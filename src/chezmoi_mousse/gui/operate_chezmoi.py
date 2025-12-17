@@ -61,24 +61,13 @@ class OperateChezmoi(OperateScreenBase, AppType):
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label in (
-            OperateBtn.add_dir.dir_label,
-            OperateBtn.add_file.file_label,
-            OperateBtn.apply_path.dir_label,
-            OperateBtn.apply_path.file_label,
-            OperateBtn.destroy_path.dir_label,
-            OperateBtn.destroy_path.file_label,
-            OperateBtn.forget_path.dir_label,
-            OperateBtn.forget_path.file_label,
-            OperateBtn.re_add_path.dir_label,
-            OperateBtn.re_add_path.file_label,
-        ):
-            self.run_operate_command()
         if event.button.label == OperateBtn.operate_exit.cancel_label:
             self.app.operate_cmd_result = None
             self.dismiss()
         elif event.button.label == OperateBtn.operate_exit.reload_label:
             self.dismiss()
+        else:
+            self.run_operate_command()
 
     def run_operate_command(self) -> None:
         if self.op_data.node_data is not None:
