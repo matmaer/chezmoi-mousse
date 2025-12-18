@@ -131,6 +131,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                         or p.parent == self.path
                     )
                     and p not in self.app.chezmoi.files
+                    and self._file_of_interest(p)
                 )
             )
         # Switches: Green - Red
@@ -151,6 +152,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                         or p.parent == self.path
                     )
                     and p not in self.app.chezmoi.files
+                    and self._file_of_interest(p)
                 )
             )
         # Switches: Red - Green
@@ -170,6 +172,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                         p.parent in self.app.chezmoi.dirs
                         or p.parent == self.path
                     )
+                    and self._file_of_interest(p)
                 )
             )
         # Switches: Green - Green, include all unmanaged paths
@@ -184,8 +187,21 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file(follow_symlinks=False)
                     and p not in self.app.chezmoi.files
+                    and self._file_of_interest(p)
                 )
             )
+
+    def _file_of_interest(self, file_path: Path) -> bool:
+        try:
+            # Check size first to avoid reading large files
+            if file_path.stat().st_size > self.app.max_file_size:
+                return False
+            # Now read only first 8 KiB
+            with open(file_path, "rb") as f:
+                chunk = f.read(8192)
+            return b"\x00" not in chunk
+        except OSError:
+            return False
 
     def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
         # Assume a directory with more than max_entries is not of interest
