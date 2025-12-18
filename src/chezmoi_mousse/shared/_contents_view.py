@@ -64,6 +64,11 @@ class ContentsView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield ContentsInfo(ids=self.ids)
         yield Label(
+            SectionLabels.cat_config_output,
+            classes=Tcss.sub_section_label,
+            id=self.ids.label.cat_config_output,
+        )
+        yield Label(
             SectionLabels.file_read_output,
             classes=Tcss.sub_section_label,
             id=self.ids.label.file_read_output,
@@ -77,6 +82,10 @@ class ContentsView(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
+        self.cat_config_label = self.query_one(
+            self.ids.label.cat_config_output_q, Label
+        )
+        self.cat_config_label.display = False
         self.file_read_label = self.query_one(
             self.ids.label.file_read_output_q, Label
         )

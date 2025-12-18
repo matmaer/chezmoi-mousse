@@ -338,6 +338,10 @@ class LabelIds:
     """Label widgets their id's to target for show/hide or update the text."""
 
     def __init__(self, ids: AppIds):
+        self.cat_config_output = ids.label_id(
+            label=LabelName.cat_config_output
+        )
+        self.cat_config_output_q = f"#{self.cat_config_output}"
         self.diff_dir_output = ids.label_id(label=LabelName.diff_dir_output)
         self.diff_dir_output_q = f"#{self.diff_dir_output}"
         self.diff_file_output = ids.label_id(label=LabelName.diff_file_output)
