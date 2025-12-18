@@ -68,6 +68,11 @@ class ContentsView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield ContentsInfo(ids=self.ids)
+        yield Label(
+            SectionLabels.file_read_output,
+            classes=Tcss.sub_section_label,
+            id=self.ids.label.file_read_output,
+        )
         yield RichLog(
             id=self.ids.logger.contents,
             auto_scroll=False,
@@ -77,6 +82,10 @@ class ContentsView(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
+        self.file_read_label = self.query_one(
+            self.ids.label.file_read_output_q, Label
+        )
+        self.file_read_label.display = False
         self.contents_info = self.query_one(
             self.ids.container.contents_info_q, ContentsInfo
         )
