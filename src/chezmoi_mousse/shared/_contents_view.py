@@ -45,7 +45,9 @@ class ContentsInfo(VerticalGroup, AppType):
 
     def compose(self) -> ComposeResult:
         yield Label(
-            SectionLabels.contents_info, classes=Tcss.sub_section_label
+            SectionLabels.contents_info,
+            classes=Tcss.sub_section_label,
+            id=self.ids.label.contents_info,
         )
         yield Static(id=self.ids.static.contents_info)
 
