@@ -41,18 +41,16 @@ class DiffView(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds", reverse: bool) -> None:
         self.ids = ids
-        self.reverse = reverse
-        self.diff_cmd: ReadCmd = (
-            ReadCmd.diff_reverse if self.reverse else ReadCmd.diff
-        )
-        self.in_dest_dir_diff_msg = (
-            DestDirStrings.diff_reverse
-            if self.reverse
-            else DestDirStrings.diff
-        )
         super().__init__(
             id=self.ids.container.diff, classes=Tcss.border_title_top
         )
+        self.reverse = reverse
+        if self.reverse is True:
+            self.diff_cmd = ReadCmd.diff_reverse
+            self.in_dest_dir_diff_msg = DestDirStrings.diff_reverse
+        else:
+            self.diff_cmd = ReadCmd.diff
+            self.in_dest_dir_diff_msg = DestDirStrings.diff
 
     def compose(self) -> ComposeResult:
         yield DiffInfo(ids=self.ids)
@@ -74,6 +72,7 @@ class DiffView(Vertical, AppType):
         )
 
     def on_mount(self) -> None:
+        self.border_title = f" {self.destDir} "
         self.dir_output_label = self.query_one(
             self.ids.label.diff_dir_output_q, Label
         )
@@ -89,11 +88,7 @@ class DiffView(Vertical, AppType):
             self.ids.static.diff_info_q, Static
         )
         if self.node_data is None:
-            self.diff_info_static_text.update(
-                "\n".join(
-                    [DestDirStrings.in_dest_dir, self.in_dest_dir_diff_msg]
-                )
-            )
+            self.diff_info_static_text.update(self.in_dest_dir_diff_msg)
 
     def watch_node_data(self) -> None:
         if self.node_data is None:

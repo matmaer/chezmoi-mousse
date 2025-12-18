@@ -104,7 +104,6 @@ class DestDirStrings(StrEnum):
         f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
     )
     git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
-    in_dest_dir = "This is the destination directory (chezmoi destDir)."
 
 
 class LogStrings(StrEnum):
