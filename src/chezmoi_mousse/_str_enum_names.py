@@ -16,6 +16,7 @@ __all__ = [
 
 class ContainerName(StrEnum):
     contents = auto()
+    contents_info = auto()
     dest_dir_info = auto()
     diff = auto()
     diff_info = auto()
@@ -82,6 +83,7 @@ class ScreenName(StrEnum):
 
 
 class StaticName(StrEnum):
+    contents_info = auto()
     diff_info = auto()
     init_info = auto()
     operate_info = auto()

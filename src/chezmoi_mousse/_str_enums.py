@@ -90,6 +90,11 @@ class Chars(StrEnum):
 
 class DestDirStrings(StrEnum):
     _click_path = "Click a path to see the output from"
+    add = (
+        "Click a directory to see if it's managed or unmanaged, "
+        "and if it contains files to add.\n"
+        "Click a file to see the output from [$success]Path.read()[/]."
+    )
     cat = (
         f"Click a file to see the output from "
         f"[$success]{ReadCmd.cat.pretty_cmd}[/]."
@@ -98,10 +103,8 @@ class DestDirStrings(StrEnum):
     diff_reverse = (
         f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
     )
-    dir_info = "Click a directary to see if it's managed or unmanaged."
     git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
     in_dest_dir = "This is the destination directory (chezmoi destDir)."
-    read_file = "Click a file to see the output from [$success]Path.read()[/]."
 
 
 class LogStrings(StrEnum):
@@ -213,8 +216,10 @@ class SectionLabels(StrEnum):
     which has its own StrEnum class "HelpSections" and the install_help.py
     module which has its own StrEnum class "InstallHelpStrings"."""
 
+    add_dir = "Add Directory Contents"
+    add_file = "Add File Contents"
     cat_config_output = "Chezmoi Cat Config Output"
-    contents_path_info = "Path Info"
+    contents_info = "Contents Info"
     debug_log_output = "Debug Log Output"
     diff_file_output = "File Differences"
     diff_dir_output = "Directory Differences"

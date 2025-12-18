@@ -124,6 +124,8 @@ class ContainerIds:
     def __init__(self, ids: AppIds):
         self.contents = ids.container_id(name=ContainerName.contents)
         self.contents_q = f"#{self.contents}"
+        self.contents_info = ids.container_id(name=ContainerName.contents_info)
+        self.contents_info_q = f"#{self.contents_info}"
         self.dest_dir_info = ids.container_id(name=ContainerName.dest_dir_info)
         self.dest_dir_info_q = f"#{self.dest_dir_info}"
         self.diff = ids.container_id(name=ContainerName.diff)
@@ -386,6 +388,8 @@ class OperateButtonIds:
 
 class StaticIds:
     def __init__(self, ids: AppIds):
+        self.contents_info = ids.static_id(static=StaticName.contents_info)
+        self.contents_info_q = f"#{self.contents_info}"
         self.diff_info = ids.static_id(static=StaticName.diff_info)
         self.diff_info_q = f"#{self.diff_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.widgets import Label, RichLog, Static
 
@@ -39,6 +39,18 @@ class ContentsTabStrings(StrEnum):
     unmanaged_dir = "Unmanaged directory:"
 
 
+class ContentsInfo(VerticalGroup, AppType):
+    def __init__(self, *, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.container.contents_info)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.contents_info, classes=Tcss.sub_section_label
+        )
+        yield Static(id=self.ids.static.contents_info)
+
+
 class ContentsView(Vertical, AppType):
 
     destDir: "Path | None" = None
@@ -50,20 +62,21 @@ class ContentsView(Vertical, AppType):
             id=self.ids.container.contents, classes=Tcss.border_title_top
         )
         self.click_file_info = (
-            DestDirStrings.read_file
+            DestDirStrings.add
             if self.ids.canvas_name == TabName.add
             else DestDirStrings.cat
         )
 
     def compose(self) -> ComposeResult:
-        with Vertical(id=self.ids.container.dest_dir_info):
-            yield Label(
-                SectionLabels.contents_path_info,
-                classes=Tcss.sub_section_label,
-            )
-            yield Static(DestDirStrings.in_dest_dir)
-            yield Static(self.click_file_info)
-            yield Static(DestDirStrings.dir_info)
+        yield ContentsInfo(ids=self.ids)
+        # with Vertical(id=self.ids.container.contents_info):
+        #     yield Label(
+        #         SectionLabels.contents_info, classes=Tcss.sub_section_label
+        #     )
+        #     yield Static(DestDirStrings.in_dest_dir)
+        #     yield Static(self.click_file_info)
+        #     yield Static(DestDirStrings.add)
+        # yield ContentsInfo(ids=self.ids)
         yield RichLog(
             id=self.ids.logger.contents,
             auto_scroll=False,
@@ -73,6 +86,20 @@ class ContentsView(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
+        # new_static_text: list[str] = []
+        self.contents_info = self.query_one(
+            self.ids.container.contents_info_q, ContentsInfo
+        )
+        self.contents_info_static_text = self.contents_info.query_one(
+            self.ids.static.contents_info_q, Static
+        )
+        if self.node_data is None:
+            # self.contents_info_static_text(DestDirStrings.in_dest_dir)
+            if self.ids.canvas_name == TabName.add:
+                self.contents_info_static_text.update(DestDirStrings.add)
+            elif self.ids.canvas_name in (TabName.apply, TabName.re_add):
+                self.contents_info_static_text.update(DestDirStrings.cat)
+        # self.contents_info_static_text.update("\n".join(new_static_text))
 
     def write_managed_directory(self, path_arg: "Path") -> None:
         if self.node_data is None:
@@ -86,7 +113,7 @@ class ContentsView(Vertical, AppType):
             return
         else:
             dest_dir_info = self.query_one(
-                self.ids.container.dest_dir_info_q, Vertical
+                self.ids.container.contents_info_q, ContentsInfo
             )
             dest_dir_info.display = False
         self.border_title = f" {self.node_data.path} "
