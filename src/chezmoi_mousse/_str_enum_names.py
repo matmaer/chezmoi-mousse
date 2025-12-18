@@ -56,6 +56,7 @@ class DataTableName(StrEnum):
 class LabelName(StrEnum):
     diff_dir_output = auto()
     diff_file_output = auto()
+    file_read_output = auto()
 
 
 class LogName(StrEnum):
