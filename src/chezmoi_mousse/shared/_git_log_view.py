@@ -33,9 +33,11 @@ class GitLogDataTable(DataTable[Text], AppType):
         self.add_row(*row)
 
     def populate_datatable(self, command_result: "CommandResult") -> None:
-        if command_result.exit_code != 0:
+        if (
+            command_result.exit_code != 0
+            or not command_result.std_out.splitlines()
+        ):
             return
-        cmd_output = command_result.std_out
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
         styles = {
@@ -43,7 +45,7 @@ class GitLogDataTable(DataTable[Text], AppType):
             "warning": self.app.theme_variables["text-warning"],
             "error": self.app.theme_variables["text-error"],
         }
-        for line in cmd_output.splitlines():
+        for line in command_result.std_out.splitlines():
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
                 self._add_row_with_style(columns, styles["ok"])
