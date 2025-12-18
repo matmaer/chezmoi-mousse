@@ -6,7 +6,7 @@ from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
-from textual.widgets import DataTable, Label, Static
+from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import AppType, DestDirStrings, ReadCmd, Tcss
 
@@ -67,10 +67,9 @@ class GitLogPath(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        with Vertical(id=self.ids.container.dest_dir_info):
-            yield Label("Path Git Log", classes=Tcss.sub_section_label)
-            yield Static(DestDirStrings.in_dest_dir)
-            yield Static(DestDirStrings.git_log_msg)
+        yield Static(
+            DestDirStrings.git_log_msg, id=self.ids.static.git_log_info
+        )
         yield GitLogDataTable(ids=self.ids)
 
     def on_mount(self) -> None:
@@ -81,7 +80,7 @@ class GitLogPath(Vertical, AppType):
             return
         else:
             dest_dir_info = self.query_one(
-                self.ids.container.dest_dir_info_q, Vertical
+                self.ids.static.git_log_info_q, Static
             )
             dest_dir_info.display = False
         datatable = self.query_one(
