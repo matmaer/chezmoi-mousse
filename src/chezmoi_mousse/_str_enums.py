@@ -88,24 +88,6 @@ class Chars(StrEnum):
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
 
 
-class DestDirStrings(StrEnum):
-    _click_path = "Click a path to see the output from"
-    add = (
-        "Click a directory to see if it's managed or unmanaged, "
-        "and if it contains files to add.\n"
-        "Click a file to see the output from [$success]Path.read()[/]."
-    )
-    cat = (
-        f"Click a file to see the output from "
-        f"[$success]{ReadCmd.cat.pretty_cmd}[/]."
-    )
-    diff = f"{_click_path} " f"[$success]{ReadCmd.diff.pretty_cmd}[/]."
-    diff_reverse = (
-        f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
-    )
-    git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
-
-
 class LogStrings(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
@@ -118,13 +100,12 @@ class LogStrings(StrEnum):
 
 class OperateStrings(StrEnum):
     add_path = (
-        "[$text-primary]The path will be added to your chezmoi "
-        "dotfile manager source state.[/]"
+        "[$text-primary]The path will be added to the chezmoi source state.[/]"
     )
     add_subtitle = f"path on disk {Chars.right_arrow} chezmoi repo"
     apply_path = (
-        "[$text-primary]The path in the destination directory "
-        "will be modified.[/]"
+        "[$text-primary]The path in the destination directory will be "
+        "modified.[/]"
     )
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_commit = (
@@ -138,8 +119,8 @@ class OperateStrings(StrEnum):
         f"{Chars.warning_sign}[/]"
     )
     changes_disabled = (
-        "[dim]Changes are currently disabled, running commands "
-        "with '--dry-run' flag.[/]"
+        "[dim]Changes are currently disabled, running commands with "
+        "'--dry-run' flag.[/]"
     )
     changes_enabled = (
         f"[$text-warning]{Chars.warning_sign} Changes currently enabled, "
@@ -147,9 +128,8 @@ class OperateStrings(StrEnum):
         f"{Chars.warning_sign}[/]"
     )
     destroy_path = (
-        "[$text-error]Permanently remove the path both from your home "
-        "directory and chezmoi's source directory, make sure you have a "
-        "backup![/]"
+        "[$text-error]Permanently remove the path both from disk and chezmoi's"
+        " source directory, make sure you have a backup![/]"
     )
     destroy_subtitle = (
         f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"
@@ -195,6 +175,7 @@ class OperateStrings(StrEnum):
         "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
         "username/my-dotfiles.git[/] and delete the PAT after use."
     )
+    read_file = "[$success]Path.read()[/]"
     re_add_path = (
         "[$text-primary]Overwrite the source state with current local path.[/]"
     )
@@ -204,10 +185,30 @@ class OperateStrings(StrEnum):
     run_chezmoi_init = 'Run [$text-success]"chezmoi init"[/]'
     ssh_select = (
         "Enter an SSH SCP-style URL, e.g., "
-        "[$text_primary]git@github.com:user/repo.git[/]. If your dotfiles "
-        "repository is private, make sure you have your SSH key pair set "
-        "up before using this option."
+        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
+        "private, make sure you have your SSH key pair set up before using "
+        "this option."
     )
+
+
+class DestDirStrings(StrEnum):
+    _click_file = "Click a file to see the output from "
+    _click_dir = "Click a directory to see"
+    add = (
+        "Click a directory to see if it's managed or unmanaged, "
+        "and if it contains files to add.\n"
+        f"{_click_file}{OperateStrings.read_file}."
+    )
+    cat = f"{_click_file}[$success]{ReadCmd.cat.pretty_cmd}[/]."
+    diff = f"{_click_file}[$success]{ReadCmd.diff.pretty_cmd}[/]."
+    diff_reverse = (
+        f"{_click_file}[$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
+    )
+    git_log_msg = (
+        f"Click a path to see the output from "
+        f"[$success]{ReadCmd.git_log.pretty_cmd}[/]."
+    )
+    re_add = f"{_click_file}[$success]{OperateStrings.read_file}[/]."
 
 
 class SectionLabels(StrEnum):
@@ -216,7 +217,7 @@ class SectionLabels(StrEnum):
     module which has its own StrEnum class "InstallHelpStrings"."""
 
     add_dir = "Add Directory Contents"
-    add_file = "Add File Contents"
+    file_read_output = "File Contents"
     cat_config_output = "Chezmoi Cat Config Output"
     contents_info = "Contents Info"
     debug_log_output = "Debug Log Output"
