@@ -95,8 +95,10 @@ class ContentsView(Vertical, AppType):
         if self.node_data is None:
             if self.ids.canvas_name == TabName.add:
                 self.contents_info_static_text.update(DestDirStrings.add)
-            elif self.ids.canvas_name in (TabName.apply, TabName.re_add):
+            elif self.ids.canvas_name == TabName.apply:
                 self.contents_info_static_text.update(DestDirStrings.cat)
+            elif self.ids.canvas_name == TabName.re_add:
+                self.contents_info_static_text.update(DestDirStrings.re_add)
 
     def write_managed_directory(self, path_arg: "Path") -> None:
         if self.node_data is None:
