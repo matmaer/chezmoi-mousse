@@ -27,7 +27,6 @@ __all__ = ["ContentsView"]
 
 class ContentsTabStrings(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
-    click_file_path = "Click a file path in the tree to see the contents."
     empty_or_only_whitespace = "File is empty or contains only whitespace"
     managed_dir = "Managed directory:"
     output_from_cat = "File does not exist on disk, output from"
@@ -94,7 +93,6 @@ class ContentsView(Vertical, AppType):
         if self.node_data is None:
             raise ValueError("node_data is None in ContentsView")
         self.rich_log.write(f"{ContentsTabStrings.managed_dir} {path_arg}")
-        self.rich_log.write(ContentsTabStrings.click_file_path)
 
     def watch_node_data(self) -> None:
         self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
@@ -174,7 +172,6 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(
                     f"{ContentsTabStrings.unmanaged_dir} {self.node_data.path}"
                 )
-                self.rich_log.write(ContentsTabStrings.click_file_path)
 
         except OSError as error:
             self.rich_log.write(
@@ -182,4 +179,3 @@ class ContentsView(Vertical, AppType):
                     f"{ContentsTabStrings.read_error} {self.node_data.path}: {error}"
                 )
             )
-            self.rich_log.write(ContentsTabStrings.click_file_path)
