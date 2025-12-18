@@ -60,11 +60,6 @@ class ContentsView(Vertical, AppType):
         super().__init__(
             id=self.ids.container.contents, classes=Tcss.border_title_top
         )
-        self.click_file_info = (
-            DestDirStrings.add
-            if self.ids.canvas_name == TabName.add
-            else DestDirStrings.cat
-        )
 
     def compose(self) -> ComposeResult:
         yield ContentsInfo(ids=self.ids)
