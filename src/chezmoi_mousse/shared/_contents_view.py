@@ -69,14 +69,6 @@ class ContentsView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield ContentsInfo(ids=self.ids)
-        # with Vertical(id=self.ids.container.contents_info):
-        #     yield Label(
-        #         SectionLabels.contents_info, classes=Tcss.sub_section_label
-        #     )
-        #     yield Static(DestDirStrings.in_dest_dir)
-        #     yield Static(self.click_file_info)
-        #     yield Static(DestDirStrings.add)
-        # yield ContentsInfo(ids=self.ids)
         yield RichLog(
             id=self.ids.logger.contents,
             auto_scroll=False,
@@ -86,7 +78,6 @@ class ContentsView(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
-        # new_static_text: list[str] = []
         self.contents_info = self.query_one(
             self.ids.container.contents_info_q, ContentsInfo
         )
@@ -94,12 +85,10 @@ class ContentsView(Vertical, AppType):
             self.ids.static.contents_info_q, Static
         )
         if self.node_data is None:
-            # self.contents_info_static_text(DestDirStrings.in_dest_dir)
             if self.ids.canvas_name == TabName.add:
                 self.contents_info_static_text.update(DestDirStrings.add)
             elif self.ids.canvas_name in (TabName.apply, TabName.re_add):
                 self.contents_info_static_text.update(DestDirStrings.cat)
-        # self.contents_info_static_text.update("\n".join(new_static_text))
 
     def write_managed_directory(self, path_arg: "Path") -> None:
         if self.node_data is None:
