@@ -6,21 +6,11 @@ from typing import Any
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Footer, Label, Pretty, Tree
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    BindingAction,
-    BindingDescription,
-    Chars,
-    FlatBtn,
-    LinkBtn,
-    Tcss,
-)
+from chezmoi_mousse import IDS, AppType, Chars, FlatBtn, LinkBtn, Tcss
 from chezmoi_mousse.shared import (
     CustomCollapsible,
     CustomHeader,
@@ -50,14 +40,6 @@ class CommandsTree(Tree[ParsedJson]):
 
 
 class InstallHelp(Screen[None], AppType):
-
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.exit_app,
-        )
-    ]
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.install_help)
@@ -112,7 +94,4 @@ class InstallHelp(Screen[None], AppType):
 
     @on(FlatButton.Pressed)
     def exit_application(self) -> None:
-        self.app.exit()
-
-    def action_exit_screen(self) -> None:
         self.app.exit()

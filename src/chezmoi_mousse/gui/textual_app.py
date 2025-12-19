@@ -75,6 +75,20 @@ class ChezmoiGUI(App[None]):
 
     BINDINGS = [
         Binding(
+            "ctrl+q",
+            action="quit",
+            description="Quit",
+            tooltip="Quit the app and return to the command prompt.",
+            show=True,
+            key_display="Ctrl-q",
+            priority=True,
+        ),
+        Binding(
+            key="escape",
+            action=BindingAction.exit_screen,
+            description=BindingDescription.cancel,
+        ),
+        Binding(
             key="M,m",
             action=BindingAction.toggle_maximized,
             description=BindingDescription.maximize,
@@ -390,6 +404,20 @@ class ChezmoiGUI(App[None]):
                 self.screen, (InstallHelp, OperateChezmoi, OperateInit)
             ):
                 return False
+        elif action == BindingAction.exit_screen:
+            if isinstance(
+                self.screen, (InstallHelp, MainScreen, SplashScreen)
+            ):
+                return False
+            elif isinstance(self.screen, OperateInit):
+                if (
+                    self.operate_cmd_result is not None
+                    and self.operate_cmd_result.dry_run is False
+                    and self.operate_cmd_result.is_init_result is True
+                ):
+                    return True
+                else:
+                    return None
         return True
 
 

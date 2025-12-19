@@ -13,7 +13,6 @@ class BindingAction(StrEnum):
 class BindingDescription(StrEnum):
     # Screen bindings
     cancel = "Cancel"
-    exit_app = "Exit App"
     reload = "Close & Reload"
     # Tab bindings
     hide_filters = "Hide filters"

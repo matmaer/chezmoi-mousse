@@ -2,7 +2,6 @@ import re
 
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
@@ -479,14 +478,6 @@ class InitCollapsibles(VerticalGroup, AppType):
 
 class OperateInit(Screen[None], AppType):
 
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.exit_app,
-        )
-    ]
-
     def __init__(self) -> None:
         super().__init__()
         if self.app.operate_data is None:
@@ -534,6 +525,9 @@ class OperateInit(Screen[None], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
+        self.app.update_binding_description(
+            BindingAction.exit_screen, BindingDescription.reload
+        )
         self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.post_op_container = self.query_one(
             self.ids.container.post_operate_q, VerticalGroup
@@ -647,24 +641,11 @@ class OperateInit(Screen[None], AppType):
         self.post_op_container.display = True
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         output_log.log_cmd_results(self.app.operate_cmd_result)
-        if self.app.changes_enabled is False:
+        if self.app.changes_enabled is True:
             self.op_btn.disabled = True
             self.op_btn.tooltip = None
             self.exit_btn.label = OperateBtn.operate_exit.reload_label
-            new_description = BindingDescription.reload
-            self.app.update_binding_description(
-                BindingAction.exit_screen, new_description
-            )
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
         self.update_static_text()
-
-    def action_exit_screen(self) -> None:
-        if (
-            self.app.operate_cmd_result is None
-            or self.app.operate_cmd_result.dry_run is True
-        ):
-            self.app.exit()
-        else:
-            self.screen.dismiss()
