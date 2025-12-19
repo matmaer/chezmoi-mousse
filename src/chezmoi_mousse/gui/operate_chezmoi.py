@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Label
+from textual.widgets import Button, Footer, Label, Static
 
 from chezmoi_mousse import (
     IDS_OPERATE_CHEZMOI,
@@ -11,6 +11,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     OperateBtn,
+    OperateStrings,
     SectionLabels,
     Tcss,
     WriteCmd,
@@ -21,7 +22,6 @@ from chezmoi_mousse.shared import (
     DebugLog,
     DiffView,
     OperateButtons,
-    OperateInfo,
     OperateLog,
 )
 
@@ -29,6 +29,9 @@ __all__ = ["OperateChezmoi"]
 
 
 class OperateChezmoi(Screen[None], AppType):
+
+    git_autocommit: bool | None = None
+    git_autopush: bool | None = None
 
     BINDINGS = [
         Binding(
@@ -43,6 +46,7 @@ class OperateChezmoi(Screen[None], AppType):
         if self.app.operate_data is None:
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
+        self.btn_enum = self.op_data.btn_enum
         self.reverse = (
             False if self.op_data.btn_enum == OperateBtn.apply_path else True
         )
@@ -50,7 +54,9 @@ class OperateChezmoi(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
-        yield OperateInfo(self.ids)
+        yield Static(
+            id=self.ids.static.operate_info, classes=Tcss.operate_info
+        )
         yield VerticalGroup(id=self.ids.container.pre_operate)
         with VerticalGroup(id=self.ids.container.post_operate):
             yield Label(
@@ -74,6 +80,10 @@ class OperateChezmoi(Screen[None], AppType):
         self.pre_op_container = self.query_one(
             self.ids.container.pre_operate_q, VerticalGroup
         )
+        self.operate_info = self.query_one(
+            self.ids.static.operate_info_q, Static
+        )
+        self.update_operate_info()
         self.op_btn = self.query_one(
             self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
         )
@@ -104,6 +114,46 @@ class OperateChezmoi(Screen[None], AppType):
             contents_view.on_mount()
             contents_view.node_data = self.op_data.node_data
             contents_view.remove_class(Tcss.border_title_top)
+
+    def update_operate_info(self) -> None:
+        lines_to_write: list[str] = []
+        border_subtitle = ""
+        if self.app.changes_enabled is True:
+            lines_to_write.append(OperateStrings.changes_enabled)
+        else:
+            lines_to_write.append(OperateStrings.changes_disabled)
+
+        if self.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
+            border_subtitle = OperateStrings.add_subtitle
+            lines_to_write.append(OperateStrings.add_path)
+        elif self.btn_enum == OperateBtn.apply_path:
+            border_subtitle = OperateStrings.apply_subtitle
+            lines_to_write.append(OperateStrings.apply_path)
+        elif self.btn_enum == OperateBtn.re_add_path:
+            border_subtitle = OperateStrings.re_add_subtitle
+            lines_to_write.append(OperateStrings.re_add_path)
+        elif self.btn_enum == OperateBtn.forget_path:
+            border_subtitle = OperateStrings.forget_subtitle
+            lines_to_write.append(OperateStrings.forget_path)
+        elif self.btn_enum == OperateBtn.destroy_path:
+            border_subtitle = OperateStrings.destroy_subtitle
+            lines_to_write.append(OperateStrings.destroy_path)
+
+        if self.btn_enum != OperateBtn.apply_path:
+            if self.git_autocommit is True:
+                lines_to_write.append(OperateStrings.auto_commit)
+            if self.git_autopush is True:
+                lines_to_write.append(OperateStrings.auto_push)
+        # show git diff color info
+        if self.btn_enum in (OperateBtn.apply_path, OperateBtn.re_add_path):
+            lines_to_write.append(OperateStrings.diff_color)
+        if self.op_data.node_data is not None:
+            lines_to_write.append(
+                f"[$text-primary]Operating on path: {self.op_data.node_data.path}[/]"
+            )
+        self.operate_info.update("\n".join(lines_to_write))
+        self.operate_info.border_title = self.op_data.btn_label
+        self.operate_info.border_subtitle = border_subtitle
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:

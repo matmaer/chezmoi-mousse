@@ -283,14 +283,6 @@ OperateButtons {
   }
 }
 
-OperateInfo {
-  border-subtitle-align: center;
-  border-title-align: center;
-  border: round $foreground;
-  text-align: center;
-  dock: top;
-}
-
 OperateChezmoi, OperateInit {
   & OperateButtons {
       margin-bottom: 1;

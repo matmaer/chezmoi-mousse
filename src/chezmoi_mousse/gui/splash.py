@@ -27,14 +27,10 @@ from chezmoi_mousse import (
     SplashData,
     VerbArgs,
 )
-from chezmoi_mousse.shared import (
-    ContentsView,
-    DiffView,
-    GitLogPath,
-    OperateInfo,
-)
+from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .main_tabs import MainScreen
+from .operate_chezmoi import OperateChezmoi
 from .operate_init import OperateInit
 from .tabs.add_tab import AddTab
 from .tabs.common.switchers import ViewSwitcher
@@ -270,8 +266,10 @@ class SplashScreen(Screen[SplashData | None], AppType):
         MainScreen.destDir = dest_dir
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
-        OperateInfo.git_autocommit = globals()["parsed_config"].git_autocommit
-        OperateInfo.git_autopush = globals()["parsed_config"].git_autopush
+        OperateChezmoi.git_autocommit = globals()[
+            "parsed_config"
+        ].git_autocommit
+        OperateChezmoi.git_autopush = globals()["parsed_config"].git_autopush
         self.app.install_screen(MainScreen(), name="main_screen")  # type: ignore[arg-type]
 
     def all_workers_finished(self) -> None:
