@@ -120,7 +120,7 @@ class ChezmoiGUI(App[None]):
         # Arbitrary max file size used by FilteredDirTree and ContentsView but
         # should be reasonable truncate for files to be considered as dotfiles.
         # TODO: make this configurable
-        self.max_file_size = 500 * 1024  # 500 KiB
+        self.max_file_size: int = 500 * 1024  # 500 KiB
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
