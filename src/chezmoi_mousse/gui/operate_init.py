@@ -96,10 +96,10 @@ class InputInitCloneRepo(HorizontalGroup):
                 ("guess url", "guess url"),
                 ("guess ssh", "guess ssh"),
             ],
-            value="https",
-            classes=Tcss.input_select,
             allow_blank=False,
+            classes=Tcss.input_select,
             type_to_search=False,
+            value="https",
         )
         yield InputURL()
         yield InputSSH()
@@ -107,9 +107,28 @@ class InputInitCloneRepo(HorizontalGroup):
         yield InputGuessSSH()
 
     def on_mount(self) -> None:
-        self.query_exactly_one(InputSSH).display = False
-        self.query_exactly_one(InputGuessURL).display = False
-        self.query_exactly_one(InputGuessSSH).display = False
+        self.input_url = self.query_exactly_one(InputURL)
+        self.input_ssh = self.query_exactly_one(InputSSH)
+        self.input_guess_url = self.query_exactly_one(InputGuessURL)
+        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
+        self.input_ssh.display = False
+        self.input_guess_url.display = False
+        self.input_guess_ssh.display = False
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        self.input_url.display = False
+        self.input_ssh.display = False
+        self.input_guess_url.display = False
+        self.input_guess_ssh.display = False
+
+        if event.value == "https":
+            self.input_url.display = True
+        elif event.value == "ssh":
+            self.input_ssh.display = True
+        elif event.value == "guess url":
+            self.input_guess_url.display = True
+        elif event.value == "guess ssh":
+            self.input_guess_ssh.display = True
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -156,12 +175,6 @@ class OperateInit(Screen[None], AppType):
         self.init_cmd: WriteCmd | None = None
         self.repo_arg: str | None = None
         self.valid_url: bool = False
-        self.init_clone_https_static_text = "\n".join(
-            [OperateStrings.https_url.value, OperateStrings.pat_info.value]
-        )
-        self.init_clone_ssh_static_text = OperateStrings.ssh_select
-        self.init_clone_guess_https_static_text = OperateStrings.guess_https
-        self.init_clone_guess_ssh_static_text = OperateStrings.guess_ssh
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -198,6 +211,7 @@ class OperateInit(Screen[None], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
+        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.post_op_container = self.query_one(
             self.ids.container.post_operate_q, VerticalGroup
         )
@@ -217,50 +231,44 @@ class OperateInit(Screen[None], AppType):
             self.ids.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
+        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
         self.init_static = self.query_one(self.ids.static.init_info_q, Static)
-        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
-        self.guess_docs_link = self.query_one(
-            self.ids.link_button_id("#", btn=LinkBtn.chezmoi_guess), FlatLink
-        )
-        self.guess_docs_link.display = False
-        self.input_url = self.query_exactly_one(InputURL)
-        self.input_ssh = self.query_exactly_one(InputSSH)
-        self.input_guess_url = self.query_exactly_one(InputGuessURL)
-        self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
         self.update_operate_info()
         self.update_static_text()
 
     def update_operate_info(self) -> None:
         lines_to_write: list[str] = []
-        if self.op_btn.label == OperateBtn.init_repo.init_clone_label:
-            lines_to_write.append(OperateStrings.init_clone_operate_info)
-        else:
-            lines_to_write.append(OperateStrings.init_new_operate_info)
+        if self.op_btn.label == OperateBtn.init_repo.init_new_label:
+            lines_to_write.append(
+                f"Run chezmoi {WriteCmd.init_new.pretty_cmd}"
+            )
         if self.app.changes_enabled is True:
             lines_to_write.append(OperateStrings.changes_enabled)
         else:
             lines_to_write.append(OperateStrings.changes_disabled)
         self.operate_info.update("\n".join(lines_to_write))
+        self.operate_info.border_title = self.operate_info.border_title = (
+            self.op_data.btn_label
+        )
 
     def update_static_text(self) -> None:
         switch_state = self.query_exactly_one(Switch).value
         if switch_state is False:
-            self.init_static.update(OperateStrings.init_new.value)
+            self.init_static.update(OperateStrings.init_new_info)
             return
         current_select = self.repo_input.query_exactly_one(Select[str]).value
         if current_select == "https":
-            self.init_static.update(self.init_clone_https_static_text)
+            self.init_static.update(OperateStrings.https_url)
         elif current_select == "ssh":
-            self.init_static.update(self.init_clone_ssh_static_text)
+            self.init_static.update(OperateStrings.ssh_select)
         elif current_select == "guess url":
-            self.init_static.update(self.init_clone_guess_https_static_text)
+            self.init_static.update(OperateStrings.guess_https)
         elif current_select == "guess ssh":
-            self.init_static.update(self.init_clone_guess_ssh_static_text)
+            self.init_static.update(OperateStrings.guess_ssh)
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
@@ -341,30 +349,6 @@ class OperateInit(Screen[None], AppType):
 
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
-        if event.value == "https":
-            self.guess_docs_link.display = False
-            self.input_url.display = True
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "ssh":
-            self.guess_docs_link.display = False
-            self.input_url.display = False
-            self.input_ssh.display = True
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = False
-        elif event.value == "guess url":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = True
-            self.input_guess_ssh.display = False
-            self.guess_docs_link.display = True
-        elif event.value == "guess ssh":
-            self.input_url.display = False
-            self.input_ssh.display = False
-            self.input_guess_url.display = False
-            self.input_guess_ssh.display = True
-            self.guess_docs_link.display = True
         self.update_static_text()
 
     def action_exit_screen(self) -> None:

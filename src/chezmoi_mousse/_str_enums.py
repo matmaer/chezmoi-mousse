@@ -3,7 +3,7 @@
 from enum import StrEnum
 
 from ._chezmoi import ReadCmd
-from ._operate_button_data import OperateBtn
+from ._switch_data import Switches
 
 __all__ = [
     "Chars",
@@ -153,22 +153,16 @@ class OperateStrings(StrEnum):
     )
     https_url = (
         "Enter a complete URL, e.g., "
-        "[$text-primary]https://github.com/user/repo.git[/]."
-    )
-    init_clone_operate_info = "[$text-primary]Initialize a chezmoi by cloning a remote repository.[/]"
-    init_new = (
-        f"Click the [$primary-lighten-3 on $surface-lighten-1] "
-        f"{OperateBtn.init_repo.initial_label} [/] button to initialize a "
-        "new chezmoi repository with default settings."
-    )
-    init_new_command = "Run [$text-success]'chezmoi init'[/]."
-    init_new_operate_info = (
-        "[$text-primary]Initialize a new chezmoi repository.[/]"
-    )
-    pat_info = (
+        "[$text-primary]https://github.com/user/repo.git[/]. "
         "If you have a PAT, make sure to include it in the URL, for example: "
         "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
         "username/my-dotfiles.git[/] and delete the PAT after use."
+    )
+    init_new_info = (
+        "Ready to initialize a new chezmoi repository. Toggle the "
+        "[$foreground-darken-1 on $surface-lighten-1] "
+        f"{Switches.init_repo_switch.label} [/]"
+        "switch to initialize by cloning an existing Github repository."
     )
     read_file = "[$success]Path.read()[/]"
     re_add_path = (
