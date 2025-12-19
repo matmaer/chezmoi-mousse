@@ -30,7 +30,6 @@ from ._messages import (
 )
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader, HeaderTitle
-from ._ssh_scp_validator import SSHSCP
 
 __all__ = [
     # Buttons, Links and Switches
@@ -65,6 +64,5 @@ __all__ = [
     "HeaderTitle",
     "PrettyTemplateData",
     "PwMgrInfoView",
-    "SSHSCP",
     "TemplateDataView",
 ]
