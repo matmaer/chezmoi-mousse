@@ -28,10 +28,10 @@ class LogUtils:
     @staticmethod
     def pretty_cmd_str(command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
-        return "chezmoi " + " ".join(
+        return " ".join(
             [
                 _
-                for _ in command[1:]
+                for _ in command
                 if _
                 not in GlobalCmd.default_args.value
                 + filter_git_log_args
