@@ -2,21 +2,17 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
+from chezmoi_mousse._chezmoi import WriteCmd
+
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import (
-        NodeData,
-        OperateBtn,
-        ScreenName,
-        TabName,
-        WriteCmd,
-    )
+    from chezmoi_mousse import NodeData, OperateBtn, ScreenName, TabName
 
 __all__ = [
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    "CurrentInitCmdMsg",
+    "InitCommandMsg",
     "OperateButtonMsg",
 ]
 
@@ -44,26 +40,13 @@ class CurrentAddNodeMsg(Message):
         super().__init__()
 
 
-class CurrentInitCmdMsg(Message):
+class InitCommandMsg(Message):
     def __init__(
-        self,
-        https_arg: str | None = None,
-        ssh_arg: str | None = None,
-        guess_url_arg: str | None = None,
-        guess_ssh_arg: str | None = None,
-        https_cmd: "WriteCmd | None" = None,
-        ssh_cmd: "WriteCmd | None" = None,
-        guess_url_cmd: "WriteCmd | None" = None,
-        guess_ssh_cmd: "WriteCmd | None" = None,
+        self, init_cmd: "WriteCmd", init_arg: str, valid_arg: bool
     ) -> None:
-        self.https_arg: str | None = https_arg
-        self.ssh_arg: str | None = ssh_arg
-        self.guess_url_arg: str | None = guess_url_arg
-        self.guess_ssh_arg: str | None = guess_ssh_arg
-        self.https_cmd: "WriteCmd | None" = https_cmd
-        self.ssh_cmd: "WriteCmd | None" = ssh_cmd
-        self.guess_url_cmd: "WriteCmd | None" = guess_url_cmd
-        self.guess_ssh_cmd: "WriteCmd | None" = guess_ssh_cmd
+        self.init_cmd = init_cmd
+        self.init_arg = init_arg
+        self.valid_arg = valid_arg
         super().__init__()
 
 

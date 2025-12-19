@@ -104,20 +104,11 @@ class NodeData:
     path_kind: "PathKind"
 
 
-@dataclass
-class InitData:
-    init_cmd: "WriteCmd"
-    guess_https: "bool | None" = None
-    guess_ssh: "bool | None" = None
-    repo_arg: "str | None" = None
-
-
 @dataclass(slots=True)
 class OperateData:
     btn_enum: "OperateBtn"
     btn_label: "str"
     btn_tooltip: "str | None"
-    init_data: "InitData | None" = None
     node_data: "NodeData | None" = None
 
 
@@ -132,7 +123,6 @@ class ParsedConfig:
 
 @dataclass(slots=True)
 class SplashData:
-    init_needed: "bool"
     cat_config: "CommandResult"
     doctor: "CommandResult"
     git_log: "CommandResult"

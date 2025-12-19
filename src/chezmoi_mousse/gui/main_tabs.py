@@ -115,12 +115,9 @@ class MainScreen(Screen[None], AppType):
             self.notify("No loading screen data available.")
             return
         commands_to_log = self.app.splash_data.executed_commands
-        if (
-            self.app.operate_cmd_result is not None
-            and self.app.operate_cmd_result.is_init_result is True
-        ):
-            self.operate_log.log_cmd_results(self.app.operate_cmd_result)
-            commands_to_log += [self.app.operate_cmd_result]
+        if self.app.init_cmd_result is not None:
+            self.operate_log.log_cmd_results(self.app.init_cmd_result)
+            commands_to_log += [self.app.init_cmd_result]
         for cmd in commands_to_log:
             self.app_log.log_cmd_results(cmd)
             self.read_cmd_log.log_cmd_results(cmd)

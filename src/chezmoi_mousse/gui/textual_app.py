@@ -107,11 +107,7 @@ class ChezmoiGUI(App[None]):
     CSS_PATH = "gui.tcss"
 
     def __init__(
-        self,
-        *,
-        chezmoi_found: bool,
-        dev_mode: bool,
-        force_init_operation: bool,
+        self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -120,7 +116,7 @@ class ChezmoiGUI(App[None]):
 
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
-        self.force_init_operation: bool = force_init_operation
+        self.init_needed: bool = pretend_init_needed
 
         # Manage state between screens
         self.changes_enabled: bool = False

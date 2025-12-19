@@ -24,8 +24,8 @@ from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
-    CurrentInitCmdMsg,
     CurrentReAddNodeMsg,
+    InitCommandMsg,
     OperateButtonMsg,
 )
 from ._pw_mgr_info import PwMgrInfoView
@@ -50,7 +50,7 @@ __all__ = [
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    "CurrentInitCmdMsg",
+    "InitCommandMsg",
     "OperateButtonMsg",
     # Other shared components
     "ContentsView",
