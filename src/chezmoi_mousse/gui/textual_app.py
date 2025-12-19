@@ -339,14 +339,6 @@ class ChezmoiGUI(App[None]):
     def check_action(
         self, action: str, parameters: tuple[object, ...]
     ) -> bool | None:
-        # if action == BindingAction.exit_screen:
-        #     if isinstance(
-        #         self.screen, (InstallHelp, OperateChezmoi, OperateInit)
-        #     ):
-        #         return True
-        #     else:
-        #         return False
-        # elif action == BindingAction.toggle_switch_slider:
         if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)

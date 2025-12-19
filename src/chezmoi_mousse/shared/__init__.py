@@ -24,6 +24,7 @@ from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
+    CurrentInitCmdMsg,
     CurrentReAddNodeMsg,
     InitCompletedMsg,
     OperateButtonMsg,
@@ -50,6 +51,7 @@ __all__ = [
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
+    "CurrentInitCmdMsg",
     "InitCompletedMsg",
     "OperateButtonMsg",
     # Other shared components

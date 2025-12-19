@@ -30,6 +30,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 from chezmoi_mousse.shared import (
+    CurrentInitCmdMsg,
     CustomCollapsible,
     CustomHeader,
     DebugLog,
@@ -122,6 +123,159 @@ class SSHSCP(Validator):
         return None
 
 
+class GUESS_HTTPS(Validator):
+    """Lenient validator for chezmoi HTTPS guess inputs.
+
+    Validates inputs that will be guessed as HTTPS URLs by chezmoi.
+    This is intentionally permissive since chezmoi will handle the actual
+    guessing and transformation logic. If the input doesn't match any known
+    pattern, chezmoi will pass it through unchanged and report an error
+    during the clone operation.
+
+    Accepts HTTPS-style formats:
+        - Shorthand paths without @ symbols (chezmoi expands to HTTPS)
+        - Optional https:// scheme prefix
+        - Tildes (for SourceHut ~user format)
+
+    Examples:
+        - `user/repo` → `https://github.com/user/repo.git`
+        - `github.com/user/repo` → `https://github.com/user/repo.git`
+        - `gitlab.com/org/project` → `https://gitlab.com/org/project.git`
+        - `sr.ht/~user/dotfiles` → `https://git.sr.ht/~user/dotfiles`
+        - `https://example.com/user/repo` → `https://example.com/user/repo.git`
+    """
+
+    # Pattern breakdown:
+    # ^                    - Start of string
+    # (?:https?://)?       - Optional http:// or https:// scheme (non-capturing group)
+    # [                    - Character class start
+    #   a-zA-Z             - Letters (uppercase and lowercase)
+    #   0-9                - Digits
+    #   .                  - Dots (for domains like github.com)
+    #   _                  - Underscores (for usernames/repos)
+    #   /                  - Forward slashes (for paths)
+    #   :                  - Colons (for schemes or ports)
+    #   \-                 - Hyphens (escaped in character class)
+    #   ~                  - Tildes (for SourceHut ~user format)
+    # ]+                   - One or more of the above characters
+    # $                    - End of string
+    # Note: Excludes @ symbol as it indicates SSH-style format
+    VALID_PATTERN = re.compile(r"^(?:https?://)?[a-zA-Z0-9._/:\-~]+$")
+
+    class InvalidGuessHTTPS(Failure):
+        """Indicates that the HTTPS guess input contains invalid characters."""
+
+    def validate(self, value: str) -> ValidationResult:
+        """Validates that `value` is suitable for HTTPS guessing.
+
+        Args:
+            value: The value to validate.
+
+        Returns:
+            The result of the validation.
+        """
+        if not value:
+            return ValidationResult.failure(
+                [GUESS_HTTPS.InvalidGuessHTTPS(self, value)]
+            )
+
+        if not self.VALID_PATTERN.match(value):
+            return ValidationResult.failure(
+                [GUESS_HTTPS.InvalidGuessHTTPS(self, value)]
+            )
+
+        return self.success()
+
+    def describe_failure(self, failure: Failure) -> str | None:
+        """Describes why the validator failed.
+
+        Args:
+            failure: Information about why the validation failed.
+
+        Returns:
+            A string description of the failure.
+        """
+        if isinstance(failure, GUESS_HTTPS.InvalidGuessHTTPS):
+            return "Must be valid for HTTPS guessing (a-z, 0-9, . / : - ~, optional https://)"
+        return None
+
+
+class GUESS_SSH(Validator):
+    """Lenient validator for chezmoi SSH guess inputs.
+
+    Validates inputs that will be guessed as SSH addresses by chezmoi.
+    This is intentionally permissive since chezmoi will handle the actual
+    guessing and transformation logic. If the input doesn't match any known
+    pattern, chezmoi will pass it through unchanged and report an error
+    during the clone operation.
+
+    Accepts SSH-style formats:
+        - Shorthand paths (chezmoi expands to SSH SCP-style)
+        - Optional @ symbols for explicit user@host format
+        - Tildes (for SourceHut ~user format)
+
+    Examples:
+        - `user/repo` → `git@github.com:user/repo.git`
+        - `github.com/user/repo` → `git@github.com:user/repo.git`
+        - `gitlab.com/org/project` → `git@gitlab.com:org/project.git`
+        - `sr.ht/~user/dotfiles` → `git@git.sr.ht:~user/dotfiles`
+        - `git@github.com:user/repo.git` → `git@github.com:user/repo.git`
+    """
+
+    # Pattern breakdown:
+    # ^                - Start of string
+    # [                - Character class start
+    #   a-zA-Z         - Letters (uppercase and lowercase)
+    #   0-9            - Digits
+    #   .              - Dots (for domains like github.com)
+    #   _              - Underscores (for usernames)
+    #   /              - Forward slashes (for paths)
+    #   :              - Colons (for SCP-style user@host:path format)
+    #   \-             - Hyphens (escaped in character class)
+    #   ~              - Tildes (for SourceHut ~user format)
+    #   @              - At symbols (for user@host format)
+    # ]+               - One or more of the above characters
+    # $                - End of string
+    VALID_PATTERN = re.compile(r"^[a-zA-Z0-9._/:\-~@]+$")
+
+    class InvalidGuessSSH(Failure):
+        """Indicates that the SSH guess input contains invalid characters."""
+
+    def validate(self, value: str) -> ValidationResult:
+        """Validates that `value` is suitable for SSH guessing.
+
+        Args:
+            value: The value to validate.
+
+        Returns:
+            The result of the validation.
+        """
+        if not value:
+            return ValidationResult.failure(
+                [GUESS_SSH.InvalidGuessSSH(self, value)]
+            )
+
+        if not self.VALID_PATTERN.match(value):
+            return ValidationResult.failure(
+                [GUESS_SSH.InvalidGuessSSH(self, value)]
+            )
+
+        return self.success()
+
+    def describe_failure(self, failure: Failure) -> str | None:
+        """Describes why the validator failed.
+
+        Args:
+            failure: Information about why the validation failed.
+
+        Returns:
+            A string description of the failure.
+        """
+        if isinstance(failure, GUESS_SSH.InvalidGuessSSH):
+            return "Must be valid for SSH guessing (a-z, 0-9, . / : - ~ @)"
+        return None
+
+
 class InputURL(Input):
     def __init__(self) -> None:
         super().__init__(
@@ -147,6 +301,8 @@ class InputGuessURL(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Input(
             placeholder="Let chezmoi guess the repo URL",
+            validate_on=["submitted"],
+            validators=GUESS_HTTPS(),
             classes=Tcss.input_field,
         )
         yield FlatLink(ids=IDS_OPERATE_INIT, link_enum=LinkBtn.chezmoi_guess)
@@ -156,15 +312,25 @@ class InputGuessSSH(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Input(
             placeholder="Let chezmoi guess the SSH repo address",
+            validate_on=["submitted"],
+            validators=GUESS_SSH(),
             classes=Tcss.input_field,
         )
         yield FlatLink(ids=IDS_OPERATE_INIT, link_enum=LinkBtn.chezmoi_guess)
 
 
-class InputInitCloneRepo(HorizontalGroup):
+class InputInitCloneRepo(HorizontalGroup, AppType):
 
     def __init__(self) -> None:
         super().__init__(id=IDS_OPERATE_INIT.container.repo_input)
+        self.https_arg: str | None = None
+        self.ssh_arg: str | None = None
+        self.guess_url_arg: str | None = None
+        self.guess_ssh_arg: str | None = None
+        self.https_cmd = WriteCmd.init_no_guess
+        self.ssh_cmd = WriteCmd.init_no_guess
+        self.guess_url_cmd = WriteCmd.init_guess_https
+        self.guess_ssh_cmd = WriteCmd.init_guess_ssh
 
     def compose(self) -> ComposeResult:
         yield Select(
@@ -207,6 +373,85 @@ class InputInitCloneRepo(HorizontalGroup):
             self.input_guess_url.display = True
         elif event.value == "guess ssh":
             self.input_guess_ssh.display = True
+        self.post_current_init_cmd_msg()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        select_widget: Select[str] = self.query_exactly_one(Select[str])
+        if select_widget.selection is None:
+            return
+        if select_widget.selection == "https":
+            if (
+                event.validation_result is not None
+                and event.validation_result.is_valid
+            ):
+                self.notify("Valid URL entered, init clone enabled.")
+                self.https_arg = event.value
+                self.https_cmd = WriteCmd.init_no_guess
+            else:
+                self.notify("Invalid URL entered.", severity="error")
+                self.https_arg = None
+                self.https_cmd = None
+        elif select_widget.selection == "ssh":
+            if (
+                event.validation_result is not None
+                and event.validation_result.is_valid
+            ):
+                self.notify(
+                    "Valid SSH SCP-style address entered, init clone enabled."
+                )
+                self.ssh_arg = event.value
+                self.ssh_cmd = WriteCmd.init_no_guess
+            else:
+                self.notify(
+                    "Invalid SSH SCP-style address entered.", severity="error"
+                )
+                self.ssh_arg = None
+                self.ssh_cmd = None
+        if select_widget.selection == "guess url":
+            if (
+                event.validation_result is not None
+                and event.validation_result.is_valid
+            ):
+                self.notify(
+                    "Ready to let chezmoi guess the https URL, init clone enabled."
+                )
+                self.guess_url_arg = event.value
+                self.guess_url_cmd = WriteCmd.init_guess_https
+            else:
+                self.notify("Invalid URL entered.", severity="error")
+                self.guess_url_arg = None
+                self.guess_url_cmd = None
+        elif select_widget.selection == "guess ssh":
+            if (
+                event.validation_result is not None
+                and event.validation_result.is_valid
+            ):
+                self.notify(
+                    "Ready to let chezmoi guess the ssh scp-style address, init clone enabled."
+                )
+                self.guess_ssh_arg = event.value
+                self.guess_ssh_cmd = WriteCmd.init_guess_ssh
+            else:
+                self.notify(
+                    "Invalid SSH SCP-style address entered.", severity="error"
+                )
+                self.guess_ssh_arg = None
+                self.guess_ssh_cmd = None
+        self.post_current_init_cmd_msg()
+
+    def post_current_init_cmd_msg(self) -> None:
+        self.app.post_message(
+            CurrentInitCmdMsg(
+                https_arg=self.https_arg,
+                ssh_arg=self.ssh_arg,
+                guess_url_arg=self.guess_url_arg,
+                guess_ssh_arg=self.guess_ssh_arg,
+                https_cmd=self.https_cmd,
+                ssh_cmd=self.ssh_cmd,
+                guess_url_cmd=self.guess_url_cmd,
+                guess_ssh_cmd=self.guess_ssh_cmd,
+            )
+        )
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -358,20 +603,6 @@ class OperateInit(Screen[None], AppType):
             self.op_btn.label = OperateBtn.init_repo.init_new_label
         self.update_static_text()
         self.update_operate_info()
-
-    @on(Input.Submitted)
-    def handle_validation(self, event: Input.Submitted) -> None:
-        event.stop()
-        if event.validation_result is None:
-            self.notify("No input provided.", severity="error")
-            return
-        self.valid_url = event.validation_result.is_valid
-        if self.valid_url is False:
-            self.notify("Invalid URL entered.", severity="error")
-            return
-        self.repo_url = event.value
-        self.notify("Valid URL entered, init clone enabled.")
-        self.op_btn.tooltip = OperateBtn.init_repo.enabled_tooltip
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
