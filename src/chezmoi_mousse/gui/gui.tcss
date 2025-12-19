@@ -60,6 +60,14 @@
   width: 1fr;
 }
 
+.operate_info {
+  border-subtitle-align: center;
+  border-title-align: center;
+  border: round $foreground;
+  text-align: center;
+  dock: top;
+}
+
 .single_switch {
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;

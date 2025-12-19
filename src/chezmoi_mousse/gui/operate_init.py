@@ -36,7 +36,6 @@ from chezmoi_mousse.shared import (
     FlatLink,
     InitCompletedMsg,
     OperateButtons,
-    OperateInfo,
     OperateLog,
     PrettyTemplateData,
     SwitchWithLabel,
@@ -158,25 +157,17 @@ class OperateInit(Screen[None], AppType):
         self.repo_arg: str | None = None
         self.valid_url: bool = False
         self.init_clone_https_static_text = "\n".join(
-            [
-                OperateStrings.init_clone.value,
-                OperateStrings.https_url.value,
-                OperateStrings.pat_info.value,
-            ]
+            [OperateStrings.https_url.value, OperateStrings.pat_info.value]
         )
-        self.init_clone_ssh_static_text = "\n".join(
-            [OperateStrings.init_clone.value, OperateStrings.ssh_select.value]
-        )
-        self.init_clone_guess_https_static_text = "\n".join(
-            [OperateStrings.init_clone.value, OperateStrings.guess_https.value]
-        )
-        self.init_clone_guess_ssh_static_text = "\n".join(
-            [OperateStrings.init_clone.value, OperateStrings.guess_ssh.value]
-        )
+        self.init_clone_ssh_static_text = OperateStrings.ssh_select
+        self.init_clone_guess_https_static_text = OperateStrings.guess_https
+        self.init_clone_guess_ssh_static_text = OperateStrings.guess_ssh
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
-        yield OperateInfo(self.ids)
+        yield Static(
+            id=self.ids.static.operate_info, classes=Tcss.operate_info
+        )
         yield VerticalGroup(
             HorizontalGroup(
                 Label(
@@ -214,6 +205,9 @@ class OperateInit(Screen[None], AppType):
         self.pre_op_container = self.query_one(
             self.ids.container.pre_operate_q, VerticalGroup
         )
+        self.operate_info = self.query_one(
+            self.ids.static.operate_info_q, Static
+        )
         self.op_btn = self.query_one(
             self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
         )
@@ -238,7 +232,20 @@ class OperateInit(Screen[None], AppType):
         self.input_ssh = self.query_exactly_one(InputSSH)
         self.input_guess_url = self.query_exactly_one(InputGuessURL)
         self.input_guess_ssh = self.query_exactly_one(InputGuessSSH)
+        self.update_operate_info()
         self.update_static_text()
+
+    def update_operate_info(self) -> None:
+        lines_to_write: list[str] = []
+        if self.op_btn.label == OperateBtn.init_repo.init_clone_label:
+            lines_to_write.append(OperateStrings.init_clone_operate_info)
+        else:
+            lines_to_write.append(OperateStrings.init_new_operate_info)
+        if self.app.changes_enabled is True:
+            lines_to_write.append(OperateStrings.changes_enabled)
+        else:
+            lines_to_write.append(OperateStrings.changes_disabled)
+        self.operate_info.update("\n".join(lines_to_write))
 
     def update_static_text(self) -> None:
         switch_state = self.query_exactly_one(Switch).value
@@ -264,6 +271,7 @@ class OperateInit(Screen[None], AppType):
             self.repo_input.display = False
             self.op_btn.label = OperateBtn.init_repo.init_new_label
         self.update_static_text()
+        self.update_operate_info()
 
     @on(Input.Submitted)
     def handle_validation(self, event: Input.Submitted) -> None:

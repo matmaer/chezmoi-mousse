@@ -62,13 +62,6 @@ class OperateInfo(Static, AppType):
             lines_to_write.append(OperateStrings.forget_path)
         elif self.btn_enum == OperateBtn.destroy_path:
             lines_to_write.append(OperateStrings.destroy_path)
-        elif self.btn_enum == OperateBtn.init_repo:
-            if self.op_data.btn_label == OperateBtn.init_repo.init_clone_label:
-                lines_to_write.append(
-                    f"{OperateStrings.init_clone} [$text-warning]{self.repo_arg}[/]"
-                )
-            else:
-                lines_to_write.append(OperateStrings.init_new)
 
         if self.btn_enum not in (OperateBtn.apply_path, OperateBtn.init_repo):
             if self.git_autocommit is True:

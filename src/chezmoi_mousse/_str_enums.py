@@ -155,12 +155,7 @@ class OperateStrings(StrEnum):
         "Enter a complete URL, e.g., "
         "[$text-primary]https://github.com/user/repo.git[/]."
     )
-    init_clone = (
-        f"Click the [$primary-lighten-3 on $surface-lighten-1] "
-        f"{OperateBtn.init_repo.init_clone_label} [/] button to initialize "
-        "chezmoi from an existing repository."
-    )
-    init_clone_operate_info = "[$text-primary]Initialize a chezmoi from:[/]"
+    init_clone_operate_info = "[$text-primary]Initialize a chezmoi by cloning a remote repository.[/]"
     init_new = (
         f"Click the [$primary-lighten-3 on $surface-lighten-1] "
         f"{OperateBtn.init_repo.initial_label} [/] button to initialize a "

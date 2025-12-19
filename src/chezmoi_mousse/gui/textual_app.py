@@ -212,9 +212,11 @@ class ChezmoiGUI(App[None]):
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
 
-        if isinstance(self.screen, (OperateChezmoi, OperateInit)):
+        if isinstance(self.screen, OperateChezmoi):
             operate_info = self.screen.query_exactly_one(OperateInfo)
             operate_info.write_info_lines()
+        elif isinstance(self.screen, OperateInit):
+            self.screen.update_operate_info()
 
         new_description = (
             BindingDescription.add_dry_run_flag
