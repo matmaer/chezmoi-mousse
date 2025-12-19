@@ -202,7 +202,7 @@ class OperateChezmoiScreen(Screen[None], AppType):
         self.post_op_container.display = True
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         output_log.log_cmd_results(self.app.operate_cmd_result)
-        if self.app.changes_enabled is False:
+        if self.app.changes_enabled is True:
             self.op_btn.disabled = True
             self.op_btn.tooltip = None
             self.exit_btn.label = OperateBtn.operate_exit.reload_label
