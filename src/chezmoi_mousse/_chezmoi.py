@@ -480,7 +480,7 @@ class Chezmoi:
         write_cmd: WriteCmd,
         *,
         path_arg: Path | None = None,
-        init_repo_arg: str | None = None,
+        init_arg: str | None = None,
         changes_enabled: bool,
     ) -> CommandResult:
         if changes_enabled is True:
@@ -502,15 +502,14 @@ class Chezmoi:
         elif (
             write_cmd
             in (
+                WriteCmd.init_new,
                 WriteCmd.init_guess_https,
                 WriteCmd.init_guess_ssh,
                 WriteCmd.init_no_guess,
             )
-            and init_repo_arg is not None
+            and init_arg is not None
         ):
-            command: list[str] = base_cmd + write_cmd.value + [init_repo_arg]
-        elif write_cmd == WriteCmd.init_new:
-            command: list[str] = base_cmd + write_cmd.value
+            command: list[str] = base_cmd + write_cmd.value + [init_arg]
         else:
             raise ValueError("Invalid arguments for perform()")
 
