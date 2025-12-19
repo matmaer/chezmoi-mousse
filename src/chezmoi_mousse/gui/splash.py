@@ -5,7 +5,7 @@ from subprocess import CompletedProcess, run
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import work
+from textual import events, work
 from textual.app import ComposeResult
 from textual.color import Gradient
 from textual.containers import Center, Middle
@@ -140,6 +140,14 @@ class SplashScreen(Screen[SplashData | None], AppType):
     def __init__(self) -> None:
         super().__init__()
         self.splash_log: SplashLog  # set in on_mount
+
+    def _forward_event(self, event: events.Event) -> None:
+        # Override textual Screen method
+        # Skip all mouse events to prevent interference with animation
+        if isinstance(event, events.MouseEvent):
+            return
+        # Allow all other events (keyboard, etc.)
+        super()._forward_event(event)
 
     def compose(self) -> ComposeResult:
         with Middle():
