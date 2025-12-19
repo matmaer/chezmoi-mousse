@@ -20,6 +20,7 @@ from chezmoi_mousse.shared import (
     CustomHeader,
     DebugLog,
     DiffView,
+    OperateButtonMsg,
     OperateButtons,
     OperateLog,
 )
@@ -146,15 +147,16 @@ class OperateChezmoiScreen(Screen[None], AppType):
         self.operate_info.border_title = self.op_data.btn_label
         self.operate_info.border_subtitle = border_subtitle
 
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_operate_button_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == OperateBtn.operate_exit.cancel_label:
-            self.app.operate_cmd_result = None
-            self.dismiss()
-        elif event.button.label == OperateBtn.operate_exit.reload_label:
-            self.dismiss()
-        else:
+    @on(OperateButtonMsg)
+    def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
+        if msg.btn_enum in (
+            OperateBtn.add_dir,
+            OperateBtn.add_file,
+            OperateBtn.apply_path,
+            OperateBtn.re_add_path,
+            OperateBtn.forget_path,
+            OperateBtn.destroy_path,
+        ):
             self.run_operate_command()
 
     def run_operate_command(self) -> None:

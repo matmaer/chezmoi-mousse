@@ -20,8 +20,6 @@ from chezmoi_mousse import (
     AppType,
     Chezmoi,
     CommandResult,
-    OperateBtn,
-    OperateData,
     ParsedConfig,
     ReadCmd,
     SplashData,
@@ -135,7 +133,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
     def __init__(self) -> None:
         super().__init__()
         self.splash_log: SplashLog  # set in on_mount
-        self.init_cmd_needed: bool = False
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method
@@ -167,20 +164,11 @@ class SplashScreen(Screen[SplashData | None], AppType):
         if status_worker.state == WorkerState.SUCCESS:
             if type(globals()["status_files"].exit_code) is not int:
                 raise RuntimeError("status_files exit_code is not an int")
-            if (
-                globals()["status_files"].exit_code != 0
-                or self.app.force_init_operation is True
-            ):
-                self.app.force_init_operation = False
-                self.app.operate_data = OperateData(
-                    btn_enum=OperateBtn.init_repo,
-                    btn_label=OperateBtn.init_repo.init_new_label,
-                    btn_tooltip=OperateBtn.init_repo.initial_tooltip,
-                )
+            if globals()["status_files"].exit_code != 0:
+                self.app.init_needed = True
                 # Run io workers for OperateScreen init commands
                 self.run_io_worker(ReadCmd.doctor)
                 self.run_io_worker(ReadCmd.template_data)
-                self.init_cmd_needed = True
                 return
             for splash_cmd in SPLASH_COMMANDS:
                 if splash_cmd == ReadCmd.status_files:
@@ -248,7 +236,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
             parsed_config=globals()["parsed_config"],
             template_data=globals()["template_data"],
             verify=globals()["verify"],
-            init_needed=self.init_cmd_needed,
         )
         self.app.chezmoi = Chezmoi(
             dev_mode=self.app.dev_mode,
@@ -257,7 +244,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             status_dirs=globals()["status_dirs"],
             status_files=globals()["status_files"],
         )
-        if self.init_cmd_needed is True:
+        if self.app.init_needed is True:
             return
         dest_dir = globals()["parsed_config"].dest_dir
         AddTab.destDir = dest_dir
@@ -273,7 +260,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
         OperateChezmoiScreen.git_autopush = globals()[
             "parsed_config"
         ].git_autopush
-        self.app.install_screen(MainScreen(), name="main_screen")  # type: ignore[arg-type]
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

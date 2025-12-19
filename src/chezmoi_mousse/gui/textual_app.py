@@ -400,17 +400,11 @@ class ChezmoiGUI(App[None]):
             ):
                 return False
             elif isinstance(self.screen, OperateInitScreen):
-                if self.operate_cmd_result is None:
+                if self.init_cmd_result is None:
                     return None
-                elif (
-                    self.operate_cmd_result.dry_run is True
-                    and self.operate_cmd_result.is_init_result is True
-                ):
+                elif self.init_cmd_result.dry_run is True:
                     return None
-                elif (
-                    self.operate_cmd_result.dry_run is False
-                    and self.operate_cmd_result.is_init_result is True
-                ):
+                elif self.init_cmd_result.dry_run is False:
                     return True
                 else:
                     return None
