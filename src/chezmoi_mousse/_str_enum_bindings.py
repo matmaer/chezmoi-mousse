@@ -18,7 +18,6 @@ class BindingDescription(StrEnum):
     hide_filters = "Hide filters"
     show_filters = "Show filters"
     # Shared bindings
-    add_dry_run_flag = "Add --dry-run flag"
+    toggle_dry_run = "Toggle --dry-run"
     maximize = "Maximize"
     minimize = "Minimize"
-    remove_dry_run_flag = "Remove --dry-run flag"

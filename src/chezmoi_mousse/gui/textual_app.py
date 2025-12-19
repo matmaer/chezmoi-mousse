@@ -103,7 +103,7 @@ class ChezmoiGUI(App[None]):
         Binding(
             key="D,d",
             action=BindingAction.toggle_dry_run,
-            description=BindingDescription.remove_dry_run_flag,
+            description=BindingDescription.toggle_dry_run,
         ),
     ]
 
@@ -119,7 +119,8 @@ class ChezmoiGUI(App[None]):
 
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
-        self.init_needed: bool = pretend_init_needed
+        self.force_init_needed: bool = pretend_init_needed
+        self.init_needed: bool = False
 
         # Manage state between screens
         self.changes_enabled: bool = False
@@ -154,6 +155,8 @@ class ChezmoiGUI(App[None]):
                 btn_tooltip=OperateBtn.init_repo.initial_tooltip,
             )
             await self.push_screen(OperateInitScreen(), wait_for_dismiss=True)
+            await self.push_screen(SplashScreen(), wait_for_dismiss=True)
+        self.changes_enabled = False
         self.push_screen(MainScreen())
 
     @on(OperateButtonMsg)
@@ -228,19 +231,8 @@ class ChezmoiGUI(App[None]):
         self.changes_enabled = not self.changes_enabled
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
-
         if isinstance(self.screen, (OperateChezmoiScreen, OperateInitScreen)):
             self.screen.update_operate_info()
-
-        new_description = (
-            BindingDescription.add_dry_run_flag
-            if self.changes_enabled is True
-            else BindingDescription.remove_dry_run_flag
-        )
-        self.update_binding_description(
-            binding_action=BindingAction.toggle_dry_run,
-            new_description=new_description,
-        )
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
