@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
-from textual import work
+from textual import on, work
 from textual.app import App
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
@@ -17,12 +17,15 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
+    OperateBtn,
+    OperateData,
     TabName,
 )
 from chezmoi_mousse.shared import (
     CustomHeader,
     FlatButtonsVertical,
     LogsTabButtons,
+    OperateButtonMsg,
     ViewTabButtons,
 )
 
@@ -36,7 +39,7 @@ from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import Chezmoi, CommandResult, OperateData, SplashData
+    from chezmoi_mousse import Chezmoi, CommandResult, SplashData
 
 __all__ = ["ChezmoiGUI"]
 
@@ -144,22 +147,25 @@ class ChezmoiGUI(App[None]):
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen(InstallHelpScreen())
             return
-        if self.force_init_operation is True:
-            self.push_screen(OperateInitScreen())
-        if self.splash_data.init_needed is False:
-            self.push_screen("main_screen")
+        if self.init_needed is True:
+            self.operate_data = OperateData(
+                btn_enum=OperateBtn.init_repo,
+                btn_label=OperateBtn.init_repo.init_new_label,
+                btn_tooltip=OperateBtn.init_repo.initial_tooltip,
+            )
+            await self.push_screen(OperateInitScreen(), wait_for_dismiss=True)
+        self.push_screen(MainScreen())
 
-    # @on(InitCompletedMsg)
-    # @work
-    # async def handle_init_completed(self) -> None:
-    #     self.splash_data = await self.push_screen(
-    #         SplashScreen(), wait_for_dismiss=True
-    #     )
-    #     if self.splash_data is None:
-    #         raise ValueError("splash_data is None on InitCompletedMsg")
-    #     elif self.force_init_operation is True:
-    #         raise ValueError("self.force_init_screen should be False here")
-    #     self.push_screen("main_screen")
+    @on(OperateButtonMsg)
+    def handle_operate_exit(self, msg: OperateButtonMsg) -> None:
+        msg.stop()
+        if msg.label == OperateBtn.operate_exit.exit_app_label:
+            self.exit()
+        elif msg.label == OperateBtn.operate_exit.cancel_label:
+            self.operate_cmd_result = None
+            self.screen.dismiss()
+        elif msg.label == OperateBtn.operate_exit.reload_label:
+            self.screen.dismiss()
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
