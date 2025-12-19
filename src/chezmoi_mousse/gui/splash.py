@@ -162,22 +162,20 @@ class SplashScreen(Screen[SplashData | None], AppType):
         status_worker = self.run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
-            if type(globals()["status_files"].exit_code) is not int:
-                raise RuntimeError("status_files exit_code is not an int")
-            if globals()["status_files"].exit_code != 0:
+            if (
+                globals()["status_files"].exit_code != 0
+                or self.app.force_init_needed is True
+            ):
                 self.app.init_needed = True
+                self.app.force_init_needed = False
                 # Run io workers for OperateScreen init commands
                 self.run_io_worker(ReadCmd.doctor)
                 self.run_io_worker(ReadCmd.template_data)
-                return
-            for splash_cmd in SPLASH_COMMANDS:
-                if splash_cmd == ReadCmd.status_files:
-                    continue
-                self.run_io_worker(splash_cmd)
-        else:
-            raise RuntimeError(
-                "status_files worker did not complete successfully"
-            )
+            else:
+                for splash_cmd in SPLASH_COMMANDS:
+                    if splash_cmd == ReadCmd.status_files:
+                        continue
+                    self.run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
@@ -267,10 +265,9 @@ class SplashScreen(Screen[SplashData | None], AppType):
             return
         if all(
             worker.state == WorkerState.SUCCESS
-            for worker in self.screen.workers
+            for worker in self.workers
             if worker.group == "io_workers"
         ):
-            self.check_workers_timer.stop()
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
                 self.dismiss()
