@@ -499,10 +499,11 @@ class Chezmoi:
             and path_arg is not None
         ):
             command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
+        elif write_cmd in (WriteCmd.init_new,) and init_arg is not None:
+            command: list[str] = base_cmd + write_cmd.value
         elif (
             write_cmd
             in (
-                WriteCmd.init_new,
                 WriteCmd.init_guess_https,
                 WriteCmd.init_guess_ssh,
                 WriteCmd.init_no_guess,

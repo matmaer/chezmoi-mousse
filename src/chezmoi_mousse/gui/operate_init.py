@@ -469,7 +469,7 @@ class OperateInitScreen(Screen[None], AppType):
         self.op_data = self.app.operate_data
         self.ids = IDS_OPERATE_INIT
         self.init_cmd: WriteCmd = WriteCmd.init_new
-        self.init_arg: str = ""
+        self.init_arg: str | None = None
         self.valid_arg: bool = False
 
     def compose(self) -> ComposeResult:

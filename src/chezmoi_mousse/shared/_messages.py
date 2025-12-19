@@ -42,7 +42,7 @@ class CurrentAddNodeMsg(Message):
 
 class InitCommandMsg(Message):
     def __init__(
-        self, init_cmd: "WriteCmd", init_arg: str, valid_arg: bool
+        self, init_cmd: "WriteCmd", init_arg: str | None, valid_arg: bool
     ) -> None:
         self.init_cmd = init_cmd
         self.init_arg = init_arg
