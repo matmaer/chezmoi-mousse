@@ -26,7 +26,6 @@ from ._messages import (
     CurrentApplyNodeMsg,
     CurrentInitCmdMsg,
     CurrentReAddNodeMsg,
-    InitCompletedMsg,
     OperateButtonMsg,
 )
 from ._pw_mgr_info import PwMgrInfoView
@@ -52,7 +51,6 @@ __all__ = [
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "CurrentInitCmdMsg",
-    "InitCompletedMsg",
     "OperateButtonMsg",
     # Other shared components
     "ContentsView",

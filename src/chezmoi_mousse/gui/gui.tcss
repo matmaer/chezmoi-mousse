@@ -243,7 +243,7 @@ InitCollapsibles {
   margin-top: 1;
 }
 
-InstallHelp {
+InstallHelpScreen {
   & VerticalGroup {
     margin-left: 1;
     width: 22;
@@ -283,7 +283,7 @@ OperateButtons {
   }
 }
 
-OperateChezmoi, OperateInit {
+OperateChezmoiScreen, OperateInitScreen {
   & OperateButtons {
       margin-bottom: 1;
   }

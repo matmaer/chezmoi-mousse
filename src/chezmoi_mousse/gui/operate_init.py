@@ -35,14 +35,13 @@ from chezmoi_mousse.shared import (
     DebugLog,
     DoctorTable,
     FlatLink,
-    InitCompletedMsg,
     OperateButtons,
     OperateLog,
     PrettyTemplateData,
     SwitchWithLabel,
 )
 
-__all__ = ["OperateInit"]
+__all__ = ["OperateInitScreen"]
 
 
 class SSHSCP(Validator):
@@ -476,7 +475,7 @@ class InitCollapsibles(VerticalGroup, AppType):
         )
 
 
-class OperateInit(Screen[None], AppType):
+class OperateInitScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
@@ -604,43 +603,42 @@ class OperateInit(Screen[None], AppType):
         if event.button.label == OperateBtn.operate_exit.exit_app_label:
             self.app.exit()
         elif event.button.label == OperateBtn.operate_exit.reload_label:
-            self.app.post_message(InitCompletedMsg())
             self.dismiss()
         else:
             self.run_operate_command()
 
     def run_operate_command(self) -> None:
         if self.op_btn.label == OperateBtn.init_repo.init_new_label:
-            self.app.operate_cmd_result = self.app.chezmoi.perform(
+            self.app.init_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.init_new, changes_enabled=self.app.changes_enabled
             )
         elif self.op_btn.label == OperateBtn.init_repo.init_clone_label:
             if self.valid_url is True:
-                self.app.operate_cmd_result = self.app.chezmoi.perform(
+                self.app.init_cmd_result = self.app.chezmoi.perform(
                     WriteCmd.init_no_guess,
                     init_repo_arg=self.repo_arg,
                     changes_enabled=self.app.changes_enabled,
                 )
             elif self.guess_https is True:
-                self.app.operate_cmd_result = self.app.chezmoi.perform(
+                self.app.init_cmd_result = self.app.chezmoi.perform(
                     WriteCmd.init_guess_https,
                     init_repo_arg=self.repo_arg,
                     changes_enabled=self.app.changes_enabled,
                 )
             elif self.guess_ssh is True:
-                self.app.operate_cmd_result = self.app.chezmoi.perform(
+                self.app.init_cmd_result = self.app.chezmoi.perform(
                     WriteCmd.init_guess_ssh,
                     init_repo_arg=self.repo_arg,
                     changes_enabled=self.app.changes_enabled,
                 )
-        if self.app.operate_cmd_result is None:
+        if self.app.init_cmd_result is None:
             raise ValueError(
-                "self.app.operate_cmd_result is None after running command"
+                "self.app.init_cmd_result is None after running command"
             )
         self.pre_op_container.display = False
         self.post_op_container.display = True
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        output_log.log_cmd_results(self.app.operate_cmd_result)
+        output_log.log_cmd_results(self.app.init_cmd_result)
         if self.app.changes_enabled is True:
             self.op_btn.disabled = True
             self.op_btn.tooltip = None

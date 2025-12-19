@@ -1,6 +1,5 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.containers import VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Label, Static
@@ -25,21 +24,13 @@ from chezmoi_mousse.shared import (
     OperateLog,
 )
 
-__all__ = ["OperateChezmoi"]
+__all__ = ["OperateChezmoiScreen"]
 
 
-class OperateChezmoi(Screen[None], AppType):
+class OperateChezmoiScreen(Screen[None], AppType):
 
     git_autocommit: bool | None = None
     git_autopush: bool | None = None
-
-    BINDINGS = [
-        Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=BindingDescription.cancel,
-        )
-    ]
 
     def __init__(self) -> None:
         super().__init__()

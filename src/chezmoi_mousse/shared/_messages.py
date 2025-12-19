@@ -17,7 +17,6 @@ __all__ = [
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "CurrentInitCmdMsg",
-    "InitCompletedMsg",
     "OperateButtonMsg",
 ]
 
@@ -66,10 +65,6 @@ class CurrentInitCmdMsg(Message):
         self.guess_url_cmd: "WriteCmd | None" = guess_url_cmd
         self.guess_ssh_cmd: "WriteCmd | None" = guess_ssh_cmd
         super().__init__()
-
-
-class InitCompletedMsg(Message):
-    pass
 
 
 class OperateButtonMsg(Message):

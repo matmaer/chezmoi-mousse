@@ -132,6 +132,7 @@ class ParsedConfig:
 
 @dataclass(slots=True)
 class SplashData:
+    init_needed: "bool"
     cat_config: "CommandResult"
     doctor: "CommandResult"
     git_log: "CommandResult"

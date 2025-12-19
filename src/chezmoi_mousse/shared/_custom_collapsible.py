@@ -1,5 +1,5 @@
 """Contains subclassed textual classes shared between the Logs tab, Config tab
-and InstallHelp screen."""
+and InstallHelpScreen screen."""
 
 from textual.widget import Widget
 from textual.widgets import Collapsible

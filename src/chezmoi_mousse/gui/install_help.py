@@ -21,7 +21,7 @@ from chezmoi_mousse.shared import (
 
 type ParsedJson = dict[str, Any]
 
-__all__ = ["InstallHelp"]
+__all__ = ["InstallHelpScreen"]
 
 
 class InstallHelpStrings(StrEnum):
@@ -39,7 +39,7 @@ class CommandsTree(Tree[ParsedJson]):
         super().__init__(label=InstallHelpStrings.install_chezmoi)
 
 
-class InstallHelp(Screen[None], AppType):
+class InstallHelpScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.install_help)
@@ -83,7 +83,7 @@ class InstallHelp(Screen[None], AppType):
         for child in help_tree.root.children:
             if child.data is None:
                 self.app.notify(
-                    f"InstallHelp: TreeNode data is None for {child.label}",
+                    f"InstallHelpScreen: TreeNode data is None for {child.label}",
                     severity="error",
                 )
                 continue
