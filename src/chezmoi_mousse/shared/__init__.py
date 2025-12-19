@@ -28,7 +28,7 @@ from ._messages import (
     InitCompletedMsg,
     OperateButtonMsg,
 )
-from ._operations_base import OperateInfo, OperateScreenBase
+from ._operations_base import OperateInfo
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader, HeaderTitle
 from ._ssh_scp_validator import SSHSCP
@@ -56,7 +56,6 @@ __all__ = [
     "OperateButtonMsg",
     # OperateScreen
     "OperateInfo",
-    "OperateScreenBase",
     # Other shared components
     "ContentsView",
     "CustomCollapsible",
