@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical
-from textual.widgets import DataTable, Label, Pretty, Static
+from textual.containers import Vertical
+from textual.widgets import DataTable, Label, Pretty
 
 from chezmoi_mousse import AppType, CommandResult, SectionLabels, Tcss
 
@@ -17,27 +17,11 @@ else:
 
 
 __all__ = [
-    "CatConfigView",
     "DoctorTable",
     "DoctorTableView",
-    "IgnoredView",
     "PrettyTemplateData",
     "TemplateDataView",
 ]
-
-
-class CatConfigView(Vertical):
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        super().__init__(id=self.ids.view.cat_config)
-
-    def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.cat_config_output, classes=Tcss.main_section_label
-        )
-
-    def mount_cat_config_output(self, command_result: CommandResult) -> None:
-        self.mount(ScrollableContainer(Static(command_result.std_out)))
 
 
 class DoctorTable(DataTable[Text], AppType):
@@ -102,22 +86,6 @@ class DoctorTableView(Vertical, AppType):
 
     def populate_doctor_data(self, command_result: CommandResult) -> None:
         self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
-
-
-class IgnoredView(Vertical):
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        super().__init__(id=self.ids.view.ignored)
-
-    def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.ignored_output, classes=Tcss.main_section_label
-        )
-
-    def mount_ignored_output(self, command_result: CommandResult) -> None:
-        self.mount(
-            ScrollableContainer(Pretty(command_result.std_out.splitlines()))
-        )
 
 
 class PrettyTemplateData(Pretty):

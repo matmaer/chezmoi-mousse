@@ -11,10 +11,8 @@ from ._actionables import (
     ViewTabButtons,
 )
 from ._config_views import (
-    CatConfigView,
     DoctorTable,
     DoctorTableView,
-    IgnoredView,
     PrettyTemplateData,
     TemplateDataView,
 )
@@ -60,7 +58,6 @@ __all__ = [
     "OperateInfo",
     "OperateScreenBase",
     # Other shared components
-    "CatConfigView",
     "ContentsView",
     "CustomCollapsible",
     "CustomHeader",
@@ -70,7 +67,6 @@ __all__ = [
     "GitLogGlobal",
     "GitLogPath",
     "HeaderTitle",
-    "IgnoredView",
     "PrettyTemplateData",
     "PwMgrInfoView",
     "SSHSCP",

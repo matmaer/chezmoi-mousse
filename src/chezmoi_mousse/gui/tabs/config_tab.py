@@ -1,20 +1,41 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, ContentSwitcher
+from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import IDS, AppType, FlatBtn, SplashData, Tcss
+from chezmoi_mousse import (
+    IDS,
+    AppIds,
+    AppType,
+    CommandResult,
+    FlatBtn,
+    SectionLabels,
+    SplashData,
+    Tcss,
+)
 from chezmoi_mousse.shared import (
-    CatConfigView,
     DoctorTableView,
     FlatButtonsVertical,
-    IgnoredView,
     PwMgrInfoView,
     TemplateDataView,
 )
 
 __all__ = ["ConfigTab", "ConfigTabSwitcher"]
+
+
+class CatConfigView(Vertical):
+    def __init__(self, ids: "AppIds"):
+        self.ids = ids
+        super().__init__(id=self.ids.view.cat_config)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.cat_config_output, classes=Tcss.main_section_label
+        )
+
+    def mount_cat_config_output(self, command_result: CommandResult) -> None:
+        self.mount(ScrollableContainer(Static(command_result.std_out)))
 
 
 class ConfigTabSwitcher(ContentSwitcher):
@@ -62,6 +83,22 @@ class ConfigTabSwitcher(ContentSwitcher):
         )
         template_data_view.mount_template_data_output(
             self.splash_data.template_data
+        )
+
+
+class IgnoredView(Vertical):
+    def __init__(self, ids: "AppIds"):
+        self.ids = ids
+        super().__init__(id=self.ids.view.ignored)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.ignored_output, classes=Tcss.main_section_label
+        )
+
+    def mount_ignored_output(self, command_result: CommandResult) -> None:
+        self.mount(
+            ScrollableContainer(Pretty(command_result.std_out.splitlines()))
         )
 
 
