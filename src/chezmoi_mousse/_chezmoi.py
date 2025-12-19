@@ -173,11 +173,7 @@ class WriteCmd(Enum):
     destroy = [WriteVerbs.destroy.value, VerbArgs.not_recursive.value]
     forget = [WriteVerbs.forget.value]
     init_guess_https = [WriteVerbs.init.value, VerbArgs.init_guess.value]
-    init_guess_ssh = (
-        GlobalCmd.live_run.value
-        + [WriteVerbs.init.value]
-        + VerbArgs.init_guess_ssh.value
-    )
+    init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
     init_new = [WriteVerbs.init.value]
     init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
     re_add = [WriteVerbs.re_add.value, VerbArgs.not_recursive.value]
