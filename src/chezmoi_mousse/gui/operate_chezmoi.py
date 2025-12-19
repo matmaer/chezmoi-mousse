@@ -101,6 +101,7 @@ class OperateChezmoi(Screen[None], AppType):
             contents_view = self.pre_op_container.query_one(
                 self.ids.container.contents_q, ContentsView
             )
+            contents_view.on_mount()
             contents_view.node_data = self.op_data.node_data
             contents_view.remove_class(Tcss.border_title_top)
 
