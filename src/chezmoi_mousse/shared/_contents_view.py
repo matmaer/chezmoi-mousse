@@ -11,6 +11,7 @@ from chezmoi_mousse import (
     AppType,
     DestDirStrings,
     NodeData,
+    PathKind,
     ReadCmd,
     SectionLabels,
     TabName,
@@ -27,15 +28,13 @@ __all__ = ["ContentsView"]
 
 class ContentsTabStrings(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
-    empty_or_only_whitespace = "File is empty or contains only whitespace"
-    managed_dir = "Managed directory:"
-    output_from_cat = "File does not exist on disk, output from"
-    output_from_read = "Output from Path.read"
-    permission_denied = "Permission denied to read file"
-    read_error = "Error reading path:"
-    too_large = "File is larger than 150 KiB, truncating output for"
+    empty_or_only_whitespace = "File is empty or contains only whitespace."
+    managed_dir = "Managed directory "
+    output_from_cat = "File does not exist on disk, output from "
+    permission_denied = "Permission denied to read file "
+    read_error = "Error reading path "
     truncated = "\n--- File content truncated to 150 KiB ---\n"
-    unmanaged_dir = "Unmanaged directory:"
+    unmanaged_dir = "Unmanaged directory "
 
 
 class ContentsInfo(VerticalGroup, AppType):
@@ -83,6 +82,9 @@ class ContentsView(Vertical, AppType):
         )
 
     def on_mount(self) -> None:
+        # TODO: make this configurable but should be reasonable truncate for
+        # displaying enough of a file to judge operating on it.
+        self.truncate_size = self.app.max_file_size // 5
         self.border_title = f" {self.destDir} "
         self.cat_config_label = self.query_one(
             self.ids.label.cat_config_output_q, Label
@@ -98,101 +100,98 @@ class ContentsView(Vertical, AppType):
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
         )
-        if self.node_data is None:
-            if self.ids.canvas_name == TabName.add:
-                self.contents_info_static_text.update(DestDirStrings.add)
-            elif self.ids.canvas_name == TabName.apply:
-                self.contents_info_static_text.update(DestDirStrings.cat)
-            elif self.ids.canvas_name == TabName.re_add:
-                self.contents_info_static_text.update(DestDirStrings.re_add)
+        if self.ids.canvas_name == TabName.add:
+            self.contents_info_static_text.update(DestDirStrings.add)
+        elif self.ids.canvas_name == TabName.apply:
+            self.contents_info_static_text.update(DestDirStrings.cat)
+        elif self.ids.canvas_name == TabName.re_add:
+            self.contents_info_static_text.update(DestDirStrings.re_add)
 
-    def write_managed_directory(self, path_arg: "Path") -> None:
-        if self.node_data is None:
-            raise ValueError("node_data is None in ContentsView")
-        self.rich_log.write(f"{ContentsTabStrings.managed_dir} {path_arg}")
+    def open_file_and_update_ui(self, file_path: "Path") -> None:
+        try:
+            file_size = file_path.stat().st_size
+            if file_size == 0:
+                self.contents_info_static_text.update(
+                    ContentsTabStrings.empty_or_only_whitespace
+                )
+                return
+            with open(file_path, "rt", encoding="utf-8") as f:
+                f_contents = f.read(self.truncate_size)
+            if f_contents.strip() == "":
+                self.contents_info_static_text.update(
+                    ContentsTabStrings.empty_or_only_whitespace
+                )
+                return
+            self.file_read_label.display = True
+            self.rich_log.write(f_contents)
+            if file_size > self.truncate_size:
+                self.rich_log.write(ContentsTabStrings.truncated)
+        except PermissionError as error:
+            self.contents_info_static_text.update(
+                f"{ContentsTabStrings.permission_denied}{file_path}"
+            )
+            self.rich_log.write(error.strerror)
+            return
+        except UnicodeDecodeError:
+            self.contents_info_static_text.update(
+                f"{ContentsTabStrings.cannot_decode}{file_path}"
+            )
+        except OSError as error:
+            self.contents_info_static_text.update(
+                f"{ContentsTabStrings.read_error}{file_path}: {error}"
+            )
+            self.rich_log.write(error.strerror)
+
+    def write_cat_output(self, file_path: "Path") -> None:
+        if file_path in self.app.chezmoi.files:
+            self.cat_config_label.display = True
+            cat_output: "CommandResult" = self.app.chezmoi.read(
+                ReadCmd.cat, path_arg=file_path
+            )
+            self.contents_info_static_text.update(
+                f"{ContentsTabStrings.output_from_cat}[$text-success]{cat_output.pretty_cmd}[/]"
+            )
+            if cat_output.std_out.strip() == "":
+                self.rich_log.write(
+                    Text(
+                        ContentsTabStrings.empty_or_only_whitespace,
+                        style="dim",
+                    )
+                )
+            else:
+                self.rich_log.write(cat_output.std_out)
+
+    def write_dir_info(self, dir_path: "Path") -> None:
+        if dir_path in self.app.chezmoi.dirs:
+            self.contents_info_static_text.update(
+                f"{ContentsTabStrings.managed_dir}[$text-accent]{dir_path}[/]"
+            )
+        else:
+            self.contents_info_static_text.update(
+                f"{ContentsTabStrings.unmanaged_dir}[$text-accent]{dir_path}[/]"
+            )
+        return
 
     def watch_node_data(self) -> None:
-        self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
         if self.node_data is None:
             return
-        else:
-            dest_dir_info = self.query_one(
-                self.ids.container.contents_info_q, ContentsInfo
-            )
-            dest_dir_info.display = False
         self.border_title = f" {self.node_data.path} "
+        self.cat_config_label.display = False
+        self.file_read_label.display = False
+        self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
         self.rich_log.clear()
-        truncated_message = ""
-        try:
-            if (
-                self.node_data.path.is_file()
-                and self.node_data.path.stat().st_size > 150 * 1024
-            ):
-                truncated_message = ContentsTabStrings.truncated
-                self.rich_log.write(
-                    f"{ContentsTabStrings.too_large} {self.node_data.path}"
-                )
-        except PermissionError as e:
-            self.rich_log.write(e.strerror)
-            self.rich_log.write(
-                f"{ContentsTabStrings.permission_denied} {self.node_data.path}"
-            )
+
+        if self.node_data.path_kind == PathKind.DIR:
+            self.contents_info.display = True
+            self.write_dir_info(self.node_data.path)
             return
-
-        try:
-            with open(self.node_data.path, "rt", encoding="utf-8") as file:
-                file_content = file.read(150 * 1024)
-                if file_content.strip() == "":
-                    self.rich_log.write(
-                        ContentsTabStrings.empty_or_only_whitespace
-                    )
-                else:
-                    self.rich_log.write(
-                        f"{ContentsTabStrings.output_from_read} {self.node_data.path}\n"
-                    )
-                    self.rich_log.write(truncated_message + file_content)
-
-        except UnicodeDecodeError:
-            self.rich_log.write(
-                f"{ContentsTabStrings.cannot_decode} {self.node_data.path}"
-            )
-            return
-
-        except FileNotFoundError:
-            # FileNotFoundError is raised both when a file or a directory
-            # does not exist
-            if self.node_data.path in self.app.chezmoi.dirs:
-                self.write_managed_directory(self.node_data.path)
-                return
-            elif self.node_data.path in self.app.chezmoi.files:
-                cat_output: "CommandResult" = self.app.chezmoi.read(
-                    ReadCmd.cat, path_arg=self.node_data.path
-                )
-                self.rich_log.write(
-                    f'{ContentsTabStrings.output_from_cat} "{cat_output.pretty_cmd}"\n'
-                )
-                if cat_output.std_out == "":
-                    self.rich_log.write(
-                        Text(
-                            ContentsTabStrings.empty_or_only_whitespace,
-                            style="dim",
-                        )
-                    )
-                else:
-                    self.rich_log.write(cat_output.std_out)
-                return
-
-        except IsADirectoryError:
-            if self.node_data.path in self.app.chezmoi.dirs:
-                self.write_managed_directory(self.node_data.path)
+        elif self.node_data.path_kind == PathKind.FILE:
+            self.contents_info.display = False
+            if self.node_data.found is True:
+                self.open_file_and_update_ui(self.node_data.path)
+            elif self.node_data.found is False:
+                self.write_cat_output(self.node_data.path)
             else:
-                self.rich_log.write(
-                    f"{ContentsTabStrings.unmanaged_dir} {self.node_data.path}"
+                self.app.notify(
+                    "Unexpected condition in ContentsView.watch_node_data"
                 )
-
-        except OSError as error:
-            self.rich_log.write(
-                Text(
-                    f"{ContentsTabStrings.read_error} {self.node_data.path}: {error}"
-                )
-            )
