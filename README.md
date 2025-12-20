@@ -8,10 +8,10 @@ Graphical user interface in the terminal for [chezmoi](https://github.com/twpayn
 
 ## Current Use Case
 
-- Can be safely tested as no write operations are enabled.
-- The current implementation has only been used or tested with autocommit enabled.
-- To enable operations, press D, d or click the "Remove --dry-run flag" text in the footer.
+- Can be safely tested as no write operations are enabled by default.
+- To enable operations, press D, d or click the "Toggle --dry-run" text in the footer.
 This will enable commands changing the file system or the chezmoi state.
+- The current implementation has only been used or tested with autocommit enabled.
 
 ## Start
 
