@@ -96,7 +96,7 @@ __all__ = [
 
 
 @dataclass(slots=True)
-class DiffOutputData:
+class DiffCmdData:
     diff_command: str
     dir_diff_lines: list[str]
     file_diff_lines: list[str]
@@ -125,6 +125,7 @@ class OperateData:
     btn_enum: "OperateBtn"
     btn_label: str
     btn_tooltip: str | None
+    diff_cmd_data: "DiffCmdData | None" = None
     node_data: "NodeData | None" = None
 
 
