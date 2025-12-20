@@ -98,7 +98,7 @@
   background: $surface-lighten-1;
   color: $text-success;
   text-align: center;
-  width: 100%;
+  width: 1fr;
 }
 
 .tab_left_vertical {
