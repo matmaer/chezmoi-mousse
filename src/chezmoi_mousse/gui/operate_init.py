@@ -20,6 +20,7 @@ from chezmoi_mousse import (
     AppType,
     BindingAction,
     BindingDescription,
+    InitCloneData,
     LinkBtn,
     OperateBtn,
     OperateStrings,
@@ -34,7 +35,7 @@ from chezmoi_mousse.shared import (
     DebugLog,
     DoctorTable,
     FlatLink,
-    InitCommandMsg,
+    InitCloneCmdMsg,
     OperateButtonMsg,
     OperateButtons,
     OperateLog,
@@ -322,14 +323,6 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
 
     def __init__(self) -> None:
         super().__init__(id=IDS_OPERATE_INIT.container.repo_input)
-        self.https_arg: str | None = None
-        self.ssh_arg: str | None = None
-        self.guess_url_arg: str | None = None
-        self.guess_ssh_arg: str | None = None
-        self.https_cmd = WriteCmd.init_no_guess
-        self.ssh_cmd = WriteCmd.init_no_guess
-        self.guess_url_cmd = WriteCmd.init_guess_https
-        self.guess_ssh_cmd = WriteCmd.init_guess_ssh
 
     def compose(self) -> ComposeResult:
         yield Select(
@@ -357,6 +350,7 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
         self.input_ssh.display = False
         self.input_guess_url.display = False
         self.input_guess_ssh.display = False
+        self.init_repo_data: InitCloneData | None = None
 
     def on_select_changed(self, event: Select.Changed) -> None:
         self.input_url.display = False
@@ -374,67 +368,66 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
             self.input_guess_ssh.display = True
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.validation_result is None:
+            self.notify(
+                "No validation result available on input submitted.",
+                severity="error",
+            )
+            return
         select_widget: Select[str] = self.query_exactly_one(Select[str])
         if select_widget.selection is None:
             return
+        init_cmd = None
+        init_arg = event.value
+        valid_arg = None
         if select_widget.selection == "https":
-            if (
-                event.validation_result is not None
-                and event.validation_result.is_valid
-            ):
-                self.notify("Valid URL entered, init clone enabled.")
-                self.https_arg = event.value
-                self.https_cmd = WriteCmd.init_no_guess
+            init_cmd = WriteCmd.init_no_guess
+            if event.validation_result.is_valid:
+                self.notify("Valid URL entered.")
+                valid_arg = True
             else:
                 self.notify("Invalid URL entered.", severity="error")
-                self.https_arg = None
-                self.https_cmd = None
+                valid_arg = False
         elif select_widget.selection == "ssh":
-            if (
-                event.validation_result is not None
-                and event.validation_result.is_valid
-            ):
-                self.notify(
-                    "Valid SSH SCP-style address entered, init clone enabled."
-                )
-                self.ssh_arg = event.value
-                self.ssh_cmd = WriteCmd.init_no_guess
+            init_cmd = WriteCmd.init_no_guess
+            if event.validation_result.is_valid:
+                self.notify("Valid SSH SCP-style address entered.")
+                valid_arg = True
             else:
                 self.notify(
                     "Invalid SSH SCP-style address entered.", severity="error"
                 )
-                self.ssh_arg = None
-                self.ssh_cmd = None
-        if select_widget.selection == "guess url":
-            if (
-                event.validation_result is not None
-                and event.validation_result.is_valid
-            ):
-                self.notify(
-                    "Ready to let chezmoi guess the https URL, init clone enabled."
-                )
-                self.guess_url_arg = event.value
-                self.guess_url_cmd = WriteCmd.init_guess_https
+                valid_arg = False
+        elif select_widget.selection == "guess url":
+            init_cmd = WriteCmd.init_guess_https
+            if event.validation_result.is_valid:
+                self.notify("Valid input for chezmoi to guess the https URL.")
+                valid_arg = True
             else:
-                self.notify("Invalid URL entered.", severity="error")
-                self.guess_url_arg = None
-                self.guess_url_cmd = None
+                self.notify(
+                    "Invalid guess input entered for https.", severity="error"
+                )
+                valid_arg = False
         elif select_widget.selection == "guess ssh":
-            if (
-                event.validation_result is not None
-                and event.validation_result.is_valid
-            ):
+            init_cmd = WriteCmd.init_guess_ssh
+            if event.validation_result.is_valid:
                 self.notify(
-                    "Ready to let chezmoi guess the ssh scp-style address, init clone enabled."
+                    "Valid input for chezmoi to guess the ssh address."
                 )
-                self.guess_ssh_arg = event.value
-                self.guess_ssh_cmd = WriteCmd.init_guess_ssh
+                valid_arg = True
             else:
                 self.notify(
                     "Invalid SSH SCP-style address entered.", severity="error"
                 )
-                self.guess_ssh_arg = None
-                self.guess_ssh_cmd = None
+        if init_cmd is None or valid_arg is None:
+            raise ValueError("Failed to determine init clone command data.")
+        self.screen.post_message(
+            InitCloneCmdMsg(
+                InitCloneData(
+                    init_cmd=init_cmd, init_arg=init_arg, valid_arg=valid_arg
+                )
+            )
+        )
 
 
 class InitCollapsibles(VerticalGroup, AppType):
@@ -468,9 +461,7 @@ class OperateInitScreen(Screen[None], AppType):
             raise ValueError("self.app.operate_data is None in InitScreen")
         self.op_data = self.app.operate_data
         self.ids = IDS_OPERATE_INIT
-        self.init_cmd: WriteCmd = WriteCmd.init_new
-        self.init_arg: str | None = None
-        self.valid_arg: bool = False
+        self.init_clone_data: InitCloneData | None = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -507,20 +498,19 @@ class OperateInitScreen(Screen[None], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
+        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.reload
         )
-        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.post_op_container = self.query_one(
             self.ids.container.post_operate_q, VerticalGroup
         )
         self.post_op_container.display = False
-        self.pre_op_container = self.query_one(
-            self.ids.container.pre_operate_q, VerticalGroup
-        )
+        self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         self.operate_info = self.query_one(
             self.ids.static.operate_info_q, Static
         )
+        self.operate_info.border_title = self.op_data.btn_label
         self.op_btn = self.query_one(
             self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
         )
@@ -535,67 +525,104 @@ class OperateInitScreen(Screen[None], AppType):
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
-        self.init_static = self.query_one(self.ids.static.init_info_q, Static)
         self.update_operate_info()
-        self.update_static_text()
+        self.update_init_info()
 
     def update_operate_info(self) -> None:
+        self.operate_info.border_title = self.op_btn.label
         lines_to_write: list[str] = []
-        if self.op_btn.label == OperateBtn.init_repo.init_new_label:
-            lines_to_write.append(
-                f"Run chezmoi {WriteCmd.init_new.pretty_cmd}"
-            )
         if self.app.changes_enabled is True:
             lines_to_write.append(OperateStrings.changes_enabled)
         else:
             lines_to_write.append(OperateStrings.changes_disabled)
+        if self.query_exactly_one(Switch).value is False:
+            lines_to_write.append(
+                "Ready to run [$text-success] chezmoi "
+                f"{WriteCmd.init_new.pretty_cmd}[/]"
+            )
+            self.operate_info.update("\n".join(lines_to_write))
+            return
+        if self.init_clone_data is None:
+            lines_to_write.append(
+                "[$text-error]No init clone input provided yet."
+            )
+            self.op_btn.disabled = True
+            self.op_btn.tooltip = OperateBtn.init_repo.disabled_tooltip
+        if (
+            self.init_clone_data is not None
+            and self.init_clone_data.init_cmd == WriteCmd.init_no_guess
+        ):
+            if self.init_clone_data.valid_arg is True:
+                lines_to_write.append(
+                    (
+                        '[$text-success]Ready to run "chezmoi '
+                        f"{WriteCmd.init_no_guess.pretty_cmd} "
+                        f'{self.init_clone_data.init_arg}"[/]'
+                    )
+                )
+            elif self.init_clone_data.valid_arg is False:
+                lines_to_write.append(
+                    f"[$text-error]{WriteCmd.init_no_guess.pretty_cmd} "
+                    ": invalid URL or SSH SCP-style address."
+                )
+        elif (
+            self.init_clone_data is not None
+            and self.init_clone_data.init_cmd == WriteCmd.init_guess_https
+        ):
+            if self.init_clone_data.valid_arg is True:
+                lines_to_write.append(
+                    (
+                        '[$text-success]Ready to run "chezmoi '
+                        f"{self.init_clone_data.init_cmd.pretty_cmd} "
+                        f"{self.init_clone_data.init_arg}[/]"
+                    )
+                )
+            elif self.init_clone_data.valid_arg is False:
+                lines_to_write.append(
+                    f"[$text-error]{self.init_clone_data.init_cmd.pretty_cmd} "
+                    ": invalid guess https input."
+                )
+        elif (
+            self.init_clone_data is not None
+            and self.init_clone_data.init_cmd == WriteCmd.init_guess_ssh
+        ):
+            if self.init_clone_data.valid_arg is True:
+                lines_to_write.append(
+                    (
+                        '[$text-success]Ready to run "chezmoi '
+                        f"{self.init_clone_data.init_cmd.pretty_cmd} "
+                        f"{self.init_clone_data.init_arg}[/]"
+                    )
+                )
+            elif self.init_clone_data.valid_arg is False:
+                lines_to_write.append(
+                    f"[$text-error]{self.init_clone_data.init_cmd.pretty_cmd} "
+                    ": invalid guess ssh input."
+                )
         self.operate_info.update("\n".join(lines_to_write))
-        self.operate_info.border_title = self.operate_info.border_title = (
-            self.op_data.btn_label
-        )
 
-    def update_static_text(self) -> None:
-        switch_state = self.query_exactly_one(Switch).value
-        if switch_state is False:
-            self.init_static.update(OperateStrings.init_new_info)
+    def update_init_info(self) -> None:
+        if self.query_exactly_one(Switch).value is False:
+            self.init_info.update(OperateStrings.init_new_info)
             return
         current_select = self.repo_input.query_exactly_one(Select[str]).value
         if current_select == "https":
-            self.init_static.update(OperateStrings.https_url)
+            self.init_info.update(OperateStrings.https_url)
         elif current_select == "ssh":
-            self.init_static.update(OperateStrings.ssh_select)
+            self.init_info.update(OperateStrings.ssh_select)
         elif current_select == "guess url":
-            self.init_static.update(OperateStrings.guess_https)
+            self.init_info.update(OperateStrings.guess_https)
         elif current_select == "guess ssh":
-            self.init_static.update(OperateStrings.guess_ssh)
-
-    @on(Switch.Changed)
-    def handle_switch_state(self, event: Switch.Changed) -> None:
-        if event.value is True:
-            self.repo_input.display = True
-            self.op_btn.label = OperateBtn.init_repo.init_clone_label
-        elif event.value is False:
-            self.repo_input.display = False
-            self.op_btn.label = OperateBtn.init_repo.init_new_label
-        self.update_static_text()
-        self.update_operate_info()
-
-    @on(OperateButtonMsg)
-    def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
-        if msg.btn_enum == OperateBtn.init_repo:
-            self.run_operate_command()
-
-    @on(InitCommandMsg)
-    def update_current_init_command(self, msg: InitCommandMsg) -> None:
-        self.init_cmd = msg.init_cmd
-        self.init_arg = msg.init_arg
-        self.valid_arg = msg.valid_arg
+            self.init_info.update(OperateStrings.guess_ssh)
 
     def run_operate_command(self) -> None:
         self.app.init_cmd_result = self.app.chezmoi.perform(
             write_cmd=self.init_cmd,
             init_arg=self.init_arg,
             changes_enabled=self.app.changes_enabled,
+        )
+        self.pre_op_container = self.query_one(
+            self.ids.container.pre_operate_q, VerticalGroup
         )
         self.pre_op_container.display = False
         self.post_op_container.display = True
@@ -610,6 +637,42 @@ class OperateInitScreen(Screen[None], AppType):
             self.op_btn.tooltip = None
             self.exit_btn.label = OperateBtn.operate_exit.reload_label
 
+    @on(Switch.Changed)
+    def handle_switch_state(self, event: Switch.Changed) -> None:
+        if event.value is True:
+            self.repo_input.display = True
+            self.op_btn.label = OperateBtn.init_repo.init_clone_label
+        elif event.value is False:
+            self.repo_input.display = False
+            self.op_btn.label = OperateBtn.init_repo.init_new_label
+        self.update_init_info()
+        self.update_operate_info()
+
+    @on(OperateButtonMsg)
+    def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
+        if msg.btn_enum == OperateBtn.init_repo:
+            if self.op_btn.label == OperateBtn.init_repo.init_new_label:
+                self.init_cmd = WriteCmd.init_new
+                self.init_arg = None
+                self.valid_arg = True
+            elif self.valid_arg is False:
+                self.notify(
+                    "Cannot run init clone, invalid or missing repo address.",
+                    severity="error",
+                )
+                return
+            self.run_operate_command()
+
+    @on(InitCloneCmdMsg)
+    def handle_init_clone_cmd_msg(self, msg: InitCloneCmdMsg) -> None:
+        self.init_clone_data = msg.init_clone_data
+        if self.init_clone_data.valid_arg is False:
+            self.op_btn.disabled = True
+        else:
+            self.op_btn.disabled = False
+            self.notify("Valid repo address, init clone enabled.")
+        self.update_operate_info()
+
     @on(Select.Changed)
     def hanle_selection_change(self, event: Select.Changed) -> None:
-        self.update_static_text()
+        self.update_operate_info()
