@@ -11,6 +11,18 @@
   border-title-style: bold;
 }
 
+.diff_line_added {
+  color: $text-success;
+  background: $success-muted;
+  background-tint: $success-muted;
+}
+
+.diff_line_removed {
+  color: $text-error;
+  background: $error-muted;
+  background-tint: $error-muted;
+}
+
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
@@ -65,7 +77,6 @@
   border-title-align: center;
   border: round $foreground;
   text-align: center;
-  dock: top;
 }
 
 .single_switch {
