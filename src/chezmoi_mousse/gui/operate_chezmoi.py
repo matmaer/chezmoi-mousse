@@ -139,10 +139,6 @@ class OperateChezmoiScreen(Screen[None], AppType):
         # show git diff color info
         if self.btn_enum in (OperateBtn.apply_path, OperateBtn.re_add_path):
             lines_to_write.append(OperateStrings.diff_color)
-        if self.op_data.node_data is not None:
-            lines_to_write.append(
-                f"[$text-primary]Operating on path: {self.op_data.node_data.path}[/]"
-            )
         self.operate_info.update("\n".join(lines_to_write))
         self.operate_info.border_title = self.op_data.btn_label
         self.operate_info.border_subtitle = border_subtitle
