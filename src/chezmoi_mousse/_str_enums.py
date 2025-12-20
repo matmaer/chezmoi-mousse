@@ -171,7 +171,6 @@ class OperateStrings(StrEnum):
     re_add_subtitle = (
         f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     )
-    run_chezmoi_init = 'Run [$text-success]"chezmoi init"[/]'
     ssh_select = (
         "Enter an SSH SCP-style URL, e.g., "
         "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
@@ -205,16 +204,13 @@ class SectionLabels(StrEnum):
     which has its own StrEnum class "HelpSections" and the install_help.py
     module which has its own StrEnum class "InstallHelpStrings"."""
 
-    add_dir = "Add Directory Contents"
     file_read_output = "File Contents"
     cat_config_output = "Cat Config Output"
     contents_info = "Contents Info"
     debug_log_output = "Debug Log Output"
     diff_info = "Diff Info"
     doctor_output = "Doctor Output"
-    error_output = "Error Output"
     ignored_output = "Ignored Output"
-    init_cloned_repo = "Initialize Cloned Chezmoi Repository"
     init_new_repo = "Initialize New Chezmoi Repository"
     operate_output = "Operate Command Output"
     password_managers = "Password Manager Information"
