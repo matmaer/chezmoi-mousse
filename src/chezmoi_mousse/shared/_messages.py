@@ -2,17 +2,21 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
-from chezmoi_mousse._chezmoi import WriteCmd
-
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import NodeData, OperateBtn, ScreenName, TabName
+    from chezmoi_mousse import (
+        InitCloneData,
+        NodeData,
+        OperateBtn,
+        ScreenName,
+        TabName,
+    )
 
 __all__ = [
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    "InitCommandMsg",
+    "InitCloneCmdMsg",
     "OperateButtonMsg",
 ]
 
@@ -40,13 +44,9 @@ class CurrentAddNodeMsg(Message):
         super().__init__()
 
 
-class InitCommandMsg(Message):
-    def __init__(
-        self, init_cmd: "WriteCmd", init_arg: str | None, valid_arg: bool
-    ) -> None:
-        self.init_cmd = init_cmd
-        self.init_arg = init_arg
-        self.valid_arg = valid_arg
+class InitCloneCmdMsg(Message):
+    def __init__(self, init_clone_data: "InitCloneData") -> None:
+        self.init_clone_data = init_clone_data
         super().__init__()
 
 

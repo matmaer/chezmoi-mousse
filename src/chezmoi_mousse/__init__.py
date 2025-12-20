@@ -58,6 +58,7 @@ __all__ = [
     "IDS_OPERATE_INIT",
     "AppIds",
     # Operations
+    "InitCloneData",
     "OperateBtn",
     "OperateData",
     "OperateStrings",
@@ -92,6 +93,13 @@ __all__ = [
     "Tcss",
     "TreeName",
 ]
+
+
+@dataclass(slots=True)
+class InitCloneData:
+    init_cmd: "WriteCmd"
+    init_arg: "str"
+    valid_arg: "bool"
 
 
 @dataclass(slots=True)
