@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING
 
-# from rich.text import Text
 from textual.app import ComposeResult
-from textual.containers import Vertical, VerticalGroup
+from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
@@ -56,29 +55,35 @@ class DiffLines(VerticalGroup):
 
     def compose(self) -> ComposeResult:
         yield Label(id=self.ids.label.diff_cmd, classes=Tcss.sub_section_label)
-        yield Static(id=self.ids.static.diff_lines)
+        yield ScrollableContainer(id=self.ids.container.diff_output)
 
     def watch_diff_data(self) -> None:
         if self.diff_data is None:
             return
         diff_cmd_label = self.query_one(self.ids.label.diff_cmd_q, Label)
         diff_cmd_label.update(self.diff_data.diff_cmd_label)
-        static_widget = self.query_one(self.ids.static.diff_lines_q, Static)
-        to_write: list[str] = []
+        diff_output = self.query_one(
+            self.ids.container.diff_output_q, ScrollableContainer
+        )
+        diff_output.remove_children()
         for line in self.diff_data.mode_diff_lines:
             if line.startswith("old mode"):
-                to_write.append(f" {Chars.bullet} {line}")
-        for line in self.diff_data.dir_diff_lines:
-            if line.startswith("+++"):
-                to_write.append(f"[$text-success on $success-muted]{line}[/]")
-            elif line.startswith("---"):
-                to_write.append(f"[$text-error on $error-muted]{line}[/]")
-        for line in self.diff_data.file_diff_lines:
+                self.mount(
+                    Static(
+                        f"{Chars.bullet} {line}", classes="diff_line_removed"
+                    )
+                )
+            elif line.startswith("new mode"):
+                self.mount(
+                    Static(f"{Chars.bullet} {line}", classes="diff_line_added")
+                )
+        for line in (
+            self.diff_data.dir_diff_lines + self.diff_data.file_diff_lines
+        ):
             if line.startswith("+"):
-                to_write.append(f"[$text-success on $success-muted]{line}[/]")
+                diff_output.mount(Static(line, classes="diff_line_added"))
             elif line.startswith("-"):
-                to_write.append(f"[$text-error on $error-muted]{line}[/]")
-        static_widget.update("\n".join(to_write))
+                diff_output.mount(Static(line, classes="diff_line_removed"))
 
 
 class DiffView(Vertical, AppType):
