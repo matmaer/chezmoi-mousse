@@ -210,8 +210,6 @@ class SectionLabels(StrEnum):
     cat_config_output = "Cat Config Output"
     contents_info = "Contents Info"
     debug_log_output = "Debug Log Output"
-    diff_file_output = "File Differences"
-    diff_dir_output = "Directory Differences"
     diff_info = "Diff Info"
     doctor_output = "Doctor Output"
     error_output = "Error Output"

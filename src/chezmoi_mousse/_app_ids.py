@@ -344,10 +344,8 @@ class LabelIds:
         self.cat_config_output_q = f"#{self.cat_config_output}"
         self.contents_info = ids.label_id(label=LabelName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
-        self.diff_dir_output = ids.label_id(label=LabelName.diff_dir_output)
-        self.diff_dir_output_q = f"#{self.diff_dir_output}"
-        self.diff_file_output = ids.label_id(label=LabelName.diff_file_output)
-        self.diff_file_output_q = f"#{self.diff_file_output}"
+        self.diff_cmd = ids.label_id(label=LabelName.diff_cmd)
+        self.diff_cmd_q = f"#{self.diff_cmd}"
         self.file_read_output = ids.label_id(label=LabelName.file_read_output)
         self.file_read_output_q = f"#{self.file_read_output}"
 

@@ -57,8 +57,7 @@ class DataTableName(StrEnum):
 class LabelName(StrEnum):
     cat_config_output = auto()
     contents_info = auto()
-    diff_dir_output = auto()
-    diff_file_output = auto()
+    diff_cmd = auto()
     file_read_output = auto()
 
 

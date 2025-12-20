@@ -30,7 +30,7 @@ from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import NodeData
+    from chezmoi_mousse import DiffCmdData, NodeData
 
 __all__ = ["MainScreen"]
 
@@ -57,7 +57,9 @@ class MainScreen(Screen[None], AppType):
         self.debug_log: "DebugLog"
 
         self.current_add_node: "NodeData | None" = None
+        self.current_apply_diff: "DiffCmdData | None" = None
         self.current_apply_node: "NodeData | None" = None
+        self.current_re_add_diff: "DiffCmdData | None" = None
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
@@ -183,11 +185,15 @@ class MainScreen(Screen[None], AppType):
             and msg.canvas_name == TabName.apply
         ):
             operate_data.node_data = self.current_apply_node
+            if self.current_apply_diff is not None:
+                operate_data.diff_data = self.current_apply_diff
         elif (
             self.current_re_add_node is not None
             and msg.canvas_name == TabName.re_add
         ):
             operate_data.node_data = self.current_re_add_node
+            if self.current_re_add_diff is not None:
+                operate_data.diff_data = self.current_re_add_diff
         self.app.operate_data = operate_data
         self.app.push_screen(
             OperateChezmoiScreen(), callback=self.handle_operate_result

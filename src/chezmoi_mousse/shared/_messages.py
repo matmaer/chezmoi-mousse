@@ -5,6 +5,7 @@ from textual.message import Message
 if TYPE_CHECKING:
 
     from chezmoi_mousse import (
+        DiffCmdData,
         InitCloneData,
         NodeData,
         OperateBtn,
@@ -14,7 +15,9 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CurrentAddNodeMsg",
+    "CurrentApplyDiffMsg",
     "CurrentApplyNodeMsg",
+    "CurrentReAddDiffMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
@@ -24,9 +27,21 @@ __all__ = [
 # the correct data
 
 
+class CurrentApplyDiffMsg(Message):
+    def __init__(self, diff_cmd_data: "DiffCmdData") -> None:
+        self.diff_cmd_data = diff_cmd_data
+        super().__init__()
+
+
 class CurrentApplyNodeMsg(Message):
     def __init__(self, node_data: "NodeData") -> None:
         self.node_data = node_data
+        super().__init__()
+
+
+class CurrentReAddDiffMsg(Message):
+    def __init__(self, diff_cmd_data: "DiffCmdData") -> None:
+        self.diff_cmd_data = diff_cmd_data
         super().__init__()
 
 
