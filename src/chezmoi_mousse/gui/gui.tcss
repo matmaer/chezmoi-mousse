@@ -147,6 +147,10 @@ CustomCollapsible {
   }
 }
 
+DiffLines > ScrollableContainer {
+  margin-top: 1;
+}
+
 DoctorTable {
   margin-bottom: 3;
 }
