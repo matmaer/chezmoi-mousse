@@ -96,37 +96,45 @@ __all__ = [
 
 
 @dataclass(slots=True)
+class DiffOutputData:
+    diff_command: str
+    dir_diff_lines: list[str]
+    file_diff_lines: list[str]
+    mode_diff_lines: list[str]
+
+
+@dataclass(slots=True)
 class InitCloneData:
     init_cmd: "WriteCmd"
-    init_arg: "str"
-    valid_arg: "bool"
+    init_arg: str
+    valid_arg: bool
 
 
 @dataclass(slots=True)
 class NodeData:
-    found: "bool"
+    found: bool
     path: "Path"
     # Chezmoi status codes processed: A, D, M, or a space
     # Additional "node status" codes: X (no status but managed)
-    status: "str"
+    status: str
     path_kind: "PathKind"
 
 
 @dataclass(slots=True)
 class OperateData:
     btn_enum: "OperateBtn"
-    btn_label: "str"
-    btn_tooltip: "str | None"
+    btn_label: str
+    btn_tooltip: str | None
     node_data: "NodeData | None" = None
 
 
 @dataclass(slots=True)
 class ParsedConfig:
     dest_dir: "Path"
-    git_autoadd: "bool"
+    git_autoadd: bool
     source_dir: "Path"
-    git_autocommit: "bool"
-    git_autopush: "bool"
+    git_autocommit: bool
+    git_autopush: bool
 
 
 @dataclass(slots=True)
