@@ -499,7 +499,7 @@ class Chezmoi:
             and path_arg is not None
         ):
             command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
-        elif write_cmd in (WriteCmd.init_new,) and init_arg is not None:
+        elif write_cmd == WriteCmd.init_new:
             command: list[str] = base_cmd + write_cmd.value
         elif (
             write_cmd
