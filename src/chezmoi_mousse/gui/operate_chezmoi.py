@@ -19,7 +19,7 @@ from chezmoi_mousse.shared import (
     ContentsView,
     CustomHeader,
     DebugLog,
-    DiffView,
+    DiffLines,
     OperateButtonMsg,
     OperateButtons,
     OperateLog,
@@ -39,9 +39,6 @@ class OperateChezmoiScreen(Screen[None], AppType):
             raise ValueError("self.app.operate_data is None in OperateScreen")
         self.op_data = self.app.operate_data
         self.btn_enum = self.op_data.btn_enum
-        self.reverse = (
-            False if self.op_data.btn_enum == OperateBtn.apply_path else True
-        )
         self.ids = IDS_OPERATE_CHEZMOI
 
     def compose(self) -> ComposeResult:
@@ -49,7 +46,9 @@ class OperateChezmoiScreen(Screen[None], AppType):
         yield Static(
             id=self.ids.static.operate_info, classes=Tcss.operate_info
         )
-        yield VerticalGroup(id=self.ids.container.pre_operate)
+        yield VerticalGroup(
+            DiffLines(ids=self.ids), id=self.ids.container.pre_operate
+        )
         with VerticalGroup(id=self.ids.container.post_operate):
             yield Label(
                 SectionLabels.operate_output, classes=Tcss.main_section_label
@@ -89,15 +88,10 @@ class OperateChezmoiScreen(Screen[None], AppType):
             OperateBtn.apply_path,
             OperateBtn.re_add_path,
         ):
-            self.pre_op_container.mount(
-                DiffView(ids=self.ids, reverse=self.reverse)
+            diff_lines = self.query_one(
+                self.ids.container.diff_lines_q, DiffLines
             )
-            diff_view = self.pre_op_container.query_one(
-                self.ids.container.diff_q, DiffView
-            )
-            diff_view.on_mount()
-            diff_view.node_data = self.op_data.node_data
-            diff_view.remove_class(Tcss.border_title_top)
+            diff_lines.diff_data = self.op_data.diff_data
         else:
             self.pre_op_container.mount(ContentsView(ids=self.ids))
             contents_view = self.pre_op_container.query_one(

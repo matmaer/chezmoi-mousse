@@ -11,7 +11,9 @@ from chezmoi_mousse import IDS, AppType, LogStrings, OperateData, TabName
 from chezmoi_mousse.shared import (
     AppLog,
     CurrentAddNodeMsg,
+    CurrentApplyDiffMsg,
     CurrentApplyNodeMsg,
+    CurrentReAddDiffMsg,
     CurrentReAddNodeMsg,
     CustomHeader,
     DebugLog,
@@ -233,9 +235,17 @@ class MainScreen(Screen[None], AppType):
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
         self.current_add_node = message.node_data
 
+    @on(CurrentApplyDiffMsg)
+    def update_current_apply_diff(self, message: CurrentApplyDiffMsg) -> None:
+        self.current_apply_diff = message.diff_data
+
     @on(CurrentApplyNodeMsg)
     def update_current_apply_node(self, message: CurrentApplyNodeMsg) -> None:
         self.current_apply_node = message.node_data
+
+    @on(CurrentReAddDiffMsg)
+    def update_current_re_add_diff(self, message: CurrentReAddDiffMsg) -> None:
+        self.current_re_add_diff = message.diff_data
 
     @on(CurrentReAddNodeMsg)
     def update_current_re_add_node(self, message: CurrentReAddNodeMsg) -> None:

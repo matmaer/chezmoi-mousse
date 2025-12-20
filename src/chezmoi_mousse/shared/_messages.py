@@ -28,8 +28,8 @@ __all__ = [
 
 
 class CurrentApplyDiffMsg(Message):
-    def __init__(self, diff_cmd_data: "DiffData") -> None:
-        self.diff_cmd_data = diff_cmd_data
+    def __init__(self, diff_data: "DiffData") -> None:
+        self.diff_data = diff_data
         super().__init__()
 
 
@@ -40,8 +40,8 @@ class CurrentApplyNodeMsg(Message):
 
 
 class CurrentReAddDiffMsg(Message):
-    def __init__(self, diff_cmd_data: "DiffData") -> None:
-        self.diff_cmd_data = diff_cmd_data
+    def __init__(self, diff_data: "DiffData") -> None:
+        self.diff_data = diff_data
         super().__init__()
 
 

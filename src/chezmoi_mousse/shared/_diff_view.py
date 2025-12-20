@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, AppType, CommandResult, NodeData
 
-__all__ = ["DiffView"]
+__all__ = ["DiffLines", "DiffView"]
 
 
 class DiffInfo(VerticalGroup):
@@ -195,8 +195,8 @@ class DiffView(Vertical, AppType):
 
         diff_data: DiffData = self.create_diff_data()
         if self.reverse is False:
-            self.app.post_message(CurrentApplyDiffMsg(diff_data))
+            self.post_message(CurrentApplyDiffMsg(diff_data))
         else:
-            self.app.post_message(CurrentReAddDiffMsg(diff_data))
+            self.post_message(CurrentReAddDiffMsg(diff_data))
         diff_lines.display = True
         diff_lines.diff_data = diff_data
