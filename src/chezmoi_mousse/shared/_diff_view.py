@@ -1,16 +1,16 @@
 from typing import TYPE_CHECKING
 
-from rich.text import Text
+# from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
-from textual.widgets import Label, RichLog, Static
+from textual.widgets import Label, Static
 
 from chezmoi_mousse import (
     AppType,
     Chars,
     DestDirStrings,
-    DiffCmdData,
+    DiffData,
     PathKind,
     ReadCmd,
     SectionLabels,
@@ -27,7 +27,10 @@ if TYPE_CHECKING:
 __all__ = ["DiffView"]
 
 
-class DiffInfo(VerticalGroup, AppType):
+class DiffInfo(VerticalGroup):
+
+    info_lines: reactive[list[str] | None] = reactive(None, init=False)
+
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(id=self.ids.container.diff_info)
@@ -35,6 +38,47 @@ class DiffInfo(VerticalGroup, AppType):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabels.diff_info, classes=Tcss.sub_section_label)
         yield Static(id=self.ids.static.diff_info)
+
+    def watch_info_lines(self) -> None:
+        if self.info_lines is None:
+            return
+        static_widget = self.query_one(self.ids.static.diff_info_q, Static)
+        static_widget.update("\n".join(self.info_lines))
+
+
+class DiffLines(VerticalGroup):
+
+    diff_data: reactive["DiffData | None"] = reactive(None, init=False)
+
+    def __init__(self, *, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.container.diff_lines)
+
+    def compose(self) -> ComposeResult:
+        yield Label(id=self.ids.label.diff_cmd, classes=Tcss.sub_section_label)
+        yield Static(id=self.ids.static.diff_lines)
+
+    def watch_diff_data(self) -> None:
+        if self.diff_data is None:
+            return
+        diff_cmd_label = self.query_one(self.ids.label.diff_cmd_q, Label)
+        diff_cmd_label.update(self.diff_data.diff_cmd_label)
+        static_widget = self.query_one(self.ids.static.diff_lines_q, Static)
+        to_write: list[str] = []
+        for line in self.diff_data.mode_diff_lines:
+            if line.startswith("old mode"):
+                to_write.append(f" {Chars.bullet} {line}")
+        for line in self.diff_data.dir_diff_lines:
+            if line.startswith("+++"):
+                to_write.append(f"[$text-success on $success-muted]{line}[/]")
+            elif line.startswith("---"):
+                to_write.append(f"[$text-error on $error-muted]{line}[/]")
+        for line in self.diff_data.file_diff_lines:
+            if line.startswith("+"):
+                to_write.append(f"[$text-success on $success-muted]{line}[/]")
+            elif line.startswith("-"):
+                to_write.append(f"[$text-error on $error-muted]{line}[/]")
+        static_widget.update("\n".join(to_write))
 
 
 class DiffView(Vertical, AppType):
@@ -57,28 +101,17 @@ class DiffView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield DiffInfo(ids=self.ids)
-        yield Label(classes=Tcss.sub_section_label, id=self.ids.label.diff_cmd)
-        yield RichLog(
-            id=self.ids.logger.diff,
-            auto_scroll=False,
-            highlight=True,
-            wrap=True,  # TODO: implement footer binding to toggle wrap
-        )
+        yield DiffLines(ids=self.ids)
 
     def on_mount(self) -> None:
         self.border_title = f" {self.destDir} "
-        self.diff_cmd_label = self.query_one(self.ids.label.diff_cmd_q, Label)
-        self.diff_cmd_label.display = False
-        self.diff_info_container = self.query_one(
-            self.ids.container.diff_info_q, DiffInfo
-        )
-        self.diff_info_static_text = self.diff_info_container.query_one(
-            self.ids.static.diff_info_q, Static
-        )
+        diff_info = self.query_one(self.ids.container.diff_info_q, DiffInfo)
+        diff_lines = self.query_one(self.ids.container.diff_lines_q, DiffLines)
+        diff_lines.display = False
         if self.node_data is None:
-            self.diff_info_static_text.update(self.in_dest_dir_diff_msg)
+            diff_info.info_lines = [self.in_dest_dir_diff_msg]
 
-    def get_diff_output(self) -> DiffCmdData:
+    def create_diff_data(self) -> DiffData:
         if self.node_data is None:
             raise ValueError("node_data is None")
         mode_diff_lines: list[str] = []
@@ -91,44 +124,38 @@ class DiffView(Vertical, AppType):
         mode_diff_lines = [
             line
             for line in diff_lines
-            if (line.startswith("old mode") or line.startswith("new mode"))
+            if line.startswith(("new mode", "old mode"))
         ]
         if self.node_data.path_kind == PathKind.DIR:
-            dir_diff_lines = [
-                line for line in diff_lines if line.startswith(("+++", "---"))
-            ]
-            for line in dir_diff_lines:
-                if line.startswith("---") or line.startswith("+++"):
-                    dir_diff_lines.append(line)
+            dir_diff_lines.extend(
+                [
+                    line
+                    for line in diff_lines
+                    if line.startswith(("+++", "---"))
+                ]
+            )
         elif self.node_data.path_kind == PathKind.FILE:
-            file_diff_lines: list[str] = [
-                line
-                for line in diff_lines
-                if line[0] in "+- " and not line.startswith(("+++", "---"))
-            ]
-            if len(file_diff_lines) == 0:
-                file_diff_lines = ["The diff contains only whitespace."]
+            file_diff_lines.extend(
+                [
+                    line
+                    for line in diff_lines
+                    if line[0] in "+- " and not line.startswith(("+++", "---"))
+                ]
+            )
 
-        diff_cmd_data = DiffCmdData(
+        diff_data = DiffData(
             diff_cmd_label=diff_output.pretty_cmd,
             dir_diff_lines=dir_diff_lines,
             file_diff_lines=file_diff_lines,
             mode_diff_lines=mode_diff_lines,
         )
-        if self.reverse is False:
-            self.app.post_message(CurrentApplyDiffMsg(diff_cmd_data))
-        else:
-            self.app.post_message(CurrentReAddDiffMsg(diff_cmd_data))
-        self.diff_cmd_label.display = True
-        self.diff_cmd_label.update(diff_output.pretty_cmd)
-        return diff_cmd_data
+        return diff_data
 
     def no_status_info_lines(self) -> list[str]:
-        new_info_text: list[str] = []
         if self.node_data is None:
-            return new_info_text
+            raise ValueError("node_data is None")
         new_info_text: list[str] = []
-        # write lines for an unchanged file or directory
+        # lines for an unchanged file or directory
         if (
             self.node_data.path_kind == PathKind.DIR
             and self.node_data.path not in self.app.chezmoi.status_dirs
@@ -147,56 +174,29 @@ class DiffView(Vertical, AppType):
                 f"Managed file [$text-accent]{self.node_data.path}[/]."
             )
             new_info_text.append("No diff available, the file has no status.")
-            self.diff_info_static_text.update("\n".join(new_info_text))
         return new_info_text
 
     def watch_node_data(self) -> None:
         if self.node_data is None:
             return
 
-        self.diff_info_container.display = False
-        self.diff_cmd_label.display = False
-        self.rich_log = self.query_one(self.ids.logger.diff_q, RichLog)
-        self.rich_log.clear()
+        diff_info = self.query_one(self.ids.container.diff_info_q, DiffInfo)
+        diff_info.display = False
+        diff_lines = self.query_one(self.ids.container.diff_lines_q, DiffLines)
+        diff_lines.display = False
 
         self.border_title = f" {self.node_data.path} "
+
         no_status_info: list[str] = self.no_status_info_lines()
         if len(no_status_info) > 0:
-            self.diff_info_container.display = True
-            self.diff_info_static_text.update("\n".join(no_status_info))
+            diff_info.display = True
+            diff_info.info_lines = no_status_info
             return
 
-        diff_cmd_data: DiffCmdData = self.get_diff_output()
-
-        if len(diff_cmd_data.mode_diff_lines) > 0:
-            self.diff_info_container.display = True
-            lines: list[str] = []
-            lines.append("Mode/permissions changes:")
-            for line in diff_cmd_data.mode_diff_lines:
-                lines.append(f" {Chars.bullet} {line}")
-            self.diff_info_static_text.update("\n".join(lines))
-
-        if self.node_data.path_kind == PathKind.DIR:
-            self.diff_cmd_label.display = True
-            for line in diff_cmd_data.dir_diff_lines:
-                if line.startswith("---"):
-                    self.rich_log.write(
-                        Text(line, self.app.theme_variables["text-error"])
-                    )
-                elif line.startswith("+++"):
-                    self.rich_log.write(
-                        Text(line, self.app.theme_variables["text-success"])
-                    )
-            return
-
-        if len(diff_cmd_data.file_diff_lines) > 0:
-            self.diff_cmd_label.display = True
-        for line in diff_cmd_data.file_diff_lines:
-            if line.startswith("-"):
-                self.rich_log.write(
-                    Text(line, self.app.theme_variables["text-error"])
-                )
-            elif line.startswith("+"):
-                self.rich_log.write(
-                    Text(line, self.app.theme_variables["text-success"])
-                )
+        diff_data: DiffData = self.create_diff_data()
+        if self.reverse is False:
+            self.app.post_message(CurrentApplyDiffMsg(diff_data))
+        else:
+            self.app.post_message(CurrentReAddDiffMsg(diff_data))
+        diff_lines.display = True
+        diff_lines.diff_data = diff_data

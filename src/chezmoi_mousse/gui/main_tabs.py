@@ -30,7 +30,7 @@ from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DiffCmdData, NodeData
+    from chezmoi_mousse import DiffData, NodeData
 
 __all__ = ["MainScreen"]
 
@@ -57,9 +57,9 @@ class MainScreen(Screen[None], AppType):
         self.debug_log: "DebugLog"
 
         self.current_add_node: "NodeData | None" = None
-        self.current_apply_diff: "DiffCmdData | None" = None
+        self.current_apply_diff: "DiffData | None" = None
         self.current_apply_node: "NodeData | None" = None
-        self.current_re_add_diff: "DiffCmdData | None" = None
+        self.current_re_add_diff: "DiffData | None" = None
         self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:

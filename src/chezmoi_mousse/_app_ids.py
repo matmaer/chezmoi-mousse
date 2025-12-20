@@ -130,6 +130,8 @@ class ContainerIds:
         self.diff_q = f"#{self.diff}"
         self.diff_info = ids.container_id(name=ContainerName.diff_info)
         self.diff_info_q = f"#{self.diff_info}"
+        self.diff_lines = ids.container_id(name=ContainerName.diff_lines)
+        self.diff_lines_q = f"#{self.diff_lines}"
         self.doctor = ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
         self.git_log_path = ids.container_id(name=ContainerName.git_log_path)
@@ -396,6 +398,8 @@ class StaticIds:
         self.contents_info_q = f"#{self.contents_info}"
         self.diff_info = ids.static_id(static=StaticName.diff_info)
         self.diff_info_q = f"#{self.diff_info}"
+        self.diff_lines = ids.static_id(static=StaticName.diff_lines)
+        self.diff_lines_q = f"#{self.diff_lines}"
         self.git_log_info = ids.static_id(static=StaticName.git_log_info)
         self.git_log_info_q = f"#{self.git_log_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)

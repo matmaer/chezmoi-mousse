@@ -20,6 +20,7 @@ class ContainerName(StrEnum):
     contents_info = auto()
     diff = auto()
     diff_info = auto()
+    diff_lines = auto()
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
@@ -87,6 +88,7 @@ class ScreenName(StrEnum):
 class StaticName(StrEnum):
     contents_info = auto()
     diff_info = auto()
+    diff_lines = auto()
     git_log_info = auto()
     init_info = auto()
     operate_info = auto()
