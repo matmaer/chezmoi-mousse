@@ -182,7 +182,7 @@ class DiffView(Vertical, AppType):
         return new_info_text
 
     def watch_node_data(self) -> None:
-        if self.node_data is None:
+        if self.node_data is None or self.destDir is None:
             return
 
         diff_info = self.query_one(self.ids.container.diff_info_q, DiffInfo)
@@ -190,7 +190,9 @@ class DiffView(Vertical, AppType):
         diff_lines = self.query_one(self.ids.container.diff_lines_q, DiffLines)
         diff_lines.display = False
 
-        self.border_title = f" {self.node_data.path} "
+        self.border_title = (
+            f" {self.node_data.path.relative_to(self.destDir)} "
+        )
 
         no_status_info: list[str] = self.no_status_info_lines()
         if len(no_status_info) > 0:

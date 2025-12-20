@@ -173,9 +173,11 @@ class ContentsView(Vertical, AppType):
         return
 
     def watch_node_data(self) -> None:
-        if self.node_data is None:
+        if self.node_data is None or self.destDir is None:
             return
-        self.border_title = f" {self.node_data.path} "
+        self.border_title = (
+            f" {self.node_data.path.relative_to(self.destDir)} "
+        )
         self.cat_config_label.display = False
         self.file_read_label.display = False
         self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
