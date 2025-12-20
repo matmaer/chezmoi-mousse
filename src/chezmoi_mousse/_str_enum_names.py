@@ -21,6 +21,7 @@ class ContainerName(StrEnum):
     diff = auto()
     diff_info = auto()
     diff_lines = auto()
+    diff_output = auto()
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
