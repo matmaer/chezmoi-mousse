@@ -130,13 +130,13 @@ class OperateButton(Button):
 
 
 class OperateButtons(Horizontal):
-    def __init__(self, *, ids: "AppIds", buttons: tuple[OperateBtn, ...]):
+    def __init__(self, ids: "AppIds"):
         self.ids = ids
-        self.buttons = buttons
         super().__init__(id=self.ids.container.operate_buttons)
 
-    def on_mount(self) -> None:
-        for button_enum in self.buttons:
+    def update_buttons(self, buttons: tuple[OperateBtn, ...]) -> None:
+        self.remove_children()
+        for button_enum in buttons:
             self.mount(
                 Vertical(OperateButton(ids=self.ids, button_enum=button_enum))
             )

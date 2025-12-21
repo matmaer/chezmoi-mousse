@@ -246,9 +246,7 @@ class AddTab(Horizontal, AppType):
     def compose(self) -> ComposeResult:
         yield FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree)
         yield ContentsView(ids=IDS.add)
-        yield OperateButtons(
-            ids=IDS.add, buttons=(OperateBtn.add_file, OperateBtn.add_dir)
-        )
+        yield OperateButtons(ids=IDS.add)
         yield SwitchSlider(ids=IDS.add)
 
     def on_mount(self) -> None:
@@ -264,6 +262,13 @@ class AddTab(Horizontal, AppType):
         )
         self.contents_view.add_class(Tcss.border_title_top)
         self.contents_view.border_title = f" {self.destDir} "
+        self.operate_buttons = self.query_one(
+            IDS.add.container.operate_buttons_q, OperateButtons
+        )
+        self.operate_buttons.update_buttons(
+            (OperateBtn.add_file, OperateBtn.add_dir)
+        )
+
         self.add_file_button = self.query_one(
             IDS.add.operate_btn.add_file_q, Button
         )

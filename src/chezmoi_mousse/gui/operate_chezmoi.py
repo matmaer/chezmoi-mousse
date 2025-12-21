@@ -57,13 +57,16 @@ class OperateChezmoiScreen(Screen[None], AppType):
         if self.app.dev_mode:
             yield Label(SectionLabels.debug_log_output)
             yield DebugLog(self.ids)
-        yield OperateButtons(
-            ids=self.ids,
-            buttons=(self.op_data.btn_enum, OperateBtn.operate_exit),
-        )
+        yield OperateButtons(ids=self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
+        self.operate_buttons = self.query_one(
+            self.ids.container.operate_buttons_q, OperateButtons
+        )
+        self.operate_buttons.update_buttons(
+            (self.op_data.btn_enum, OperateBtn.operate_exit)
+        )
         self.post_op_container = self.query_one(
             self.ids.container.post_operate_q, VerticalGroup
         )

@@ -20,17 +20,20 @@ class ApplyTab(TabHorizontal, AppType):
     def compose(self) -> ComposeResult:
         yield TreeSwitcher(IDS.apply)
         yield ViewSwitcher(ids=IDS.apply, diff_reverse=False)
-        yield OperateButtons(
-            ids=IDS.apply,
-            buttons=(
-                OperateBtn.apply_path,
-                OperateBtn.forget_path,
-                OperateBtn.destroy_path,
-            ),
-        )
+        yield OperateButtons(ids=IDS.apply)
         yield SwitchSlider(ids=IDS.apply)
 
     def on_mount(self) -> None:
+        self.operate_buttons = self.query_one(
+            IDS.apply.container.operate_buttons_q, OperateButtons
+        )
+        self.operate_buttons.update_buttons(
+            (
+                OperateBtn.apply_path,
+                OperateBtn.forget_path,
+                OperateBtn.destroy_path,
+            )
+        )
         self.apply_btn = self.query_one(
             IDS.apply.operate_btn.apply_path_q, Button
         )

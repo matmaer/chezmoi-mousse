@@ -491,14 +491,17 @@ class OperateInitScreen(Screen[None], AppType):
         if self.app.dev_mode:
             yield Label(SectionLabels.debug_log_output)
             yield DebugLog(self.ids)
-        yield OperateButtons(
-            ids=self.ids,
-            buttons=(self.op_data.btn_enum, OperateBtn.operate_exit),
-        )
+        yield OperateButtons(ids=self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
         self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
+        self.operate_buttons = self.query_one(
+            self.ids.container.operate_buttons_q, OperateButtons
+        )
+        self.operate_buttons.update_buttons(
+            (self.op_data.btn_enum, OperateBtn.operate_exit)
+        )
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.reload
         )
