@@ -1,5 +1,6 @@
 from textual import on
 from textual.app import ComposeResult
+from textual.containers import Horizontal
 from textual.widgets import Button
 
 from chezmoi_mousse import IDS, AppType, OperateBtn, PathKind
@@ -8,19 +9,20 @@ from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .common.tab_horizontal import TabHorizontal
+from .common.tab_horizontal import TabVertical
 
 __all__ = ["ReAddTab"]
 
 
-class ReAddTab(TabHorizontal, AppType):
+class ReAddTab(TabVertical, AppType):
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.re_add)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(ids=IDS.re_add)
-        yield ViewSwitcher(ids=IDS.re_add, diff_reverse=True)
+        with Horizontal():
+            yield TreeSwitcher(ids=IDS.re_add)
+            yield ViewSwitcher(ids=IDS.re_add, diff_reverse=True)
         yield OperateButtons(ids=IDS.re_add)
         yield SwitchSlider(ids=IDS.re_add)
 

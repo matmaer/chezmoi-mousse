@@ -4,7 +4,7 @@ ReAddTab."""
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.containers import Horizontal
+from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import OpBtnLabels, PathKind, Switches, Tcss
@@ -15,10 +15,10 @@ from .trees import ExpandedTree, ListTree, ManagedTree
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, NodeData
 
-__all__ = ["TabHorizontal"]
+__all__ = ["TabVertical"]
 
 
-class TabHorizontal(Horizontal):
+class TabVertical(Vertical):
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__()

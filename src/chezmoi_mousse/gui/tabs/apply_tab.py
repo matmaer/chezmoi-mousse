@@ -1,5 +1,6 @@
 from textual import on
 from textual.app import ComposeResult
+from textual.containers import Horizontal
 from textual.widgets import Button
 
 from chezmoi_mousse import IDS, AppType, OpBtnLabels, OperateBtn, PathKind
@@ -7,19 +8,20 @@ from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .common.tab_horizontal import TabHorizontal
+from .common.tab_horizontal import TabVertical
 
 __all__ = ["ApplyTab"]
 
 
-class ApplyTab(TabHorizontal, AppType):
+class ApplyTab(TabVertical, AppType):
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.apply)
 
     def compose(self) -> ComposeResult:
-        yield TreeSwitcher(IDS.apply)
-        yield ViewSwitcher(ids=IDS.apply, diff_reverse=False)
+        with Horizontal():
+            yield TreeSwitcher(IDS.apply)
+            yield ViewSwitcher(ids=IDS.apply, diff_reverse=False)
         yield OperateButtons(ids=IDS.apply)
         yield SwitchSlider(ids=IDS.apply)
 
