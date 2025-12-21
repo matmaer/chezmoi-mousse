@@ -23,6 +23,7 @@ from chezmoi_mousse import (
     InitCloneData,
     LinkBtn,
     OpBtnLabels,
+    OpBtnToolTips,
     OperateBtn,
     OperateStrings,
     SectionLabels,
@@ -460,6 +461,9 @@ class OperateInitScreen(Screen[None], AppType):
         super().__init__()
         self.ids = IDS_OPERATE_INIT
         self.init_clone_data: InitCloneData | None = None
+        self.valid_arg: bool = False
+        self.init_arg: str | None = None
+        self.init_cmd = WriteCmd.init_new
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
@@ -649,12 +653,19 @@ class OperateInitScreen(Screen[None], AppType):
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
             self.repo_input.display = True
-            self.init_new_btn.disabled = False
-            self.init_clone_btn.disabled = True
+            self.init_new_btn.disabled = True
+            self.init_new_btn.tooltip = OpBtnToolTips.init_new_disabled
+            if self.valid_arg is True:
+                self.init_clone_btn.disabled = False
+                self.init_clone_btn.tooltip = None
+            elif self.valid_arg is False:
+                self.init_clone_btn.disabled = True
+                self.init_clone_btn.tooltip = OpBtnToolTips.init_clone_disabled
         elif event.value is False:
             self.repo_input.display = False
             self.init_new_btn.disabled = False
             self.init_clone_btn.disabled = True
+            self.init_clone_btn.tooltip = OpBtnToolTips.init_clone_switch_off
         self.update_init_info()
         self.update_operate_info()
 
@@ -663,13 +674,8 @@ class OperateInitScreen(Screen[None], AppType):
         if msg.btn_enum == OperateBtn.init_new:
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
-            self.valid_arg = True
-        elif self.valid_arg is False:
-            self.notify(
-                "Cannot run init clone, invalid or missing repo address.",
-                severity="error",
-            )
-            return
+        else:
+            self.notify("Init clone not yet implemented.")
         self.run_operate_command()
 
     @on(InitCloneCmdMsg)
@@ -679,7 +685,6 @@ class OperateInitScreen(Screen[None], AppType):
             self.init_clone_btn.disabled = True
         else:
             self.init_clone_btn.disabled = False
-            self.notify("Valid repo address, init clone enabled.")
         self.update_operate_info()
 
     @on(Select.Changed)

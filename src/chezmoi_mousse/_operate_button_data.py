@@ -9,6 +9,8 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
+from ._switch_data import SwitchLabel
+
 __all__ = ["OpBtnLabels", "OpBtnToolTips", "OperateBtn"]
 
 
@@ -43,7 +45,15 @@ class OpBtnToolTips(StrEnum):
     add_file_disabled = "Select a file to enable."
     in_dest_dir = "This is the destDir, select a path to operate on."
     init_clone_disabled = (
-        f"Provide an input to enable init {OpBtnLabels.init_clone}."
+        f"Provide an input to enable {OpBtnLabels.init_clone}."
+    )
+    init_clone_switch_off = (
+        f"Switch the {SwitchLabel.init_repo} switch on to "
+        f"enable {OpBtnLabels.init_clone}."
+    )
+    init_new_disabled = (
+        f"Switch the {SwitchLabel.init_repo} switch off to "
+        f"enable {OpBtnLabels.init_new}."
     )
     path_no_status = "The selected path has no status to operate on."
     review = "Review changes before running the command."
@@ -76,7 +86,8 @@ class OperateBtn(Enum):
     )
     init_new = OpBtnData(label=OpBtnLabels.init_new, tooltip=None)
     init_clone = OpBtnData(
-        label=OpBtnLabels.init_clone, tooltip=OpBtnToolTips.init_clone_disabled
+        label=OpBtnLabels.init_clone,
+        tooltip=OpBtnToolTips.init_clone_switch_off,
     )
     operate_exit = OpBtnData(label=OpBtnLabels.cancel, tooltip=None)
 
