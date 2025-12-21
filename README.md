@@ -4,14 +4,20 @@
 [![Black](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=black&logo=python&logoColor=white)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
-Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi). Built with [textual](https://github.com/Textualize/textual).
+Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
 
-## Current Use Case
+The rich visualization is made possible thanks to [textual](https://github.com/Textualize/textual), see the [textual docs](https://textual.textualize.io/).
+
+Commands are issued using [Python](https://www.python.org/) its [Subprocess management](https://docs.python.org/3/library/subprocess.html).
+
+
+## Use Case
 
 - Can be safely tested as no write operations are enabled by default.
-- To enable operations, press D, d or click the "Toggle --dry-run" text in the footer.
-This will enable commands changing the file system or the chezmoi state.
-- The current implementation has only been used or tested with autocommit enabled.
+- To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer.
+This will enable commands changing your config files or the chezmoi state.
+- Run the app with your own user. Runnig the app with `sudo` or elevated permissions is **not needed**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
+- The current implementation has only been used or tested with `autocommit` enabled, feedback is welcome on the issues page.
 
 ## Start
 
