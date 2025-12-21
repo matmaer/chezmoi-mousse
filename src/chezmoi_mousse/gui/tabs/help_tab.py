@@ -47,9 +47,10 @@ FLOW_DIAGRAM = """\
 """
 
 
-class HelpSections(StrEnum):
+class HelpStrings(StrEnum):
     chezmoi_diagram = "Chezmoi Diagram"
-    filters_section_label = "Available Filters"
+    available_filters = "Available Filters"
+    available_buttons = "Available Buttons"
     # Add tab
     add_tab_help = "Add Tab Help"
     add_dir_button = f"{OperateBtn.add_dir.dir_label} Button"
@@ -79,36 +80,29 @@ class SharedBtnHelp(VerticalGroup):
     def compose(self) -> ComposeResult:
         yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_forget)
         yield Label(
-            HelpSections.forget_file_button, classes=Tcss.sub_section_label
+            HelpStrings.available_buttons, classes=Tcss.sub_section_label
         )
-        yield Static(OperateBtn.forget_path.file_tooltip)
-        yield Label(
-            HelpSections.forget_dir_button, classes=Tcss.sub_section_label
-        )
-        yield Static(OperateBtn.forget_path.dir_tooltip)
-
+        yield Static(HelpStrings.forget_file_button)
+        yield Static(HelpStrings.forget_dir_button)
         yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_destroy)
         yield Label(
-            HelpSections.destroy_file_button, classes=Tcss.sub_section_label
+            HelpStrings.available_buttons, classes=Tcss.sub_section_label
         )
-        yield Static(OperateBtn.destroy_path.file_tooltip)
-        yield Label(
-            HelpSections.destroy_dir_button, classes=Tcss.sub_section_label
-        )
-        yield Static(OperateBtn.destroy_path.dir_tooltip)
+        yield Static(HelpStrings.destroy_file_button)
+        yield Static(HelpStrings.destroy_dir_button)
 
 
 class SharedFiltersHelp(VerticalGroup):
     def compose(self) -> ComposeResult:
         yield Label(
-            HelpSections.filters_section_label, classes=Tcss.flat_section_label
+            HelpStrings.available_filters, classes=Tcss.flat_section_label
         )
         yield Label(
-            HelpSections.unchanged_filter, classes=Tcss.sub_section_label
+            HelpStrings.unchanged_filter, classes=Tcss.sub_section_label
         )
         yield Static(Switches.unchanged.enabled_tooltip)
         yield Label(
-            HelpSections.expand_all_filter, classes=Tcss.sub_section_label
+            HelpStrings.expand_all_filter, classes=Tcss.sub_section_label
         )
         yield Static(Switches.expand_all.enabled_tooltip)
 
@@ -119,19 +113,16 @@ class ApplyTabHelp(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(
-            HelpSections.apply_tab_help, classes=Tcss.main_section_label
+            HelpStrings.apply_tab_help, classes=Tcss.main_section_label
         )
         with ScrollableContainer():
             yield SharedFiltersHelp()
             yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_apply)
             yield Label(
-                HelpSections.apply_file_button, classes=Tcss.sub_section_label
+                HelpStrings.available_buttons, classes=Tcss.sub_section_label
             )
-            yield Static(OperateBtn.apply_path.file_tooltip)
-            yield Label(
-                HelpSections.apply_dir_button, classes=Tcss.sub_section_label
-            )
-            yield Static(OperateBtn.apply_path.dir_tooltip)
+            yield Static(HelpStrings.apply_file_button)
+            yield Static(HelpStrings.apply_dir_button)
             yield SharedBtnHelp()
 
 
@@ -142,19 +133,16 @@ class ReAddTabHelp(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(
-            HelpSections.re_add_tab_help, classes=Tcss.main_section_label
+            HelpStrings.re_add_tab_help, classes=Tcss.main_section_label
         )
         with ScrollableContainer():
             yield SharedFiltersHelp()
             yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_re_add)
             yield Label(
-                HelpSections.re_add_file_button, classes=Tcss.sub_section_label
+                HelpStrings.available_buttons, classes=Tcss.sub_section_label
             )
-            yield Static(OperateBtn.re_add_path.file_tooltip)
-            yield Label(
-                HelpSections.re_add_dir_button, classes=Tcss.sub_section_label
-            )
-            yield Static(OperateBtn.re_add_path.dir_tooltip)
+            yield Static(HelpStrings.re_add_file_button)
+            yield Static(HelpStrings.re_add_dir_button)
             yield SharedBtnHelp()
 
 
@@ -164,31 +152,27 @@ class AddTabHelp(Vertical):
         super().__init__(id=IDS.help.view.add_help)
 
     def compose(self) -> ComposeResult:
-        yield Label(HelpSections.add_tab_help, classes=Tcss.main_section_label)
+        yield Label(HelpStrings.add_tab_help, classes=Tcss.main_section_label)
 
         with ScrollableContainer():
             yield Label(
-                HelpSections.filters_section_label,
-                classes=Tcss.flat_section_label,
+                HelpStrings.available_filters, classes=Tcss.flat_section_label
             )
             yield Label(
-                HelpSections.unmanaged_dirs_filter,
+                HelpStrings.unmanaged_dirs_filter,
                 classes=Tcss.sub_section_label,
             )
             yield Static(Switches.unmanaged_dirs.enabled_tooltip)
             yield Label(
-                HelpSections.unwanted_filter, classes=Tcss.sub_section_label
+                HelpStrings.unwanted_filter, classes=Tcss.sub_section_label
             )
             yield Static(Switches.unwanted.enabled_tooltip)
             yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_add)
             yield Label(
-                HelpSections.add_file_button, classes=Tcss.sub_section_label
+                HelpStrings.available_buttons, classes=Tcss.sub_section_label
             )
-            yield Static(OperateBtn.apply_path.file_tooltip)
-            yield Label(
-                HelpSections.add_dir_button, classes=Tcss.sub_section_label
-            )
-            yield Static(OperateBtn.apply_path.dir_tooltip)
+            yield Static(HelpStrings.add_file_button)
+            yield Static(HelpStrings.add_dir_button)
 
 
 class ChezmoiDiagram(Vertical):
@@ -198,7 +182,7 @@ class ChezmoiDiagram(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(
-            HelpSections.chezmoi_diagram, classes=Tcss.main_section_label
+            HelpStrings.chezmoi_diagram, classes=Tcss.main_section_label
         )
         yield ScrollableContainer(
             Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram)

@@ -9,8 +9,6 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from ._str_enum_bindings import BindingDescription
-
 __all__ = ["OperateBtn"]
 
 
@@ -18,9 +16,34 @@ __all__ = ["OperateBtn"]
 _UNSET = "UNSET"
 
 
-class SharedToolTips(StrEnum):
-    path_no_status = "The selected path has no status to operate on."
+class OpBtnLabels(StrEnum):
+    add_dir = "Add Dir"
+    add_file = "Add File"
+    apply_dir = "Apply Dir"
+    apply_file = "Apply File"
+    apply_path = "Apply Path"
+    destroy_dir = "Destroy Dir"
+    destroy_file = "Destroy File"
+    destroy_path = "Destroy Path"
+    forget_dir = "Forget Dir"
+    forget_file = "Forget File"
+    forget_path = "Forget Path"
+    init_clone_repo = "Init Clone Repo"
+    init_new_repo = "Init New Repo"
+    cancel = "Cancel"
+    exit_app = "Exit App"
+    reload = "Reload"
+    re_add_dir = "Re-Add Dir"
+    re_add_file = "Re-Add File"
+    re_add_path = "Re-Add Path"
+
+
+class OpBtnToolTips(StrEnum):
     in_dest_dir = "This is the destDir, select a path to operate on."
+    path_no_status = "The selected path has no status to operate on."
+    review = "Review changes before running the command."
+    add_file_disabled = "Select a file to enable."
+    add_dir_disabled = "Select a directory to enable."
 
 
 @dataclass(slots=True)
@@ -32,11 +55,8 @@ class OpBtnData:
     # Path-specific labels and tooltips
     file_label: str = _UNSET
     dir_label: str = _UNSET
-    file_tooltip: str = _UNSET
-    dir_tooltip: str = _UNSET
 
     # Add and Init button specific
-    enabled_tooltip: str = _UNSET
     disabled_tooltip: str = _UNSET
 
     # Init button specific
@@ -46,56 +66,45 @@ class OpBtnData:
 
 class OperateBtn(Enum):
     add_file = OpBtnData(
-        disabled_tooltip="Select a file to operate on.",
-        enabled_tooltip="Manage the file with chezmoi.",
-        file_label="Add File",
-        initial_label="Add File",
-        initial_tooltip=SharedToolTips.in_dest_dir,
+        disabled_tooltip=OpBtnToolTips.add_file_disabled,
+        file_label=OpBtnLabels.add_file,
+        initial_label=OpBtnLabels.add_file,
+        initial_tooltip=OpBtnToolTips.in_dest_dir,
     )
     add_dir = OpBtnData(
-        dir_label="Add Dir",
+        dir_label=OpBtnLabels.add_dir,
         disabled_tooltip="Select a directory to operate on.",
-        enabled_tooltip="Manage the directory with chezmoi.",
-        initial_label="Add Dir",
-        initial_tooltip=SharedToolTips.in_dest_dir,
+        initial_label=OpBtnLabels.add_dir,
+        initial_tooltip=OpBtnToolTips.in_dest_dir,
     )
     apply_path = OpBtnData(
-        dir_label="Apply Dir",
-        dir_tooltip='Run "chezmoi apply" on the directory.',
-        disabled_tooltip=SharedToolTips.path_no_status,
-        file_label="Apply File",
-        file_tooltip='Run "chezmoi apply" on the file.',
-        initial_label="Apply Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
+        dir_label=OpBtnLabels.apply_dir,
+        disabled_tooltip=OpBtnToolTips.path_no_status,
+        file_label=OpBtnLabels.apply_file,
+        initial_label=OpBtnLabels.apply_path,
+        initial_tooltip=OpBtnToolTips.in_dest_dir,
     )
     re_add_path = OpBtnData(
-        dir_label="Re-Add Dir",
-        dir_tooltip='Run "chezmoi re-add" on the directory.',
-        disabled_tooltip=SharedToolTips.path_no_status,
-        file_label="Re-Add File",
-        file_tooltip='Run "chezmoi re-add" on the file.',
-        initial_label="Re-Add Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
+        dir_label=OpBtnLabels.re_add_dir,
+        disabled_tooltip=OpBtnToolTips.path_no_status,
+        file_label=OpBtnLabels.re_add_file,
+        initial_label=OpBtnLabels.re_add_path,
+        initial_tooltip=OpBtnToolTips.in_dest_dir,
     )
     forget_path = OpBtnData(
-        dir_label="Forget Dir",
-        dir_tooltip='Run "chezmoi forget", stop managing the directory.',
-        file_label="Forget File",
-        file_tooltip='Run "chezmoi forget", stop managing the file.',
-        initial_label="Forget Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
+        dir_label=OpBtnLabels.forget_dir,
+        file_label=OpBtnLabels.forget_file,
+        initial_label=OpBtnLabels.forget_path,
+        initial_tooltip=OpBtnToolTips.in_dest_dir,
     )
     destroy_path = OpBtnData(
         dir_label="Destroy Dir",
-        dir_tooltip='Run "chezmoi destroy" on the directory. Permanently remove the directory and its files from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
         file_label="Destroy File",
-        file_tooltip='Run "chezmoi destroy" on the file. Permanently remove the file from disk and chezmoi. MAKE SURE YOU HAVE A BACKUP!',
         initial_label="Destroy Path",
-        initial_tooltip=SharedToolTips.in_dest_dir,
+        initial_tooltip=OpBtnToolTips.in_dest_dir,
     )
     init_repo = OpBtnData(
         disabled_tooltip="Provide an input to determine the repository to clone from.",
-        enabled_tooltip="Valid URL entered, ready to clone.",
         init_clone_label="Init Clone Repo",
         init_new_label="Init New Repo",
         initial_label="Init New Repo",
@@ -118,35 +127,23 @@ class OperateBtn(Enum):
 
     @property
     def cancel_label(self) -> str:
-        return "Cancel"
+        return OpBtnLabels.cancel.value
 
     @property
     def exit_app_label(self) -> str:
-        return "Exit App"
+        return OpBtnLabels.exit_app.value
 
     @property
     def reload_label(self) -> str:
-        return BindingDescription.reload.value
+        return OpBtnLabels.reload.value
 
     # AddTab button specific attribute access
-
-    @property
-    def enabled_tooltip(self) -> str:
-        return self.value.enabled_tooltip
 
     @property
     def disabled_tooltip(self) -> str:
         return self.value.disabled_tooltip
 
     # Apply and ReAdd tab specific attribute access
-
-    @property
-    def dir_tooltip(self) -> str:
-        return self.value.dir_tooltip
-
-    @property
-    def file_tooltip(self) -> str:
-        return self.value.file_tooltip
 
     @property
     def file_label(self) -> str:

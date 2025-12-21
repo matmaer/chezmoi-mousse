@@ -50,11 +50,11 @@ class ApplyTab(TabHorizontal, AppType):
                 or self.app.chezmoi.apply_status_files_in(node_path)
             ):
                 self.apply_btn.disabled = False
-                self.apply_btn.tooltip = OperateBtn.apply_path.dir_tooltip
+                self.apply_btn.tooltip = None
         elif msg.node_data.path_kind == PathKind.FILE:
             self.apply_btn.label = OperateBtn.apply_path.file_label
             if node_path in self.app.chezmoi.apply_status_files:
                 self.apply_btn.disabled = False
-                self.apply_btn.tooltip = OperateBtn.apply_path.file_tooltip
+                self.apply_btn.tooltip = None
         self.update_other_buttons(msg.node_data)
         self.update_view_node_data(msg.node_data)

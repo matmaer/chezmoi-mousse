@@ -128,8 +128,8 @@ class OperateStrings(StrEnum):
         f"{Chars.warning_sign}[/]"
     )
     destroy_path = (
-        "[$text-error]Permanently remove the path both from disk and chezmoi's"
-        " source directory, make sure you have a backup![/]"
+        "[$text-error]Permanently remove the path from disk and "
+        " chezmoi. MAKE SURE YOU HAVE A BACKUP![/]"
     )
     destroy_subtitle = (
         f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"

@@ -281,10 +281,10 @@ class AddTab(Horizontal, AppType):
             self.add_file_button.disabled = True
             self.add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip
             self.add_dir_button.disabled = False
-            self.add_dir_button.tooltip = OperateBtn.add_dir.enabled_tooltip
+            self.add_dir_button.tooltip = None
         else:
             self.add_file_button.disabled = False
-            self.add_file_button.tooltip = OperateBtn.add_file.enabled_tooltip
+            self.add_file_button.tooltip = None
             self.add_dir_button.disabled = True
             self.add_dir_button.tooltip = OperateBtn.add_dir.disabled_tooltip
         return
