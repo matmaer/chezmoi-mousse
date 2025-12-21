@@ -18,7 +18,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OpBtnLabels,
-    OperateBtn,
     OperateData,
     TabName,
 )
@@ -150,10 +149,6 @@ class ChezmoiGUI(App[None]):
             self.push_screen(InstallHelpScreen())
             return
         if self.init_needed is True:
-            self.operate_data = OperateData(
-                btn_enum=OperateBtn.init_repo,
-                btn_label=OpBtnLabels.init_new_repo,
-            )
             await self.push_screen(OperateInitScreen(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.changes_enabled = False

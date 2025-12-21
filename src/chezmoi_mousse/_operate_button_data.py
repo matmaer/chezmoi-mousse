@@ -30,8 +30,8 @@ class OpBtnLabels(StrEnum):
     forget_dir = "Forget Dir"
     forget_file = "Forget File"
     forget_path = "Forget Path"
-    init_clone_repo = "Init Clone Repo"
-    init_new_repo = "Init New Repo"
+    init_clone = "Init Clone Repo"
+    init_new = "Init New Repo"
     re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
     re_add_path = "Re-Add Path"
@@ -42,6 +42,9 @@ class OpBtnToolTips(StrEnum):
     add_dir_disabled = "Select a directory to enable."
     add_file_disabled = "Select a file to enable."
     in_dest_dir = "This is the destDir, select a path to operate on."
+    init_clone_disabled = (
+        f"Provide an input to enable init {OpBtnLabels.init_clone}."
+    )
     path_no_status = "The selected path has no status to operate on."
     review = "Review changes before running the command."
 
@@ -71,7 +74,10 @@ class OperateBtn(Enum):
     destroy_path = OpBtnData(
         label=OpBtnLabels.destroy_path, tooltip=OpBtnToolTips.in_dest_dir
     )
-    init_repo = OpBtnData(label=OpBtnLabels.init_new_repo, tooltip=None)
+    init_new = OpBtnData(label=OpBtnLabels.init_new, tooltip=None)
+    init_clone = OpBtnData(
+        label=OpBtnLabels.init_clone, tooltip=OpBtnToolTips.init_clone_disabled
+    )
     operate_exit = OpBtnData(label=OpBtnLabels.cancel, tooltip=None)
 
     # Allow access to dataclass attributes directly from the Enum member,

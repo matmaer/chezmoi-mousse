@@ -458,9 +458,6 @@ class OperateInitScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
-        if self.app.operate_data is None:
-            raise ValueError("self.app.operate_data is None in InitScreen")
-        self.op_data = self.app.operate_data
         self.ids = IDS_OPERATE_INIT
         self.init_clone_data: InitCloneData | None = None
 
@@ -501,7 +498,11 @@ class OperateInitScreen(Screen[None], AppType):
             self.ids.container.operate_buttons_q, OperateButtons
         )
         self.operate_buttons.update_buttons(
-            (self.op_data.btn_enum, OperateBtn.operate_exit)
+            (
+                OperateBtn.init_new,
+                OperateBtn.init_clone,
+                OperateBtn.operate_exit,
+            )
         )
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.reload
@@ -514,16 +515,17 @@ class OperateInitScreen(Screen[None], AppType):
         self.operate_info = self.query_one(
             self.ids.static.operate_info_q, Static
         )
-        self.operate_info.border_title = self.op_data.btn_label
-        self.op_btn = self.query_one(
-            self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
+        self.operate_info.border_title = OpBtnLabels.init_new
+        self.init_new_btn = self.query_one(
+            self.ids.operate_btn.init_new_q, Button
         )
-        self.op_btn.disabled = False
-        self.op_btn.label = self.op_data.btn_label
-        self.op_btn.tooltip = self.op_data.btn_tooltip
+        self.init_new_btn.disabled = False
+        self.init_clone_btn = self.query_one(
+            self.ids.operate_btn.init_clone_q, Button
+        )
+        self.init_clone_btn.disabled = True
         self.exit_btn = self.query_one(
-            self.ids.operate_button_id("#", btn=OperateBtn.operate_exit),
-            Button,
+            self.ids.operate_btn.operate_exit_q, Button
         )
         self.exit_btn.label = OpBtnLabels.exit_app
         self.repo_input = self.query_one(
@@ -534,7 +536,7 @@ class OperateInitScreen(Screen[None], AppType):
         self.update_init_info()
 
     def update_operate_info(self) -> None:
-        self.operate_info.border_title = self.op_btn.label
+        self.operate_info.border_title = self.init_new_btn.label
         lines_to_write: list[str] = []
         if self.app.changes_enabled is True:
             lines_to_write.append(OperateStrings.changes_enabled)
@@ -551,7 +553,7 @@ class OperateInitScreen(Screen[None], AppType):
             lines_to_write.append(
                 "[$text-error]No init clone input provided yet."
             )
-            self.op_btn.disabled = True
+            self.init_clone_btn.disabled = True
         if (
             self.init_clone_data is not None
             and self.init_clone_data.init_cmd == WriteCmd.init_no_guess
@@ -637,44 +639,46 @@ class OperateInitScreen(Screen[None], AppType):
             and self.app.init_cmd_result.exit_code == 0
         ):
             self.app.init_needed = False
-            self.op_btn.disabled = True
-            self.op_btn.tooltip = None
+            self.init_new_btn.disabled = True
+            self.init_new_btn.tooltip = None
+            self.init_clone_btn.disabled = True
+            self.init_clone_btn.tooltip = None
             self.exit_btn.label = OpBtnLabels.reload
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
             self.repo_input.display = True
-            self.op_btn.label = OpBtnLabels.init_clone_repo
+            self.init_new_btn.disabled = False
+            self.init_clone_btn.disabled = True
         elif event.value is False:
             self.repo_input.display = False
-            self.op_btn.label = OpBtnLabels.init_new_repo
-            self.op_btn.disabled = False
+            self.init_new_btn.disabled = False
+            self.init_clone_btn.disabled = True
         self.update_init_info()
         self.update_operate_info()
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
-        if msg.btn_enum == OperateBtn.init_repo:
-            if self.op_btn.label == OpBtnLabels.init_new_repo:
-                self.init_cmd = WriteCmd.init_new
-                self.init_arg = None
-                self.valid_arg = True
-            elif self.valid_arg is False:
-                self.notify(
-                    "Cannot run init clone, invalid or missing repo address.",
-                    severity="error",
-                )
-                return
-            self.run_operate_command()
+        if msg.btn_enum == OperateBtn.init_new:
+            self.init_cmd = WriteCmd.init_new
+            self.init_arg = None
+            self.valid_arg = True
+        elif self.valid_arg is False:
+            self.notify(
+                "Cannot run init clone, invalid or missing repo address.",
+                severity="error",
+            )
+            return
+        self.run_operate_command()
 
     @on(InitCloneCmdMsg)
     def handle_init_clone_cmd_msg(self, msg: InitCloneCmdMsg) -> None:
         self.init_clone_data = msg.init_clone_data
         if self.init_clone_data.valid_arg is False:
-            self.op_btn.disabled = True
+            self.init_clone_btn.disabled = True
         else:
-            self.op_btn.disabled = False
+            self.init_clone_btn.disabled = False
             self.notify("Valid repo address, init clone enabled.")
         self.update_operate_info()
 
