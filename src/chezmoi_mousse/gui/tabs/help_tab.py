@@ -7,7 +7,6 @@ from textual.containers import (
     ScrollableContainer,
     Vertical,
     VerticalGroup,
-    VerticalScroll,
 )
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
@@ -122,7 +121,7 @@ class ApplyTabHelp(Vertical):
         yield Label(
             HelpSections.apply_tab_help, classes=Tcss.main_section_label
         )
-        with VerticalScroll():
+        with ScrollableContainer():
             yield SharedFiltersHelp()
             yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_apply)
             yield Label(
@@ -136,7 +135,7 @@ class ApplyTabHelp(Vertical):
             yield SharedBtnHelp()
 
 
-class ReAddTabHelp(VerticalScroll):
+class ReAddTabHelp(Vertical):
 
     def __init__(self) -> None:
         super().__init__(id=IDS.help.view.re_add_help)
@@ -145,7 +144,7 @@ class ReAddTabHelp(VerticalScroll):
         yield Label(
             HelpSections.re_add_tab_help, classes=Tcss.main_section_label
         )
-        with VerticalScroll():
+        with ScrollableContainer():
             yield SharedFiltersHelp()
             yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_re_add)
             yield Label(
@@ -167,7 +166,7 @@ class AddTabHelp(Vertical):
     def compose(self) -> ComposeResult:
         yield Label(HelpSections.add_tab_help, classes=Tcss.main_section_label)
 
-        with VerticalScroll():
+        with ScrollableContainer():
             yield Label(
                 HelpSections.filters_section_label,
                 classes=Tcss.flat_section_label,
