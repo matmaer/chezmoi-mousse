@@ -9,7 +9,7 @@ from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .common.tab_horizontal import TabVertical
+from .common.tabs_container import TabVertical
 
 __all__ = ["ReAddTab"]
 

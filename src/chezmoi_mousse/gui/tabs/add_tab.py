@@ -4,7 +4,7 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Switch
 
@@ -239,15 +239,16 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
 
-class AddTab(Horizontal, AppType):
+class AddTab(Vertical, AppType):
 
     destDir: Path
 
     def compose(self) -> ComposeResult:
-        yield FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree)
-        yield ContentsView(ids=IDS.add)
-        yield OperateButtons(ids=IDS.add)
+        with Horizontal():
+            yield FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree)
+            yield ContentsView(ids=IDS.add)
         yield SwitchSlider(ids=IDS.add)
+        yield OperateButtons(ids=IDS.add)
 
     def on_mount(self) -> None:
         self.dir_tree = self.query_one(
