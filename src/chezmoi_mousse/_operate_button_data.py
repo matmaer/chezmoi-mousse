@@ -14,10 +14,6 @@ from ._switch_data import SwitchLabel
 __all__ = ["OpBtnLabels", "OpBtnToolTips", "OperateBtn"]
 
 
-# Sentinel value to distinguish "not provided" from None
-_UNSET = "UNSET"
-
-
 class OpBtnLabels(StrEnum):
     add_dir = "Add Dir"
     add_file = "Add File"
