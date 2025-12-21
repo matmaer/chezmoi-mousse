@@ -33,7 +33,7 @@ class ContentsTabStrings(StrEnum):
     output_from_cat = "File does not exist on disk, output from "
     permission_denied = "Permission denied to read file "
     read_error = "Error reading path "
-    truncated = "\n--- File content truncated to 150 KiB ---\n"
+    truncated = "\n--- File content truncated to "
     unmanaged_dir = "Unmanaged directory "
 
 
@@ -84,7 +84,7 @@ class ContentsView(Vertical, AppType):
     def on_mount(self) -> None:
         # TODO: make this configurable but should be reasonable truncate for
         # displaying enough of a file to judge operating on it.
-        self.truncate_size = self.app.max_file_size // 5
+        self.truncate_size = self.app.max_file_size // 10
         self.border_title = f" {self.destDir} "
         self.cat_config_label = self.query_one(
             self.ids.label.cat_config_output_q, Label
@@ -125,7 +125,9 @@ class ContentsView(Vertical, AppType):
             self.file_read_label.display = True
             self.rich_log.write(f_contents)
             if file_size > self.truncate_size:
-                self.rich_log.write(ContentsTabStrings.truncated)
+                self.rich_log.write(
+                    f"{ContentsTabStrings.truncated} {self.truncate_size / 1024} KiB ---"
+                )
         except PermissionError as error:
             self.contents_info_static_text.update(
                 f"{ContentsTabStrings.permission_denied}{file_path}"

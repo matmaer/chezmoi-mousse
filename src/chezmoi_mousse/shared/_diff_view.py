@@ -77,13 +77,28 @@ class DiffLines(VerticalGroup):
                 self.mount(
                     Static(f"{Chars.bullet} {line}", classes="diff_line_added")
                 )
+        # TODO: make lines limit configurable, look into paging,
+        # temporary solution
+        lines_limit = 1000
+        lines = 0
+        static_list: list[Static] = []
         for line in (
             self.diff_data.dir_diff_lines + self.diff_data.file_diff_lines
         ):
             if line.startswith("+"):
-                diff_output.mount(Static(line, classes="diff_line_added"))
+                static_list.append(Static(line, classes="diff_line_added"))
             elif line.startswith("-"):
-                diff_output.mount(Static(line, classes="diff_line_removed"))
+                static_list.append(Static(line, classes="diff_line_removed"))
+            lines += 1
+            if lines >= lines_limit:
+                static_list.append(
+                    Static(
+                        "\n--- Diff output truncated to 1000 lines ---\n",
+                        classes="diff_line",
+                    )
+                )
+                break
+        diff_output.mount_all(static_list)
 
 
 class DiffView(Vertical, AppType):

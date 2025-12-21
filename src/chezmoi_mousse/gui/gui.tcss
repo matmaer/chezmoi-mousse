@@ -270,7 +270,7 @@ InstallHelpScreen {
   }
 }
 
-ContentsInfo, DiffInfo, LoggersBase {
+ContentsView, ContentsInfo, DiffInfo, LoggersBase {
   margin-bottom: 1;
 }
 
