@@ -114,8 +114,8 @@ class OperateButton(Button):
             classes=Tcss.operate_button,
             disabled=should_disable,
             id=self.ids.operate_button_id(btn=self.button_enum),
-            label=self.button_enum.initial_label,
-            tooltip=self.button_enum.initial_tooltip,
+            label=self.button_enum.label,
+            tooltip=self.button_enum.tooltip,
         )
 
     def on_button_pressed(self):

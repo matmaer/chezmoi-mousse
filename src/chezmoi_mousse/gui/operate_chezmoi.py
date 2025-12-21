@@ -9,6 +9,7 @@ from chezmoi_mousse import (
     AppType,
     BindingAction,
     BindingDescription,
+    OpBtnLabels,
     OperateBtn,
     OperateStrings,
     SectionLabels,
@@ -198,7 +199,7 @@ class OperateChezmoiScreen(Screen[None], AppType):
         if self.app.changes_enabled is True:
             self.op_btn.disabled = True
             self.op_btn.tooltip = None
-            self.exit_btn.label = OperateBtn.operate_exit.reload_label
+            self.exit_btn.label = OpBtnLabels.reload
             new_description = BindingDescription.reload
             self.app.update_binding_description(
                 BindingAction.exit_screen, new_description

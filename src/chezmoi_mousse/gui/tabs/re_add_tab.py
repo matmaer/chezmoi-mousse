@@ -3,6 +3,7 @@ from textual.app import ComposeResult
 from textual.widgets import Button
 
 from chezmoi_mousse import IDS, AppType, OperateBtn, PathKind
+from chezmoi_mousse._operate_button_data import OpBtnLabels
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -41,20 +42,17 @@ class ReAddTab(TabHorizontal, AppType):
     @on(CurrentReAddNodeMsg)
     def update_re_add_operate_buttons(self, msg: CurrentReAddNodeMsg) -> None:
         self.re_add_btn.disabled = True
-        self.re_add_btn.tooltip = OperateBtn.re_add_path.disabled_tooltip
         node_path = msg.node_data.path
         if msg.node_data.path_kind == PathKind.DIR:
-            self.re_add_btn.label = OperateBtn.re_add_path.dir_label
+            self.re_add_btn.label = OpBtnLabels.re_add_dir
             if (
                 node_path in self.app.chezmoi.status_dirs
                 or self.app.chezmoi.apply_status_files_in(node_path)
             ):
                 self.re_add_btn.disabled = False
-                self.re_add_btn.tooltip = OperateBtn.re_add_path.dir_tooltip
         elif msg.node_data.path_kind == PathKind.FILE:
-            self.re_add_btn.label = OperateBtn.re_add_path.file_label
+            self.re_add_btn.label = OpBtnLabels.re_add_file
             if node_path in self.app.chezmoi.apply_status_files:
                 self.re_add_btn.disabled = False
-                self.re_add_btn.tooltip = OperateBtn.re_add_path.file_tooltip
         self.update_other_buttons(msg.node_data)
         self.update_view_node_data(msg.node_data)

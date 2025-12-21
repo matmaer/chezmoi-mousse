@@ -21,7 +21,7 @@ from ._chezmoi import (
     VerbArgs,
     WriteCmd,
 )
-from ._operate_button_data import OperateBtn
+from ._operate_button_data import OpBtnLabels, OpBtnToolTips, OperateBtn
 from ._str_enum_bindings import BindingAction, BindingDescription
 from ._str_enum_names import LogName, PathKind, ScreenName, TabName, TreeName
 from ._str_enum_tcss import Tcss
@@ -59,6 +59,8 @@ __all__ = [
     "AppIds",
     # Operations
     "InitCloneData",
+    "OpBtnLabels",
+    "OpBtnToolTips",
     "OperateBtn",
     "OperateData",
     "OperateStrings",
@@ -124,7 +126,7 @@ class NodeData:
 class OperateData:
     btn_enum: "OperateBtn"
     btn_label: str
-    btn_tooltip: str | None
+    btn_tooltip: str | None = None
     diff_data: "DiffData | None" = None
     node_data: "NodeData | None" = None
 

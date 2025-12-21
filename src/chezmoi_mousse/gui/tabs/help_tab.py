@@ -10,7 +10,7 @@ from textual.containers import (
 )
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
-from chezmoi_mousse import IDS, FlatBtn, LinkBtn, OperateBtn, Switches, Tcss
+from chezmoi_mousse import IDS, FlatBtn, LinkBtn, OpBtnLabels, Switches, Tcss
 from chezmoi_mousse.shared import FlatButtonsVertical, FlatLink
 
 __all__ = ["HelpTab"]
@@ -53,23 +53,23 @@ class HelpStrings(StrEnum):
     available_buttons = "Available Buttons"
     # Add tab
     add_tab_help = "Add Tab Help"
-    add_dir_button = f"{OperateBtn.add_dir.dir_label} Button"
-    add_file_button = f"{OperateBtn.add_file.file_label} Button"
+    add_dir_button = f"{OpBtnLabels.add_dir} Button"
+    add_file_button = f"{OpBtnLabels.add_file} Button"
     unmanaged_dirs_filter = f"{Switches.unmanaged_dirs.label} Filter"
     unwanted_filter = f"{Switches.unwanted.label} Filter"
     # Apply tab
     apply_tab_help = "Apply Tab Help"
-    apply_dir_button = f"{OperateBtn.apply_path.dir_label} Button"
-    apply_file_button = f"{OperateBtn.apply_path.file_label} Button"
+    apply_dir_button = f"{OpBtnLabels.apply_dir} Button"
+    apply_file_button = f"{OpBtnLabels.apply_file} Button"
     # Re-Add tab
     re_add_tab_help = "Re-Add Tab Help"
-    re_add_dir_button = f"{OperateBtn.re_add_path.dir_label} Button"
-    re_add_file_button = f"{OperateBtn.re_add_path.file_label} Button"
+    re_add_dir_button = f"{OpBtnLabels.re_add_dir} Button"
+    re_add_file_button = f"{OpBtnLabels.re_add_file} Button"
     # Common buttons for Apply and Re-Add tabs
-    destroy_dir_button = f"{OperateBtn.destroy_path.dir_label} Button"
-    destroy_file_button = f"{OperateBtn.destroy_path.file_label} Button"
-    forget_dir_button = f"{OperateBtn.forget_path.dir_label} Button"
-    forget_file_button = f"{OperateBtn.forget_path.file_label} Button"
+    destroy_file_button = f"{OpBtnLabels.destroy_file} Button"
+    destroy_dir_button = f"{OpBtnLabels.destroy_dir} Button"
+    forget_file_button = f"{OpBtnLabels.forget_file} Button"
+    forget_dir_button = f"{OpBtnLabels.forget_dir} Button"
     # Common filters for Apply and Re-Add tabs
     expand_all_filter = f"{Switches.expand_all.label} Filter"
     unchanged_filter = f"{Switches.unchanged.label} Filter"

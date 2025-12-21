@@ -17,6 +17,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
+    OpBtnLabels,
     OperateBtn,
     OperateData,
     TabName,
@@ -151,8 +152,7 @@ class ChezmoiGUI(App[None]):
         if self.init_needed is True:
             self.operate_data = OperateData(
                 btn_enum=OperateBtn.init_repo,
-                btn_label=OperateBtn.init_repo.init_new_label,
-                btn_tooltip=OperateBtn.init_repo.initial_tooltip,
+                btn_label=OpBtnLabels.init_new_repo,
             )
             await self.push_screen(OperateInitScreen(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
@@ -162,12 +162,12 @@ class ChezmoiGUI(App[None]):
     @on(OperateButtonMsg)
     def handle_operate_exit(self, msg: OperateButtonMsg) -> None:
         msg.stop()
-        if msg.label == OperateBtn.operate_exit.exit_app_label:
+        if msg.label == OpBtnLabels.exit_app:
             self.exit()
-        elif msg.label == OperateBtn.operate_exit.cancel_label:
+        elif msg.label == OpBtnLabels.cancel:
             self.operate_cmd_result = None
             self.screen.dismiss()
-        elif msg.label == OperateBtn.operate_exit.reload_label:
+        elif msg.label == OpBtnLabels.reload:
             self.screen.dismiss()
 
     def on_tabbed_content_tab_activated(

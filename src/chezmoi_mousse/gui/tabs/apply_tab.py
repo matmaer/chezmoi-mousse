@@ -2,7 +2,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.widgets import Button
 
-from chezmoi_mousse import IDS, AppType, OperateBtn, PathKind
+from chezmoi_mousse import IDS, AppType, OpBtnLabels, OperateBtn, PathKind
 from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -41,10 +41,9 @@ class ApplyTab(TabHorizontal, AppType):
     @on(CurrentApplyNodeMsg)
     def update_apply_operate_buttons(self, msg: CurrentApplyNodeMsg) -> None:
         self.apply_btn.disabled = True
-        self.apply_btn.tooltip = OperateBtn.apply_path.disabled_tooltip
         node_path = msg.node_data.path
         if msg.node_data.path_kind == PathKind.DIR:
-            self.apply_btn.label = OperateBtn.apply_path.dir_label
+            self.apply_btn.label = OpBtnLabels.apply_dir
             if (
                 node_path in self.app.chezmoi.status_dirs
                 or self.app.chezmoi.apply_status_files_in(node_path)
@@ -52,7 +51,7 @@ class ApplyTab(TabHorizontal, AppType):
                 self.apply_btn.disabled = False
                 self.apply_btn.tooltip = None
         elif msg.node_data.path_kind == PathKind.FILE:
-            self.apply_btn.label = OperateBtn.apply_path.file_label
+            self.apply_btn.label = OpBtnLabels.apply_file
             if node_path in self.app.chezmoi.apply_status_files:
                 self.apply_btn.disabled = False
                 self.apply_btn.tooltip = None

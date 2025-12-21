@@ -22,6 +22,7 @@ from chezmoi_mousse import (
     BindingDescription,
     InitCloneData,
     LinkBtn,
+    OpBtnLabels,
     OperateBtn,
     OperateStrings,
     SectionLabels,
@@ -517,13 +518,14 @@ class OperateInitScreen(Screen[None], AppType):
         self.op_btn = self.query_one(
             self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
         )
+        self.op_btn.disabled = False
         self.op_btn.label = self.op_data.btn_label
         self.op_btn.tooltip = self.op_data.btn_tooltip
         self.exit_btn = self.query_one(
             self.ids.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
-        self.exit_btn.label = OperateBtn.operate_exit.exit_app_label
+        self.exit_btn.label = OpBtnLabels.exit_app
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
@@ -550,7 +552,6 @@ class OperateInitScreen(Screen[None], AppType):
                 "[$text-error]No init clone input provided yet."
             )
             self.op_btn.disabled = True
-            self.op_btn.tooltip = OperateBtn.init_repo.disabled_tooltip
         if (
             self.init_clone_data is not None
             and self.init_clone_data.init_cmd == WriteCmd.init_no_guess
@@ -638,23 +639,24 @@ class OperateInitScreen(Screen[None], AppType):
             self.app.init_needed = False
             self.op_btn.disabled = True
             self.op_btn.tooltip = None
-            self.exit_btn.label = OperateBtn.operate_exit.reload_label
+            self.exit_btn.label = OpBtnLabels.reload
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
             self.repo_input.display = True
-            self.op_btn.label = OperateBtn.init_repo.init_clone_label
+            self.op_btn.label = OpBtnLabels.init_clone_repo
         elif event.value is False:
             self.repo_input.display = False
-            self.op_btn.label = OperateBtn.init_repo.init_new_label
+            self.op_btn.label = OpBtnLabels.init_new_repo
+            self.op_btn.disabled = False
         self.update_init_info()
         self.update_operate_info()
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
         if msg.btn_enum == OperateBtn.init_repo:
-            if self.op_btn.label == OperateBtn.init_repo.init_new_label:
+            if self.op_btn.label == OpBtnLabels.init_new_repo:
                 self.init_cmd = WriteCmd.init_new
                 self.init_arg = None
                 self.valid_arg = True

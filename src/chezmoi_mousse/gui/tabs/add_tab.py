@@ -279,14 +279,12 @@ class AddTab(Horizontal, AppType):
     def update_buttons(self, path_kind: PathKind) -> None:
         if path_kind == PathKind.DIR:
             self.add_file_button.disabled = True
-            self.add_file_button.tooltip = OperateBtn.add_file.disabled_tooltip
             self.add_dir_button.disabled = False
             self.add_dir_button.tooltip = None
         else:
             self.add_file_button.disabled = False
             self.add_file_button.tooltip = None
             self.add_dir_button.disabled = True
-            self.add_dir_button.tooltip = OperateBtn.add_dir.disabled_tooltip
         return
 
     @on(DirectoryTree.DirectorySelected)

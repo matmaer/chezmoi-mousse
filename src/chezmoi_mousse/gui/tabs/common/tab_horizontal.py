@@ -7,7 +7,7 @@ from textual import on
 from textual.containers import Horizontal
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import OperateBtn, PathKind, Switches, Tcss
+from chezmoi_mousse import OpBtnLabels, PathKind, Switches, Tcss
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
@@ -45,18 +45,18 @@ class TabHorizontal(Horizontal):
             self.ids.operate_btn.destroy_path_q, Button
         )
         destroy_button.label = (
-            OperateBtn.destroy_path.dir_label
+            OpBtnLabels.destroy_dir
             if node_data.path_kind == PathKind.DIR
-            else OperateBtn.destroy_path.file_label
+            else OpBtnLabels.destroy_file
         )
         destroy_button.tooltip = None
         forget_button = self.query_one(
             self.ids.operate_btn.forget_path_q, Button
         )
         forget_button.label = (
-            OperateBtn.forget_path.dir_label
+            OpBtnLabels.forget_dir
             if node_data.path_kind == PathKind.DIR
-            else OperateBtn.forget_path.file_label
+            else OpBtnLabels.forget_file
         )
         forget_button.tooltip = None
         destroy_button.disabled = False
