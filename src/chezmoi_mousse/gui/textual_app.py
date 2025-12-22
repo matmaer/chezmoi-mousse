@@ -122,6 +122,10 @@ class ChezmoiGUI(App[None]):
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
 
+        # Disable Maxdmize/Minimize and Show/Hide Filters bindings when
+        # in operate mode in the MainScreen
+        self.operating_mode: bool = False
+
         # Manage state between screens
         self.changes_enabled: bool = False
         self.operate_data: "OperateData | None" = None
@@ -175,6 +179,10 @@ class ChezmoiGUI(App[None]):
         ):
             self.update_switch_slider_binding()
             self.refresh_bindings()
+
+    def toggle_main_tabs_display(self) -> None:
+        main_tabs = self.screen.query_exactly_one(Tabs)
+        main_tabs.display = False if main_tabs.display is True else True
 
     def get_switch_slider_widget(self) -> SwitchSlider:
         active_tab = self.screen.query_exactly_one(TabbedContent).active
@@ -256,8 +264,7 @@ class ChezmoiGUI(App[None]):
 
         header = self.screen.query_exactly_one(CustomHeader)
         header.display = False if header.display is True else True
-        main_tabs = self.screen.query_exactly_one(Tabs)
-        main_tabs.display = False if main_tabs.display is True else True
+        self.toggle_main_tabs_display()
 
         if active_tab == TabName.apply:
             left_side = self.screen.query_one(
@@ -344,6 +351,8 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, MainScreen):
+                if self.operating_mode is True:
+                    return None
                 header = self.screen.query_exactly_one(CustomHeader)
                 if header.display is False:
                     return False
@@ -391,6 +400,8 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
+            if self.operating_mode is True:
+                return None
             if isinstance(
                 self.screen,
                 (InstallHelpScreen, OperateChezmoiScreen, OperateInitScreen),

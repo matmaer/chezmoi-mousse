@@ -1,14 +1,14 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
-from textual.widgets import Button, Static, Tabs
+from textual.widgets import Button, Static
 
-from chezmoi_mousse import (  # OperateData,
+from chezmoi_mousse import (
     IDS,
     AppType,
-    CommandResult,
     NodeData,
     OpBtnLabels,
+    OpBtnToolTips,
     OperateStrings,
     PathKind,
     Tcss,
@@ -33,15 +33,11 @@ class ApplyTab(TabVertical, AppType):
     def __init__(self) -> None:
         super().__init__(ids=IDS.apply)
         self.current_node: "NodeData | None" = None
-        self.operate_result: "CommandResult | None" = None
-        self.current_apply_node: "NodeData | None" = None
+        self.current_pretty_cmd: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Static(
             id=IDS.apply.static.operate_info, classes=Tcss.operate_info
-        )
-        yield Static(
-            id=IDS.apply.static.operate_output, classes=Tcss.operate_output
         )
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
@@ -69,47 +65,33 @@ class ApplyTab(TabVertical, AppType):
             IDS.apply.static.operate_info_q, Static
         )
         self.operate_info.display = False
-        self.operate_output = self.query_one(
-            IDS.apply.static.operate_output_q, Static
-        )
-        self.operate_output.display = False
 
     def run_operate_command(self) -> None:
         if self.current_node is None:
             return
-        self.operate_result = self.app.chezmoi.perform(
+        operate_result = self.app.chezmoi.perform(
             WriteCmd.apply,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
         )
-        if self.operate_result.dry_run is True:
+        if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
-        elif self.operate_result.dry_run is False:
+        elif operate_result.dry_run is False:
             self.exit_btn.label = OpBtnLabels.reload
-        self.operate_output.update(self.operate_result.std_out)
 
-    @on(CurrentApplyNodeMsg)
-    def update_label_and_tooltip(self, msg: CurrentApplyNodeMsg) -> None:
-        msg.stop()
-        self.current_apply_node = msg.node_data
-        self.current_node = msg.node_data
-        node_path = msg.node_data.path
-        self.apply_btn.label = OpBtnLabels.apply_review
-        if (
-            node_path in self.app.chezmoi.status_dirs
-            or node_path in self.app.chezmoi.apply_status_files
-            or self.app.chezmoi.apply_status_files_in(node_path)
-        ):
-            self.apply_btn.disabled = False
+        self.operate_info.border_title = self.current_pretty_cmd
+        if operate_result.exit_code == 0:
+            self.operate_info.add_class(Tcss.operate_success)
+            self.operate_info.update(operate_result.std_out)
+            self.operate_info.border_subtitle = "Success"
         else:
-            self.apply_btn.disabled = True
-        self.update_other_buttons(msg.node_data)
-        self.update_view_node_data(msg.node_data)
+            self.operate_info.add_class(Tcss.operate_error)
+            self.operate_info.border_subtitle = "Error"
+            self.operate_info.update(operate_result.std_err)
 
-    def toggle_visibility(self) -> None:
+    def toggle_widget_visibility(self) -> None:
         # Widgets shown by default
-        main_tabs = self.screen.query_exactly_one(Tabs)
-        main_tabs.display = False if main_tabs.display is True else True
+        self.app.toggle_main_tabs_display()
         left_side = self.query_one(
             IDS.apply.container.left_side_q, TreeSwitcher
         )
@@ -120,53 +102,85 @@ class ApplyTab(TabVertical, AppType):
         view_switcher_buttons.display = (
             False if view_switcher_buttons.display is True else True
         )
-        # Widgets hidden by default
         self.operate_info.display = (
             True if self.operate_info.display is False else False
         )
-        # Switch slider always hidden when operating
+        # Depending on self.app.operating_mode, show/hide buttons
         switch_slider = self.query_one(
             IDS.apply.container.switch_slider_q, SwitchSlider
         )
-        if switch_slider.has_class("-visible") is True:
-            self.app.action_toggle_switch_slider
-
-    @on(OperateButtonMsg)
-    def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
-        msg.stop()
-        if msg.label == OpBtnLabels.apply_review:
-            self.toggle_visibility()
-            self.exit_btn.disabled = False
+        switch_slider.display = (
+            False if self.app.operating_mode is True else True
+        )
+        if self.app.operating_mode is True:
             self.exit_btn.display = True
-            self.operate_output.display = True
-            self.operate_info.display = True
             self.forget_btn.display = False
             self.destroy_btn.display = False
-            self.apply_btn.label = OpBtnLabels.apply_run
-            self.notify("Review chezmoi apply for file.")
-            self.update_operate_info()
-        elif msg.label == OpBtnLabels.apply_run:
-            self.notify("Running command.")
-            self.run_operate_command()
-        elif msg.label == OpBtnLabels.cancel:
-            self.toggle_visibility()
+            switch_slider.display = False  # regardless of visibility
+        else:
+            self.exit_btn.display = False
+            self.forget_btn.display = True
+            self.destroy_btn.display = True
+            # this will restore the previous vilibility, whatever it was
+            switch_slider.display = True
 
-    def update_operate_info(self) -> None:
+    def write_pre_operate_info(self) -> None:
         if self.current_node is None:
             return
         lines_to_write: list[str] = []
+        lines_to_write.append(OperateStrings.apply_path)
         if self.app.changes_enabled is True:
             lines_to_write.append(OperateStrings.changes_enabled)
         else:
             lines_to_write.append(OperateStrings.changes_disabled)
-            lines_to_write.append(OperateStrings.apply_path)
-            lines_to_write.append(OperateStrings.diff_color)
-            self.operate_info.border_subtitle = OperateStrings.apply_subtitle
+        lines_to_write.append(OperateStrings.diff_color)
+        lines_to_write.append(f"Ready to run {self.current_pretty_cmd}")
+        self.operate_info.border_subtitle = OperateStrings.apply_subtitle
         self.operate_info.update("\n".join(lines_to_write))
         if self.current_node.path_kind == PathKind.DIR:
             self.operate_info.border_title = OpBtnLabels.apply_dir
         elif self.current_node.path_kind == PathKind.FILE:
             self.operate_info.border_title = OpBtnLabels.apply_file
+
+    @on(CurrentApplyNodeMsg)
+    def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
+        msg.stop()
+        self.current_node = msg.node_data
+        self.apply_btn.label = OpBtnLabels.apply_review
+        if (
+            msg.node_data.path in self.app.chezmoi.status_dirs
+            or msg.node_data.path in self.app.chezmoi.apply_status_files
+            or self.app.chezmoi.apply_status_files_in(msg.node_data.path)
+        ):
+            self.apply_btn.disabled = False
+            self.apply_btn.tooltip = OpBtnToolTips.review
+            self.current_pretty_cmd = (
+                f"chehzmoi {WriteCmd.apply.pretty_cmd} "
+                f"{self.current_node.path}"
+            )
+        else:
+            self.apply_btn.disabled = True
+            self.apply_btn.tooltip = OpBtnToolTips.path_no_status
+        self.update_other_buttons(msg.node_data)
+        self.update_view_node_data(msg.node_data)
+
+    @on(OperateButtonMsg)
+    def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
+        msg.stop()
+        if msg.label == OpBtnLabels.apply_review:
+            self.app.operating_mode = True
+            self.toggle_widget_visibility()
+            self.apply_btn.label = OpBtnLabels.apply_run
+            self.apply_btn.tooltip = self.current_pretty_cmd
+            self.write_pre_operate_info()
+        elif msg.label == OpBtnLabels.apply_run:
+            self.run_operate_command()
+        elif msg.label == OpBtnLabels.cancel:
+            self.app.operating_mode = False
+            self.toggle_widget_visibility()
+        elif msg.label == OpBtnLabels.reload:
+            self.app.operating_mode = False
+            self.toggle_widget_visibility()
 
 
 # from textual import on

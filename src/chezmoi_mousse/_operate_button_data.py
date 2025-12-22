@@ -20,8 +20,7 @@ class OpBtnLabels(StrEnum):
     apply_dir = "Apply Dir"
     apply_file = "Apply File"
     apply_review = "Review Apply"
-    apply_run = "Chezmoi Apply"
-    apply_path = "Apply Path"
+    apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
     destroy_dir = "Destroy Dir"
     destroy_file = "Destroy File"
@@ -71,7 +70,7 @@ class OperateBtn(Enum):
         label=OpBtnLabels.add_dir, tooltip=OpBtnToolTips.in_dest_dir
     )
     apply_path = OpBtnData(
-        label=OpBtnLabels.apply_path, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.apply_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     re_add_path = OpBtnData(
         label=OpBtnLabels.re_add_path, tooltip=OpBtnToolTips.in_dest_dir

@@ -73,10 +73,25 @@
 }
 
 .operate_info {
+  background-tint: $surface;
+  background: $surface;
   border-subtitle-align: center;
   border-title-align: center;
   border: round $foreground;
+  padding: 0 1;
   text-align: center;
+  &.operate_error {
+    border-subtitle-align: right;
+    border-title-align: left;
+    border: round $error;
+    text-align: left;
+  }
+  &.operate_success {
+    border-subtitle-align: right;
+    border-title-align: left;
+    border: round $success;
+    text-align: left;
+  }
 }
 
 .single_switch {
@@ -275,7 +290,7 @@ ContentsView, ContentsInfo, DiffInfo, LoggersBase {
 }
 
 OperateButtons {
-  height: 3;
+  # height: 3;
   dock: bottom;
   .operate_button {
     background-tint: $surface-lighten-1;
