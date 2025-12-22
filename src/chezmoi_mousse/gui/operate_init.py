@@ -517,12 +517,10 @@ class OperateInitScreen(Screen[None], AppType):
             self.ids.operate_btn.init_new_q, Button
         )
         self.init_new_btn.display = True
-        self.init_new_btn.disabled = False
         self.init_clone_btn = self.query_one(
             self.ids.operate_btn.init_clone_q, Button
         )
         self.init_clone_btn.display = True
-        self.init_clone_btn.disabled = True
         self.exit_btn = self.query_one(
             self.ids.operate_btn.operate_exit_q, Button
         )
