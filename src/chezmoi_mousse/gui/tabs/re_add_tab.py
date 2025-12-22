@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Button
 
-from chezmoi_mousse import IDS, AppType, OperateBtn, PathKind
+from chezmoi_mousse import IDS, AppType, PathKind
 from chezmoi_mousse._operate_button_data import OpBtnLabels
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
@@ -30,13 +30,18 @@ class ReAddTab(TabVertical, AppType):
         self.operate_buttons = self.query_one(
             IDS.re_add.container.operate_buttons_q, OperateButtons
         )
-        self.operate_buttons.update_buttons(
-            (
-                OperateBtn.re_add_path,
-                OperateBtn.forget_path,
-                OperateBtn.destroy_path,
-            )
+        self.re_add_btn = self.query_one(
+            IDS.re_add.operate_btn.re_add_path_q, Button
         )
+        self.re_add_btn.display = True
+        self.forget_btn = self.query_one(
+            IDS.re_add.operate_btn.forget_path_q, Button
+        )
+        self.forget_btn.display = True
+        self.destroy_btn = self.query_one(
+            IDS.re_add.operate_btn.destroy_path_q, Button
+        )
+        self.destroy_btn.display = True
         self.re_add_btn = self.query_one(
             IDS.re_add.operate_btn.re_add_path_q, Button
         )

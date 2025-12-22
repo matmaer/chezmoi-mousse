@@ -100,8 +100,16 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class OperateButton(Button):
-    def __init__(self, *, ids: "AppIds", button_enum: OperateBtn) -> None:
+class OperateButton(Button, AppType):
+
+    def __init__(
+        self,
+        *,
+        ids: "AppIds",
+        button_label: str,
+        button_tooltip: str | None,
+        button_enum: OperateBtn,
+    ) -> None:
         self.ids = ids
         self.button_enum = button_enum
         should_disable = True
@@ -113,33 +121,87 @@ class OperateButton(Button):
         super().__init__(
             classes=Tcss.operate_button,
             disabled=should_disable,
-            id=self.ids.operate_button_id(btn=self.button_enum),
-            label=self.button_enum.label,
-            tooltip=self.button_enum.tooltip,
+            id=self.ids.operate_button_id(btn=button_enum),
+            label=button_label,
+            tooltip=button_tooltip,
         )
+        self.button_enum = button_enum
 
-    def on_button_pressed(self):
-        self.post_message(
-            OperateButtonMsg(
-                btn_enum=self.button_enum,
-                canvas_name=self.ids.canvas_name,
-                label=str(self.label),
-                tooltip=str(self.tooltip),
-            )
+    def on_mount(self) -> None:
+        self.display = False
+
+    @on(Button.Pressed)
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        operate_button_message = OperateButtonMsg(
+            btn_enum=self.button_enum,
+            canvas_name=self.ids.canvas_name,
+            label=str(self.label),
+            tooltip=str(self.tooltip),
         )
+        self.post_message(operate_button_message)
 
 
-class OperateButtons(Horizontal):
+class OperateButtons(HorizontalGroup):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(id=self.ids.container.operate_buttons)
 
-    def update_buttons(self, buttons: tuple[OperateBtn, ...]) -> None:
-        self.remove_children()
-        for button_enum in buttons:
-            self.mount(
-                Vertical(OperateButton(ids=self.ids, button_enum=button_enum))
-            )
+    def compose(self) -> ComposeResult:
+        yield OperateButton(
+            button_label=OperateBtn.add_dir.label,
+            button_tooltip=OperateBtn.add_dir.tooltip,
+            button_enum=OperateBtn.add_dir,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.add_file.label,
+            button_tooltip=OperateBtn.add_file.tooltip,
+            button_enum=OperateBtn.add_file,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.apply_path.label,
+            button_tooltip=OperateBtn.apply_path.tooltip,
+            button_enum=OperateBtn.apply_path,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.re_add_path.label,
+            button_tooltip=OperateBtn.re_add_path.tooltip,
+            button_enum=OperateBtn.re_add_path,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.forget_path.label,
+            button_tooltip=OperateBtn.forget_path.tooltip,
+            button_enum=OperateBtn.forget_path,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.destroy_path.label,
+            button_tooltip=OperateBtn.destroy_path.tooltip,
+            button_enum=OperateBtn.destroy_path,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.init_new.label,
+            button_tooltip=OperateBtn.init_new.tooltip,
+            button_enum=OperateBtn.init_new,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.init_clone.label,
+            button_tooltip=OperateBtn.init_clone.tooltip,
+            button_enum=OperateBtn.init_clone,
+            ids=self.ids,
+        )
+        yield OperateButton(
+            button_label=OperateBtn.operate_exit.label,
+            button_tooltip=OperateBtn.operate_exit.tooltip,
+            button_enum=OperateBtn.operate_exit,
+            ids=self.ids,
+        )
 
 
 class TabButtonsBase(Horizontal):

@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Button
 
-from chezmoi_mousse import IDS, AppType, OpBtnLabels, OperateBtn, PathKind
+from chezmoi_mousse import IDS, AppType, OpBtnLabels, PathKind
 from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
 
 from .common.switch_slider import SwitchSlider
@@ -29,13 +29,18 @@ class ApplyTab(TabVertical, AppType):
         self.operate_buttons = self.query_one(
             IDS.apply.container.operate_buttons_q, OperateButtons
         )
-        self.operate_buttons.update_buttons(
-            (
-                OperateBtn.apply_path,
-                OperateBtn.forget_path,
-                OperateBtn.destroy_path,
-            )
+        self.apply_btn = self.query_one(
+            IDS.apply.operate_btn.apply_path_q, Button
         )
+        self.apply_btn.display = True
+        self.forget_btn = self.query_one(
+            IDS.apply.operate_btn.forget_path_q, Button
+        )
+        self.forget_btn.display = True
+        self.destroy_btn = self.query_one(
+            IDS.apply.operate_btn.destroy_path_q, Button
+        )
+        self.destroy_btn.display = True
         self.apply_btn = self.query_one(
             IDS.apply.operate_btn.apply_path_q, Button
         )

@@ -8,15 +8,7 @@ from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Switch
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    Chars,
-    NodeData,
-    OperateBtn,
-    PathKind,
-    Tcss,
-)
+from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
 from chezmoi_mousse.shared import (
     ContentsView,
     CurrentAddNodeMsg,
@@ -266,16 +258,14 @@ class AddTab(Vertical, AppType):
         self.operate_buttons = self.query_one(
             IDS.add.container.operate_buttons_q, OperateButtons
         )
-        self.operate_buttons.update_buttons(
-            (OperateBtn.add_file, OperateBtn.add_dir)
-        )
-
         self.add_file_button = self.query_one(
             IDS.add.operate_btn.add_file_q, Button
         )
+        self.add_file_button.display = True
         self.add_dir_button = self.query_one(
             IDS.add.operate_btn.add_dir_q, Button
         )
+        self.add_dir_button.display = True
 
     def update_buttons(self, path_kind: PathKind) -> None:
         if path_kind == PathKind.DIR:

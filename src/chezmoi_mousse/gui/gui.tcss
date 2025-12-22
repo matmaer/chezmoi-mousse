@@ -284,9 +284,8 @@ OperateButtons {
     border-bottom: wide $surface;
     color: $primary-lighten-3;
     margin: 0 1;
-    min-width: 10;
     text-style: none;
-    width: 100%;
+    width: 1fr;
     &:hover {
       text-style: none;
       color: $accent;

@@ -65,9 +65,6 @@ class OperateChezmoiScreen(Screen[None], AppType):
         self.operate_buttons = self.query_one(
             self.ids.container.operate_buttons_q, OperateButtons
         )
-        self.operate_buttons.update_buttons(
-            (self.op_data.btn_enum, OperateBtn.operate_exit)
-        )
         self.post_op_container = self.query_one(
             self.ids.container.post_operate_q, VerticalGroup
         )
@@ -82,12 +79,14 @@ class OperateChezmoiScreen(Screen[None], AppType):
         self.op_btn = self.query_one(
             self.ids.operate_button_id("#", btn=self.op_data.btn_enum), Button
         )
+        self.op_btn.display = True
         self.op_btn.label = self.op_data.btn_label
         self.op_btn.tooltip = self.op_data.btn_tooltip
         self.exit_btn = self.query_one(
             self.ids.operate_button_id("#", btn=OperateBtn.operate_exit),
             Button,
         )
+        self.exit_btn.display = True
         if self.op_data.btn_enum in (
             OperateBtn.apply_path,
             OperateBtn.re_add_path,

@@ -501,13 +501,6 @@ class OperateInitScreen(Screen[None], AppType):
         self.operate_buttons = self.query_one(
             self.ids.container.operate_buttons_q, OperateButtons
         )
-        self.operate_buttons.update_buttons(
-            (
-                OperateBtn.init_new,
-                OperateBtn.init_clone,
-                OperateBtn.operate_exit,
-            )
-        )
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.reload
         )
@@ -523,14 +516,17 @@ class OperateInitScreen(Screen[None], AppType):
         self.init_new_btn = self.query_one(
             self.ids.operate_btn.init_new_q, Button
         )
+        self.init_new_btn.display = True
         self.init_new_btn.disabled = False
         self.init_clone_btn = self.query_one(
             self.ids.operate_btn.init_clone_q, Button
         )
+        self.init_clone_btn.display = True
         self.init_clone_btn.disabled = True
         self.exit_btn = self.query_one(
             self.ids.operate_btn.operate_exit_q, Button
         )
+        self.exit_btn.display = True
         self.exit_btn.label = OpBtnLabels.exit_app
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
