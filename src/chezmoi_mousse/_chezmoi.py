@@ -86,8 +86,7 @@ class VerbArgs(Enum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     init_do_not_guess = "--guess-repo-url=false"
-    init_guess = "--guess-repo-url=true"
-    init_guess_ssh = ["--guess-repo-url=true", "--ssh"]
+    init_guess_ssh = ["--ssh"]
     not_recursive = "--recursive=false"
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
@@ -182,7 +181,7 @@ class WriteCmd(Enum):
     apply_file_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
     destroy = [WriteVerbs.destroy.value, VerbArgs.not_recursive.value]
     forget = [WriteVerbs.forget.value]
-    init_guess_https = [WriteVerbs.init.value, VerbArgs.init_guess.value]
+    init_guess_https = [WriteVerbs.init.value]
     init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
     init_new = [WriteVerbs.init.value]
     init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
