@@ -19,6 +19,7 @@ class Tcss(StrEnum):
     main_section_label = auto()
     operate_button = auto()
     operate_info = auto()
+    operate_output = auto()
     pw_mgr_group = auto()
     read_cmd_static = auto()
     single_button_vertical = auto()

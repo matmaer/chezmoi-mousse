@@ -40,7 +40,9 @@ class ApplyTab(TabVertical, AppType):
         yield Static(
             id=IDS.apply.static.operate_info, classes=Tcss.operate_info
         )
-        yield Static(id=IDS.apply.static.operate_output)
+        yield Static(
+            id=IDS.apply.static.operate_output, classes=Tcss.operate_output
+        )
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
             yield ViewSwitcher(ids=IDS.apply, diff_reverse=False)
@@ -105,24 +107,29 @@ class ApplyTab(TabVertical, AppType):
         self.update_view_node_data(msg.node_data)
 
     def toggle_visibility(self) -> None:
+        # Widgets shown by default
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
         left_side = self.query_one(
-            self.ids.container.left_side_q, TreeSwitcher
+            IDS.apply.container.left_side_q, TreeSwitcher
         )
         left_side.display = False if left_side.display is True else True
-        switch_slider = self.query_one(
-            self.ids.container.switch_slider_q, SwitchSlider
-        )
-        switch_slider.display = (
-            False if switch_slider.display is True else True
-        )
         view_switcher_buttons = self.screen.query_one(
             IDS.apply.switcher.view_buttons_q, ViewTabButtons
         )
         view_switcher_buttons.display = (
             False if view_switcher_buttons.display is True else True
         )
+        # Widgets hidden by default
+        self.operate_info.display = (
+            True if self.operate_info.display is False else False
+        )
+        # Switch slider always hidden when operating
+        switch_slider = self.query_one(
+            IDS.apply.container.switch_slider_q, SwitchSlider
+        )
+        if switch_slider.has_class("-visible") is True:
+            self.app.action_toggle_switch_slider
 
     @on(OperateButtonMsg)
     def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
@@ -141,6 +148,8 @@ class ApplyTab(TabVertical, AppType):
         elif msg.label == OpBtnLabels.apply_run:
             self.notify("Running command.")
             self.run_operate_command()
+        elif msg.label == OpBtnLabels.cancel:
+            self.toggle_visibility()
 
     def update_operate_info(self) -> None:
         if self.current_node is None:
