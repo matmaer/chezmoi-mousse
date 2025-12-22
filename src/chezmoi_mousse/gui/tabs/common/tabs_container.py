@@ -50,6 +50,7 @@ class TabVertical(Vertical):
             else OpBtnLabels.destroy_file
         )
         destroy_button.tooltip = None
+        destroy_button.disabled = False
         forget_button = self.query_one(
             self.ids.operate_btn.forget_path_q, Button
         )
@@ -59,7 +60,6 @@ class TabVertical(Vertical):
             else OpBtnLabels.forget_file
         )
         forget_button.tooltip = None
-        destroy_button.disabled = False
         forget_button.disabled = False
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
