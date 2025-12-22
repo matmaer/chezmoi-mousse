@@ -170,6 +170,16 @@ class WriteCmd(Enum):
     add = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
     # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
     apply = [WriteVerbs.apply.value, VerbArgs.not_recursive.value]
+    apply_dir_dry = GlobalCmd.dry_run.value + [
+        WriteVerbs.apply.value,
+        VerbArgs.not_recursive.value,
+    ]
+    apply_dir_live = GlobalCmd.live_run.value + [
+        WriteVerbs.apply.value,
+        VerbArgs.not_recursive.value,
+    ]
+    apply_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.apply.value]
+    apply_file_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
     destroy = [WriteVerbs.destroy.value, VerbArgs.not_recursive.value]
     forget = [WriteVerbs.forget.value]
     init_guess_https = [WriteVerbs.init.value, VerbArgs.init_guess.value]
