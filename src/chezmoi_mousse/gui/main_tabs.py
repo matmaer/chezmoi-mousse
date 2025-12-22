@@ -11,8 +11,6 @@ from chezmoi_mousse import IDS, AppType, LogStrings, OperateData, TabName
 from chezmoi_mousse.shared import (
     AppLog,
     CurrentAddNodeMsg,
-    CurrentApplyDiffMsg,
-    CurrentApplyNodeMsg,
     CurrentReAddDiffMsg,
     CurrentReAddNodeMsg,
     CustomHeader,
@@ -174,6 +172,8 @@ class MainScreen(Screen[None], AppType):
 
     @on(OperateButtonMsg)
     def push_operate_screen(self, msg: OperateButtonMsg) -> None:
+        if msg.canvas_name == TabName.apply:
+            return
         operate_data = OperateData(
             btn_enum=msg.btn_enum, btn_label=msg.label, btn_tooltip=msg.tooltip
         )
@@ -182,13 +182,6 @@ class MainScreen(Screen[None], AppType):
             and msg.canvas_name == TabName.add
         ):
             operate_data.node_data = self.current_add_node
-        elif (
-            self.current_apply_node is not None
-            and msg.canvas_name == TabName.apply
-        ):
-            operate_data.node_data = self.current_apply_node
-            if self.current_apply_diff is not None:
-                operate_data.diff_data = self.current_apply_diff
         elif (
             self.current_re_add_node is not None
             and msg.canvas_name == TabName.re_add
@@ -234,14 +227,6 @@ class MainScreen(Screen[None], AppType):
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
         self.current_add_node = message.node_data
-
-    @on(CurrentApplyDiffMsg)
-    def update_current_apply_diff(self, message: CurrentApplyDiffMsg) -> None:
-        self.current_apply_diff = message.diff_data
-
-    @on(CurrentApplyNodeMsg)
-    def update_current_apply_node(self, message: CurrentApplyNodeMsg) -> None:
-        self.current_apply_node = message.node_data
 
     @on(CurrentReAddDiffMsg)
     def update_current_re_add_diff(self, message: CurrentReAddDiffMsg) -> None:

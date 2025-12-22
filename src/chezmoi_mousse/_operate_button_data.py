@@ -19,6 +19,8 @@ class OpBtnLabels(StrEnum):
     add_file = "Add File"
     apply_dir = "Apply Dir"
     apply_file = "Apply File"
+    apply_review = "Review Apply"
+    apply_run = "Chezmoi Apply"
     apply_path = "Apply Path"
     cancel = "Cancel"
     destroy_dir = "Destroy Dir"

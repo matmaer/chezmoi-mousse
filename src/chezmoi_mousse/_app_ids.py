@@ -410,6 +410,8 @@ class StaticIds:
         self.init_info_q = f"#{self.init_info}"
         self.operate_info = ids.static_id(static=StaticName.operate_info)
         self.operate_info_q = f"#{self.operate_info}"
+        self.operate_output = ids.static_id(static=StaticName.operate_output)
+        self.operate_output_q = f"#{self.operate_output}"
 
 
 class TabButtonIds:
