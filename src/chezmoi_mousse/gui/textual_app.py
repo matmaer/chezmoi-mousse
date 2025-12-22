@@ -173,7 +173,7 @@ class ChezmoiGUI(App[None]):
             TabName.re_add,
             TabName.add,
         ):
-            self.update_toggle_switch_slider_binding()
+            self.update_switch_slider_binding()
             self.refresh_bindings()
 
     def get_switch_slider_widget(self) -> SwitchSlider:
@@ -209,7 +209,7 @@ class ChezmoiGUI(App[None]):
                 break
             self.refresh_bindings()
 
-    def update_toggle_switch_slider_binding(self) -> None:
+    def update_switch_slider_binding(self) -> None:
         slider: SwitchSlider = self.get_switch_slider_widget()
         slider_visible = slider.has_class("-visible")
         new_description = (
@@ -234,7 +234,16 @@ class ChezmoiGUI(App[None]):
             return
         slider: SwitchSlider = self.get_switch_slider_widget()
         slider.toggle_class("-visible")
-        self.update_toggle_switch_slider_binding()
+        slider_visible = slider.has_class("-visible")
+        new_description = (
+            BindingDescription.hide_filters
+            if slider_visible is False
+            else BindingDescription.show_filters
+        )
+        self.update_binding_description(
+            binding_action=BindingAction.toggle_switch_slider,
+            new_description=new_description,
+        )
 
     def action_toggle_maximized(self) -> None:
         if not isinstance(self.screen, MainScreen):
