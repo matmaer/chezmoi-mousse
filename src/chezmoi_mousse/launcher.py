@@ -16,33 +16,35 @@ def run_app():
     pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
 
     if dev_mode is True:
-        src_dir = Path(__file__).parent.parent
         # Save stacktrace in case an exception occurs on App class init.
+        src_dir = Path(__file__).parent.parent
+        stack_trace_path = src_dir / "stack_trace.txt"
+
+        def save_stacktrace():
+            with open(stack_trace_path, "a") as f:
+                traceback.print_exc(file=f)
+
         try:
             app = ChezmoiGUI(
                 chezmoi_found=chezmoi_found,
                 dev_mode=dev_mode,
                 pretend_init_needed=pretend_init_needed,
             )
+
+            # Patch app._handle_exception to save stacktrace during runtime
+            original_handle_exception = app._handle_exception  # type: ignore[method-assign]
+
+            def patched_handle_exception(error: Exception):
+                save_stacktrace()
+                original_handle_exception(error)
+
+            # monkey patch
+            app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
+            app.run()
+
         except Exception:
-            with open((Path.joinpath(src_dir, "stack_trace.txt")), "w") as f:
-                traceback.print_exc(file=f)
+            save_stacktrace()
             raise
-
-        # Patch app._handle_exception method to save stacktrace in case of an
-        # uncaught exception while the app is running.
-
-        # keep the original method for pretty exception output in the console
-        original_handle_exception = app._handle_exception  # type: ignore[method-assign]
-
-        def patched_handle_exception(error: Exception):
-            with open(src_dir / "stack_trace.txt", "w") as stack_trace_file:
-                traceback.print_exc(file=stack_trace_file)
-            original_handle_exception(error)
-
-        # monkey patch
-        app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
-        app.run()
 
     else:
         app = ChezmoiGUI(
