@@ -44,6 +44,7 @@ class TreeBase(Tree[NodeData], AppType):
             id=self.ids.tree_id(tree=tree_name),
             classes=Tcss.tree_widget,
         )
+        self.expanded_nodes: list[TreeNode[NodeData]] = []
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
@@ -94,7 +95,7 @@ class TreeBase(Tree[NodeData], AppType):
             f"TreeNode data is None for {tree_node.label}", severity="error"
         )
 
-    def get_expanded_nodes(self) -> list[TreeNode[NodeData]]:
+    def get_expanded_nodes(self) -> None:
         # Recursively calling collect_nodes
         nodes: list[TreeNode[NodeData]] = [self.root]
 
@@ -109,7 +110,7 @@ class TreeBase(Tree[NodeData], AppType):
             return expanded
 
         nodes.extend(collect_nodes(self.root))
-        return nodes
+        self.expanded_nodes = nodes
 
     def get_leaves_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
@@ -377,8 +378,8 @@ class ExpandedTree(TreeBase):
                     self.expand_all_nodes(child)
 
     def watch_unchanged(self) -> None:
-        expanded_nodes = self.get_expanded_nodes()
-        for tree_node in expanded_nodes:
+        self.get_expanded_nodes()
+        for tree_node in self.expanded_nodes:
             if self.unchanged:
                 self.add_files_without_status_in(
                     tree_node=tree_node, flat_list=False
@@ -434,7 +435,8 @@ class ManagedTree(TreeBase):
             )
 
     def watch_unchanged(self) -> None:
-        for node in self.get_expanded_nodes():
+        self.get_expanded_nodes()
+        for node in self.expanded_nodes:
             if self.unchanged:
                 self.add_files_without_status_in(
                     tree_node=node, flat_list=False
