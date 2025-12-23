@@ -16,7 +16,8 @@ __all__ = ["OpBtnLabels", "OpBtnToolTips", "OperateBtn"]
 
 class OpBtnLabels(StrEnum):
     add_dir = "Add Dir"
-    add_review = "Review Add"
+    add_file_review = "Review Add File"
+    add_dir_review = "Review Add Dir"
     add_live = "Run Chezmoi Add"
     add_file = "Add File"
     apply_dir = "Apply Dir"
@@ -67,10 +68,10 @@ class OpBtnData:
 
 class OperateBtn(Enum):
     add_file = OpBtnData(
-        label=OpBtnLabels.add_review, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.add_file_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     add_dir = OpBtnData(
-        label=OpBtnLabels.add_review, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.add_dir_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     apply_path = OpBtnData(
         label=OpBtnLabels.apply_review, tooltip=OpBtnToolTips.in_dest_dir
