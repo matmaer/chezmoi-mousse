@@ -8,9 +8,7 @@ from chezmoi_mousse import (
     AppType,
     NodeData,
     OpBtnLabels,
-    OpBtnToolTips,
     OperateStrings,
-    PathKind,
     Tcss,
     WriteCmd,
 )
@@ -75,20 +73,11 @@ class ReAddTab(TabsBase, AppType):
     def get_command(self) -> WriteCmd:
         if self.current_node is None:
             raise ValueError("No current node selected")
-        if self.current_node.path_kind == PathKind.FILE:
-            return (
-                WriteCmd.re_add_file_live
-                if self.app.changes_enabled
-                else WriteCmd.re_add_file_dry
-            )
-        elif self.current_node.path_kind == PathKind.DIR:
-            return (
-                WriteCmd.re_add_dir_live
-                if self.app.changes_enabled
-                else WriteCmd.re_add_dir_dry
-            )
-        else:
-            raise ValueError("Invalid path kind for re-add operation")
+        return (
+            WriteCmd.re_add_live
+            if self.app.changes_enabled
+            else WriteCmd.re_add_dry
+        )
 
     def run_operate_command(self) -> None:
         if self.current_node is None:
@@ -183,13 +172,11 @@ class ReAddTab(TabsBase, AppType):
         if (
             msg.node_data.path in self.app.chezmoi.status_dirs
             or msg.node_data.path in self.app.chezmoi.re_add_status_files
-            or self.app.chezmoi.re_add_status_files_in(msg.node_data.path)
+            or self.app.chezmoi.has_re_add_status_paths_in(msg.node_data.path)
         ):
             self.re_add_btn.disabled = False
-            self.re_add_btn.tooltip = OpBtnToolTips.review
         else:
             self.re_add_btn.disabled = True
-            self.re_add_btn.tooltip = OpBtnToolTips.path_no_status
         self.update_view_node_data(msg.node_data)
 
     @on(OperateButtonMsg)
@@ -199,7 +186,6 @@ class ReAddTab(TabsBase, AppType):
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.re_add_btn.label = OpBtnLabels.re_add_run
-            self.re_add_btn.tooltip = self.get_command().pretty_cmd
             self.write_pre_operate_info()
         elif msg.label == OpBtnLabels.re_add_run:
             self.run_operate_command()
@@ -207,7 +193,6 @@ class ReAddTab(TabsBase, AppType):
             self.app.operating_mode = False
             self.re_add_btn.disabled = False
             self.re_add_btn.label = OpBtnLabels.re_add_review
-            self.re_add_btn.tooltip = OpBtnToolTips.review
             self.toggle_widget_visibility()
         elif msg.label == OpBtnLabels.reload:
             self.app.operating_mode = False

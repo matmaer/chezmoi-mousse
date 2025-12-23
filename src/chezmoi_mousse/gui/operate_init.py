@@ -23,7 +23,6 @@ from chezmoi_mousse import (
     InitCloneData,
     LinkBtn,
     OpBtnLabels,
-    OpBtnToolTips,
     OperateBtn,
     OperateStrings,
     SectionLabels,
@@ -644,18 +643,15 @@ class OperateInitScreen(Screen[None], AppType):
         if event.value is True:
             self.repo_input.display = True
             self.init_new_btn.disabled = True
-            self.init_new_btn.tooltip = OpBtnToolTips.init_new_disabled
             if self.valid_arg is True:
                 self.init_clone_btn.disabled = False
                 self.init_clone_btn.tooltip = None
             elif self.valid_arg is False:
                 self.init_clone_btn.disabled = True
-                self.init_clone_btn.tooltip = OpBtnToolTips.init_clone_disabled
         elif event.value is False:
             self.repo_input.display = False
             self.init_new_btn.disabled = False
             self.init_clone_btn.disabled = True
-            self.init_clone_btn.tooltip = OpBtnToolTips.init_clone_switch_off
         self.update_init_info()
         self.update_operate_info()
 

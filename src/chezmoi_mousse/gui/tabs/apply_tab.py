@@ -8,9 +8,7 @@ from chezmoi_mousse import (
     AppType,
     NodeData,
     OpBtnLabels,
-    OpBtnToolTips,
     OperateStrings,
-    PathKind,
     Tcss,
     WriteCmd,
 )
@@ -69,20 +67,11 @@ class ApplyTab(TabsBase, AppType):
     def get_command(self) -> WriteCmd:
         if self.current_node is None:
             raise ValueError("No current node selected")
-        if self.current_node.path_kind == PathKind.FILE:
-            return (
-                WriteCmd.apply_file_live
-                if self.app.changes_enabled
-                else WriteCmd.apply_file_dry
-            )
-        elif self.current_node.path_kind == PathKind.DIR:
-            return (
-                WriteCmd.apply_dir_live
-                if self.app.changes_enabled
-                else WriteCmd.apply_dir_dry
-            )
-        else:
-            raise ValueError("Invalid path kind for apply operation")
+        return (
+            WriteCmd.apply_live
+            if self.app.changes_enabled
+            else WriteCmd.apply_dry
+        )
 
     def run_operate_command(self) -> None:
         if self.current_node is None:
@@ -170,13 +159,11 @@ class ApplyTab(TabsBase, AppType):
         if (
             msg.node_data.path in self.app.chezmoi.status_dirs
             or msg.node_data.path in self.app.chezmoi.apply_status_files
-            or self.app.chezmoi.apply_status_files_in(msg.node_data.path)
+            or self.app.chezmoi.has_apply_status_paths_in(msg.node_data.path)
         ):
             self.apply_btn.disabled = False
-            self.apply_btn.tooltip = OpBtnToolTips.review
         else:
             self.apply_btn.disabled = True
-            self.apply_btn.tooltip = OpBtnToolTips.path_no_status
         self.update_view_node_data(msg.node_data)
 
     @on(OperateButtonMsg)
@@ -186,13 +173,11 @@ class ApplyTab(TabsBase, AppType):
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.apply_btn.label = OpBtnLabels.apply_run
-            self.apply_btn.tooltip = self.get_command().pretty_cmd
             self.write_pre_operate_info()
         elif msg.label == OpBtnLabels.apply_run:
             self.run_operate_command()
         elif msg.label == OpBtnLabels.cancel:
             self.apply_btn.disabled = False
-            self.apply_btn.tooltip = OpBtnToolTips.review
             self.apply_btn.label = OpBtnLabels.apply_review
             self.app.operating_mode = False
             self.toggle_widget_visibility()

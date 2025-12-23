@@ -296,20 +296,9 @@ class AddTab(TabsBase, AppType):
     def get_command(self) -> WriteCmd:
         if self.current_node is None:
             raise ValueError("No current node selected")
-        if self.current_node.path_kind == PathKind.FILE:
-            return (
-                WriteCmd.add_file_live
-                if self.app.changes_enabled
-                else WriteCmd.add_file_dry
-            )
-        elif self.current_node.path_kind == PathKind.DIR:
-            return (
-                WriteCmd.add_dir_live
-                if self.app.changes_enabled
-                else WriteCmd.add_dir_dry
-            )
-        else:
-            raise ValueError("Invalid path kind for apply operation")
+        return (
+            WriteCmd.add_live if self.app.changes_enabled else WriteCmd.add_dry
+        )
 
     def run_operate_command(self) -> None:
         if self.current_node is None:
@@ -435,14 +424,11 @@ class AddTab(TabsBase, AppType):
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             if self.current_node.path_kind == PathKind.DIR:
-                self.add_dir_button.label = OpBtnLabels.add_dir_live
+                self.add_dir_button.label = OpBtnLabels.add_dir_run
             elif self.current_node.path_kind == PathKind.FILE:
-                self.add_file_button.label = OpBtnLabels.add_file_live
+                self.add_file_button.label = OpBtnLabels.add_file_run
             self.write_pre_operate_info()
-        elif msg.label in (
-            OpBtnLabels.add_file_live,
-            OpBtnLabels.add_dir_live,
-        ):
+        elif msg.label in (OpBtnLabels.add_file_run, OpBtnLabels.add_dir_run):
             self.run_operate_command()
         elif msg.label == OpBtnLabels.cancel:
             self.add_dir_button.display = True

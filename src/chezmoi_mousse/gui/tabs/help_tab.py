@@ -53,8 +53,6 @@ class HelpStrings(StrEnum):
     available_buttons = "Available Buttons"
     # Add tab
     add_tab_help = "Add Tab Help"
-    add_dir_button = f"{OpBtnLabels.add_dir_live} Button"
-    add_file_button = f"{OpBtnLabels.add_file_live} Button"
     unmanaged_dirs_filter = f"{Switches.unmanaged_dirs.label} Filter"
     unwanted_filter = f"{Switches.unwanted.label} Filter"
     # Apply tab
@@ -162,8 +160,6 @@ class AddTabHelp(Vertical):
             yield Label(
                 HelpStrings.available_buttons, classes=Tcss.sub_section_label
             )
-            yield Static(HelpStrings.add_file_button)
-            yield Static(HelpStrings.add_dir_button)
 
 
 class ChezmoiDiagram(Vertical):

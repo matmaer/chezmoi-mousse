@@ -9,23 +9,21 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from ._switch_data import SwitchLabel
-
-__all__ = ["OpBtnLabels", "OpBtnToolTips", "OperateBtn"]
+__all__ = ["OpBtnLabels", "OperateBtn"]
 
 
 class OpBtnLabels(StrEnum):
-    add_dir_live = "Run Chezmoi Add"
+    add_dir_run = "Run Chezmoi Add Dir"
     add_dir_review = "Review Add Dir"
-    add_file_live = "Run Chezmoi Add"
+    add_file_run = "Run Chezmoi Add File"
     add_file_review = "Review Add File"
     apply_review = "Review Apply"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
-    destroy_live = "Run Chezmoi Destroy"
+    destroy_run = "Run Chezmoi Destroy"
     destroy_review = "Review Destroy"
     exit_app = "Exit App"
-    forget_live = "Run Chezmoi Forget"
+    forget_run = "Run Chezmoi Forget"
     forget_review = "Review Forget"
     init_clone = "Init Clone Repo"
     init_new = "Init New Repo"
@@ -34,54 +32,21 @@ class OpBtnLabels(StrEnum):
     reload = "Reload"
 
 
-class OpBtnToolTips(StrEnum):
-    in_dest_dir = "This is the destDir, select a path to operate on."
-    init_clone_disabled = (
-        f"Provide an input to enable {OpBtnLabels.init_clone}."
-    )
-    init_clone_switch_off = (
-        f"Switch the {SwitchLabel.init_repo} switch on to "
-        f"enable {OpBtnLabels.init_clone}."
-    )
-    init_new_disabled = (
-        f"Switch the {SwitchLabel.init_repo} switch off to "
-        f"enable {OpBtnLabels.init_new}."
-    )
-    path_no_status = "The selected path has no status to operate on."
-    review = "Review changes before running the command."
-
-
 @dataclass(slots=True)
 class OpBtnData:
     label: str
-    tooltip: str | None
 
 
 class OperateBtn(Enum):
-    add_file = OpBtnData(
-        label=OpBtnLabels.add_file_review, tooltip=OpBtnToolTips.in_dest_dir
-    )
-    add_dir = OpBtnData(
-        label=OpBtnLabels.add_dir_review, tooltip=OpBtnToolTips.in_dest_dir
-    )
-    apply_path = OpBtnData(
-        label=OpBtnLabels.apply_review, tooltip=OpBtnToolTips.in_dest_dir
-    )
-    re_add_path = OpBtnData(
-        label=OpBtnLabels.re_add_review, tooltip=OpBtnToolTips.in_dest_dir
-    )
-    forget_path = OpBtnData(
-        label=OpBtnLabels.forget_review, tooltip=OpBtnToolTips.in_dest_dir
-    )
-    destroy_path = OpBtnData(
-        label=OpBtnLabels.destroy_review, tooltip=OpBtnToolTips.in_dest_dir
-    )
-    init_new = OpBtnData(label=OpBtnLabels.init_new, tooltip=None)
-    init_clone = OpBtnData(
-        label=OpBtnLabels.init_clone,
-        tooltip=OpBtnToolTips.init_clone_switch_off,
-    )
-    operate_exit = OpBtnData(label=OpBtnLabels.cancel, tooltip=None)
+    add_file = OpBtnData(label=OpBtnLabels.add_file_review)
+    add_dir = OpBtnData(label=OpBtnLabels.add_dir_review)
+    apply_path = OpBtnData(label=OpBtnLabels.apply_review)
+    re_add_path = OpBtnData(label=OpBtnLabels.re_add_review)
+    forget_path = OpBtnData(label=OpBtnLabels.forget_review)
+    destroy_path = OpBtnData(label=OpBtnLabels.destroy_review)
+    init_new = OpBtnData(label=OpBtnLabels.init_new)
+    init_clone = OpBtnData(label=OpBtnLabels.init_clone)
+    operate_exit = OpBtnData(label=OpBtnLabels.cancel)
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
@@ -89,7 +54,3 @@ class OperateBtn(Enum):
     @property
     def label(self) -> str:
         return self.value.label
-
-    @property
-    def tooltip(self) -> str | None:
-        return self.value.tooltip

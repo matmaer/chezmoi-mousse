@@ -108,7 +108,6 @@ class OperateButton(Button, AppType):
         *,
         ids: "AppIds",
         button_label: str,
-        button_tooltip: str | None,
         button_enum: OperateBtn,
         disabled_default: bool,
     ) -> None:
@@ -120,7 +119,6 @@ class OperateButton(Button, AppType):
             disabled=disabled_default,
             id=self.ids.operate_button_id(btn=button_enum),
             label=button_label,
-            tooltip=button_tooltip,
         )
         self.button_enum = button_enum
 
@@ -148,14 +146,12 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name == TabName.add:
             yield OperateButton(
                 button_label=OperateBtn.add_file.label,
-                button_tooltip=OperateBtn.add_file.tooltip,
                 button_enum=OperateBtn.add_file,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
             yield OperateButton(
                 button_label=OperateBtn.add_dir.label,
-                button_tooltip=OperateBtn.add_dir.tooltip,
                 button_enum=OperateBtn.add_dir,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
@@ -164,7 +160,6 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name == TabName.apply:
             yield OperateButton(
                 button_label=OperateBtn.apply_path.label,
-                button_tooltip=OperateBtn.apply_path.tooltip,
                 button_enum=OperateBtn.apply_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
@@ -172,7 +167,6 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name == TabName.re_add:
             yield OperateButton(
                 button_label=OperateBtn.re_add_path.label,
-                button_tooltip=OperateBtn.re_add_path.tooltip,
                 button_enum=OperateBtn.re_add_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
@@ -180,14 +174,12 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
             yield OperateButton(
                 button_label=OperateBtn.forget_path.label,
-                button_tooltip=OperateBtn.forget_path.tooltip,
                 button_enum=OperateBtn.forget_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
             yield OperateButton(
                 button_label=OperateBtn.destroy_path.label,
-                button_tooltip=OperateBtn.destroy_path.tooltip,
                 button_enum=OperateBtn.destroy_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
@@ -195,21 +187,18 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name == ScreenName.operate_init:
             yield OperateButton(
                 button_label=OperateBtn.init_new.label,
-                button_tooltip=OperateBtn.init_new.tooltip,
                 button_enum=OperateBtn.init_new,
                 ids=self.ids,
                 disabled_default=False,  # after pushing InitScreen
             )
             yield OperateButton(
                 button_label=OperateBtn.init_clone.label,
-                button_tooltip=OperateBtn.init_clone.tooltip,
                 button_enum=OperateBtn.init_clone,
                 ids=self.ids,
                 disabled_default=True,  # after pushing InitScreen, no repo arg yet
             )
         yield OperateButton(
             button_label=OperateBtn.operate_exit.label,
-            button_tooltip=OperateBtn.operate_exit.tooltip,
             button_enum=OperateBtn.operate_exit,
             ids=self.ids,
             disabled_default=False,  # always enabled when displayed

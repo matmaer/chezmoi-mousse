@@ -85,7 +85,6 @@ class VerbArgs(Enum):
     include_files = "--include=files"
     init_do_not_guess = "--guess-repo-url=false"
     init_guess_ssh = ["--ssh"]
-    not_recursive = "--recursive=false"
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
 
@@ -166,64 +165,20 @@ class WriteVerbs(Enum):
 
 
 class WriteCmd(Enum):
-    add_dir_dry = GlobalCmd.dry_run.value + [
-        WriteVerbs.add.value,
-        VerbArgs.not_recursive.value,
-    ]
-    add_dir_live = GlobalCmd.live_run.value + [
-        WriteVerbs.add.value,
-        VerbArgs.not_recursive.value,
-    ]
-    add_file_live = GlobalCmd.live_run.value + [WriteVerbs.add.value]
-    add_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.add.value]
-    apply_dir_dry = GlobalCmd.dry_run.value + [
-        WriteVerbs.apply.value,
-        VerbArgs.not_recursive.value,
-    ]
-    apply_dir_live = GlobalCmd.live_run.value + [
-        WriteVerbs.apply.value,
-        VerbArgs.not_recursive.value,
-    ]
-    apply_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.apply.value]
-    apply_file_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
-    destroy_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.destroy.value]
-    destroy_file_live = GlobalCmd.live_run.value + [WriteVerbs.destroy.value]
-    destroy_dir_dry = (
-        GlobalCmd.dry_run.value
-        + [WriteVerbs.destroy.value]
-        + [VerbArgs.not_recursive.value]
-    )
-    destroy_dir_live = (
-        GlobalCmd.live_run.value
-        + [WriteVerbs.destroy.value]
-        + [VerbArgs.not_recursive.value]
-    )
-    forget_dir_dry = (
-        GlobalCmd.dry_run.value
-        + [WriteVerbs.forget.value]
-        + [VerbArgs.not_recursive.value]
-    )
-    forget_dir_live = (
-        GlobalCmd.live_run.value
-        + [WriteVerbs.forget.value]
-        + [VerbArgs.not_recursive.value]
-    )
-    forget_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.forget.value]
-    forget_file_live = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
+    add_dry = GlobalCmd.dry_run.value + [WriteVerbs.add.value]
+    add_live = GlobalCmd.live_run.value + [WriteVerbs.add.value]
+    apply_dry = GlobalCmd.dry_run.value + [WriteVerbs.apply.value]
+    apply_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
+    destroy_dry = GlobalCmd.dry_run.value + [WriteVerbs.destroy.value]
+    destroy_live = GlobalCmd.live_run.value + [WriteVerbs.destroy.value]
+    forget_dry = GlobalCmd.dry_run.value + [WriteVerbs.forget.value]
+    forget_live = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
     init_guess_https = [WriteVerbs.init.value]
     init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
     init_new = [WriteVerbs.init.value]
     init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
-    re_add_dir_dry = GlobalCmd.dry_run.value + [
-        WriteVerbs.re_add.value,
-        VerbArgs.not_recursive.value,
-    ]
-    re_add_dir_live = GlobalCmd.live_run.value + [
-        WriteVerbs.re_add.value,
-        VerbArgs.not_recursive.value,
-    ]
-    re_add_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.re_add.value]
-    re_add_file_live = GlobalCmd.live_run.value + [WriteVerbs.re_add.value]
+    re_add_dry = GlobalCmd.dry_run.value + [WriteVerbs.re_add.value]
+    re_add_live = GlobalCmd.live_run.value + [WriteVerbs.re_add.value]
 
     @property
     def pretty_cmd(self) -> str:
@@ -537,26 +492,16 @@ class Chezmoi:
         if (
             write_cmd
             in (
-                WriteCmd.add_dir_dry,
-                WriteCmd.add_dir_live,
-                WriteCmd.add_file_dry,
-                WriteCmd.add_file_live,
-                WriteCmd.apply_dir_dry,
-                WriteCmd.apply_dir_live,
-                WriteCmd.apply_file_dry,
-                WriteCmd.apply_file_live,
-                WriteCmd.destroy_dir_dry,
-                WriteCmd.destroy_dir_live,
-                WriteCmd.destroy_file_dry,
-                WriteCmd.destroy_file_live,
-                WriteCmd.forget_dir_dry,
-                WriteCmd.forget_dir_live,
-                WriteCmd.forget_file_dry,
-                WriteCmd.forget_file_live,
-                WriteCmd.re_add_dir_dry,
-                WriteCmd.re_add_dir_live,
-                WriteCmd.re_add_file_dry,
-                WriteCmd.re_add_file_live,
+                WriteCmd.add_dry,
+                WriteCmd.add_live,
+                WriteCmd.apply_dry,
+                WriteCmd.apply_live,
+                WriteCmd.destroy_dry,
+                WriteCmd.destroy_live,
+                WriteCmd.forget_dry,
+                WriteCmd.forget_live,
+                WriteCmd.re_add_dry,
+                WriteCmd.re_add_live,
             )
             and path_arg is not None
         ):
