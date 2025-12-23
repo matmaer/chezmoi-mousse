@@ -185,6 +185,16 @@ class WriteCmd(Enum):
     init_new = [WriteVerbs.init.value]
     init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
     re_add = [WriteVerbs.re_add.value, VerbArgs.not_recursive.value]
+    re_add_dir_dry = GlobalCmd.dry_run.value + [
+        WriteVerbs.re_add.value,
+        VerbArgs.not_recursive.value,
+    ]
+    re_add_dir_live = GlobalCmd.live_run.value + [
+        WriteVerbs.re_add.value,
+        VerbArgs.not_recursive.value,
+    ]
+    re_add_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.re_add.value]
+    re_add_file_live = GlobalCmd.live_run.value + [WriteVerbs.re_add.value]
 
     @property
     def pretty_cmd(self) -> str:

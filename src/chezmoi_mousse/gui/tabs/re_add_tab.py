@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Button, Static
 
-from chezmoi_mousse import IDS, AppType, NodeData, PathKind, Tcss
+from chezmoi_mousse import IDS, AppType, NodeData, PathKind, Tcss, WriteCmd
 from chezmoi_mousse._operate_button_data import OpBtnLabels
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
@@ -53,6 +53,24 @@ class ReAddTab(TabVertical, AppType):
             IDS.re_add.static.operate_info_q, Static
         )
         self.operate_info.display = False
+
+    def get_command(self) -> WriteCmd:
+        if self.current_node is None:
+            raise ValueError("No current node selected")
+        if self.current_node.path_kind == PathKind.FILE:
+            return (
+                WriteCmd.re_add_file_live
+                if self.app.changes_enabled
+                else WriteCmd.re_add_file_dry
+            )
+        elif self.current_node.path_kind == PathKind.DIR:
+            return (
+                WriteCmd.re_add_dir_live
+                if self.app.changes_enabled
+                else WriteCmd.re_add_dir_dry
+            )
+        else:
+            raise ValueError("Invalid path kind for re-add operation")
 
     @on(CurrentReAddNodeMsg)
     def update_re_add_operate_buttons(self, msg: CurrentReAddNodeMsg) -> None:
