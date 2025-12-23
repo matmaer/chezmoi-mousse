@@ -117,7 +117,7 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 **Legend:**
 
 - :green_circle: Follow user configuration or chezmoi defaults
-- :green_square: Providing flags for the `chezmoi` command.
+- :green_square: Providing flags for the `chezmoi` command, managed by this app.
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
 - :black_circle: Under development, help wanted or to be documented
@@ -125,18 +125,18 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 Top level
 
 - :green_circle: cacheDir
-- :green_square: color
+- :green_square: color (`--no-color`, app manages color)
 - :green_circle: data
 - :green_circle: destDir
 - :black_circle: encryption
 - :black_circle: env
 - :green_circle: format
-- :green_square: interactive
-- :negative_squared_cross_mark: mode (only file mode is supported)
-- :green_square: pager
+- :green_square: interactive (`--interactive=false`, app provides safeguards)
+- :negative_squared_cross_mark: mode (`--mode=file`, only file mode is supported)
+- :green_square: pager (`--no-pager`, app limits output)
 - :green_square: pagerArgs
 - :black_circle: persistentState
-- :green_square: progress
+- :green_square: progress (`--progress=false`, app will implement spinner)
 - :black_circle: scriptEnv
 - :black_circle: scriptTempDir
 - :green_circle: sourceDir
@@ -144,7 +144,7 @@ Top level
 - :green_circle: umask
 - :black_circle: useBuiltinAge
 - :green_circle: useBuiltinGit (`chezmoi git` is used to render any git related output)
-- :green_square: verbose
+- :negative_squared_cross_mark: verbose
 - :black_circle: workingTree
 
 add
