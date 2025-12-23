@@ -27,7 +27,7 @@ from chezmoi_mousse.shared import (
 )
 
 from .common.switch_slider import SwitchSlider
-from .common.tabs_container import TabsBase
+from .common.tabs_base import TabsBase
 
 __all__ = ["AddTab", "FilteredDirTree"]
 

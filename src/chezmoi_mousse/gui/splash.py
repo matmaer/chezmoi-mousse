@@ -30,7 +30,7 @@ from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 from .main_tabs import MainScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.switchers import ViewSwitcher
-from .tabs.common.tabs_container import TabsBase
+from .tabs.common.tabs_base import TabsBase
 from .tabs.common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
