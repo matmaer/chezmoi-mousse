@@ -5,7 +5,16 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical
 from textual.widgets import Button, Label, Link, Switch
 
-from chezmoi_mousse import AppType, FlatBtn, LinkBtn, OperateBtn, TabBtn, Tcss
+from chezmoi_mousse import (
+    AppType,
+    FlatBtn,
+    LinkBtn,
+    OperateBtn,
+    ScreenName,
+    TabBtn,
+    TabName,
+    Tcss,
+)
 
 from ._messages import OperateButtonMsg
 
@@ -136,62 +145,68 @@ class OperateButtons(HorizontalGroup):
         super().__init__(id=self.ids.container.operate_buttons)
 
     def compose(self) -> ComposeResult:
-        yield OperateButton(
-            button_label=OperateBtn.add_dir.label,
-            button_tooltip=OperateBtn.add_dir.tooltip,
-            button_enum=OperateBtn.add_dir,
-            ids=self.ids,
-            disabled_default=True,  # on startup in dest dir
-        )
-        yield OperateButton(
-            button_label=OperateBtn.add_file.label,
-            button_tooltip=OperateBtn.add_file.tooltip,
-            button_enum=OperateBtn.add_file,
-            ids=self.ids,
-            disabled_default=True,  # on startup in dest dir
-        )
-        yield OperateButton(
-            button_label=OperateBtn.apply_path.label,
-            button_tooltip=OperateBtn.apply_path.tooltip,
-            button_enum=OperateBtn.apply_path,
-            ids=self.ids,
-            disabled_default=True,  # on startup in dest dir
-        )
-        yield OperateButton(
-            button_label=OperateBtn.re_add_path.label,
-            button_tooltip=OperateBtn.re_add_path.tooltip,
-            button_enum=OperateBtn.re_add_path,
-            ids=self.ids,
-            disabled_default=True,  # on startup in dest dir
-        )
-        yield OperateButton(
-            button_label=OperateBtn.forget_path.label,
-            button_tooltip=OperateBtn.forget_path.tooltip,
-            button_enum=OperateBtn.forget_path,
-            ids=self.ids,
-            disabled_default=True,  # on startup in dest dir
-        )
-        yield OperateButton(
-            button_label=OperateBtn.destroy_path.label,
-            button_tooltip=OperateBtn.destroy_path.tooltip,
-            button_enum=OperateBtn.destroy_path,
-            ids=self.ids,
-            disabled_default=True,  # on startup in dest dir
-        )
-        yield OperateButton(
-            button_label=OperateBtn.init_new.label,
-            button_tooltip=OperateBtn.init_new.tooltip,
-            button_enum=OperateBtn.init_new,
-            ids=self.ids,
-            disabled_default=False,  # after pushing InitScreen
-        )
-        yield OperateButton(
-            button_label=OperateBtn.init_clone.label,
-            button_tooltip=OperateBtn.init_clone.tooltip,
-            button_enum=OperateBtn.init_clone,
-            ids=self.ids,
-            disabled_default=True,  # after pushing InitScreen, no repo arg yet
-        )
+        if self.ids.canvas_name == TabName.add:
+            yield OperateButton(
+                button_label=OperateBtn.add_dir.label,
+                button_tooltip=OperateBtn.add_dir.tooltip,
+                button_enum=OperateBtn.add_dir,
+                ids=self.ids,
+                disabled_default=True,  # on startup in dest dir
+            )
+            yield OperateButton(
+                button_label=OperateBtn.add_file.label,
+                button_tooltip=OperateBtn.add_file.tooltip,
+                button_enum=OperateBtn.add_file,
+                ids=self.ids,
+                disabled_default=True,  # on startup in dest dir
+            )
+
+        if self.ids.canvas_name == TabName.apply:
+            yield OperateButton(
+                button_label=OperateBtn.apply_path.label,
+                button_tooltip=OperateBtn.apply_path.tooltip,
+                button_enum=OperateBtn.apply_path,
+                ids=self.ids,
+                disabled_default=True,  # on startup in dest dir
+            )
+        if self.ids.canvas_name == TabName.re_add:
+            yield OperateButton(
+                button_label=OperateBtn.re_add_path.label,
+                button_tooltip=OperateBtn.re_add_path.tooltip,
+                button_enum=OperateBtn.re_add_path,
+                ids=self.ids,
+                disabled_default=True,  # on startup in dest dir
+            )
+        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
+            yield OperateButton(
+                button_label=OperateBtn.forget_path.label,
+                button_tooltip=OperateBtn.forget_path.tooltip,
+                button_enum=OperateBtn.forget_path,
+                ids=self.ids,
+                disabled_default=True,  # on startup in dest dir
+            )
+            yield OperateButton(
+                button_label=OperateBtn.destroy_path.label,
+                button_tooltip=OperateBtn.destroy_path.tooltip,
+                button_enum=OperateBtn.destroy_path,
+                ids=self.ids,
+                disabled_default=True,  # on startup in dest dir
+            )
+        if self.ids.canvas_name == ScreenName.operate_init:
+            yield OperateButton(
+                button_label=OperateBtn.init_new.label,
+                button_tooltip=OperateBtn.init_new.tooltip,
+                button_enum=OperateBtn.init_new,
+                ids=self.ids,
+                disabled_default=False,  # after pushing InitScreen
+            )
+            yield OperateButton(
+                button_label=OperateBtn.init_clone.label,
+                button_tooltip=OperateBtn.init_clone.tooltip,
+                button_enum=OperateBtn.init_clone,
+                ids=self.ids,
+                disabled_default=True,  # after pushing InitScreen, no repo arg yet
+            )
         yield OperateButton(
             button_label=OperateBtn.operate_exit.label,
             button_tooltip=OperateBtn.operate_exit.tooltip,
