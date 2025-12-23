@@ -117,7 +117,7 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 **Legend:**
 
 - :green_circle: Follow user configuration or chezmoi defaults
-- :green_square: Provided by this app
+- :green_square: Providing flags for the `chezmoi` command.
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
 - :black_circle: Under development, help wanted or to be documented
@@ -188,11 +188,11 @@ dashlane
 - :black_circle: dashlane.command
 
 diff
-- :green_square: diff.args
-- :green_square: diff.command (`chezmoi diff --use-builtin-diff` is used.)
-- :green_square: diff.exclude
-- :green_square: diff.pager
-- :green_square: diff.pagerArgs
+- :negative_squared_cross_mark: diff.args
+- :green_square: diff.command (`chezmoi diff --use-builtin-diff`)
+- :black_circle: diff.exclude
+- :green_square: diff.pager (`chezmoi diff --no-pager`)
+- :negative_squared_cross_mark: diff.pagerArgs
 - :green_square: diff.reverse
 - :black_circle: diff.scriptContents
 
