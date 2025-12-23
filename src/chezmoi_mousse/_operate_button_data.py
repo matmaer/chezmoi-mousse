@@ -67,10 +67,10 @@ class OpBtnData:
 
 class OperateBtn(Enum):
     add_file = OpBtnData(
-        label=OpBtnLabels.add_file, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.add_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     add_dir = OpBtnData(
-        label=OpBtnLabels.add_dir, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.add_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     apply_path = OpBtnData(
         label=OpBtnLabels.apply_review, tooltip=OpBtnToolTips.in_dest_dir
