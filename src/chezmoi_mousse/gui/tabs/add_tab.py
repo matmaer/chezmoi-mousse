@@ -255,22 +255,25 @@ class AddTab(TabsBase, AppType):
         yield OperateButtons(ids=IDS.add)
 
     def on_mount(self) -> None:
-        self.dir_tree = self.query_one(
-            IDS.add.tree.dir_tree_q, FilteredDirTree
+        self.add_dir_button = self.query_one(
+            IDS.add.operate_btn.add_dir_q, Button
         )
+        self.add_dir_button.display = True
+        self.add_file_button = self.query_one(
+            IDS.add.operate_btn.add_file_q, Button
+        )
+        self.add_file_button.display = True
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, ContentsView
         )
         self.contents_view.add_class(Tcss.border_title_top)
         self.contents_view.border_title = f" {self.destDir} "
-        self.add_file_button = self.query_one(
-            IDS.add.operate_btn.add_file_q, Button
+        self.dir_tree = self.query_one(
+            IDS.add.tree.dir_tree_q, FilteredDirTree
         )
-        self.add_file_button.display = True
-        self.add_dir_button = self.query_one(
-            IDS.add.operate_btn.add_dir_q, Button
+        self.exit_btn = self.query_one(
+            IDS.add.operate_btn.operate_exit_q, Button
         )
-        self.add_dir_button.display = True
         self.operate_info = self.query_one(
             IDS.add.static.operate_info_q, Static
         )
