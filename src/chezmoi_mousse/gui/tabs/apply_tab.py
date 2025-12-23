@@ -16,6 +16,7 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     CurrentApplyNodeMsg,
+    DiffView,
     OperateButtonMsg,
     OperateButtons,
     ViewTabButtons,
@@ -92,9 +93,14 @@ class ApplyTab(TabVertical, AppType):
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
         )
+        self.apply_btn.disabled = True
         if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
+            self.app.chezmoi.update_managed_paths()
+            diff_view = self.query_exactly_one(DiffView)
+            diff_view.node_data = None
+            diff_view.node_data = self.current_node
             self.exit_btn.label = OpBtnLabels.reload
         self.operate_info.border_title = OperateStrings.cmd_output_subtitle
         if operate_result.exit_code == 0:
