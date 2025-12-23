@@ -411,13 +411,10 @@ class AddTab(TabsBase, AppType):
             f"{self.current_node.path}[/]"
         )
         if self.app.changes_enabled is True:
-            lines_to_write.append(OperateStrings.changes_enabled)
             if self.git_autocommit is True:
                 lines_to_write.append(OperateStrings.auto_commit)
             if self.git_autopush is True:
                 lines_to_write.append(OperateStrings.auto_push)
-        else:
-            lines_to_write.append(OperateStrings.changes_disabled)
         self.operate_info.border_subtitle = OperateStrings.add_subtitle
         self.operate_info.update("\n".join(lines_to_write))
 

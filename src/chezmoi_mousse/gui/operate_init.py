@@ -536,10 +536,6 @@ class OperateInitScreen(Screen[None], AppType):
     def update_operate_info(self) -> None:
         self.operate_info.border_title = self.init_new_btn.label
         lines_to_write: list[str] = []
-        if self.app.changes_enabled is True:
-            lines_to_write.append(OperateStrings.changes_enabled)
-        else:
-            lines_to_write.append(OperateStrings.changes_disabled)
         if self.query_exactly_one(Switch).value is False:
             lines_to_write.append(
                 "Ready to run [$text-success] chezmoi "

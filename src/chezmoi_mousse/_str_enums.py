@@ -118,15 +118,6 @@ class OperateStrings(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    changes_disabled = (
-        "[dim]Changes are currently disabled, running commands with "
-        "'--dry-run' flag.[/]"
-    )
-    changes_enabled = (
-        f"[$text-warning]{Chars.warning_sign} Changes currently enabled, "
-        "running commands without '--dry-run' flag."
-        f"{Chars.warning_sign}[/]"
-    )
     cmd_output_subtitle = "Command Output"
     destroy_path = (
         "[$text-error]Permanently remove the path from disk and "
