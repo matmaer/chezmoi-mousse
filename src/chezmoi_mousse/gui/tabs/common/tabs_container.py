@@ -20,6 +20,9 @@ __all__ = ["TabsBase"]
 
 class TabsBase(Vertical):
 
+    git_autocommit: bool | None = None
+    git_autopush: bool | None = None
+
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__()
 

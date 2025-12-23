@@ -28,9 +28,9 @@ from chezmoi_mousse import (
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .main_tabs import MainScreen
-from .operate_chezmoi import OperateChezmoiScreen
 from .tabs.add_tab import AddTab
 from .tabs.common.switchers import ViewSwitcher
+from .tabs.common.tabs_container import TabsBase
 from .tabs.common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
@@ -252,12 +252,8 @@ class SplashScreen(Screen[SplashData | None], AppType):
         MainScreen.destDir = dest_dir
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
-        OperateChezmoiScreen.git_autocommit = globals()[
-            "parsed_config"
-        ].git_autocommit
-        OperateChezmoiScreen.git_autopush = globals()[
-            "parsed_config"
-        ].git_autopush
+        TabsBase.git_autocommit = globals()["parsed_config"].git_autocommit
+        TabsBase.git_autopush = globals()["parsed_config"].git_autopush
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

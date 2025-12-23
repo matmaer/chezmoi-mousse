@@ -31,7 +31,6 @@ from chezmoi_mousse.shared import (
 
 from .install_help import InstallHelpScreen
 from .main_tabs import MainScreen
-from .operate_chezmoi import OperateChezmoiScreen
 from .operate_init import OperateInitScreen
 from .splash import SplashScreen
 from .tabs.add_tab import FilteredDirTree
@@ -237,7 +236,7 @@ class ChezmoiGUI(App[None]):
         self.changes_enabled = not self.changes_enabled
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
-        if isinstance(self.screen, (OperateChezmoiScreen, OperateInitScreen)):
+        if isinstance(self.screen, (OperateInitScreen)):
             self.screen.update_operate_info()
         elif isinstance(self.screen, MainScreen):
             apply_tab = self.screen.query_one(ApplyTab)
@@ -399,19 +398,14 @@ class ChezmoiGUI(App[None]):
                     return False
                 elif active_tab == TabName.help:
                     return False
-            elif isinstance(
-                self.screen, (OperateChezmoiScreen, OperateInitScreen)
-            ):
+            elif isinstance(self.screen, (OperateInitScreen)):
                 return True
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
             if self.operating_mode is True:
                 return None
-            if isinstance(
-                self.screen,
-                (InstallHelpScreen, OperateChezmoiScreen, OperateInitScreen),
-            ):
+            if isinstance(self.screen, (InstallHelpScreen, OperateInitScreen)):
                 return False
         elif action == BindingAction.exit_screen:
             if isinstance(

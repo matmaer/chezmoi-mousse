@@ -166,7 +166,6 @@ class WriteVerbs(Enum):
 
 
 class WriteCmd(Enum):
-    add = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
     add_dir_dry = GlobalCmd.dry_run.value + [
         WriteVerbs.add.value,
         VerbArgs.not_recursive.value,
@@ -515,7 +514,7 @@ class Chezmoi:
         else:
             base_cmd = GlobalCmd.dry_run.value
         if (
-            write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget)
+            write_cmd in (WriteCmd.destroy, WriteCmd.forget)
             and path_arg is not None
         ):
             command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
