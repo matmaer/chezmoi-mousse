@@ -1,24 +1,20 @@
 from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-from textual import on, work
+from textual import work
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import IDS, AppType, LogStrings, OperateData, TabName
+from chezmoi_mousse import IDS, AppType, LogStrings, TabName
 from chezmoi_mousse.shared import (
     AppLog,
-    CurrentAddNodeMsg,
     CustomHeader,
     DebugLog,
-    OperateButtonMsg,
     OperateLog,
     ReadCmdLog,
 )
 
-from .operate_chezmoi import OperateChezmoiScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
@@ -26,9 +22,6 @@ from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
 from .tabs.help_tab import HelpTab
 from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import NodeData
 
 __all__ = ["MainScreen"]
 
@@ -53,8 +46,6 @@ class MainScreen(Screen[None], AppType):
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
         self.debug_log: "DebugLog"
-
-        self.current_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.main_tabs)
@@ -164,24 +155,6 @@ class MainScreen(Screen[None], AppType):
         )
         setattr(config_tab_switcher, "splash_data", self.app.splash_data)
 
-    @on(OperateButtonMsg)
-    def push_operate_screen(self, msg: OperateButtonMsg) -> None:
-        if msg.canvas_name != TabName.add:
-            return
-
-        operate_data = OperateData(
-            btn_enum=msg.btn_enum, btn_label=msg.label, btn_tooltip=msg.tooltip
-        )
-        if (
-            self.current_add_node is not None
-            and msg.canvas_name == TabName.add
-        ):
-            operate_data.node_data = self.current_add_node
-        self.app.operate_data = operate_data
-        self.app.push_screen(
-            OperateChezmoiScreen(), callback=self.handle_operate_result
-        )
-
     def handle_operate_result(self, _: None) -> None:
         if self.app.operate_cmd_result is None:
             self.notify("Operation cancelled.")
@@ -211,7 +184,3 @@ class MainScreen(Screen[None], AppType):
         add_dir_tree.reload()
         self.populate_apply_trees()
         self.populate_re_add_trees()
-
-    @on(CurrentAddNodeMsg)
-    def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
-        self.current_add_node = message.node_data
