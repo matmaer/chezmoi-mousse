@@ -6,7 +6,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import Button, DirectoryTree, Switch
+from textual.widgets import Button, DirectoryTree, Static, Switch
 
 from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
 from chezmoi_mousse.shared import (
@@ -244,8 +244,10 @@ class AddTab(TabsBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.add)
+        self.current_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
+        yield Static(id=IDS.add.static.operate_info, classes=Tcss.operate_info)
         with Horizontal():
             yield FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree)
             yield ContentsView(ids=IDS.add)
