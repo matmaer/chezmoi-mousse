@@ -42,8 +42,6 @@ class OpBtnLabels(StrEnum):
 
 
 class OpBtnToolTips(StrEnum):
-    add_dir_disabled = "Select a directory to enable."
-    add_file_disabled = "Select a file to enable."
     in_dest_dir = "This is the destDir, select a path to operate on."
     init_clone_disabled = (
         f"Provide an input to enable {OpBtnLabels.init_clone}."

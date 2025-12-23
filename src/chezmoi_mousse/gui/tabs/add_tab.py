@@ -13,15 +13,13 @@ from chezmoi_mousse import (
     AppType,
     Chars,
     NodeData,
+    OpBtnLabels,
+    OperateStrings,
     PathKind,
     Tcss,
     WriteCmd,
 )
-from chezmoi_mousse.shared import (
-    ContentsView,
-    CurrentAddNodeMsg,
-    OperateButtons,
-)
+from chezmoi_mousse.shared import ContentsView, OperateButtons
 
 from .common.switch_slider import SwitchSlider
 from .common.tabs_container import TabsBase
@@ -282,6 +280,9 @@ class AddTab(TabsBase, AppType):
         self.exit_btn = self.query_one(
             IDS.add.operate_btn.operate_exit_q, Button
         )
+        self.filtered_dir_tree = self.query_one(
+            IDS.add.tree.dir_tree_q, FilteredDirTree
+        )
         self.operate_info = self.query_one(
             IDS.add.static.operate_info_q, Static
         )
@@ -305,29 +306,55 @@ class AddTab(TabsBase, AppType):
         else:
             raise ValueError("Invalid path kind for apply operation")
 
-    def update_buttons(self, path_kind: PathKind) -> None:
-        if path_kind == PathKind.DIR:
+    def run_operate_command(self) -> None:
+        if self.current_node is None:
+            return
+        write_cmd: WriteCmd = self.get_command()
+        operate_result = self.app.chezmoi.perform(
+            write_cmd,
+            path_arg=self.current_node.path,
+            changes_enabled=self.app.changes_enabled,
+        )
+        self.add_dir_button.disabled = True
+        self.add_dir_button.tooltip = None
+        if self.current_node.path_kind == PathKind.FILE:
+            self.add_file_button.label = OpBtnLabels.add_file_review
             self.add_file_button.disabled = True
-            self.add_dir_button.disabled = False
+            self.add_file_button.tooltip = None
+        elif self.current_node.path_kind == PathKind.DIR:
+            self.add_dir_button.label = OpBtnLabels.add_dir_review
+            self.add_dir_button.disabled = True
             self.add_dir_button.tooltip = None
         else:
-            self.add_file_button.disabled = False
-            self.add_file_button.tooltip = None
-            self.add_dir_button.disabled = True
-        return
+            raise ValueError("Invalid path kind for add operation")
+        if operate_result.dry_run is True:
+            self.exit_btn.label = OpBtnLabels.cancel
+        elif operate_result.dry_run is False:
+            self.app.chezmoi.update_managed_paths()
+            self.filtered_dir_tree.reload()
+            content_view = self.query_exactly_one(ContentsView)
+            content_view.node_data = None
+            content_view.node_data = self.current_node
+            self.exit_btn.label = OpBtnLabels.reload
+        self.operate_info.border_title = OperateStrings.cmd_output_subtitle
+        if operate_result.exit_code == 0:
+            self.operate_info.border_subtitle = OperateStrings.success_subtitle
+            self.operate_info.add_class(Tcss.operate_success)
+            self.operate_info.update(f"{operate_result.std_out}")
+        else:
+            self.operate_info.border_subtitle = OperateStrings.error_subtitle
+            self.operate_info.add_class(Tcss.operate_error)
+            self.operate_info.update(f"{operate_result.std_err}")
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
-    def update_contents_view_and_send_message(
+    def update_contents_view(
         self,
         event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
         if event.node.data is None:
-            self.app.notify(
-                f"AddTab: TreeNode data is None for {event.node.label}",
-                severity="error",
-            )
+            self.app.notify("Select a new node to operate on.")
             return
         self.contents_view.border_title = f" {event.node.data.path} "
 
@@ -336,7 +363,14 @@ class AddTab(TabsBase, AppType):
             if isinstance(event, DirectoryTree.DirectorySelected)
             else PathKind.FILE
         )
-        self.update_buttons(path_kind=path_kind)
+        if path_kind == PathKind.DIR:
+            self.add_file_button.disabled = True
+            self.add_dir_button.disabled = False
+            self.add_dir_button.tooltip = None
+        else:
+            self.add_file_button.disabled = False
+            self.add_file_button.tooltip = None
+            self.add_dir_button.disabled = True
         node_data = NodeData(
             found=True,
             path=event.node.data.path,
@@ -344,7 +378,6 @@ class AddTab(TabsBase, AppType):
             path_kind=path_kind,
         )
         self.contents_view.node_data = node_data
-        self.post_message(CurrentAddNodeMsg(node_data=node_data))
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
