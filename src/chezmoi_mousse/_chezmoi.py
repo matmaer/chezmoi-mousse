@@ -167,6 +167,10 @@ class WriteVerbs(Enum):
 
 class WriteCmd(Enum):
     add = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
+    add_dir_dry = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
+    add_dir_live = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
+    add_file_live = [WriteVerbs.add.value]
+    add_file_dry = [WriteVerbs.add.value]
     # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
     apply_dir_dry = GlobalCmd.dry_run.value + [
         WriteVerbs.apply.value,
