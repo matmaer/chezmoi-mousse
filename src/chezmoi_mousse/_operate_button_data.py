@@ -16,6 +16,8 @@ __all__ = ["OpBtnLabels", "OpBtnToolTips", "OperateBtn"]
 
 class OpBtnLabels(StrEnum):
     add_dir = "Add Dir"
+    add_review = "Review Add"
+    add_live = "Run Chezmoi Add"
     add_file = "Add File"
     apply_dir = "Apply Dir"
     apply_file = "Apply File"
@@ -31,10 +33,10 @@ class OpBtnLabels(StrEnum):
     forget_path = "Forget Path"
     init_clone = "Init Clone Repo"
     init_new = "Init New Repo"
-    re_add_review = "Review Re-Add"
-    re_add_run = "Run Chezmoi Re-Add"
     re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
+    re_add_review = "Review Re-Add"
+    re_add_run = "Run Chezmoi Re-Add"
     reload = "Reload"
 
 
