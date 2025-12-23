@@ -96,20 +96,15 @@ class ApplyTab(TabVertical, AppType):
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
             self.exit_btn.label = OpBtnLabels.reload
-        pretty_cmd = self.get_command().pretty_cmd
         self.operate_info.border_title = OperateStrings.cmd_output_subtitle
         if operate_result.exit_code == 0:
             self.operate_info.border_subtitle = OperateStrings.success_subtitle
             self.operate_info.add_class(Tcss.operate_success)
-            self.operate_info.update(
-                f"{pretty_cmd} output:\n{operate_result.std_out}"
-            )
+            self.operate_info.update(f"{operate_result.std_out}")
         else:
             self.operate_info.border_subtitle = OperateStrings.error_subtitle
             self.operate_info.add_class(Tcss.operate_error)
-            self.operate_info.update(
-                f"{pretty_cmd} output:\n{operate_result.std_err}"
-            )
+            self.operate_info.update(f"{operate_result.std_err}")
 
     def toggle_widget_visibility(self) -> None:
         # Widgets shown by default
@@ -155,14 +150,9 @@ class ApplyTab(TabVertical, AppType):
             f"[$warning]{self.get_command().pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
-        if self.app.changes_enabled is True:
-            lines_to_write.append(OperateStrings.changes_enabled)
-        else:
-            lines_to_write.append(OperateStrings.changes_disabled)
         lines_to_write.append(OperateStrings.diff_color)
         self.operate_info.border_subtitle = OperateStrings.apply_subtitle
         self.operate_info.update("\n".join(lines_to_write))
-        # self.operate_info.border_title = OperateStrings.apply_path
 
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:

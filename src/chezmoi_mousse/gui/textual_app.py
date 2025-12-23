@@ -35,6 +35,7 @@ from .operate_chezmoi import OperateChezmoiScreen
 from .operate_init import OperateInitScreen
 from .splash import SplashScreen
 from .tabs.add_tab import FilteredDirTree
+from .tabs.apply_tab import ApplyTab
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher
 
@@ -236,6 +237,9 @@ class ChezmoiGUI(App[None]):
         reactive_header.changes_enabled = self.changes_enabled
         if isinstance(self.screen, (OperateChezmoiScreen, OperateInitScreen)):
             self.screen.update_operate_info()
+        elif isinstance(self.screen, MainScreen):
+            apply_tab = self.screen.query_one(ApplyTab)
+            apply_tab.write_pre_operate_info()
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
