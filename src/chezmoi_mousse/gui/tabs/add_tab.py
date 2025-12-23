@@ -102,6 +102,12 @@ class FilteredDirTree(DirectoryTree, AppType):
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)
     unwanted: reactive[bool] = reactive(False, init=False)
 
+    def on_mount(self) -> None:
+        self.guide_depth = 3
+        self.show_root = False
+        self.add_class(Tcss.tab_left_vertical, Tcss.border_title_top)
+        self.border_title = " destDir "
+
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
         # Switches: Red - Red (default)
@@ -246,10 +252,6 @@ class AddTab(Vertical, AppType):
         self.dir_tree = self.query_one(
             IDS.add.tree.dir_tree_q, FilteredDirTree
         )
-        self.dir_tree.guide_depth = 3
-        self.dir_tree.show_root = False
-        self.dir_tree.add_class(Tcss.tab_left_vertical, Tcss.border_title_top)
-        self.dir_tree.border_title = " destDir "
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, ContentsView
         )
