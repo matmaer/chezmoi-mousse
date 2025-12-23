@@ -18,7 +18,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OpBtnLabels,
-    OperateData,
     TabName,
 )
 from chezmoi_mousse.shared import (
@@ -34,10 +33,12 @@ from .main_tabs import MainScreen
 from .operate_init import OperateInitScreen
 from .splash import SplashScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
-from .tabs.apply_tab import ApplyTab
+
+# from .tabs.apply_tab import ApplyTab
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher
-from .tabs.re_add_tab import ReAddTab
+
+# from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
     from chezmoi_mousse import Chezmoi, CommandResult, SplashData
@@ -129,7 +130,6 @@ class ChezmoiGUI(App[None]):
 
         # Manage state between screens
         self.changes_enabled: bool = False
-        self.operate_data: "OperateData | None" = None
         self.init_cmd_result: "CommandResult | None" = None
         self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
@@ -244,10 +244,10 @@ class ChezmoiGUI(App[None]):
                 return
             add_tab = self.screen.query_exactly_one(AddTab)
             add_tab.write_pre_operate_info()
-            apply_tab = self.screen.query_exactly_one(ApplyTab)
-            apply_tab.write_pre_operate_info()
-            re_add_tab = self.screen.query_exactly_one(ReAddTab)
-            re_add_tab.write_pre_operate_info()
+            # apply_tab = self.screen.query_exactly_one(ApplyTab)
+            # apply_tab.write_pre_operate_info()
+            # re_add_tab = self.screen.query_exactly_one(ReAddTab)
+            # re_add_tab.write_pre_operate_info()
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):

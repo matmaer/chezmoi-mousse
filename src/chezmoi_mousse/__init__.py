@@ -61,7 +61,6 @@ __all__ = [
     "InitCloneData",
     "OpBtnLabels",
     "OperateBtn",
-    "OperateData",
     "OperateStrings",
     # _chezmoi.py
     "Chezmoi",
@@ -119,15 +118,6 @@ class NodeData:
     # Additional "node status" codes: X (no status but managed)
     status: str
     path_kind: "PathKind"
-
-
-@dataclass(slots=True)
-class OperateData:
-    btn_enum: "OperateBtn"
-    btn_label: str
-    btn_tooltip: str | None = None
-    diff_data: "DiffData | None" = None
-    node_data: "NodeData | None" = None
 
 
 @dataclass(slots=True)

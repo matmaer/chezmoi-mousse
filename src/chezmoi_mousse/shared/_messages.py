@@ -71,11 +71,9 @@ class OperateButtonMsg(Message):
         *,
         btn_enum: "OperateBtn",
         label: "str",
-        tooltip: "str",
         canvas_name: "TabName|ScreenName",
     ) -> None:
         self.btn_enum = btn_enum
         self.label = label
-        self.tooltip = tooltip
         self.canvas_name = canvas_name
         super().__init__()

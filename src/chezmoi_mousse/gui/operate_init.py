@@ -633,9 +633,7 @@ class OperateInitScreen(Screen[None], AppType):
         ):
             self.app.init_needed = False
             self.init_new_btn.disabled = True
-            self.init_new_btn.tooltip = None
             self.init_clone_btn.disabled = True
-            self.init_clone_btn.tooltip = None
             self.exit_btn.label = OpBtnLabels.reload
 
     @on(Switch.Changed)
@@ -645,7 +643,6 @@ class OperateInitScreen(Screen[None], AppType):
             self.init_new_btn.disabled = True
             if self.valid_arg is True:
                 self.init_clone_btn.disabled = False
-                self.init_clone_btn.tooltip = None
             elif self.valid_arg is False:
                 self.init_clone_btn.disabled = True
         elif event.value is False:

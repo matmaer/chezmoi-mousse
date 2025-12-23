@@ -132,7 +132,6 @@ class OperateButton(Button, AppType):
             btn_enum=self.button_enum,
             canvas_name=self.ids.canvas_name,
             label=str(self.label),
-            tooltip=str(self.tooltip),
         )
         self.post_message(operate_button_message)
 

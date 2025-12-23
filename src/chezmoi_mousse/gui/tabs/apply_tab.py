@@ -64,26 +64,40 @@ class ApplyTab(TabsBase, AppType):
         )
         self.operate_info.display = False
 
-    def get_command(self) -> WriteCmd:
+    def get_run_command(self, btn_label: OpBtnLabels) -> WriteCmd:
         if self.current_node is None:
             raise ValueError("No current node selected")
-        return (
-            WriteCmd.apply_live
-            if self.app.changes_enabled
-            else WriteCmd.apply_dry
-        )
+        if btn_label == OpBtnLabels.apply_run:
+            return (
+                WriteCmd.apply_live
+                if self.app.changes_enabled
+                else WriteCmd.apply_dry
+            )
+        elif btn_label == OpBtnLabels.forget_run:
+            return (
+                WriteCmd.forget_live
+                if self.app.changes_enabled
+                else WriteCmd.forget_dry
+            )
+        elif btn_label == OpBtnLabels.destroy_run:
+            return (
+                WriteCmd.destroy_live
+                if self.app.changes_enabled
+                else WriteCmd.destroy_dry
+            )
+        else:
+            raise ValueError(f"Unknown button label: {btn_label}")
 
-    def run_operate_command(self) -> None:
+    def run_operate_command(self, btn_label: OpBtnLabels) -> None:
         if self.current_node is None:
             return
-        write_cmd: WriteCmd = self.get_command()
+        write_cmd: WriteCmd = self.get_run_command(btn_label)
         operate_result = self.app.chezmoi.perform(
             write_cmd,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
         )
         self.apply_btn.disabled = True
-        self.apply_btn.tooltip = None
         self.apply_btn.label = OpBtnLabels.apply_review
         if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
@@ -138,13 +152,13 @@ class ApplyTab(TabsBase, AppType):
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
-    def write_pre_operate_info(self) -> None:
+    def write_pre_operate_info(self, btn_label: OpBtnLabels) -> None:
         if self.current_node is None:
             return
         lines_to_write: list[str] = []
         lines_to_write.append(
             f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{self.get_command().pretty_cmd} "
+            f"[$text-warning]{self.get_run_command(btn_label).pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
         lines_to_write.append(OperateStrings.diff_color)
@@ -162,6 +176,8 @@ class ApplyTab(TabsBase, AppType):
             or self.app.chezmoi.has_apply_status_paths_in(msg.node_data.path)
         ):
             self.apply_btn.disabled = False
+            self.destroy_btn.disabled = False
+            self.forget_btn.disabled = False
         else:
             self.apply_btn.disabled = True
         self.update_view_node_data(msg.node_data)
@@ -173,9 +189,23 @@ class ApplyTab(TabsBase, AppType):
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.apply_btn.label = OpBtnLabels.apply_run
-            self.write_pre_operate_info()
+            self.write_pre_operate_info(OpBtnLabels.apply_run)
         elif msg.label == OpBtnLabels.apply_run:
-            self.run_operate_command()
+            self.run_operate_command(OpBtnLabels.apply_run)
+        elif msg.label == OpBtnLabels.forget_review:
+            self.app.operating_mode = True
+            self.toggle_widget_visibility()
+            self.apply_btn.label = OpBtnLabels.forget_run
+            self.write_pre_operate_info(OpBtnLabels.forget_run)
+        elif msg.label == OpBtnLabels.forget_run:
+            self.run_operate_command(OpBtnLabels.forget_run)
+        elif msg.label == OpBtnLabels.destroy_review:
+            self.app.operating_mode = True
+            self.toggle_widget_visibility()
+            self.apply_btn.label = OpBtnLabels.destroy_run
+            self.write_pre_operate_info(OpBtnLabels.destroy_run)
+        elif msg.label == OpBtnLabels.destroy_run:
+            self.run_operate_command(OpBtnLabels.destroy_run)
         elif msg.label == OpBtnLabels.cancel:
             self.apply_btn.disabled = False
             self.apply_btn.label = OpBtnLabels.apply_review
