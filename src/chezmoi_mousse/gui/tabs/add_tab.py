@@ -255,9 +255,6 @@ class AddTab(Vertical, AppType):
         )
         self.contents_view.add_class(Tcss.border_title_top)
         self.contents_view.border_title = f" {self.destDir} "
-        self.operate_buttons = self.query_one(
-            IDS.add.container.operate_buttons_q, OperateButtons
-        )
         self.add_file_button = self.query_one(
             IDS.add.operate_btn.add_file_q, Button
         )
