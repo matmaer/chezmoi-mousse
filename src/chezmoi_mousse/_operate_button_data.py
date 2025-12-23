@@ -15,10 +15,8 @@ __all__ = ["OpBtnLabels", "OpBtnToolTips", "OperateBtn"]
 
 
 class OpBtnLabels(StrEnum):
-    add_dir = "Add Dir"
     add_dir_live = "Run Chezmoi Add"
     add_dir_review = "Review Add Dir"
-    add_file = "Add File"
     add_file_live = "Run Chezmoi Add"
     add_file_review = "Review Add File"
     apply_dir = "Apply Dir"

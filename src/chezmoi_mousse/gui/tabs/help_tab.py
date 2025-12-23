@@ -53,8 +53,8 @@ class HelpStrings(StrEnum):
     available_buttons = "Available Buttons"
     # Add tab
     add_tab_help = "Add Tab Help"
-    add_dir_button = f"{OpBtnLabels.add_dir} Button"
-    add_file_button = f"{OpBtnLabels.add_file} Button"
+    add_dir_button = f"{OpBtnLabels.add_dir_live} Button"
+    add_file_button = f"{OpBtnLabels.add_file_live} Button"
     unmanaged_dirs_filter = f"{Switches.unmanaged_dirs.label} Filter"
     unwanted_filter = f"{Switches.unwanted.label} Filter"
     # Apply tab
