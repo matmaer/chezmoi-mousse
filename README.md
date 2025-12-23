@@ -13,7 +13,6 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 ## Use Case
 
-- The current HEAD is under development, a release containing the most recent fully functional state will be added soon.
 - Can be safely tested as no write operations are enabled by default.
 - To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer.
 This will enable commands changing your config files or the chezmoi state.
@@ -24,9 +23,9 @@ This will enable commands changing your config files or the chezmoi state.
 
 > Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
 
-On the command line, clone the repository:
+On the command line, clone the repository at the latest stable release:
 
-`git clone https://github.com/matmaer/chezmoi-mousse.git`
+`git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`
 
 Change directory into the `src` directory of the cloned repository.
 
