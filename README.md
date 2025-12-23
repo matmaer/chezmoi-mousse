@@ -143,7 +143,7 @@ Top level
 - :green_circle: tempDir
 - :green_circle: umask
 - :black_circle: useBuiltinAge
-- :green_circle: useBuiltinGit (`chezmoi git` is used to render any git related output)
+- :green_square: useBuiltinGit (`--use-builtin-git=true`)
 - :negative_squared_cross_mark: verbose
 - :black_circle: workingTree
 
