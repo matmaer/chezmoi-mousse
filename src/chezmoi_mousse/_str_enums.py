@@ -158,6 +158,7 @@ class OperateStrings(StrEnum):
         "switch to initialize by cloning an existing Github repository."
     )
     read_file = "[$success]Path.read()[/]"
+    ready_to_run = "[$success]Ready to run: [/]"
     re_add_path = (
         "[$text-primary]Overwrite the source state with current local path.[/]"
     )

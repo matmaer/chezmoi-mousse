@@ -406,8 +406,8 @@ class AddTab(TabsBase, AppType):
             return
         lines_to_write: list[str] = []
         lines_to_write.append(
-            f"[$text-warning]Ready to run [/]"
-            f"[$warning]{self.get_command().pretty_cmd} "
+            f"{OperateStrings.ready_to_run}"
+            f"[$text-warning]{self.get_command().pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
         if self.app.changes_enabled is True:
