@@ -168,7 +168,6 @@ class WriteVerbs(Enum):
 class WriteCmd(Enum):
     add = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
     # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
-    apply = [WriteVerbs.apply.value, VerbArgs.not_recursive.value]
     apply_dir_dry = GlobalCmd.dry_run.value + [
         WriteVerbs.apply.value,
         VerbArgs.not_recursive.value,
@@ -500,14 +499,24 @@ class Chezmoi:
             write_cmd
             in (
                 WriteCmd.add,
-                WriteCmd.apply,
-                WriteCmd.re_add,
-                WriteCmd.forget,
                 WriteCmd.destroy,
+                WriteCmd.forget,
+                WriteCmd.re_add,
             )
             and path_arg is not None
         ):
             command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
+        if (
+            write_cmd
+            in (
+                WriteCmd.apply_dir_dry,
+                WriteCmd.apply_dir_live,
+                WriteCmd.apply_file_dry,
+                WriteCmd.apply_file_live,
+            )
+            and path_arg is not None
+        ):
+            command: list[str] = write_cmd.value + [str(path_arg)]
         elif write_cmd == WriteCmd.init_new:
             command: list[str] = base_cmd + write_cmd.value
         elif (
