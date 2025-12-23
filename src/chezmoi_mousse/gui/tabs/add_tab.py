@@ -19,7 +19,12 @@ from chezmoi_mousse import (
     Tcss,
     WriteCmd,
 )
-from chezmoi_mousse.shared import ContentsView, OperateButtons
+from chezmoi_mousse.shared import (
+    ContentsView,
+    CurrentAddNodeMsg,
+    OperateButtonMsg,
+    OperateButtons,
+)
 
 from .common.switch_slider import SwitchSlider
 from .common.tabs_container import TabsBase
@@ -280,7 +285,7 @@ class AddTab(TabsBase, AppType):
         self.exit_btn = self.query_one(
             IDS.add.operate_btn.operate_exit_q, Button
         )
-        self.filtered_dir_tree = self.query_one(
+        self.dir_tree = self.query_one(
             IDS.add.tree.dir_tree_q, FilteredDirTree
         )
         self.operate_info = self.query_one(
@@ -328,7 +333,7 @@ class AddTab(TabsBase, AppType):
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
             self.app.chezmoi.update_managed_paths()
-            self.filtered_dir_tree.reload()
+            self.dir_tree.reload()
             content_view = self.query_exactly_one(ContentsView)
             content_view.node_data = None
             content_view.node_data = self.current_node
@@ -363,16 +368,92 @@ class AddTab(TabsBase, AppType):
         if path_kind == PathKind.DIR:
             self.add_file_button.disabled = True
             self.add_dir_button.disabled = False
-        else:
+        elif path_kind == PathKind.FILE:
             self.add_file_button.disabled = False
             self.add_dir_button.disabled = True
-        node_data = NodeData(
+        else:
+            raise ValueError("Unknown path kind.")
+        self.current_node = NodeData(
             found=True,
             path=event.node.data.path,
             status="",
             path_kind=path_kind,
         )
-        self.contents_view.node_data = node_data
+        self.contents_view.node_data = self.current_node
+
+    def toggle_widget_visibility(self) -> None:
+        # Widgets shown by default
+        self.app.toggle_main_tabs_display()
+        self.dir_tree.display = (
+            False if self.dir_tree.display is True else True
+        )
+        self.operate_info.display = (
+            True if self.operate_info.display is False else False
+        )
+        # Depending on self.app.operating_mode, show/hide buttons
+        switch_slider = self.query_one(
+            IDS.add.container.switch_slider_q, SwitchSlider
+        )
+        switch_slider.display = (
+            False if self.app.operating_mode is True else True
+        )
+        if self.app.operating_mode is True:
+            self.exit_btn.display = True
+            switch_slider.display = False  # regardless of visibility
+        else:
+            self.exit_btn.display = False
+            # this will restore the previous vilibility, whatever it was
+            switch_slider.display = True
+
+    def write_pre_operate_info(self) -> None:
+        if self.current_node is None:
+            return
+        lines_to_write: list[str] = []
+        lines_to_write.append(
+            f"[$text-warning]Ready to run [/]"
+            f"[$warning]{self.get_command().pretty_cmd} "
+            f"{self.current_node.path}[/]"
+        )
+        self.operate_info.border_subtitle = OperateStrings.add_subtitle
+        self.operate_info.update("\n".join(lines_to_write))
+
+    @on(OperateButtonMsg)
+    def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
+        msg.stop()
+        if self.current_node is None:
+            raise ValueError("self.current_node is None")
+        if self.current_node.path_kind == PathKind.DIR:
+            self.add_file_button.display = False
+        elif self.current_node.path_kind == PathKind.FILE:
+            self.add_dir_button.display = False
+        if msg.label in (
+            OpBtnLabels.add_dir_review,
+            OpBtnLabels.add_file_review,
+        ):
+            self.app.operating_mode = True
+            self.toggle_widget_visibility()
+            if self.current_node.path_kind == PathKind.DIR:
+                self.add_file_button.display = False
+                self.add_dir_button.label = OpBtnLabels.add_live
+            elif self.current_node.path_kind == PathKind.FILE:
+                self.add_dir_button.display = False
+                self.add_file_button.label = OpBtnLabels.add_live
+            self.write_pre_operate_info()
+        elif msg.label == OpBtnLabels.re_add_run:
+            self.run_operate_command()
+        elif msg.label == OpBtnLabels.cancel:
+            self.app.operating_mode = False
+            self.toggle_widget_visibility()
+        elif msg.label == OpBtnLabels.reload:
+            self.app.operating_mode = False
+        self.exit_btn.display = False
+        self.add_dir_button.display = True
+        self.add_file_button.display = True
+
+    @on(CurrentAddNodeMsg)
+    def handle_new_apply_node_selected(self, msg: CurrentAddNodeMsg) -> None:
+        msg.stop()
+        self.current_node = msg.node_data
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
