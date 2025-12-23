@@ -410,6 +410,10 @@ class AddTab(TabsBase, AppType):
             f"[$warning]{self.get_command().pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
+        if self.app.changes_enabled is True:
+            lines_to_write.append(OperateStrings.changes_enabled)
+        else:
+            lines_to_write.append(OperateStrings.changes_disabled)
         self.operate_info.border_subtitle = OperateStrings.add_subtitle
         self.operate_info.update("\n".join(lines_to_write))
 
