@@ -23,7 +23,7 @@ This will enable commands changing your config files or the chezmoi state.
 
 > Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
 
-On the command line, clone the repository at the latest stable release:
+On the command line, clone the repository at the latest tagged version:
 
 `git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`
 
