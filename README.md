@@ -189,7 +189,7 @@ dashlane
 
 diff
 - :green_square: diff.args
-- :green_circle: diff.command (`chezmoi diff` is used to render any diff related output)
+- :green_square: diff.command (`chezmoi diff --use-builtin-diff` is used.)
 - :green_square: diff.exclude
 - :green_square: diff.pager
 - :green_square: diff.pagerArgs

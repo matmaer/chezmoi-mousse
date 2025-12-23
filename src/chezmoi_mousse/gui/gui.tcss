@@ -23,6 +23,12 @@
   background-tint: $error-muted;
 }
 
+.diff_line_context {
+  color: $text-disabled;
+  background: $surface;
+  background-tint: $surface;
+}
+
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;

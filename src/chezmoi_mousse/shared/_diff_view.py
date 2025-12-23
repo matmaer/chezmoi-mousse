@@ -89,6 +89,13 @@ class DiffLines(VerticalGroup):
                 static_list.append(Static(line, classes="diff_line_added"))
             elif line.startswith("-"):
                 static_list.append(Static(line, classes="diff_line_removed"))
+            elif line.startswith(" "):
+                static_list.append(
+                    Static(
+                        f"{Chars.bullet}{line[1:]}",
+                        classes="diff_line_context",
+                    )
+                )
             lines += 1
             if lines >= lines_limit:
                 static_list.append(

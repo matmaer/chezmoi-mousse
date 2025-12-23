@@ -71,6 +71,7 @@ class GlobalCmd(Enum):
 class VerbArgs(Enum):
     # encrypt = "--encrypt"
     # debug = "--debug"
+    diff = ["--use-builtin-diff", "--no-pager"]
     format_json = "--format=json"
     git_log = [
         "--",
@@ -110,7 +111,9 @@ class ReadVerbs(Enum):
 class ReadCmd(Enum):
     cat = GlobalCmd.live_run.value + [ReadVerbs.cat.value]
     cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config.value]
-    diff = GlobalCmd.live_run.value + [ReadVerbs.diff.value]
+    diff = (
+        GlobalCmd.live_run.value + [ReadVerbs.diff.value] + VerbArgs.diff.value
+    )
     diff_reverse = GlobalCmd.live_run.value + [
         ReadVerbs.diff.value,
         VerbArgs.reverse.value,

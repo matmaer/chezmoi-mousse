@@ -129,7 +129,7 @@ class OperateStrings(StrEnum):
     diff_color = (
         f"[$text-success]+ green lines will be added[/]\n"
         "[$text-error]- red lines will be removed[/]\n"
-        f"[dim]{Chars.bullet} dimmed lines for context[/]"
+        f"[dim]{Chars.bullet} dimmed lines for context (3 lines)[/]"
     )
     error_subtitle = "Operation failed with errors"
     forget_path = (
