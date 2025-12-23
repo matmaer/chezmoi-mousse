@@ -4,7 +4,7 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Switch
 
@@ -16,6 +16,7 @@ from chezmoi_mousse.shared import (
 )
 
 from .common.switch_slider import SwitchSlider
+from .common.tabs_container import TabsBase
 
 __all__ = ["AddTab", "FilteredDirTree"]
 
@@ -237,9 +238,12 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
 
-class AddTab(Vertical, AppType):
+class AddTab(TabsBase, AppType):
 
     destDir: Path
+
+    def __init__(self) -> None:
+        super().__init__(ids=IDS.add)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
