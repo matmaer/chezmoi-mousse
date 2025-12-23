@@ -24,12 +24,12 @@ from chezmoi_mousse.shared import (
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .common.tabs_container import TabVertical
+from .common.tabs_container import TabsBase
 
 __all__ = ["ApplyTab"]
 
 
-class ApplyTab(TabVertical, AppType):
+class ApplyTab(TabsBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.apply)

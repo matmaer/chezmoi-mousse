@@ -15,10 +15,10 @@ from .trees import ExpandedTree, ListTree, ManagedTree
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, NodeData
 
-__all__ = ["TabVertical"]
+__all__ = ["TabsBase"]
 
 
-class TabVertical(Vertical):
+class TabsBase(Vertical):
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__()
