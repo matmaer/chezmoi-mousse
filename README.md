@@ -27,6 +27,8 @@ On the command line, clone the repository at the latest tagged version:
 
 `git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`
 
+> Note: You'll see a "detached HEAD" warning message - this is normal when checking out a tagged commit.
+
 Change directory into the `src` directory of the cloned repository.
 
 `cd chezmoi-mousse` and `cd src`
