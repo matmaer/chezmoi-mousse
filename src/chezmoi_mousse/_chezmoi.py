@@ -167,10 +167,16 @@ class WriteVerbs(Enum):
 
 class WriteCmd(Enum):
     add = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
-    add_dir_dry = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
-    add_dir_live = [WriteVerbs.add.value, VerbArgs.not_recursive.value]
-    add_file_live = [WriteVerbs.add.value]
-    add_file_dry = [WriteVerbs.add.value]
+    add_dir_dry = GlobalCmd.dry_run.value + [
+        WriteVerbs.add.value,
+        VerbArgs.not_recursive.value,
+    ]
+    add_dir_live = GlobalCmd.live_run.value + [
+        WriteVerbs.add.value,
+        VerbArgs.not_recursive.value,
+    ]
+    add_file_live = GlobalCmd.live_run.value + [WriteVerbs.add.value]
+    add_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.add.value]
     # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
     apply_dir_dry = GlobalCmd.dry_run.value + [
         WriteVerbs.apply.value,
@@ -516,6 +522,10 @@ class Chezmoi:
         if (
             write_cmd
             in (
+                WriteCmd.add_dir_dry,
+                WriteCmd.add_dir_live,
+                WriteCmd.add_file_dry,
+                WriteCmd.add_file_live,
                 WriteCmd.apply_dir_dry,
                 WriteCmd.apply_dir_live,
                 WriteCmd.apply_file_dry,

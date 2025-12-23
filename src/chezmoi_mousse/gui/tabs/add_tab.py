@@ -322,13 +322,9 @@ class AddTab(TabsBase, AppType):
         )
         self.add_dir_button.disabled = True
         if self.current_node.path_kind == PathKind.FILE:
-            self.add_file_button.label = OpBtnLabels.add_file_review
             self.add_file_button.disabled = True
-        elif self.current_node.path_kind == PathKind.DIR:
-            self.add_dir_button.label = OpBtnLabels.add_dir_review
-            self.add_dir_button.disabled = True
         else:
-            raise ValueError("Invalid path kind for add operation")
+            self.add_dir_button.disabled = True
         if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
@@ -430,25 +426,33 @@ class AddTab(TabsBase, AppType):
             OpBtnLabels.add_dir_review,
             OpBtnLabels.add_file_review,
         ):
+            self.exit_btn.display = False
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             if self.current_node.path_kind == PathKind.DIR:
-                self.add_file_button.display = False
-                self.add_dir_button.label = OpBtnLabels.add_live
+                self.add_dir_button.label = OpBtnLabels.add_dir_live
             elif self.current_node.path_kind == PathKind.FILE:
-                self.add_dir_button.display = False
-                self.add_file_button.label = OpBtnLabels.add_live
+                self.add_file_button.label = OpBtnLabels.add_file_live
             self.write_pre_operate_info()
-        elif msg.label == OpBtnLabels.re_add_run:
+        elif msg.label in (
+            OpBtnLabels.add_file_live,
+            OpBtnLabels.add_dir_live,
+        ):
             self.run_operate_command()
         elif msg.label == OpBtnLabels.cancel:
+            self.add_dir_button.display = True
+            self.add_dir_button.label = OpBtnLabels.add_dir_review
+            self.add_file_button.display = True
+            self.add_file_button.label = OpBtnLabels.add_file_review
             self.app.operating_mode = False
             self.toggle_widget_visibility()
         elif msg.label == OpBtnLabels.reload:
+            self.add_dir_button.display = True
+            self.add_dir_button.label = OpBtnLabels.add_dir_review
+            self.add_file_button.display = True
+            self.add_file_button.label = OpBtnLabels.add_file_review
             self.app.operating_mode = False
-        self.exit_btn.display = False
-        self.add_dir_button.display = True
-        self.add_file_button.display = True
+            self.toggle_widget_visibility()
 
     @on(CurrentAddNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentAddNodeMsg) -> None:
