@@ -127,6 +127,7 @@ class OperateStrings(StrEnum):
         "running commands without '--dry-run' flag."
         f"{Chars.warning_sign}[/]"
     )
+    cmd_output_subtitle = "Command Output"
     destroy_path = (
         "[$text-error]Permanently remove the path from disk and "
         " chezmoi. MAKE SURE YOU HAVE A BACKUP![/]"
@@ -139,6 +140,7 @@ class OperateStrings(StrEnum):
         "[$text-error]- red lines will be removed[/]\n"
         f"[dim]{Chars.bullet} dimmed lines for context[/]"
     )
+    error_subtitle = "Operation failed with errors"
     forget_path = (
         "[$text-primary]Remove the path from the source state, i.e. stop "
         "managing them.[/]"
@@ -177,6 +179,7 @@ class OperateStrings(StrEnum):
         "private, make sure you have your SSH key pair set up before using "
         "this option."
     )
+    success_subtitle = "Operation completed successfully"
 
 
 class DestDirStrings(StrEnum):
