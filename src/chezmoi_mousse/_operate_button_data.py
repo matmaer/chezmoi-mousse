@@ -19,22 +19,16 @@ class OpBtnLabels(StrEnum):
     add_dir_review = "Review Add Dir"
     add_file_live = "Run Chezmoi Add"
     add_file_review = "Review Add File"
-    apply_dir = "Apply Dir"
-    apply_file = "Apply File"
     apply_review = "Review Apply"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
-    destroy_dir = "Destroy Dir"
-    destroy_file = "Destroy File"
-    destroy_path = "Destroy Path"
+    destroy_live = "Run Chezmoi Destroy"
+    destroy_review = "Review Destroy"
     exit_app = "Exit App"
-    forget_dir = "Forget Dir"
-    forget_file = "Forget File"
-    forget_path = "Forget Path"
+    forget_live = "Run Chezmoi Forget"
+    forget_review = "Review Forget"
     init_clone = "Init Clone Repo"
     init_new = "Init New Repo"
-    re_add_dir = "Re-Add Dir"
-    re_add_file = "Re-Add File"
     re_add_review = "Review Re-Add"
     re_add_run = "Run Chezmoi Re-Add"
     reload = "Reload"
@@ -77,10 +71,10 @@ class OperateBtn(Enum):
         label=OpBtnLabels.re_add_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     forget_path = OpBtnData(
-        label=OpBtnLabels.forget_path, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.forget_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     destroy_path = OpBtnData(
-        label=OpBtnLabels.destroy_path, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.destroy_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     init_new = OpBtnData(label=OpBtnLabels.init_new, tooltip=None)
     init_clone = OpBtnData(

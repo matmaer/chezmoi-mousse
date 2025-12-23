@@ -99,14 +99,7 @@ class LogStrings(StrEnum):
 
 
 class OperateStrings(StrEnum):
-    add_path = (
-        "[$text-primary]The path will be added to the chezmoi source state.[/]"
-    )
     add_subtitle = f"path on disk {Chars.right_arrow} chezmoi repo"
-    apply_path = (
-        "[$text-primary]The path in the destination directory will be "
-        "modified.[/]"
-    )
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_commit = (
         f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: "
@@ -159,9 +152,6 @@ class OperateStrings(StrEnum):
     )
     read_file = "[$success]Path.read()[/]"
     ready_to_run = "[$success]Ready to run: [/]"
-    re_add_path = (
-        "[$text-primary]Overwrite the source state with current local path.[/]"
-    )
     re_add_subtitle = (
         f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     )

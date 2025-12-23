@@ -7,7 +7,7 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import OpBtnLabels, PathKind, Switches, Tcss
+from chezmoi_mousse import Switches, Tcss
 from chezmoi_mousse.shared import ContentsView, DiffView, GitLogPath
 
 from .trees import ExpandedTree, ListTree, ManagedTree
@@ -42,28 +42,6 @@ class TabsBase(Vertical):
             self.ids.container.git_log_path_q, GitLogPath
         )
         git_log_path.path = node_data.path
-
-    def update_other_buttons(self, node_data: "NodeData") -> None:
-        destroy_button = self.query_one(
-            self.ids.operate_btn.destroy_path_q, Button
-        )
-        destroy_button.label = (
-            OpBtnLabels.destroy_dir
-            if node_data.path_kind == PathKind.DIR
-            else OpBtnLabels.destroy_file
-        )
-        destroy_button.tooltip = None
-        destroy_button.disabled = False
-        forget_button = self.query_one(
-            self.ids.operate_btn.forget_path_q, Button
-        )
-        forget_button.label = (
-            OpBtnLabels.forget_dir
-            if node_data.path_kind == PathKind.DIR
-            else OpBtnLabels.forget_file
-        )
-        forget_button.tooltip = None
-        forget_button.disabled = False
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:

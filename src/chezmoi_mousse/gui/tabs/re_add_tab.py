@@ -190,7 +190,6 @@ class ReAddTab(TabsBase, AppType):
         else:
             self.re_add_btn.disabled = True
             self.re_add_btn.tooltip = OpBtnToolTips.path_no_status
-        self.update_other_buttons(msg.node_data)
         self.update_view_node_data(msg.node_data)
 
     @on(OperateButtonMsg)

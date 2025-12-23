@@ -107,11 +107,6 @@
 #     def update_operate_info(self) -> None:
 #         lines_to_write: list[str] = []
 #         border_subtitle = ""
-#         if self.app.changes_enabled is True:
-#             lines_to_write.append(OperateStrings.changes_enabled)
-#         else:
-#             lines_to_write.append(OperateStrings.changes_disabled)
-
 #         if self.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
 #             border_subtitle = OperateStrings.add_subtitle
 #             lines_to_write.append(OperateStrings.add_path)
@@ -156,12 +151,6 @@
 #         if self.op_data.node_data is None:
 #             raise ValueError(
 #                 "self.op_data.node_data is None in operate command"
-#             )
-#         if self.op_data.btn_enum in (OperateBtn.add_file, OperateBtn.add_dir):
-#             self.app.operate_cmd_result = self.app.chezmoi.perform(
-#                 WriteCmd.add,
-#                 path_arg=self.op_data.node_data.path,
-#                 changes_enabled=self.app.changes_enabled,
 #             )
 #         elif self.op_data.btn_enum == OperateBtn.forget_path:
 #             self.app.operate_cmd_result = self.app.chezmoi.perform(

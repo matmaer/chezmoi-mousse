@@ -58,7 +58,7 @@ class GlobalCmd(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
-        "--use-builtin-git=True",
+        "--use-builtin-git=true",
     ]
     live_run = ["chezmoi"] + default_args
     dry_run = live_run + ["--dry-run"]
@@ -176,7 +176,6 @@ class WriteCmd(Enum):
     ]
     add_file_live = GlobalCmd.live_run.value + [WriteVerbs.add.value]
     add_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.add.value]
-    # add_encrypt = ["add", VerbArgs.encrypt.value] TODO
     apply_dir_dry = GlobalCmd.dry_run.value + [
         WriteVerbs.apply.value,
         VerbArgs.not_recursive.value,
@@ -187,8 +186,30 @@ class WriteCmd(Enum):
     ]
     apply_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.apply.value]
     apply_file_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
-    destroy = [WriteVerbs.destroy.value, VerbArgs.not_recursive.value]
-    forget = [WriteVerbs.forget.value]
+    destroy_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.destroy.value]
+    destroy_file_live = GlobalCmd.live_run.value + [WriteVerbs.destroy.value]
+    destroy_dir_dry = (
+        GlobalCmd.dry_run.value
+        + [WriteVerbs.destroy.value]
+        + [VerbArgs.not_recursive.value]
+    )
+    destroy_dir_live = (
+        GlobalCmd.live_run.value
+        + [WriteVerbs.destroy.value]
+        + [VerbArgs.not_recursive.value]
+    )
+    forget_dir_dry = (
+        GlobalCmd.dry_run.value
+        + [WriteVerbs.forget.value]
+        + [VerbArgs.not_recursive.value]
+    )
+    forget_dir_live = (
+        GlobalCmd.live_run.value
+        + [WriteVerbs.forget.value]
+        + [VerbArgs.not_recursive.value]
+    )
+    forget_file_dry = GlobalCmd.dry_run.value + [WriteVerbs.forget.value]
+    forget_file_live = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
     init_guess_https = [WriteVerbs.init.value]
     init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
     init_new = [WriteVerbs.init.value]
@@ -514,11 +535,6 @@ class Chezmoi:
         else:
             base_cmd = GlobalCmd.dry_run.value
         if (
-            write_cmd in (WriteCmd.destroy, WriteCmd.forget)
-            and path_arg is not None
-        ):
-            command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
-        if (
             write_cmd
             in (
                 WriteCmd.add_dir_dry,
@@ -529,6 +545,14 @@ class Chezmoi:
                 WriteCmd.apply_dir_live,
                 WriteCmd.apply_file_dry,
                 WriteCmd.apply_file_live,
+                WriteCmd.destroy_dir_dry,
+                WriteCmd.destroy_dir_live,
+                WriteCmd.destroy_file_dry,
+                WriteCmd.destroy_file_live,
+                WriteCmd.forget_dir_dry,
+                WriteCmd.forget_dir_live,
+                WriteCmd.forget_file_dry,
+                WriteCmd.forget_file_live,
                 WriteCmd.re_add_dir_dry,
                 WriteCmd.re_add_dir_live,
                 WriteCmd.re_add_file_dry,

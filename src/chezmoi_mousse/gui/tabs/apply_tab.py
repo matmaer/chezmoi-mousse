@@ -177,7 +177,6 @@ class ApplyTab(TabsBase, AppType):
         else:
             self.apply_btn.disabled = True
             self.apply_btn.tooltip = OpBtnToolTips.path_no_status
-        self.update_other_buttons(msg.node_data)
         self.update_view_node_data(msg.node_data)
 
     @on(OperateButtonMsg)

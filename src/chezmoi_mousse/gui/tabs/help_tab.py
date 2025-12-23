@@ -59,17 +59,12 @@ class HelpStrings(StrEnum):
     unwanted_filter = f"{Switches.unwanted.label} Filter"
     # Apply tab
     apply_tab_help = "Apply Tab Help"
-    apply_dir_button = f"{OpBtnLabels.apply_dir} Button"
-    apply_file_button = f"{OpBtnLabels.apply_file} Button"
+    apply_dir_button = f"{OpBtnLabels.apply_review} Button"
+    apply_file_button = f"{OpBtnLabels.apply_run} Button"
     # Re-Add tab
     re_add_tab_help = "Re-Add Tab Help"
-    re_add_dir_button = f"{OpBtnLabels.re_add_dir} Button"
-    re_add_file_button = f"{OpBtnLabels.re_add_file} Button"
-    # Common buttons for Apply and Re-Add tabs
-    destroy_file_button = f"{OpBtnLabels.destroy_file} Button"
-    destroy_dir_button = f"{OpBtnLabels.destroy_dir} Button"
-    forget_file_button = f"{OpBtnLabels.forget_file} Button"
-    forget_dir_button = f"{OpBtnLabels.forget_dir} Button"
+    re_add_dir_button = f"{OpBtnLabels.re_add_review} Button"
+    re_add_file_button = f"{OpBtnLabels.re_add_run} Button"
     # Common filters for Apply and Re-Add tabs
     expand_all_filter = f"{Switches.expand_all.label} Filter"
     unchanged_filter = f"{Switches.unchanged.label} Filter"
@@ -82,14 +77,10 @@ class SharedBtnHelp(VerticalGroup):
         yield Label(
             HelpStrings.available_buttons, classes=Tcss.sub_section_label
         )
-        yield Static(HelpStrings.forget_file_button)
-        yield Static(HelpStrings.forget_dir_button)
         yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_destroy)
         yield Label(
             HelpStrings.available_buttons, classes=Tcss.sub_section_label
         )
-        yield Static(HelpStrings.destroy_file_button)
-        yield Static(HelpStrings.destroy_dir_button)
 
 
 class SharedFiltersHelp(VerticalGroup):

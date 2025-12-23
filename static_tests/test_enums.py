@@ -167,4 +167,4 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
                 f"{class_data.class_name}.{member_name} (in {class_data.module_path})"
             )
     if results:
-        pytest.fail("\n".join(results))
+        pytest.fail("\n" + "\n".join(results))

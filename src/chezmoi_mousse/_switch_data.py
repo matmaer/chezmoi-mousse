@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-__all__ = ["Switches"]
+__all__ = ["Switches", "SwitchLabel"]
 
 
 class SwitchLabel(StrEnum):
