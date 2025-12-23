@@ -28,18 +28,14 @@ class LogUtils:
     @staticmethod
     def pretty_cmd_str(command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
+        exclude = set(
+            GlobalCmd.default_args.value
+            + filter_git_log_args
+            + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
+            + VerbArgs.diff.value
+        )
         return " ".join(
-            [
-                _
-                for _ in command
-                if _
-                not in GlobalCmd.default_args.value
-                + filter_git_log_args
-                + [
-                    VerbArgs.format_json.value,
-                    VerbArgs.path_style_absolute.value,
-                ]
-            ]
+            [part for part in command if part and part not in exclude]
         )
 
     @staticmethod
@@ -62,6 +58,7 @@ class GlobalCmd(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
+        "--use-builtin-git=True",
     ]
     live_run = ["chezmoi"] + default_args
     dry_run = live_run + ["--dry-run"]
