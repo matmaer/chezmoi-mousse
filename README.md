@@ -13,6 +13,7 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 ## Use Case
 
+- The current HEAD is under development, a release containing the most recent fully functional state will be added soon.
 - Can be safely tested as no write operations are enabled by default.
 - To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer.
 This will enable commands changing your config files or the chezmoi state.
