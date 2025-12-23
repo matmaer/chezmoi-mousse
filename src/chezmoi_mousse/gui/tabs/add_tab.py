@@ -271,6 +271,10 @@ class AddTab(TabsBase, AppType):
             IDS.add.operate_btn.add_dir_q, Button
         )
         self.add_dir_button.display = True
+        self.operate_info = self.query_one(
+            IDS.add.static.operate_info_q, Static
+        )
+        self.operate_info.display = False
 
     def update_buttons(self, path_kind: PathKind) -> None:
         if path_kind == PathKind.DIR:
