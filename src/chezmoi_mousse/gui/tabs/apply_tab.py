@@ -33,7 +33,6 @@ class ApplyTab(TabVertical, AppType):
     def __init__(self) -> None:
         super().__init__(ids=IDS.apply)
         self.current_node: "NodeData | None" = None
-        self.current_pretty_cmd: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Static(
@@ -66,11 +65,30 @@ class ApplyTab(TabVertical, AppType):
         )
         self.operate_info.display = False
 
+    def get_command(self) -> WriteCmd:
+        if self.current_node is None:
+            raise ValueError("No current node selected")
+        if self.current_node.path_kind == PathKind.FILE:
+            return (
+                WriteCmd.apply_file_live
+                if self.app.changes_enabled
+                else WriteCmd.apply_file_dry
+            )
+        elif self.current_node.path_kind == PathKind.DIR:
+            return (
+                WriteCmd.apply_dir_live
+                if self.app.changes_enabled
+                else WriteCmd.apply_dir_dry
+            )
+        else:
+            raise ValueError("Invalid path kind for apply operation")
+
     def run_operate_command(self) -> None:
         if self.current_node is None:
             return
+        write_cmd: WriteCmd = self.get_command()
         operate_result = self.app.chezmoi.perform(
-            WriteCmd.apply,
+            write_cmd,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
         )
@@ -78,16 +96,20 @@ class ApplyTab(TabVertical, AppType):
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
             self.exit_btn.label = OpBtnLabels.reload
-
-        self.operate_info.border_title = self.current_pretty_cmd
+        pretty_cmd = self.get_command().pretty_cmd
+        self.operate_info.border_title = OperateStrings.cmd_output_subtitle
         if operate_result.exit_code == 0:
+            self.operate_info.border_subtitle = OperateStrings.success_subtitle
             self.operate_info.add_class(Tcss.operate_success)
-            self.operate_info.update(operate_result.std_out)
-            self.operate_info.border_subtitle = "Success"
+            self.operate_info.update(
+                f"{pretty_cmd} output:\n{operate_result.std_out}"
+            )
         else:
+            self.operate_info.border_subtitle = OperateStrings.error_subtitle
             self.operate_info.add_class(Tcss.operate_error)
-            self.operate_info.border_subtitle = "Error"
-            self.operate_info.update(operate_result.std_err)
+            self.operate_info.update(
+                f"{pretty_cmd} output:\n{operate_result.std_err}"
+            )
 
     def toggle_widget_visibility(self) -> None:
         # Widgets shown by default
@@ -128,19 +150,19 @@ class ApplyTab(TabVertical, AppType):
         if self.current_node is None:
             return
         lines_to_write: list[str] = []
-        lines_to_write.append(OperateStrings.apply_path)
+        lines_to_write.append(
+            f"[$text-warning]Ready to run [/]"
+            f"[$warning]{self.get_command().pretty_cmd} "
+            f"{self.current_node.path}[/]"
+        )
         if self.app.changes_enabled is True:
             lines_to_write.append(OperateStrings.changes_enabled)
         else:
             lines_to_write.append(OperateStrings.changes_disabled)
         lines_to_write.append(OperateStrings.diff_color)
-        lines_to_write.append(f"Ready to run {self.current_pretty_cmd}")
         self.operate_info.border_subtitle = OperateStrings.apply_subtitle
         self.operate_info.update("\n".join(lines_to_write))
-        if self.current_node.path_kind == PathKind.DIR:
-            self.operate_info.border_title = OpBtnLabels.apply_dir
-        elif self.current_node.path_kind == PathKind.FILE:
-            self.operate_info.border_title = OpBtnLabels.apply_file
+        # self.operate_info.border_title = OperateStrings.apply_path
 
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
@@ -154,10 +176,6 @@ class ApplyTab(TabVertical, AppType):
         ):
             self.apply_btn.disabled = False
             self.apply_btn.tooltip = OpBtnToolTips.review
-            self.current_pretty_cmd = (
-                f"chehzmoi {WriteCmd.apply.pretty_cmd} "
-                f"{self.current_node.path}"
-            )
         else:
             self.apply_btn.disabled = True
             self.apply_btn.tooltip = OpBtnToolTips.path_no_status
@@ -171,7 +189,7 @@ class ApplyTab(TabVertical, AppType):
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.apply_btn.label = OpBtnLabels.apply_run
-            self.apply_btn.tooltip = self.current_pretty_cmd
+            self.apply_btn.tooltip = self.get_command().pretty_cmd
             self.write_pre_operate_info()
         elif msg.label == OpBtnLabels.apply_run:
             self.run_operate_command()
