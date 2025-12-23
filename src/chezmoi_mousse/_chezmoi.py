@@ -184,7 +184,6 @@ class WriteCmd(Enum):
     init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
     init_new = [WriteVerbs.init.value]
     init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
-    re_add = [WriteVerbs.re_add.value, VerbArgs.not_recursive.value]
     re_add_dir_dry = GlobalCmd.dry_run.value + [
         WriteVerbs.re_add.value,
         VerbArgs.not_recursive.value,
@@ -506,13 +505,7 @@ class Chezmoi:
         else:
             base_cmd = GlobalCmd.dry_run.value
         if (
-            write_cmd
-            in (
-                WriteCmd.add,
-                WriteCmd.destroy,
-                WriteCmd.forget,
-                WriteCmd.re_add,
-            )
+            write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget)
             and path_arg is not None
         ):
             command: list[str] = base_cmd + write_cmd.value + [str(path_arg)]
@@ -523,6 +516,10 @@ class Chezmoi:
                 WriteCmd.apply_dir_live,
                 WriteCmd.apply_file_dry,
                 WriteCmd.apply_file_live,
+                WriteCmd.re_add_dir_dry,
+                WriteCmd.re_add_dir_live,
+                WriteCmd.re_add_file_dry,
+                WriteCmd.re_add_file_live,
             )
             and path_arg is not None
         ):

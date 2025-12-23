@@ -163,12 +163,6 @@ class OperateChezmoiScreen(Screen[None], AppType):
                 path_arg=self.op_data.node_data.path,
                 changes_enabled=self.app.changes_enabled,
             )
-        elif self.op_data.btn_enum == OperateBtn.re_add_path:
-            self.app.operate_cmd_result = self.app.chezmoi.perform(
-                WriteCmd.re_add,
-                path_arg=self.op_data.node_data.path,
-                changes_enabled=self.app.changes_enabled,
-            )
         elif self.op_data.btn_enum == OperateBtn.forget_path:
             self.app.operate_cmd_result = self.app.chezmoi.perform(
                 WriteCmd.forget,

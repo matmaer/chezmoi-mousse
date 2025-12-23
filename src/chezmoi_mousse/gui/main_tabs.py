@@ -11,8 +11,6 @@ from chezmoi_mousse import IDS, AppType, LogStrings, OperateData, TabName
 from chezmoi_mousse.shared import (
     AppLog,
     CurrentAddNodeMsg,
-    CurrentReAddDiffMsg,
-    CurrentReAddNodeMsg,
     CustomHeader,
     DebugLog,
     OperateButtonMsg,
@@ -30,7 +28,7 @@ from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import DiffData, NodeData
+    from chezmoi_mousse import NodeData
 
 __all__ = ["MainScreen"]
 
@@ -57,10 +55,6 @@ class MainScreen(Screen[None], AppType):
         self.debug_log: "DebugLog"
 
         self.current_add_node: "NodeData | None" = None
-        self.current_apply_diff: "DiffData | None" = None
-        self.current_apply_node: "NodeData | None" = None
-        self.current_re_add_diff: "DiffData | None" = None
-        self.current_re_add_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.main_tabs)
@@ -172,8 +166,9 @@ class MainScreen(Screen[None], AppType):
 
     @on(OperateButtonMsg)
     def push_operate_screen(self, msg: OperateButtonMsg) -> None:
-        if msg.canvas_name == TabName.apply:
+        if msg.canvas_name != TabName.add:
             return
+
         operate_data = OperateData(
             btn_enum=msg.btn_enum, btn_label=msg.label, btn_tooltip=msg.tooltip
         )
@@ -182,13 +177,6 @@ class MainScreen(Screen[None], AppType):
             and msg.canvas_name == TabName.add
         ):
             operate_data.node_data = self.current_add_node
-        elif (
-            self.current_re_add_node is not None
-            and msg.canvas_name == TabName.re_add
-        ):
-            operate_data.node_data = self.current_re_add_node
-            if self.current_re_add_diff is not None:
-                operate_data.diff_data = self.current_re_add_diff
         self.app.operate_data = operate_data
         self.app.push_screen(
             OperateChezmoiScreen(), callback=self.handle_operate_result
@@ -227,11 +215,3 @@ class MainScreen(Screen[None], AppType):
     @on(CurrentAddNodeMsg)
     def update_current_dir_tree_node(self, message: CurrentAddNodeMsg) -> None:
         self.current_add_node = message.node_data
-
-    @on(CurrentReAddDiffMsg)
-    def update_current_re_add_diff(self, message: CurrentReAddDiffMsg) -> None:
-        self.current_re_add_diff = message.diff_data
-
-    @on(CurrentReAddNodeMsg)
-    def update_current_re_add_node(self, message: CurrentReAddNodeMsg) -> None:
-        self.current_re_add_node = message.node_data

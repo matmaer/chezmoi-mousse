@@ -94,6 +94,8 @@ class ApplyTab(TabVertical, AppType):
             changes_enabled=self.app.changes_enabled,
         )
         self.apply_btn.disabled = True
+        self.apply_btn.tooltip = None
+        self.apply_btn.label = OpBtnLabels.apply_review
         if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
@@ -190,6 +192,9 @@ class ApplyTab(TabVertical, AppType):
         elif msg.label == OpBtnLabels.apply_run:
             self.run_operate_command()
         elif msg.label == OpBtnLabels.cancel:
+            self.apply_btn.disabled = False
+            self.apply_btn.tooltip = OpBtnToolTips.review
+            self.apply_btn.label = OpBtnLabels.apply_review
             self.app.operating_mode = False
             self.toggle_widget_visibility()
         elif msg.label == OpBtnLabels.reload:

@@ -161,6 +161,8 @@ class ChezmoiGUI(App[None]):
 
     @on(OperateButtonMsg)
     def handle_operate_exit(self, msg: OperateButtonMsg) -> None:
+        if msg.canvas_name in (TabName.apply, TabName.re_add):
+            return
         msg.stop()
         if msg.label == OpBtnLabels.exit_app:
             self.exit()

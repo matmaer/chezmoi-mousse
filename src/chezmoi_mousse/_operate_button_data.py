@@ -31,9 +31,10 @@ class OpBtnLabels(StrEnum):
     forget_path = "Forget Path"
     init_clone = "Init Clone Repo"
     init_new = "Init New Repo"
+    re_add_review = "Review Re-Add"
+    re_add_run = "Run Chezmoi Re-Add"
     re_add_dir = "Re-Add Dir"
     re_add_file = "Re-Add File"
-    re_add_path = "Re-Add Path"
     reload = "Reload"
 
 
@@ -73,7 +74,7 @@ class OperateBtn(Enum):
         label=OpBtnLabels.apply_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     re_add_path = OpBtnData(
-        label=OpBtnLabels.re_add_path, tooltip=OpBtnToolTips.in_dest_dir
+        label=OpBtnLabels.re_add_review, tooltip=OpBtnToolTips.in_dest_dir
     )
     forget_path = OpBtnData(
         label=OpBtnLabels.forget_path, tooltip=OpBtnToolTips.in_dest_dir
