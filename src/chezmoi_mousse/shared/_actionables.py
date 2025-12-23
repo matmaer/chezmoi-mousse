@@ -147,16 +147,16 @@ class OperateButtons(HorizontalGroup):
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
             yield OperateButton(
-                button_label=OperateBtn.add_dir.label,
-                button_tooltip=OperateBtn.add_dir.tooltip,
-                button_enum=OperateBtn.add_dir,
+                button_label=OperateBtn.add_file.label,
+                button_tooltip=OperateBtn.add_file.tooltip,
+                button_enum=OperateBtn.add_file,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
             yield OperateButton(
-                button_label=OperateBtn.add_file.label,
-                button_tooltip=OperateBtn.add_file.tooltip,
-                button_enum=OperateBtn.add_file,
+                button_label=OperateBtn.add_dir.label,
+                button_tooltip=OperateBtn.add_dir.tooltip,
+                button_enum=OperateBtn.add_dir,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
