@@ -8,7 +8,15 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Static, Switch
 
-from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
+from chezmoi_mousse import (
+    IDS,
+    AppType,
+    Chars,
+    NodeData,
+    PathKind,
+    Tcss,
+    WriteCmd,
+)
 from chezmoi_mousse.shared import (
     ContentsView,
     CurrentAddNodeMsg,
@@ -278,6 +286,24 @@ class AddTab(TabsBase, AppType):
             IDS.add.static.operate_info_q, Static
         )
         self.operate_info.display = False
+
+    def get_command(self) -> WriteCmd:
+        if self.current_node is None:
+            raise ValueError("No current node selected")
+        if self.current_node.path_kind == PathKind.FILE:
+            return (
+                WriteCmd.add_file_live
+                if self.app.changes_enabled
+                else WriteCmd.add_file_dry
+            )
+        elif self.current_node.path_kind == PathKind.DIR:
+            return (
+                WriteCmd.add_dir_live
+                if self.app.changes_enabled
+                else WriteCmd.add_dir_dry
+            )
+        else:
+            raise ValueError("Invalid path kind for apply operation")
 
     def update_buttons(self, path_kind: PathKind) -> None:
         if path_kind == PathKind.DIR:
