@@ -316,15 +316,12 @@ class AddTab(TabsBase, AppType):
             changes_enabled=self.app.changes_enabled,
         )
         self.add_dir_button.disabled = True
-        self.add_dir_button.tooltip = None
         if self.current_node.path_kind == PathKind.FILE:
             self.add_file_button.label = OpBtnLabels.add_file_review
             self.add_file_button.disabled = True
-            self.add_file_button.tooltip = None
         elif self.current_node.path_kind == PathKind.DIR:
             self.add_dir_button.label = OpBtnLabels.add_dir_review
             self.add_dir_button.disabled = True
-            self.add_dir_button.tooltip = None
         else:
             raise ValueError("Invalid path kind for add operation")
         if operate_result.dry_run is True:
@@ -366,10 +363,8 @@ class AddTab(TabsBase, AppType):
         if path_kind == PathKind.DIR:
             self.add_file_button.disabled = True
             self.add_dir_button.disabled = False
-            self.add_dir_button.tooltip = None
         else:
             self.add_file_button.disabled = False
-            self.add_file_button.tooltip = None
             self.add_dir_button.disabled = True
         node_data = NodeData(
             found=True,
