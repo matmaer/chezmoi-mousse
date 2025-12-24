@@ -19,7 +19,7 @@ from ._str_enum_names import (
 from ._str_enums import FlatBtn, LinkBtn, TabBtn
 from ._switch_data import Switches
 
-__all__ = ["AppIds", "IDS", "IDS_OPERATE_CHEZMOI", "IDS_OPERATE_INIT"]
+__all__ = ["AppIds", "IDS", "IDS_OPERATE_INIT"]
 
 
 class AppIds:
@@ -110,7 +110,6 @@ class CanvasIds:
         self.splash = AppIds(ScreenName.splash)
         self.main_tabs = AppIds(ScreenName.main_tabs)
         self.operate_init = AppIds(ScreenName.operate_init)
-        self.operate_chezmoi = AppIds(ScreenName.operate_chezmoi)
         # TabPanes
         self.add = AppIds(TabName.add)
         self.apply = AppIds(TabName.apply)
@@ -474,4 +473,3 @@ class ViewIds:
 
 IDS = CanvasIds()
 IDS_OPERATE_INIT = AppIds(ScreenName.operate_init)
-IDS_OPERATE_CHEZMOI = AppIds(ScreenName.operate_chezmoi)

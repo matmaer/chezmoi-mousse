@@ -82,7 +82,6 @@ class ScreenName(StrEnum):
     install_help = auto()
     main_tabs = auto()
     operate_init = auto()
-    operate_chezmoi = auto()
     splash = auto()
 
 
