@@ -23,7 +23,6 @@ from ._git_log_view import GitLogGlobal, GitLogPath
 from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
     CurrentAddNodeMsg,
-    CurrentApplyDiffMsg,
     CurrentApplyNodeMsg,
     CurrentReAddDiffMsg,
     CurrentReAddNodeMsg,
@@ -50,7 +49,6 @@ __all__ = [
     "ReadCmdLog",
     # Messages
     "CurrentAddNodeMsg",
-    "CurrentApplyDiffMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddDiffMsg",
     "CurrentReAddNodeMsg",

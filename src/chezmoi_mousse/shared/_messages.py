@@ -15,22 +15,12 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CurrentAddNodeMsg",
-    "CurrentApplyDiffMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddDiffMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
 ]
-
-# messages used to keep track in main screen to push the operate screen with
-# the correct data
-
-
-class CurrentApplyDiffMsg(Message):
-    def __init__(self, diff_data: "DiffData") -> None:
-        self.diff_data = diff_data
-        super().__init__()
 
 
 class CurrentApplyNodeMsg(Message):
