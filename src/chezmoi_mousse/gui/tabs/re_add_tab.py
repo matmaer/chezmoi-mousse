@@ -14,12 +14,12 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
-    DiffView,
     OperateButtonMsg,
     OperateButtons,
     ViewTabButtons,
 )
 
+from .common.diff_view import DiffView
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tabs_base import TabsBase

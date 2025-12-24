@@ -21,7 +21,7 @@ from chezmoi_mousse import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, AppType, CommandResult, NodeData
+    from chezmoi_mousse import AppIds, CommandResult, NodeData
 
 __all__ = ["DiffLines", "DiffView"]
 

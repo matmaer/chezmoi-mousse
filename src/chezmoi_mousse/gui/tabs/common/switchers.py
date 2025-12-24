@@ -11,12 +11,12 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import Tcss
 from chezmoi_mousse.shared import (
     ContentsView,
-    DiffView,
     GitLogPath,
     TreeTabButtons,
     ViewTabButtons,
 )
 
+from .diff_view import DiffView
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:

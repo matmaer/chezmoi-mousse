@@ -18,7 +18,6 @@ from ._config_views import (
 )
 from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
-from ._diff_view import DiffLines, DiffView
 from ._git_log_view import GitLogGlobal, GitLogPath
 from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
@@ -58,8 +57,6 @@ __all__ = [
     "ContentsView",
     "CustomCollapsible",
     "CustomHeader",
-    "DiffLines",
-    "DiffView",
     "DoctorTable",
     "DoctorTableView",
     "GitLogGlobal",
