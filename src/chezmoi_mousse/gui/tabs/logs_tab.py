@@ -11,11 +11,12 @@ from chezmoi_mousse import IDS, AppType, Tcss
 from chezmoi_mousse.shared import (
     AppLog,
     DebugLog,
-    GitLogGlobal,
     LogsTabButtons,
     OperateLog,
     ReadCmdLog,
 )
+
+from .common.git_log_view import GitLogGlobal
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult

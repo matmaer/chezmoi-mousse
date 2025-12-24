@@ -17,7 +17,6 @@ from ._config_views import (
     TemplateDataView,
 )
 from ._custom_collapsible import CustomCollapsible
-from ._git_log_view import GitLogGlobal, GitLogPath
 from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
     CurrentAddNodeMsg,
@@ -57,8 +56,6 @@ __all__ = [
     "CustomHeader",
     "DoctorTable",
     "DoctorTableView",
-    "GitLogGlobal",
-    "GitLogPath",
     "HeaderTitle",
     "PrettyTemplateData",
     "PwMgrInfoView",

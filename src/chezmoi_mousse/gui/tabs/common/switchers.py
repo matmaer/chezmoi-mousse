@@ -9,10 +9,11 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import Tcss
-from chezmoi_mousse.shared import GitLogPath, TreeTabButtons, ViewTabButtons
+from chezmoi_mousse.shared import TreeTabButtons, ViewTabButtons
 
 from .contents_view import ContentsView
 from .diff_view import DiffView
+from .git_log_view import GitLogPath
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
