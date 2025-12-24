@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual.app import ComposeResult
@@ -10,6 +11,7 @@ from chezmoi_mousse import (
     Chars,
     DestDirStrings,
     DiffData,
+    PathDict,
     PathKind,
     ReadCmd,
     SectionLabels,
@@ -22,6 +24,13 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, AppType, CommandResult, NodeData
 
 __all__ = ["DiffLines", "DiffView"]
+
+
+class DiffStrings(StrEnum):
+    contains_status_paths = "Contains status paths:"
+    no_dir_status = "No diff available, the directory has no status."
+    no_file_status = "No diff available, the file has no status."
+    truncacted = "\n--- Diff output truncated to 1000 lines ---\n"
 
 
 class DiffInfo(VerticalGroup):
@@ -64,44 +73,52 @@ class DiffLines(VerticalGroup):
             self.ids.container.diff_output_q, ScrollableContainer
         )
         diff_output.remove_children()
+        static_list: list[Static] = []
         for line in self.diff_data.mode_diff_lines:
-            if line.startswith("old mode"):
-                self.mount(
+            if line.startswith(("old mode", "deleted file mode")):
+                static_list.append(
                     Static(
-                        f"{Chars.bullet} {line}", classes="diff_line_removed"
+                        f"{Chars.bullet} {line}",
+                        classes=Tcss.diff_line_removed,
                     )
                 )
-            elif line.startswith("new mode"):
-                self.mount(
-                    Static(f"{Chars.bullet} {line}", classes="diff_line_added")
+            elif line.startswith(("new mode", "new file mode")):
+                static_list.append(
+                    Static(
+                        f"{Chars.bullet} {line}", classes=Tcss.diff_line_added
+                    )
                 )
+            elif line.startswith("changed mode"):
+                static_list.append(
+                    Static(
+                        f"{Chars.bullet} {line}",
+                        classes=Tcss.diff_line_changed_mode,
+                    )
+                )
+            static_list.append(Static(""))  # empty line after mode lines
         # TODO: make lines limit configurable, look into paging,
         # temporary solution
         lines_limit = 1000
         lines = 0
-        static_list: list[Static] = []
         for line in (
             self.diff_data.dir_diff_lines + self.diff_data.file_diff_lines
         ):
             if line.startswith("+"):
-                static_list.append(Static(line, classes="diff_line_added"))
+                static_list.append(Static(line, classes=Tcss.diff_line_added))
             elif line.startswith("-"):
-                static_list.append(Static(line, classes="diff_line_removed"))
+                static_list.append(
+                    Static(line, classes=Tcss.diff_line_removed)
+                )
             elif line.startswith(" "):
                 static_list.append(
                     Static(
                         f"{Chars.bullet}{line[1:]}",
-                        classes="diff_line_context",
+                        classes=Tcss.diff_line_context,
                     )
                 )
             lines += 1
             if lines >= lines_limit:
-                static_list.append(
-                    Static(
-                        "\n--- Diff output truncated to 1000 lines ---\n",
-                        classes="diff_line",
-                    )
-                )
+                static_list.append(Static(DiffStrings.truncacted))
                 break
         diff_output.mount_all(static_list)
 
@@ -136,7 +153,7 @@ class DiffView(Vertical, AppType):
         if self.node_data is None:
             diff_info.info_lines = [self.in_dest_dir_diff_msg]
 
-    def create_diff_data(self) -> DiffData:
+    def run_chezmoi_diff(self) -> DiffData:
         if self.node_data is None:
             raise ValueError("node_data is None")
         mode_diff_lines: list[str] = []
@@ -149,7 +166,15 @@ class DiffView(Vertical, AppType):
         mode_diff_lines = [
             line
             for line in diff_lines
-            if line.startswith(("new mode", "old mode"))
+            if line.startswith(
+                (
+                    "changed mode",
+                    "deleted file mode",
+                    "new file mode",
+                    "new mode",
+                    "old mode",
+                )
+            )
         ]
         if self.node_data.path_kind == PathKind.DIR:
             dir_diff_lines.extend(
@@ -176,31 +201,6 @@ class DiffView(Vertical, AppType):
         )
         return diff_data
 
-    def no_status_info_lines(self) -> list[str]:
-        if self.node_data is None:
-            raise ValueError("node_data is None")
-        new_info_text: list[str] = []
-        # lines for an unchanged file or directory
-        if (
-            self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path not in self.app.chezmoi.status_dirs
-        ):
-            new_info_text.append(
-                f"Managed directory [$text-accent]{self.node_data.path}[/]."
-            )
-            new_info_text.append(
-                "No diff available, the directory has no status."
-            )
-        elif (
-            self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path not in self.app.chezmoi.status_files
-        ):
-            new_info_text.append(
-                f"Managed file [$text-accent]{self.node_data.path}[/]."
-            )
-            new_info_text.append("No diff available, the file has no status.")
-        return new_info_text
-
     def watch_node_data(self) -> None:
         if self.node_data is None or self.destDir is None:
             return
@@ -213,15 +213,56 @@ class DiffView(Vertical, AppType):
         self.border_title = (
             f" {self.node_data.path.relative_to(self.destDir)} "
         )
+        diff_data: DiffData = self.run_chezmoi_diff()
 
-        no_status_info: list[str] = self.no_status_info_lines()
-        if len(no_status_info) > 0:
+        info_lines: list[str] = []
+        if (
+            self.node_data.path_kind == PathKind.FILE
+            and self.node_data.path not in self.app.chezmoi.status_files
+        ):
             diff_info.display = True
-            diff_info.info_lines = no_status_info
+            diff_info.info_lines = [
+                f"Managed file [$text-accent]{self.node_data.path}[/]",
+                f"{DiffStrings.no_file_status}",
+            ]
+        elif (
+            self.node_data.path_kind == PathKind.FILE
+            and self.node_data.path in self.app.chezmoi.status_files
+        ):
+            diff_info.display = False
+            diff_lines.display = True
+            diff_lines.diff_data = diff_data
             return
+        # Handle directory status paths
+        status_paths: PathDict = self.app.chezmoi.list_apply_status_paths_in(
+            self.node_data.path
+        )
+        to_show: list[tuple["Path", str]] = []
+        if len(status_paths) > 0:
+            to_show = [
+                (path, status)
+                for path, status in status_paths.items()
+                if status != " " and path != self.node_data.path
+            ]
+        if len(to_show) > 0:
+            info_lines.append(f"{DiffStrings.contains_status_paths}")
+            for path, status in to_show:
+                info_lines.append(f"  {path} ({status})")
+            diff_info.display = True
+            diff_info.info_lines = info_lines
 
-        diff_data: DiffData = self.create_diff_data()
+        if (
+            self.node_data.path_kind == PathKind.DIR
+            and self.node_data.path not in self.app.chezmoi.status_dirs
+        ):
+            info_lines.append(
+                f"Managed directory [$text-accent]{self.node_data.path}[/]."
+            )
+            info_lines.append(f"{DiffStrings.no_dir_status}")
 
-        if len(diff_data.file_diff_lines) > 0:
+        if (
+            len(diff_data.file_diff_lines) > 0
+            or len(diff_data.dir_diff_lines) > 0
+        ):
             diff_lines.display = True
             diff_lines.diff_data = diff_data
