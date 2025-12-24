@@ -438,6 +438,24 @@ class Chezmoi:
             for status_path in self.re_add_status_paths.keys()
         )
 
+    def list_apply_status_paths_in(self, dir_path: Path) -> PathDict:
+        # Return a dict of apply-status paths that are descendants of the
+        # provided directory, mapping path -> status.
+        return {
+            path: status
+            for path, status in self.apply_status_paths.items()
+            if path.is_relative_to(dir_path)
+        }
+
+    def list_re_add_status_paths_in(self, dir_path: Path) -> PathDict:
+        # Return a dict of re-add-status paths that are descendants of dir_path,
+        # mapping path -> status.
+        return {
+            path: status
+            for path, status in self.re_add_status_paths.items()
+            if path.is_relative_to(dir_path)
+        }
+
     def update_managed_paths(self) -> None:
         self._managed_dirs_result: CommandResult = self.read(
             ReadCmd.managed_dirs
