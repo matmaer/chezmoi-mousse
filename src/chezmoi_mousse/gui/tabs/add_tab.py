@@ -20,12 +20,12 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 from chezmoi_mousse.shared import (
-    ContentsView,
     CurrentAddNodeMsg,
     OperateButtonMsg,
     OperateButtons,
 )
 
+from .common.contents_view import ContentsView
 from .common.switch_slider import SwitchSlider
 from .common.tabs_base import TabsBase
 

@@ -25,10 +25,11 @@ from chezmoi_mousse import (
     SplashData,
     VerbArgs,
 )
-from chezmoi_mousse.shared import ContentsView, GitLogPath
+from chezmoi_mousse.shared import GitLogPath
 
 from .main_tabs import MainScreen
 from .tabs.add_tab import AddTab
+from .tabs.common.contents_view import ContentsView
 from .tabs.common.diff_view import DiffView
 from .tabs.common.switchers import ViewSwitcher
 from .tabs.common.tabs_base import TabsBase

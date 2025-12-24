@@ -8,8 +8,9 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import Switches, Tcss
-from chezmoi_mousse.shared import ContentsView, GitLogPath
+from chezmoi_mousse.shared import GitLogPath
 
+from .contents_view import ContentsView
 from .diff_view import DiffView
 from .trees import ExpandedTree, ListTree, ManagedTree
 

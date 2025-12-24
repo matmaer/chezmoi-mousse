@@ -16,7 +16,6 @@ from ._config_views import (
     PrettyTemplateData,
     TemplateDataView,
 )
-from ._contents_view import ContentsView
 from ._custom_collapsible import CustomCollapsible
 from ._git_log_view import GitLogGlobal, GitLogPath
 from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
@@ -54,7 +53,6 @@ __all__ = [
     "InitCloneCmdMsg",
     "OperateButtonMsg",
     # Other shared components
-    "ContentsView",
     "CustomCollapsible",
     "CustomHeader",
     "DoctorTable",
