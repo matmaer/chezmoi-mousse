@@ -12,7 +12,7 @@ type PathDict = "dict[Path, str]"
 type PathList = "list[Path]"
 
 __all__ = [
-    "Chezmoi",
+    "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
     "PathDict",
@@ -229,7 +229,7 @@ class CommandResult:
             return stripped_stderr
 
 
-class Chezmoi:
+class ChezmoiCommand:
 
     def __init__(
         self,
@@ -544,10 +544,10 @@ class Chezmoi:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
         )
-        command_results = CommandResult(
+        command_result = CommandResult(
             completed_process=result, write_cmd=write_cmd
         )
-        self._log_in_app_and_operate_log(command_results)
+        self._log_in_app_and_operate_log(command_result)
         if write_cmd == WriteCmd.add_live:
             self.update_managed_paths()
         elif (
@@ -561,4 +561,4 @@ class Chezmoi:
         ):
             self.update_status_paths()
             self.update_managed_paths()
-        return command_results
+        return command_result

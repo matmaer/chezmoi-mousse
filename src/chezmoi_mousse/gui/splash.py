@@ -18,7 +18,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse import (
     IDS,
     AppType,
-    Chezmoi,
+    ChezmoiCommand,
     CommandResult,
     ParsedConfig,
     ReadCmd,
@@ -237,7 +237,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
-        self.app.chezmoi = Chezmoi(
+        self.app.chezmoi = ChezmoiCommand(
             dev_mode=self.app.dev_mode,
             managed_dirs=globals()["managed_dirs"],
             managed_files=globals()["managed_files"],

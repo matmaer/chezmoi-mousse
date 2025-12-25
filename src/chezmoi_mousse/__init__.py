@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
 from ._chezmoi import (
-    Chezmoi,
+    ChezmoiCommand,
     CommandResult,
     GlobalCmd,
     PathDict,
@@ -61,7 +61,7 @@ __all__ = [
     "OperateBtn",
     "OperateStrings",
     # _chezmoi.py
-    "Chezmoi",
+    "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
     "PathDict",
