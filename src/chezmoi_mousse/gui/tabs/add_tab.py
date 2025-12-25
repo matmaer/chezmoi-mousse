@@ -251,7 +251,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(TabsBase, AppType):
 
-    dest_dir: reactive[Path | None] = reactive(None)
+    destDir: Path | None = None
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.add)
@@ -261,24 +261,6 @@ class AddTab(TabsBase, AppType):
         yield Static(id=IDS.add.static.operate_info, classes=Tcss.operate_info)
         yield SwitchSlider(ids=IDS.add)
         yield OperateButtons(ids=IDS.add)
-
-    def watch_dest_dir(self) -> None:
-        if self.dest_dir is None:
-            return
-        self.mount(
-            Horizontal(
-                FilteredDirTree(self.dest_dir, id=IDS.add.tree.dir_tree),
-                ContentsView(ids=IDS.add),
-            )
-        )
-        self.contents_view = self.query_one(
-            IDS.add.container.contents_q, ContentsView
-        )
-        self.contents_view.add_class(Tcss.border_title_top)
-        self.contents_view.border_title = f" {self.dest_dir} "
-        self.dir_tree = self.query_one(
-            IDS.add.tree.dir_tree_q, FilteredDirTree
-        )
 
     def on_mount(self) -> None:
         self.add_dir_button = self.query_one(
@@ -296,6 +278,21 @@ class AddTab(TabsBase, AppType):
             IDS.add.static.operate_info_q, Static
         )
         self.operate_info.display = False
+        if self.destDir is not None:
+            self.mount(
+                Horizontal(
+                    FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree),
+                    ContentsView(ids=IDS.add),
+                )
+            )
+            self.contents_view = self.query_one(
+                IDS.add.container.contents_q, ContentsView
+            )
+            self.contents_view.add_class(Tcss.border_title_top)
+            self.contents_view.border_title = f" {self.destDir} "
+            self.dir_tree = self.query_one(
+                IDS.add.tree.dir_tree_q, FilteredDirTree
+            )
 
     def get_command(self) -> WriteCmd:
         if self.current_node is None:

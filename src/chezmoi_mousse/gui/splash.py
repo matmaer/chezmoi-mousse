@@ -247,7 +247,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         if self.app.init_needed is True:
             return
         dest_dir = globals()["parsed_config"].dest_dir
-        AddTab.dest_dir = dest_dir
+        AddTab.destDir = dest_dir
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
@@ -268,7 +268,8 @@ class SplashScreen(Screen[SplashData | None], AppType):
         ):
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
-                self.dismiss()
+                if all(w for w in self.workers if w.is_finished):
+                    self.dismiss()
             else:
                 raise RuntimeError(
                     "update_app worker did not complete successfully"
