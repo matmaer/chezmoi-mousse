@@ -16,7 +16,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import (
-    IDS_OPERATE_INIT,
+    IDS,
     AppType,
     BindingAction,
     BindingDescription,
@@ -306,7 +306,7 @@ class InputGuessURL(HorizontalGroup):
             validators=GUESS_HTTPS(),
             classes=Tcss.input_field,
         )
-        yield FlatLink(ids=IDS_OPERATE_INIT, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(ids=IDS.init, link_enum=LinkBtn.chezmoi_guess)
 
 
 class InputGuessSSH(HorizontalGroup):
@@ -317,13 +317,13 @@ class InputGuessSSH(HorizontalGroup):
             validators=GUESS_SSH(),
             classes=Tcss.input_field,
         )
-        yield FlatLink(ids=IDS_OPERATE_INIT, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(ids=IDS.init, link_enum=LinkBtn.chezmoi_guess)
 
 
 class InputInitCloneRepo(HorizontalGroup, AppType):
 
     def __init__(self) -> None:
-        super().__init__(id=IDS_OPERATE_INIT.container.repo_input)
+        super().__init__(id=IDS.init.container.repo_input)
 
     def compose(self) -> ComposeResult:
         yield Select(
@@ -443,9 +443,7 @@ class InitCollapsibles(VerticalGroup, AppType):
             SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label
         )
         yield CustomCollapsible(
-            DoctorTable(
-                ids=IDS_OPERATE_INIT, doctor_data=self.splash_data.doctor
-            ),
+            DoctorTable(ids=IDS.init, doctor_data=self.splash_data.doctor),
             title="Doctor Output",
         )
         yield CustomCollapsible(
@@ -458,7 +456,7 @@ class OperateInitScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ids = IDS_OPERATE_INIT
+        self.ids = IDS.init
         self.init_clone_data: InitCloneData | None = None
         self.valid_arg: bool = False
         self.init_arg: str | None = None

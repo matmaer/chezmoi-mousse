@@ -10,7 +10,7 @@ from dataclasses import dataclass, fields
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
-from ._app_ids import IDS, IDS_OPERATE_INIT, AppIds
+from ._app_ids import IDS, AppIds
 from ._chezmoi import (
     Chezmoi,
     CommandResult,
@@ -54,7 +54,6 @@ __all__ = [
     "__version__",
     # Id related
     "IDS",
-    "IDS_OPERATE_INIT",
     "AppIds",
     # Operations
     "InitCloneData",

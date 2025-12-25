@@ -183,7 +183,7 @@ class OperateButtons(HorizontalGroup):
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
-        if self.ids.canvas_name == ScreenName.operate_init:
+        if self.ids.canvas_name == ScreenName.init:
             yield OperateButton(
                 button_label=OperateBtn.init_new.label,
                 button_enum=OperateBtn.init_new,

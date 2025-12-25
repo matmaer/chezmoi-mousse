@@ -1,6 +1,8 @@
-"""Contains classes to enable setting widget id's without hardcoded strings.
+"""Contains the IDS singleton and  classes to enable setting widget id's
+without hardcoded strings.
 
-Easy access, autocomplete, type checking or to generated the id dynamically.
+Provides easy access, autocomplete, type checking or to generate the id
+dynamically.
 """
 
 from ._operate_button_data import OperateBtn
@@ -19,7 +21,7 @@ from ._str_enum_names import (
 from ._str_enums import FlatBtn, LinkBtn, TabBtn
 from ._switch_data import Switches
 
-__all__ = ["AppIds", "IDS", "IDS_OPERATE_INIT"]
+__all__ = ["AppIds", "IDS"]
 
 
 class AppIds:
@@ -109,7 +111,7 @@ class CanvasIds:
         self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
         self.main_tabs = AppIds(ScreenName.main_tabs)
-        self.operate_init = AppIds(ScreenName.operate_init)
+        self.init = AppIds(ScreenName.init)
         # TabPanes
         self.add = AppIds(TabName.add)
         self.apply = AppIds(TabName.apply)
@@ -472,4 +474,3 @@ class ViewIds:
 
 
 IDS = CanvasIds()
-IDS_OPERATE_INIT = AppIds(ScreenName.operate_init)
