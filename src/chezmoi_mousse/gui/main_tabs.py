@@ -112,7 +112,6 @@ class MainScreen(Screen[None], AppType):
 
     def populate_apply_trees(self) -> None:
         self.app_log.info("Updating managed paths")
-        self.app.chezmoi.update_managed_paths()
         managed_tree = self.screen.query_one(
             IDS.apply.tree.managed_q, ManagedTree
         )

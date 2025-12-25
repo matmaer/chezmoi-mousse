@@ -111,7 +111,6 @@ class ReAddTab(TabsBase, AppType):
         if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
-            self.app.chezmoi.update_managed_paths()
             diff_view = self.query_exactly_one(DiffView)
             diff_view.node_data = None
             diff_view.node_data = self.current_node

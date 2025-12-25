@@ -463,6 +463,8 @@ class Chezmoi:
         self._managed_files_result: CommandResult = self.read(
             ReadCmd.managed_files
         )
+
+    def update_status_paths(self) -> None:
         self._status_files_result: CommandResult = self.read(
             ReadCmd.status_files
         )
@@ -479,9 +481,9 @@ class Chezmoi:
         else:
             command: list[str] = command + [str(path_arg)]
         if read_cmd == ReadCmd.doctor:
-            time_out = 3
+            time_out = 4
         else:
-            time_out = 1
+            time_out = 2
         result: CompletedProcess[str] = run(
             command,
             capture_output=True,
@@ -546,4 +548,17 @@ class Chezmoi:
             completed_process=result, write_cmd=write_cmd
         )
         self._log_in_app_and_operate_log(command_results)
+        if write_cmd == WriteCmd.add_live:
+            self.update_managed_paths()
+        elif (
+            write_cmd in (WriteCmd.apply_live, WriteCmd.re_add_live)
+            and path_arg is not None
+        ):
+            self.update_status_paths()
+        elif (
+            write_cmd in (WriteCmd.destroy_live, WriteCmd.forget_live)
+            and path_arg is not None
+        ):
+            self.update_status_paths()
+            self.update_managed_paths()
         return command_results
