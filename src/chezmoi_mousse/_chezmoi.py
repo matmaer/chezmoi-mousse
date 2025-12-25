@@ -300,10 +300,6 @@ class Chezmoi:
             if line.strip() != ""
         }
 
-    @property
-    def all_status_paths(self) -> "PathDict":
-        return {**self.status_dirs, **self.status_files}
-
     # properties filtering status files into apply and re-add contexts
 
     @property

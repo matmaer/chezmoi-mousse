@@ -21,7 +21,6 @@ from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
-    CurrentReAddDiffMsg,
     CurrentReAddNodeMsg,
     InitCloneCmdMsg,
     OperateButtonMsg,
@@ -47,7 +46,6 @@ __all__ = [
     # Messages
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
-    "CurrentReAddDiffMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
