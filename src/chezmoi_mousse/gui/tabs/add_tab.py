@@ -251,7 +251,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(TabsBase, AppType):
 
-    destDir: Path
+    destDir: reactive[Path | None] = reactive(None)
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.add)
@@ -259,21 +259,18 @@ class AddTab(TabsBase, AppType):
 
     def compose(self) -> ComposeResult:
         yield Static(id=IDS.add.static.operate_info, classes=Tcss.operate_info)
-        with Horizontal():
-            yield FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree)
-            yield ContentsView(ids=IDS.add)
         yield SwitchSlider(ids=IDS.add)
         yield OperateButtons(ids=IDS.add)
 
-    def on_mount(self) -> None:
-        self.add_dir_button = self.query_one(
-            IDS.add.operate_btn.add_dir_q, Button
+    def watch_destDir(self) -> None:
+        if self.destDir is None:
+            return
+        self.mount(
+            Horizontal(
+                FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree),
+                ContentsView(ids=IDS.add),
+            )
         )
-        self.add_dir_button.display = True
-        self.add_file_button = self.query_one(
-            IDS.add.operate_btn.add_file_q, Button
-        )
-        self.add_file_button.display = True
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, ContentsView
         )
@@ -282,11 +279,20 @@ class AddTab(TabsBase, AppType):
         self.dir_tree = self.query_one(
             IDS.add.tree.dir_tree_q, FilteredDirTree
         )
+
+    def on_mount(self) -> None:
+        if self.destDir is None:
+            return
+        self.add_dir_button = self.query_one(
+            IDS.add.operate_btn.add_dir_q, Button
+        )
+        self.add_dir_button.display = True
+        self.add_file_button = self.query_one(
+            IDS.add.operate_btn.add_file_q, Button
+        )
+        self.add_file_button.display = True
         self.exit_btn = self.query_one(
             IDS.add.operate_btn.operate_exit_q, Button
-        )
-        self.dir_tree = self.query_one(
-            IDS.add.tree.dir_tree_q, FilteredDirTree
         )
         self.operate_info = self.query_one(
             IDS.add.static.operate_info_q, Static
@@ -317,8 +323,7 @@ class AddTab(TabsBase, AppType):
         if operate_result.dry_run is True:
             self.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
-            self.app.chezmoi.update_managed_paths()
-            self.dir_tree.reload()
+            # self.dir_tree.reload()
             content_view = self.query_exactly_one(ContentsView)
             content_view.node_data = None
             content_view.node_data = self.current_node
