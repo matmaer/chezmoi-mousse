@@ -111,34 +111,31 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("--- End of loading screen commands ---")
 
     def populate_apply_trees(self) -> None:
-        self.app_log.info("Updating managed paths")
-        managed_tree = self.screen.query_one(
+        self.screen.query_one(
             IDS.apply.tree.managed_q, ManagedTree
-        )
-        expanded_tree = self.screen.query_one(
-            IDS.apply.tree.expanded_q, ExpandedTree
-        )
-        list_tree = self.screen.query_one(IDS.apply.tree.list_q, ListTree)
-        managed_tree.dest_dir = self.destDir
+        ).dest_dir = self.destDir
         self.app_log.success("Apply tab managed tree populated.")
-        expanded_tree.dest_dir = self.destDir
+        self.screen.query_one(
+            IDS.apply.tree.expanded_q, ExpandedTree
+        ).dest_dir = self.destDir
         self.app_log.success("Apply tab expanded tree populated.")
-        list_tree.dest_dir = self.destDir
+        self.screen.query_one(IDS.apply.tree.list_q, ListTree).dest_dir = (
+            self.destDir
+        )
         self.app_log.success("Apply list populated.")
 
     def populate_re_add_trees(self) -> None:
-        managed_tree = self.screen.query_one(
+        self.screen.query_one(
             IDS.re_add.tree.managed_q, ManagedTree
-        )
-        expanded_tree = self.screen.query_one(
-            IDS.re_add.tree.expanded_q, ExpandedTree
-        )
-        list_tree = self.screen.query_one(IDS.re_add.tree.list_q, ListTree)
-        managed_tree.dest_dir = self.destDir
+        ).dest_dir = self.destDir
         self.app_log.success("Re-Add tab managed tree populated.")
-        expanded_tree.dest_dir = self.destDir
+        self.screen.query_one(
+            IDS.re_add.tree.expanded_q, ExpandedTree
+        ).dest_dir = self.destDir
         self.app_log.success("Re-Add tab expanded tree populated.")
-        list_tree.dest_dir = self.destDir
+        self.screen.query_one(IDS.re_add.tree.list_q, ListTree).dest_dir = (
+            self.destDir
+        )
         self.app_log.success("Re-Add list populated.")
 
     def update_global_git_log(self) -> None:
