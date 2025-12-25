@@ -119,11 +119,11 @@ class MainScreen(Screen[None], AppType):
             IDS.apply.tree.expanded_q, ExpandedTree
         )
         list_tree = self.screen.query_one(IDS.apply.tree.list_q, ListTree)
-        managed_tree.populate_tree()
+        managed_tree.dest_dir = self.destDir
         self.app_log.success("Apply tab managed tree populated.")
-        expanded_tree.populate_tree()
+        expanded_tree.dest_dir = self.destDir
         self.app_log.success("Apply tab expanded tree populated.")
-        list_tree.populate_tree()
+        list_tree.dest_dir = self.destDir
         self.app_log.success("Apply list populated.")
 
     def populate_re_add_trees(self) -> None:
@@ -134,11 +134,11 @@ class MainScreen(Screen[None], AppType):
             IDS.re_add.tree.expanded_q, ExpandedTree
         )
         list_tree = self.screen.query_one(IDS.re_add.tree.list_q, ListTree)
-        managed_tree.populate_tree()
+        managed_tree.dest_dir = self.destDir
         self.app_log.success("Re-Add tab managed tree populated.")
-        expanded_tree.populate_tree()
+        expanded_tree.dest_dir = self.destDir
         self.app_log.success("Re-Add tab expanded tree populated.")
-        list_tree.populate_tree()
+        list_tree.dest_dir = self.destDir
         self.app_log.success("Re-Add list populated.")
 
     def update_global_git_log(self) -> None:

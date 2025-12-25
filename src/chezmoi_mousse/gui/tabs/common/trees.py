@@ -57,13 +57,15 @@ class TreeBase(Tree[NodeData], AppType):
             "M": self.app.theme_variables["text-warning"],
             " ": self.app.theme_variables["text-secondary"],
         }
-        self.root.data = NodeData(
-            path=self.destDir, path_kind=PathKind.DIR, found=True, status="F"
-        )
         self.guide_depth: int = 3
         self.show_root: bool = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
+
+    def create_root_node_data(self, dest_dir: "Path") -> None:
+        self.root.data = NodeData(
+            path=dest_dir, path_kind=PathKind.DIR, found=True, status="F"
+        )
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
@@ -339,14 +341,17 @@ class TreeBase(Tree[NodeData], AppType):
 
 class ExpandedTree(TreeBase):
 
+    dest_dir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
-    def populate_tree(self) -> None:
-        self.clear()
+    def watch_dest_dir(self) -> None:
+        if self.dest_dir is None:
+            return
+        self.create_root_node_data(dest_dir=self.dest_dir)
         self.expand_all_nodes(self.root)
 
     @on(TreeBase.NodeExpanded)
@@ -390,14 +395,17 @@ class ExpandedTree(TreeBase):
 
 class ListTree(TreeBase):
 
+    dest_dir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
-    def populate_tree(self) -> None:
-        self.clear()
+    def watch_dest_dir(self) -> None:
+        if self.dest_dir is None:
+            return
+        self.create_root_node_data(dest_dir=self.dest_dir)
         self.add_status_files_in(tree_node=self.root, flat_list=True)
 
     def watch_unchanged(self) -> None:
@@ -411,14 +419,17 @@ class ListTree(TreeBase):
 
 class ManagedTree(TreeBase):
 
+    dest_dir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
-    def populate_tree(self) -> None:
-        self.clear()
+    def watch_dest_dir(self) -> None:
+        if self.dest_dir is None:
+            return
+        self.create_root_node_data(dest_dir=self.dest_dir)
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root, flat_list=False)
 
