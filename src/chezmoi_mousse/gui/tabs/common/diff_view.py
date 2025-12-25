@@ -234,8 +234,12 @@ class DiffView(Vertical, AppType):
             diff_lines.diff_data = diff_data
             return
         # Handle directory status paths
-        status_paths: PathDict = self.app.chezmoi.list_apply_status_paths_in(
-            self.node_data.path
+        status_paths: PathDict = (
+            self.app.chezmoi.list_apply_status_paths_in(self.node_data.path)
+            if self.reverse is False
+            else self.app.chezmoi.list_re_add_status_paths_in(
+                self.node_data.path
+            )
         )
         to_show: list[tuple["Path", str]] = []
         if len(status_paths) > 0:

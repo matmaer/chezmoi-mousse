@@ -67,19 +67,22 @@ class ApplyTab(TabsBase, AppType):
     def get_run_command(self, btn_label: OpBtnLabels) -> WriteCmd:
         if self.current_node is None:
             raise ValueError("No current node selected")
-        if btn_label == OpBtnLabels.apply_run:
+        if btn_label in (OpBtnLabels.apply_run, OpBtnLabels.apply_review):
             return (
                 WriteCmd.apply_live
                 if self.app.changes_enabled
                 else WriteCmd.apply_dry
             )
-        elif btn_label == OpBtnLabels.forget_run:
+        elif btn_label in (OpBtnLabels.forget_run, OpBtnLabels.forget_review):
             return (
                 WriteCmd.forget_live
                 if self.app.changes_enabled
                 else WriteCmd.forget_dry
             )
-        elif btn_label == OpBtnLabels.destroy_run:
+        elif btn_label in (
+            OpBtnLabels.destroy_run,
+            OpBtnLabels.destroy_review,
+        ):
             return (
                 WriteCmd.destroy_live
                 if self.app.changes_enabled
