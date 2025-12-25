@@ -247,7 +247,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         if self.app.init_needed is True:
             return
         dest_dir = globals()["parsed_config"].dest_dir
-        AddTab.destDir = dest_dir
+        AddTab.dest_dir = dest_dir
         ContentsView.destDir = dest_dir
         DiffView.destDir = dest_dir
         GitLogPath.destDir = dest_dir
