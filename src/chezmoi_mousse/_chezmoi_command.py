@@ -90,6 +90,7 @@ class ReadVerbs(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
+    unmanaged = "unmanaged"
     verify = "verify"
 
 
@@ -136,8 +137,10 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
+    unmanaged = GlobalCmd.live_run.value + [
+        ReadVerbs.unmanaged.value + VerbArgs.path_style_absolute.value
+    ]
     verify = GlobalCmd.live_run.value + [ReadVerbs.verify.value]
-    # version = GlobalCmd.version.value TODO
 
     @property
     def pretty_cmd(self) -> str:
