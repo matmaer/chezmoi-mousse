@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from ._chezmoi import ReadCmd
+from ._chezmoi_command import ReadCmd
 from ._switch_data import Switches
 
 __all__ = [

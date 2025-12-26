@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ._chezmoi import CommandResult
+    from ._chezmoi_command import CommandResult
 
 type PathDict = dict[Path, str]
 type PathList = list[Path]

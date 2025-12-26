@@ -13,7 +13,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
-from ._chezmoi import (
+from ._chezmoi_command import (
     ChezmoiCommand,
     CommandResult,
     GlobalCmd,
