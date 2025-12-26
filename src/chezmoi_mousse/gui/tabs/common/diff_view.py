@@ -99,13 +99,12 @@ class DiffView(Vertical, AppType):
     destDir: "Path | None" = None
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
-    def __init__(self, *, ids: "AppIds", reverse: bool) -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
         super().__init__(
             id=self.ids.container.diff, classes=Tcss.border_title_top
         )
-        self.reverse = reverse
-        if self.reverse is True:
+        if self.ids.canvas_name == TabName.re_add:
             self.diff_cmd = ReadCmd.diff_reverse
             self.in_dest_dir_diff_msg = Static(DestDirStrings.diff_reverse)
         else:
@@ -221,7 +220,7 @@ class DiffView(Vertical, AppType):
         # Handle directory status paths
         status_paths = (
             self.app.cmd.paths.list_apply_status_paths_in(self.node_data.path)
-            if self.reverse is False
+            if self.ids.canvas_name == TabName.apply
             else self.app.cmd.paths.list_re_add_status_paths_in(
                 self.node_data.path
             )

@@ -39,7 +39,7 @@ class ReAddTab(TabsBase, AppType):
         )
         with Horizontal():
             yield TreeSwitcher(ids=IDS.re_add)
-            yield ViewSwitcher(ids=IDS.re_add, diff_reverse=True)
+            yield ViewSwitcher(ids=IDS.re_add)
         yield OperateButtons(ids=IDS.re_add)
         yield SwitchSlider(ids=IDS.re_add)
 

@@ -39,7 +39,7 @@ class ApplyTab(TabsBase, AppType):
         )
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
-            yield ViewSwitcher(ids=IDS.apply, diff_reverse=False)
+            yield ViewSwitcher(ids=IDS.apply)
         yield SwitchSlider(ids=IDS.apply)
         yield OperateButtons(ids=IDS.apply)
 

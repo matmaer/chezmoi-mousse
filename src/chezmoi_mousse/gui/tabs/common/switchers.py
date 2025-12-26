@@ -48,9 +48,8 @@ class ViewSwitcher(Vertical):
 
     destDir: "Path | None" = None
 
-    def __init__(self, *, ids: "AppIds", diff_reverse: bool):
+    def __init__(self, *, ids: "AppIds"):
         self.ids = ids
-        self.reverse = diff_reverse
         super().__init__(id=self.ids.container.right_side)
 
     def compose(self) -> ComposeResult:
@@ -58,7 +57,7 @@ class ViewSwitcher(Vertical):
         with ContentSwitcher(
             id=self.ids.switcher.views, initial=self.ids.container.diff
         ):
-            yield DiffView(ids=self.ids, reverse=self.reverse)
+            yield DiffView(ids=self.ids)
             yield ContentsView(ids=self.ids)
             yield GitLogPath(ids=self.ids)
 
