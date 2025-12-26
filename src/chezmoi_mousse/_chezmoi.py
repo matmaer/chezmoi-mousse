@@ -38,15 +38,6 @@ class LogUtils:
             [part for part in command if part and part not in exclude]
         )
 
-    @staticmethod
-    def strip_output(stdout: str):
-        # remove trailing space and new lines but NOT leading whitespace
-        stripped = stdout.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip() != ""]
-        )
-
 
 class GlobalCmd(Enum):
     default_args = [
