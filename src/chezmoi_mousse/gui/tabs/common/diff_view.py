@@ -11,7 +11,6 @@ from chezmoi_mousse import (
     Chars,
     DestDirStrings,
     DiffData,
-    PathDict,
     PathKind,
     ReadCmd,
     SectionLabels,
@@ -159,7 +158,7 @@ class DiffView(Vertical, AppType):
         mode_diff_lines: list[str] = []
         dir_diff_lines: list[str] = []
         file_diff_lines: list[str] = []
-        diff_output: "CommandResult" = self.app.chezmoi.read(
+        diff_output: "CommandResult" = self.app.cmd.read(
             self.diff_cmd, path_arg=self.node_data.path
         )
         diff_lines = diff_output.std_out.splitlines()
@@ -218,7 +217,7 @@ class DiffView(Vertical, AppType):
         info_lines: list[str] = []
         if (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path not in self.app.chezmoi.status_files
+            and self.node_data.path not in self.app.cmd.paths.status_files
         ):
             diff_info.display = True
             diff_info.info_lines = [
@@ -227,17 +226,17 @@ class DiffView(Vertical, AppType):
             ]
         elif (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.chezmoi.status_files
+            and self.node_data.path in self.app.cmd.paths.status_files
         ):
             diff_info.display = False
             diff_lines.display = True
             diff_lines.diff_data = diff_data
             return
         # Handle directory status paths
-        status_paths: PathDict = (
-            self.app.chezmoi.list_apply_status_paths_in(self.node_data.path)
+        status_paths = (
+            self.app.cmd.paths.list_apply_status_paths_in(self.node_data.path)
             if self.reverse is False
-            else self.app.chezmoi.list_re_add_status_paths_in(
+            else self.app.cmd.paths.list_re_add_status_paths_in(
                 self.node_data.path
             )
         )
@@ -257,7 +256,7 @@ class DiffView(Vertical, AppType):
 
         if (
             self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path not in self.app.chezmoi.status_dirs
+            and self.node_data.path not in self.app.cmd.paths.status_dirs
         ):
             info_lines.append(
                 f"Managed directory [$text-accent]{self.node_data.path}[/]."

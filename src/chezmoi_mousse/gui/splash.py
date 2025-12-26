@@ -19,6 +19,7 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     ChezmoiCommand,
+    ChezmoiPaths,
     CommandResult,
     ParsedConfig,
     ReadCmd,
@@ -242,12 +243,18 @@ class SplashScreen(Screen[SplashData | None], AppType):
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
-        self.app.chezmoi = ChezmoiCommand(
+        self.app.cmd = ChezmoiCommand(
             dev_mode=self.app.dev_mode,
             managed_dirs=globals()["managed_dirs"],
             managed_files=globals()["managed_files"],
             status_dirs=globals()["status_dirs"],
             status_files=globals()["status_files"],
+        )
+        self.app.paths = ChezmoiPaths(
+            managed_dirs_result=globals()["managed_dirs"],
+            managed_files_result=globals()["managed_files"],
+            status_dirs_result=globals()["status_dirs"],
+            status_files_result=globals()["status_files"],
         )
         if self.app.init_needed is True:
             return

@@ -145,9 +145,9 @@ class ContentsView(Vertical, AppType):
             self.rich_log.write(error.strerror)
 
     def write_cat_output(self, file_path: "Path") -> None:
-        if file_path in self.app.chezmoi.files:
+        if file_path in self.app.cmd.paths.files:
             self.cat_config_label.display = True
-            cat_output: "CommandResult" = self.app.chezmoi.read(
+            cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
             )
             self.contents_info_static_text.update(
@@ -164,7 +164,7 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(cat_output.std_out)
 
     def write_dir_info(self, dir_path: "Path") -> None:
-        if dir_path in self.app.chezmoi.dirs:
+        if dir_path in self.app.cmd.paths.dirs:
             self.contents_info_static_text.update(
                 f"{ContentsTabStrings.managed_dir}[$text-accent]{dir_path}[/]"
             )

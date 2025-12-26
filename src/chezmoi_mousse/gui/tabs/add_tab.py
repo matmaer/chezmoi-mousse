@@ -130,17 +130,17 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (
                     p.is_dir(follow_symlinks=False)
                     and not self._is_unwanted_dir(p)
-                    and p in self.app.chezmoi.dirs
+                    and p in self.app.cmd.paths.dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.chezmoi.dirs
+                        p.parent in self.app.cmd.paths.dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.chezmoi.files
+                    and p not in self.app.cmd.paths.files
                     and self._file_of_interest(p)
                 )
             )
@@ -158,10 +158,10 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.chezmoi.dirs
+                        p.parent in self.app.cmd.paths.dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.chezmoi.files
+                    and p not in self.app.cmd.paths.files
                     and self._file_of_interest(p)
                 )
             )
@@ -172,14 +172,14 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_dir(follow_symlinks=False)
-                    and p in self.app.chezmoi.dirs
+                    and p in self.app.cmd.paths.dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.chezmoi.files
+                    and p not in self.app.cmd.paths.files
                     and (
-                        p.parent in self.app.chezmoi.dirs
+                        p.parent in self.app.cmd.paths.dirs
                         or p.parent == self.path
                     )
                     and self._file_of_interest(p)
@@ -196,7 +196,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.chezmoi.files
+                    and p not in self.app.cmd.paths.files
                     and self._file_of_interest(p)
                 )
             )
@@ -221,8 +221,8 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if idx > max_entries:
                     return False
                 elif (
-                    p not in self.app.chezmoi.dirs
-                    and p not in self.app.chezmoi.files
+                    p not in self.app.cmd.paths.dirs
+                    and p not in self.app.cmd.paths.files
                 ):
                     return True
             return True
@@ -305,7 +305,7 @@ class AddTab(TabsBase, AppType):
         if self.current_node is None:
             return
         write_cmd: WriteCmd = self.get_command()
-        operate_result = self.app.chezmoi.perform(
+        operate_result = self.app.cmd.perform(
             write_cmd,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,

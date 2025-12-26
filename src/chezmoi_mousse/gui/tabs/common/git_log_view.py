@@ -88,10 +88,10 @@ class GitLogPath(Vertical, AppType):
         datatable = self.query_one(
             self.ids.datatable.git_log_q, GitLogDataTable
         )
-        command_result: "CommandResult" = self.app.chezmoi.read(
+        command_result: "CommandResult" = self.app.cmd.read(
             ReadCmd.source_path, path_arg=self.path
         )
-        git_log_result: "CommandResult" = self.app.chezmoi.read(
+        git_log_result: "CommandResult" = self.app.cmd.read(
             ReadCmd.git_log, path_arg=Path(command_result.std_out)
         )
         datatable.populate_datatable(git_log_result)

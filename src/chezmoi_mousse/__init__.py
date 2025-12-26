@@ -17,12 +17,12 @@ from ._chezmoi import (
     ChezmoiCommand,
     CommandResult,
     GlobalCmd,
-    PathDict,
     ReadCmd,
     ReadVerbs,
     VerbArgs,
     WriteCmd,
 )
+from ._chezmoi_paths import ChezmoiPaths, PathDict, PathList
 from ._operate_button_data import OpBtnLabels, OperateBtn
 from ._str_enum_bindings import BindingAction, BindingDescription
 from ._str_enum_names import LogName, PathKind, ScreenName, TabName, TreeName
@@ -67,10 +67,13 @@ __all__ = [
     "CommandResult",
     "GlobalCmd",
     "PathDict",
+    "PathList",
     "ReadCmd",
     "ReadVerbs",
     "WriteCmd",
     "VerbArgs",
+    # _chezmoi_paths.py
+    "ChezmoiPaths",
     # Other
     "AppType",
     "BindingAction",

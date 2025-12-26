@@ -39,7 +39,12 @@ from .tabs.common.switchers import TreeSwitcher
 from .tabs.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiCommand, CommandResult, SplashData
+    from chezmoi_mousse import (
+        ChezmoiCommand,
+        ChezmoiPaths,
+        CommandResult,
+        SplashData,
+    )
 
 __all__ = ["ChezmoiGUI"]
 
@@ -115,7 +120,8 @@ class ChezmoiGUI(App[None]):
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
-        self.chezmoi: "ChezmoiCommand"
+        self.cmd: "ChezmoiCommand"
+        self.paths: "ChezmoiPaths"
 
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode

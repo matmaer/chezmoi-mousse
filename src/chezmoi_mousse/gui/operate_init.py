@@ -613,7 +613,7 @@ class OperateInitScreen(Screen[None], AppType):
             self.init_info.update(OperateStrings.guess_ssh)
 
     def run_operate_command(self) -> None:
-        self.app.init_cmd_result = self.app.chezmoi.perform(
+        self.app.init_cmd_result = self.app.cmd.perform(
             write_cmd=self.init_cmd,
             init_arg=self.init_arg,
             changes_enabled=self.app.changes_enabled,

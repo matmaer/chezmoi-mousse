@@ -5,17 +5,15 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
+from ._chezmoi_paths import ChezmoiPaths
+
 if TYPE_CHECKING:
     from .gui.tabs.logs_tab import AppLog, DebugLog, OperateLog, ReadCmdLog
-
-type PathDict = "dict[Path, str]"
-type PathList = "list[Path]"
 
 __all__ = [
     "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
-    "PathDict",
     "ReadCmd",
     "ReadVerbs",
     "VerbArgs",
@@ -230,10 +228,12 @@ class ChezmoiCommand:
         status_files: CommandResult,
     ) -> None:
         self._dev_mode = dev_mode
-        self._managed_dirs_result = managed_dirs
-        self._managed_files_result = managed_files
-        self._status_dirs_result = status_dirs
-        self._status_files_result = status_files
+        self.paths = ChezmoiPaths(
+            managed_dirs_result=managed_dirs,
+            managed_files_result=managed_files,
+            status_dirs_result=status_dirs,
+            status_files_result=status_files,
+        )
 
         self.app_log: AppLog | None = None
         self.read_cmd_log: ReadCmdLog | None = None
@@ -255,211 +255,13 @@ class ChezmoiCommand:
             self.app_log.log_cmd_results(result)
             self.operate_log.log_cmd_results(result)
 
-    ############################
-    # MANAGED AND STATUS PATHS #
-    ############################
-
-    @property
-    def dirs(self) -> "PathList":
-        return [
-            Path(line)
-            for line in self._managed_dirs_result.std_out.splitlines()
-        ]
-
-    @property
-    def files(self) -> "PathList":
-        return [
-            Path(line)
-            for line in self._managed_files_result.std_out.splitlines()
-        ]
-
-    @property
-    def status_dirs(self) -> "PathDict":
-        return {
-            Path(line[3:]): line[:2]
-            for line in self._status_dirs_result.std_out.splitlines()
-            if line.strip() != ""
-        }
-
-    @property
-    def status_files(self) -> "PathDict":
-        return {
-            Path(line[3:]): line[:2]
-            for line in self._status_files_result.std_out.splitlines()
-            if line.strip() != ""
-        }
-
-    @property
-    def all_status_paths(self) -> "PathDict":
-        return {**self.status_dirs, **self.status_files}
-
-    # properties filtering status files into apply and re-add contexts
-
-    @property
-    def apply_status_files(self) -> "PathDict":
-        return {
-            path: status_pair[1]
-            for path, status_pair in self.status_files.items()
-            if status_pair[1] in "ADM"  # Check second character only
-        }
-
-    @property
-    def re_add_status_files(self) -> "PathDict":
-        # consider these files to have a status as chezmoi re-add can be run
-        return {
-            path: status_pair[0]
-            for path, status_pair in self.status_files.items()
-            if (
-                status_pair[0] == "M"
-                or (status_pair[0] == " " and status_pair[1] in "ADM")
-            )
-            and path.exists()
-        }
-
-    # properties filtering status dirs into apply and re-add contexts
-
-    @property
-    def apply_status_dirs(self) -> "PathDict":
-        real_status_dirs = {
-            path: status_pair[1]
-            for path, status_pair in self.status_dirs.items()
-            if status_pair[1] in "ADM"  # Check second character only
-        }
-        dirs_with_status_files = {
-            file_path.parent: " "
-            for file_path, _ in self.apply_status_files.items()
-            if file_path.parent not in real_status_dirs
-        }
-        return {**real_status_dirs, **dirs_with_status_files}
-
-    @property
-    def re_add_status_dirs(self) -> "PathDict":
-        # Dir status is not relevant to the re-add command, just return any
-        # parent dir that contains re-add status files
-        # Return those directories with status " "
-        # No need to check for existence, as files within must exist
-        return {
-            file_path.parent: " "
-            for file_path in self.re_add_status_files.keys()
-        }
-
-    # properties for files without status
-    @property
-    def apply_files_without_status(self) -> "PathDict":
-        return {
-            path: "X"
-            for path in self.files
-            if path not in self.apply_status_files.keys()
-        }
-
-    @property
-    def re_add_files_without_status(self) -> "PathDict":
-        return {
-            path: "X"
-            for path in self.files
-            if path not in self.re_add_status_files.keys()
-        }
-
-    # concat dicts, files override dirs on key collisions, should never happen
-    @property
-    def apply_status_paths(self) -> "PathDict":
-        return {**self.apply_status_dirs, **self.apply_status_files}
-
-    @property
-    def re_add_status_paths(self) -> "PathDict":
-        return {**self.re_add_status_dirs, **self.re_add_status_files}
-
-    def apply_status_dirs_in(self, dir_path: Path) -> "PathDict":
-        return {
-            path: status
-            for path, status in self.apply_status_dirs.items()
-            if path.parent == dir_path
-        }
-
-    def apply_status_files_in(self, dir_path: Path) -> "PathDict":
-        return {
-            path: status
-            for path, status in self.apply_status_files.items()
-            if path.parent == dir_path
-        }
-
-    def re_add_status_files_in(self, dir_path: Path) -> "PathDict":
-        return {
-            path: status
-            for path, status in self.re_add_status_files.items()
-            if path.parent == dir_path
-        }
-
-    def re_add_status_dirs_in(self, dir_path: Path) -> "PathDict":
-        return {
-            path: status
-            for path, status in self.re_add_status_dirs.items()
-            if path.parent == dir_path
-        }
-
-    def apply_files_without_status_in(self, dir_path: Path) -> "PathDict":
-        return {
-            path: status
-            for path, status in self.apply_files_without_status.items()
-            if path.parent == dir_path
-        }
-
-    def re_add_files_without_status_in(self, dir_path: Path) -> "PathDict":
-        return {
-            path: status
-            for path, status in self.re_add_files_without_status.items()
-            if path.parent == dir_path
-        }
-
-    def has_apply_status_paths_in(self, dir_path: Path) -> bool:
-        # Return True if any apply-status path is a descendant of the
-        # provided directory.
-        return any(
-            status_path.is_relative_to(dir_path)
-            for status_path in self.apply_status_paths.keys()
-        )
-
-    def has_re_add_status_paths_in(self, dir_path: Path) -> bool:
-        # Same logic as for apply: return True if any re-add status path
-        # is a descendant of dir_path.
-        return any(
-            status_path.is_relative_to(dir_path)
-            for status_path in self.re_add_status_paths.keys()
-        )
-
-    def list_apply_status_paths_in(self, dir_path: Path) -> PathDict:
-        # Return a dict of apply-status paths that are descendants of the
-        # provided directory, mapping path -> status.
-        return {
-            path: status
-            for path, status in self.apply_status_paths.items()
-            if path.is_relative_to(dir_path)
-        }
-
-    def list_re_add_status_paths_in(self, dir_path: Path) -> PathDict:
-        # Return a dict of re-add-status paths that are descendants of dir_path,
-        # mapping path -> status.
-        return {
-            path: status
-            for path, status in self.re_add_status_paths.items()
-            if path.is_relative_to(dir_path)
-        }
-
     def update_managed_paths(self) -> None:
-        self._managed_dirs_result: CommandResult = self.read(
-            ReadCmd.managed_dirs
-        )
-        self._managed_files_result: CommandResult = self.read(
-            ReadCmd.managed_files
-        )
+        self.paths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
+        self.paths.managed_files_result = self.read(ReadCmd.managed_files)
 
     def update_status_paths(self) -> None:
-        self._status_files_result: CommandResult = self.read(
-            ReadCmd.status_files
-        )
-        self._status_dirs_result: CommandResult = self.read(
-            ReadCmd.status_dirs
-        )
+        self.paths.status_files_result = self.read(ReadCmd.status_files)
+        self.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
 
     @staticmethod
     def strip_output(cmd_output: str):

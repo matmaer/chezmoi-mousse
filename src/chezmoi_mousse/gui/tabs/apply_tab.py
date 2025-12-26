@@ -95,7 +95,7 @@ class ApplyTab(TabsBase, AppType):
         if self.current_node is None:
             return
         write_cmd: WriteCmd = self.get_run_command(btn_label)
-        operate_result = self.app.chezmoi.perform(
+        operate_result = self.app.cmd.perform(
             write_cmd,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
@@ -173,9 +173,9 @@ class ApplyTab(TabsBase, AppType):
         self.current_node = msg.node_data
         self.apply_btn.label = OpBtnLabels.apply_review
         if (
-            msg.node_data.path in self.app.chezmoi.status_dirs
-            or msg.node_data.path in self.app.chezmoi.apply_status_files
-            or self.app.chezmoi.has_apply_status_paths_in(msg.node_data.path)
+            msg.node_data.path in self.app.cmd.paths.status_dirs
+            or msg.node_data.path in self.app.cmd.paths.apply_status_files
+            or self.app.cmd.paths.has_apply_status_paths_in(msg.node_data.path)
         ):
             self.apply_btn.disabled = False
             self.destroy_btn.disabled = False

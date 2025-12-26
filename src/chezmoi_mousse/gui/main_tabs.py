@@ -77,21 +77,21 @@ class MainScreen(Screen[None], AppType):
     async def initialize_loggers(self) -> None:
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
-        self.app.chezmoi.app_log = self.app_log
+        self.app.cmd.app_log = self.app_log
         # Initialize Operate logger
         self.operate_log = self.query_one(
             IDS.logs.logger.operate_q, OperateLog
         )
-        self.app.chezmoi.operate_log = self.operate_log
+        self.app.cmd.operate_log = self.operate_log
         self.app_log.success(LogStrings.operate_log_initialized)
         # Initialize ReadCmd logger
         self.read_cmd_log = self.query_one(IDS.logs.logger.read_q, ReadCmdLog)
-        self.app.chezmoi.read_cmd_log = self.read_cmd_log
+        self.app.cmd.read_cmd_log = self.read_cmd_log
         self.app_log.success(LogStrings.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode:
             self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
-            self.app.chezmoi.debug_log = self.debug_log
+            self.app.cmd.debug_log = self.debug_log
             self.app_log.success(LogStrings.debug_log_initialized)
             self.notify(LogStrings.dev_mode_enabled)
 
