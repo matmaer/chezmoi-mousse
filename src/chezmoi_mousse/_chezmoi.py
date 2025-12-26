@@ -188,6 +188,8 @@ class WriteCmd(Enum):
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
+    stripped_std_out: str
+    stripped_std_err: str
     pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
     read_cmd: ReadCmd | None = None
     write_cmd: WriteCmd | None = None
@@ -210,23 +212,19 @@ class CommandResult:
 
     @property
     def std_out(self) -> str:
-        stripped_stdout = LogUtils.strip_output(self.completed_process.stdout)
-        if stripped_stdout == "" and "--dry-run" in self.cmd_args:
+        if self.stripped_std_out == "" and "--dry-run" in self.cmd_args:
             return "No output on stdout, command was executed with --dry-run."
-        elif stripped_stdout == "":
+        elif self.stripped_std_out == "":
             return "No output on stdout."
         else:
-            return stripped_stdout
+            return self.stripped_std_out
 
     @property
     def std_err(self) -> str:
-        stripped_stderr = LogUtils.strip_output(self.completed_process.stderr)
-        if stripped_stderr == "" and "--dry-run" in self.cmd_args:
-            return "No output on stderr, command was executed with --dry-run."
-        elif stripped_stderr == "":
-            return ""
+        if self.stripped_std_err == "":
+            return "No output on stderr."
         else:
-            return stripped_stderr
+            return self.stripped_std_err
 
 
 class ChezmoiCommand:
@@ -472,6 +470,15 @@ class ChezmoiCommand:
             ReadCmd.status_dirs
         )
 
+    @staticmethod
+    def strip_output(cmd_output: str):
+        # remove trailing space and new lines but NOT leading whitespace
+        stripped = cmd_output.lstrip("\n").rstrip()
+        # remove intermediate empty lines
+        return "\n".join(
+            [line for line in stripped.splitlines() if line.strip() != ""]
+        )
+
     def read(
         self, read_cmd: ReadCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
@@ -491,8 +498,13 @@ class ChezmoiCommand:
             text=True,
             timeout=time_out,
         )
+        stripped_stdout = self.strip_output(result.stdout)
+        stripped_stderr = self.strip_output(result.stderr)
         command_result = CommandResult(
-            completed_process=result, read_cmd=read_cmd
+            completed_process=result,
+            read_cmd=read_cmd,
+            stripped_std_err=stripped_stderr,
+            stripped_std_out=stripped_stdout,
         )
         self._log_in_app_and_read_cmd_log(command_result)
         return command_result
@@ -544,8 +556,13 @@ class ChezmoiCommand:
         result: CompletedProcess[str] = run(
             command, capture_output=True, shell=False, text=True, timeout=5
         )
+        stripped_stdout = self.strip_output(result.stdout)
+        stripped_stderr = self.strip_output(result.stderr)
         command_result = CommandResult(
-            completed_process=result, write_cmd=write_cmd
+            completed_process=result,
+            stripped_std_err=stripped_stderr,
+            stripped_std_out=stripped_stdout,
+            write_cmd=write_cmd,
         )
         self._log_in_app_and_operate_log(command_result)
         if write_cmd == WriteCmd.add_live:

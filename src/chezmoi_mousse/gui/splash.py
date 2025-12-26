@@ -188,8 +188,13 @@ class SplashScreen(Screen[SplashData | None], AppType):
             text=True,
             timeout=2,
         )
+        stripped_stdout = ChezmoiCommand.strip_output(result.stdout)
+        stripped_stderr = ChezmoiCommand.strip_output(result.stderr)
         cmd_result = CommandResult(
-            completed_process=result, read_cmd=splash_cmd
+            completed_process=result,
+            read_cmd=splash_cmd,
+            stripped_std_out=stripped_stdout,
+            stripped_std_err=stripped_stderr,
         )
         cmd_text = cmd_result.pretty_cmd
         globals()[splash_cmd.name] = cmd_result
