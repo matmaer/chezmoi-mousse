@@ -119,11 +119,6 @@ class OperateStrings(StrEnum):
     destroy_subtitle = (
         f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"
     )
-    diff_color = (
-        f"[$text-success]+ green lines will be added[/]\n"
-        "[$text-error]- red lines will be removed[/]\n"
-        f"[dim]{Chars.bullet} dimmed lines for context (3 lines)[/]"
-    )
     error_subtitle = "Operation failed with errors"
     forget_path = (
         "[$text-primary]Remove the path from the source state, i.e. stop "
@@ -165,23 +160,21 @@ class OperateStrings(StrEnum):
 
 
 class DestDirStrings(StrEnum):
-    _click_file = "Click a file to see the output from "
-    _click_dir = "Click a directory to see"
+    _click_path = "Select a file or directory to check"
+    _click_file = "Select a file to check"
+    _click_dir = "Select a directory to check"
     add = (
-        "Click a directory to see if it's managed or unmanaged, "
-        "and if it contains files to add.\n"
-        f"{_click_file}{OperateStrings.read_file}."
+        f"Select a directory to check if it's managed or unmanaged and if it "
+        "contains files to add.\n"
+        f"{_click_file} {OperateStrings.read_file}."
     )
-    cat = f"{_click_file}[$success]{ReadCmd.cat.pretty_cmd}[/]."
-    diff = f"{_click_file}[$success]{ReadCmd.diff.pretty_cmd}[/]."
+    cat = f"{_click_file} [$success]{ReadCmd.cat.pretty_cmd}[/]."
+    diff = f"{_click_path} [$success]{ReadCmd.diff.pretty_cmd}[/]."
     diff_reverse = (
-        f"{_click_file}[$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
+        f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
     )
-    git_log_msg = (
-        f"Click a path to see the output from "
-        f"[$success]{ReadCmd.git_log.pretty_cmd}[/]."
-    )
-    re_add = f"{_click_file}[$success]{OperateStrings.read_file}[/]."
+    git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
+    re_add = f"{_click_file} [$success]{OperateStrings.read_file}[/]."
 
 
 class SectionLabels(StrEnum):

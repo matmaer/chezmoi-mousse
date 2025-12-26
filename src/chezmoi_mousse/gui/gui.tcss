@@ -10,30 +10,6 @@
   border-title-style: bold;
 }
 
-.diff_line_added {
-  color: $text-success;
-  background: $success-muted;
-  background-tint: $success-muted;
-}
-
-.diff_line_changed_mode {
-  color: $text-warning;
-  background: $warning-muted;
-  background-tint: $warning-muted;
-}
-
-.diff_line_removed {
-  color: $text-error;
-  background: $error-muted;
-  background-tint: $error-muted;
-}
-
-.diff_line_context {
-  color: $text-disabled;
-  background: $surface;
-  background-tint: $surface;
-}
-
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
@@ -117,6 +93,36 @@
     background: $surface-lighten-1;
     background-tint: $surface-lighten-1;
   }
+}
+
+.style_added {
+  color: $text-success;
+  background: $success-muted;
+  background-tint: $success-muted;
+}
+
+.style_changed {
+  color: $text-warning;
+  background: $warning-muted;
+  background-tint: $warning-muted;
+}
+
+.style_context{
+  color: $text-disabled;
+  background: $surface;
+  background-tint: $surface;
+}
+
+.style_removed {
+  color: $text-error;
+  background: $error-muted;
+  background-tint: $error-muted;
+}
+
+.style_unchanged {
+  color: $text-primary;
+  background: $primary-muted;
+  background-tint: $primary-muted;
 }
 
 .sub_section_label {

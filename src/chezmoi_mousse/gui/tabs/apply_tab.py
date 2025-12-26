@@ -163,7 +163,6 @@ class ApplyTab(TabsBase, AppType):
             f"[$text-warning]{self.get_run_command(btn_label).pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
-        lines_to_write.append(OperateStrings.diff_color)
         self.operate_info.border_subtitle = OperateStrings.apply_subtitle
         self.operate_info.update("\n".join(lines_to_write))
 

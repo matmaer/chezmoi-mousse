@@ -42,6 +42,8 @@ from ._switch_data import Switches
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from textual.widgets import Static
+
     from .gui.textual_app import ChezmoiGUI
 
 
@@ -101,9 +103,7 @@ __all__ = [
 @dataclass(slots=True)
 class DiffData:
     diff_cmd_label: str
-    dir_diff_lines: list[str]
-    file_diff_lines: list[str]
-    mode_diff_lines: list[str]
+    diff_lines: list[Static]
 
 
 @dataclass(slots=True)

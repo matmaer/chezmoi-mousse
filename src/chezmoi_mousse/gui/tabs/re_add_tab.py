@@ -174,7 +174,6 @@ class ReAddTab(TabsBase, AppType):
                 lines_to_write.append(OperateStrings.auto_commit)
             if self.git_autopush is True:
                 lines_to_write.append(OperateStrings.auto_push)
-        lines_to_write.append(OperateStrings.diff_color)
         self.operate_info.border_subtitle = OperateStrings.re_add_subtitle
         self.operate_info.update("\n".join(lines_to_write))
 
