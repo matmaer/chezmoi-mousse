@@ -7,6 +7,7 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     NodeData,
+    OpBtnEnum,
     OpBtnLabels,
     OperateStrings,
     Tcss,
@@ -70,37 +71,34 @@ class ReAddTab(TabsBase, AppType):
         )
         self.operate_info.display = False
 
-    def get_run_command(self, btn_label: OpBtnLabels) -> WriteCmd:
+    def get_run_command(self, btn_enum: OpBtnEnum) -> WriteCmd:
         if self.current_node is None:
             raise ValueError("No current node selected")
-        if btn_label in (OpBtnLabels.re_add_run, OpBtnLabels.re_add_review):
+        if btn_enum == OpBtnEnum.re_add_path:
             return (
                 WriteCmd.re_add_live
                 if self.app.changes_enabled
                 else WriteCmd.re_add_dry
             )
-        elif btn_label in (OpBtnLabels.forget_run, OpBtnLabels.forget_review):
+        elif btn_enum == OpBtnEnum.forget_path:
             return (
                 WriteCmd.forget_live
                 if self.app.changes_enabled
                 else WriteCmd.forget_dry
             )
-        elif btn_label in (
-            OpBtnLabels.destroy_run,
-            OpBtnLabels.destroy_review,
-        ):
+        elif btn_enum == OpBtnEnum.destroy_path:
             return (
                 WriteCmd.destroy_live
                 if self.app.changes_enabled
                 else WriteCmd.destroy_dry
             )
         else:
-            raise ValueError(f"Unknown button label: {btn_label}")
+            raise ValueError(f"Unknown button enum: {btn_enum}")
 
-    def run_operate_command(self, btn_label: OpBtnLabels) -> None:
+    def run_operate_command(self, btn_enum: OpBtnEnum) -> None:
         if self.current_node is None:
             return
-        write_cmd: WriteCmd = self.get_run_command(btn_label)
+        write_cmd: WriteCmd = self.get_run_command(btn_enum)
         operate_result = self.app.cmd.perform(
             write_cmd,
             path_arg=self.current_node.path,
@@ -160,13 +158,13 @@ class ReAddTab(TabsBase, AppType):
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
-    def write_pre_operate_info(self, btn_label: OpBtnLabels) -> None:
+    def write_pre_operate_info(self, btn_enum: OpBtnEnum) -> None:
         if self.current_node is None:
             return
         lines_to_write: list[str] = []
         lines_to_write.append(
             f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{self.get_run_command(btn_label).pretty_cmd} "
+            f"[$text-warning]{self.get_run_command(btn_enum).pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
         if self.app.changes_enabled is True:
@@ -205,23 +203,23 @@ class ReAddTab(TabsBase, AppType):
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.re_add_btn.label = OpBtnLabels.re_add_run
-            self.write_pre_operate_info(OpBtnLabels.re_add_run)
+            self.write_pre_operate_info(OpBtnEnum.re_add_path)
         elif msg.label == OpBtnLabels.re_add_run:
-            self.run_operate_command(OpBtnLabels.re_add_run)
+            self.run_operate_command(OpBtnEnum.re_add_path)
         elif msg.label == OpBtnLabels.destroy_review:
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.re_add_btn.label = OpBtnLabels.destroy_run
-            self.write_pre_operate_info(OpBtnLabels.destroy_run)
+            self.write_pre_operate_info(OpBtnEnum.destroy_path)
         elif msg.label == OpBtnLabels.destroy_run:
-            self.run_operate_command(OpBtnLabels.destroy_run)
+            self.run_operate_command(OpBtnEnum.destroy_path)
         elif msg.label == OpBtnLabels.forget_review:
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.re_add_btn.label = OpBtnLabels.forget_run
-            self.write_pre_operate_info(OpBtnLabels.forget_run)
+            self.write_pre_operate_info(OpBtnEnum.forget_path)
         elif msg.label == OpBtnLabels.forget_run:
-            self.run_operate_command(OpBtnLabels.forget_run)
+            self.run_operate_command(OpBtnEnum.forget_path)
         elif msg.label == OpBtnLabels.cancel:
             self.app.operating_mode = False
             self.re_add_btn.disabled = False

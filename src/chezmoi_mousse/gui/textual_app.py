@@ -17,6 +17,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
+    OpBtnEnum,
     OpBtnLabels,
     TabName,
 )
@@ -248,20 +249,10 @@ class ChezmoiGUI(App[None]):
                 return
             add_tab = self.screen.query_exactly_one(AddTab)
             add_tab.write_pre_operate_info()
-            new_apply_label = (
-                OpBtnLabels.apply_run
-                if self.changes_enabled
-                else OpBtnLabels.apply_review
-            )
             apply_tab = self.screen.query_exactly_one(ApplyTab)
-            apply_tab.write_pre_operate_info(new_apply_label)
-            new_re_add_label = (
-                OpBtnLabels.re_add_run
-                if self.changes_enabled
-                else OpBtnLabels.re_add_review
-            )
+            apply_tab.write_pre_operate_info(OpBtnEnum.apply_path)
             re_add_tab = self.screen.query_exactly_one(ReAddTab)
-            re_add_tab.write_pre_operate_info(new_re_add_label)
+            re_add_tab.write_pre_operate_info(OpBtnEnum.re_add_path)
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
