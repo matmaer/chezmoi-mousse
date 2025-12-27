@@ -21,6 +21,7 @@ from chezmoi_mousse import (
     Chars,
     OpBtnEnum,
     OpBtnLabels,
+    OperateStrings,
     TabName,
 )
 from chezmoi_mousse.shared import (
@@ -132,6 +133,7 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
+        self.current_op_btn_msg: OperateButtonMsg | None = None
 
         # Disable Maxdmize/Minimize and Show/Hide Filters bindings when
         # in operate mode in the MainScreen
@@ -141,6 +143,9 @@ class ChezmoiGUI(App[None]):
         self.init_cmd_result: "CommandResult | None" = None
         self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
+
+        self.git_autocommit: bool | None = None
+        self.git_autopush: bool | None = None
 
         # Arbitrary max file size used by FilteredDirTree and ContentsView but
         # should be reasonable truncate for files to be considered as dotfiles.
@@ -167,13 +172,8 @@ class ChezmoiGUI(App[None]):
         self.push_screen(MainScreen())
 
     def toggle_widget_visibility(
-        self,
-        operate_info: Static,
-        tab_widget: ApplyTab | ReAddTab,
-        button_enum: OpBtnEnum,
-        btn_qid: str,
+        self, tab_widget: ApplyTab | ReAddTab, btn_qid: str
     ) -> None:
-        # Widgets shown by default
         self.toggle_main_tabs_display()
         left_side = tab_widget.query_one(
             tab_widget.ids.container.left_side_q, TreeSwitcher
@@ -185,13 +185,14 @@ class ChezmoiGUI(App[None]):
         view_switcher_buttons.display = (
             False if view_switcher_buttons.display is True else True
         )
-        operate_info.display = True if operate_info.display is False else False
-        # Depending on self.app.operating_mode, show/hide buttons
+        operate_info_widget = self.get_operate_info_widget()
+        operate_info_widget.display = (
+            True if operate_info_widget.display is False else False
+        )
         all_buttons = tab_widget.query(Button)
         switch_slider = self.get_switch_slider_widget()
         op_btn_widget = tab_widget.query_one(btn_qid, Button)
         if self.operating_mode is True:
-            # When entering operating mode, hide all buttons except the clicked one and exit button
             for btn in all_buttons:
                 if btn is tab_widget.exit_btn or btn is op_btn_widget:
                     btn.display = True
@@ -208,6 +209,34 @@ class ChezmoiGUI(App[None]):
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
+    def write_pre_operate_info(
+        self, *, tab_widget: ApplyTab | ReAddTab
+    ) -> None:
+        if self.current_op_btn_msg is None:
+            raise ValueError(
+                "current_op_review_msg is None in write_pre_operate_info"
+            )
+        lines_to_write: list[str] = []
+        if tab_widget.current_node is None:
+            raise ValueError("current_node is None in write_pre_operate_info")
+        lines_to_write.append(
+            f"{OperateStrings.ready_to_run}"
+            f"[$text-warning]{self.current_op_btn_msg.btn_enum.write_cmd.pretty_cmd} "
+            f"{tab_widget.current_node.path}[/]"
+        )
+        if self.changes_enabled is True:
+            if self.splash_data is None:
+                raise ValueError(
+                    "splash_data is None in write_pre_operate_info"
+                )
+            if self.splash_data.parsed_config.git_autocommit is True:
+                lines_to_write.append(OperateStrings.auto_commit)
+            if self.splash_data.parsed_config.git_autopush is True:
+                lines_to_write.append(OperateStrings.auto_push)
+        operate_info = self.get_operate_info_widget()
+        operate_info.border_subtitle = OperateStrings.re_add_subtitle
+        operate_info.update("\n".join(lines_to_write))
+
     @on(OperateButtonMsg)
     def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
         if not isinstance(self.screen, MainScreen) or msg.canvas_name not in (
@@ -215,21 +244,16 @@ class ChezmoiGUI(App[None]):
             TabName.re_add,
         ):
             return
+        self.current_op_btn_msg = msg
         tabbed_content = self.screen.query_exactly_one(TabbedContent)
         if msg.canvas_name == TabName.apply:
             tab_widget = tabbed_content.query_one(msg.tab_qid, ApplyTab)
             op_btn_widget = tab_widget.query_one(msg.btn_qid, Button)
             review_label = OpBtnLabels.apply_review
-            operate_info = tab_widget.query_one(
-                IDS.apply.static.operate_info_q, Static
-            )
         elif msg.canvas_name == TabName.re_add:
             tab_widget = tabbed_content.query_one(msg.tab_qid, ReAddTab)
             op_btn_widget = tab_widget.query_one(msg.btn_qid, Button)
             review_label = OpBtnLabels.re_add_review
-            operate_info = tab_widget.query_one(
-                IDS.re_add.static.operate_info_q, Static
-            )
         else:
             self.notify(
                 f"OperateButtonMsg received for unsupported tab: {msg.canvas_name}"
@@ -248,7 +272,7 @@ class ChezmoiGUI(App[None]):
                 # Update state BEFORE toggling visibility
                 self.operating_mode = True
                 op_btn_widget.label = review_to_run[msg.label]
-                tab_widget.write_pre_operate_info(msg.btn_enum)
+                self.write_pre_operate_info(tab_widget=tab_widget)
             elif msg.label == OpBtnLabels.cancel:
                 self.operating_mode = False
                 op_btn_widget.disabled = False
@@ -257,10 +281,7 @@ class ChezmoiGUI(App[None]):
                 self.operating_mode = False
             # Toggle visibility AFTER updating operating_mode and labels
             self.toggle_widget_visibility(
-                operate_info=operate_info,
-                tab_widget=tab_widget,
-                button_enum=msg.btn_enum,
-                btn_qid=msg.btn_qid,
+                tab_widget=tab_widget, btn_qid=msg.btn_qid
             )
 
     def on_tabbed_content_tab_activated(
@@ -278,6 +299,23 @@ class ChezmoiGUI(App[None]):
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
 
+    def get_operate_info_widget(self) -> Static:
+        if not isinstance(self.screen, MainScreen):
+            raise ValueError(
+                "get_operate_info_widget called outside of MainScreen"
+            )
+        active_tab = self.screen.query_exactly_one(TabbedContent).active
+        if active_tab == TabName.apply:
+            return self.screen.query_one(
+                IDS.apply.static.operate_info_q, Static
+            )
+        if active_tab == TabName.re_add:
+            return self.screen.query_one(
+                IDS.re_add.static.operate_info_q, Static
+            )
+        else:  # active_tab == TabName.add
+            return self.screen.query_one(IDS.add.static.operate_info_q, Static)
+
     def get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
             raise ValueError(
@@ -285,18 +323,17 @@ class ChezmoiGUI(App[None]):
             )
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         if active_tab == TabName.apply:
-            slider = self.screen.query_one(
+            return self.screen.query_one(
                 IDS.apply.container.switch_slider_q, SwitchSlider
             )
         elif active_tab == TabName.re_add:
-            slider = self.screen.query_one(
+            return self.screen.query_one(
                 IDS.re_add.container.switch_slider_q, SwitchSlider
             )
         else:  # active_tab == TabName.add
-            slider = self.screen.query_one(
+            return self.screen.query_one(
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
-        return slider
 
     def update_binding_description(
         self, binding_action: BindingAction, new_description: str
@@ -339,10 +376,11 @@ class ChezmoiGUI(App[None]):
                 return
             add_tab = self.screen.query_exactly_one(AddTab)
             add_tab.write_pre_operate_info(OpBtnEnum.add_file)
+
             apply_tab = self.screen.query_exactly_one(ApplyTab)
-            apply_tab.write_pre_operate_info(OpBtnEnum.apply_path)
+            self.write_pre_operate_info(tab_widget=apply_tab)
             re_add_tab = self.screen.query_exactly_one(ReAddTab)
-            re_add_tab.write_pre_operate_info(OpBtnEnum.re_add_path)
+            self.write_pre_operate_info(tab_widget=re_add_tab)
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):

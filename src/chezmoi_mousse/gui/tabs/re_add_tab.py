@@ -89,23 +89,6 @@ class ReAddTab(TabsBase, AppType):
             self.operate_info.add_class(Tcss.operate_error)
             self.operate_info.update(f"{operate_result.std_err}")
 
-    def write_pre_operate_info(self, btn_enum: OpBtnEnum) -> None:
-        if self.current_node is None:
-            return
-        lines_to_write: list[str] = []
-        lines_to_write.append(
-            f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{btn_enum.write_cmd.pretty_cmd} "
-            f"{self.current_node.path}[/]"
-        )
-        if self.app.changes_enabled is True:
-            if self.git_autocommit is True:
-                lines_to_write.append(OperateStrings.auto_commit)
-            if self.git_autopush is True:
-                lines_to_write.append(OperateStrings.auto_push)
-        self.operate_info.border_subtitle = OperateStrings.re_add_subtitle
-        self.operate_info.update("\n".join(lines_to_write))
-
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(
         self, msg: CurrentReAddNodeMsg
