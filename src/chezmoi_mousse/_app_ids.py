@@ -5,7 +5,7 @@ Provides easy access, autocomplete, type checking or to generate the id
 dynamically.
 """
 
-from ._operate_button_data import OperateBtn
+from ._operate_button_data import OpBtnEnum
 from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
@@ -61,7 +61,7 @@ class AppIds:
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
 
-    def operate_button_id(self, qid: str = "", *, btn: OperateBtn) -> str:
+    def operate_button_id(self, qid: str = "", *, btn: OpBtnEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_op_btn"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
@@ -375,23 +375,23 @@ class LoggerIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds):
-        self.add_dir = ids.operate_button_id(btn=OperateBtn.add_dir)
+        self.add_dir = ids.operate_button_id(btn=OpBtnEnum.add_dir)
         self.add_dir_q = f"#{self.add_dir}"
-        self.add_file = ids.operate_button_id(btn=OperateBtn.add_file)
+        self.add_file = ids.operate_button_id(btn=OpBtnEnum.add_file)
         self.add_file_q = f"#{self.add_file}"
-        self.apply_path = ids.operate_button_id(btn=OperateBtn.apply_path)
+        self.apply_path = ids.operate_button_id(btn=OpBtnEnum.apply_path)
         self.apply_path_q = f"#{self.apply_path}"
-        self.destroy_path = ids.operate_button_id(btn=OperateBtn.destroy_path)
+        self.destroy_path = ids.operate_button_id(btn=OpBtnEnum.destroy_path)
         self.destroy_path_q = f"#{self.destroy_path}"
-        self.forget_path = ids.operate_button_id(btn=OperateBtn.forget_path)
+        self.forget_path = ids.operate_button_id(btn=OpBtnEnum.forget_path)
         self.forget_path_q = f"#{self.forget_path}"
-        self.init_new = ids.operate_button_id(btn=OperateBtn.init_new)
+        self.init_new = ids.operate_button_id(btn=OpBtnEnum.init_new)
         self.init_new_q = f"#{self.init_new}"
-        self.init_clone = ids.operate_button_id(btn=OperateBtn.init_clone)
+        self.init_clone = ids.operate_button_id(btn=OpBtnEnum.init_clone)
         self.init_clone_q = f"#{self.init_clone}"
-        self.operate_exit = ids.operate_button_id(btn=OperateBtn.operate_exit)
+        self.operate_exit = ids.operate_button_id(btn=OpBtnEnum.operate_exit)
         self.operate_exit_q = f"#{self.operate_exit}"
-        self.re_add_path = ids.operate_button_id(btn=OperateBtn.re_add_path)
+        self.re_add_path = ids.operate_button_id(btn=OpBtnEnum.re_add_path)
         self.re_add_path_q = f"#{self.re_add_path}"
 
 

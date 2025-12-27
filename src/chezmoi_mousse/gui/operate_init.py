@@ -22,8 +22,8 @@ from chezmoi_mousse import (
     BindingDescription,
     InitCloneData,
     LinkBtn,
+    OpBtnEnum,
     OpBtnLabels,
-    OperateBtn,
     OperateStrings,
     SectionLabels,
     Switches,
@@ -652,7 +652,7 @@ class OperateInitScreen(Screen[None], AppType):
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
-        if msg.btn_enum == OperateBtn.init_new:
+        if msg.btn_enum == OpBtnEnum.init_new:
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
         else:

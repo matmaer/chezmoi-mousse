@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse import (
         InitCloneData,
         NodeData,
-        OperateBtn,
+        OpBtnEnum,
         ScreenName,
         TabName,
     )
@@ -51,7 +51,7 @@ class OperateButtonMsg(Message):
     def __init__(
         self,
         *,
-        btn_enum: "OperateBtn",
+        btn_enum: "OpBtnEnum",
         label: "str",
         canvas_name: "TabName|ScreenName",
     ) -> None:

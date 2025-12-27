@@ -9,7 +9,7 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-__all__ = ["OpBtnLabels", "OperateBtn"]
+__all__ = ["OpBtnLabels", "OpBtnEnum"]
 
 
 class OpBtnLabels(StrEnum):
@@ -37,7 +37,7 @@ class OpBtnData:
     label: str
 
 
-class OperateBtn(Enum):
+class OpBtnEnum(Enum):
     add_file = OpBtnData(label=OpBtnLabels.add_file_review)
     add_dir = OpBtnData(label=OpBtnLabels.add_dir_review)
     apply_path = OpBtnData(label=OpBtnLabels.apply_review)

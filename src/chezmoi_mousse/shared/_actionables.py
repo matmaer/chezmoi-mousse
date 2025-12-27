@@ -9,7 +9,7 @@ from chezmoi_mousse import (
     AppType,
     FlatBtn,
     LinkBtn,
-    OperateBtn,
+    OpBtnEnum,
     ScreenName,
     TabBtn,
     TabName,
@@ -108,7 +108,7 @@ class OperateButton(Button, AppType):
         *,
         ids: "AppIds",
         button_label: str,
-        button_enum: OperateBtn,
+        button_enum: OpBtnEnum,
         disabled_default: bool,
     ) -> None:
         self.ids = ids
@@ -144,61 +144,61 @@ class OperateButtons(HorizontalGroup):
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
             yield OperateButton(
-                button_label=OperateBtn.add_file.label,
-                button_enum=OperateBtn.add_file,
+                button_label=OpBtnEnum.add_file.label,
+                button_enum=OpBtnEnum.add_file,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
             yield OperateButton(
-                button_label=OperateBtn.add_dir.label,
-                button_enum=OperateBtn.add_dir,
+                button_label=OpBtnEnum.add_dir.label,
+                button_enum=OpBtnEnum.add_dir,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
 
         if self.ids.canvas_name == TabName.apply:
             yield OperateButton(
-                button_label=OperateBtn.apply_path.label,
-                button_enum=OperateBtn.apply_path,
+                button_label=OpBtnEnum.apply_path.label,
+                button_enum=OpBtnEnum.apply_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
         if self.ids.canvas_name == TabName.re_add:
             yield OperateButton(
-                button_label=OperateBtn.re_add_path.label,
-                button_enum=OperateBtn.re_add_path,
+                button_label=OpBtnEnum.re_add_path.label,
+                button_enum=OpBtnEnum.re_add_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
             yield OperateButton(
-                button_label=OperateBtn.forget_path.label,
-                button_enum=OperateBtn.forget_path,
+                button_label=OpBtnEnum.forget_path.label,
+                button_enum=OpBtnEnum.forget_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
             yield OperateButton(
-                button_label=OperateBtn.destroy_path.label,
-                button_enum=OperateBtn.destroy_path,
+                button_label=OpBtnEnum.destroy_path.label,
+                button_enum=OpBtnEnum.destroy_path,
                 ids=self.ids,
                 disabled_default=True,  # on startup in dest dir
             )
         if self.ids.canvas_name == ScreenName.init:
             yield OperateButton(
-                button_label=OperateBtn.init_new.label,
-                button_enum=OperateBtn.init_new,
+                button_label=OpBtnEnum.init_new.label,
+                button_enum=OpBtnEnum.init_new,
                 ids=self.ids,
                 disabled_default=False,  # after pushing InitScreen
             )
             yield OperateButton(
-                button_label=OperateBtn.init_clone.label,
-                button_enum=OperateBtn.init_clone,
+                button_label=OpBtnEnum.init_clone.label,
+                button_enum=OpBtnEnum.init_clone,
                 ids=self.ids,
                 disabled_default=True,  # after pushing InitScreen, no repo arg yet
             )
         yield OperateButton(
-            button_label=OperateBtn.operate_exit.label,
-            button_enum=OperateBtn.operate_exit,
+            button_label=OpBtnEnum.operate_exit.label,
+            button_enum=OpBtnEnum.operate_exit,
             ids=self.ids,
             disabled_default=False,  # always enabled when displayed
         )

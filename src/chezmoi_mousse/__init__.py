@@ -23,7 +23,7 @@ from ._chezmoi_command import (
     WriteCmd,
 )
 from ._chezmoi_paths import ChezmoiPaths, PathDict, PathList
-from ._operate_button_data import OpBtnLabels, OperateBtn
+from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
 from ._str_enum_names import LogName, PathKind, ScreenName, TabName, TreeName
 from ._str_enum_tcss import Tcss
@@ -62,7 +62,7 @@ __all__ = [
     # Operations
     "InitCloneData",
     "OpBtnLabels",
-    "OperateBtn",
+    "OpBtnEnum",
     "OperateStrings",
     # _chezmoi.py
     "ChezmoiCommand",
