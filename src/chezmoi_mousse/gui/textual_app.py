@@ -23,6 +23,7 @@ from chezmoi_mousse import (
     OpBtnLabels,
     OperateStrings,
     TabName,
+    Tcss,
 )
 from chezmoi_mousse.shared import (
     CustomHeader,
@@ -38,6 +39,7 @@ from .operate_init import OperateInitScreen
 from .splash import SplashScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
+from .tabs.common.diff_view import DiffView
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher
 from .tabs.re_add_tab import ReAddTab
@@ -47,6 +49,7 @@ if TYPE_CHECKING:
         ChezmoiCommand,
         ChezmoiPaths,
         CommandResult,
+        NodeData,
         SplashData,
     )
 
@@ -134,6 +137,9 @@ class ChezmoiGUI(App[None]):
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
         self.current_op_btn_msg: OperateButtonMsg | None = None
+        self.current_add_node: "NodeData | None" = None
+        self.current_apply_node: "NodeData | None" = None
+        self.current_re_add_node: "NodeData | None" = None
 
         # Disable Maxdmize/Minimize and Show/Hide Filters bindings when
         # in operate mode in the MainScreen
@@ -171,8 +177,46 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
 
+    def run_operate_command(
+        self,
+        *,
+        tab_widget: ApplyTab | ReAddTab,
+        btn_qid: str,
+        btn_enum: OpBtnEnum,
+    ) -> None:
+        if tab_widget.current_node is None:
+            return
+        operate_result = self.cmd.perform(
+            btn_enum.write_cmd,
+            path_arg=tab_widget.current_node.path,
+            changes_enabled=self.changes_enabled,
+        )
+        self.screen.query_one(btn_qid, Button).disabled = True
+        if operate_result.dry_run is True:
+            tab_widget.exit_btn.label = OpBtnLabels.cancel
+        elif operate_result.dry_run is False:
+            diff_view = self.query_exactly_one(DiffView)
+            diff_view.node_data = None
+            diff_view.node_data = tab_widget.current_node
+            tab_widget.exit_btn.label = OpBtnLabels.reload
+        tab_widget.operate_info.border_title = (
+            OperateStrings.cmd_output_subtitle
+        )
+        if operate_result.exit_code == 0:
+            tab_widget.operate_info.border_subtitle = (
+                OperateStrings.success_subtitle
+            )
+            tab_widget.operate_info.add_class(Tcss.operate_success)
+            tab_widget.operate_info.update(f"{operate_result.std_out}")
+        else:
+            tab_widget.operate_info.border_subtitle = (
+                OperateStrings.error_subtitle
+            )
+            tab_widget.operate_info.add_class(Tcss.operate_error)
+            tab_widget.operate_info.update(f"{operate_result.std_err}")
+
     def toggle_widget_visibility(
-        self, tab_widget: ApplyTab | ReAddTab, btn_qid: str
+        self, *, tab_widget: ApplyTab | ReAddTab, btn_qid: str
     ) -> None:
         self.toggle_main_tabs_display()
         left_side = tab_widget.query_one(
@@ -249,11 +293,11 @@ class ChezmoiGUI(App[None]):
         if msg.canvas_name == TabName.apply:
             tab_widget = tabbed_content.query_one(msg.tab_qid, ApplyTab)
             op_btn_widget = tab_widget.query_one(msg.btn_qid, Button)
-            review_label = OpBtnLabels.apply_review
+            review_label = op_btn_widget.label
         elif msg.canvas_name == TabName.re_add:
             tab_widget = tabbed_content.query_one(msg.tab_qid, ReAddTab)
             op_btn_widget = tab_widget.query_one(msg.btn_qid, Button)
-            review_label = OpBtnLabels.re_add_review
+            review_label = op_btn_widget.label
         else:
             self.notify(
                 f"OperateButtonMsg received for unsupported tab: {msg.canvas_name}"
@@ -266,7 +310,11 @@ class ChezmoiGUI(App[None]):
             OpBtnLabels.forget_review.value: OpBtnLabels.forget_run.value,
         }
         if msg.label in review_to_run.values():
-            tab_widget.run_operate_command(msg.btn_enum)
+            self.run_operate_command(
+                btn_qid=msg.btn_qid,
+                tab_widget=tab_widget,
+                btn_enum=msg.btn_enum,
+            )
         else:
             if msg.label in review_to_run:
                 # Update state BEFORE toggling visibility
@@ -283,17 +331,6 @@ class ChezmoiGUI(App[None]):
             self.toggle_widget_visibility(
                 tab_widget=tab_widget, btn_qid=msg.btn_qid
             )
-
-    def on_tabbed_content_tab_activated(
-        self, event: TabbedContent.TabActivated
-    ) -> None:
-        if event.tabbed_content.active in (
-            TabName.apply,
-            TabName.re_add,
-            TabName.add,
-        ):
-            self.update_switch_slider_binding()
-            self.refresh_bindings()
 
     def toggle_main_tabs_display(self) -> None:
         main_tabs = self.screen.query_exactly_one(Tabs)
@@ -334,6 +371,25 @@ class ChezmoiGUI(App[None]):
             return self.screen.query_one(
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
+
+    ###################
+    # Message Methods #
+    ###################
+
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
+        if event.tabbed_content.active in (
+            TabName.apply,
+            TabName.re_add,
+            TabName.add,
+        ):
+            self.update_switch_slider_binding()
+            self.refresh_bindings()
+
+    ##################
+    # Action Methods #
+    ##################
 
     def update_binding_description(
         self, binding_action: BindingAction, new_description: str

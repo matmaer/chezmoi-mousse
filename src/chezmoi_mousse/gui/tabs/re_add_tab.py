@@ -3,18 +3,9 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Button, Static
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    NodeData,
-    OpBtnEnum,
-    OpBtnLabels,
-    OperateStrings,
-    Tcss,
-)
+from chezmoi_mousse import IDS, AppType, NodeData, Tcss
 from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
 
-from .common.diff_view import DiffView
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tabs_base import TabsBase
@@ -39,9 +30,6 @@ class ReAddTab(TabsBase, AppType):
         yield SwitchSlider(ids=IDS.re_add)
 
     def on_mount(self) -> None:
-        self.operate_buttons = self.query_one(
-            IDS.re_add.container.operate_buttons_q, OperateButtons
-        )
         self.re_add_btn = self.query_one(
             IDS.re_add.operate_btn.re_add_path_q, Button
         )
@@ -62,40 +50,11 @@ class ReAddTab(TabsBase, AppType):
         )
         self.operate_info.display = False
 
-    def run_operate_command(self, btn_enum: OpBtnEnum) -> None:
-        if self.current_node is None:
-            return
-        operate_result = self.app.cmd.perform(
-            btn_enum.write_cmd,
-            path_arg=self.current_node.path,
-            changes_enabled=self.app.changes_enabled,
-        )
-        self.re_add_btn.disabled = True
-        self.re_add_btn.label = OpBtnLabels.re_add_review
-        if operate_result.dry_run is True:
-            self.exit_btn.label = OpBtnLabels.cancel
-        elif operate_result.dry_run is False:
-            diff_view = self.query_exactly_one(DiffView)
-            diff_view.node_data = None
-            diff_view.node_data = self.current_node
-            self.exit_btn.label = OpBtnLabels.reload
-        self.operate_info.border_title = OperateStrings.cmd_output_subtitle
-        if operate_result.exit_code == 0:
-            self.operate_info.border_subtitle = OperateStrings.success_subtitle
-            self.operate_info.add_class(Tcss.operate_success)
-            self.operate_info.update(f"{operate_result.std_out}")
-        else:
-            self.operate_info.border_subtitle = OperateStrings.error_subtitle
-            self.operate_info.add_class(Tcss.operate_error)
-            self.operate_info.update(f"{operate_result.std_err}")
-
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(
         self, msg: CurrentReAddNodeMsg
     ) -> None:
-        msg.stop()
         self.current_node = msg.node_data
-        self.re_add_btn.label = OpBtnLabels.re_add_review
         if (
             msg.node_data.path in self.app.cmd.paths.re_add_status_dirs
             or msg.node_data.path in self.app.cmd.paths.re_add_status_files
