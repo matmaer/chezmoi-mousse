@@ -52,10 +52,14 @@ class OperateButtonMsg(Message):
         self,
         *,
         btn_enum: "OpBtnEnum",
-        label: "str",
+        btn_qid: str,
         canvas_name: "TabName|ScreenName",
+        label: str,
+        tab_qid: str,
     ) -> None:
         self.btn_enum = btn_enum
-        self.label = label
+        self.btn_qid = btn_qid
         self.canvas_name = canvas_name
+        self.label = label
+        self.tab_qid = tab_qid
         super().__init__()

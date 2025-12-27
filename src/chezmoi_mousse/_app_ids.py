@@ -39,6 +39,8 @@ class AppIds:
         "static",
         "switcher",
         "tab_btn",
+        "tab_id",
+        "tab_qid",
         "tree",
         "view",
     )
@@ -47,6 +49,8 @@ class AppIds:
         self.canvas_name = canvas_name
         self.footer = f"{self.canvas_name.name}_footer"
         self.header = f"{self.canvas_name.name}_header"
+        self.tab_id = f"{self.canvas_name.name}_tab_container"
+        self.tab_qid = f"#{self.tab_id}"
 
         self.container = ContainerIds(self)
         self.datatable = DataTableIds(self)

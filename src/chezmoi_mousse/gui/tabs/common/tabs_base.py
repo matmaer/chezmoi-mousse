@@ -26,7 +26,7 @@ class TabsBase(Vertical):
     git_autopush: bool | None = None
 
     def __init__(self, *, ids: "AppIds") -> None:
-        super().__init__()
+        super().__init__(id=ids.tab_id)
 
         self.ids = ids
         self.expand_all_state = False

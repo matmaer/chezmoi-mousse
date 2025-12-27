@@ -112,12 +112,14 @@ class OperateButton(Button, AppType):
         disabled_default: bool,
     ) -> None:
         self.ids = ids
+        self.btn_id = self.ids.operate_button_id(btn=button_enum)
+        self.btn_qid = self.ids.operate_button_id("#", btn=button_enum)
         self.button_enum = button_enum
         self.disabled_default = disabled_default
         super().__init__(
             classes=Tcss.operate_button,
             disabled=disabled_default,
-            id=self.ids.operate_button_id(btn=button_enum),
+            id=self.btn_id,
             label=button_label,
         )
         self.button_enum = button_enum
@@ -130,8 +132,10 @@ class OperateButton(Button, AppType):
         event.stop()
         operate_button_message = OperateButtonMsg(
             btn_enum=self.button_enum,
+            btn_qid=self.btn_qid,
             canvas_name=self.ids.canvas_name,
             label=str(self.label),
+            tab_qid=self.ids.tab_qid,
         )
         self.post_message(operate_button_message)
 
