@@ -6,11 +6,7 @@ Only launcher.py imports from textual, ChezmoiGUI which inherits from the
 textual App class.
 """
 
-from __future__ import annotations
-
-from dataclasses import dataclass, fields
 from importlib.metadata import PackageNotFoundError, version
-from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
 from ._chezmoi_command import (
@@ -38,20 +34,14 @@ from ._str_enums import (
     TabBtn,
 )
 from ._switch_data import Switches
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from textual.widgets import Static
-
-    from .gui.textual_app import ChezmoiGUI
-
-
-class AppType:
-    """Type hint for self.app attributes in widgets and screens."""
-
-    app: ChezmoiGUI
-
+from ._type_checking import (
+    AppType,
+    DiffData,
+    InitCloneData,
+    NodeData,
+    ParsedConfig,
+    SplashData,
+)
 
 __all__ = [
     "__version__",
@@ -80,6 +70,7 @@ __all__ = [
     "BindingAction",
     "BindingDescription",
     "Chars",
+    "DiffData",
     "DestDirStrings",
     "FlatBtn",
     "LinkBtn",
@@ -97,58 +88,6 @@ __all__ = [
     "Tcss",
     "TreeName",
 ]
-
-
-@dataclass(slots=True)
-class DiffData:
-    diff_cmd_label: str
-    diff_lines: list[Static]
-
-
-@dataclass(slots=True)
-class InitCloneData:
-    init_cmd: WriteCmd
-    init_arg: str
-    valid_arg: bool
-
-
-@dataclass(slots=True)
-class NodeData:
-    found: bool
-    path: Path
-    # Chezmoi status codes processed: A, D, M, or a space
-    # Additional "node status" codes: X (no status but managed)
-    status: str
-    path_kind: PathKind
-
-
-@dataclass(slots=True)
-class ParsedConfig:
-    dest_dir: Path
-    git_autoadd: bool
-    source_dir: Path
-    git_autocommit: bool
-    git_autopush: bool
-
-
-@dataclass(slots=True)
-class SplashData:
-    cat_config: CommandResult
-    doctor: CommandResult
-    git_log: CommandResult
-    ignored: CommandResult
-    parsed_config: ParsedConfig
-    template_data: CommandResult
-    verify: CommandResult
-
-    @property
-    def executed_commands(self) -> list[CommandResult]:
-        # Return the field value which are CommandResult and not None
-        return [
-            getattr(self, field.name)
-            for field in fields(self)
-            if isinstance(getattr(self, field.name), CommandResult)
-        ]
 
 
 try:
