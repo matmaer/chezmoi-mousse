@@ -50,8 +50,7 @@ if TYPE_CHECKING:
 class AppType:
     """Type hint for self.app attributes in widgets and screens."""
 
-    if TYPE_CHECKING:
-        app: ChezmoiGUI
+    app: ChezmoiGUI
 
 
 __all__ = [
