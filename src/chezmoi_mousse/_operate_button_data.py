@@ -9,6 +9,8 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
+from ._chezmoi_command import WriteCmd
+
 __all__ = ["OpBtnLabels", "OpBtnEnum"]
 
 
@@ -35,15 +37,33 @@ class OpBtnLabels(StrEnum):
 @dataclass(slots=True)
 class OpBtnData:
     label: str
+    cmd_live: WriteCmd | None = None
+    cmd_dry: WriteCmd | None = None
 
 
 class OpBtnEnum(Enum):
     add_file = OpBtnData(label=OpBtnLabels.add_file_review)
     add_dir = OpBtnData(label=OpBtnLabels.add_dir_review)
-    apply_path = OpBtnData(label=OpBtnLabels.apply_review)
-    re_add_path = OpBtnData(label=OpBtnLabels.re_add_review)
-    forget_path = OpBtnData(label=OpBtnLabels.forget_review)
-    destroy_path = OpBtnData(label=OpBtnLabels.destroy_review)
+    apply_path = OpBtnData(
+        cmd_dry=WriteCmd.apply_dry,
+        cmd_live=WriteCmd.apply_live,
+        label=OpBtnLabels.apply_review,
+    )
+    re_add_path = OpBtnData(
+        cmd_dry=WriteCmd.re_add_dry,
+        cmd_live=WriteCmd.re_add_live,
+        label=OpBtnLabels.re_add_review,
+    )
+    forget_path = OpBtnData(
+        label=OpBtnLabels.forget_review,
+        cmd_dry=WriteCmd.forget_dry,
+        cmd_live=WriteCmd.forget_live,
+    )
+    destroy_path = OpBtnData(
+        label=OpBtnLabels.destroy_review,
+        cmd_dry=WriteCmd.destroy_dry,
+        cmd_live=WriteCmd.destroy_live,
+    )
     init_new = OpBtnData(label=OpBtnLabels.init_new)
     init_clone = OpBtnData(label=OpBtnLabels.init_clone)
     operate_exit = OpBtnData(label=OpBtnLabels.cancel)
@@ -54,3 +74,11 @@ class OpBtnEnum(Enum):
     @property
     def label(self) -> str:
         return self.value.label
+
+    @property
+    def cmd_live(self) -> WriteCmd | None:
+        return self.value.cmd_live
+
+    @property
+    def cmd_dry(self) -> WriteCmd | None:
+        return self.value.cmd_dry
