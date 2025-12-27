@@ -17,8 +17,8 @@ from chezmoi_mousse import (
     OperateStrings,
     PathKind,
     Tcss,
-    WriteCmd,
 )
+from chezmoi_mousse._operate_button_data import OpBtnEnum
 from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
     OperateButtonMsg,
@@ -294,17 +294,15 @@ class AddTab(TabsBase, AppType):
                 IDS.add.tree.dir_tree_q, FilteredDirTree
             )
 
-    def get_command(self) -> WriteCmd:
-        if self.current_node is None:
-            raise ValueError("No current node selected")
-        return (
-            WriteCmd.add_live if self.app.changes_enabled else WriteCmd.add_dry
-        )
-
     def run_operate_command(self) -> None:
         if self.current_node is None:
             return
-        write_cmd: WriteCmd = self.get_command()
+        if self.current_node.path_kind == PathKind.DIR:
+            write_cmd = OpBtnEnum.add_dir.write_cmd
+        elif self.current_node.path_kind == PathKind.FILE:
+            write_cmd = OpBtnEnum.add_file.write_cmd
+        else:
+            raise ValueError("Unknown path kind in run_operate_command.")
         operate_result = self.app.cmd.perform(
             write_cmd,
             path_arg=self.current_node.path,
@@ -394,9 +392,15 @@ class AddTab(TabsBase, AppType):
         if self.current_node is None:
             return
         lines_to_write: list[str] = []
+        if self.current_node.path_kind == PathKind.DIR:
+            write_cmd = OpBtnEnum.add_dir.write_cmd
+        elif self.current_node.path_kind == PathKind.FILE:
+            write_cmd = OpBtnEnum.add_file.write_cmd
+        else:
+            raise ValueError("Unknown path kind in run_operate_command.")
         lines_to_write.append(
             f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{self.get_command().pretty_cmd} "
+            f"[$text-warning]{write_cmd.pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
         if self.app.changes_enabled is True:

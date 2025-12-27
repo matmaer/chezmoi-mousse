@@ -9,6 +9,7 @@ shared/_buttons.py.
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
+from ._app_state import AppState
 from ._chezmoi_command import WriteCmd
 
 __all__ = ["OpBtnLabels", "OpBtnEnum"]
@@ -42,8 +43,16 @@ class OpBtnData:
 
 
 class OpBtnEnum(Enum):
-    add_file = OpBtnData(label=OpBtnLabels.add_file_review)
-    add_dir = OpBtnData(label=OpBtnLabels.add_dir_review)
+    add_file = OpBtnData(
+        label=OpBtnLabels.add_file_review,
+        cmd_dry=WriteCmd.add_dry,
+        cmd_live=WriteCmd.add_live,
+    )
+    add_dir = OpBtnData(
+        label=OpBtnLabels.add_dir_review,
+        cmd_dry=WriteCmd.add_dry,
+        cmd_live=WriteCmd.add_live,
+    )
     apply_path = OpBtnData(
         cmd_dry=WriteCmd.apply_dry,
         cmd_live=WriteCmd.apply_live,
@@ -76,9 +85,21 @@ class OpBtnEnum(Enum):
         return self.value.label
 
     @property
-    def cmd_live(self) -> WriteCmd | None:
+    def cmd_live(self) -> WriteCmd:
+        if self.value.cmd_live is None:
+            raise ValueError(f"No live command for button {self.name}")
         return self.value.cmd_live
 
     @property
-    def cmd_dry(self) -> WriteCmd | None:
+    def cmd_dry(self) -> WriteCmd:
+        if self.value.cmd_dry is None:
+            raise ValueError(f"No dry command for button {self.name}")
         return self.value.cmd_dry
+
+    @property
+    def write_cmd(self) -> WriteCmd:
+
+        if AppState.changes_enabled():
+            return self.cmd_live
+        else:
+            return self.cmd_dry

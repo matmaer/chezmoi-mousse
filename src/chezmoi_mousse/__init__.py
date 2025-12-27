@@ -9,6 +9,7 @@ textual App class.
 from importlib.metadata import PackageNotFoundError, version
 
 from ._app_ids import IDS, AppIds
+from ._app_state import AppState
 from ._chezmoi_command import (
     ChezmoiCommand,
     CommandResult,
@@ -45,6 +46,8 @@ from ._type_checking import (
 
 __all__ = [
     "__version__",
+    # App state
+    "AppState",
     # Id related
     "IDS",
     "AppIds",

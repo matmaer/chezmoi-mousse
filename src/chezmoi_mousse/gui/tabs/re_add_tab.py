@@ -11,7 +11,6 @@ from chezmoi_mousse import (
     OpBtnLabels,
     OperateStrings,
     Tcss,
-    WriteCmd,
 )
 from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
@@ -71,36 +70,11 @@ class ReAddTab(TabsBase, AppType):
         )
         self.operate_info.display = False
 
-    def get_run_command(self, btn_enum: OpBtnEnum) -> WriteCmd:
-        if self.current_node is None:
-            raise ValueError("No current node selected")
-        if btn_enum == OpBtnEnum.re_add_path:
-            return (
-                WriteCmd.re_add_live
-                if self.app.changes_enabled
-                else WriteCmd.re_add_dry
-            )
-        elif btn_enum == OpBtnEnum.forget_path:
-            return (
-                WriteCmd.forget_live
-                if self.app.changes_enabled
-                else WriteCmd.forget_dry
-            )
-        elif btn_enum == OpBtnEnum.destroy_path:
-            return (
-                WriteCmd.destroy_live
-                if self.app.changes_enabled
-                else WriteCmd.destroy_dry
-            )
-        else:
-            raise ValueError(f"Unknown button enum: {btn_enum}")
-
     def run_operate_command(self, btn_enum: OpBtnEnum) -> None:
         if self.current_node is None:
             return
-        write_cmd: WriteCmd = self.get_run_command(btn_enum)
         operate_result = self.app.cmd.perform(
-            write_cmd,
+            btn_enum.write_cmd,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
         )
@@ -164,7 +138,7 @@ class ReAddTab(TabsBase, AppType):
         lines_to_write: list[str] = []
         lines_to_write.append(
             f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{self.get_run_command(btn_enum).pretty_cmd} "
+            f"[$text-warning]{btn_enum.write_cmd.pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
         if self.app.changes_enabled is True:

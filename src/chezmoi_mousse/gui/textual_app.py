@@ -8,12 +8,14 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
+from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
+    AppState,
     BindingAction,
     BindingDescription,
     Chars,
@@ -114,12 +116,14 @@ class ChezmoiGUI(App[None]):
     ]
 
     CSS_PATH = "gui.tcss"
+    changes_enabled: reactive[bool] = reactive(False)
 
     def __init__(
         self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
+        AppState.set_app(self)
 
         self.cmd: "ChezmoiCommand"
         self.paths: "ChezmoiPaths"
@@ -134,7 +138,6 @@ class ChezmoiGUI(App[None]):
         self.operating_mode: bool = False
 
         # Manage state between screens
-        self.changes_enabled: bool = False
         self.init_cmd_result: "CommandResult | None" = None
         self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
@@ -161,7 +164,6 @@ class ChezmoiGUI(App[None]):
         if self.init_needed is True:
             await self.push_screen(OperateInitScreen(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        self.changes_enabled = False
         self.push_screen(MainScreen())
 
     @on(OperateButtonMsg)
@@ -239,7 +241,7 @@ class ChezmoiGUI(App[None]):
         )
 
     def action_toggle_dry_run(self) -> None:
-        self.changes_enabled = not self.changes_enabled
+        AppState.set_changes_enabled(not self.changes_enabled)
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
         if isinstance(self.screen, (OperateInitScreen)):
