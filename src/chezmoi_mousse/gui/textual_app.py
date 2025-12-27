@@ -11,7 +11,7 @@ from textual.binding import Binding
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import TabbedContent, Tabs
+from textual.widgets import Button, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
@@ -167,17 +167,50 @@ class ChezmoiGUI(App[None]):
         self.push_screen(MainScreen())
 
     @on(OperateButtonMsg)
-    def handle_operate_exit(self, msg: OperateButtonMsg) -> None:
-        if msg.canvas_name in (TabName.apply, TabName.re_add):
+    def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
+        if not isinstance(self.screen, MainScreen) or msg.canvas_name not in (
+            TabName.apply,
+            TabName.re_add,
+        ):
             return
-        msg.stop()
-        if msg.label == OpBtnLabels.exit_app:
-            self.exit()
-        elif msg.label == OpBtnLabels.cancel:
-            self.operate_cmd_result = None
-            self.screen.dismiss()
-        elif msg.label == OpBtnLabels.reload:
-            self.screen.dismiss()
+        tabbed_content = self.screen.query_exactly_one(TabbedContent)
+        if msg.canvas_name == TabName.apply:
+            tab_widget = tabbed_content.query_exactly_one(ApplyTab)
+            op_btn_widget = tab_widget.query_one(
+                IDS.apply.operate_btn.apply_path_q, Button
+            )
+            review_label = OpBtnLabels.apply_review
+        elif msg.canvas_name == TabName.re_add:
+            tab_widget = tabbed_content.query_exactly_one(ReAddTab)
+            op_btn_widget = tab_widget.query_one(
+                IDS.re_add.operate_btn.re_add_path_q, Button
+            )
+            review_label = OpBtnLabels.re_add_review
+        else:
+            self.notify(
+                f"OperateButtonMsg received for unsupported tab: {msg.canvas_name}"
+            )
+            return
+        review_to_run = {
+            OpBtnLabels.apply_review.value: OpBtnLabels.apply_run.value,
+            OpBtnLabels.re_add_review.value: OpBtnLabels.re_add_run.value,
+            OpBtnLabels.destroy_review.value: OpBtnLabels.destroy_run.value,
+            OpBtnLabels.forget_review.value: OpBtnLabels.forget_run.value,
+        }
+        if msg.label in review_to_run.values():
+            tab_widget.run_operate_command(msg.btn_enum)
+        else:
+            tab_widget.toggle_widget_visibility()
+            if msg.label in review_to_run:
+                self.operating_mode = True
+                op_btn_widget.label = review_to_run[msg.label]
+                tab_widget.write_pre_operate_info(msg.btn_enum)
+            elif msg.label == OpBtnLabels.cancel:
+                self.operating_mode = False
+                op_btn_widget.disabled = False
+                op_btn_widget.label = review_label
+            elif msg.label == OpBtnLabels.reload:
+                self.operating_mode = False
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
@@ -250,7 +283,7 @@ class ChezmoiGUI(App[None]):
             if self.operating_mode is False:
                 return
             add_tab = self.screen.query_exactly_one(AddTab)
-            add_tab.write_pre_operate_info()
+            add_tab.write_pre_operate_info(OpBtnEnum.add_file)
             apply_tab = self.screen.query_exactly_one(ApplyTab)
             apply_tab.write_pre_operate_info(OpBtnEnum.apply_path)
             re_add_tab = self.screen.query_exactly_one(ReAddTab)

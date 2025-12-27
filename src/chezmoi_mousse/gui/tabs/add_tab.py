@@ -388,19 +388,13 @@ class AddTab(TabsBase, AppType):
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
-    def write_pre_operate_info(self) -> None:
+    def write_pre_operate_info(self, btn_enum: OpBtnEnum) -> None:
         if self.current_node is None:
             return
         lines_to_write: list[str] = []
-        if self.current_node.path_kind == PathKind.DIR:
-            write_cmd = OpBtnEnum.add_dir.write_cmd
-        elif self.current_node.path_kind == PathKind.FILE:
-            write_cmd = OpBtnEnum.add_file.write_cmd
-        else:
-            raise ValueError("Unknown path kind in run_operate_command.")
         lines_to_write.append(
             f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{write_cmd.pretty_cmd} "
+            f"[$text-warning]{btn_enum.write_cmd.pretty_cmd} "
             f"{self.current_node.path}[/]"
         )
         if self.app.changes_enabled is True:
@@ -431,7 +425,7 @@ class AddTab(TabsBase, AppType):
                 self.add_dir_button.label = OpBtnLabels.add_dir_run
             elif self.current_node.path_kind == PathKind.FILE:
                 self.add_file_button.label = OpBtnLabels.add_file_run
-            self.write_pre_operate_info()
+            self.write_pre_operate_info(msg.btn_enum)
         elif msg.label in (OpBtnLabels.add_file_run, OpBtnLabels.add_dir_run):
             self.run_operate_command()
         elif msg.label == OpBtnLabels.cancel:

@@ -652,12 +652,18 @@ class OperateInitScreen(Screen[None], AppType):
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
+        msg.stop()
+        if msg.btn_enum == OpBtnEnum.init_clone:
+            self.notify("Init clone not yet implemented.")
+            return
         if msg.btn_enum == OpBtnEnum.init_new:
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
-        else:
-            self.notify("Init clone not yet implemented.")
-        self.run_operate_command()
+            self.run_operate_command()
+        elif msg.label == OpBtnLabels.exit_app:
+            self.app.exit()
+        elif msg.label == OpBtnLabels.reload:
+            self.dismiss()
 
     @on(InitCloneCmdMsg)
     def handle_init_clone_cmd_msg(self, msg: InitCloneCmdMsg) -> None:

@@ -14,7 +14,6 @@ from chezmoi_mousse import (
 )
 from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
-    OperateButtonMsg,
     OperateButtons,
     ViewTabButtons,
 )
@@ -169,36 +168,3 @@ class ReAddTab(TabsBase, AppType):
         else:
             self.re_add_btn.disabled = True
         self.update_view_node_data(msg.node_data)
-
-    @on(OperateButtonMsg)
-    def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
-        msg.stop()
-        if msg.label == OpBtnLabels.re_add_review:
-            self.app.operating_mode = True
-            self.toggle_widget_visibility()
-            self.re_add_btn.label = OpBtnLabels.re_add_run
-            self.write_pre_operate_info(OpBtnEnum.re_add_path)
-        elif msg.label == OpBtnLabels.re_add_run:
-            self.run_operate_command(OpBtnEnum.re_add_path)
-        elif msg.label == OpBtnLabels.destroy_review:
-            self.app.operating_mode = True
-            self.toggle_widget_visibility()
-            self.re_add_btn.label = OpBtnLabels.destroy_run
-            self.write_pre_operate_info(OpBtnEnum.destroy_path)
-        elif msg.label == OpBtnLabels.destroy_run:
-            self.run_operate_command(OpBtnEnum.destroy_path)
-        elif msg.label == OpBtnLabels.forget_review:
-            self.app.operating_mode = True
-            self.toggle_widget_visibility()
-            self.re_add_btn.label = OpBtnLabels.forget_run
-            self.write_pre_operate_info(OpBtnEnum.forget_path)
-        elif msg.label == OpBtnLabels.forget_run:
-            self.run_operate_command(OpBtnEnum.forget_path)
-        elif msg.label == OpBtnLabels.cancel:
-            self.app.operating_mode = False
-            self.re_add_btn.disabled = False
-            self.re_add_btn.label = OpBtnLabels.re_add_review
-            self.toggle_widget_visibility()
-        elif msg.label == OpBtnLabels.reload:
-            self.app.operating_mode = False
-            self.toggle_widget_visibility()
