@@ -11,7 +11,7 @@ from textual.binding import Binding
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import Button, TabbedContent, Tabs
+from textual.widgets import Button, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
@@ -166,6 +166,48 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
 
+    def toggle_widget_visibility(
+        self,
+        operate_info: Static,
+        tab_widget: ApplyTab | ReAddTab,
+        button_enum: OpBtnEnum,
+        btn_qid: str,
+    ) -> None:
+        # Widgets shown by default
+        self.toggle_main_tabs_display()
+        left_side = tab_widget.query_one(
+            tab_widget.ids.container.left_side_q, TreeSwitcher
+        )
+        left_side.display = False if left_side.display is True else True
+        view_switcher_buttons = tab_widget.query_one(
+            tab_widget.ids.switcher.view_buttons_q, ViewTabButtons
+        )
+        view_switcher_buttons.display = (
+            False if view_switcher_buttons.display is True else True
+        )
+        operate_info.display = True if operate_info.display is False else False
+        # Depending on self.app.operating_mode, show/hide buttons
+        all_buttons = tab_widget.query(Button)
+        switch_slider = self.get_switch_slider_widget()
+        op_btn_widget = tab_widget.query_one(btn_qid, Button)
+        if self.operating_mode is True:
+            # When entering operating mode, hide all buttons except the clicked one and exit button
+            for btn in all_buttons:
+                if btn is tab_widget.exit_btn or btn is op_btn_widget:
+                    btn.display = True
+                else:
+                    btn.display = False
+            switch_slider.display = False  # regardless of visibility
+        else:
+            # When exiting operating mode, show all operation buttons, hide exit button
+            for btn in all_buttons:
+                if btn is tab_widget.exit_btn:
+                    btn.display = False
+                else:
+                    btn.display = True
+            # this will restore the previous vilibility, whatever it was
+            switch_slider.display = True
+
     @on(OperateButtonMsg)
     def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
         if not isinstance(self.screen, MainScreen) or msg.canvas_name not in (
@@ -175,17 +217,19 @@ class ChezmoiGUI(App[None]):
             return
         tabbed_content = self.screen.query_exactly_one(TabbedContent)
         if msg.canvas_name == TabName.apply:
-            tab_widget = tabbed_content.query_exactly_one(ApplyTab)
-            op_btn_widget = tab_widget.query_one(
-                IDS.apply.operate_btn.apply_path_q, Button
-            )
+            tab_widget = tabbed_content.query_one(msg.tab_qid, ApplyTab)
+            op_btn_widget = tab_widget.query_one(msg.btn_qid, Button)
             review_label = OpBtnLabels.apply_review
-        elif msg.canvas_name == TabName.re_add:
-            tab_widget = tabbed_content.query_exactly_one(ReAddTab)
-            op_btn_widget = tab_widget.query_one(
-                IDS.re_add.operate_btn.re_add_path_q, Button
+            operate_info = tab_widget.query_one(
+                IDS.apply.static.operate_info_q, Static
             )
+        elif msg.canvas_name == TabName.re_add:
+            tab_widget = tabbed_content.query_one(msg.tab_qid, ReAddTab)
+            op_btn_widget = tab_widget.query_one(msg.btn_qid, Button)
             review_label = OpBtnLabels.re_add_review
+            operate_info = tab_widget.query_one(
+                IDS.re_add.static.operate_info_q, Static
+            )
         else:
             self.notify(
                 f"OperateButtonMsg received for unsupported tab: {msg.canvas_name}"
@@ -200,8 +244,8 @@ class ChezmoiGUI(App[None]):
         if msg.label in review_to_run.values():
             tab_widget.run_operate_command(msg.btn_enum)
         else:
-            tab_widget.toggle_widget_visibility()
             if msg.label in review_to_run:
+                # Update state BEFORE toggling visibility
                 self.operating_mode = True
                 op_btn_widget.label = review_to_run[msg.label]
                 tab_widget.write_pre_operate_info(msg.btn_enum)
@@ -211,6 +255,13 @@ class ChezmoiGUI(App[None]):
                 op_btn_widget.label = review_label
             elif msg.label == OpBtnLabels.reload:
                 self.operating_mode = False
+            # Toggle visibility AFTER updating operating_mode and labels
+            self.toggle_widget_visibility(
+                operate_info=operate_info,
+                tab_widget=tab_widget,
+                button_enum=msg.btn_enum,
+                btn_qid=msg.btn_qid,
+            )
 
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
@@ -228,6 +279,10 @@ class ChezmoiGUI(App[None]):
         main_tabs.display = False if main_tabs.display is True else True
 
     def get_switch_slider_widget(self) -> SwitchSlider:
+        if not isinstance(self.screen, MainScreen):
+            raise ValueError(
+                "get_switch_slider_widget called outside of MainScreen"
+            )
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         if active_tab == TabName.apply:
             slider = self.screen.query_one(
