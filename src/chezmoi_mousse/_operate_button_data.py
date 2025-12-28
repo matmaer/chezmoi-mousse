@@ -85,13 +85,13 @@ class OpBtnEnum(Enum):
         return self.value.label
 
     @property
-    def cmd_live(self) -> WriteCmd:
+    def _cmd_live(self) -> WriteCmd:
         if self.value.cmd_live is None:
             raise ValueError(f"No live command for button {self.name}")
         return self.value.cmd_live
 
     @property
-    def cmd_dry(self) -> WriteCmd:
+    def _cmd_dry(self) -> WriteCmd:
         if self.value.cmd_dry is None:
             raise ValueError(f"No dry command for button {self.name}")
         return self.value.cmd_dry
@@ -100,6 +100,6 @@ class OpBtnEnum(Enum):
     def write_cmd(self) -> WriteCmd:
 
         if AppState.changes_enabled():
-            return self.cmd_live
+            return self._cmd_live
         else:
-            return self.cmd_dry
+            return self._cmd_dry
