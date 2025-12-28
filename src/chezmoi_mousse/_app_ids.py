@@ -35,7 +35,7 @@ class AppIds:
         "header",
         "label",
         "logger",
-        "operate_btn",
+        "op_btn",
         "static",
         "switcher",
         "tab_btn",
@@ -58,7 +58,7 @@ class AppIds:
         self.flat_btn = FlatButtonIds(self)
         self.label = LabelIds(self)
         self.logger = LoggerIds(self)
-        self.operate_btn = OperateButtonIds(self)
+        self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
         self.switcher = ContentSwitcherIds(self)
         self.tab_btn = TabButtonIds(self)

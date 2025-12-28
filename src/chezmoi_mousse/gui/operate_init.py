@@ -510,15 +510,11 @@ class OperateInitScreen(Screen[None], AppType):
             self.ids.static.operate_info_q, Static
         )
         self.operate_info.border_title = OpBtnLabels.init_new
-        self.init_new_btn = self.query_one(
-            self.ids.operate_btn.init_new_q, Button
-        )
+        self.init_new_btn = self.query_one(self.ids.op_btn.init_new_q, Button)
         self.init_clone_btn = self.query_one(
-            self.ids.operate_btn.init_clone_q, Button
+            self.ids.op_btn.init_clone_q, Button
         )
-        self.exit_btn = self.query_one(
-            self.ids.operate_btn.operate_exit_q, Button
-        )
+        self.exit_btn = self.query_one(self.ids.op_btn.operate_exit_q, Button)
         self.exit_btn.display = True
         self.exit_btn.label = OpBtnLabels.exit_app
         self.repo_input = self.query_one(

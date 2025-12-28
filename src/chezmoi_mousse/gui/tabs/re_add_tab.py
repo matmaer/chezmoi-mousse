@@ -31,16 +31,16 @@ class ReAddTab(TabsBase, AppType):
 
     def on_mount(self) -> None:
         self.re_add_btn = self.query_one(
-            IDS.re_add.operate_btn.re_add_path_q, Button
+            IDS.re_add.op_btn.re_add_path_q, Button
         )
         self.forget_btn = self.query_one(
-            IDS.re_add.operate_btn.forget_path_q, Button
+            IDS.re_add.op_btn.forget_path_q, Button
         )
         self.destroy_btn = self.query_one(
-            IDS.re_add.operate_btn.destroy_path_q, Button
+            IDS.re_add.op_btn.destroy_path_q, Button
         )
         self.exit_btn = self.query_one(
-            IDS.re_add.operate_btn.operate_exit_q, Button
+            IDS.re_add.op_btn.operate_exit_q, Button
         )
         self.operate_info = self.query_one(
             IDS.re_add.static.operate_info_q, Static

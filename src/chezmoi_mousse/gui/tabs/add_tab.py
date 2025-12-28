@@ -263,15 +263,11 @@ class AddTab(TabsBase, AppType):
         yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
-        self.add_dir_button = self.query_one(
-            IDS.add.operate_btn.add_dir_q, Button
-        )
+        self.add_dir_button = self.query_one(IDS.add.op_btn.add_dir_q, Button)
         self.add_file_button = self.query_one(
-            IDS.add.operate_btn.add_file_q, Button
+            IDS.add.op_btn.add_file_q, Button
         )
-        self.exit_btn = self.query_one(
-            IDS.add.operate_btn.operate_exit_q, Button
-        )
+        self.exit_btn = self.query_one(IDS.add.op_btn.operate_exit_q, Button)
         self.operate_info = self.query_one(
             IDS.add.static.operate_info_q, Static
         )

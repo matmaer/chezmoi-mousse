@@ -30,18 +30,14 @@ class ApplyTab(TabsBase, AppType):
         yield OperateButtons(IDS.apply)
 
     def on_mount(self) -> None:
-        self.apply_btn = self.query_one(
-            IDS.apply.operate_btn.apply_path_q, Button
-        )
+        self.apply_btn = self.query_one(IDS.apply.op_btn.apply_path_q, Button)
         self.forget_btn = self.query_one(
-            IDS.apply.operate_btn.forget_path_q, Button
+            IDS.apply.op_btn.forget_path_q, Button
         )
         self.destroy_btn = self.query_one(
-            IDS.apply.operate_btn.destroy_path_q, Button
+            IDS.apply.op_btn.destroy_path_q, Button
         )
-        self.exit_btn = self.query_one(
-            IDS.apply.operate_btn.operate_exit_q, Button
-        )
+        self.exit_btn = self.query_one(IDS.apply.op_btn.operate_exit_q, Button)
         self.operate_info = self.query_one(
             IDS.apply.static.operate_info_q, Static
         )
