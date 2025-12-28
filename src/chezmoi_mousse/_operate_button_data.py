@@ -16,21 +16,19 @@ __all__ = ["OpBtnLabels", "OpBtnEnum"]
 
 
 class OpBtnLabels(StrEnum):
-    add_dir_run = "Run Chezmoi Add Dir"
-    add_dir_review = "Review Add Dir"
-    add_file_run = "Run Chezmoi Add File"
-    add_file_review = "Review Add File"
-    apply_review = "Review Apply"
+    add_run = "Run Chezmoi Add"
+    add_review = "Review Add Path"
+    apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
     destroy_run = "Run Chezmoi Destroy"
-    destroy_review = "Review Destroy"
+    destroy_review = "Review Destroy Path"
     exit_app = "Exit App"
     forget_run = "Run Chezmoi Forget"
-    forget_review = "Review Forget"
-    init_clone = "Init Clone Repo"
-    init_new = "Init New Repo"
-    re_add_review = "Review Re-Add"
+    forget_review = "Review Forget Path"
+    init_run = "Run Chezmoi Init"
+    init_review = "Review Init Chezmoi"
+    re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
     reload = "Reload"
 
@@ -43,39 +41,32 @@ class OpBtnData:
 
 
 class OpBtnEnum(Enum):
-    add_file = OpBtnData(
-        label=OpBtnLabels.add_file_review,
+    add = OpBtnData(
+        label=OpBtnLabels.add_review,
         cmd_dry=WriteCmd.add_dry,
         cmd_live=WriteCmd.add_live,
     )
-    add_dir = OpBtnData(
-        label=OpBtnLabels.add_dir_review,
-        cmd_dry=WriteCmd.add_dry,
-        cmd_live=WriteCmd.add_live,
-    )
-    apply_path = OpBtnData(
+    apply = OpBtnData(
         cmd_dry=WriteCmd.apply_dry,
         cmd_live=WriteCmd.apply_live,
         label=OpBtnLabels.apply_review,
     )
-    re_add_path = OpBtnData(
-        cmd_dry=WriteCmd.re_add_dry,
-        cmd_live=WriteCmd.re_add_live,
-        label=OpBtnLabels.re_add_review,
-    )
-    forget_path = OpBtnData(
-        label=OpBtnLabels.forget_review,
-        cmd_dry=WriteCmd.forget_dry,
-        cmd_live=WriteCmd.forget_live,
-    )
-    destroy_path = OpBtnData(
+    destroy = OpBtnData(
         label=OpBtnLabels.destroy_review,
         cmd_dry=WriteCmd.destroy_dry,
         cmd_live=WriteCmd.destroy_live,
     )
-    init_new = OpBtnData(label=OpBtnLabels.init_new)
-    init_clone = OpBtnData(label=OpBtnLabels.init_clone)
-    operate_exit = OpBtnData(label=OpBtnLabels.cancel)
+    forget = OpBtnData(
+        label=OpBtnLabels.forget_review,
+        cmd_dry=WriteCmd.forget_dry,
+        cmd_live=WriteCmd.forget_live,
+    )
+    re_add = OpBtnData(
+        cmd_dry=WriteCmd.re_add_dry,
+        cmd_live=WriteCmd.re_add_live,
+        label=OpBtnLabels.re_add_review,
+    )
+    init = OpBtnData(label=OpBtnLabels.init_review)
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
@@ -98,7 +89,6 @@ class OpBtnEnum(Enum):
 
     @property
     def write_cmd(self) -> WriteCmd:
-
         if AppState.changes_enabled():
             return self._cmd_live
         else:

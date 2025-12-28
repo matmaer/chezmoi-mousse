@@ -30,18 +30,9 @@ class ReAddTab(TabsBase, AppType):
         yield SwitchSlider(ids=IDS.re_add)
 
     def on_mount(self) -> None:
-        self.re_add_btn = self.query_one(
-            IDS.re_add.op_btn.re_add_path_q, Button
-        )
-        self.forget_btn = self.query_one(
-            IDS.re_add.op_btn.forget_path_q, Button
-        )
-        self.destroy_btn = self.query_one(
-            IDS.re_add.op_btn.destroy_path_q, Button
-        )
-        self.exit_btn = self.query_one(
-            IDS.re_add.op_btn.operate_exit_q, Button
-        )
+        self.re_add_btn = self.query_one(IDS.re_add.op_btn.re_add_q, Button)
+        self.forget_btn = self.query_one(IDS.re_add.op_btn.forget_q, Button)
+        self.destroy_btn = self.query_one(IDS.re_add.op_btn.destroy_q, Button)
         self.operate_info = self.query_one(
             IDS.re_add.static.operate_info_q, Static
         )

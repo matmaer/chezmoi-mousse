@@ -263,11 +263,7 @@ class AddTab(TabsBase, AppType):
         yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
-        self.add_dir_button = self.query_one(IDS.add.op_btn.add_dir_q, Button)
-        self.add_file_button = self.query_one(
-            IDS.add.op_btn.add_file_q, Button
-        )
-        self.exit_btn = self.query_one(IDS.add.op_btn.operate_exit_q, Button)
+        self.add_path_button = self.query_one(IDS.add.op_btn.add_q, Button)
         self.operate_info = self.query_one(
             IDS.add.static.operate_info_q, Static
         )
@@ -291,30 +287,22 @@ class AddTab(TabsBase, AppType):
     def run_operate_command(self) -> None:
         if self.current_node is None:
             return
-        if self.current_node.path_kind == PathKind.DIR:
-            write_cmd = OpBtnEnum.add_dir.write_cmd
-        elif self.current_node.path_kind == PathKind.FILE:
-            write_cmd = OpBtnEnum.add_file.write_cmd
-        else:
-            raise ValueError("Unknown path kind in run_operate_command.")
+        write_cmd = OpBtnEnum.add.write_cmd
+
         operate_result = self.app.cmd.perform(
             write_cmd,
             path_arg=self.current_node.path,
             changes_enabled=self.app.changes_enabled,
         )
-        self.add_dir_button.disabled = True
-        if self.current_node.path_kind == PathKind.FILE:
-            self.add_file_button.disabled = True
-        else:
-            self.add_dir_button.disabled = True
+        self.close_btn = self.query_one(IDS.add.close_q, Button)
         if operate_result.dry_run is True:
-            self.exit_btn.label = OpBtnLabels.cancel
+            self.close_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
             # self.dir_tree.reload()
             content_view = self.query_exactly_one(ContentsView)
             content_view.node_data = None
             content_view.node_data = self.current_node
-            self.exit_btn.label = OpBtnLabels.reload
+            self.close_btn.label = OpBtnLabels.reload
         self.operate_info.border_title = OperateStrings.cmd_output_subtitle
         if operate_result.exit_code == 0:
             self.operate_info.border_subtitle = OperateStrings.success_subtitle
@@ -332,6 +320,7 @@ class AddTab(TabsBase, AppType):
         event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
+        self.add_path_button.disabled = False
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
@@ -342,14 +331,6 @@ class AddTab(TabsBase, AppType):
             if isinstance(event, DirectoryTree.DirectorySelected)
             else PathKind.FILE
         )
-        if path_kind == PathKind.DIR:
-            self.add_file_button.disabled = True
-            self.add_dir_button.disabled = False
-        elif path_kind == PathKind.FILE:
-            self.add_file_button.disabled = False
-            self.add_dir_button.disabled = True
-        else:
-            raise ValueError("Unknown path kind.")
         self.current_node = NodeData(
             found=True,
             path=event.node.data.path,
@@ -374,11 +355,12 @@ class AddTab(TabsBase, AppType):
         switch_slider.display = (
             False if self.app.operating_mode is True else True
         )
+        self.close_btn = self.query_one(IDS.add.close_q, Button)
         if self.app.operating_mode is True:
-            self.exit_btn.display = True
+            self.close_btn.display = True
             switch_slider.display = False  # regardless of visibility
         else:
-            self.exit_btn.display = False
+            self.close_btn.display = False
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
@@ -404,36 +386,23 @@ class AddTab(TabsBase, AppType):
         msg.stop()
         if self.current_node is None:
             raise ValueError("self.current_node is None")
-        if self.current_node.path_kind == PathKind.DIR:
-            self.add_file_button.display = False
-        elif self.current_node.path_kind == PathKind.FILE:
-            self.add_dir_button.display = False
-        if msg.label in (
-            OpBtnLabels.add_dir_review,
-            OpBtnLabels.add_file_review,
-        ):
-            self.exit_btn.display = False
+        self.close_btn = self.query_one(IDS.add.close_q, Button)
+        if msg.label == OpBtnLabels.add_review:
+            self.close_btn.display = False
             self.app.operating_mode = True
             self.toggle_widget_visibility()
-            if self.current_node.path_kind == PathKind.DIR:
-                self.add_dir_button.label = OpBtnLabels.add_dir_run
-            elif self.current_node.path_kind == PathKind.FILE:
-                self.add_file_button.label = OpBtnLabels.add_file_run
+            self.add_path_button.label = OpBtnLabels.add_run
             self.write_pre_operate_info(msg.btn_enum)
-        elif msg.label in (OpBtnLabels.add_file_run, OpBtnLabels.add_dir_run):
+        elif msg.label == OpBtnLabels.add_run:
             self.run_operate_command()
         elif msg.label == OpBtnLabels.cancel:
-            self.add_dir_button.display = True
-            self.add_dir_button.label = OpBtnLabels.add_dir_review
-            self.add_file_button.display = True
-            self.add_file_button.label = OpBtnLabels.add_file_review
+            self.add_path_button.display = True
+            self.add_path_button.label = OpBtnLabels.add_review
             self.app.operating_mode = False
             self.toggle_widget_visibility()
         elif msg.label == OpBtnLabels.reload:
-            self.add_dir_button.display = True
-            self.add_dir_button.label = OpBtnLabels.add_dir_review
-            self.add_file_button.display = True
-            self.add_file_button.label = OpBtnLabels.add_file_review
+            self.add_path_button.display = True
+            self.add_path_button.label = OpBtnLabels.add_review
             self.app.operating_mode = False
             self.toggle_widget_visibility()
 

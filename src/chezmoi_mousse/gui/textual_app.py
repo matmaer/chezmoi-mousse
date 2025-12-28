@@ -11,7 +11,7 @@ from textual.binding import Binding
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import Static, TabbedContent, Tabs
+from textual.widgets import Button, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
@@ -193,13 +193,14 @@ class ChezmoiGUI(App[None]):
             changes_enabled=self.changes_enabled,
         )
         self.screen.query_one(btn_qid, OpButton).disabled = True
+        close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
         if operate_result.dry_run is True:
-            tab_widget.exit_btn.label = OpBtnLabels.cancel
+            close_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
             diff_view = self.query_exactly_one(DiffView)
             diff_view.node_data = None
             diff_view.node_data = tab_widget.current_node
-            tab_widget.exit_btn.label = OpBtnLabels.reload
+            close_btn.label = OpBtnLabels.reload
         tab_widget.operate_info.border_title = (
             OperateStrings.cmd_output_subtitle
         )
@@ -237,9 +238,10 @@ class ChezmoiGUI(App[None]):
         switch_slider = self.get_switch_slider_widget()
         op_btn_widget = tab_widget.query_one(btn_qid, OpButton)
         all_buttons = tab_widget.query(OpButton)
+        close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
         if self.operating_mode is True:
             for btn in all_buttons:
-                if btn is tab_widget.exit_btn or btn is op_btn_widget:
+                if btn is close_btn or btn is op_btn_widget:
                     btn.display = True
                 else:
                     btn.display = False
@@ -247,7 +249,7 @@ class ChezmoiGUI(App[None]):
         else:
             # When exiting operating mode, show all operation buttons, hide exit button
             for btn in all_buttons:
-                if btn is tab_widget.exit_btn:
+                if btn is close_btn:
                     btn.display = False
                 else:
                     btn.display = True
@@ -426,15 +428,13 @@ class ChezmoiGUI(App[None]):
         AppState.set_changes_enabled(not self.changes_enabled)
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
-        if isinstance(self.screen, (OperateInitScreen)):
-            self.screen.update_operate_info()
-        elif isinstance(self.screen, MainScreen):
+        if isinstance(self.screen, MainScreen):
             if self.operating_mode is False:
                 return
             active_tab = self.screen.query_exactly_one(TabbedContent).active
             if active_tab == TabName.add:
                 add_tab = self.screen.query_exactly_one(AddTab)
-                add_tab.write_pre_operate_info(OpBtnEnum.add_file)
+                add_tab.write_pre_operate_info(OpBtnEnum.add)
             elif active_tab == TabName.apply:
                 apply_tab = self.screen.query_exactly_one(ApplyTab)
                 self.write_pre_operate_info(tab_widget=apply_tab)

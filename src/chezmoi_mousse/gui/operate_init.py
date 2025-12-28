@@ -509,23 +509,17 @@ class OperateInitScreen(Screen[None], AppType):
         self.operate_info = self.query_one(
             self.ids.static.operate_info_q, Static
         )
-        self.operate_info.border_title = OpBtnLabels.init_new
-        self.init_new_btn = self.query_one(self.ids.op_btn.init_new_q, Button)
-        self.init_clone_btn = self.query_one(
-            self.ids.op_btn.init_clone_q, Button
-        )
-        self.exit_btn = self.query_one(self.ids.op_btn.operate_exit_q, Button)
-        self.exit_btn.display = True
-        self.exit_btn.label = OpBtnLabels.exit_app
+        self.operate_info.border_title = OpBtnLabels.init_run
+        self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
+        self.close_btn = self.query_one(IDS.init.close_q, Button)
+        self.close_btn.display = True
+        self.close_btn.label = OpBtnLabels.exit_app
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
-        self.update_operate_info()
         self.update_init_info()
 
-    def update_operate_info(self) -> None:
-        self.operate_info.border_title = self.init_new_btn.label
         lines_to_write: list[str] = []
         if self.query_exactly_one(Switch).value is False:
             lines_to_write.append(
@@ -538,7 +532,6 @@ class OperateInitScreen(Screen[None], AppType):
             lines_to_write.append(
                 "[$text-error]No init clone input provided yet."
             )
-            self.init_clone_btn.disabled = True
         if (
             self.init_clone_data is not None
             and self.init_clone_data.init_cmd == WriteCmd.init_no_guess
@@ -619,38 +612,28 @@ class OperateInitScreen(Screen[None], AppType):
         self.post_op_container.display = True
         output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
         output_log.log_cmd_results(self.app.init_cmd_result)
+        self.close_btn = self.query_one(IDS.init.close_q, Button)
         if (
             self.app.changes_enabled is True
             and self.app.init_cmd_result.exit_code == 0
         ):
             self.app.init_needed = False
-            self.init_new_btn.disabled = True
-            self.init_clone_btn.disabled = True
-            self.exit_btn.label = OpBtnLabels.reload
+            self.init_chezmoi_btn.disabled = True
+            self.close_btn.label = OpBtnLabels.reload
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
             self.repo_input.display = True
-            self.init_new_btn.disabled = True
-            if self.valid_arg is True:
-                self.init_clone_btn.disabled = False
-            elif self.valid_arg is False:
-                self.init_clone_btn.disabled = True
+            self.init_chezmoi_btn.disabled = True
         elif event.value is False:
             self.repo_input.display = False
-            self.init_new_btn.disabled = False
-            self.init_clone_btn.disabled = True
         self.update_init_info()
-        self.update_operate_info()
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
         msg.stop()
-        if msg.btn_enum == OpBtnEnum.init_clone:
-            self.notify("Init clone not yet implemented.")
-            return
-        if msg.btn_enum == OpBtnEnum.init_new:
+        if msg.btn_enum == OpBtnEnum.init:
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
             self.run_operate_command()
@@ -662,12 +645,3 @@ class OperateInitScreen(Screen[None], AppType):
     @on(InitCloneCmdMsg)
     def handle_init_clone_cmd_msg(self, msg: InitCloneCmdMsg) -> None:
         self.init_clone_data = msg.init_clone_data
-        if self.init_clone_data.valid_arg is False:
-            self.init_clone_btn.disabled = True
-        else:
-            self.init_clone_btn.disabled = False
-        self.update_operate_info()
-
-    @on(Select.Changed)
-    def hanle_selection_change(self, event: Select.Changed) -> None:
-        self.update_operate_info()

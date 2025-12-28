@@ -5,7 +5,7 @@ Provides easy access, autocomplete, type checking or to generate the id
 dynamically.
 """
 
-from ._operate_button_data import OpBtnEnum
+from ._chezmoi_command import WriteVerbs
 from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
@@ -27,6 +27,8 @@ __all__ = ["AppIds", "IDS"]
 class AppIds:
     __slots__ = (
         "canvas_name",
+        "close_q",
+        "close",
         "container",
         "datatable",
         "filter",
@@ -51,6 +53,8 @@ class AppIds:
         self.header = f"{self.canvas_name.name}_header"
         self.tab_id = f"{self.canvas_name.name}_tab_container"
         self.tab_qid = f"#{self.tab_id}"
+        self.close = f"{self.canvas_name.name}_close_btn"
+        self.close_q = f"#{self.close}"
 
         self.container = ContainerIds(self)
         self.datatable = DataTableIds(self)
@@ -64,9 +68,6 @@ class AppIds:
         self.tab_btn = TabButtonIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
-
-    def operate_button_id(self, qid: str = "", *, btn: OpBtnEnum) -> str:
-        return f"{qid}{self.canvas_name.name}_{btn.name}_op_btn"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name.name}_{name.name}"
@@ -89,6 +90,11 @@ class AppIds:
 
     def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
+
+    def operate_button_id(
+        self, qid: str = "", *, write_verb: WriteVerbs
+    ) -> str:
+        return f"{qid}{self.canvas_name.name}_{write_verb.name}_op_btn"
 
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
         return f"{qid}{self.canvas_name.name}_{static.name}_static"
@@ -379,24 +385,18 @@ class LoggerIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds):
-        self.add_dir = ids.operate_button_id(btn=OpBtnEnum.add_dir)
-        self.add_dir_q = f"#{self.add_dir}"
-        self.add_file = ids.operate_button_id(btn=OpBtnEnum.add_file)
-        self.add_file_q = f"#{self.add_file}"
-        self.apply_path = ids.operate_button_id(btn=OpBtnEnum.apply_path)
-        self.apply_path_q = f"#{self.apply_path}"
-        self.destroy_path = ids.operate_button_id(btn=OpBtnEnum.destroy_path)
-        self.destroy_path_q = f"#{self.destroy_path}"
-        self.forget_path = ids.operate_button_id(btn=OpBtnEnum.forget_path)
-        self.forget_path_q = f"#{self.forget_path}"
-        self.init_new = ids.operate_button_id(btn=OpBtnEnum.init_new)
-        self.init_new_q = f"#{self.init_new}"
-        self.init_clone = ids.operate_button_id(btn=OpBtnEnum.init_clone)
-        self.init_clone_q = f"#{self.init_clone}"
-        self.operate_exit = ids.operate_button_id(btn=OpBtnEnum.operate_exit)
-        self.operate_exit_q = f"#{self.operate_exit}"
-        self.re_add_path = ids.operate_button_id(btn=OpBtnEnum.re_add_path)
-        self.re_add_path_q = f"#{self.re_add_path}"
+        self.add = ids.operate_button_id(write_verb=WriteVerbs.add)
+        self.add_q = f"#{self.add}"
+        self.apply = ids.operate_button_id(write_verb=WriteVerbs.apply)
+        self.apply_q = f"#{self.apply}"
+        self.destroy = ids.operate_button_id(write_verb=WriteVerbs.destroy)
+        self.destroy_q = f"#{self.destroy}"
+        self.forget = ids.operate_button_id(write_verb=WriteVerbs.forget)
+        self.forget_q = f"#{self.forget}"
+        self.init = ids.operate_button_id(write_verb=WriteVerbs.init)
+        self.init_q = f"#{self.init}"
+        self.re_add = ids.operate_button_id(write_verb=WriteVerbs.re_add)
+        self.re_add_q = f"#{self.re_add}"
 
 
 class StaticIds:
