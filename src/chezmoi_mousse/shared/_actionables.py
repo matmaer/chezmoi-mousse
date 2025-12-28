@@ -27,6 +27,7 @@ __all__ = [
     "FlatButtonsVertical",
     "FlatLink",
     "LogsTabButtons",
+    "OperateButton",
     "OperateButtons",
     "SwitchWithLabel",
     "TreeTabButtons",
