@@ -42,17 +42,4 @@ class ReAddTab(TabsBase, AppType):
     def handle_new_re_add_node_selected(
         self, msg: CurrentReAddNodeMsg
     ) -> None:
-        self.current_node = msg.node_data
-        if (
-            msg.node_data.path in self.app.cmd.paths.re_add_status_dirs
-            or msg.node_data.path in self.app.cmd.paths.re_add_status_files
-            or self.app.cmd.paths.has_re_add_status_paths_in(
-                msg.node_data.path
-            )
-        ):
-            self.re_add_btn.disabled = False
-            self.destroy_btn.disabled = False
-            self.forget_btn.disabled = False
-        else:
-            self.re_add_btn.disabled = True
         self.update_view_node_data(msg.node_data)

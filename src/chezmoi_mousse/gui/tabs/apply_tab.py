@@ -1,7 +1,7 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
-from textual.widgets import Button, Static
+from textual.widgets import Static
 
 from chezmoi_mousse import IDS, AppType, NodeData, Tcss
 from chezmoi_mousse.shared import CurrentApplyNodeMsg, OperateButtons
@@ -30,9 +30,6 @@ class ApplyTab(TabsBase, AppType):
         yield OperateButtons(IDS.apply)
 
     def on_mount(self) -> None:
-        self.apply_btn = self.query_one(IDS.apply.op_btn.apply_q, Button)
-        self.forget_btn = self.query_one(IDS.apply.op_btn.forget_q, Button)
-        self.destroy_btn = self.query_one(IDS.apply.op_btn.destroy_q, Button)
         self.operate_info = self.query_one(
             IDS.apply.static.operate_info_q, Static
         )
@@ -41,14 +38,4 @@ class ApplyTab(TabsBase, AppType):
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
         self.current_node = msg.node_data
-        if (
-            msg.node_data.path in self.app.cmd.paths.status_dirs
-            or msg.node_data.path in self.app.cmd.paths.apply_status_files
-            or self.app.cmd.paths.has_apply_status_paths_in(msg.node_data.path)
-        ):
-            self.apply_btn.disabled = False
-            self.destroy_btn.disabled = False
-            self.forget_btn.disabled = False
-        else:
-            self.apply_btn.disabled = True
         self.update_view_node_data(msg.node_data)

@@ -71,6 +71,7 @@ class TabsBase(Vertical):
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
+        event.stop()
         if event.switch.id == self.ids.filter.unchanged:
             expanded_tree = self.query_one(
                 self.ids.tree.expanded_q, ExpandedTree

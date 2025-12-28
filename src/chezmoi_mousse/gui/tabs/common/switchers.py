@@ -61,7 +61,7 @@ class ViewSwitcher(Vertical):
             yield ContentsView(ids=self.ids)
             yield GitLogPath(ids=self.ids)
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(
             self.ids.switcher.views_q, ContentSwitcher

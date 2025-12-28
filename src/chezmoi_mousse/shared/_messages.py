@@ -28,10 +28,12 @@ class CloseButtonMsg(Message):
         self,
         *,
         canvas_name: "TabName|ScreenName",
+        ids: "AppIds",
         pressed_label: str,
         tab_qid: str,
     ) -> None:
         self.canvas_name = canvas_name
+        self.ids = ids
         self.pressed_label = pressed_label
         self.tab_qid = tab_qid
         super().__init__()

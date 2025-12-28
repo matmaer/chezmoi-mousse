@@ -320,7 +320,6 @@ class AddTab(TabsBase, AppType):
         event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
     ) -> None:
         event.stop()
-        self.add_path_button.disabled = False
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return

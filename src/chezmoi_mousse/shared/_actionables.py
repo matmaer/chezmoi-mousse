@@ -97,8 +97,8 @@ class FlatButtonsVertical(Vertical):
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
 
-    @on(Button.Pressed)
-    def update_tcss_classes(self, event: Button.Pressed) -> None:
+    @on(FlatButton.Pressed, Tcss.flat_button.dot_prefix)
+    def update_tcss_classes(self, event: FlatButton.Pressed) -> None:
         for btn in self.query(Button):
             btn.remove_class(Tcss.last_clicked_flat_btn)
         event.button.add_class(Tcss.last_clicked_flat_btn)
@@ -119,9 +119,9 @@ class CloseButton(Button, AppType):
             self.label = OpBtnLabels.exit_app
             self.display = True
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
+        event.stop()  # We post our own message.
         if event.button.label == OpBtnLabels.exit_app:
             self.app.exit()
             return
@@ -131,6 +131,7 @@ class CloseButton(Button, AppType):
         self.post_message(
             CloseButtonMsg(
                 canvas_name=self.ids.canvas_name,
+                ids=self.ids,
                 tab_qid=self.ids.tab_qid,
                 pressed_label=str(event.button.label),
             )
@@ -139,15 +140,10 @@ class CloseButton(Button, AppType):
 
 class OpButton(Button, AppType):
 
-    def __init__(
-        self, *, btn_id: str, btn_enum: OpBtnEnum, disabled_default: bool
-    ) -> None:
+    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum) -> None:
         self.btn_enum = btn_enum
         super().__init__(
-            classes=Tcss.operate_button,
-            disabled=disabled_default,
-            id=btn_id,
-            label=self.btn_enum.label,
+            classes=Tcss.operate_button, id=btn_id, label=self.btn_enum.label
         )
 
     def on_mount(self) -> None:
@@ -171,46 +167,79 @@ class OperateButtons(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
-            yield OpButton(
-                btn_id=self.ids.op_btn.add,
-                btn_enum=OpBtnEnum.add,
-                disabled_default=True,  # on startup in dest dir
-            )
+            yield OpButton(btn_id=self.ids.op_btn.add, btn_enum=OpBtnEnum.add)
 
         if self.ids.canvas_name == TabName.apply:
             yield OpButton(
-                btn_id=self.ids.op_btn.apply,
-                btn_enum=OpBtnEnum.apply,
-                disabled_default=True,  # on startup in dest dir
+                btn_id=self.ids.op_btn.apply, btn_enum=OpBtnEnum.apply
             )
         if self.ids.canvas_name == TabName.re_add:
             yield OpButton(
-                btn_id=self.ids.op_btn.re_add,
-                btn_enum=OpBtnEnum.re_add,
-                disabled_default=True,  # on startup in dest dir
+                btn_id=self.ids.op_btn.re_add, btn_enum=OpBtnEnum.re_add
             )
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
             yield OpButton(
-                btn_id=self.ids.op_btn.forget,
-                btn_enum=OpBtnEnum.forget,
-                disabled_default=True,  # on startup in dest dir
+                btn_id=self.ids.op_btn.forget, btn_enum=OpBtnEnum.forget
             )
             yield OpButton(
-                btn_id=self.ids.op_btn.destroy,
-                btn_enum=OpBtnEnum.destroy,
-                disabled_default=True,  # on startup in dest dir
+                btn_id=self.ids.op_btn.destroy, btn_enum=OpBtnEnum.destroy
             )
         if self.ids.canvas_name == ScreenName.init:
             yield OpButton(
-                btn_id=self.ids.op_btn.init,
-                btn_enum=OpBtnEnum.init,
-                disabled_default=False,  # after pushing InitScreen
+                btn_id=self.ids.op_btn.init, btn_enum=OpBtnEnum.init
             )
         yield CloseButton(ids=self.ids)
 
-    @on(Button.Pressed)
-    def operate_exit_button_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
+    @on(OpButton.Pressed, Tcss.operate_button.dot_prefix)
+    def handle_operate_button_pressed(self, event: OpButton.Pressed) -> None:
+        event.stop()  # We post our own message.
+        if not isinstance(event.button, OpButton):
+            return
+
+        if event.button.btn_enum == OpBtnEnum.init:
+            self.toggle_button_label(
+                event.button, OpBtnLabels.init_review, OpBtnLabels.init_run
+            )
+
+        elif event.button.btn_enum == OpBtnEnum.add:
+            self.toggle_button_label(
+                event.button, OpBtnLabels.add_review, OpBtnLabels.add_run
+            )
+
+        elif event.button.btn_enum == OpBtnEnum.apply:
+            if event.button.label == OpBtnLabels.apply_review:
+                self.query_one(self.ids.op_btn.forget_q).display = False
+                self.query_one(self.ids.op_btn.destroy_q).display = False
+            self.toggle_button_label(
+                event.button, OpBtnLabels.apply_review, OpBtnLabels.apply_run
+            )
+
+        elif event.button.btn_enum == OpBtnEnum.destroy:
+            if event.button.label == OpBtnLabels.destroy_review:
+                self.query_one(self.ids.op_btn.apply_q).display = False
+                self.query_one(self.ids.op_btn.forget_q).display = False
+            self.toggle_button_label(
+                event.button,
+                OpBtnLabels.destroy_review,
+                OpBtnLabels.destroy_run,
+            )
+
+        elif event.button.btn_enum == OpBtnEnum.forget:
+            if event.button.label == OpBtnLabels.forget_review:
+                self.query_one(self.ids.op_btn.apply_q).display = False
+                self.query_one(self.ids.op_btn.destroy_q).display = False
+            self.toggle_button_label(
+                event.button, OpBtnLabels.forget_review, OpBtnLabels.forget_run
+            )
+
+        elif event.button.btn_enum == OpBtnEnum.re_add:
+            if event.button.label == OpBtnLabels.re_add_review:
+                self.query_one(self.ids.op_btn.forget_q).display = False
+                self.query_one(self.ids.op_btn.destroy_q).display = False
+            self.toggle_button_label(
+                event.button, OpBtnLabels.re_add_review, OpBtnLabels.re_add_run
+            )
+
         button_qid = f"#{event.button.id}"
         button = self.query_one(button_qid, Button)
         btn_enum: OpBtnEnum = getattr(button, "btn_enum")
@@ -219,20 +248,28 @@ class OperateButtons(HorizontalGroup):
                 btn_enum=btn_enum,
                 btn_qid=button_qid,
                 canvas_name=self.ids.canvas_name,
+                ids=self.ids,
                 pressed_label=str(event.button.label),
             )
         )
+
+    def toggle_button_label(
+        self, button: Button, review_label: str, run_label: str
+    ) -> None:
+        if button.label == review_label:
+            button.label = run_label
+        elif button.label == run_label:
+            button.disabled = True
+            button.label = review_label
 
 
 class TabButtonsBase(Horizontal):
     def __init__(
         self, *, ids: "AppIds", buttons: tuple[TabBtn, ...], container_id: str
     ):
+        super().__init__(id=container_id)
         self.ids = ids
         self.buttons = buttons
-        self.container_id = container_id
-
-        super().__init__(id=self.container_id)
 
     def compose(self) -> ComposeResult:
         for btn_enum in self.buttons:
@@ -246,7 +283,7 @@ class TabButtonsBase(Horizontal):
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def update_tcss_classes(self, event: Button.Pressed) -> None:
         for btn in self.query(Button):
             btn.remove_class(Tcss.last_clicked_tab_btn)
