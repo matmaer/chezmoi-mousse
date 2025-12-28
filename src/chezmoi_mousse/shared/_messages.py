@@ -5,6 +5,7 @@ from textual.message import Message
 if TYPE_CHECKING:
 
     from chezmoi_mousse import (
+        AppIds,
         InitCloneData,
         NodeData,
         OpBtnEnum,
@@ -69,10 +70,12 @@ class OperateButtonMsg(Message):
         btn_enum: "OpBtnEnum",
         btn_qid: str,
         canvas_name: "TabName|ScreenName",
+        ids: "AppIds",
         pressed_label: str,
     ) -> None:
         self.btn_enum = btn_enum
         self.btn_qid = btn_qid
         self.canvas_name = canvas_name
+        self.ids = ids
         self.pressed_label = pressed_label
         super().__init__()
