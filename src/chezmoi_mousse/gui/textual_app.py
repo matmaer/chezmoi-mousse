@@ -430,13 +430,22 @@ class ChezmoiGUI(App[None]):
         elif isinstance(self.screen, MainScreen):
             if self.operating_mode is False:
                 return
-            add_tab = self.screen.query_exactly_one(AddTab)
-            add_tab.write_pre_operate_info(OpBtnEnum.add_file)
-
-            apply_tab = self.screen.query_exactly_one(ApplyTab)
-            self.write_pre_operate_info(tab_widget=apply_tab)
-            re_add_tab = self.screen.query_exactly_one(ReAddTab)
-            self.write_pre_operate_info(tab_widget=re_add_tab)
+            active_tab = self.screen.query_exactly_one(TabbedContent).active
+            if active_tab == TabName.add:
+                add_tab = self.screen.query_exactly_one(AddTab)
+                add_tab.write_pre_operate_info(OpBtnEnum.add_file)
+            elif active_tab == TabName.apply:
+                apply_tab = self.screen.query_exactly_one(ApplyTab)
+                self.write_pre_operate_info(tab_widget=apply_tab)
+            elif active_tab == TabName.re_add:
+                re_add_tab = self.screen.query_exactly_one(ReAddTab)
+                self.write_pre_operate_info(tab_widget=re_add_tab)
+            else:
+                raise ValueError(
+                    f"action_toggle_dry_run called on {active_tab} tab"
+                )
+        else:
+            raise ValueError(f"action_toggle_dry_run in {self.screen.name}")
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
