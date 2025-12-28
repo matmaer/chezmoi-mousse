@@ -6,6 +6,7 @@ from textual.containers import Horizontal, HorizontalGroup, Vertical
 from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
+    IDS,
     AppType,
     FlatBtn,
     LinkBtn,
@@ -17,7 +18,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from ._messages import OperateButtonMsg
+from ._messages import CloseButtonMsg, OperateButtonMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, Switches
@@ -104,14 +105,36 @@ class FlatButtonsVertical(Vertical):
 
 
 class CloseButton(Button, AppType):
-
-    def __init__(self, *, btn_id: str) -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
+        self.ids = ids
         super().__init__(
-            id=btn_id, classes=Tcss.operate_button, label=OpBtnLabels.cancel
+            id=self.ids.close,
+            classes=Tcss.operate_button,
+            label=OpBtnLabels.cancel,
         )
 
     def on_mount(self) -> None:
         self.display = False
+        if self.ids.close == IDS.init.close:
+            self.label = OpBtnLabels.exit_app
+            self.display = True
+
+    @on(Button.Pressed)
+    def handle_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == OpBtnLabels.exit_app:
+            self.app.exit()
+            return
+        self.display = False
+        if event.button.label == OpBtnLabels.reload:
+            self.label = OpBtnLabels.cancel
+        self.post_message(
+            CloseButtonMsg(
+                canvas_name=self.ids.canvas_name,
+                tab_qid=self.ids.tab_qid,
+                pressed_label=str(event.button.label),
+            )
+        )
 
 
 class OpButton(Button, AppType):
@@ -183,7 +206,7 @@ class OperateButtons(HorizontalGroup):
                 btn_enum=OpBtnEnum.init,
                 disabled_default=False,  # after pushing InitScreen
             )
-        yield CloseButton(btn_id=self.ids.close)
+        yield CloseButton(ids=self.ids)
 
     @on(Button.Pressed)
     def operate_exit_button_pressed(self, event: Button.Pressed) -> None:
@@ -196,8 +219,7 @@ class OperateButtons(HorizontalGroup):
                 btn_enum=btn_enum,
                 btn_qid=button_qid,
                 canvas_name=self.ids.canvas_name,
-                label=str(event.button.label),
-                tab_qid=self.ids.tab_qid,
+                pressed_label=str(event.button.label),
             )
         )
 

@@ -20,6 +20,7 @@ from ._config_views import (
 from ._custom_collapsible import CustomCollapsible
 from ._loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from ._messages import (
+    CloseButtonMsg,
     CurrentAddNodeMsg,
     CurrentApplyNodeMsg,
     CurrentReAddNodeMsg,
@@ -46,6 +47,7 @@ __all__ = [
     "OperateLog",
     "ReadCmdLog",
     # Messages
+    "CloseButtonMsg",
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",

@@ -13,12 +13,27 @@ if TYPE_CHECKING:
     )
 
 __all__ = [
+    "CloseButtonMsg",
     "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
 ]
+
+
+class CloseButtonMsg(Message):
+    def __init__(
+        self,
+        *,
+        canvas_name: "TabName|ScreenName",
+        pressed_label: str,
+        tab_qid: str,
+    ) -> None:
+        self.canvas_name = canvas_name
+        self.pressed_label = pressed_label
+        self.tab_qid = tab_qid
+        super().__init__()
 
 
 class CurrentApplyNodeMsg(Message):
@@ -54,12 +69,10 @@ class OperateButtonMsg(Message):
         btn_enum: "OpBtnEnum",
         btn_qid: str,
         canvas_name: "TabName|ScreenName",
-        label: str,
-        tab_qid: str,
+        pressed_label: str,
     ) -> None:
         self.btn_enum = btn_enum
         self.btn_qid = btn_qid
         self.canvas_name = canvas_name
-        self.label = label
-        self.tab_qid = tab_qid
+        self.pressed_label = pressed_label
         super().__init__()

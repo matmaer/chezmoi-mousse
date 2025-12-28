@@ -511,9 +511,6 @@ class OperateInitScreen(Screen[None], AppType):
         )
         self.operate_info.border_title = OpBtnLabels.init_run
         self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
-        self.close_btn = self.query_one(IDS.init.close_q, Button)
-        self.close_btn.display = True
-        self.close_btn.label = OpBtnLabels.exit_app
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
@@ -637,9 +634,7 @@ class OperateInitScreen(Screen[None], AppType):
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
             self.run_operate_command()
-        elif msg.label == OpBtnLabels.exit_app:
-            self.app.exit()
-        elif msg.label == OpBtnLabels.reload:
+        elif msg.pressed_label == OpBtnLabels.reload:
             self.dismiss()
 
     @on(InitCloneCmdMsg)

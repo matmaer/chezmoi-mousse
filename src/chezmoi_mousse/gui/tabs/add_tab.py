@@ -13,12 +13,12 @@ from chezmoi_mousse import (
     AppType,
     Chars,
     NodeData,
+    OpBtnEnum,
     OpBtnLabels,
     OperateStrings,
     PathKind,
     Tcss,
 )
-from chezmoi_mousse._operate_button_data import OpBtnEnum
 from chezmoi_mousse.shared import (
     CurrentAddNodeMsg,
     OperateButtonMsg,
@@ -360,7 +360,6 @@ class AddTab(TabsBase, AppType):
             self.close_btn.display = True
             switch_slider.display = False  # regardless of visibility
         else:
-            self.close_btn.display = False
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
@@ -387,20 +386,19 @@ class AddTab(TabsBase, AppType):
         if self.current_node is None:
             raise ValueError("self.current_node is None")
         self.close_btn = self.query_one(IDS.add.close_q, Button)
-        if msg.label == OpBtnLabels.add_review:
-            self.close_btn.display = False
+        if msg.pressed_label == OpBtnLabels.add_review:
             self.app.operating_mode = True
             self.toggle_widget_visibility()
             self.add_path_button.label = OpBtnLabels.add_run
             self.write_pre_operate_info(msg.btn_enum)
-        elif msg.label == OpBtnLabels.add_run:
+        elif msg.pressed_label == OpBtnLabels.add_run:
             self.run_operate_command()
-        elif msg.label == OpBtnLabels.cancel:
+        elif msg.pressed_label == OpBtnLabels.cancel:
             self.add_path_button.display = True
             self.add_path_button.label = OpBtnLabels.add_review
             self.app.operating_mode = False
             self.toggle_widget_visibility()
-        elif msg.label == OpBtnLabels.reload:
+        elif msg.pressed_label == OpBtnLabels.reload:
             self.add_path_button.display = True
             self.add_path_button.label = OpBtnLabels.add_review
             self.app.operating_mode = False

@@ -26,6 +26,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 from chezmoi_mousse.shared import (
+    CloseButtonMsg,
     CustomHeader,
     FlatButtonsVertical,
     LogsTabButtons,
@@ -193,14 +194,12 @@ class ChezmoiGUI(App[None]):
             changes_enabled=self.changes_enabled,
         )
         self.screen.query_one(btn_qid, OpButton).disabled = True
-        close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
-        if operate_result.dry_run is True:
-            close_btn.label = OpBtnLabels.cancel
-        elif operate_result.dry_run is False:
+        if operate_result.dry_run is False:
+            close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
+            close_btn.label = OpBtnLabels.reload
             diff_view = self.query_exactly_one(DiffView)
             diff_view.node_data = None
             diff_view.node_data = tab_widget.current_node
-            close_btn.label = OpBtnLabels.reload
         tab_widget.operate_info.border_title = (
             OperateStrings.cmd_output_subtitle
         )
@@ -237,22 +236,20 @@ class ChezmoiGUI(App[None]):
         )
         switch_slider = self.get_switch_slider_widget()
         op_btn_widget = tab_widget.query_one(btn_qid, OpButton)
-        all_buttons = tab_widget.query(OpButton)
-        close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
+        op_buttons = tab_widget.query(OpButton)
         if self.operating_mode is True:
-            for btn in all_buttons:
-                if btn is close_btn or btn is op_btn_widget:
+            close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
+            close_btn.display = True
+            for btn in op_buttons:
+                if btn is op_btn_widget:
                     btn.display = True
                 else:
                     btn.display = False
             switch_slider.display = False  # regardless of visibility
         else:
             # When exiting operating mode, show all operation buttons, hide exit button
-            for btn in all_buttons:
-                if btn is close_btn:
-                    btn.display = False
-                else:
-                    btn.display = True
+            for btn in op_buttons:
+                btn.display = True
             # this will restore the previous vilibility, whatever it was
             switch_slider.display = True
 
@@ -287,18 +284,18 @@ class ChezmoiGUI(App[None]):
     @on(OperateButtonMsg)
     def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
         if not isinstance(self.screen, MainScreen) or msg.canvas_name not in (
+            TabName.add,
             TabName.apply,
-            TabName.re_add,
         ):
             return
         self.current_op_btn_msg = msg
         tabbed_content = self.screen.query_exactly_one(TabbedContent)
         if msg.canvas_name == TabName.apply:
-            tab_widget = tabbed_content.query_one(msg.tab_qid, ApplyTab)
+            tab_widget = tabbed_content.query_exactly_one(ApplyTab)
             op_btn_widget = tab_widget.query_one(msg.btn_qid, OpButton)
             review_label = op_btn_widget.label
         elif msg.canvas_name == TabName.re_add:
-            tab_widget = tabbed_content.query_one(msg.tab_qid, ReAddTab)
+            tab_widget = tabbed_content.query_exactly_one(ReAddTab)
             op_btn_widget = tab_widget.query_one(msg.btn_qid, OpButton)
             review_label = op_btn_widget.label
         else:
@@ -312,23 +309,23 @@ class ChezmoiGUI(App[None]):
             OpBtnLabels.destroy_review.value: OpBtnLabels.destroy_run.value,
             OpBtnLabels.forget_review.value: OpBtnLabels.forget_run.value,
         }
-        if msg.label in review_to_run.values():
+        if msg.pressed_label in review_to_run.values():
             self.run_operate_command(
                 btn_qid=msg.btn_qid,
                 tab_widget=tab_widget,
                 btn_enum=msg.btn_enum,
             )
         else:
-            if msg.label in review_to_run:
+            if msg.pressed_label in review_to_run:
                 # Update state BEFORE toggling visibility
                 self.operating_mode = True
-                op_btn_widget.label = review_to_run[msg.label]
+                op_btn_widget.label = review_to_run[msg.pressed_label]
                 self.write_pre_operate_info(tab_widget=tab_widget)
-            elif msg.label == OpBtnLabels.cancel:
+            elif msg.pressed_label == OpBtnLabels.cancel:
                 self.operating_mode = False
                 op_btn_widget.disabled = False
                 op_btn_widget.label = review_label
-            elif msg.label == OpBtnLabels.reload:
+            elif msg.pressed_label == OpBtnLabels.reload:
                 self.operating_mode = False
             # Toggle visibility AFTER updating operating_mode and labels
             self.toggle_widget_visibility(
@@ -389,6 +386,13 @@ class ChezmoiGUI(App[None]):
         ):
             self.update_switch_slider_binding()
             self.refresh_bindings()
+
+    @on(CloseButtonMsg)
+    def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
+        operate_info = self.get_operate_info_widget()
+        operate_info.visible = False
+        operate_info.remove_class(Tcss.operate_success)
+        operate_info.remove_class(Tcss.operate_error)
 
     ##################
     # Action Methods #
