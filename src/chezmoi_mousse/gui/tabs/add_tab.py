@@ -260,17 +260,15 @@ class AddTab(TabsBase, AppType):
     def compose(self) -> ComposeResult:
         yield Static(id=IDS.add.static.operate_info, classes=Tcss.operate_info)
         yield SwitchSlider(ids=IDS.add)
-        yield OperateButtons(ids=IDS.add)
+        yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
         self.add_dir_button = self.query_one(
             IDS.add.operate_btn.add_dir_q, Button
         )
-        self.add_dir_button.display = True
         self.add_file_button = self.query_one(
             IDS.add.operate_btn.add_file_q, Button
         )
-        self.add_file_button.display = True
         self.exit_btn = self.query_one(
             IDS.add.operate_btn.operate_exit_q, Button
         )

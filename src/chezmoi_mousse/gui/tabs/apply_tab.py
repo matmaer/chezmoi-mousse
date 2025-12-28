@@ -27,21 +27,18 @@ class ApplyTab(TabsBase, AppType):
             yield TreeSwitcher(IDS.apply)
             yield ViewSwitcher(ids=IDS.apply)
         yield SwitchSlider(ids=IDS.apply)
-        yield OperateButtons(ids=IDS.apply)
+        yield OperateButtons(IDS.apply)
 
     def on_mount(self) -> None:
         self.apply_btn = self.query_one(
             IDS.apply.operate_btn.apply_path_q, Button
         )
-        self.apply_btn.display = True
         self.forget_btn = self.query_one(
             IDS.apply.operate_btn.forget_path_q, Button
         )
-        self.forget_btn.display = True
         self.destroy_btn = self.query_one(
             IDS.apply.operate_btn.destroy_path_q, Button
         )
-        self.destroy_btn.display = True
         self.exit_btn = self.query_one(
             IDS.apply.operate_btn.operate_exit_q, Button
         )

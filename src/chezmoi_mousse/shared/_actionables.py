@@ -10,6 +10,7 @@ from chezmoi_mousse import (
     FlatBtn,
     LinkBtn,
     OpBtnEnum,
+    OpBtnLabels,
     ScreenName,
     TabBtn,
     TabName,
@@ -27,8 +28,9 @@ __all__ = [
     "FlatButtonsVertical",
     "FlatLink",
     "LogsTabButtons",
-    "OperateButton",
+    "OpButton",
     "OperateButtons",
+    "OpExitButton",
     "SwitchWithLabel",
     "TreeTabButtons",
     "ViewTabButtons",
@@ -52,13 +54,13 @@ class SwitchWithLabel(HorizontalGroup):
 
 
 class FlatButton(Button):
-    def __init__(self, *, ids: "AppIds", button_enum: FlatBtn) -> None:
+    def __init__(self, *, ids: "AppIds", btn_enum: FlatBtn) -> None:
         self.ids = ids
         super().__init__(
             classes=Tcss.flat_button,
             flat=True,
-            id=self.ids.flat_button_id(btn=button_enum),
-            label=button_enum,
+            id=self.ids.flat_button_id(btn=btn_enum),
+            label=btn_enum,
             variant="primary",
         )
 
@@ -89,8 +91,8 @@ class FlatButtonsVertical(Vertical):
         )
 
     def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
-            yield FlatButton(ids=self.ids, button_enum=button_enum)
+        for btn_enum in self.buttons:
+            yield FlatButton(ids=self.ids, btn_enum=btn_enum)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
@@ -102,43 +104,50 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class OperateButton(Button, AppType):
+class OpExitButton(Button, AppType):
 
-    def __init__(
-        self,
-        *,
-        ids: "AppIds",
-        button_label: str,
-        button_enum: OpBtnEnum,
-        disabled_default: bool,
-    ) -> None:
+    def __init__(self, ids: "AppIds", *, btn_enum: OpBtnEnum) -> None:
         self.ids = ids
-        self.btn_id = self.ids.operate_button_id(btn=button_enum)
-        self.btn_qid = self.ids.operate_button_id("#", btn=button_enum)
-        self.button_enum = button_enum
-        self.disabled_default = disabled_default
+        self.btn_id = self.ids.operate_button_id(btn=btn_enum)
+        self.btn_enum = btn_enum
         super().__init__(
-            classes=Tcss.operate_button,
-            disabled=disabled_default,
             id=self.btn_id,
-            label=button_label,
+            classes=Tcss.operate_button,
+            label=OpBtnLabels.cancel,
         )
-        self.button_enum = button_enum
 
     def on_mount(self) -> None:
         self.display = False
 
-    @on(Button.Pressed)
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        event.stop()
-        operate_button_message = OperateButtonMsg(
-            btn_enum=self.button_enum,
-            btn_qid=self.btn_qid,
-            canvas_name=self.ids.canvas_name,
-            label=str(self.label),
-            tab_qid=self.ids.tab_qid,
+
+class OpButton(Button, AppType):
+
+    def __init__(
+        self, ids: "AppIds", *, btn_enum: OpBtnEnum, disabled_default: bool
+    ) -> None:
+        self.ids = ids
+        self.btn_enum = btn_enum
+        super().__init__(
+            classes=Tcss.operate_button,
+            disabled=disabled_default,
+            id=self.ids.operate_button_id(btn=self.btn_enum),
+            label=self.btn_enum.label,
         )
-        self.post_message(operate_button_message)
+
+    def on_mount(self) -> None:
+        if self.btn_enum in (
+            OpBtnEnum.init_new,
+            OpBtnEnum.init_clone,
+            OpBtnEnum.add_file,
+            OpBtnEnum.add_dir,
+            OpBtnEnum.apply_path,
+            OpBtnEnum.re_add_path,
+            OpBtnEnum.forget_path,
+            OpBtnEnum.destroy_path,
+        ):
+            self.display = True
+        else:  # OpBtnEnum.operate_exit, do not display on startup
+            self.display = False
 
 
 class OperateButtons(HorizontalGroup):
@@ -148,64 +157,68 @@ class OperateButtons(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
-            yield OperateButton(
-                button_label=OpBtnEnum.add_file.label,
-                button_enum=OpBtnEnum.add_file,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.add_file,
                 disabled_default=True,  # on startup in dest dir
             )
-            yield OperateButton(
-                button_label=OpBtnEnum.add_dir.label,
-                button_enum=OpBtnEnum.add_dir,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.add_dir,
                 disabled_default=True,  # on startup in dest dir
             )
 
         if self.ids.canvas_name == TabName.apply:
-            yield OperateButton(
-                button_label=OpBtnEnum.apply_path.label,
-                button_enum=OpBtnEnum.apply_path,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.apply_path,
                 disabled_default=True,  # on startup in dest dir
             )
         if self.ids.canvas_name == TabName.re_add:
-            yield OperateButton(
-                button_label=OpBtnEnum.re_add_path.label,
-                button_enum=OpBtnEnum.re_add_path,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.re_add_path,
                 disabled_default=True,  # on startup in dest dir
             )
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
-            yield OperateButton(
-                button_label=OpBtnEnum.forget_path.label,
-                button_enum=OpBtnEnum.forget_path,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.forget_path,
                 disabled_default=True,  # on startup in dest dir
             )
-            yield OperateButton(
-                button_label=OpBtnEnum.destroy_path.label,
-                button_enum=OpBtnEnum.destroy_path,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.destroy_path,
                 disabled_default=True,  # on startup in dest dir
             )
         if self.ids.canvas_name == ScreenName.init:
-            yield OperateButton(
-                button_label=OpBtnEnum.init_new.label,
-                button_enum=OpBtnEnum.init_new,
-                ids=self.ids,
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.init_new,
                 disabled_default=False,  # after pushing InitScreen
             )
-            yield OperateButton(
-                button_label=OpBtnEnum.init_clone.label,
-                button_enum=OpBtnEnum.init_clone,
-                ids=self.ids,
-                disabled_default=True,  # after pushing InitScreen, no repo arg yet
+            yield OpButton(
+                self.ids,
+                btn_enum=OpBtnEnum.init_clone,
+                # after pushing InitScreen, no repo arg yet
+                disabled_default=True,
             )
-        yield OperateButton(
-            button_label=OpBtnEnum.operate_exit.label,
-            button_enum=OpBtnEnum.operate_exit,
-            ids=self.ids,
-            disabled_default=False,  # always enabled when displayed
+        yield OpExitButton(self.ids, btn_enum=OpBtnEnum.operate_exit)
+
+    @on(Button.Pressed)
+    def operate_exit_button_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
+        button_qid = f"#{event.button.id}"
+        button = self.query_one(button_qid, Button)
+        btn_enum: OpBtnEnum = getattr(button, "btn_enum")
+        self.post_message(
+            OperateButtonMsg(
+                btn_enum=btn_enum,
+                btn_qid=button_qid,
+                canvas_name=self.ids.canvas_name,
+                label=str(event.button.label),
+                tab_qid=self.ids.tab_qid,
+            )
         )
 
 
@@ -220,11 +233,11 @@ class TabButtonsBase(Horizontal):
         super().__init__(id=self.container_id)
 
     def compose(self) -> ComposeResult:
-        for button_enum in self.buttons:
+        for btn_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical):
                 yield Button(
-                    label=button_enum,
-                    id=self.ids.tab_button_id(btn=button_enum),
+                    label=btn_enum,
+                    id=self.ids.tab_button_id(btn=btn_enum),
                     classes=Tcss.tab_button,
                 )
 

@@ -2,7 +2,7 @@
 imported at module init before launching the textual app, and attributes
 accessed after the app is launched.
 
-The initial_label attribute is used to construct the OperateButton class in
+The initial_label attribute is used to construct the OpButton class in
 shared/_buttons.py.
 """
 

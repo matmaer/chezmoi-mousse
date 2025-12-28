@@ -490,7 +490,7 @@ class OperateInitScreen(Screen[None], AppType):
         if self.app.dev_mode:
             yield Label(SectionLabels.debug_log_output)
             yield DebugLog(self.ids)
-        yield OperateButtons(ids=self.ids)
+        yield OperateButtons(self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
@@ -513,11 +513,9 @@ class OperateInitScreen(Screen[None], AppType):
         self.init_new_btn = self.query_one(
             self.ids.operate_btn.init_new_q, Button
         )
-        self.init_new_btn.display = True
         self.init_clone_btn = self.query_one(
             self.ids.operate_btn.init_clone_q, Button
         )
-        self.init_clone_btn.display = True
         self.exit_btn = self.query_one(
             self.ids.operate_btn.operate_exit_q, Button
         )

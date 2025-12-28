@@ -26,22 +26,19 @@ class ReAddTab(TabsBase, AppType):
         with Horizontal():
             yield TreeSwitcher(ids=IDS.re_add)
             yield ViewSwitcher(ids=IDS.re_add)
-        yield OperateButtons(ids=IDS.re_add)
+        yield OperateButtons(IDS.re_add)
         yield SwitchSlider(ids=IDS.re_add)
 
     def on_mount(self) -> None:
         self.re_add_btn = self.query_one(
             IDS.re_add.operate_btn.re_add_path_q, Button
         )
-        self.re_add_btn.display = True
         self.forget_btn = self.query_one(
             IDS.re_add.operate_btn.forget_path_q, Button
         )
-        self.forget_btn.display = True
         self.destroy_btn = self.query_one(
             IDS.re_add.operate_btn.destroy_path_q, Button
         )
-        self.destroy_btn.display = True
         self.exit_btn = self.query_one(
             IDS.re_add.operate_btn.operate_exit_q, Button
         )

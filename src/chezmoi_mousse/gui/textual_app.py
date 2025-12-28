@@ -29,7 +29,7 @@ from chezmoi_mousse.shared import (
     CustomHeader,
     FlatButtonsVertical,
     LogsTabButtons,
-    OperateButton,
+    OpButton,
     OperateButtonMsg,
     ViewTabButtons,
 )
@@ -192,7 +192,7 @@ class ChezmoiGUI(App[None]):
             path_arg=tab_widget.current_node.path,
             changes_enabled=self.changes_enabled,
         )
-        self.screen.query_one(btn_qid, OperateButton).disabled = True
+        self.screen.query_one(btn_qid, OpButton).disabled = True
         if operate_result.dry_run is True:
             tab_widget.exit_btn.label = OpBtnLabels.cancel
         elif operate_result.dry_run is False:
@@ -235,8 +235,8 @@ class ChezmoiGUI(App[None]):
             True if operate_info_widget.display is False else False
         )
         switch_slider = self.get_switch_slider_widget()
-        op_btn_widget = tab_widget.query_one(btn_qid, OperateButton)
-        all_buttons = tab_widget.query(OperateButton)
+        op_btn_widget = tab_widget.query_one(btn_qid, OpButton)
+        all_buttons = tab_widget.query(OpButton)
         if self.operating_mode is True:
             for btn in all_buttons:
                 if btn is tab_widget.exit_btn or btn is op_btn_widget:
@@ -293,11 +293,11 @@ class ChezmoiGUI(App[None]):
         tabbed_content = self.screen.query_exactly_one(TabbedContent)
         if msg.canvas_name == TabName.apply:
             tab_widget = tabbed_content.query_one(msg.tab_qid, ApplyTab)
-            op_btn_widget = tab_widget.query_one(msg.btn_qid, OperateButton)
+            op_btn_widget = tab_widget.query_one(msg.btn_qid, OpButton)
             review_label = op_btn_widget.label
         elif msg.canvas_name == TabName.re_add:
             tab_widget = tabbed_content.query_one(msg.tab_qid, ReAddTab)
-            op_btn_widget = tab_widget.query_one(msg.btn_qid, OperateButton)
+            op_btn_widget = tab_widget.query_one(msg.btn_qid, OpButton)
             review_label = op_btn_widget.label
         else:
             self.notify(
