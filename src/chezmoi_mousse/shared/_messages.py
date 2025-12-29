@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CloseButtonMsg",
-    "CurrentAddNodeMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
@@ -46,13 +45,6 @@ class CurrentApplyNodeMsg(Message):
 
 
 class CurrentReAddNodeMsg(Message):
-    # used to keep track in main screen to push the operate screen
-    def __init__(self, node_data: "NodeData") -> None:
-        self.node_data = node_data
-        super().__init__()
-
-
-class CurrentAddNodeMsg(Message):
     # used to keep track in main screen to push the operate screen
     def __init__(self, node_data: "NodeData") -> None:
         self.node_data = node_data

@@ -6,24 +6,10 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import Button, DirectoryTree, Static, Switch
+from textual.widgets import DirectoryTree, Static, Switch
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    Chars,
-    NodeData,
-    OpBtnEnum,
-    OpBtnLabels,
-    OperateStrings,
-    PathKind,
-    Tcss,
-)
-from chezmoi_mousse.shared import (
-    CurrentAddNodeMsg,
-    OperateButtonMsg,
-    OperateButtons,
-)
+from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
+from chezmoi_mousse.shared import OperateButtons
 
 from .common.contents_view import ContentsView
 from .common.switch_slider import SwitchSlider
@@ -263,11 +249,8 @@ class AddTab(TabsBase, AppType):
         yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
-        self.add_path_button = self.query_one(IDS.add.op_btn.add_q, Button)
-        self.operate_info = self.query_one(
-            IDS.add.static.operate_info_q, Static
-        )
-        self.operate_info.display = False
+        operate_info = self.query_one(IDS.add.static.operate_info_q, Static)
+        operate_info.display = False
         if self.destDir is not None:
             self.mount(
                 Horizontal(
@@ -275,43 +258,11 @@ class AddTab(TabsBase, AppType):
                     ContentsView(ids=IDS.add),
                 )
             )
-            self.contents_view = self.query_one(
+            contents_view = self.query_one(
                 IDS.add.container.contents_q, ContentsView
             )
-            self.contents_view.add_class(Tcss.border_title_top)
-            self.contents_view.border_title = f" {self.destDir} "
-            self.dir_tree = self.query_one(
-                IDS.add.tree.dir_tree_q, FilteredDirTree
-            )
-
-    def run_operate_command(self) -> None:
-        if self.current_node is None:
-            return
-        write_cmd = OpBtnEnum.add.write_cmd
-
-        operate_result = self.app.cmd.perform(
-            write_cmd,
-            path_arg=self.current_node.path,
-            changes_enabled=self.app.changes_enabled,
-        )
-        self.close_btn = self.query_one(IDS.add.close_q, Button)
-        if operate_result.dry_run is True:
-            self.close_btn.label = OpBtnLabels.cancel
-        elif operate_result.dry_run is False:
-            # self.dir_tree.reload()
-            content_view = self.query_exactly_one(ContentsView)
-            content_view.node_data = None
-            content_view.node_data = self.current_node
-            self.close_btn.label = OpBtnLabels.reload
-        self.operate_info.border_title = OperateStrings.cmd_output_subtitle
-        if operate_result.exit_code == 0:
-            self.operate_info.border_subtitle = OperateStrings.success_subtitle
-            self.operate_info.add_class(Tcss.operate_success)
-            self.operate_info.update(f"{operate_result.std_out}")
-        else:
-            self.operate_info.border_subtitle = OperateStrings.error_subtitle
-            self.operate_info.add_class(Tcss.operate_error)
-            self.operate_info.update(f"{operate_result.std_err}")
+            contents_view.add_class(Tcss.border_title_top)
+            contents_view.border_title = f" {self.destDir} "
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
@@ -323,7 +274,10 @@ class AddTab(TabsBase, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        self.contents_view.border_title = f" {event.node.data.path} "
+        contents_view = self.query_one(
+            IDS.add.container.contents_q, ContentsView
+        )
+        contents_view.border_title = f" {event.node.data.path} "
 
         path_kind = (
             PathKind.DIR
@@ -336,83 +290,14 @@ class AddTab(TabsBase, AppType):
             status="",
             path_kind=path_kind,
         )
-        self.contents_view.node_data = self.current_node
-
-    def toggle_widget_visibility(self) -> None:
-        # Widgets shown by default
-        self.app.toggle_main_tabs_display()
-        self.dir_tree.display = (
-            False if self.dir_tree.display is True else True
-        )
-        self.operate_info.display = (
-            True if self.operate_info.display is False else False
-        )
-        # Depending on self.app.operating_mode, show/hide buttons
-        switch_slider = self.query_one(
-            IDS.add.container.switch_slider_q, SwitchSlider
-        )
-        switch_slider.display = (
-            False if self.app.operating_mode is True else True
-        )
-        self.close_btn = self.query_one(IDS.add.close_q, Button)
-        if self.app.operating_mode is True:
-            self.close_btn.display = True
-            switch_slider.display = False  # regardless of visibility
-        else:
-            # this will restore the previous vilibility, whatever it was
-            switch_slider.display = True
-
-    def write_pre_operate_info(self, btn_enum: OpBtnEnum) -> None:
-        if self.current_node is None:
-            return
-        lines_to_write: list[str] = []
-        lines_to_write.append(
-            f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]{btn_enum.write_cmd.pretty_cmd} "
-            f"{self.current_node.path}[/]"
-        )
-        if self.app.changes_enabled is True:
-            if self.git_autocommit is True:
-                lines_to_write.append(OperateStrings.auto_commit)
-            if self.git_autopush is True:
-                lines_to_write.append(OperateStrings.auto_push)
-        self.operate_info.border_subtitle = OperateStrings.add_subtitle
-        self.operate_info.update("\n".join(lines_to_write))
-
-    @on(OperateButtonMsg)
-    def handle_button_pressed(self, msg: OperateButtonMsg) -> None:
-        msg.stop()
-        if self.current_node is None:
-            raise ValueError("self.current_node is None")
-        self.close_btn = self.query_one(IDS.add.close_q, Button)
-        if msg.pressed_label == OpBtnLabels.add_review:
-            self.app.operating_mode = True
-            self.toggle_widget_visibility()
-            self.add_path_button.label = OpBtnLabels.add_run
-            self.write_pre_operate_info(msg.btn_enum)
-        elif msg.pressed_label == OpBtnLabels.add_run:
-            self.run_operate_command()
-        elif msg.pressed_label == OpBtnLabels.cancel:
-            self.add_path_button.display = True
-            self.add_path_button.label = OpBtnLabels.add_review
-            self.app.operating_mode = False
-            self.toggle_widget_visibility()
-        elif msg.pressed_label == OpBtnLabels.reload:
-            self.add_path_button.display = True
-            self.add_path_button.label = OpBtnLabels.add_review
-            self.app.operating_mode = False
-            self.toggle_widget_visibility()
-
-    @on(CurrentAddNodeMsg)
-    def handle_new_apply_node_selected(self, msg: CurrentAddNodeMsg) -> None:
-        msg.stop()
-        self.current_node = msg.node_data
+        contents_view.node_data = self.current_node
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
+        dir_tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
         if event.switch.id == IDS.add.filter.unmanaged_dirs:
-            self.dir_tree.unmanaged_dirs = event.value
+            dir_tree.unmanaged_dirs = event.value
         elif event.switch.id == IDS.add.filter.unwanted:
-            self.dir_tree.unwanted = event.value
-        self.dir_tree.reload()
+            dir_tree.unwanted = event.value
+        dir_tree.reload()
