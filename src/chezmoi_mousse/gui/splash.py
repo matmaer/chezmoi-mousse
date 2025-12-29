@@ -244,7 +244,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
-        self.app.cmd = ChezmoiCommand()
         self.app.paths = ChezmoiPaths(
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],

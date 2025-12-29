@@ -19,6 +19,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
+    ChezmoiCommand,
     TabName,
     Tcss,
 )
@@ -126,7 +127,7 @@ class ChezmoiGUI(App[None]):
         super().__init__()
         AppState.set_app(self)
 
-        self.cmd: "ChezmoiCommand"
+        self.cmd = ChezmoiCommand()
         self.paths: "ChezmoiPaths"
         self.changes_enabled: bool = False
         self.chezmoi_found: bool = chezmoi_found
