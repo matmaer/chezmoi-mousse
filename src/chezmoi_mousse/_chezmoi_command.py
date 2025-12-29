@@ -82,7 +82,8 @@ class VerbArgs(Enum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     init_do_not_guess = "--guess-repo-url=false"
-    init_guess_ssh = ["--ssh"]
+    init_guess_https = "--guess-repo-url=true"
+    init_guess_ssh = ["--guess-repo-url=true", "--ssh"]
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
 
