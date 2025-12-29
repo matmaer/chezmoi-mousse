@@ -108,7 +108,7 @@ class ChezmoiGUI(App[None]):
         ),
         Binding(
             key="F,f",
-            action=BindingAction.toggle_switch_slider,
+            action=BindingAction.toggle_switch_slider_visibility,
             description=BindingDescription.hide_filters,
         ),
         Binding(
