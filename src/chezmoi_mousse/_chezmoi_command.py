@@ -97,56 +97,42 @@ class ReadVerb(Enum):
 
 
 class ReadCmd(Enum):
-    cat = GlobalCmd.live_run.value + [ReadVerb.cat.value]
-    cat_config = GlobalCmd.live_run.value + [ReadVerb.cat_config.value]
-    diff = (
-        GlobalCmd.live_run.value + [ReadVerb.diff.value] + VerbArgs.diff.value
-    )
-    diff_reverse = GlobalCmd.live_run.value + [
-        ReadVerb.diff.value,
-        VerbArgs.reverse.value,
-    ]
-    doctor = GlobalCmd.live_run.value + [ReadVerb.doctor.value]
-    dump_config = GlobalCmd.live_run.value + [
-        VerbArgs.format_json.value,
-        ReadVerb.dump_config.value,
-    ]
-    git_log = (
-        GlobalCmd.live_run.value
-        + [ReadVerb.git.value]
-        + VerbArgs.git_log.value
-    )
-    ignored = GlobalCmd.live_run.value + [ReadVerb.ignored.value]
-    managed_dirs = GlobalCmd.live_run.value + [
+    cat = [ReadVerb.cat.value]
+    cat_config = [ReadVerb.cat_config.value]
+    diff = [ReadVerb.diff.value] + VerbArgs.diff.value
+    diff_reverse = [ReadVerb.diff.value, VerbArgs.reverse.value]
+    doctor = [ReadVerb.doctor.value]
+    dump_config = [VerbArgs.format_json.value, ReadVerb.dump_config.value]
+    git_log = [ReadVerb.git.value] + VerbArgs.git_log.value
+    ignored = [ReadVerb.ignored.value]
+    managed_dirs = [
         ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
-    managed_files = GlobalCmd.live_run.value + [
+    managed_files = [
         ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    source_path = GlobalCmd.live_run.value + [ReadVerb.source_path.value]
-    status_dirs = GlobalCmd.live_run.value + [
+    source_path = [ReadVerb.source_path.value]
+    status_dirs = [
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
-    status_files = GlobalCmd.live_run.value + [
+    status_files = [
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    template_data = GlobalCmd.live_run.value + [ReadVerb.data.value]
-    unmanaged = GlobalCmd.live_run.value + [
-        ReadVerb.unmanaged.value + VerbArgs.path_style_absolute.value
-    ]
-    verify = GlobalCmd.live_run.value + [ReadVerb.verify.value]
+    template_data = [ReadVerb.data.value]
+    unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
+    verify = [ReadVerb.verify.value]
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.value)
+        return f"{GlobalCmd.live_run.value[0]} {LogUtils.pretty_cmd_str(self.value)}"
 
 
 class WriteVerb(Enum):
@@ -156,6 +142,23 @@ class WriteVerb(Enum):
     forget = "forget"
     init = "init"
     re_add = "re-add"
+
+
+# class WriteCmd(Enum):
+#     add = GlobalCmd.dry_run.value + [WriteVerb.add.value]
+#     add_live = GlobalCmd.live_run.value + [WriteVerb.add.value]
+#     apply_dry = GlobalCmd.dry_run.value + [WriteVerb.apply.value]
+#     apply_live = GlobalCmd.live_run.value + [WriteVerb.apply.value]
+#     destroy_dry = GlobalCmd.dry_run.value + [WriteVerb.destroy.value]
+#     destroy_live = GlobalCmd.live_run.value + [WriteVerb.destroy.value]
+#     forget_dry = GlobalCmd.dry_run.value + [WriteVerb.forget.value]
+#     forget_live = GlobalCmd.live_run.value + [WriteVerb.forget.value]
+#     init_guess_https = [WriteVerb.init.value]
+#     init_guess_ssh = [WriteVerb.init.value] + VerbArgs.init_guess_ssh.value
+#     init_new = [WriteVerb.init.value]
+#     init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
+#     re_add_dry = GlobalCmd.dry_run.value + [WriteVerb.re_add.value]
+#     re_add_live = GlobalCmd.live_run.value + [WriteVerb.re_add.value]
 
 
 class WriteCmd(Enum):
@@ -177,6 +180,13 @@ class WriteCmd(Enum):
     @property
     def pretty_cmd(self) -> str:
         return LogUtils.pretty_cmd_str(self.value)
+
+    # @classmethod
+    # def base_cmd(cls) -> list[str]:
+    #     if AppState.changes_enabled() is True:
+    #         return cls.live_run.value
+    #     else:
+    #         return cls.dry_run.value
 
 
 @dataclass(slots=True)
@@ -223,22 +233,8 @@ class CommandResult:
 
 class ChezmoiCommand:
 
-    def __init__(
-        self,
-        *,
-        dev_mode: bool,
-        managed_dirs: CommandResult,
-        managed_files: CommandResult,
-        status_dirs: CommandResult,
-        status_files: CommandResult,
-    ) -> None:
+    def __init__(self, *, dev_mode: bool) -> None:
         self._dev_mode = dev_mode
-        self.paths = ChezmoiPaths(
-            managed_dirs_result=managed_dirs,
-            managed_files_result=managed_files,
-            status_dirs_result=status_dirs,
-            status_files_result=status_files,
-        )
 
         self.app_log: AppLog | None = None
         self.read_cmd_log: ReadCmdLog | None = None
@@ -261,12 +257,12 @@ class ChezmoiCommand:
             self.operate_log.log_cmd_results(result)
 
     def update_managed_paths(self) -> None:
-        self.paths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
-        self.paths.managed_files_result = self.read(ReadCmd.managed_files)
+        ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
+        ChezmoiPaths.managed_files_result = self.read(ReadCmd.managed_files)
 
     def update_status_paths(self) -> None:
-        self.paths.status_files_result = self.read(ReadCmd.status_files)
-        self.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
+        ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
+        ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
 
     @staticmethod
     def strip_output(cmd_output: str):
@@ -280,11 +276,10 @@ class ChezmoiCommand:
     def read(
         self, read_cmd: ReadCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
-        command: list[str] = read_cmd.value
-        if path_arg is None:
-            command: list[str] = command
-        else:
-            command: list[str] = command + [str(path_arg)]
+        base_cmd = GlobalCmd.live_run.value
+        command = base_cmd + read_cmd.value
+        if path_arg is not None:
+            command += [str(path_arg)]
         if read_cmd == ReadCmd.doctor:
             time_out = 4
         else:
@@ -362,17 +357,17 @@ class ChezmoiCommand:
             write_cmd=write_cmd,
         )
         self._log_in_app_and_operate_log(command_result)
-        if write_cmd == WriteCmd.add_live:
-            self.update_managed_paths()
-        elif (
-            write_cmd in (WriteCmd.apply_live, WriteCmd.re_add_live)
-            and path_arg is not None
-        ):
-            self.update_status_paths()
-        elif (
-            write_cmd in (WriteCmd.destroy_live, WriteCmd.forget_live)
-            and path_arg is not None
-        ):
-            self.update_status_paths()
-            self.update_managed_paths()
+        # if write_cmd == WriteCmd.add_live:
+        #     self.update_managed_paths()
+        # elif (
+        #     write_cmd in (WriteCmd.apply_live, WriteCmd.re_add_live)
+        #     and path_arg is not None
+        # ):
+        #     self.update_status_paths()
+        # elif (
+        #     write_cmd in (WriteCmd.destroy_live, WriteCmd.forget_live)
+        #     and path_arg is not None
+        # ):
+        #     self.update_status_paths()
+        #     self.update_managed_paths()
         return command_result

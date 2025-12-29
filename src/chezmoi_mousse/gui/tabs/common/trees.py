@@ -171,19 +171,15 @@ class TreeBase(Tree[NodeData], AppType):
 
         if self.ids.canvas_name == TabName.apply:
             paths: "PathDict" = (
-                (self.app.cmd.paths.apply_status_files)
+                (self.app.paths.apply_status_files)
                 if flat_list
-                else self.app.cmd.paths.apply_status_files_in(
-                    tree_node.data.path
-                )
+                else self.app.paths.apply_status_files_in(tree_node.data.path)
             )
         else:
             paths: "PathDict" = (
-                (self.app.cmd.paths.re_add_status_files)
+                (self.app.paths.re_add_status_files)
                 if flat_list
-                else self.app.cmd.paths.re_add_status_files_in(
-                    tree_node.data.path
-                )
+                else self.app.paths.re_add_status_files_in(tree_node.data.path)
             )
 
         for file_path, status_code in paths.items():
@@ -204,18 +200,18 @@ class TreeBase(Tree[NodeData], AppType):
 
         if self.ids.canvas_name == TabName.apply:
             paths: "PathDict" = (
-                (self.app.cmd.paths.apply_files_without_status)
+                (self.app.paths.apply_files_without_status)
                 if flat_list
-                else self.app.cmd.paths.apply_files_without_status_in(
+                else self.app.paths.apply_files_without_status_in(
                     tree_node.data.path
                 )
             )
 
         else:
             paths: "PathDict" = (
-                (self.app.cmd.paths.re_add_files_without_status)
+                (self.app.paths.re_add_files_without_status)
                 if flat_list
-                else self.app.cmd.paths.re_add_files_without_status_in(
+                else self.app.paths.re_add_files_without_status_in(
                     tree_node.data.path
                 )
             )
@@ -233,28 +229,28 @@ class TreeBase(Tree[NodeData], AppType):
             return
 
         if self.ids.canvas_name == TabName.apply:
-            result: "PathDict" = self.app.cmd.paths.apply_status_dirs_in(
+            result: "PathDict" = self.app.paths.apply_status_dirs_in(
                 tree_node.data.path
             )
             # Add dirs that contain status files but don't have direct status
-            for path in self.app.cmd.paths.dirs:
+            for path in self.app.paths.dirs:
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self.app.cmd.paths.has_apply_status_paths_in(path)
+                    and self.app.paths.has_apply_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
         else:
-            result: "PathDict" = self.app.cmd.paths.re_add_status_dirs_in(
+            result: "PathDict" = self.app.paths.re_add_status_dirs_in(
                 tree_node.data.path
             )
             # Add dirs that contain status files but don't have direct status
-            for path in self.app.cmd.paths.dirs:
+            for path in self.app.paths.dirs:
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self.app.cmd.paths.has_re_add_status_paths_in(path)
+                    and self.app.paths.has_re_add_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
@@ -276,18 +272,18 @@ class TreeBase(Tree[NodeData], AppType):
         if self.ids.canvas_name == TabName.apply:
             dir_paths: "PathDict" = {
                 path: "X"
-                for path in self.app.cmd.paths.dirs
+                for path in self.app.paths.dirs
                 if path.parent == tree_node.data.path
-                and path not in self.app.cmd.paths.apply_status_dirs
-                and not self.app.cmd.paths.has_apply_status_paths_in(path)
+                and path not in self.app.paths.apply_status_dirs
+                and not self.app.paths.has_apply_status_paths_in(path)
             }
         else:
             dir_paths: "PathDict" = {
                 path: "X"
-                for path in self.app.cmd.paths.dirs
+                for path in self.app.paths.dirs
                 if path.parent == tree_node.data.path
-                and path not in self.app.cmd.paths.re_add_status_dirs
-                and not self.app.cmd.paths.has_re_add_status_paths_in(path)
+                and path not in self.app.paths.re_add_status_dirs
+                and not self.app.paths.has_re_add_status_paths_in(path)
             }
 
         for dir_path, status_code in dir_paths.items():

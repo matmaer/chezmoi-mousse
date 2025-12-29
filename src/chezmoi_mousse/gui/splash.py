@@ -21,6 +21,7 @@ from chezmoi_mousse import (
     ChezmoiCommand,
     ChezmoiPaths,
     CommandResult,
+    GlobalCmd,
     ParsedConfig,
     ReadCmd,
     SplashData,
@@ -183,7 +184,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
         result: CompletedProcess[str] = run(
-            splash_cmd.value,
+            GlobalCmd.live_run.value + splash_cmd.value,
             capture_output=True,
             shell=False,
             text=True,
@@ -243,13 +244,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
-        self.app.cmd = ChezmoiCommand(
-            dev_mode=self.app.dev_mode,
-            managed_dirs=globals()["managed_dirs"],
-            managed_files=globals()["managed_files"],
-            status_dirs=globals()["status_dirs"],
-            status_files=globals()["status_files"],
-        )
+        self.app.cmd = ChezmoiCommand(dev_mode=self.app.dev_mode)
         self.app.paths = ChezmoiPaths(
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],

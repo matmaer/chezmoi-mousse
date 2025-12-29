@@ -201,7 +201,7 @@ class DiffView(Vertical, AppType):
         info_lines: list[Static] = []
         if (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path not in self.app.cmd.paths.status_files
+            and self.node_data.path not in self.app.paths.status_files
         ):
             diff_info.display = True
             diff_info.info_lines = [
@@ -210,7 +210,7 @@ class DiffView(Vertical, AppType):
             ]
         elif (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.cmd.paths.status_files
+            and self.node_data.path in self.app.paths.status_files
         ):
             diff_info.display = False
             self.diff_lines.display = True
@@ -219,9 +219,9 @@ class DiffView(Vertical, AppType):
 
         # Handle directory status paths
         status_paths = (
-            self.app.cmd.paths.list_apply_status_paths_in(self.node_data.path)
+            self.app.paths.list_apply_status_paths_in(self.node_data.path)
             if self.ids.canvas_name == TabName.apply
-            else self.app.cmd.paths.list_re_add_status_paths_in(
+            else self.app.paths.list_re_add_status_paths_in(
                 self.node_data.path
             )
         )
@@ -249,7 +249,7 @@ class DiffView(Vertical, AppType):
 
         if (
             self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path not in self.app.cmd.paths.status_dirs
+            and self.node_data.path not in self.app.paths.status_dirs
         ):
             info_lines.append(
                 Static(
