@@ -175,30 +175,6 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
 
-    # def run_operate_command(
-    #     self, *, ids: "AppIds", btn_enum: OpBtnEnum
-    # ) -> None:
-    #     tab_widget = self.screen.query_one(ids.tab_qid)
-    #     if ids.canvas_name == TabName.apply:
-    #         tab_widget = cast(ApplyTab, tab_widget)
-    #     elif ids.canvas_name == TabName.re_add:
-    #         tab_widget = cast(ReAddTab, tab_widget)
-    #     elif ids.canvas_name == TabName.add:
-    #         tab_widget = cast(AddTab, tab_widget)
-    #     else:
-    #         raise ValueError(
-    #             f"write_pre_operate_info called on unsupported tab: "
-    #             f"{ids.canvas_name}"
-    #         )
-    #     if tab_widget.current_node is None:
-    #         raise ValueError("current_node is None in run_operate_command")
-    #     operate_result = self.cmd.perform(
-    #         btn_enum.full_cmd, path_arg=tab_widget.current_node.path
-    #     )
-    #     if operate_result.dry_run is False:
-    #         close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
-    #         close_btn.label = OpBtnLabels.reload
-
     def operate_display(self, *, ids: AppIds) -> None:
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = False
@@ -260,42 +236,6 @@ class ChezmoiGUI(App[None]):
         switch_slider.display = (
             False if switch_slider.display is True else True
         )
-
-    # def write_pre_operate_info(self, *, ids: AppIds) -> None:
-    #     if self.current_op_btn_msg is None:
-    #         raise ValueError(
-    #             "current_op_review_msg is None in write_pre_operate_info"
-    #         )
-    #     lines_to_write: list[str] = []
-    #     tab_widget = self.screen.query_one(ids.tab_qid)
-    #     if ids.canvas_name == TabName.apply:
-    #         tab_widget = cast(ApplyTab, tab_widget)
-    #     elif ids.canvas_name == TabName.re_add:
-    #         tab_widget = cast(ReAddTab, tab_widget)
-    #     else:
-    #         raise ValueError(
-    #             f"write_pre_operate_info called on unsupported tab: "
-    #             f"{ids.canvas_name}"
-    #         )
-    #     if tab_widget.current_node is None:
-    #         raise ValueError("current_node is None in write_pre_operate_info")
-    #     lines_to_write.append(
-    #         f"{OperateStrings.ready_to_run}"
-    #         f"[$text-warning]"
-    #         f"{self.current_op_btn_msg.btn_enum.write_cmd.pretty_cmd} "
-    #         f"{tab_widget.current_node.path}[/]"
-    #     )
-    #     if self.changes_enabled is True:
-    #         if self.splash_data is None:
-    #             raise ValueError(
-    #                 "splash_data is None in write_pre_operate_info"
-    #             )
-    #         if self.splash_data.parsed_config.git_autocommit is True:
-    #             lines_to_write.append(OperateStrings.auto_commit)
-    #         if self.splash_data.parsed_config.git_autopush is True:
-    #             lines_to_write.append(OperateStrings.auto_push)
-    #     operate_info = self.screen.query_one(ids.static.operate_info_q, Static)
-    #     operate_info.update("\n".join(lines_to_write))
 
     def get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
