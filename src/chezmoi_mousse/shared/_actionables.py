@@ -216,7 +216,10 @@ class OperateButtons(HorizontalGroup):
 
         elif event.button.btn_enum == OpBtnEnum.destroy:
             if event.button.label == OpBtnLabels.destroy_review:
-                self.query_one(self.ids.op_btn.apply_q).display = False
+                if self.ids.canvas_name == TabName.apply:
+                    self.query_one(self.ids.op_btn.apply_q).display = False
+                elif self.ids.canvas_name == TabName.re_add:
+                    self.query_one(self.ids.op_btn.re_add_q).display = False
                 self.query_one(self.ids.op_btn.forget_q).display = False
             self.toggle_button_label(
                 event.button,
@@ -226,7 +229,10 @@ class OperateButtons(HorizontalGroup):
 
         elif event.button.btn_enum == OpBtnEnum.forget:
             if event.button.label == OpBtnLabels.forget_review:
-                self.query_one(self.ids.op_btn.apply_q).display = False
+                if self.ids.canvas_name == TabName.apply:
+                    self.query_one(self.ids.op_btn.apply_q).display = False
+                elif self.ids.canvas_name == TabName.re_add:
+                    self.query_one(self.ids.op_btn.re_add_q).display = False
                 self.query_one(self.ids.op_btn.destroy_q).display = False
             self.toggle_button_label(
                 event.button, OpBtnLabels.forget_review, OpBtnLabels.forget_run
