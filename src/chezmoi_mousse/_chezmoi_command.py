@@ -9,7 +9,7 @@ from ._app_state import AppState
 from ._chezmoi_paths import ChezmoiPaths
 
 if TYPE_CHECKING:
-    from .gui.tabs.logs_tab import AppLog, DebugLog, OperateLog, ReadCmdLog
+    from .gui.tabs.logs_tab import AppLog, OperateLog, ReadCmdLog
 
 __all__ = [
     "ChezmoiCommand",
@@ -212,14 +212,10 @@ class CommandResult:
 
 class ChezmoiCommand:
 
-    def __init__(self, *, dev_mode: bool) -> None:
-        self._dev_mode = dev_mode
-
+    def __init__(self) -> None:
         self.app_log: AppLog | None = None
         self.read_cmd_log: ReadCmdLog | None = None
         self.operate_log: OperateLog | None = None
-        if self._dev_mode is True:
-            self.debug_log: DebugLog | None = None
 
     #################################
     # Command execution and logging #
