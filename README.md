@@ -5,7 +5,7 @@
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
 > [!WARNING]
-> To test the app, clone from the latest tagged stable branch `git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`. The current HEAD will be updated soon.
+> To use the app, clone from the latest tagged stable branch `git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`. The current HEAD will be updated soon.
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
 
