@@ -91,7 +91,6 @@ class StaticName(StrEnum):
     git_log_info = auto()
     init_info = auto()
     operate_info = auto()
-    operate_output = auto()
 
 
 class TabName(StrEnum):

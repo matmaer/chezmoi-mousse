@@ -33,10 +33,9 @@ class CustomHeader(Header, AppType):
 
     def on_mount(self) -> None:
         self.icon = Chars.burger
-        self.changes_enabled = self.app.changes_enabled
-        if self.changes_enabled is False:
+        if self.app.changes_enabled is False:
             self.screen.title = HeaderTitle.header_dry_run_mode
-        elif self.changes_enabled is True:
+        elif self.app.changes_enabled is True:
             self.screen.title = HeaderTitle.header_live_mode
 
     def watch_changes_enabled(self) -> None:

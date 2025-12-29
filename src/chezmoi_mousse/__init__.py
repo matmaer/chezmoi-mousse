@@ -15,7 +15,7 @@ from ._chezmoi_command import (
     CommandResult,
     GlobalCmd,
     ReadCmd,
-    ReadVerbs,
+    ReadVerb,
     VerbArgs,
     WriteCmd,
 )
@@ -63,7 +63,7 @@ __all__ = [
     "PathDict",
     "PathList",
     "ReadCmd",
-    "ReadVerbs",
+    "ReadVerb",
     "WriteCmd",
     "VerbArgs",
     # _chezmoi_paths.py

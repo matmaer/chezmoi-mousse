@@ -7,7 +7,7 @@ from rich.markup import escape
 from textual.containers import ScrollableContainer
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerbs, Tcss
+from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
 
 from ._custom_collapsible import CustomCollapsible
 
@@ -109,13 +109,13 @@ class AppLog(LoggersBase, AppType):
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
-        if ReadVerbs.verify.value in command_result.cmd_args:
+        if ReadVerb.verify.value in command_result.cmd_args:
             if command_result.exit_code == 0:
                 self.success(self.verify_exit_zero)
             else:
                 self.success(self.verify_non_zero)
             return
-        elif ReadVerbs.doctor.value in command_result.cmd_args:
+        elif ReadVerb.doctor.value in command_result.cmd_args:
             if command_result.exit_code == 0:
                 self.log_doctor_exit_zero_msg(command_result)
             return
@@ -293,7 +293,7 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         # Don't log verify read-verb outputs as in produces no output.
-        if ReadVerbs.verify.value in command_result.cmd_args:
+        if ReadVerb.verify.value in command_result.cmd_args:
             return
 
         self.collapsible_counter += 1

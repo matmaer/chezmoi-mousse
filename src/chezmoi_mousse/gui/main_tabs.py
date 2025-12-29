@@ -155,9 +155,6 @@ class MainScreen(Screen[None], AppType):
         if self.app.operate_cmd_result is None:
             self.notify("Operation cancelled.")
             return
-        # The dry/live mode could have changed while in the operate screen
-        reactive_header = self.query_exactly_one(CustomHeader)
-        reactive_header.changes_enabled = self.app.changes_enabled
         self.refresh_bindings()
         if (
             self.app.operate_cmd_result.exit_code == 0

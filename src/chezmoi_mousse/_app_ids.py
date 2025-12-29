@@ -5,7 +5,7 @@ Provides easy access, autocomplete, type checking or to generate the id
 dynamically.
 """
 
-from ._chezmoi_command import WriteVerbs
+from ._chezmoi_command import WriteVerb
 from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
@@ -92,7 +92,7 @@ class AppIds:
         return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
 
     def operate_button_id(
-        self, qid: str = "", *, write_verb: WriteVerbs
+        self, qid: str = "", *, write_verb: WriteVerb
     ) -> str:
         return f"{qid}{self.canvas_name.name}_{write_verb.name}_op_btn"
 
@@ -385,17 +385,17 @@ class LoggerIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds):
-        self.add = ids.operate_button_id(write_verb=WriteVerbs.add)
+        self.add = ids.operate_button_id(write_verb=WriteVerb.add)
         self.add_q = f"#{self.add}"
-        self.apply = ids.operate_button_id(write_verb=WriteVerbs.apply)
+        self.apply = ids.operate_button_id(write_verb=WriteVerb.apply)
         self.apply_q = f"#{self.apply}"
-        self.destroy = ids.operate_button_id(write_verb=WriteVerbs.destroy)
+        self.destroy = ids.operate_button_id(write_verb=WriteVerb.destroy)
         self.destroy_q = f"#{self.destroy}"
-        self.forget = ids.operate_button_id(write_verb=WriteVerbs.forget)
+        self.forget = ids.operate_button_id(write_verb=WriteVerb.forget)
         self.forget_q = f"#{self.forget}"
-        self.init = ids.operate_button_id(write_verb=WriteVerbs.init)
+        self.init = ids.operate_button_id(write_verb=WriteVerb.init)
         self.init_q = f"#{self.init}"
-        self.re_add = ids.operate_button_id(write_verb=WriteVerbs.re_add)
+        self.re_add = ids.operate_button_id(write_verb=WriteVerb.re_add)
         self.re_add_q = f"#{self.re_add}"
 
 
@@ -413,8 +413,6 @@ class StaticIds:
         self.init_info_q = f"#{self.init_info}"
         self.operate_info = ids.static_id(static=StaticName.operate_info)
         self.operate_info_q = f"#{self.operate_info}"
-        self.operate_output = ids.static_id(static=StaticName.operate_output)
-        self.operate_output_q = f"#{self.operate_output}"
 
 
 class TabButtonIds:

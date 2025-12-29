@@ -8,7 +8,6 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
-from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import Button, Static, TabbedContent, Tabs
@@ -36,13 +35,12 @@ from chezmoi_mousse.shared import (
     ViewTabButtons,
 )
 
+from .init_chezmoi import InitChezmoi
 from .install_help import InstallHelpScreen
 from .main_tabs import MainScreen
-from .operate_init import OperateInitScreen
 from .splash import SplashScreen
 from .tabs.add_tab import AddTab, FilteredDirTree
 from .tabs.apply_tab import ApplyTab
-from .tabs.common.diff_view import DiffView
 from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher
 from .tabs.re_add_tab import ReAddTab
@@ -123,7 +121,6 @@ class ChezmoiGUI(App[None]):
     ]
 
     CSS_PATH = "gui.tcss"
-    changes_enabled: reactive[bool] = reactive(False)
 
     def __init__(
         self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool
@@ -134,7 +131,7 @@ class ChezmoiGUI(App[None]):
 
         self.cmd: "ChezmoiCommand"
         self.paths: "ChezmoiPaths"
-
+        self.changes_enabled: bool = False
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
@@ -176,7 +173,7 @@ class ChezmoiGUI(App[None]):
             self.push_screen(InstallHelpScreen())
             return
         if self.init_needed is True:
-            await self.push_screen(OperateInitScreen(), wait_for_dismiss=True)
+            await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
 
@@ -198,29 +195,11 @@ class ChezmoiGUI(App[None]):
         if tab_widget.current_node is None:
             raise ValueError("current_node is None in run_operate_command")
         operate_result = self.cmd.perform(
-            btn_enum.write_cmd,
-            path_arg=tab_widget.current_node.path,
-            changes_enabled=self.changes_enabled,
-        )
-        operate_info = tab_widget.query_one(ids.static.operate_info_q, Static)
-        operate_output = tab_widget.query_one(
-            ids.static.operate_output_q, Static
+            btn_enum.write_cmd, path_arg=tab_widget.current_node.path
         )
         if operate_result.dry_run is False:
             close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
             close_btn.label = OpBtnLabels.reload
-            diff_view = self.query_exactly_one(DiffView)
-            diff_view.node_data = None
-            diff_view.node_data = tab_widget.current_node
-            operate_info.border_title = OperateStrings.cmd_output_subtitle
-        if operate_result.exit_code == 0:
-            operate_info.border_subtitle = OperateStrings.success_subtitle
-            operate_info.add_class(Tcss.operate_success)
-            operate_output.update(f"{operate_result.std_out}")
-        else:
-            operate_info.border_subtitle = OperateStrings.error_subtitle
-            operate_info.add_class(Tcss.operate_error)
-            operate_output.update(f"{operate_result.std_err}")
 
     def operate_display(self, *, ids: AppIds) -> None:
         main_tabs = self.screen.query_exactly_one(Tabs)
@@ -458,6 +437,8 @@ class ChezmoiGUI(App[None]):
                 raise ValueError(
                     f"action_toggle_dry_run called on {active_tab} tab"
                 )
+        if isinstance(self.screen, InitChezmoi):
+            return
         else:
             raise ValueError(f"action_toggle_dry_run in {self.screen.name}")
 
@@ -618,21 +599,21 @@ class ChezmoiGUI(App[None]):
                     return False
                 elif active_tab == TabName.help:
                     return False
-            elif isinstance(self.screen, (OperateInitScreen)):
+            elif isinstance(self.screen, (InitChezmoi)):
                 return True
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
             if self.operating_mode is True:
                 return None
-            if isinstance(self.screen, (InstallHelpScreen, OperateInitScreen)):
+            if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
         elif action == BindingAction.exit_screen:
             if isinstance(
                 self.screen, (InstallHelpScreen, MainScreen, SplashScreen)
             ):
                 return False
-            elif isinstance(self.screen, OperateInitScreen):
+            elif isinstance(self.screen, InitChezmoi):
                 if self.init_cmd_result is None:
                     return None
                 elif self.init_cmd_result.dry_run is True:

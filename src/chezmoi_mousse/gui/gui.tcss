@@ -329,7 +329,7 @@ OperateButtons {
   }
 }
 
-OperateChezmoiScreen, OperateInitScreen {
+InitChezmoi {
   & OperateButtons {
       margin-bottom: 1;
   }

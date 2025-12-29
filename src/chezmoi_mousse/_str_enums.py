@@ -3,7 +3,6 @@
 from enum import StrEnum
 
 from ._chezmoi_command import ReadCmd
-from ._switch_data import Switches
 
 __all__ = [
     "Chars",
@@ -76,7 +75,7 @@ class TabBtn(StrEnum):
 
 
 class Chars(StrEnum):
-    bullet = "\u2022"  # BULLET
+    # bullet = "\u2022"  # BULLET
     burger = "\u2261"  # IDENTICAL TO
     check_mark = "\u2714"  # HEAVY CHECK MARK
     down_triangle = "\u25be "  # BLACK DOWN-POINTING SMALL TRIANGLE
@@ -99,8 +98,6 @@ class LogStrings(StrEnum):
 
 
 class OperateStrings(StrEnum):
-    add_subtitle = f"path on disk {Chars.right_arrow} chezmoi repo"
-    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_commit = (
         f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: "
         "files will also be committed."
@@ -111,52 +108,16 @@ class OperateStrings(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    cmd_output_subtitle = "Command Output"
     destroy_path = (
         "[$text-error]Permanently remove the path from disk and "
         " chezmoi. MAKE SURE YOU HAVE A BACKUP![/]"
     )
-    destroy_subtitle = (
-        f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"
-    )
-    error_subtitle = "Operation failed with errors"
     forget_path = (
         "[$text-primary]Remove the path from the source state, i.e. stop "
         "managing them.[/]"
     )
-    forget_subtitle = (
-        f"{Chars.x_mark} leave on disk but remove from chezmoi repo "
-        f"{Chars.x_mark}"
-    )
-    guess_https = "Let chezmoi guess the best URL to clone from."
-    guess_ssh = (
-        "Let chezmoi guess the best ssh scp-style address to clone from."
-    )
-    https_url = (
-        "Enter a complete URL, e.g., "
-        "[$text-primary]https://github.com/user/repo.git[/]. "
-        "If you have a PAT, make sure to include it in the URL, for example: "
-        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
-        "username/my-dotfiles.git[/] and delete the PAT after use."
-    )
-    init_new_info = (
-        "Ready to initialize a new chezmoi repository. Toggle the "
-        "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{Switches.init_repo_switch.label} [/]"
-        "switch to initialize by cloning an existing Github repository."
-    )
     read_file = "[$success]Path.read()[/]"
     ready_to_run = "[$success]Ready to run: [/]"
-    re_add_subtitle = (
-        f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-    )
-    ssh_select = (
-        "Enter an SSH SCP-style URL, e.g., "
-        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
-        "private, make sure you have your SSH key pair set up before using "
-        "this option."
-    )
-    success_subtitle = "Operation completed successfully"
 
 
 class DestDirStrings(StrEnum):

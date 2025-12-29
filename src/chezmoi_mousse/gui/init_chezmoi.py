@@ -1,4 +1,5 @@
 import re
+from enum import StrEnum
 
 from textual import on
 from textual.app import ComposeResult
@@ -24,7 +25,6 @@ from chezmoi_mousse import (
     LinkBtn,
     OpBtnEnum,
     OpBtnLabels,
-    OperateStrings,
     SectionLabels,
     Switches,
     Tcss,
@@ -44,7 +44,33 @@ from chezmoi_mousse.shared import (
     SwitchWithLabel,
 )
 
-__all__ = ["OperateInitScreen"]
+__all__ = ["InitChezmoi"]
+
+
+class InitStrings(StrEnum):
+    guess_https = "Let chezmoi guess the best URL to clone from."
+    guess_ssh = (
+        "Let chezmoi guess the best ssh scp-style address to clone from."
+    )
+    init_new_info = (
+        "Ready to initialize a new chezmoi repository. Toggle the "
+        "[$foreground-darken-1 on $surface-lighten-1] "
+        f"{Switches.init_repo_switch.label} [/]"
+        "switch to initialize by cloning an existing Github repository."
+    )
+    https_url = (
+        "Enter a complete URL, e.g., "
+        "[$text-primary]https://github.com/user/repo.git[/]. "
+        "If you have a PAT, make sure to include it in the URL, for example: "
+        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
+        "username/my-dotfiles.git[/] and delete the PAT after use."
+    )
+    ssh_select = (
+        "Enter an SSH SCP-style URL, e.g., "
+        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
+        "private, make sure you have your SSH key pair set up before using "
+        "this option."
+    )
 
 
 class SSHSCP(Validator):
@@ -452,7 +478,7 @@ class InitCollapsibles(VerticalGroup, AppType):
         )
 
 
-class OperateInitScreen(Screen[None], AppType):
+class InitChezmoi(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
@@ -584,23 +610,21 @@ class OperateInitScreen(Screen[None], AppType):
 
     def update_init_info(self) -> None:
         if self.query_exactly_one(Switch).value is False:
-            self.init_info.update(OperateStrings.init_new_info)
+            self.init_info.update(InitStrings.init_new_info)
             return
         current_select = self.repo_input.query_exactly_one(Select[str]).value
         if current_select == "https":
-            self.init_info.update(OperateStrings.https_url)
+            self.init_info.update(InitStrings.https_url)
         elif current_select == "ssh":
-            self.init_info.update(OperateStrings.ssh_select)
+            self.init_info.update(InitStrings.ssh_select)
         elif current_select == "guess url":
-            self.init_info.update(OperateStrings.guess_https)
+            self.init_info.update(InitStrings.guess_https)
         elif current_select == "guess ssh":
-            self.init_info.update(OperateStrings.guess_ssh)
+            self.init_info.update(InitStrings.guess_ssh)
 
     def run_operate_command(self) -> None:
         self.app.init_cmd_result = self.app.cmd.perform(
-            write_cmd=self.init_cmd,
-            init_arg=self.init_arg,
-            changes_enabled=self.app.changes_enabled,
+            write_cmd=self.init_cmd, init_arg=self.init_arg
         )
         self.pre_op_container = self.query_one(
             self.ids.container.pre_operate_q, VerticalGroup

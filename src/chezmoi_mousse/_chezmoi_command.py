@@ -5,6 +5,7 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
+from ._app_state import AppState
 from ._chezmoi_paths import ChezmoiPaths
 
 if TYPE_CHECKING:
@@ -15,9 +16,10 @@ __all__ = [
     "CommandResult",
     "GlobalCmd",
     "ReadCmd",
-    "ReadVerbs",
+    "ReadVerb",
     "VerbArgs",
     "WriteCmd",
+    "WriteVerb",
 ]
 
 
@@ -78,7 +80,7 @@ class VerbArgs(Enum):
     reverse = "--reverse"
 
 
-class ReadVerbs(Enum):
+class ReadVerb(Enum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
@@ -95,59 +97,59 @@ class ReadVerbs(Enum):
 
 
 class ReadCmd(Enum):
-    cat = GlobalCmd.live_run.value + [ReadVerbs.cat.value]
-    cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config.value]
+    cat = GlobalCmd.live_run.value + [ReadVerb.cat.value]
+    cat_config = GlobalCmd.live_run.value + [ReadVerb.cat_config.value]
     diff = (
-        GlobalCmd.live_run.value + [ReadVerbs.diff.value] + VerbArgs.diff.value
+        GlobalCmd.live_run.value + [ReadVerb.diff.value] + VerbArgs.diff.value
     )
     diff_reverse = GlobalCmd.live_run.value + [
-        ReadVerbs.diff.value,
+        ReadVerb.diff.value,
         VerbArgs.reverse.value,
     ]
-    doctor = GlobalCmd.live_run.value + [ReadVerbs.doctor.value]
+    doctor = GlobalCmd.live_run.value + [ReadVerb.doctor.value]
     dump_config = GlobalCmd.live_run.value + [
         VerbArgs.format_json.value,
-        ReadVerbs.dump_config.value,
+        ReadVerb.dump_config.value,
     ]
     git_log = (
         GlobalCmd.live_run.value
-        + [ReadVerbs.git.value]
+        + [ReadVerb.git.value]
         + VerbArgs.git_log.value
     )
-    ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored.value]
+    ignored = GlobalCmd.live_run.value + [ReadVerb.ignored.value]
     managed_dirs = GlobalCmd.live_run.value + [
-        ReadVerbs.managed.value,
+        ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
     managed_files = GlobalCmd.live_run.value + [
-        ReadVerbs.managed.value,
+        ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
+    source_path = GlobalCmd.live_run.value + [ReadVerb.source_path.value]
     status_dirs = GlobalCmd.live_run.value + [
-        ReadVerbs.status.value,
+        ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
     status_files = GlobalCmd.live_run.value + [
-        ReadVerbs.status.value,
+        ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
+    template_data = GlobalCmd.live_run.value + [ReadVerb.data.value]
     unmanaged = GlobalCmd.live_run.value + [
-        ReadVerbs.unmanaged.value + VerbArgs.path_style_absolute.value
+        ReadVerb.unmanaged.value + VerbArgs.path_style_absolute.value
     ]
-    verify = GlobalCmd.live_run.value + [ReadVerbs.verify.value]
+    verify = GlobalCmd.live_run.value + [ReadVerb.verify.value]
 
     @property
     def pretty_cmd(self) -> str:
         return LogUtils.pretty_cmd_str(self.value)
 
 
-class WriteVerbs(Enum):
+class WriteVerb(Enum):
     add = "add"
     apply = "apply"
     destroy = "destroy"
@@ -157,20 +159,20 @@ class WriteVerbs(Enum):
 
 
 class WriteCmd(Enum):
-    add_dry = GlobalCmd.dry_run.value + [WriteVerbs.add.value]
-    add_live = GlobalCmd.live_run.value + [WriteVerbs.add.value]
-    apply_dry = GlobalCmd.dry_run.value + [WriteVerbs.apply.value]
-    apply_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
-    destroy_dry = GlobalCmd.dry_run.value + [WriteVerbs.destroy.value]
-    destroy_live = GlobalCmd.live_run.value + [WriteVerbs.destroy.value]
-    forget_dry = GlobalCmd.dry_run.value + [WriteVerbs.forget.value]
-    forget_live = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
-    init_guess_https = [WriteVerbs.init.value]
-    init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
-    init_new = [WriteVerbs.init.value]
-    init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
-    re_add_dry = GlobalCmd.dry_run.value + [WriteVerbs.re_add.value]
-    re_add_live = GlobalCmd.live_run.value + [WriteVerbs.re_add.value]
+    add_dry = GlobalCmd.dry_run.value + [WriteVerb.add.value]
+    add_live = GlobalCmd.live_run.value + [WriteVerb.add.value]
+    apply_dry = GlobalCmd.dry_run.value + [WriteVerb.apply.value]
+    apply_live = GlobalCmd.live_run.value + [WriteVerb.apply.value]
+    destroy_dry = GlobalCmd.dry_run.value + [WriteVerb.destroy.value]
+    destroy_live = GlobalCmd.live_run.value + [WriteVerb.destroy.value]
+    forget_dry = GlobalCmd.dry_run.value + [WriteVerb.forget.value]
+    forget_live = GlobalCmd.live_run.value + [WriteVerb.forget.value]
+    init_guess_https = [WriteVerb.init.value]
+    init_guess_ssh = [WriteVerb.init.value] + VerbArgs.init_guess_ssh.value
+    init_new = [WriteVerb.init.value]
+    init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
+    re_add_dry = GlobalCmd.dry_run.value + [WriteVerb.re_add.value]
+    re_add_live = GlobalCmd.live_run.value + [WriteVerb.re_add.value]
 
     @property
     def pretty_cmd(self) -> str:
@@ -311,9 +313,8 @@ class ChezmoiCommand:
         *,
         path_arg: Path | None = None,
         init_arg: str | None = None,
-        changes_enabled: bool,
     ) -> CommandResult:
-        if changes_enabled is True:
+        if AppState.changes_enabled() is True:
             base_cmd = GlobalCmd.live_run.value
         else:
             base_cmd = GlobalCmd.dry_run.value
