@@ -55,6 +55,13 @@ class GlobalCmd(Enum):
     dry_run = live_run + ["--dry-run"]
     # version = live_run + ["--version"] TODO
 
+    @classmethod
+    def base_cmd(cls) -> list[str]:
+        if AppState.changes_enabled() is True:
+            return cls.live_run.value
+        else:
+            return cls.dry_run.value
+
 
 class VerbArgs(Enum):
     # encrypt = "--encrypt"
@@ -144,23 +151,6 @@ class WriteVerb(Enum):
     re_add = "re-add"
 
 
-# class WriteCmd(Enum):
-#     add = GlobalCmd.dry_run.value + [WriteVerb.add.value]
-#     add_live = GlobalCmd.live_run.value + [WriteVerb.add.value]
-#     apply_dry = GlobalCmd.dry_run.value + [WriteVerb.apply.value]
-#     apply_live = GlobalCmd.live_run.value + [WriteVerb.apply.value]
-#     destroy_dry = GlobalCmd.dry_run.value + [WriteVerb.destroy.value]
-#     destroy_live = GlobalCmd.live_run.value + [WriteVerb.destroy.value]
-#     forget_dry = GlobalCmd.dry_run.value + [WriteVerb.forget.value]
-#     forget_live = GlobalCmd.live_run.value + [WriteVerb.forget.value]
-#     init_guess_https = [WriteVerb.init.value]
-#     init_guess_ssh = [WriteVerb.init.value] + VerbArgs.init_guess_ssh.value
-#     init_new = [WriteVerb.init.value]
-#     init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
-#     re_add_dry = GlobalCmd.dry_run.value + [WriteVerb.re_add.value]
-#     re_add_live = GlobalCmd.live_run.value + [WriteVerb.re_add.value]
-
-
 class WriteCmd(Enum):
     add_dry = GlobalCmd.dry_run.value + [WriteVerb.add.value]
     add_live = GlobalCmd.live_run.value + [WriteVerb.add.value]
@@ -180,13 +170,6 @@ class WriteCmd(Enum):
     @property
     def pretty_cmd(self) -> str:
         return LogUtils.pretty_cmd_str(self.value)
-
-    # @classmethod
-    # def base_cmd(cls) -> list[str]:
-    #     if AppState.changes_enabled() is True:
-    #         return cls.live_run.value
-    #     else:
-    #         return cls.dry_run.value
 
 
 @dataclass(slots=True)
