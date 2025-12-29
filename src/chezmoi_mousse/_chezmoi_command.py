@@ -153,24 +153,19 @@ class WriteVerb(Enum):
 
 
 class WriteCmd(Enum):
-    add_dry = GlobalCmd.dry_run.value + [WriteVerb.add.value]
-    add_live = GlobalCmd.live_run.value + [WriteVerb.add.value]
-    apply_dry = GlobalCmd.dry_run.value + [WriteVerb.apply.value]
-    apply_live = GlobalCmd.live_run.value + [WriteVerb.apply.value]
-    destroy_dry = GlobalCmd.dry_run.value + [WriteVerb.destroy.value]
-    destroy_live = GlobalCmd.live_run.value + [WriteVerb.destroy.value]
-    forget_dry = GlobalCmd.dry_run.value + [WriteVerb.forget.value]
-    forget_live = GlobalCmd.live_run.value + [WriteVerb.forget.value]
-    init_guess_https = [WriteVerb.init.value]
+    add = [WriteVerb.add.value]
+    apply = [WriteVerb.apply.value]
+    destroy = [WriteVerb.destroy.value]
+    forget = [WriteVerb.forget.value]
+    init_guess_https = [WriteVerb.init.value, VerbArgs.init_guess_https.value]
     init_guess_ssh = [WriteVerb.init.value] + VerbArgs.init_guess_ssh.value
     init_new = [WriteVerb.init.value]
     init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
-    re_add_dry = GlobalCmd.dry_run.value + [WriteVerb.re_add.value]
-    re_add_live = GlobalCmd.live_run.value + [WriteVerb.re_add.value]
+    re_add = [WriteVerb.re_add.value]
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.value)
+        return f"{GlobalCmd.base_cmd()} {LogUtils.pretty_cmd_str(self.value)}"
 
 
 @dataclass(slots=True)
@@ -293,39 +288,19 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        if AppState.changes_enabled() is True:
-            base_cmd = GlobalCmd.live_run.value
-        else:
-            base_cmd = GlobalCmd.dry_run.value
-        if (
-            write_cmd
-            in (
-                WriteCmd.add_dry,
-                WriteCmd.add_live,
-                WriteCmd.apply_dry,
-                WriteCmd.apply_live,
-                WriteCmd.destroy_dry,
-                WriteCmd.destroy_live,
-                WriteCmd.forget_dry,
-                WriteCmd.forget_live,
-                WriteCmd.re_add_dry,
-                WriteCmd.re_add_live,
-            )
-            and path_arg is not None
-        ):
-            command: list[str] = write_cmd.value + [str(path_arg)]
-        elif write_cmd == WriteCmd.init_new:
-            command: list[str] = base_cmd + write_cmd.value
+        if write_cmd == WriteCmd.init_new:
+            command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
         elif (
-            write_cmd
-            in (
-                WriteCmd.init_guess_https,
-                WriteCmd.init_guess_ssh,
-                WriteCmd.init_no_guess,
-            )
-            and init_arg is not None
+            path_arg is not None
+            and WriteVerb.init.value not in write_cmd.value
         ):
-            command: list[str] = base_cmd + write_cmd.value + [init_arg]
+            command: list[str] = (
+                GlobalCmd.base_cmd() + write_cmd.value + [str(path_arg)]
+            )
+        elif init_arg is not None and WriteVerb.init.value in write_cmd.value:
+            command: list[str] = (
+                GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
+            )
         else:
             raise ValueError("Invalid arguments for perform()")
 
@@ -341,17 +316,11 @@ class ChezmoiCommand:
             write_cmd=write_cmd,
         )
         self._log_in_app_and_operate_log(command_result)
-        # if write_cmd == WriteCmd.add_live:
-        #     self.update_managed_paths()
-        # elif (
-        #     write_cmd in (WriteCmd.apply_live, WriteCmd.re_add_live)
-        #     and path_arg is not None
-        # ):
-        #     self.update_status_paths()
-        # elif (
-        #     write_cmd in (WriteCmd.destroy_live, WriteCmd.forget_live)
-        #     and path_arg is not None
-        # ):
-        #     self.update_status_paths()
-        #     self.update_managed_paths()
+        if write_cmd == WriteCmd.add:
+            self.update_managed_paths()
+        elif write_cmd in (WriteCmd.apply, WriteCmd.re_add):
+            self.update_status_paths()
+        elif write_cmd in (WriteCmd.destroy, WriteCmd.forget):
+            self.update_status_paths()
+            self.update_managed_paths()
         return command_result

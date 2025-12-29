@@ -19,9 +19,6 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
-    OpBtnEnum,
-    OpBtnLabels,
-    OperateStrings,
     TabName,
     Tcss,
 )
@@ -177,29 +174,29 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
 
-    def run_operate_command(
-        self, *, ids: "AppIds", btn_enum: OpBtnEnum
-    ) -> None:
-        tab_widget = self.screen.query_one(ids.tab_qid)
-        if ids.canvas_name == TabName.apply:
-            tab_widget = cast(ApplyTab, tab_widget)
-        elif ids.canvas_name == TabName.re_add:
-            tab_widget = cast(ReAddTab, tab_widget)
-        elif ids.canvas_name == TabName.add:
-            tab_widget = cast(AddTab, tab_widget)
-        else:
-            raise ValueError(
-                f"write_pre_operate_info called on unsupported tab: "
-                f"{ids.canvas_name}"
-            )
-        if tab_widget.current_node is None:
-            raise ValueError("current_node is None in run_operate_command")
-        operate_result = self.cmd.perform(
-            btn_enum.write_cmd, path_arg=tab_widget.current_node.path
-        )
-        if operate_result.dry_run is False:
-            close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
-            close_btn.label = OpBtnLabels.reload
+    # def run_operate_command(
+    #     self, *, ids: "AppIds", btn_enum: OpBtnEnum
+    # ) -> None:
+    #     tab_widget = self.screen.query_one(ids.tab_qid)
+    #     if ids.canvas_name == TabName.apply:
+    #         tab_widget = cast(ApplyTab, tab_widget)
+    #     elif ids.canvas_name == TabName.re_add:
+    #         tab_widget = cast(ReAddTab, tab_widget)
+    #     elif ids.canvas_name == TabName.add:
+    #         tab_widget = cast(AddTab, tab_widget)
+    #     else:
+    #         raise ValueError(
+    #             f"write_pre_operate_info called on unsupported tab: "
+    #             f"{ids.canvas_name}"
+    #         )
+    #     if tab_widget.current_node is None:
+    #         raise ValueError("current_node is None in run_operate_command")
+    #     operate_result = self.cmd.perform(
+    #         btn_enum.full_cmd, path_arg=tab_widget.current_node.path
+    #     )
+    #     if operate_result.dry_run is False:
+    #         close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
+    #         close_btn.label = OpBtnLabels.reload
 
     def operate_display(self, *, ids: AppIds) -> None:
         main_tabs = self.screen.query_exactly_one(Tabs)
@@ -263,41 +260,41 @@ class ChezmoiGUI(App[None]):
             False if switch_slider.display is True else True
         )
 
-    def write_pre_operate_info(self, *, ids: AppIds) -> None:
-        if self.current_op_btn_msg is None:
-            raise ValueError(
-                "current_op_review_msg is None in write_pre_operate_info"
-            )
-        lines_to_write: list[str] = []
-        tab_widget = self.screen.query_one(ids.tab_qid)
-        if ids.canvas_name == TabName.apply:
-            tab_widget = cast(ApplyTab, tab_widget)
-        elif ids.canvas_name == TabName.re_add:
-            tab_widget = cast(ReAddTab, tab_widget)
-        else:
-            raise ValueError(
-                f"write_pre_operate_info called on unsupported tab: "
-                f"{ids.canvas_name}"
-            )
-        if tab_widget.current_node is None:
-            raise ValueError("current_node is None in write_pre_operate_info")
-        lines_to_write.append(
-            f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]"
-            f"{self.current_op_btn_msg.btn_enum.write_cmd.pretty_cmd} "
-            f"{tab_widget.current_node.path}[/]"
-        )
-        if self.changes_enabled is True:
-            if self.splash_data is None:
-                raise ValueError(
-                    "splash_data is None in write_pre_operate_info"
-                )
-            if self.splash_data.parsed_config.git_autocommit is True:
-                lines_to_write.append(OperateStrings.auto_commit)
-            if self.splash_data.parsed_config.git_autopush is True:
-                lines_to_write.append(OperateStrings.auto_push)
-        operate_info = self.screen.query_one(ids.static.operate_info_q, Static)
-        operate_info.update("\n".join(lines_to_write))
+    # def write_pre_operate_info(self, *, ids: AppIds) -> None:
+    #     if self.current_op_btn_msg is None:
+    #         raise ValueError(
+    #             "current_op_review_msg is None in write_pre_operate_info"
+    #         )
+    #     lines_to_write: list[str] = []
+    #     tab_widget = self.screen.query_one(ids.tab_qid)
+    #     if ids.canvas_name == TabName.apply:
+    #         tab_widget = cast(ApplyTab, tab_widget)
+    #     elif ids.canvas_name == TabName.re_add:
+    #         tab_widget = cast(ReAddTab, tab_widget)
+    #     else:
+    #         raise ValueError(
+    #             f"write_pre_operate_info called on unsupported tab: "
+    #             f"{ids.canvas_name}"
+    #         )
+    #     if tab_widget.current_node is None:
+    #         raise ValueError("current_node is None in write_pre_operate_info")
+    #     lines_to_write.append(
+    #         f"{OperateStrings.ready_to_run}"
+    #         f"[$text-warning]"
+    #         f"{self.current_op_btn_msg.btn_enum.write_cmd.pretty_cmd} "
+    #         f"{tab_widget.current_node.path}[/]"
+    #     )
+    #     if self.changes_enabled is True:
+    #         if self.splash_data is None:
+    #             raise ValueError(
+    #                 "splash_data is None in write_pre_operate_info"
+    #             )
+    #         if self.splash_data.parsed_config.git_autocommit is True:
+    #             lines_to_write.append(OperateStrings.auto_commit)
+    #         if self.splash_data.parsed_config.git_autopush is True:
+    #             lines_to_write.append(OperateStrings.auto_push)
+    #     operate_info = self.screen.query_one(ids.static.operate_info_q, Static)
+    #     operate_info.update("\n".join(lines_to_write))
 
     def get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
@@ -345,21 +342,21 @@ class ChezmoiGUI(App[None]):
             return
         close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
         close_btn.display = True
-        if msg.pressed_label in (
-            OpBtnLabels.add_run,
-            OpBtnLabels.apply_run,
-            OpBtnLabels.re_add_run,
-        ):
-            self.run_operate_command(ids=msg.ids, btn_enum=msg.btn_enum)
-            return
-        if msg.pressed_label in (
-            OpBtnLabels.add_review,
-            OpBtnLabels.apply_review,
-            OpBtnLabels.re_add_review,
-        ):
-            self.write_pre_operate_info(ids=msg.ids)
-            self.operate_display(ids=msg.ids)
-            self.operate_mode = True
+        # if msg.pressed_label in (
+        #     OpBtnLabels.add_run,
+        #     OpBtnLabels.apply_run,
+        #     OpBtnLabels.re_add_run,
+        # ):
+        #     self.run_operate_command(ids=msg.ids, btn_enum=msg.btn_enum)
+        #     return
+        # if msg.pressed_label in (
+        #     OpBtnLabels.add_review,
+        #     OpBtnLabels.apply_review,
+        #     OpBtnLabels.re_add_review,
+        # ):
+        #     self.write_pre_operate_info(ids=msg.ids)
+        #     self.operate_display(ids=msg.ids)
+        #     self.operate_mode = True
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
@@ -423,24 +420,24 @@ class ChezmoiGUI(App[None]):
         AppState.set_changes_enabled(not self.changes_enabled)
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
-        if isinstance(self.screen, MainScreen):
-            if self.operating_mode is False:
-                return
-            active_tab = self.screen.query_exactly_one(TabbedContent).active
-            if active_tab == TabName.add:
-                self.write_pre_operate_info(ids=IDS.add)
-            elif active_tab == TabName.apply:
-                self.write_pre_operate_info(ids=IDS.apply)
-            elif active_tab == TabName.re_add:
-                self.write_pre_operate_info(ids=IDS.re_add)
-            else:
-                raise ValueError(
-                    f"action_toggle_dry_run called on {active_tab} tab"
-                )
-        if isinstance(self.screen, InitChezmoi):
-            return
-        else:
-            raise ValueError(f"action_toggle_dry_run in {self.screen.name}")
+        # if isinstance(self.screen, MainScreen):
+        #     if self.operating_mode is False:
+        #         return
+        #     active_tab = self.screen.query_exactly_one(TabbedContent).active
+        #     if active_tab == TabName.add:
+        #         self.write_pre_operate_info(ids=IDS.add)
+        #     elif active_tab == TabName.apply:
+        #         self.write_pre_operate_info(ids=IDS.apply)
+        #     elif active_tab == TabName.re_add:
+        #         self.write_pre_operate_info(ids=IDS.re_add)
+        #     else:
+        #         raise ValueError(
+        #             f"action_toggle_dry_run called on {active_tab} tab"
+        #         )
+        # if isinstance(self.screen, InitChezmoi):
+        #     return
+        # else:
+        #     raise ValueError(f"action_toggle_dry_run in {self.screen.name}")
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
