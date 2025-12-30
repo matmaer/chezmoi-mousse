@@ -25,6 +25,7 @@ from chezmoi_mousse import (
     LinkBtn,
     OpBtnEnum,
     OpBtnLabels,
+    OperateStrings,
     SectionLabels,
     Switches,
     Tcss,
@@ -546,7 +547,7 @@ class InitChezmoi(Screen[None], AppType):
         lines_to_write: list[str] = []
         if self.query_exactly_one(Switch).value is False:
             lines_to_write.append(
-                "Ready to run [$text-success] chezmoi "
+                f"{OperateStrings.ready_to_run} "
                 f"{WriteCmd.init_new.pretty_cmd}[/]"
             )
             self.operate_info.update("\n".join(lines_to_write))
@@ -562,7 +563,7 @@ class InitChezmoi(Screen[None], AppType):
             if self.init_clone_data.valid_arg is True:
                 lines_to_write.append(
                     (
-                        '[$text-success]Ready to run "chezmoi '
+                        f"{OperateStrings.ready_to_run} "
                         f"{WriteCmd.init_no_guess.pretty_cmd} "
                         f'{self.init_clone_data.init_arg}"[/]'
                     )
@@ -579,15 +580,15 @@ class InitChezmoi(Screen[None], AppType):
             if self.init_clone_data.valid_arg is True:
                 lines_to_write.append(
                     (
-                        '[$text-success]Ready to run "chezmoi '
+                        f"{OperateStrings.ready_to_run} "
                         f"{self.init_clone_data.init_cmd.pretty_cmd} "
                         f"{self.init_clone_data.init_arg}[/]"
                     )
                 )
             elif self.init_clone_data.valid_arg is False:
                 lines_to_write.append(
-                    f"[$text-error]{self.init_clone_data.init_cmd.pretty_cmd} "
-                    ": invalid guess https input."
+                    f"{self.init_clone_data.init_cmd.pretty_cmd} [$text-error]"
+                    ": invalid guess https input.[/]"
                 )
         elif (
             self.init_clone_data is not None
@@ -596,15 +597,15 @@ class InitChezmoi(Screen[None], AppType):
             if self.init_clone_data.valid_arg is True:
                 lines_to_write.append(
                     (
-                        '[$text-success]Ready to run "chezmoi '
+                        f"{OperateStrings.ready_to_run} "
                         f"{self.init_clone_data.init_cmd.pretty_cmd} "
                         f"{self.init_clone_data.init_arg}[/]"
                     )
                 )
             elif self.init_clone_data.valid_arg is False:
                 lines_to_write.append(
-                    f"[$text-error]{self.init_clone_data.init_cmd.pretty_cmd} "
-                    ": invalid guess ssh input."
+                    f"{self.init_clone_data.init_cmd.pretty_cmd} [$text-error]"
+                    ": invalid guess ssh input.[/]"
                 )
         self.operate_info.update("\n".join(lines_to_write))
 
