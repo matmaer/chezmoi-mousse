@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "CloseButton",
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",
@@ -37,20 +38,30 @@ __all__ = [
 ]
 
 
-class SwitchWithLabel(HorizontalGroup):
-
-    def __init__(self, *, ids: "AppIds", switch_enum: "Switches") -> None:
-        self.ids = ids
-        self.switch_enum = switch_enum
+class CloseButton(Button, AppType):
+    def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(
-            id=self.ids.switch_horizontal_id(switch=self.switch_enum)
+            id=ids.close, classes=Tcss.operate_button, label=OpBtnLabels.cancel
         )
+        self.ids = ids
 
-    def compose(self) -> ComposeResult:
-        yield Switch(id=self.ids.switch_id(switch=self.switch_enum))
-        yield Label(self.switch_enum.label).with_tooltip(
-            tooltip=self.switch_enum.enabled_tooltip
-        )
+    def on_mount(self) -> None:
+        self.display = False
+        if self.ids.close == IDS.init.close:
+            self.label = OpBtnLabels.exit_app
+            self.display = True
+
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
+    def handle_pressed(self, event: Button.Pressed) -> None:
+        if not isinstance(event.button, CloseButton):
+            raise TypeError("event.button is not a CloseButton")
+        event.stop()  # We post our own message.
+        if event.button.label == OpBtnLabels.exit_app:
+            self.app.exit()
+            return
+        if event.button.label == OpBtnLabels.reload:
+            self.label = OpBtnLabels.cancel
+        self.post_message(CloseButtonMsg(button=event.button, ids=self.ids))
 
 
 class FlatButton(Button):
@@ -104,60 +115,13 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class CloseButton(Button, AppType):
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(
-            id=self.ids.close,
-            classes=Tcss.operate_button,
-            label=OpBtnLabels.cancel,
-        )
-
-    def on_mount(self) -> None:
-        self.display = False
-        if self.ids.close == IDS.init.close:
-            self.label = OpBtnLabels.exit_app
-            self.display = True
-
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_pressed(self, event: Button.Pressed) -> None:
-        event.stop()  # We post our own message.
-        if event.button.label == OpBtnLabels.exit_app:
-            self.app.exit()
-            return
-        self.display = False
-        if event.button.label == OpBtnLabels.reload:
-            self.label = OpBtnLabels.cancel
-        self.post_message(
-            CloseButtonMsg(
-                canvas_name=self.ids.canvas_name,
-                ids=self.ids,
-                tab_qid=self.ids.tab_qid,
-                pressed_label=str(event.button.label),
-            )
-        )
-
-
 class OpButton(Button, AppType):
 
     def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum) -> None:
-        self.btn_enum = btn_enum
         super().__init__(
-            classes=Tcss.operate_button, id=btn_id, label=self.btn_enum.label
+            classes=Tcss.operate_button, id=btn_id, label=btn_enum.label
         )
-
-    def on_mount(self) -> None:
-        if self.btn_enum in (
-            OpBtnEnum.init,
-            OpBtnEnum.add,
-            OpBtnEnum.apply,
-            OpBtnEnum.re_add,
-            OpBtnEnum.forget,
-            OpBtnEnum.destroy,
-        ):
-            self.display = True
-        else:  # OpBtnEnum.exit, do not display on startup
-            self.display = False
+        self.btn_enum = btn_enum
 
 
 class OperateButtons(HorizontalGroup):
@@ -194,79 +158,64 @@ class OperateButtons(HorizontalGroup):
     def handle_operate_button_pressed(self, event: OpButton.Pressed) -> None:
         event.stop()  # We post our own message.
         if not isinstance(event.button, OpButton):
-            return
-
-        if event.button.btn_enum == OpBtnEnum.init:
-            self.toggle_button_label(
-                event.button, OpBtnLabels.init_review, OpBtnLabels.init_run
-            )
-
-        elif event.button.btn_enum == OpBtnEnum.add:
-            self.toggle_button_label(
-                event.button, OpBtnLabels.add_review, OpBtnLabels.add_run
-            )
-
-        elif event.button.btn_enum == OpBtnEnum.apply:
-            if event.button.label == OpBtnLabels.apply_review:
-                self.query_one(self.ids.op_btn.forget_q).display = False
-                self.query_one(self.ids.op_btn.destroy_q).display = False
-            self.toggle_button_label(
-                event.button, OpBtnLabels.apply_review, OpBtnLabels.apply_run
-            )
-
-        elif event.button.btn_enum == OpBtnEnum.destroy:
-            if event.button.label == OpBtnLabels.destroy_review:
-                if self.ids.canvas_name == TabName.apply:
-                    self.query_one(self.ids.op_btn.apply_q).display = False
-                elif self.ids.canvas_name == TabName.re_add:
-                    self.query_one(self.ids.op_btn.re_add_q).display = False
-                self.query_one(self.ids.op_btn.forget_q).display = False
-            self.toggle_button_label(
-                event.button,
-                OpBtnLabels.destroy_review,
-                OpBtnLabels.destroy_run,
-            )
-
-        elif event.button.btn_enum == OpBtnEnum.forget:
-            if event.button.label == OpBtnLabels.forget_review:
-                if self.ids.canvas_name == TabName.apply:
-                    self.query_one(self.ids.op_btn.apply_q).display = False
-                elif self.ids.canvas_name == TabName.re_add:
-                    self.query_one(self.ids.op_btn.re_add_q).display = False
-                self.query_one(self.ids.op_btn.destroy_q).display = False
-            self.toggle_button_label(
-                event.button, OpBtnLabels.forget_review, OpBtnLabels.forget_run
-            )
-
-        elif event.button.btn_enum == OpBtnEnum.re_add:
-            if event.button.label == OpBtnLabels.re_add_review:
-                self.query_one(self.ids.op_btn.forget_q).display = False
-                self.query_one(self.ids.op_btn.destroy_q).display = False
-            self.toggle_button_label(
-                event.button, OpBtnLabels.re_add_review, OpBtnLabels.re_add_run
-            )
-
-        button_qid = f"#{event.button.id}"
-        button = self.query_one(button_qid, Button)
-        btn_enum: OpBtnEnum = getattr(button, "btn_enum")
+            raise TypeError("event.button is not an OpButton")
+        pressed_label = str(event.button.label)
         self.post_message(
             OperateButtonMsg(
-                btn_enum=btn_enum,
-                btn_qid=button_qid,
-                canvas_name=self.ids.canvas_name,
-                ids=self.ids,
-                pressed_label=str(event.button.label),
+                button=event.button, ids=self.ids, pressed_label=pressed_label
             )
         )
 
-    def toggle_button_label(
-        self, button: Button, review_label: str, run_label: str
-    ) -> None:
-        if button.label == review_label:
-            button.label = run_label
-        elif button.label == run_label:
-            button.disabled = True
-            button.label = review_label
+        self.visible = False
+        if event.button.label == OpBtnLabels.init_review:
+            event.button.label = OpBtnLabels.init_run
+
+        elif event.button.label == OpBtnLabels.add_review:
+            event.button.label = OpBtnLabels.add_run
+
+        elif event.button.label == OpBtnLabels.apply_review:
+            self.query_one(self.ids.op_btn.forget_q).display = False
+            self.query_one(self.ids.op_btn.destroy_q).display = False
+            event.button.label = OpBtnLabels.apply_run
+
+        elif event.button.label == OpBtnLabels.destroy_review:
+            self.query_one(self.ids.op_btn.forget_q).display = False
+            if self.ids.canvas_name == TabName.apply:
+                self.query_one(self.ids.op_btn.apply_q).display = False
+            elif self.ids.canvas_name == TabName.re_add:
+                self.query_one(self.ids.op_btn.re_add_q).display = False
+            event.button.label = OpBtnLabels.destroy_run
+
+        elif event.button.label == OpBtnLabels.forget_review:
+            self.query_one(self.ids.op_btn.destroy_q).display = False
+            if self.ids.canvas_name == TabName.apply:
+                self.query_one(self.ids.op_btn.apply_q).display = False
+            elif self.ids.canvas_name == TabName.re_add:
+                self.query_one(self.ids.op_btn.re_add_q).display = False
+            event.button.label = OpBtnLabels.forget_run
+
+        elif event.button.label == OpBtnLabels.re_add_review:
+            self.query_one(self.ids.op_btn.forget_q).display = False
+            self.query_one(self.ids.op_btn.destroy_q).display = False
+            event.button.label = OpBtnLabels.re_add_run
+
+        self.visible = True
+
+
+class SwitchWithLabel(HorizontalGroup):
+
+    def __init__(self, *, ids: "AppIds", switch_enum: "Switches") -> None:
+        self.ids = ids
+        self.switch_enum = switch_enum
+        super().__init__(
+            id=self.ids.switch_horizontal_id(switch=self.switch_enum)
+        )
+
+    def compose(self) -> ComposeResult:
+        yield Switch(id=self.ids.switch_id(switch=self.switch_enum))
+        yield Label(self.switch_enum.label).with_tooltip(
+            tooltip=self.switch_enum.enabled_tooltip
+        )
 
 
 class TabButtonsBase(Horizontal):

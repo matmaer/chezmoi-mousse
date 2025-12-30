@@ -66,7 +66,6 @@
   border-title-align: center;
   border: round $foreground;
   padding: 0 1;
-  text-align: center;
   &.operate_error {
     border-subtitle-align: right;
     border-title-align: left;
@@ -78,6 +77,9 @@
     border-title-align: left;
     border: round $success;
     text-align: left;
+  }
+  & Static {
+    text-align: center
   }
 }
 

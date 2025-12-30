@@ -159,6 +159,8 @@ class ContainerIds:
             name=ContainerName.operate_buttons
         )
         self.operate_buttons_q = f"#{self.operate_buttons}"
+        self.operate_info = ids.container_id(name=ContainerName.operate_info)
+        self.operate_info_q = f"#{self.operate_info}"
         self.post_operate = ids.container_id(name=ContainerName.post_operate)
         self.post_operate_q = f"#{self.post_operate}"
         self.pre_operate = ids.container_id(name=ContainerName.pre_operate)
@@ -411,8 +413,10 @@ class StaticIds:
         self.git_log_info_q = f"#{self.git_log_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)
         self.init_info_q = f"#{self.init_info}"
-        self.operate_info = ids.static_id(static=StaticName.operate_info)
-        self.operate_info_q = f"#{self.operate_info}"
+        self.operate_info_cmd = ids.static_id(
+            static=StaticName.operate_info_cmd
+        )
+        self.operate_info_cmd_q = f"#{self.operate_info_cmd}"
 
 
 class TabButtonIds:

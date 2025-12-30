@@ -6,7 +6,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import DirectoryTree, Static, Switch
+from textual.widgets import DirectoryTree, Switch
 
 from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
 from chezmoi_mousse.shared import OperateButtons, OperateInfo
@@ -249,8 +249,9 @@ class AddTab(TabsBase, AppType):
         yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
-        operate_info = self.query_one(IDS.add.static.operate_info_q, Static)
-        operate_info.display = False
+        self.operate_info = self.query_one(
+            IDS.add.container.operate_info_q, OperateInfo
+        )
         if self.destDir is not None:
             self.mount(
                 Horizontal(
@@ -291,6 +292,7 @@ class AddTab(TabsBase, AppType):
             path_kind=path_kind,
         )
         contents_view.node_data = self.current_node
+        self.operate_info.path_arg = str(self.current_node.path)
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

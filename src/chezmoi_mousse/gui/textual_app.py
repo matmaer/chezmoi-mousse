@@ -10,7 +10,7 @@ from textual.app import App
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import Button, TabbedContent, Tabs
+from textual.widgets import TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
@@ -20,17 +20,17 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
-    OpBtnLabels,
-    OperateInfoData,
     TabName,
     Tcss,
 )
 from chezmoi_mousse.shared import (
+    CloseButton,
     CloseButtonMsg,
     CustomHeader,
     FlatButtonsVertical,
     LogsTabButtons,
     OperateButtonMsg,
+    OperateButtons,
     OperateInfo,
     ViewTabButtons,
 )
@@ -48,7 +48,6 @@ if TYPE_CHECKING:
         ChezmoiCommand,
         ChezmoiPaths,
         CommandResult,
-        NodeData,
         SplashData,
     )
 
@@ -134,10 +133,6 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
-        self.current_op_btn_msg: OperateButtonMsg | None = None
-        self.current_add_node: "NodeData | None" = None
-        self.current_apply_node: "NodeData | None" = None
-        self.current_re_add_node: "NodeData | None" = None
 
         # Disable Maxdmize/Minimize and Show/Hide Filters bindings when
         # in operate mode in the MainScreen
@@ -148,13 +143,14 @@ class ChezmoiGUI(App[None]):
         self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
 
-        self.git_autocommit: bool | None = None
-        self.git_autopush: bool | None = None
-
         # Arbitrary max file size used by FilteredDirTree and ContentsView but
         # should be reasonable truncate for files to be considered as dotfiles.
         # TODO: make this configurable
         self.max_file_size: int = 500 * 1024  # 500 KiB
+
+        self.git_auto_commit: bool = False
+        self.git_auto_add: bool = False
+        self.git_auto_push: bool = False
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
@@ -173,6 +169,9 @@ class ChezmoiGUI(App[None]):
         if self.init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
+        self.git_auto_add = self.splash_data.parsed_config.git_autoadd
+        self.git_auto_commit = self.splash_data.parsed_config.git_autocommit
+        self.git_auto_push = self.splash_data.parsed_config.git_autopush
         self.push_screen(MainScreen())
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:
@@ -191,6 +190,9 @@ class ChezmoiGUI(App[None]):
             view_switcher_buttons.display = (
                 False if view_switcher_buttons.display is True else True
             )
+        elif ids.canvas_name == TabName.add:
+            left_side = self.screen.query_exactly_one(FilteredDirTree)
+            left_side.display = False if left_side.display is True else True
         switch_slider = self.screen.query_one(
             ids.container.switch_slider_q, SwitchSlider
         )
@@ -223,54 +225,42 @@ class ChezmoiGUI(App[None]):
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
-        if not isinstance(self.screen, MainScreen) or msg.canvas_name not in (
-            TabName.add,
-            TabName.apply,
-            TabName.re_add,
-        ):
+        if not isinstance(self.screen, MainScreen):
+            self.notify(
+                f"Operate button not yet implemented for button "
+                f"{msg.button.label} in {msg.ids.canvas_name}.",
+                severity="error",
+            )
             return
-        if msg.btn_enum.label in (
-            OpBtnLabels.add_review,
-            OpBtnLabels.apply_review,
-            OpBtnLabels.re_add_review,
-        ):
-            self.operating_mode = True
-            close_btn = self.screen.query_one(msg.ids.close_q, Button)
-            close_btn.display = True
-            operate_info = self.screen.query_one(
-                msg.ids.static.operate_info_q, OperateInfo
-            )
-            operate_info.operate_info_data = OperateInfoData(
-                btn_enum=msg.btn_enum
-            )
+        if "Review" in msg.pressed_label:
             self.toggle_operate_display(ids=msg.ids)
-
-        self.current_op_btn_msg = msg
-
-        # if msg.pressed_label in (
-        #     OpBtnLabels.add_run,
-        #     OpBtnLabels.apply_run,
-        #     OpBtnLabels.re_add_run,
-        # ):
-        #     self.run_operate_command(ids=msg.ids, btn_enum=msg.btn_enum)
-        #     return
-        # if msg.pressed_label in (
-        #     OpBtnLabels.add_review,
-        #     OpBtnLabels.apply_review,
-        #     OpBtnLabels.re_add_review,
-        # ):
-        #     self.write_pre_operate_info(ids=msg.ids)
-        #     self.operate_display(ids=msg.ids)
-        #     self.operate_mode = True
+            self.operating_mode = True
+            operate_info = self.screen.query_one(
+                msg.ids.container.operate_info_q, OperateInfo
+            )
+            operate_info.op_btn_enum = msg.button.btn_enum
+            operate_info.display = True
+            close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
+            close_btn.display = True
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
+        self.operating_mode = False
         operate_info = self.screen.query_one(
-            msg.ids.static.operate_info_q, OperateInfo
+            msg.ids.container.operate_info_q, OperateInfo
         )
-        operate_info.remove_class(Tcss.operate_success)
-        operate_info.remove_class(Tcss.operate_error)
+        operate_info.remove_class(Tcss.operate_success, Tcss.operate_error)
         operate_info.display = False
+        self.toggle_operate_display(ids=msg.ids)
+        operate_buttons = self.screen.query_one(
+            msg.ids.container.operate_buttons_q, OperateButtons
+        )
+        operate_buttons.visible = False
+        msg.button.display = False
+        operate_buttons.refresh(recompose=True)
+        operate_buttons.visible = True
+        if "reload" in str(msg.button.label):
+            self.notify("Reloading to be implemented.", severity="error")
 
     ##################
     # Action Methods #
@@ -490,9 +480,7 @@ class ChezmoiGUI(App[None]):
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
         elif action == BindingAction.exit_screen:
-            if isinstance(
-                self.screen, (InstallHelpScreen, MainScreen, SplashScreen)
-            ):
+            if isinstance(self.screen, (InstallHelpScreen, MainScreen)):
                 return False
             elif isinstance(self.screen, InitChezmoi):
                 if self.init_cmd_result is None:

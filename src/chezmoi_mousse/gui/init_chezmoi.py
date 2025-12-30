@@ -491,9 +491,9 @@ class InitChezmoi(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
-        yield Static(
-            id=self.ids.static.operate_info, classes=Tcss.operate_info
-        )
+        # yield Static(
+        #     id=self.ids.static.operate_info, classes=Tcss.operate_info
+        # )
         yield VerticalGroup(
             HorizontalGroup(
                 Label(
@@ -533,10 +533,10 @@ class InitChezmoi(Screen[None], AppType):
         )
         self.post_op_container.display = False
         self.init_info = self.query_one(self.ids.static.init_info_q, Static)
-        self.operate_info = self.query_one(
-            self.ids.static.operate_info_q, Static
-        )
-        self.operate_info.border_title = OpBtnLabels.init_run
+        # self.operate_info = self.query_one(
+        #     self.ids.static.operate_info_q, Static
+        # )
+        # self.operate_info.border_title = OpBtnLabels.init_run
         self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
@@ -545,13 +545,13 @@ class InitChezmoi(Screen[None], AppType):
         self.update_init_info()
 
         lines_to_write: list[str] = []
-        if self.query_exactly_one(Switch).value is False:
-            lines_to_write.append(
-                f"{OperateStrings.ready_to_run} "
-                f"{WriteCmd.init_new.pretty_cmd}[/]"
-            )
-            self.operate_info.update("\n".join(lines_to_write))
-            return
+        # if self.query_exactly_one(Switch).value is False:
+        #     lines_to_write.append(
+        #         f"{OperateStrings.ready_to_run} "
+        #         f"{WriteCmd.init_new.pretty_cmd}[/]"
+        #     )
+        #     self.operate_info.update("\n".join(lines_to_write))
+        #     return
         if self.init_clone_data is None:
             lines_to_write.append(
                 "[$text-error]No init clone input provided yet."
@@ -607,7 +607,7 @@ class InitChezmoi(Screen[None], AppType):
                     f"{self.init_clone_data.init_cmd.pretty_cmd} [$text-error]"
                     ": invalid guess ssh input.[/]"
                 )
-        self.operate_info.update("\n".join(lines_to_write))
+        # self.operate_info.update("\n".join(lines_to_write))
 
     def update_init_info(self) -> None:
         if self.query_exactly_one(Switch).value is False:
@@ -655,11 +655,11 @@ class InitChezmoi(Screen[None], AppType):
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
         msg.stop()
-        if msg.btn_enum == OpBtnEnum.init:
+        if msg.button.btn_enum == OpBtnEnum.init:
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
             self.run_operate_command()
-        elif msg.pressed_label == OpBtnLabels.reload:
+        elif msg.button.label == OpBtnLabels.reload:
             self.dismiss()
 
     @on(InitCloneCmdMsg)

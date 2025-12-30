@@ -4,14 +4,9 @@ from textual.message import Message
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import (
-        AppIds,
-        InitCloneData,
-        NodeData,
-        OpBtnEnum,
-        ScreenName,
-        TabName,
-    )
+    from chezmoi_mousse import AppIds, InitCloneData, NodeData
+
+    from ._actionables import CloseButton, OpButton
 
 __all__ = [
     "CloseButtonMsg",
@@ -23,18 +18,9 @@ __all__ = [
 
 
 class CloseButtonMsg(Message):
-    def __init__(
-        self,
-        *,
-        canvas_name: "TabName|ScreenName",
-        ids: "AppIds",
-        pressed_label: str,
-        tab_qid: str,
-    ) -> None:
-        self.canvas_name = canvas_name
+    def __init__(self, *, button: "CloseButton", ids: "AppIds") -> None:
+        self.button = button
         self.ids = ids
-        self.pressed_label = pressed_label
-        self.tab_qid = tab_qid
         super().__init__()
 
 
@@ -59,17 +45,9 @@ class InitCloneCmdMsg(Message):
 
 class OperateButtonMsg(Message):
     def __init__(
-        self,
-        *,
-        btn_enum: "OpBtnEnum",
-        btn_qid: str,
-        canvas_name: "TabName|ScreenName",
-        ids: "AppIds",
-        pressed_label: str,
+        self, *, button: "OpButton", ids: "AppIds", pressed_label: str
     ) -> None:
-        self.btn_enum = btn_enum
-        self.btn_qid = btn_qid
-        self.canvas_name = canvas_name
+        self.button = button
         self.ids = ids
         self.pressed_label = pressed_label
         super().__init__()

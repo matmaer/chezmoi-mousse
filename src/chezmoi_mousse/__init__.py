@@ -40,7 +40,6 @@ from ._type_checking import (
     DiffData,
     InitCloneData,
     NodeData,
-    OperateInfoData,
     ParsedConfig,
     SplashData,
 )
@@ -56,7 +55,6 @@ __all__ = [
     "InitCloneData",
     "OpBtnLabels",
     "OpBtnEnum",
-    "OperateInfoData",
     "OperateStrings",
     # _chezmoi.py
     "ChezmoiCommand",

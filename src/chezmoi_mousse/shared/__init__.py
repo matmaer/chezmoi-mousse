@@ -1,6 +1,7 @@
 """Contains subclassed textual classes shared across the application."""
 
 from ._actionables import (
+    CloseButton,
     FlatButton,
     FlatButtonsVertical,
     FlatLink,
@@ -26,12 +27,13 @@ from ._messages import (
     InitCloneCmdMsg,
     OperateButtonMsg,
 )
-from ._operate_mode import OperateInfo
+from ._operate_info import OperateInfo
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader, HeaderTitle
 
 __all__ = [
     # Buttons, Links and Switches
+    "CloseButton",
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",

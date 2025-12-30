@@ -27,6 +27,7 @@ class ContainerName(StrEnum):
     git_log_path = auto()
     left_side = auto()
     operate_buttons = auto()
+    operate_info = auto()
     post_operate = auto()
     pre_operate = auto()
     repo_input = auto()
@@ -90,7 +91,7 @@ class StaticName(StrEnum):
     diff_lines = auto()
     git_log_info = auto()
     init_info = auto()
-    operate_info = auto()
+    operate_info_cmd = auto()
 
 
 class TabName(StrEnum):

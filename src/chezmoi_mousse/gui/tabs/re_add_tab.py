@@ -1,9 +1,8 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
-from textual.widgets import Static
 
-from chezmoi_mousse import IDS, AppType, NodeData
+from chezmoi_mousse import IDS, AppType
 from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
     OperateButtons,
@@ -21,7 +20,6 @@ class ReAddTab(TabsBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.re_add)
-        self.current_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
         yield OperateInfo(ids=IDS.re_add)
@@ -33,12 +31,13 @@ class ReAddTab(TabsBase, AppType):
 
     def on_mount(self) -> None:
         self.operate_info = self.query_one(
-            IDS.re_add.static.operate_info_q, Static
+            IDS.re_add.container.operate_info_q, OperateInfo
         )
-        self.operate_info.display = False
 
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(
         self, msg: CurrentReAddNodeMsg
     ) -> None:
+        msg.stop()
         self.update_view_node_data(msg.node_data)
+        self.operate_info.path_arg = str(msg.node_data.path)

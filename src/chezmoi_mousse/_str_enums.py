@@ -98,26 +98,55 @@ class LogStrings(StrEnum):
 
 
 class OperateStrings(StrEnum):
+    add_path_info = (
+        "[dim]Add new targets to the source state. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    apply_path_info = (
+        "[dim]Ensure that the path is in the target state without prompting "
+        "for targets modified since chezmoi last wrote it. If adding a "
+        "directory, it will be recursed in.[/]"
+    )
     auto_commit = (
-        f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: "
+        f"[$text-warning]{Chars.warning_sign} Git auto commit is enabled: "
         "files will also be committed."
         f"{Chars.warning_sign}[/]"
     )
     auto_push = (
-        f"[$text-warning]{Chars.warning_sign} Auto push is enabled: "
+        f"[$text-warning]{Chars.warning_sign} Git auto push is enabled: "
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    destroy_path = (
-        "[$text-error]Permanently remove the path from disk and "
-        " chezmoi. MAKE SURE YOU HAVE A BACKUP![/]"
+    cmd_output_subtitle = "Command Output"
+    destroy_path_info = (
+        "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
+        "SURE YOU HAVE A BACKUP![/]"
     )
-    forget_path = (
-        "[$text-primary]Remove the path from the source state, i.e. stop "
-        "managing them.[/]"
+    destroy_subtitle = (
+        f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[$text-error]{Chars.x_mark}[/]"
+    )
+    error_subtitle = "Operation failed with errors"
+    forget_path_info = (
+        "[dim]Remove from the source state, i.e. stop managing them.[/]"
+    )
+    forget_subtitle = (
+        f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     )
     read_file = "[$success]Path.read()[/]"
-    ready_to_run = "[$text-muted]Ready to run[/]"
+    ready_to_run = "[$text]Ready to run[/]"
+    re_add_path_info = (
+        "[dim]Re-add modified files in the target state, preserving "
+        "any encrypted_ attributes. chezmoi will not overwrite templates, and "
+        "all entries that are not files are ignored. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    re_add_subtitle = (
+        f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
+    )
+    success_subtitle = "Operation completed successfully"
 
 
 class DestDirStrings(StrEnum):

@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ._chezmoi_command import CommandResult, WriteCmd
-from ._operate_button_data import OpBtnEnum
 from ._str_enum_names import PathKind
 
 if TYPE_CHECKING:
@@ -49,14 +48,6 @@ class NodeData:
     # Additional "node status" codes: X (no status but managed)
     status: str
     path_kind: PathKind
-
-
-@dataclass(slots=True)
-class OperateInfoData:
-    btn_enum: OpBtnEnum
-    cmd_result: CommandResult | None = None
-    init_arg: str | None = None
-    path_arg: Path | None = None
 
 
 @dataclass(slots=True)
