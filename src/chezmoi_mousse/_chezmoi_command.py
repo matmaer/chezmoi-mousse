@@ -165,7 +165,10 @@ class WriteCmd(Enum):
 
     @property
     def pretty_cmd(self) -> str:
-        return f"{GlobalCmd.base_cmd()} {LogUtils.pretty_cmd_str(self.value)}"
+        return (
+            f"[$text-success]{GlobalCmd.base_cmd()} "
+            f"{LogUtils.pretty_cmd_str(self.value)}[/]"
+        )
 
 
 @dataclass(slots=True)

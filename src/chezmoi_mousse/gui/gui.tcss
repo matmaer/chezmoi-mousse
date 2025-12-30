@@ -14,7 +14,7 @@
   background-tint: $primary-muted;
   background: $primary-muted;
   border: block $primary-muted;
-  color: $foreground 70%;
+  color: $text-muted;
   width: 100%;
   &:hover {
     color: $foreground;
