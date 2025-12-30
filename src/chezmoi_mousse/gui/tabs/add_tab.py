@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Static, Switch
 
 from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
-from chezmoi_mousse.shared import OperateButtons
+from chezmoi_mousse.shared import OperateButtons, OperateInfo
 
 from .common.contents_view import ContentsView
 from .common.switch_slider import SwitchSlider
@@ -244,7 +244,7 @@ class AddTab(TabsBase, AppType):
         self.current_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield Static(id=IDS.add.static.operate_info, classes=Tcss.operate_info)
+        yield OperateInfo(ids=IDS.add)
         yield SwitchSlider(ids=IDS.add)
         yield OperateButtons(IDS.add)
 

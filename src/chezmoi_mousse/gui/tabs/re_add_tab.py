@@ -3,8 +3,12 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Static
 
-from chezmoi_mousse import IDS, AppType, NodeData, Tcss
-from chezmoi_mousse.shared import CurrentReAddNodeMsg, OperateButtons
+from chezmoi_mousse import IDS, AppType, NodeData
+from chezmoi_mousse.shared import (
+    CurrentReAddNodeMsg,
+    OperateButtons,
+    OperateInfo,
+)
 
 from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
@@ -20,9 +24,7 @@ class ReAddTab(TabsBase, AppType):
         self.current_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield Static(
-            id=IDS.re_add.static.operate_info, classes=Tcss.operate_info
-        )
+        yield OperateInfo(ids=IDS.re_add)
         with Horizontal():
             yield TreeSwitcher(ids=IDS.re_add)
             yield ViewSwitcher(ids=IDS.re_add)
