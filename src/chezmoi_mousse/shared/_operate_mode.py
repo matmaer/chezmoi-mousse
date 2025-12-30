@@ -1,22 +1,17 @@
 from enum import StrEnum
 
 from textual.reactive import reactive
-from textual.widgets import Button, Static
+from textual.widgets import Static
 
 from chezmoi_mousse import (
     AppIds,
     AppType,
     Chars,
-    CommandResult,
     OpBtnEnum,
-    OpBtnLabels,
+    OperateInfoData,
     OperateStrings,
-    TabName,
     Tcss,
 )
-from chezmoi_mousse.gui.tabs.add_tab import AddTab
-from chezmoi_mousse.gui.tabs.apply_tab import ApplyTab
-from chezmoi_mousse.gui.tabs.re_add_tab import ReAddTab
 
 __all__ = ["OperateInfo"]
 
@@ -42,70 +37,40 @@ class InfoBorders(StrEnum):
 
 class OperateInfo(Static, AppType):
 
-    cmd_result: reactive["CommandResult | None"] = reactive(None, init=False)
-    btn_enum: reactive["OpBtnEnum | None"] = reactive(None, init=False)
+    operate_info_data: reactive["OperateInfoData | None"] = reactive(
+        None, init=False
+    )
 
     def __init__(self, *, ids: AppIds) -> None:
         self.ids = ids
-        super().__init__(id=self.ids.static.operate_info)
-
-    def watch_cmd_result(self) -> None:
-        if self.cmd_result is None:
-            return
-        self.border_title = InfoBorders.cmd_output_subtitle
-        if self.cmd_result.exit_code == 0:
-            self.border_subtitle = InfoBorders.success_subtitle
-            self.add_class(Tcss.operate_success)
-            self.update(f"{self.cmd_result.std_out}")
-        else:
-            self.border_subtitle = InfoBorders.error_subtitle
-            self.add_class(Tcss.operate_error)
-            self.update(f"{self.cmd_result.std_err}")
+        super().__init__(
+            id=self.ids.static.operate_info, classes=Tcss.operate_info
+        )
 
     def run_operate_command(self, *, ids: "AppIds") -> None:
-        assert self.btn_enum is not None
-        tab_widget = self.screen.query_one(ids.tab_qid)
-        if ids.canvas_name == TabName.apply:
-            tab_widget = self.query_exactly_one(ApplyTab)
-        elif ids.canvas_name == TabName.re_add:
-            tab_widget = self.query_exactly_one(ReAddTab)
-        elif ids.canvas_name == TabName.add:
-            tab_widget = self.query_exactly_one(AddTab)
-        else:
-            raise ValueError(
-                f"write_pre_operate_info called on unsupported tab: "
-                f"{ids.canvas_name}"
-            )
-        if tab_widget.current_node is None:
-            raise ValueError("current_node is None in run_operate_command")
-        operate_result = self.app.cmd.perform(
-            self.btn_enum.write_cmd, path_arg=tab_widget.current_node.path
+        assert (
+            self.operate_info_data is not None
+            and self.operate_info_data.path_arg is not None
         )
-        if operate_result.dry_run is False:
-            close_btn = tab_widget.query_one(tab_widget.ids.close_q, Button)
-            close_btn.label = OpBtnLabels.reload
+        self.app.cmd.perform(
+            self.operate_info_data.btn_enum.write_cmd,
+            path_arg=self.operate_info_data.path_arg,
+        )
 
     def write_pre_operate_info(self, *, ids: AppIds) -> None:
-        assert self.btn_enum is not None
+        assert (
+            self.operate_info_data is not None
+            and self.operate_info_data.btn_enum is not None
+        )
         lines_to_write: list[str] = []
-        tab_widget = self.screen.query_one(ids.tab_qid)
-        if ids.canvas_name == TabName.apply:
-            tab_widget = self.query_exactly_one(ApplyTab)
-        elif ids.canvas_name == TabName.re_add:
-            tab_widget = self.query_exactly_one(ReAddTab)
-        else:
-            raise ValueError(
-                f"write_pre_operate_info called on unsupported tab: "
-                f"{ids.canvas_name}"
-            )
-        if tab_widget.current_node is None:
-            raise ValueError("current_node is None in write_pre_operate_info")
         lines_to_write.append(
             f"{OperateStrings.ready_to_run}"
-            f"[$text-warning]"
-            f"{self.btn_enum.write_cmd.pretty_cmd} "
-            f"{tab_widget.current_node.path}[/]"
+            f"{self.operate_info_data.btn_enum.write_cmd.pretty_cmd}"
         )
+        if self.operate_info_data.init_arg is not None:
+            lines_to_write.append(f"{self.operate_info_data.init_arg}")
+        elif self.operate_info_data.path_arg is not None:
+            lines_to_write.append(f"{self.operate_info_data.path_arg}")
         if self.app.changes_enabled is True:
             if self.app.splash_data is None:
                 raise ValueError(
@@ -118,18 +83,36 @@ class OperateInfo(Static, AppType):
         operate_info = self.screen.query_one(ids.static.operate_info_q, Static)
         operate_info.update("\n".join(lines_to_write))
 
-    def watch_btn_enum(self) -> None:
-        if self.btn_enum is None:
+    def write_post_operate_info(self) -> None:
+        if (
+            self.operate_info_data is None
+            or self.operate_info_data.cmd_result is None
+        ):
             return
-        if self.btn_enum == OpBtnEnum.add:
+        self.border_title = InfoBorders.cmd_output_subtitle
+        if self.operate_info_data.cmd_result.exit_code == 0:
+            self.border_subtitle = InfoBorders.success_subtitle
+            self.add_class(Tcss.operate_success)
+            self.update(f"{self.operate_info_data.cmd_result.std_out}")
+        else:
+            self.border_subtitle = InfoBorders.error_subtitle
+            self.add_class(Tcss.operate_error)
+            self.update(f"{self.operate_info_data.cmd_result.std_err}")
+
+    def watch_operate_info_data(self) -> None:
+        if self.operate_info_data is None:
+            return
+        if self.operate_info_data.btn_enum == OpBtnEnum.add:
             self.border_subtitle = InfoBorders.add_subtitle
-        elif self.btn_enum == OpBtnEnum.apply:
+        elif self.operate_info_data.btn_enum == OpBtnEnum.apply:
             self.border_subtitle = InfoBorders.apply_subtitle
-        elif self.btn_enum == OpBtnEnum.destroy:
+        elif self.operate_info_data.btn_enum == OpBtnEnum.destroy:
             self.border_subtitle = InfoBorders.destroy_subtitle
-        elif self.btn_enum == OpBtnEnum.forget:
+        elif self.operate_info_data.btn_enum == OpBtnEnum.forget:
             self.border_subtitle = InfoBorders.forget_subtitle
-        elif self.btn_enum == OpBtnEnum.re_add:
+        elif self.operate_info_data.btn_enum == OpBtnEnum.re_add:
             self.border_subtitle = InfoBorders.re_add_subtitle
-        elif self.btn_enum == OpBtnEnum.init:
+        elif self.operate_info_data.btn_enum == OpBtnEnum.init:
             self.border_subtitle = InfoBorders.init_subtitle
+        self.write_pre_operate_info(ids=self.ids)
+        self.visible = True

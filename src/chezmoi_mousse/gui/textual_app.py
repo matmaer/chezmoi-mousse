@@ -10,7 +10,7 @@ from textual.app import App
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import Button, Static, TabbedContent, Tabs
+from textual.widgets import Button, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
@@ -21,6 +21,7 @@ from chezmoi_mousse import (
     Chars,
     ChezmoiCommand,
     OpBtnLabels,
+    OperateInfoData,
     TabName,
     Tcss,
 )
@@ -29,7 +30,6 @@ from chezmoi_mousse.shared import (
     CustomHeader,
     FlatButtonsVertical,
     LogsTabButtons,
-    OpButton,
     OperateButtonMsg,
     OperateInfo,
     ViewTabButtons,
@@ -240,7 +240,9 @@ class ChezmoiGUI(App[None]):
             operate_info = self.screen.query_one(
                 msg.ids.static.operate_info_q, OperateInfo
             )
-            operate_info.btn_enum = msg.btn_enum
+            operate_info.operate_info_data = OperateInfoData(
+                btn_enum=msg.btn_enum
+            )
             self.toggle_operate_display(ids=msg.ids)
 
         self.current_op_btn_msg = msg
@@ -264,16 +266,18 @@ class ChezmoiGUI(App[None]):
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
         operate_info = self.screen.query_one(
-            msg.ids.static.operate_info_q, Static
+            msg.ids.static.operate_info_q, OperateInfo
         )
         operate_info.remove_class(Tcss.operate_success)
         operate_info.remove_class(Tcss.operate_error)
-        operate_tab_widget = self.screen.query_one(msg.ids.tab_qid)
-        op_buttons = operate_tab_widget.query(OpButton)
-        for btn in op_buttons:
-            btn.display = True
+        operate_info.display = False
 
-    def on_tabbed_content_tab_activated(
+    ##################
+    # Action Methods #
+    ##################
+
+    @on(TabbedContent.TabActivated)
+    def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
         if event.tabbed_content.active in (
@@ -283,10 +287,6 @@ class ChezmoiGUI(App[None]):
         ):
             self.update_switch_slider_binding()
             self.refresh_bindings()
-
-    ##################
-    # Action Methods #
-    ##################
 
     def update_binding_description(
         self, binding_action: BindingAction, new_description: str
