@@ -49,6 +49,7 @@ class GlobalCmd(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
+        "--verbose=true",
         "--use-builtin-git=true",
     ]
     live_run = ["chezmoi"] + default_args
