@@ -178,18 +178,19 @@ class ChezmoiGUI(App[None]):
     def toggle_operate_display(self, *, ids: AppIds) -> None:
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = False if main_tabs.display is True else True
-        left_side = self.screen.query_one(
-            ids.container.left_side_q, TreeSwitcher
-        )
-        left_side.display = False if left_side.display is True else True
-        view_switcher_buttons = view_switcher_buttons = self.screen.query_one(
-            IDS.apply.switcher.view_buttons_q, ViewTabButtons
-        )
-        view_switcher_buttons.display = (
-            False if view_switcher_buttons.display is True else True
-        )
-        operate_info = self.screen.query_one(ids.static.operate_info_q, Static)
-        operate_info.display = True if operate_info.display is False else False
+        if ids.canvas_name in (TabName.apply, TabName.re_add):
+            left_side = self.screen.query_one(
+                ids.container.left_side_q, TreeSwitcher
+            )
+            left_side.display = False if left_side.display is True else True
+            view_switcher_buttons = view_switcher_buttons = (
+                self.screen.query_one(
+                    ids.switcher.view_buttons_q, ViewTabButtons
+                )
+            )
+            view_switcher_buttons.display = (
+                False if view_switcher_buttons.display is True else True
+            )
         switch_slider = self.screen.query_one(
             ids.container.switch_slider_q, SwitchSlider
         )
@@ -321,24 +322,6 @@ class ChezmoiGUI(App[None]):
         AppState.set_changes_enabled(not self.changes_enabled)
         reactive_header = self.screen.query_exactly_one(CustomHeader)
         reactive_header.changes_enabled = self.changes_enabled
-        # if isinstance(self.screen, MainScreen):
-        #     if self.operating_mode is False:
-        #         return
-        #     active_tab = self.screen.query_exactly_one(TabbedContent).active
-        #     if active_tab == TabName.add:
-        #         self.write_pre_operate_info(ids=IDS.add)
-        #     elif active_tab == TabName.apply:
-        #         self.write_pre_operate_info(ids=IDS.apply)
-        #     elif active_tab == TabName.re_add:
-        #         self.write_pre_operate_info(ids=IDS.re_add)
-        #     else:
-        #         raise ValueError(
-        #             f"action_toggle_dry_run called on {active_tab} tab"
-        #         )
-        # if isinstance(self.screen, InitChezmoi):
-        #     return
-        # else:
-        #     raise ValueError(f"action_toggle_dry_run in {self.screen.name}")
 
     def action_toggle_switch_slider_visibility(self) -> None:
         if not isinstance(self.screen, MainScreen):
