@@ -201,17 +201,17 @@ class CommandResult:
     def std_out(self) -> str:
         if self.stripped_std_out == "" and "--dry-run" in self.cmd_args:
             return "No output on stdout, command was executed with --dry-run."
-        elif self.stripped_std_out == "":
+        if self.stripped_std_out == "":
             return "No output on stdout."
-        else:
-            return self.stripped_std_out
+        return self.stripped_std_out
 
     @property
-    def std_err(self) -> str:
-        if self.stripped_std_err == "":
-            return "No output on stderr."
-        else:
-            return self.stripped_std_err
+    def std_err(self) -> str | None:
+        if self.stripped_std_err == "" and self.exit_code == 0:
+            return None
+        if self.stripped_std_err == "" and self.exit_code != 0:
+            return f"exit code {self.exit_code} but nothing written to stdout"
+        return self.stripped_std_err
 
 
 class ChezmoiCommand:
@@ -225,15 +225,20 @@ class ChezmoiCommand:
     # Command execution and logging #
     #################################
 
-    def _log_in_app_and_read_cmd_log(self, result: CommandResult):
-        if self.app_log is not None and self.read_cmd_log is not None:
-            self.app_log.log_cmd_results(result)
+    def _log_in_app(self, result: CommandResult):
+        if (
+            self.app_log is None
+            or self.read_cmd_log is None
+            or self.operate_log is None
+        ):
+            return
+        self.app_log.log_cmd_results(result)
+        if CommandResult.read_cmd is not None:
             self.read_cmd_log.log_cmd_results(result)
-
-    def _log_in_app_and_operate_log(self, result: CommandResult):
-        if self.app_log is not None and self.operate_log is not None:
-            self.app_log.log_cmd_results(result)
+            return
+        if CommandResult.write_cmd is not None:
             self.operate_log.log_cmd_results(result)
+            return
 
     def update_managed_paths(self) -> None:
         ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
@@ -278,7 +283,7 @@ class ChezmoiCommand:
             stripped_std_err=stripped_stderr,
             stripped_std_out=stripped_stdout,
         )
-        self._log_in_app_and_read_cmd_log(command_result)
+        self._log_in_app(command_result)
         return command_result
 
     def perform(
@@ -315,7 +320,7 @@ class ChezmoiCommand:
             stripped_std_out=stripped_stdout,
             write_cmd=write_cmd,
         )
-        self._log_in_app_and_operate_log(command_result)
+        self._log_in_app(command_result)
         if write_cmd == WriteCmd.add:
             self.update_managed_paths()
         elif write_cmd in (WriteCmd.apply, WriteCmd.re_add):

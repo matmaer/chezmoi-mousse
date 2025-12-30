@@ -228,47 +228,15 @@ class DebugLog(LoggersBase, AppType):
             self.write(f"{key}: {value}")
 
 
-class OperateLog(LoggersBase, AppType):
+class OutputCollapsible(CustomCollapsible, AppType):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.operate, markup=True, max_lines=10000)
-
-    def on_mount(self) -> None:
-        self.ready_to_run(LogStrings.operate_log_initialized)
-
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self.write(self.log_command(command_result))
-        if command_result.exit_code == 0:
-            self.success("Success, stdout:")
-            if command_result.std_out == "":
-                self.dimmed("No output on stdout")
-            else:
-                self.dimmed(command_result.std_out)
-        elif command_result.exit_code != 0:
-            if command_result.std_err != "":
-                self.error("Failed, stderr:")
-                self.dimmed(f"{command_result.std_err}")
-            else:
-                self.warning("Non zero exit but no stderr output.")
-
-
-class ReadOutputCollapsible(CustomCollapsible, AppType):
-
-    def __init__(
-        self, command_result: "CommandResult", output: str, counter: int
-    ) -> None:
+    def __init__(self, command_result: "CommandResult", output: str) -> None:
         self.command_result = command_result
         self.pretty_cmd = command_result.pretty_cmd
         self.pretty_time = command_result.pretty_time
-        self.static_id = f"read_cmd_static_number_{counter}"
 
         super().__init__(
-            Static(
-                output,
-                id=self.static_id,
-                markup=False,
-                classes=Tcss.read_cmd_static,
-            ),
+            Static(output, markup=False, classes=Tcss.read_cmd_static),
             title=f"{self.pretty_time} {self.pretty_cmd}",
         )
 
@@ -284,29 +252,34 @@ class ReadOutputCollapsible(CustomCollapsible, AppType):
             ]
 
 
-class ReadCmdLog(ScrollableContainer, AppType):
+class CmdOutputCollapsibles(ScrollableContainer):
 
-    collapsible_counter: int = 0
+    def create_collapsible(self, command_result: "CommandResult") -> None:
+        collapsible = OutputCollapsible(
+            command_result=command_result, output=command_result.std_out
+        )
+        self.mount(collapsible)
+
+        if command_result.std_err is not None:
+            collapsible = OutputCollapsible(
+                command_result=command_result, output=command_result.std_out
+            )
+            self.mount(collapsible)
+
+
+class OperateLog(CmdOutputCollapsibles, AppType):
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.logger.operate)
+
+    def log_cmd_results(self, command_result: "CommandResult") -> None:
+        self.create_collapsible(command_result)
+
+
+class ReadCmdLog(CmdOutputCollapsibles, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.read)
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
-        # Don't log verify read-verb outputs as in produces no output.
-        if ReadVerb.verify.value in command_result.cmd_args:
-            return
-
-        self.collapsible_counter += 1
-
-        output = (
-            command_result.std_out
-            if command_result.exit_code == 0
-            else command_result.std_err
-        )
-
-        collapsible = ReadOutputCollapsible(
-            command_result=command_result,
-            output=output,
-            counter=self.collapsible_counter,
-        )
-        self.mount(collapsible)
+        self.create_collapsible(command_result)
