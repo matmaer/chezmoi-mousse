@@ -117,7 +117,7 @@ class OperateStrings(StrEnum):
         "managing them.[/]"
     )
     read_file = "[$success]Path.read()[/]"
-    ready_to_run = "[$text-muted]Ready to run [/]"
+    ready_to_run = "[$text-muted]Ready to run[/]"
 
 
 class DestDirStrings(StrEnum):

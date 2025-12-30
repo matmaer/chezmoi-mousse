@@ -64,7 +64,7 @@ class OperateInfo(Static, AppType):
         )
         lines_to_write: list[str] = []
         lines_to_write.append(
-            f"{OperateStrings.ready_to_run}"
+            f"{OperateStrings.ready_to_run} "
             f"{self.operate_info_data.btn_enum.write_cmd.pretty_cmd}"
         )
         if self.operate_info_data.init_arg is not None:
