@@ -235,8 +235,12 @@ class ChezmoiGUI(App[None]):
             )
             return
         if "Review" in msg.pressed_label:
-            self.toggle_operate_display(ids=msg.ids)
             self.operate_mode = True
+            self.update_binding_show(BindingAction.toggle_maximized, False)
+            self.update_binding_show(
+                BindingAction.toggle_switch_slider_visibility, False
+            )
+            self.toggle_operate_display(ids=msg.ids)
             operate_info = self.screen.query_one(
                 msg.ids.container.operate_info_q, OperateInfo
             )
@@ -246,6 +250,7 @@ class ChezmoiGUI(App[None]):
             close_btn.display = True
             return
         if "Run" in str(msg.button.label):
+            self.operate_mode = True
             self.notify(
                 f"Will run '{" ".join(msg.button.btn_enum.full_cmd)}'."
             )
@@ -254,6 +259,10 @@ class ChezmoiGUI(App[None]):
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
         self.operate_mode = False
+        self.update_binding_show(BindingAction.toggle_maximized, True)
+        self.update_binding_show(
+            BindingAction.toggle_switch_slider_visibility, True
+        )
         operate_info = self.screen.query_one(
             msg.ids.container.operate_info_q, OperateInfo
         )
@@ -294,6 +303,21 @@ class ChezmoiGUI(App[None]):
                 updated_binding = dataclasses.replace(
                     binding, description=new_description
                 )
+                if key in self._bindings.key_to_bindings:
+                    bindings_list = self._bindings.key_to_bindings[key]
+                    for i, b in enumerate(bindings_list):
+                        if b.action == binding_action:
+                            bindings_list[i] = updated_binding
+                            break
+                break
+        self.refresh_bindings()
+
+    def update_binding_show(
+        self, binding_action: BindingAction, show: bool
+    ) -> None:
+        for key, binding in self._bindings:
+            if binding.action == binding_action:
+                updated_binding = dataclasses.replace(binding, show=show)
                 if key in self._bindings.key_to_bindings:
                     bindings_list = self._bindings.key_to_bindings[key]
                     for i, b in enumerate(bindings_list):
@@ -437,7 +461,7 @@ class ChezmoiGUI(App[None]):
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
                 if self.operate_mode is True:
-                    return None
+                    return False
                 header = self.screen.query_exactly_one(CustomHeader)
                 if header.display is False:
                     return False
@@ -484,7 +508,7 @@ class ChezmoiGUI(App[None]):
                 return False
         elif action == BindingAction.toggle_maximized:
             if self.operate_mode is True:
-                return None
+                return False
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
         elif action == BindingAction.exit_screen:
