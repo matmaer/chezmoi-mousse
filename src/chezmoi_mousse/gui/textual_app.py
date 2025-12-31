@@ -136,7 +136,7 @@ class ChezmoiGUI(App[None]):
 
         # Disable Maxdmize/Minimize and Show/Hide Filters bindings when
         # in operate mode in the MainScreen
-        self.operating_mode: bool = False
+        self.operate_mode: bool = False
 
         # Manage state between screens
         self.init_cmd_result: "CommandResult | None" = None
@@ -236,7 +236,7 @@ class ChezmoiGUI(App[None]):
             return
         if "Review" in msg.pressed_label:
             self.toggle_operate_display(ids=msg.ids)
-            self.operating_mode = True
+            self.operate_mode = True
             operate_info = self.screen.query_one(
                 msg.ids.container.operate_info_q, OperateInfo
             )
@@ -253,7 +253,7 @@ class ChezmoiGUI(App[None]):
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
-        self.operating_mode = False
+        self.operate_mode = False
         operate_info = self.screen.query_one(
             msg.ids.container.operate_info_q, OperateInfo
         )
@@ -436,7 +436,7 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
-                if self.operating_mode is True:
+                if self.operate_mode is True:
                     return None
                 header = self.screen.query_exactly_one(CustomHeader)
                 if header.display is False:
@@ -483,7 +483,7 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
-            if self.operating_mode is True:
+            if self.operate_mode is True:
                 return None
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
