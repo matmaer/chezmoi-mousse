@@ -242,6 +242,12 @@ class ChezmoiGUI(App[None]):
             operate_info.display = True
             close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
             close_btn.display = True
+            return
+        if "Run" in str(msg.button.label):
+            self.notify(
+                f"Will run '{" ".join(msg.button.btn_enum.full_cmd)}'."
+            )
+            return
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:

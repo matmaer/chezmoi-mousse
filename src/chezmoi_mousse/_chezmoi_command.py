@@ -171,6 +171,10 @@ class WriteCmd(Enum):
             f"{LogUtils.pretty_cmd_str(GlobalCmd.base_cmd() + self.value)}[/]"
         )
 
+    @property
+    def subprocess_arguments(self) -> list[str]:
+        return GlobalCmd.base_cmd() + self.value
+
 
 @dataclass(slots=True)
 class CommandResult:

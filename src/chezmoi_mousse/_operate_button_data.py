@@ -109,7 +109,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabels.forget_review, write_cmd=WriteCmd.forget
     )
     re_add = OpBtnData(
-        write_cmd=WriteCmd.re_add, label=OpBtnLabels.re_add_review
+        label=OpBtnLabels.re_add_review, write_cmd=WriteCmd.re_add
     )
     init = OpBtnData(
         label=OpBtnLabels.init_review, write_cmd=WriteCmd.init_new
@@ -125,3 +125,7 @@ class OpBtnEnum(Enum):
     @property
     def write_cmd(self) -> WriteCmd:
         return self.value.write_cmd
+
+    @property
+    def full_cmd(self) -> list[str]:
+        return self.write_cmd.subprocess_arguments
