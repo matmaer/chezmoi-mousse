@@ -6,6 +6,7 @@ __all__ = ["Tcss"]
 class Tcss(StrEnum):
     border_title_top = auto()
     changes_enabled_color = auto()
+    cmd_output = auto()
     content_switcher_left = auto()
     doctor_table = auto()
     flat_button = auto()
@@ -22,7 +23,6 @@ class Tcss(StrEnum):
     operate_info = auto()
     operate_success = auto()
     pw_mgr_group = auto()
-    read_cmd_static = auto()
     single_button_vertical = auto()
     single_switch = auto()
     style_added = auto()

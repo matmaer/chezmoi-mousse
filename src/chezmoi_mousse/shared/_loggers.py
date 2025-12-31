@@ -234,10 +234,11 @@ class OutputCollapsible(CustomCollapsible, AppType):
         self.command_result = command_result
         self.pretty_cmd = command_result.pretty_cmd
         self.pretty_time = command_result.pretty_time
+        collapsible_title = f"{self.pretty_time} {self.pretty_cmd}"
 
         super().__init__(
-            Static(output, markup=False, classes=Tcss.read_cmd_static),
-            title=f"{self.pretty_time} {self.pretty_cmd}",
+            Static(output, markup=False, classes=Tcss.cmd_output),
+            title=collapsible_title,
         )
 
     def on_mount(self) -> None:

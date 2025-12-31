@@ -34,8 +34,8 @@ class TreeBase(Tree[NodeData], AppType):
 
     destDir: "Path"
 
-    ICON_NODE = Chars.right_triangle
-    ICON_NODE_EXPANDED = Chars.down_triangle
+    ICON_NODE = Chars.tree_collapsed
+    ICON_NODE_EXPANDED = Chars.tree_expanded
 
     def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
         self.ids = ids

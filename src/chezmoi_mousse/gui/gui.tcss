@@ -167,20 +167,6 @@ CustomHeader {
   }
 }
 
-CustomCollapsible {
-  border: none;
-  padding: 0;
-  .pw_mgr_group {
-    margin-bottom: 1;
-  }
-  .read_cmd_static {
-    background-tint: $surface;
-    background: $surface;
-    margin-bottom: 1;
-    margin-right: 1;
-  }
-}
-
 DiffLines > ScrollableContainer {
   margin-top: 1;
 }
@@ -425,11 +411,30 @@ CheckBox {
   }
 }
 
+Collapsible {
+  border: none;
+  padding: 0;
+  .pw_mgr_group {
+    margin-bottom: 1;
+    margin-right: 1;
+  }
+  .cmd_output {
+    background-tint: $surface;
+    background: $surface;
+    margin-bottom: 1;
+    margin-right: 1;
+  }
+}
+
 CollapsibleTitle {
   color: $text-primary;
+  padding: 0;
   text-style: none;
   &:hover {
     text-style: bold;
+  }
+  &:focus {
+    color: $text-primary;
   }
 }
 

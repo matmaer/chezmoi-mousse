@@ -32,8 +32,8 @@ class InstallHelpStrings(StrEnum):
 
 
 class CommandsTree(Tree[ParsedJson]):
-    ICON_NODE = Chars.right_triangle
-    ICON_NODE_EXPANDED = Chars.down_triangle
+    ICON_NODE = Chars.tree_collapsed
+    ICON_NODE_EXPANDED = Chars.tree_expanded
 
     def __init__(self) -> None:
         super().__init__(label=InstallHelpStrings.install_chezmoi)

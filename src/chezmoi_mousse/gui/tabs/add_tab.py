@@ -93,8 +93,8 @@ class UnwantedFileExtensions(StrEnum):
 
 class FilteredDirTree(DirectoryTree, AppType):
 
-    ICON_NODE_EXPANDED = Chars.down_triangle
-    ICON_NODE = Chars.right_triangle
+    ICON_NODE = Chars.tree_collapsed
+    ICON_NODE_EXPANDED = Chars.tree_expanded
     ICON_FILE = " "
 
     unmanaged_dirs: reactive[bool] = reactive(False, init=False)

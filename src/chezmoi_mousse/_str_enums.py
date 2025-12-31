@@ -78,13 +78,16 @@ class Chars(StrEnum):
     # bullet = "\u2022"  # BULLET
     burger = "\u2261"  # IDENTICAL TO
     check_mark = "\u2714"  # HEAVY CHECK MARK
-    down_triangle = "\u25be "  # BLACK DOWN-POINTING SMALL TRIANGLE
+    down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     # gear = "\u2699"  # GEAR
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
-    right_triangle = "\u25b8 "  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     warning_sign = "\u26a0"  # WARNING SIGN
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
+    # Used for Tree widgets
+    tree_collapsed = f"{right_triangle} "
+    tree_expanded = f"{down_triangle} "
 
 
 class LogStrings(StrEnum):
