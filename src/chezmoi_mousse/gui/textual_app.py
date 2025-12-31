@@ -301,7 +301,7 @@ class ChezmoiGUI(App[None]):
                             bindings_list[i] = updated_binding
                             break
                 break
-            self.refresh_bindings()
+        self.refresh_bindings()
 
     def update_switch_slider_binding(self) -> None:
         slider: SwitchSlider = self.get_switch_slider_widget()
