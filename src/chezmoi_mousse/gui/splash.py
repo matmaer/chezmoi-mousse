@@ -203,10 +203,10 @@ class SplashScreen(Screen[SplashData | None], AppType):
             parsed_config = json.loads(cmd_result.std_out)
             globals()["parsed_config"] = ParsedConfig(
                 dest_dir=Path(parsed_config["destDir"]),
-                git_autoadd=parsed_config["git"]["autoadd"],
+                git_auto_add=parsed_config["git"]["autoadd"],
+                git_auto_commit=parsed_config["git"]["autocommit"],
+                git_auto_push=parsed_config["git"]["autopush"],
                 source_dir=Path(parsed_config["sourceDir"]),
-                git_autocommit=parsed_config["git"]["autocommit"],
-                git_autopush=parsed_config["git"]["autopush"],
             )
         elif splash_cmd in (
             ReadCmd.managed_dirs,
@@ -239,7 +239,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             doctor=globals()["doctor"],
             git_log=globals()["git_log"],
             ignored=globals()["ignored"],
-            parsed_config=globals()["parsed_config"],
+            # parsed_config=globals()["parsed_config"],
             template_data=globals()["template_data"],
             verify=globals()["verify"],
         )
@@ -249,6 +249,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
             status_dirs_result=globals()["status_dirs"],
             status_files_result=globals()["status_files"],
         )
+        self.app.parsed_config = globals()["parsed_config"]
         if self.app.init_needed is True:
             return
         dest_dir = globals()["parsed_config"].dest_dir

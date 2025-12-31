@@ -48,6 +48,7 @@ if TYPE_CHECKING:
         ChezmoiCommand,
         ChezmoiPaths,
         CommandResult,
+        ParsedConfig,
         SplashData,
     )
 
@@ -147,7 +148,7 @@ class ChezmoiGUI(App[None]):
         # should be reasonable truncate for files to be considered as dotfiles.
         # TODO: make this configurable
         self.max_file_size: int = 500 * 1024  # 500 KiB
-
+        self.parsed_config: "ParsedConfig | None" = None
         self.git_auto_commit: bool = False
         self.git_auto_add: bool = False
         self.git_auto_push: bool = False
@@ -169,9 +170,11 @@ class ChezmoiGUI(App[None]):
         if self.init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        self.git_auto_add = self.splash_data.parsed_config.git_autoadd
-        self.git_auto_commit = self.splash_data.parsed_config.git_autocommit
-        self.git_auto_push = self.splash_data.parsed_config.git_autopush
+        if self.parsed_config is None:
+            raise ValueError("parsed_config is None after SplashScreen")
+        self.git_auto_add = self.parsed_config.git_auto_add
+        self.git_auto_commit = self.parsed_config.git_auto_commit
+        self.git_auto_push = self.parsed_config.git_auto_push
         self.push_screen(MainScreen())
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:

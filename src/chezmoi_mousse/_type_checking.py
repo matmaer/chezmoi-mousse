@@ -53,10 +53,10 @@ class NodeData:
 @dataclass(slots=True)
 class ParsedConfig:
     dest_dir: Path
-    git_autoadd: bool
+    git_auto_add: bool
+    git_auto_commit: bool
+    git_auto_push: bool
     source_dir: Path
-    git_autocommit: bool
-    git_autopush: bool
 
 
 @dataclass(slots=True)
@@ -65,7 +65,6 @@ class SplashData:
     doctor: CommandResult
     git_log: CommandResult
     ignored: CommandResult
-    parsed_config: ParsedConfig
     template_data: CommandResult
     verify: CommandResult
 
