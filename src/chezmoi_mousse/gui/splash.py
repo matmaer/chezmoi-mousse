@@ -34,7 +34,6 @@ from .tabs.common.contents_view import ContentsView
 from .tabs.common.diff_view import DiffView
 from .tabs.common.git_log_view import GitLogPath
 from .tabs.common.switchers import ViewSwitcher
-from .tabs.common.tabs_base import TabsBase
 from .tabs.common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
@@ -260,8 +259,6 @@ class SplashScreen(Screen[SplashData | None], AppType):
         MainScreen.destDir = dest_dir
         TreeBase.destDir = dest_dir
         ViewSwitcher.destDir = dest_dir
-        TabsBase.git_autocommit = globals()["parsed_config"].git_autocommit
-        TabsBase.git_autopush = globals()["parsed_config"].git_autopush
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
