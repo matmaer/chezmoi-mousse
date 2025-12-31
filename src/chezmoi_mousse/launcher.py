@@ -3,6 +3,7 @@ import shutil
 import traceback
 from pathlib import Path
 
+from ._app_state import AppState
 from .gui.textual_app import ChezmoiGUI
 
 
@@ -15,7 +16,9 @@ def run_app():
     )
     pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
 
-    if dev_mode is True:
+    if dev_mode is True or pretend_init_needed is True:
+        # Set dev mode in _app_state so we always dry run chezmoi commands
+        AppState.set_dev_mode(dev_mode)
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
         stack_trace_path = src_dir / "stack_trace.txt"
@@ -27,7 +30,6 @@ def run_app():
         try:
             app = ChezmoiGUI(
                 chezmoi_found=chezmoi_found,
-                dev_mode=dev_mode,
                 pretend_init_needed=pretend_init_needed,
             )
 
@@ -49,7 +51,6 @@ def run_app():
     else:
         app = ChezmoiGUI(
             chezmoi_found=chezmoi_found,
-            dev_mode=dev_mode,
             pretend_init_needed=pretend_init_needed,
         )
         app.run()

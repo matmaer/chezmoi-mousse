@@ -7,7 +7,7 @@ from rich.markup import escape
 from textual.containers import ScrollableContainer
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
+from chezmoi_mousse import AppState, AppType, Chars, LogStrings, ReadVerb, Tcss
 
 from ._custom_collapsible import CustomCollapsible
 
@@ -85,7 +85,7 @@ class AppLog(LoggersBase, AppType):
             self.success(LogStrings.chezmoi_found)
         else:
             self.error(LogStrings.chezmoi_not_found)
-        if self.app.dev_mode:
+        if AppState.is_dev_mode():
             self.warning(LogStrings.dev_mode_enabled)
 
     def log_doctor_exit_zero_msg(

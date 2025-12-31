@@ -58,7 +58,10 @@ class GlobalCmd(Enum):
 
     @classmethod
     def base_cmd(cls) -> list[str]:
-        if AppState.changes_enabled() is True:
+        if (
+            AppState.changes_enabled() is True
+            and AppState.is_dev_mode() is False
+        ):
             return cls.live_run.value
         else:
             return cls.dry_run.value

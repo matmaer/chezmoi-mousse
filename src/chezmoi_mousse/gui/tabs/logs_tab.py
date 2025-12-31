@@ -7,7 +7,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import IDS, AppType, Tcss
+from chezmoi_mousse import IDS, AppState, AppType, Tcss
 from chezmoi_mousse.shared import (
     AppLog,
     DebugLog,
@@ -49,7 +49,7 @@ class LogsTab(Vertical, AppType):
             yield ReadCmdLog(ids=IDS.logs)
             yield OperateLog(ids=IDS.logs)
             yield GitLogGlobal(ids=IDS.logs)
-            if self.app.dev_mode is True:
+            if AppState.is_dev_mode():
                 yield DebugLog(ids=IDS.logs)
 
     def on_mount(self) -> None:
@@ -77,7 +77,7 @@ class LogsTab(Vertical, AppType):
             switcher.border_title = BorderTitle.git_log_global
             switcher.current = IDS.logs.container.git_log_global
         elif (
-            self.app.dev_mode is True
+            AppState.is_dev_mode()
             and event.button.id == IDS.logs.tab_btn.debug_log
         ):
             switcher.current = IDS.logs.logger.debug

@@ -18,6 +18,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import (
     IDS,
+    AppState,
     AppType,
     BindingAction,
     BindingDescription,
@@ -514,7 +515,7 @@ class InitChezmoi(Screen[None], AppType):
                 SectionLabels.operate_output, classes=Tcss.main_section_label
             )
             yield OperateLog(ids=self.ids)
-        if self.app.dev_mode:
+        if AppState.is_dev_mode():
             yield Label(SectionLabels.debug_log_output)
             yield DebugLog(self.ids)
         yield OperateButtons(self.ids)

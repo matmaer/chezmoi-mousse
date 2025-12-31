@@ -9,8 +9,9 @@ __all__ = ["AppState"]
 class AppState:
     """Centralized app state accessible from anywhere."""
 
-    _changes_enabled: bool = False
     _app: "ChezmoiGUI | None" = None  # Reference to the app instance
+    _changes_enabled: bool = False
+    _dev_mode: bool = False
 
     @classmethod
     def set_app(cls, app: "ChezmoiGUI") -> None:
@@ -26,3 +27,11 @@ class AppState:
         # Notify the app to update its reactive attribute
         if cls._app is not None:
             cls._app.changes_enabled = value
+
+    @classmethod
+    def set_dev_mode(cls, dev_mode: bool) -> None:
+        cls._dev_mode = dev_mode
+
+    @classmethod
+    def is_dev_mode(cls) -> bool:
+        return cls._dev_mode

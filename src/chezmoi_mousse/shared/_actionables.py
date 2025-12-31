@@ -7,6 +7,7 @@ from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
     IDS,
+    AppState,
     AppType,
     FlatBtn,
     LinkBtn,
@@ -254,7 +255,7 @@ class LogsTabButtons(TabButtonsBase, AppType):
             TabBtn.operate_log,
             TabBtn.git_log_global,
         )
-        if self.app.dev_mode is True:
+        if AppState.is_dev_mode():
             self.tab_buttons += (TabBtn.debug_log,)
         super().__init__(
             ids=self.ids,
