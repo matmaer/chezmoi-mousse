@@ -48,7 +48,7 @@ class DiffInfo(VerticalGroup):
 
     def on_mount(self) -> None:
         if self.ids.canvas_name == TabName.re_add:
-            in_dest_dir_msg = DestDirStrings.diff_reverse
+            in_dest_dir_msg = DestDirStrings.re_add
         else:
             in_dest_dir_msg = DestDirStrings.diff
         self.query_one(
@@ -106,10 +106,8 @@ class DiffView(Vertical, AppType):
         )
         if self.ids.canvas_name == TabName.re_add:
             self.diff_cmd = ReadCmd.diff_reverse
-            self.in_dest_dir_diff_msg = Static(DestDirStrings.diff_reverse)
         else:
             self.diff_cmd = ReadCmd.diff
-            self.in_dest_dir_diff_msg = Static(DestDirStrings.diff)
 
     def compose(self) -> ComposeResult:
         yield DiffInfo(ids=self.ids)

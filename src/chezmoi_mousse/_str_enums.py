@@ -161,13 +161,10 @@ class DestDirStrings(StrEnum):
         "contains files to add.\n"
         f"{_click_file} {OperateStrings.read_file}."
     )
-    cat = f"{_click_file} [$success]{ReadCmd.cat.pretty_cmd}[/]."
-    diff = f"{_click_path} [$success]{ReadCmd.diff.pretty_cmd}[/]."
-    diff_reverse = (
-        f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
-    )
-    git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
-    re_add = f"{_click_file} [$success]{OperateStrings.read_file}[/]."
+    cat = f"{_click_file} {ReadCmd.cat.pretty_cmd}."
+    diff = f"{_click_path} {ReadCmd.diff.pretty_cmd}."
+    git_log_msg = f"{_click_path} {ReadCmd.git_log.pretty_cmd}."
+    re_add = f"{_click_file} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
 
 
 class SectionLabels(StrEnum):

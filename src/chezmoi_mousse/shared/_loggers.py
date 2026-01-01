@@ -231,26 +231,10 @@ class DebugLog(LoggersBase, AppType):
 class OutputCollapsible(CustomCollapsible, AppType):
 
     def __init__(self, command_result: "CommandResult", output: str) -> None:
-        self.command_result = command_result
-        self.pretty_cmd = command_result.pretty_cmd
-        self.pretty_time = command_result.pretty_time
-        collapsible_title = f"{self.pretty_time} {self.pretty_cmd}"
-
         super().__init__(
             Static(output, markup=False, classes=Tcss.cmd_output),
-            title=collapsible_title,
+            title=command_result.collapsible_title,
         )
-
-    def on_mount(self) -> None:
-        collapsible_title = self.query_exactly_one("CollapsibleTitle")
-        if self.command_result.exit_code == 0:
-            collapsible_title.styles.color = self.app.theme_variables[
-                "text-success"
-            ]
-        else:
-            collapsible_title.styles.color = self.app.theme_variables[
-                "text-warning"
-            ]
 
 
 class CmdOutputCollapsibles(ScrollableContainer):

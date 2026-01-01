@@ -15,6 +15,7 @@ __all__ = [
     "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
+    "LogUtils",
     "ReadCmd",
     "ReadVerb",
     "VerbArgs",
@@ -26,7 +27,15 @@ __all__ = [
 class LogUtils:
 
     @staticmethod
-    def pretty_cmd_str(command: list[str]) -> str:
+    def formatted_time_str() -> str:
+        return f"{datetime.now().strftime("%H:%M:%S")}"
+
+    @staticmethod
+    def pretty_time() -> str:
+        return f"[$text-success][{datetime.now().strftime("%H:%M:%S")}][/]"
+
+    @staticmethod
+    def filtered_args_str(command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
         exclude = set(
             GlobalCmd.default_args.value
@@ -144,7 +153,10 @@ class ReadCmd(Enum):
 
     @property
     def pretty_cmd(self) -> str:
-        return f"{GlobalCmd.live_run.value[0]} {LogUtils.pretty_cmd_str(self.value)}"
+        return (
+            f"[$success]{GlobalCmd.live_run.value[0]} "
+            f"{LogUtils.filtered_args_str(self.value)}[/]"
+        )
 
 
 class WriteVerb(Enum):
@@ -171,7 +183,7 @@ class WriteCmd(Enum):
     def pretty_cmd(self) -> str:
         return (
             f"[$text-success bold] "
-            f"{LogUtils.pretty_cmd_str(GlobalCmd.base_cmd() + self.value)}[/]"
+            f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
         )
 
     @property
@@ -184,13 +196,23 @@ class CommandResult:
     completed_process: CompletedProcess[str]
     stripped_std_out: str
     stripped_std_err: str
-    pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
     read_cmd: ReadCmd | None = None
     write_cmd: WriteCmd | None = None
 
     @property
     def cmd_args(self) -> list[str]:
         return self.completed_process.args
+
+    @property
+    def collapsible_title(self) -> str:
+        if self.exit_code == 0:
+            return (
+                f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
+            )
+        else:
+            return (
+                f"{LogUtils.pretty_time()} [$text-warning]{self.pretty_cmd}[/]"
+            )
 
     @property
     def dry_run(self) -> bool:
@@ -202,7 +224,7 @@ class CommandResult:
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.cmd_args)
+        return f"{LogUtils.filtered_args_str(self.cmd_args)}"
 
     @property
     def std_out(self) -> str:
@@ -238,13 +260,6 @@ class ChezmoiCommand:
             or self.read_cmd_log is None
             or self.operate_log is None
         ):
-            return
-        self.app_log.log_cmd_results(result)
-        if CommandResult.read_cmd is not None:
-            self.read_cmd_log.log_cmd_results(result)
-            return
-        if CommandResult.write_cmd is not None:
-            self.operate_log.log_cmd_results(result)
             return
 
     def update_managed_paths(self) -> None:

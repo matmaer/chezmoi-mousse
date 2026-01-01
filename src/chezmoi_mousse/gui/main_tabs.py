@@ -91,7 +91,6 @@ class MainScreen(Screen[None], AppType):
         # Initialize Debug logger if in dev mode
         if AppState.is_dev_mode():
             self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
-            self.app_log.success(LogStrings.debug_log_initialized)
             self.notify(LogStrings.dev_mode_enabled)
 
     def log_splash_log_commands(self) -> None:

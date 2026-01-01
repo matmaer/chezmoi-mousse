@@ -427,14 +427,10 @@ Collapsible {
 }
 
 CollapsibleTitle {
-  color: $text-primary;
   padding: 0;
   text-style: none;
   &:hover {
     text-style: bold;
-  }
-  &:focus {
-    color: $text-primary;
   }
 }
 
