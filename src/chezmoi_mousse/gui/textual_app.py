@@ -244,7 +244,7 @@ class ChezmoiGUI(App[None]):
             operate_info = self.screen.query_one(
                 msg.ids.container.operate_info_q, OperateInfo
             )
-            operate_info.op_btn_enum = msg.button.btn_enum
+            operate_info.update_review_info(msg.button.btn_enum)
             operate_info.display = True
             close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
             close_btn.display = True

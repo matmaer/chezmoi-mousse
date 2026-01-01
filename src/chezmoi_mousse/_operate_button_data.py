@@ -98,9 +98,9 @@ class OpBtnEnum(Enum):
         return self.write_cmd.subprocess_arguments
 
     @property
-    def info_strings(self) -> str | None:
+    def info_strings(self) -> str:
         if self.value.info_strings is None:
-            return None
+            return ""
         return "\n".join(self.value.info_strings)
 
     @property

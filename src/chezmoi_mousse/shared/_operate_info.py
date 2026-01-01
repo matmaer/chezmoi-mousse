@@ -7,7 +7,6 @@ from chezmoi_mousse import (
     AppIds,
     AppType,
     OpBtnEnum,
-    OpBtnLabels,
     OperateStrings,
     TabName,
     Tcss,
@@ -41,37 +40,15 @@ class OperateInfo(VerticalGroup, AppType):
             if self.app.git_auto_push is True:
                 self.mount(Static(OperateStrings.auto_push))
 
-    def watch_op_btn_enum(self) -> None:
-        if self.op_btn_enum is None:
-            return
-        operate_info_cmd = self.query_one(
+    def update_review_info(self, btn_enum: "OpBtnEnum") -> None:
+        info_static = self.query_one(
             self.ids.static.operate_info_cmd_q, Static
         )
-        to_write: list[str] = []
         cmd_text = (
             f"{OperateStrings.ready_to_run} "
-            f"{self.op_btn_enum.write_cmd.pretty_cmd} "
+            f"{btn_enum.write_cmd.pretty_cmd} "
             f"[$text-success bold]{self.path_arg}[/]"
         )
-        to_write.append(cmd_text)
-        if "Add" in self.op_btn_enum.label:
-            to_write.append(OperateStrings.add_path_info)
-            self.border_subtitle = OperateStrings.add_subtitle
-            self.border_title = OpBtnLabels.add_run
-        elif "Apply" in self.op_btn_enum.label:
-            to_write.append(OperateStrings.apply_path_info)
-            self.border_subtitle = OperateStrings.apply_subtitle
-            self.border_title = OpBtnLabels.apply_run
-        elif "Destroy" in self.op_btn_enum.label:
-            to_write.append(OperateStrings.destroy_path_info)
-            self.border_subtitle = OperateStrings.destroy_subtitle
-            self.border_title = OpBtnLabels.destroy_run
-        elif "Forget" in self.op_btn_enum.label:
-            to_write.append(OperateStrings.forget_path_info)
-            self.border_subtitle = OperateStrings.forget_subtitle
-            self.border_title = OpBtnLabels.forget_run
-        elif "Re-Add" in self.op_btn_enum.label:
-            to_write.append(OperateStrings.re_add_path_info)
-            self.border_subtitle = OperateStrings.re_add_subtitle
-            self.border_title = OpBtnLabels.re_add_run
-        operate_info_cmd.update("\n".join(to_write))
+        info_static.update("\n".join([cmd_text, btn_enum.info_strings]))
+        self.border_title = btn_enum.info_title
+        self.border_subtitle = btn_enum.info_sub_title
