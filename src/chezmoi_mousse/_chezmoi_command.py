@@ -261,6 +261,11 @@ class ChezmoiCommand:
             or self.operate_log is None
         ):
             return
+        if result.read_cmd is not None:
+            self.read_cmd_log.log_cmd_results(result)
+        elif result.write_cmd is not None:
+            self.operate_log.log_cmd_results(result)
+        self.app_log.log_cmd_results(result)
 
     def update_managed_paths(self) -> None:
         ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
