@@ -24,13 +24,14 @@ class AppState:
     @classmethod
     def set_changes_enabled(cls, value: bool) -> None:
         cls._changes_enabled = value
-        # Notify the app to update its reactive attribute
         if cls._app is not None:
             cls._app.changes_enabled = value
 
     @classmethod
-    def set_dev_mode(cls, dev_mode: bool) -> None:
-        cls._dev_mode = dev_mode
+    def set_dev_mode(cls, value: bool) -> None:
+        cls._dev_mode = value
+        if cls._app is not None:
+            cls._app.dev_mode = value
 
     @classmethod
     def is_dev_mode(cls) -> bool:

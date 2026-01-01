@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import IDS, AppState, AppType, LogStrings, TabName
+from chezmoi_mousse import IDS, AppType, LogStrings, TabName
 from chezmoi_mousse.shared import (
     AppLog,
     CustomHeader,
@@ -89,7 +89,7 @@ class MainScreen(Screen[None], AppType):
         self.app.cmd.read_cmd_log = self.read_cmd_log
         self.app_log.success(LogStrings.read_log_initialized)
         # Initialize Debug logger if in dev mode
-        if AppState.is_dev_mode():
+        if self.app.dev_mode is True:
             self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
             self.notify(LogStrings.dev_mode_enabled)
 

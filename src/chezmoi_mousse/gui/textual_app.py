@@ -130,6 +130,7 @@ class ChezmoiGUI(App[None]):
         self.cmd = ChezmoiCommand()
         self.paths: "ChezmoiPaths"
         self.changes_enabled: bool = False
+        self.dev_mode: bool = False
         self.chezmoi_found: bool = chezmoi_found
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
