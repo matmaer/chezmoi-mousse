@@ -16,6 +16,7 @@ __all__ = [
 
 
 class ContainerName(StrEnum):
+    command_output = auto()
     contents = auto()
     contents_info = auto()
     diff = auto()
@@ -27,9 +28,9 @@ class ContainerName(StrEnum):
     git_log_path = auto()
     left_side = auto()
     operate_buttons = auto()
-    operate_info = auto()
-    post_operate = auto()
-    pre_operate = auto()
+    op_mode = auto()
+    op_result = auto()
+    op_review = auto()
     repo_input = auto()
     right_side = auto()
     switch_slider = auto()
@@ -91,7 +92,8 @@ class StaticName(StrEnum):
     diff_lines = auto()
     git_log_info = auto()
     init_info = auto()
-    operate_info_cmd = auto()
+    op_result_info = auto()
+    op_review_info = auto()
 
 
 class TabName(StrEnum):

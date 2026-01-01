@@ -18,6 +18,10 @@ class AppState:
         cls._app = app
 
     @classmethod
+    def get_app(cls) -> "ChezmoiGUI | None":
+        return cls._app
+
+    @classmethod
     def changes_enabled(cls) -> bool:
         return cls._changes_enabled
 

@@ -4,12 +4,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
+from textual import work
 from textual.containers import ScrollableContainer
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
 
 from ._custom_collapsible import CustomCollapsible
+from ._operate_mode import CommandOutput
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -228,43 +230,41 @@ class DebugLog(LoggersBase, AppType):
             self.write(f"{key}: {value}")
 
 
+class CmdOutput(Static, AppType):
+
+    def __init__(self, command_result: "CommandResult") -> None:
+        super().__init__(
+            command_result.std_out, markup=False, classes=Tcss.cmd_output
+        )
+
+
 class OutputCollapsible(CustomCollapsible, AppType):
 
-    def __init__(self, command_result: "CommandResult", output: str) -> None:
+    def __init__(self, *, command_result: "CommandResult") -> None:
         super().__init__(
-            Static(output, markup=False, classes=Tcss.cmd_output),
+            CommandOutput(command_result),
             title=command_result.collapsible_title,
         )
 
 
-class CmdOutputCollapsibles(ScrollableContainer):
-
-    def create_collapsible(self, command_result: "CommandResult") -> None:
-        collapsible = OutputCollapsible(
-            command_result=command_result, output=command_result.std_out
-        )
-        self.mount(collapsible)
-
-        if command_result.std_err is not None:
-            collapsible = OutputCollapsible(
-                command_result=command_result, output=command_result.std_out
-            )
-            self.mount(collapsible)
-
-
-class OperateLog(CmdOutputCollapsibles, AppType):
+class OperateLog(ScrollableContainer, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.operate)
 
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self.create_collapsible(command_result)
+    @work
+    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+        collapsible = OutputCollapsible(command_result=command_result)
+        self.mount(collapsible)
 
 
-class ReadCmdLog(CmdOutputCollapsibles, AppType):
+class ReadCmdLog(ScrollableContainer, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.read)
+        self.ids = ids
 
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self.create_collapsible(command_result)
+    @work
+    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+        collapsible = OutputCollapsible(command_result=command_result)
+        self.mount(collapsible)

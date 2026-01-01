@@ -27,7 +27,6 @@ from ._str_enum_names import LogName, PathKind, ScreenName, TabName, TreeName
 from ._str_enum_tcss import Tcss
 from ._str_enums import (
     Chars,
-    DestDirStrings,
     FlatBtn,
     LinkBtn,
     LogStrings,
@@ -76,7 +75,6 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "DiffData",
-    "DestDirStrings",
     "FlatBtn",
     "LinkBtn",
     "LogName",

@@ -8,8 +8,8 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import (
     AppType,
-    DestDirStrings,
     DiffData,
+    OperateStrings,
     PathKind,
     ReadCmd,
     SectionLabels,
@@ -47,13 +47,9 @@ class DiffInfo(VerticalGroup):
         yield ScrollableContainer(id=self.ids.container.diff_info)
 
     def on_mount(self) -> None:
-        if self.ids.canvas_name == TabName.re_add:
-            in_dest_dir_msg = DestDirStrings.re_add
-        else:
-            in_dest_dir_msg = DestDirStrings.diff
         self.query_one(
             self.ids.container.diff_info_q, ScrollableContainer
-        ).mount(Static(in_dest_dir_msg))
+        ).mount(Static(OperateStrings.in_dest_dir_click_path))
         self.label = self.query_exactly_one(Label)
 
     def watch_info_lines(self) -> None:

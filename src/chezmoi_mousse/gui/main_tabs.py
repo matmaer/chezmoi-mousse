@@ -15,7 +15,7 @@ from chezmoi_mousse.shared import (
     ReadCmdLog,
 )
 
-from .tabs.add_tab import AddTab, FilteredDirTree
+from .tabs.add_tab import AddTab
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
@@ -64,17 +64,19 @@ class MainScreen(Screen[None], AppType):
             yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
         yield Footer(id=IDS.main_tabs.footer)
 
-    async def on_mount(self) -> None:
-        initialize_loggers_worker = self.initialize_loggers()
-        await initialize_loggers_worker.wait()
-        self.log_splash_log_commands()
-        self.populate_apply_trees()
+    def on_mount(self) -> None:
+        self.initialize_loggers()
+        self.screen.query_one(
+            IDS.apply.tree.managed_q, ManagedTree
+        ).dest_dir = self.destDir
+        self.app_log.success("Apply tab managed tree populated.")
+        self.populate_other_apply_trees()
         self.populate_re_add_trees()
-        self.update_config_tab()
+        self.log_splash_log_commands()
         self.update_global_git_log()
+        self.update_config_tab()
 
-    @work
-    async def initialize_loggers(self) -> None:
+    def initialize_loggers(self) -> None:
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.app.cmd.app_log = self.app_log
@@ -93,7 +95,8 @@ class MainScreen(Screen[None], AppType):
             self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
             self.notify(LogStrings.dev_mode_enabled)
 
-    def log_splash_log_commands(self) -> None:
+    @work
+    async def log_splash_log_commands(self) -> None:
         # Log SplashScreen and OperateScreen commands, if any.
         self.app_log.info("--- Commands executed in loading screen ---")
         if self.app.splash_data is None:
@@ -108,11 +111,8 @@ class MainScreen(Screen[None], AppType):
             self.read_cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
 
-    def populate_apply_trees(self) -> None:
-        self.screen.query_one(
-            IDS.apply.tree.managed_q, ManagedTree
-        ).dest_dir = self.destDir
-        self.app_log.success("Apply tab managed tree populated.")
+    @work
+    async def populate_other_apply_trees(self) -> None:
         self.screen.query_one(
             IDS.apply.tree.expanded_q, ExpandedTree
         ).dest_dir = self.destDir
@@ -122,7 +122,8 @@ class MainScreen(Screen[None], AppType):
         )
         self.app_log.success("Apply list populated.")
 
-    def populate_re_add_trees(self) -> None:
+    @work
+    async def populate_re_add_trees(self) -> None:
         self.screen.query_one(
             IDS.re_add.tree.managed_q, ManagedTree
         ).dest_dir = self.destDir
@@ -136,42 +137,17 @@ class MainScreen(Screen[None], AppType):
         )
         self.app_log.success("Re-Add list populated.")
 
-    def update_global_git_log(self) -> None:
+    @work
+    async def update_global_git_log(self) -> None:
         if self.app.splash_data is None:
             self.notify("No loading screen data available.", severity="error")
             return
         logs_tab = self.screen.query_exactly_one(LogsTab)
         setattr(logs_tab, "git_log_result", self.app.splash_data.git_log)
 
-    def update_config_tab(self) -> None:
+    @work
+    async def update_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
             IDS.config.switcher.config_tab_q, ConfigTabSwitcher
         )
         setattr(config_tab_switcher, "splash_data", self.app.splash_data)
-
-    def handle_operate_result(self, _: None) -> None:
-        if self.app.operate_cmd_result is None:
-            self.notify("Operation cancelled.")
-            return
-        self.refresh_bindings()
-        if (
-            self.app.operate_cmd_result.exit_code == 0
-            and self.app.changes_enabled
-        ):
-            self.notify("Operation completed successfully.")
-        elif (
-            self.app.operate_cmd_result.exit_code == 0
-            and not self.app.changes_enabled
-        ):
-            self.notify(
-                "Operation completed in dry-run mode, no changes were made."
-            )
-        else:
-            self.notify(
-                "The command ran with errors, see the Logs tab for more info.",
-                severity="error",
-            )
-        add_dir_tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
-        add_dir_tree.reload()
-        self.populate_apply_trees()
-        self.populate_re_add_trees()

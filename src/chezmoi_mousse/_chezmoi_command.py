@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from ._app_state import AppState
 from ._chezmoi_paths import ChezmoiPaths
+from ._str_enums import OperateStrings
 
 if TYPE_CHECKING:
     from .gui.tabs.logs_tab import AppLog, OperateLog, ReadCmdLog
@@ -62,18 +63,15 @@ class GlobalCmd(Enum):
         "--use-builtin-git=true",
     ]
     live_run = ["chezmoi"] + default_args
-    dry_run = live_run + ["--dry-run"]
+    _dry_run = live_run + ["--dry-run"]
     # version = live_run + ["--version"] TODO
 
     @classmethod
     def base_cmd(cls) -> list[str]:
-        if (
-            AppState.changes_enabled() is True
-            and AppState.is_dev_mode() is False
-        ):
+        if AppState.changes_enabled() is True:
             return cls.live_run.value
         else:
-            return cls.dry_run.value
+            return cls._dry_run.value
 
 
 class VerbArgs(Enum):
@@ -153,10 +151,7 @@ class ReadCmd(Enum):
 
     @property
     def pretty_cmd(self) -> str:
-        return (
-            f"[$success]{GlobalCmd.live_run.value[0]} "
-            f"{LogUtils.filtered_args_str(self.value)}[/]"
-        )
+        return f"[$success]chezmoi {LogUtils.filtered_args_str(self.value)}[/]"
 
 
 class WriteVerb(Enum):
@@ -182,7 +177,7 @@ class WriteCmd(Enum):
     @property
     def pretty_cmd(self) -> str:
         return (
-            f"[$text-success bold] "
+            f"[$text-success bold]"
             f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
         )
 
@@ -228,24 +223,27 @@ class CommandResult:
 
     @property
     def std_out(self) -> str:
+        exit_code = f"Exit code {self.exit_code} ."
         if self.stripped_std_out == "" and "--dry-run" in self.cmd_args:
-            return "No output on stdout, command was executed with --dry-run."
+            return f"{OperateStrings.no_stdout_write_cmd_dry} {exit_code}"
         if self.stripped_std_out == "":
-            return "No output on stdout."
+            return f"{OperateStrings.no_stdout_write_cmd_live} {exit_code}"
         return self.stripped_std_out
 
     @property
-    def std_err(self) -> str | None:
-        if self.stripped_std_err == "" and self.exit_code == 0:
-            return None
-        if self.stripped_std_err == "" and self.exit_code != 0:
-            return f"exit code {self.exit_code} but nothing written to stdout"
+    def std_err(self) -> str:
+        exit_code = f"Exit code {self.exit_code} ."
+        if self.stripped_std_err == "" and "--dry-run" in self.cmd_args:
+            return f"{OperateStrings.no_stderr_write_cmd_dry} {exit_code}"
+        if self.stripped_std_err == "":
+            return f"{OperateStrings.no_stderr_write_cmd_live} {exit_code}"
         return self.stripped_std_err
 
 
 class ChezmoiCommand:
 
     def __init__(self) -> None:
+        self.app = AppState.get_app()
         self.app_log: AppLog | None = None
         self.read_cmd_log: ReadCmdLog | None = None
         self.operate_log: OperateLog | None = None
@@ -267,14 +265,6 @@ class ChezmoiCommand:
             self.operate_log.log_cmd_results(result)
         self.app_log.log_cmd_results(result)
 
-    def update_managed_paths(self) -> None:
-        ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
-        ChezmoiPaths.managed_files_result = self.read(ReadCmd.managed_files)
-
-    def update_status_paths(self) -> None:
-        ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
-        ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
-
     @staticmethod
     def strip_output(cmd_output: str):
         # remove trailing space and new lines but NOT leading whitespace
@@ -287,7 +277,7 @@ class ChezmoiCommand:
     def read(
         self, read_cmd: ReadCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
-        base_cmd = GlobalCmd.live_run.value
+        base_cmd = GlobalCmd.live_run.value  # read commands always run live
         command = base_cmd + read_cmd.value
         if path_arg is not None:
             command += [str(path_arg)]
@@ -317,22 +307,22 @@ class ChezmoiCommand:
         self,
         write_cmd: WriteCmd,
         *,
-        path_arg: Path | None = None,
+        path_arg: str | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
         if write_cmd == WriteCmd.init_new:
             command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
-        elif (
-            path_arg is not None
-            and WriteVerb.init.value not in write_cmd.value
-        ):
-            command: list[str] = (
-                GlobalCmd.base_cmd() + write_cmd.value + [str(path_arg)]
-            )
-        elif init_arg is not None and WriteVerb.init.value in write_cmd.value:
-            command: list[str] = (
-                GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
-            )
+            if init_arg is not None:
+                command: list[str] = (
+                    GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
+                )
+        elif init_arg is None:
+            if path_arg is None:
+                command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
+            else:
+                command: list[str] = (
+                    GlobalCmd.base_cmd() + write_cmd.value + [str(path_arg)]
+                )
         else:
             raise ValueError("Invalid arguments for perform()")
 
@@ -348,11 +338,14 @@ class ChezmoiCommand:
             write_cmd=write_cmd,
         )
         self._log_in_app(command_result)
-        if write_cmd == WriteCmd.add:
-            self.update_managed_paths()
+        if write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget):
+            ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
+            ChezmoiPaths.managed_files_result = self.read(
+                ReadCmd.managed_files
+            )
+            ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
+            ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
         elif write_cmd in (WriteCmd.apply, WriteCmd.re_add):
-            self.update_status_paths()
-        elif write_cmd in (WriteCmd.destroy, WriteCmd.forget):
-            self.update_status_paths()
-            self.update_managed_paths()
+            ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
+            ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
         return command_result

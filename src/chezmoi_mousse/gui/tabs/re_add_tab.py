@@ -6,7 +6,7 @@ from chezmoi_mousse import IDS, AppType
 from chezmoi_mousse.shared import (
     CurrentReAddNodeMsg,
     OperateButtons,
-    OperateInfo,
+    OperateMode,
 )
 
 from .common.switch_slider import SwitchSlider
@@ -22,7 +22,7 @@ class ReAddTab(TabsBase, AppType):
         super().__init__(ids=IDS.re_add)
 
     def compose(self) -> ComposeResult:
-        yield OperateInfo(ids=IDS.re_add)
+        yield OperateMode(ids=IDS.re_add)
         with Horizontal():
             yield TreeSwitcher(ids=IDS.re_add)
             yield ViewSwitcher(ids=IDS.re_add)
@@ -30,8 +30,8 @@ class ReAddTab(TabsBase, AppType):
         yield SwitchSlider(ids=IDS.re_add)
 
     def on_mount(self) -> None:
-        self.operate_info = self.query_one(
-            IDS.re_add.container.operate_info_q, OperateInfo
+        self.operate_mode_container = self.query_one(
+            IDS.re_add.container.op_mode_q, OperateMode
         )
 
     @on(CurrentReAddNodeMsg)
@@ -40,4 +40,4 @@ class ReAddTab(TabsBase, AppType):
     ) -> None:
         msg.stop()
         self.update_view_node_data(msg.node_data)
-        self.operate_info.path_arg = str(msg.node_data.path)
+        self.operate_mode_container.path_arg = str(msg.node_data.path)

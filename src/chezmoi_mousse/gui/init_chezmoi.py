@@ -1,7 +1,7 @@
 import re
 from enum import StrEnum
 
-from textual import on
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
@@ -31,7 +31,7 @@ from chezmoi_mousse import (
     Tcss,
     WriteCmd,
 )
-from chezmoi_mousse.shared import (
+from chezmoi_mousse.shared import (  # OperateLog,
     CustomCollapsible,
     CustomHeader,
     DebugLog,
@@ -40,7 +40,6 @@ from chezmoi_mousse.shared import (
     InitCloneCmdMsg,
     OperateButtonMsg,
     OperateButtons,
-    OperateLog,
     PrettyTemplateData,
     SwitchWithLabel,
 )
@@ -494,26 +493,26 @@ class InitChezmoi(Screen[None], AppType):
         # yield Static(
         #     id=self.ids.static.operate_info, classes=Tcss.operate_info
         # )
-        yield VerticalGroup(
-            HorizontalGroup(
-                Label(
-                    SectionLabels.init_new_repo,
-                    classes=Tcss.main_section_label,
-                ),
-                SwitchWithLabel(
-                    ids=self.ids, switch_enum=Switches.init_repo_switch
-                ),
-            ),
-            Static(id=self.ids.static.init_info),
-            InputInitCloneRepo(),
-            InitCollapsibles(),
-            id=self.ids.container.pre_operate,
-        )
-        with VerticalGroup(id=self.ids.container.post_operate):
-            yield Label(
-                SectionLabels.operate_output, classes=Tcss.main_section_label
-            )
-            yield OperateLog(ids=self.ids)
+        # yield VerticalGroup(
+        #     HorizontalGroup(
+        #         Label(
+        #             SectionLabels.init_new_repo,
+        #             classes=Tcss.main_section_label,
+        #         ),
+        #         SwitchWithLabel(
+        #             ids=self.ids, switch_enum=Switches.init_repo_switch
+        #         ),
+        #     ),
+        #     Static(id=self.ids.static.init_info),
+        #     InputInitCloneRepo(),
+        #     InitCollapsibles(),
+        #     id=self.ids.container.pre_operate,
+        # )
+        # with VerticalGroup(id=self.ids.container.post_operate):
+        #     yield Label(
+        #         SectionLabels.operate_output, classes=Tcss.main_section_label
+        #     )
+        #     yield OperateLog(ids=self.ids)
         if self.app.dev_mode is True:
             yield Label(SectionLabels.debug_log_output)
             yield DebugLog(self.ids)
@@ -528,10 +527,10 @@ class InitChezmoi(Screen[None], AppType):
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.reload
         )
-        self.post_op_container = self.query_one(
-            self.ids.container.post_operate_q, VerticalGroup
-        )
-        self.post_op_container.display = False
+        # self.post_op_container = self.query_one(
+        #     self.ids.container.post_operate_q, VerticalGroup
+        # )
+        # self.post_op_container.display = False
         self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         # self.operate_info = self.query_one(
         #     self.ids.static.operate_info_q, Static
@@ -623,21 +622,23 @@ class InitChezmoi(Screen[None], AppType):
         elif current_select == "guess ssh":
             self.init_info.update(InitStrings.guess_ssh)
 
-    def run_operate_command(self) -> None:
-        self.app.init_cmd_result = self.app.cmd.perform(
-            write_cmd=self.init_cmd, init_arg=self.init_arg
-        )
-        self.pre_op_container = self.query_one(
-            self.ids.container.pre_operate_q, VerticalGroup
-        )
-        self.pre_op_container.display = False
-        self.post_op_container.display = True
-        output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        output_log.log_cmd_results(self.app.init_cmd_result)
+    @work(exit_on_error=False)
+    async def run_operate_command(self) -> None:
+        # self.app.init_cmd_result = self.app.cmd.perform(
+        #     write_cmd=self.init_cmd, init_arg=self.init_arg
+        # )
+        # self.pre_op_container = self.query_one(
+        #     self.ids.container.pre_operate_q, VerticalGroup
+        # )
+        # self.pre_op_container.display = False
+        # self.post_op_container.display = True
+        # output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
+        # output_log.log_cmd_results(self.app.init_cmd_result)
         self.close_btn = self.query_one(IDS.init.close_q, Button)
         if (
-            self.app.changes_enabled is True
-            and self.app.init_cmd_result.exit_code == 0
+            self.app.changes_enabled
+            is True
+            # and self.app.init_cmd_result.exit_code == 0
         ):
             self.app.init_needed = False
             self.init_chezmoi_btn.disabled = True
@@ -658,7 +659,7 @@ class InitChezmoi(Screen[None], AppType):
         if msg.button.btn_enum == OpBtnEnum.init:
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
-            self.run_operate_command()
+            # self.run_operate_command()
         elif msg.button.label == OpBtnLabels.reload:
             self.dismiss()
 

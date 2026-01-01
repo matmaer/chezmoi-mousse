@@ -36,6 +36,7 @@ class OpBtnLabels(StrEnum):
 @dataclass(slots=True)
 class OpBtnData:
     label: str
+    pretty_cmd: str
     write_cmd: WriteCmd
     info_strings: list[str] | None = None
     info_sub_title: str | None = None
@@ -45,6 +46,7 @@ class OpBtnData:
 class OpBtnEnum(Enum):
     add = OpBtnData(
         label=OpBtnLabels.add_review,
+        pretty_cmd=WriteCmd.add.pretty_cmd,
         write_cmd=WriteCmd.add,
         info_strings=[OperateStrings.add_path_info],
         info_sub_title=OperateStrings.add_subtitle,
@@ -52,6 +54,7 @@ class OpBtnEnum(Enum):
     )
     apply = OpBtnData(
         label=OpBtnLabels.apply_review,
+        pretty_cmd=WriteCmd.apply.pretty_cmd,
         write_cmd=WriteCmd.apply,
         info_strings=[OperateStrings.apply_path_info],
         info_sub_title=OperateStrings.apply_subtitle,
@@ -59,6 +62,7 @@ class OpBtnEnum(Enum):
     )
     destroy = OpBtnData(
         label=OpBtnLabels.destroy_review,
+        pretty_cmd=WriteCmd.destroy.pretty_cmd,
         write_cmd=WriteCmd.destroy,
         info_strings=[OperateStrings.destroy_path_info],
         info_sub_title=OperateStrings.destroy_subtitle,
@@ -66,6 +70,7 @@ class OpBtnEnum(Enum):
     )
     forget = OpBtnData(
         label=OpBtnLabels.forget_review,
+        pretty_cmd=WriteCmd.forget.pretty_cmd,
         write_cmd=WriteCmd.forget,
         info_strings=[OperateStrings.forget_path_info],
         info_sub_title=OperateStrings.forget_subtitle,
@@ -73,13 +78,16 @@ class OpBtnEnum(Enum):
     )
     re_add = OpBtnData(
         label=OpBtnLabels.re_add_review,
+        pretty_cmd=WriteCmd.re_add.pretty_cmd,
         write_cmd=WriteCmd.re_add,
         info_strings=[OperateStrings.re_add_path_info],
         info_sub_title=OperateStrings.re_add_subtitle,
         info_title=OpBtnLabels.re_add_run,
     )
     init = OpBtnData(
-        label=OpBtnLabels.init_review, write_cmd=WriteCmd.init_new
+        label=OpBtnLabels.init_review,
+        pretty_cmd=WriteCmd.init_new.pretty_cmd,
+        write_cmd=WriteCmd.init_new,
     )
 
     # Allow access to dataclass attributes directly from the Enum member,
@@ -88,6 +96,10 @@ class OpBtnEnum(Enum):
     @property
     def label(self) -> str:
         return self.value.label
+
+    @property
+    def pretty_cmd(self) -> str:
+        return self.value.pretty_cmd
 
     @property
     def write_cmd(self) -> WriteCmd:

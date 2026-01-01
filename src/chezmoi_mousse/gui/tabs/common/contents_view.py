@@ -9,12 +9,11 @@ from textual.widgets import Label, RichLog, Static
 
 from chezmoi_mousse import (
     AppType,
-    DestDirStrings,
     NodeData,
+    OperateStrings,
     PathKind,
     ReadCmd,
     SectionLabels,
-    TabName,
     Tcss,
 )
 
@@ -100,12 +99,9 @@ class ContentsView(Vertical, AppType):
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
         )
-        if self.ids.canvas_name == TabName.add:
-            self.contents_info_static_text.update(DestDirStrings.add)
-        elif self.ids.canvas_name == TabName.apply:
-            self.contents_info_static_text.update(DestDirStrings.cat)
-        elif self.ids.canvas_name == TabName.re_add:
-            self.contents_info_static_text.update(DestDirStrings.re_add)
+        self.contents_info_static_text.update(
+            OperateStrings.in_dest_dir_click_path
+        )
 
     def open_file_and_update_ui(self, file_path: "Path") -> None:
         try:

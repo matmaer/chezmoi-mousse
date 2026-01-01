@@ -134,6 +134,10 @@ class CanvasIds:
 class ContainerIds:
     def __init__(self, ids: AppIds):
         self.contents = ids.container_id(name=ContainerName.contents)
+        self.command_output = ids.container_id(
+            name=ContainerName.command_output
+        )
+        self.command_output_q = f"#{self.command_output}"
         self.contents_q = f"#{self.contents}"
         self.contents_info = ids.container_id(name=ContainerName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
@@ -159,12 +163,12 @@ class ContainerIds:
             name=ContainerName.operate_buttons
         )
         self.operate_buttons_q = f"#{self.operate_buttons}"
-        self.operate_info = ids.container_id(name=ContainerName.operate_info)
-        self.operate_info_q = f"#{self.operate_info}"
-        self.post_operate = ids.container_id(name=ContainerName.post_operate)
-        self.post_operate_q = f"#{self.post_operate}"
-        self.pre_operate = ids.container_id(name=ContainerName.pre_operate)
-        self.pre_operate_q = f"#{self.pre_operate}"
+        self.op_mode = ids.container_id(name=ContainerName.op_mode)
+        self.op_mode_q = f"#{self.op_mode}"
+        self.op_result = ids.container_id(name=ContainerName.op_result)
+        self.op_result_q = f"#{self.op_result}"
+        self.op_review = ids.container_id(name=ContainerName.op_review)
+        self.op_review_q = f"#{self.op_review}"
         self.repo_input = ids.container_id(name=ContainerName.repo_input)
         self.repo_input_q = f"#{self.repo_input}"
         self.right_side = ids.container_id(name=ContainerName.right_side)
@@ -413,10 +417,10 @@ class StaticIds:
         self.git_log_info_q = f"#{self.git_log_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)
         self.init_info_q = f"#{self.init_info}"
-        self.operate_info_cmd = ids.static_id(
-            static=StaticName.operate_info_cmd
-        )
-        self.operate_info_cmd_q = f"#{self.operate_info_cmd}"
+        self.op_review_info = ids.static_id(static=StaticName.op_review_info)
+        self.op_review_info_q = f"#{self.op_review_info}"
+        self.op_result_info = ids.static_id(static=StaticName.op_result_info)
+        self.op_result_info_q = f"#{self.op_result_info}"
 
 
 class TabButtonIds:

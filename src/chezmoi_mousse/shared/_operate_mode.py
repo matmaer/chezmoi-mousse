@@ -1,0 +1,145 @@
+from asyncio import sleep
+
+from textual import work
+from textual.app import ComposeResult
+from textual.containers import ScrollableContainer, Vertical
+from textual.screen import ModalScreen
+from textual.widgets import Label, LoadingIndicator, Static
+
+from chezmoi_mousse import (
+    AppIds,
+    AppType,
+    CommandResult,
+    OpBtnEnum,
+    OperateStrings,
+    TabName,
+    Tcss,
+)
+
+__all__ = ["OperateMode", "LoadingModal"]
+
+
+class CommandOutput(ScrollableContainer):
+    def __init__(self, cmd_result: "CommandResult | None" = None) -> None:
+        super().__init__()
+        self.cmd_result = cmd_result
+
+    def on_mount(self) -> None:
+        if self.cmd_result is not None:
+            self.update_cmd_output(self.cmd_result)
+
+    def update_cmd_output(self, cmd_result: "CommandResult") -> None:
+        self.remove_children()
+        self.mount(
+            Label("Output from stdout", classes=Tcss.sub_section_label),
+            Static(cmd_result.std_out, markup=False),
+            Label("Output from stderr", classes=Tcss.sub_section_label),
+            Static(cmd_result.std_err, markup=False),
+        )
+
+
+class LoadingModal(ModalScreen[None]):
+
+    def __init__(self, pretty_cmd: str) -> None:
+        super().__init__()
+        self.pretty_cmd = pretty_cmd
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label(f"Running {self.pretty_cmd}")
+            yield LoadingIndicator()
+
+
+class OperateMode(Vertical, AppType):
+
+    def __init__(self, *, ids: AppIds) -> None:
+        super().__init__(id=ids.container.op_mode)
+        self.command: str | None = None
+        self.ids = ids
+        self.path_arg: str | None = None
+        self.btn_enum: OpBtnEnum | None = None
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            Static(id=self.ids.static.op_review_info),
+            id=self.ids.container.op_review,
+            classes=Tcss.operate_info,
+        )
+        yield Vertical(
+            Static(id=self.ids.static.op_result_info),
+            CommandOutput(),
+            id=self.ids.container.op_result,
+            classes=Tcss.operate_info,
+        )
+
+    def on_mount(self) -> None:
+        self.display = False
+        self.op_result_container = self.query_one(
+            self.ids.container.op_result_q, Vertical
+        )
+        self.op_result_container.display = False
+        self.op_review_container = self.query_one(
+            self.ids.container.op_review_q, Vertical
+        )
+        self.review_info = self.query_one(
+            self.ids.static.op_review_info_q, Static
+        )
+
+    def update_review_info(self, btn_enum: "OpBtnEnum") -> None:
+        self.btn_enum = btn_enum
+        info_lines: list[str] = []
+        cmd_text = (
+            f"{OperateStrings.ready_to_run} "
+            f"{self.btn_enum.write_cmd.pretty_cmd} "
+            f"[$text-success bold]{self.path_arg}[/]"
+        )
+        info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
+        if self.ids.canvas_name in (TabName.add, TabName.re_add):
+            if self.app.git_auto_commit is True:
+                info_lines.append(OperateStrings.auto_commit)
+            if self.app.git_auto_push is True:
+                info_lines.append(OperateStrings.auto_push)
+        self.review_info.update("\n".join(info_lines))
+        self.op_review_container.border_title = self.btn_enum.info_title
+        self.op_review_container.border_subtitle = self.btn_enum.info_sub_title
+
+    def refresh_review_info(self) -> None:
+        if self.btn_enum is not None:
+            self.update_review_info(self.btn_enum)
+
+    @work(thread=True)
+    def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
+        return self.app.cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
+
+    @work(exit_on_error=False)
+    async def run_command(self, btn_enum: "OpBtnEnum") -> None:
+        pretty_cmd = f"{btn_enum.write_cmd.pretty_cmd}"
+        if self.path_arg is not None:
+            pretty_cmd += f"[$text-success bold] {self.path_arg}[/]"
+        loading_modal = LoadingModal(pretty_cmd)
+        await self.app.push_screen(loading_modal)
+        worker = self.run_perform_command(btn_enum)
+        await worker.wait()
+        cmd_result = worker.result
+        if cmd_result is None:
+            self.notify("Command result is None", severity="error")
+            return
+        self.op_review_container.display = False
+        result_info = self.query_one(self.ids.static.op_result_info_q, Static)
+        result_info.update(
+            (
+                f"Command {pretty_cmd} completed with exit code "
+                f"{cmd_result.exit_code}."
+            )
+        )
+        self.mount(
+            ScrollableContainer(
+                Label("Output from stdout", classes=Tcss.sub_section_label),
+                Static(cmd_result.std_out),
+                Label("Output from stderr", classes=Tcss.sub_section_label),
+                Static(cmd_result.std_err),
+            )
+        )
+        self.op_result_container.display = True
+        await sleep(1)
+        loading_modal.dismiss()

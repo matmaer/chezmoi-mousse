@@ -2,11 +2,8 @@
 
 from enum import StrEnum
 
-from ._chezmoi_command import ReadCmd
-
 __all__ = [
     "Chars",
-    "DestDirStrings",
     "FlatBtn",
     "LinkBtn",
     "LogStrings",
@@ -108,8 +105,9 @@ class OperateStrings(StrEnum):
     add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     apply_path_info = (
-        "[dim]Ensure that the path is in the target state without prompting "
-        "for targets modified since chezmoi last wrote it. If adding a "
+        "[dim]Chezmoi will ensure that the path is in the target state. "
+        "The command will run without prompting. "
+        "For targets modified since chezmoi last wrote it. If adding a "
         "directory, it will be recursed in.[/]"
     )
     auto_commit = (
@@ -122,7 +120,7 @@ class OperateStrings(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    cmd_output_subtitle = "Command Output"
+    in_dest_dir_click_path = "Select a file or directory to operate on."
     destroy_path_info = (
         "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
         "SURE YOU HAVE A BACKUP![/]"
@@ -131,7 +129,6 @@ class OperateStrings(StrEnum):
         f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
         f"[$text-error]{Chars.x_mark}[/]"
     )
-    error_subtitle = "Operation failed with errors"
     forget_path_info = (
         "[dim]Remove from the source state, i.e. stop managing them.[/]"
     )
@@ -149,22 +146,22 @@ class OperateStrings(StrEnum):
     re_add_subtitle = (
         f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     )
-    success_subtitle = "Operation completed successfully"
-
-
-class DestDirStrings(StrEnum):
-    _click_path = "Select a file or directory to check"
-    _click_file = "Select a file to check"
-    _click_dir = "Select a directory to check"
-    add = (
-        f"Select a directory to check if it's managed or unmanaged and if it "
-        "contains files to add.\n"
-        f"{_click_file} {OperateStrings.read_file}."
+    no_stdout_write_cmd_live = (
+        "No output on stdout, the command was executed live, i.e. "
+        "without --dry-run flag."
     )
-    cat = f"{_click_file} {ReadCmd.cat.pretty_cmd}."
-    diff = f"{_click_path} {ReadCmd.diff.pretty_cmd}."
-    git_log_msg = f"{_click_path} {ReadCmd.git_log.pretty_cmd}."
-    re_add = f"{_click_file} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
+    no_stdout_write_cmd_dry = (
+        "No output on stdout, the command was executed "
+        " with the --dry-run flag."
+    )
+    no_stderr_write_cmd_live = (
+        "No output on stderr, the command was executed live, i.e. "
+        "without --dry-run flag."
+    )
+    no_stderr_write_cmd_dry = (
+        "No output on stderr, the command was executed "
+        " with the --dry-run flag."
+    )
 
 
 class SectionLabels(StrEnum):
@@ -180,7 +177,6 @@ class SectionLabels(StrEnum):
     doctor_output = "Doctor Output"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
-    operate_output = "Operate Command Output"
     password_managers = "Password Manager Information"
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"

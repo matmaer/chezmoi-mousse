@@ -59,8 +59,6 @@ class CloseButton(Button, AppType):
         if event.button.label == OpBtnLabels.exit_app:
             self.app.exit()
             return
-        if event.button.label == OpBtnLabels.reload:
-            self.label = OpBtnLabels.cancel
         self.post_message(CloseButtonMsg(button=event.button, ids=self.ids))
 
 
@@ -166,7 +164,6 @@ class OperateButtons(HorizontalGroup):
             )
         )
 
-        self.visible = False
         if event.button.label == OpBtnLabels.init_review:
             event.button.label = OpBtnLabels.init_run
 
@@ -198,8 +195,6 @@ class OperateButtons(HorizontalGroup):
             self.query_one(self.ids.op_btn.forget_q).display = False
             self.query_one(self.ids.op_btn.destroy_q).display = False
             event.button.label = OpBtnLabels.re_add_run
-
-        self.visible = True
 
 
 class SwitchWithLabel(HorizontalGroup):

@@ -27,7 +27,7 @@ from ._messages import (
     InitCloneCmdMsg,
     OperateButtonMsg,
 )
-from ._operate_info import OperateInfo
+from ._operate_mode import LoadingModal, OperateMode
 from ._pw_mgr_info import PwMgrInfoView
 from ._screen_header import CustomHeader, HeaderTitle
 
@@ -40,7 +40,6 @@ __all__ = [
     "LogsTabButtons",
     "OpButton",
     "OperateButtons",
-    "OperateInfo",
     "SwitchWithLabel",
     "TreeTabButtons",
     "ViewTabButtons",
@@ -55,6 +54,9 @@ __all__ = [
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
+    # Operate Mode
+    "LoadingModal",
+    "OperateMode",
     # Other shared components
     "CustomCollapsible",
     "CustomHeader",

@@ -20,8 +20,8 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
+    OpBtnLabels,
     TabName,
-    Tcss,
 )
 from chezmoi_mousse.shared import (
     CloseButton,
@@ -31,7 +31,7 @@ from chezmoi_mousse.shared import (
     LogsTabButtons,
     OperateButtonMsg,
     OperateButtons,
-    OperateInfo,
+    OperateMode,
     ViewTabButtons,
 )
 
@@ -135,13 +135,8 @@ class ChezmoiGUI(App[None]):
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
 
-        # Disable Maxdmize/Minimize and Show/Hide Filters bindings when
-        # in operate mode in the MainScreen
-        self.operate_mode: bool = False
-
         # Manage state between screens
         self.init_cmd_result: "CommandResult | None" = None
-        self.operate_cmd_result: "CommandResult | None" = None
         self.splash_data: "SplashData | None" = None
 
         # Arbitrary max file size used by FilteredDirTree and ContentsView but
@@ -235,50 +230,43 @@ class ChezmoiGUI(App[None]):
                 severity="error",
             )
             return
+        operate_mode_container = self.screen.query_one(
+            msg.ids.container.op_mode_q, OperateMode
+        )
+        operate_buttons = self.screen.query_one(
+            msg.ids.container.operate_buttons_q, OperateButtons
+        )
+        close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
+        close_btn.display = True
         if "Review" in msg.pressed_label:
-            self.operate_mode = True
-            self.update_binding_show(BindingAction.toggle_maximized, False)
-            self.update_binding_show(
-                BindingAction.toggle_switch_slider_visibility, False
-            )
+            operate_buttons.visible = False
             self.toggle_operate_display(ids=msg.ids)
-            operate_info = self.screen.query_one(
-                msg.ids.container.operate_info_q, OperateInfo
-            )
-            operate_info.update_review_info(msg.button.btn_enum)
-            operate_info.display = True
-            close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
-            close_btn.display = True
-            return
-        if "Run" in str(msg.button.label):
-            self.operate_mode = True
-            self.notify(
-                f"Will run '{" ".join(msg.button.btn_enum.full_cmd)}'."
-            )
-            return
+            operate_mode_container.update_review_info(msg.button.btn_enum)
+            operate_mode_container.display = True
+            operate_buttons.visible = True
+            self.screen.query_exactly_one(CustomHeader).read_mode = False
+            self.refresh_bindings()
+        elif "Run" in str(msg.button.label):
+            close_btn.label = OpBtnLabels.reload
+            operate_mode_container.run_command(msg.button.btn_enum)
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
-        self.operate_mode = False
-        self.update_binding_show(BindingAction.toggle_maximized, True)
-        self.update_binding_show(
-            BindingAction.toggle_switch_slider_visibility, True
+        operate_mode_container = self.screen.query_one(
+            msg.ids.container.op_mode_q, OperateMode
         )
-        operate_info = self.screen.query_one(
-            msg.ids.container.operate_info_q, OperateInfo
-        )
-        operate_info.remove_class(Tcss.operate_success, Tcss.operate_error)
-        operate_info.display = False
-        self.toggle_operate_display(ids=msg.ids)
+        operate_mode_container.display = False
         operate_buttons = self.screen.query_one(
             msg.ids.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.visible = False
-        msg.button.display = False
+        self.toggle_operate_display(ids=msg.ids)
         operate_buttons.refresh(recompose=True)
+        msg.button.display = False
         operate_buttons.visible = True
-        if "reload" in str(msg.button.label):
+        if msg.button.label == OpBtnLabels.reload:
             self.notify("Reloading to be implemented.", severity="error")
+        self.screen.query_exactly_one(CustomHeader).read_mode = True
 
     ##################
     # Action Methods #
@@ -293,8 +281,18 @@ class ChezmoiGUI(App[None]):
             TabName.re_add,
             TabName.add,
         ):
-            self.update_switch_slider_binding()
-            self.refresh_bindings()
+            slider: SwitchSlider = self.get_switch_slider_widget()
+            slider_visible = slider.has_class("-visible")
+            new_description = (
+                BindingDescription.hide_filters
+                if slider_visible is False
+                else BindingDescription.show_filters
+            )
+            self.update_binding_description(
+                binding_action=BindingAction.toggle_switch_slider_visibility,
+                new_description=new_description,
+            )
+        self.refresh_bindings()
 
     def update_binding_description(
         self, binding_action: BindingAction, new_description: str
@@ -313,38 +311,15 @@ class ChezmoiGUI(App[None]):
                 break
         self.refresh_bindings()
 
-    def update_binding_show(
-        self, binding_action: BindingAction, show: bool
-    ) -> None:
-        for key, binding in self._bindings:
-            if binding.action == binding_action:
-                updated_binding = dataclasses.replace(binding, show=show)
-                if key in self._bindings.key_to_bindings:
-                    bindings_list = self._bindings.key_to_bindings[key]
-                    for i, b in enumerate(bindings_list):
-                        if b.action == binding_action:
-                            bindings_list[i] = updated_binding
-                            break
-                break
-        self.refresh_bindings()
-
-    def update_switch_slider_binding(self) -> None:
-        slider: SwitchSlider = self.get_switch_slider_widget()
-        slider_visible = slider.has_class("-visible")
-        new_description = (
-            BindingDescription.hide_filters
-            if slider_visible is False
-            else BindingDescription.show_filters
-        )
-        self.update_binding_description(
-            binding_action=BindingAction.toggle_switch_slider_visibility,
-            new_description=new_description,
-        )
-
     def action_toggle_dry_run(self) -> None:
         AppState.set_changes_enabled(not self.changes_enabled)
-        reactive_header = self.screen.query_exactly_one(CustomHeader)
-        reactive_header.changes_enabled = self.changes_enabled
+        self.screen.query_exactly_one(CustomHeader).changes_enabled = (
+            self.changes_enabled
+        )
+        operate_mode_widgets = self.screen.query(OperateMode)
+        for widget in operate_mode_widgets:
+            if widget.display is True:
+                widget.refresh_review_info()
 
     def action_toggle_switch_slider_visibility(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -461,10 +436,9 @@ class ChezmoiGUI(App[None]):
     ) -> bool | None:
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
-                if self.operate_mode is True:
-                    return False
                 header = self.screen.query_exactly_one(CustomHeader)
-                if header.display is False:
+                switch_slider = self.get_switch_slider_widget()
+                if header.display is False or switch_slider.display is False:
                     return False
                 active_tab = self.screen.query_exactly_one(
                     TabbedContent
@@ -485,31 +459,19 @@ class ChezmoiGUI(App[None]):
                 return False
         elif action == BindingAction.toggle_dry_run:
             if isinstance(self.screen, MainScreen):
+                tabs = self.screen.query_exactly_one(Tabs)
                 header = self.screen.query_exactly_one(CustomHeader)
-                if header.display is False:
-                    return False
-                active_tab = self.screen.query_exactly_one(
-                    TabbedContent
-                ).active
-                if active_tab == TabName.apply:
-                    return True
-                elif active_tab == TabName.re_add:
-                    return True
-                elif active_tab == TabName.add:
-                    return True
-                elif active_tab == TabName.logs:
-                    return False
-                elif active_tab == TabName.config:
-                    return False
-                elif active_tab == TabName.help:
+                if tabs.display is True or header.display is False:
                     return False
             elif isinstance(self.screen, (InitChezmoi)):
                 return True
             else:
                 return False
         elif action == BindingAction.toggle_maximized:
-            if self.operate_mode is True:
-                return False
+            operate_mode_widgets = self.screen.query(OperateMode)
+            for widget in operate_mode_widgets:
+                if widget.display is True:
+                    return False
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
         elif action == BindingAction.exit_screen:

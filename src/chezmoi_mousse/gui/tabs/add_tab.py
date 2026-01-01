@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Switch
 
 from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, Tcss
-from chezmoi_mousse.shared import OperateButtons, OperateInfo
+from chezmoi_mousse.shared import OperateButtons, OperateMode
 
 from .common.contents_view import ContentsView
 from .common.switch_slider import SwitchSlider
@@ -244,13 +244,13 @@ class AddTab(TabsBase, AppType):
         self.current_node: "NodeData | None" = None
 
     def compose(self) -> ComposeResult:
-        yield OperateInfo(ids=IDS.add)
+        yield OperateMode(ids=IDS.add)
         yield SwitchSlider(ids=IDS.add)
         yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
-        self.operate_info = self.query_one(
-            IDS.add.container.operate_info_q, OperateInfo
+        self.operate_mode_container = self.query_one(
+            IDS.add.container.op_mode_q, OperateMode
         )
         if self.destDir is not None:
             self.mount(
@@ -292,7 +292,7 @@ class AddTab(TabsBase, AppType):
             path_kind=path_kind,
         )
         contents_view.node_data = self.current_node
-        self.operate_info.path_arg = str(self.current_node.path)
+        self.operate_mode_container.path_arg = str(self.current_node.path)
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

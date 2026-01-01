@@ -8,7 +8,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable, Static
 
-from chezmoi_mousse import AppType, DestDirStrings, ReadCmd, Tcss
+from chezmoi_mousse import AppType, OperateStrings, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult
@@ -70,7 +70,8 @@ class GitLogPath(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Static(
-            DestDirStrings.git_log_msg, id=self.ids.static.git_log_info
+            OperateStrings.in_dest_dir_click_path,
+            id=self.ids.static.git_log_info,
         )
         yield GitLogDataTable(ids=self.ids)
 
