@@ -19,6 +19,7 @@ from .tabs.add_tab import AddTab
 from .tabs.apply_tab import ApplyTab
 from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
 from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
+from .tabs.debug_tab import DebugTab
 from .tabs.help_tab import HelpTab
 from .tabs.logs_tab import LogsTab
 from .tabs.re_add_tab import ReAddTab
@@ -30,6 +31,7 @@ class TabPanes(StrEnum):
     add_tab_label = "Add"
     apply_tab_label = "Apply"
     config_tab_label = "Config"
+    debug_tab_label = "Debug"
     help_tab_label = "Help"
     logs_tab_label = "Logs"
     re_add_tab_label = "Re-Add"
@@ -62,6 +64,11 @@ class MainScreen(Screen[None], AppType):
                 TabPanes.config_tab_label, ConfigTab(), id=TabName.config
             )
             yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
+            if self.app.dev_mode is True:
+                yield TabPane(
+                    TabPanes.debug_tab_label, DebugTab(), id=TabName.debug
+                )
+
         yield Footer(id=IDS.main_tabs.footer)
 
     def on_mount(self) -> None:
@@ -92,7 +99,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(LogStrings.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:
-            self.debug_log = self.query_one(IDS.logs.logger.debug_q, DebugLog)
+            self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.notify(LogStrings.dev_mode_enabled)
 
     @work

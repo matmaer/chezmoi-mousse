@@ -11,7 +11,6 @@ class AppState:
 
     _app: "ChezmoiGUI | None" = None  # Reference to the app instance
     _changes_enabled: bool = False
-    _dev_mode: bool = False
 
     @classmethod
     def set_app(cls, app: "ChezmoiGUI") -> None:
@@ -30,13 +29,3 @@ class AppState:
         cls._changes_enabled = value
         if cls._app is not None:
             cls._app.changes_enabled = value
-
-    @classmethod
-    def set_dev_mode(cls, value: bool) -> None:
-        cls._dev_mode = value
-        if cls._app is not None:
-            cls._app.dev_mode = value
-
-    @classmethod
-    def is_dev_mode(cls) -> bool:
-        return cls._dev_mode

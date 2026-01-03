@@ -19,6 +19,7 @@ class Tcss(StrEnum):
     last_clicked_tab_btn = auto()
     main_section_label = auto()
     operate_button = auto()
+    operate_button_group = auto()
     operate_info = auto()
     pw_mgr_group = auto()
     single_button_vertical = auto()

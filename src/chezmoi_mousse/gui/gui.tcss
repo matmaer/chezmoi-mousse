@@ -318,7 +318,7 @@ LogsTabButtons, TreeTabButtons, ViewTabButtons {
   }
 }
 
-OperateButtons {
+.operate_button_group {
   dock: bottom;
   .operate_button {
     background-tint: $surface-lighten-1;

@@ -126,6 +126,7 @@ class CanvasIds:
         self.add = AppIds(TabName.add)
         self.apply = AppIds(TabName.apply)
         self.config = AppIds(TabName.config)
+        self.debug = AppIds(TabName.debug)
         self.help = AppIds(TabName.help)
         self.logs = AppIds(TabName.logs)
         self.re_add = AppIds(TabName.re_add)
@@ -141,6 +142,8 @@ class ContainerIds:
         self.contents_q = f"#{self.contents}"
         self.contents_info = ids.container_id(name=ContainerName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
+        self.debug_log = ids.container_id(name=ContainerName.debug_log)
+        self.debug_log_q = f"#{self.debug_log}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
         self.diff_info = ids.container_id(name=ContainerName.diff_info)
@@ -185,7 +188,10 @@ class ContentSwitcherIds:
             switcher=ContentSwitcherName.config_switcher
         )
         self.config_tab_q = f"#{self.config_tab}"
-
+        self.debug_tab = ids.content_switcher_id(
+            switcher=ContentSwitcherName.debug_switcher
+        )
+        self.debug_tab_q = f"#{self.debug_tab}"
         self.help_tab = ids.content_switcher_id(
             switcher=ContentSwitcherName.help_switcher
         )
@@ -339,6 +345,12 @@ class FlatButtonIds:
         self.apply_help_q = f"#{self.apply_help}"
         self.cat_config = ids.flat_button_id(btn=FlatBtn.cat_config)
         self.cat_config_q = f"#{self.cat_config}"
+        self.debug_test_paths = ids.flat_button_id(
+            btn=FlatBtn.debug_test_paths
+        )
+        self.debug_test_paths_q = f"#{self.debug_test_paths}"
+        self.debug_log = ids.flat_button_id(btn=FlatBtn.debug_log)
+        self.debug_log_q = f"#{self.debug_log}"
         self.diagram = ids.flat_button_id(btn=FlatBtn.diagram)
         self.diagram_q = f"#{self.diagram}"
         self.doctor = ids.flat_button_id(btn=FlatBtn.doctor)
@@ -409,6 +421,10 @@ class StaticIds:
     def __init__(self, ids: AppIds):
         self.contents_info = ids.static_id(static=StaticName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
+        self.debug_test_paths = ids.static_id(
+            static=StaticName.debug_test_paths
+        )
+        self.debug_test_paths_q = f"#{self.debug_test_paths}"
         self.diff_info = ids.static_id(static=StaticName.diff_info)
         self.diff_info_q = f"#{self.diff_info}"
         self.diff_lines = ids.static_id(static=StaticName.diff_lines)
@@ -429,7 +445,6 @@ class TabButtonIds:
     def __init__(self, ids: AppIds):
         self.app_log = ids.tab_button_id(btn=TabBtn.app_log)
         self.contents = ids.tab_button_id(btn=TabBtn.contents)
-        self.debug_log = ids.tab_button_id(btn=TabBtn.debug_log)
         self.diff = ids.tab_button_id(btn=TabBtn.diff)
         self.git_log = ids.tab_button_id(btn=TabBtn.git_log_path)
         self.git_log_global = ids.tab_button_id(btn=TabBtn.git_log_global)
@@ -473,6 +488,14 @@ class ViewIds:
         self.cat_config_q = f"#{self.cat_config}"
         self.ignored = ids.view_id(view=ViewName.git_ignored_view)
         self.ignored_q = f"#{self.ignored}"
+
+        # Debug tab
+        self.debug_log = ids.view_id(view=ViewName.debug_log_view)
+        self.debug_log_q = f"#{self.debug_log}"
+        self.debug_test_paths = ids.view_id(
+            view=ViewName.debug_test_paths_view
+        )
+        self.debug_test_paths_q = f"#{self.debug_test_paths}"
 
         # Views or shared across canvases
         self.pw_mgr_info = ids.view_id(view=ViewName.pw_mgr_info_view)

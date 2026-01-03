@@ -121,16 +121,17 @@ class ChezmoiGUI(App[None]):
     CSS_PATH = "gui.tcss"
 
     def __init__(
-        self, *, chezmoi_found: bool, pretend_init_needed: bool
+        self, *, chezmoi_found: bool, pretend_init_needed: bool, dev_mode: bool
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
         AppState.set_app(self)
 
-        self.cmd = ChezmoiCommand()
         self.paths: "ChezmoiPaths"
+
+        self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
-        self.dev_mode: bool = False
+        self.dev_mode: bool = dev_mode
         self.chezmoi_found: bool = chezmoi_found
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False

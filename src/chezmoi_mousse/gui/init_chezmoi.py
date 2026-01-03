@@ -34,7 +34,6 @@ from chezmoi_mousse import (
 from chezmoi_mousse.shared import (  # OperateLog,
     CustomCollapsible,
     CustomHeader,
-    DebugLog,
     DoctorTable,
     FlatLink,
     InitCloneCmdMsg,
@@ -490,32 +489,6 @@ class InitChezmoi(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
-        # yield Static(
-        #     id=self.ids.static.operate_info, classes=Tcss.operate_info
-        # )
-        # yield VerticalGroup(
-        #     HorizontalGroup(
-        #         Label(
-        #             SectionLabels.init_new_repo,
-        #             classes=Tcss.main_section_label,
-        #         ),
-        #         SwitchWithLabel(
-        #             ids=self.ids, switch_enum=Switches.init_repo_switch
-        #         ),
-        #     ),
-        #     Static(id=self.ids.static.init_info),
-        #     InputInitCloneRepo(),
-        #     InitCollapsibles(),
-        #     id=self.ids.container.pre_operate,
-        # )
-        # with VerticalGroup(id=self.ids.container.post_operate):
-        #     yield Label(
-        #         SectionLabels.operate_output, classes=Tcss.main_section_label
-        #     )
-        #     yield OperateLog(ids=self.ids)
-        if self.app.dev_mode is True:
-            yield Label(SectionLabels.debug_log_output)
-            yield DebugLog(self.ids)
         yield OperateButtons(self.ids)
         yield Footer(id=self.ids.footer)
 

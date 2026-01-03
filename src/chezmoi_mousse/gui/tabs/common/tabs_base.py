@@ -65,11 +65,6 @@ class TabsBase(Vertical):
                     Switches.expand_all.disabled_tooltip
                 )
                 tree_switcher.current = self.ids.tree.list
-        elif event.button.id in (
-            self.ids.tab_btn.contents,
-            self.ids.tab_btn.diff,
-        ):
-            ...
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:

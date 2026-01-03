@@ -10,7 +10,6 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import IDS, AppType, Tcss
 from chezmoi_mousse.shared import (
     AppLog,
-    DebugLog,
     LogsTabButtons,
     OperateLog,
     ReadCmdLog,
@@ -26,7 +25,6 @@ __all__ = ["LogsTab"]
 
 class BorderTitle(StrEnum):
     app_log = " App Log "
-    debug_log = " Debug Log "
     git_log_global = " Global Git Log "
     read_cmd_log = " Read Commands Output Log "
     operate_log = " Operate Commands Output Log "
@@ -49,8 +47,6 @@ class LogsTab(Vertical, AppType):
             yield ReadCmdLog(ids=IDS.logs)
             yield OperateLog(ids=IDS.logs)
             yield GitLogGlobal(ids=IDS.logs)
-            if self.app.dev_mode is True:
-                yield DebugLog(ids=IDS.logs)
 
     def on_mount(self) -> None:
         switcher = self.query_one(
@@ -76,12 +72,6 @@ class LogsTab(Vertical, AppType):
         elif event.button.id == IDS.logs.tab_btn.git_log_global:
             switcher.border_title = BorderTitle.git_log_global
             switcher.current = IDS.logs.container.git_log_global
-        elif (
-            self.app.dev_mode is True
-            and event.button.id == IDS.logs.tab_btn.debug_log
-        ):
-            switcher.current = IDS.logs.logger.debug
-            switcher.border_title = BorderTitle.debug_log
 
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:
