@@ -186,6 +186,22 @@ class WriteCmd(Enum):
         return GlobalCmd.base_cmd() + self.value
 
 
+def _run_chezmoi_cmd(
+    command: list[str], read_cmd: ReadCmd | None, write_cmd: WriteCmd | None
+) -> CompletedProcess[str]:
+    if read_cmd is not None and read_cmd != ReadCmd.doctor:
+        time_out = 2
+    elif read_cmd == ReadCmd.doctor:
+        time_out = 4
+    elif write_cmd is not None:
+        time_out = 7
+    else:
+        raise ValueError("Both read_cmd and write_cmd are None")
+    return run(
+        command, capture_output=True, shell=False, text=True, timeout=time_out
+    )
+
+
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
@@ -281,16 +297,8 @@ class ChezmoiCommand:
         command = base_cmd + read_cmd.value
         if path_arg is not None:
             command += [str(path_arg)]
-        if read_cmd == ReadCmd.doctor:
-            time_out = 4
-        else:
-            time_out = 2
-        result: CompletedProcess[str] = run(
-            command,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
+        result: CompletedProcess[str] = _run_chezmoi_cmd(
+            command, read_cmd=read_cmd, write_cmd=None
         )
         stripped_stdout = self.strip_output(result.stdout)
         stripped_stderr = self.strip_output(result.stderr)
@@ -326,8 +334,8 @@ class ChezmoiCommand:
         else:
             raise ValueError("Invalid arguments for perform()")
 
-        result: CompletedProcess[str] = run(
-            command, capture_output=True, shell=False, text=True, timeout=5
+        result: CompletedProcess[str] = _run_chezmoi_cmd(
+            command, read_cmd=None, write_cmd=write_cmd
         )
         stripped_stdout = self.strip_output(result.stdout)
         stripped_stderr = self.strip_output(result.stderr)
