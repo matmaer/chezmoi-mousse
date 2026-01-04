@@ -438,6 +438,13 @@ class GitLogDataTable(DataTable[Text], AppType):
         self.ids = ids
         super().__init__(id=self.ids.datatable.git_log)
 
+    def on_mount(self) -> None:
+        self.row_color = {
+            "ok": self.app.theme_variables["text-success"],
+            "warning": self.app.theme_variables["text-warning"],
+            "error": self.app.theme_variables["text-error"],
+        }
+
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
             Text(cell_text, style=style) for cell_text in columns
@@ -452,19 +459,14 @@ class GitLogDataTable(DataTable[Text], AppType):
             return
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
-        styles = {
-            "ok": self.app.theme_variables["text-success"],
-            "warning": self.app.theme_variables["text-warning"],
-            "error": self.app.theme_variables["text-error"],
-        }
         for line in command_result.std_out.splitlines():
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
-                self._add_row_with_style(columns, styles["ok"])
+                self._add_row_with_style(columns, self.row_color["ok"])
             elif columns[1].split(maxsplit=1)[0] == "Update":
-                self._add_row_with_style(columns, styles["warning"])
+                self._add_row_with_style(columns, self.row_color["warning"])
             elif columns[1].split(maxsplit=1)[0] == "Remove":
-                self._add_row_with_style(columns, styles["error"])
+                self._add_row_with_style(columns, self.row_color["error"])
             else:
                 self.add_row(*(Text(cell) for cell in columns))
 
