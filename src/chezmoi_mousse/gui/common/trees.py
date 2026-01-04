@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, PathDict
 
-__all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
+__all__ = ["ExpandedTree", "ListTree", "ManagedTree"]
 
 
 class TreeBase(Tree[NodeData], AppType):

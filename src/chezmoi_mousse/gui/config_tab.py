@@ -22,12 +22,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 
-__all__ = [
-    "ConfigTab",
-    "ConfigTabSwitcher",
-    "DoctorTableView",
-    "TemplateDataView",
-]
+__all__ = ["ConfigTab", "DoctorTableView", "TemplateDataView"]
 
 
 class CatConfigView(Vertical, AppType):
