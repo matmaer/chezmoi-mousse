@@ -88,6 +88,9 @@ class OpBtnEnum(Enum):
         label=OpBtnLabels.init_review,
         pretty_cmd=WriteCmd.init_new.pretty_cmd,
         write_cmd=WriteCmd.init_new,
+        info_strings=[OperateStrings.init_new_info],
+        info_sub_title=OperateStrings.init_subtitle,
+        info_title=OpBtnLabels.init_run,
     )
 
     # Allow access to dataclass attributes directly from the Enum member,

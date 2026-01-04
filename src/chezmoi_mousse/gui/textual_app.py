@@ -184,30 +184,48 @@ class ChezmoiGUI(App[None]):
         self.push_screen(MainScreen())
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:
-        main_tabs = self.screen.query_exactly_one(Tabs)
-        main_tabs.display = False if main_tabs.display is True else True
-        if ids.canvas_name in (TabName.apply, TabName.re_add):
-            left_side = self.screen.query_one(
-                ids.container.left_side_q, TreeSwitcher
+        if isinstance(self.screen, InitChezmoi):
+            init_left_side = self.screen.query_one(
+                ids.container.left_side_q, FlatButtonsVertical
             )
-            left_side.display = False if left_side.display is True else True
-            view_switcher_buttons = view_switcher_buttons = (
-                self.screen.query_one(
-                    ids.switcher.view_buttons_q, ViewTabButtons
+            init_left_side.display = (
+                False if init_left_side.display is True else True
+            )
+            switch_slider = self.screen.query_one(
+                ids.container.switch_slider_q, SwitchSlider
+            )
+            switch_slider.display = (
+                False if switch_slider.display is True else True
+            )
+        elif isinstance(self.screen, MainScreen):
+            main_tabs = self.screen.query_exactly_one(Tabs)
+            main_tabs.display = False if main_tabs.display is True else True
+            if ids.canvas_name in (TabName.apply, TabName.re_add):
+                left_side = self.screen.query_one(
+                    ids.container.left_side_q, TreeSwitcher
                 )
+                left_side.display = (
+                    False if left_side.display is True else True
+                )
+                view_switcher_buttons = view_switcher_buttons = (
+                    self.screen.query_one(
+                        ids.switcher.view_buttons_q, ViewTabButtons
+                    )
+                )
+                view_switcher_buttons.display = (
+                    False if view_switcher_buttons.display is True else True
+                )
+            elif ids.canvas_name == TabName.add:
+                left_side = self.screen.query_exactly_one(FilteredDirTree)
+                left_side.display = (
+                    False if left_side.display is True else True
+                )
+            switch_slider = self.screen.query_one(
+                ids.container.switch_slider_q, SwitchSlider
             )
-            view_switcher_buttons.display = (
-                False if view_switcher_buttons.display is True else True
+            switch_slider.display = (
+                False if switch_slider.display is True else True
             )
-        elif ids.canvas_name == TabName.add:
-            left_side = self.screen.query_exactly_one(FilteredDirTree)
-            left_side.display = False if left_side.display is True else True
-        switch_slider = self.screen.query_one(
-            ids.container.switch_slider_q, SwitchSlider
-        )
-        switch_slider.display = (
-            False if switch_slider.display is True else True
-        )
 
     def get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
@@ -234,21 +252,14 @@ class ChezmoiGUI(App[None]):
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
-        if not isinstance(self.screen, MainScreen):
-            self.notify(
-                f"Operate button not yet implemented for button "
-                f"{msg.button.label} in {msg.ids.canvas_name}.",
-                severity="error",
-            )
-            return
+        close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
+        close_btn.display = True
         operate_mode_container = self.screen.query_one(
             msg.ids.container.op_mode_q, OperateMode
         )
         operate_buttons = self.screen.query_one(
             msg.ids.container.operate_buttons_q, OperateButtons
         )
-        close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
-        close_btn.display = True
         if "Review" in msg.pressed_label:
             operate_buttons.visible = False
             self.toggle_operate_display(ids=msg.ids)
