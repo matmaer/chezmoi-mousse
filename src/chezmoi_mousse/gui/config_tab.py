@@ -16,8 +16,7 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import FlatButtonsVertical
-from .common.doctor_table import DoctorTable
-from .common.pw_mgr_info import PwMgrInfoView
+from .common.doctor_data import DoctorTable, PwMgrInfoView
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds

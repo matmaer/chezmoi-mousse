@@ -33,7 +33,7 @@ from chezmoi_mousse import (
 
 from .common.actionables import FlatLink, OperateButtons  # , SwitchWithLabel
 from .common.custom_collapsible import CustomCollapsible
-from .common.doctor_table import DoctorTable
+from .common.doctor_data import DoctorTable
 from .common.messages import InitCloneCmdMsg, OperateButtonMsg
 from .common.screen_header import CustomHeader
 
