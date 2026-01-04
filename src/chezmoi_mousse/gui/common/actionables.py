@@ -2,7 +2,12 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, HorizontalGroup, Vertical
+from textual.containers import (
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
 from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
@@ -13,6 +18,7 @@ from chezmoi_mousse import (
     OpBtnEnum,
     OpBtnLabels,
     ScreenName,
+    Switches,
     TabBtn,
     TabName,
     Tcss,
@@ -32,6 +38,7 @@ __all__ = [
     "LogsTabButtons",
     "OpButton",
     "OperateButtons",
+    "SwitchSlider",
     "SwitchWithLabel",
     "TreeTabButtons",
     "ViewTabButtons",
@@ -214,6 +221,23 @@ class SwitchWithLabel(HorizontalGroup):
         yield Label(self.switch_enum.label).with_tooltip(
             tooltip=self.switch_enum.enabled_tooltip
         )
+
+
+class SwitchSlider(VerticalGroup):
+    def __init__(self, *, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.container.switch_slider)
+        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
+            self.switches = (Switches.unchanged, Switches.expand_all)
+        else:  # for the AddTab
+            self.switches = (Switches.unmanaged_dirs, Switches.unwanted)
+
+    def compose(self) -> ComposeResult:
+        for switch_enum in self.switches:
+            yield SwitchWithLabel(ids=self.ids, switch_enum=switch_enum)
+
+    def on_mount(self) -> None:
+        self.query(HorizontalGroup).last().styles.padding = 0
 
 
 class TabButtonsBase(Horizontal):

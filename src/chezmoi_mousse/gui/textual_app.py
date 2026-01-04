@@ -33,12 +33,12 @@ from .common.actionables import (
     FlatButtonsVertical,
     LogsTabButtons,
     OperateButtons,
+    SwitchSlider,
     ViewTabButtons,
 )
 from .common.messages import CloseButtonMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
-from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher
 from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
