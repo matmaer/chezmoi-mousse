@@ -32,20 +32,6 @@ else:
 __all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogGlobal"]
 
 
-class ContentsInfo(VerticalGroup, AppType):
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.contents_info)
-
-    def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.contents_info,
-            classes=Tcss.sub_section_label,
-            id=self.ids.label.contents_info,
-        )
-        yield Static(id=self.ids.static.contents_info)
-
-
 class ContentsView(Vertical, AppType):
 
     class ContentStr(StrEnum):
@@ -67,7 +53,15 @@ class ContentsView(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield ContentsInfo(ids=self.ids)
+        yield VerticalGroup(
+            Label(
+                SectionLabels.contents_info,
+                classes=Tcss.sub_section_label,
+                id=self.ids.label.contents_info,
+            ),
+            Static(id=self.ids.static.contents_info),
+            id=self.ids.container.contents_info,
+        )
         yield Label(
             SectionLabels.cat_config_output,
             classes=Tcss.sub_section_label,
@@ -99,7 +93,7 @@ class ContentsView(Vertical, AppType):
         )
         self.file_read_label.display = False
         self.contents_info = self.query_one(
-            self.ids.container.contents_info_q, ContentsInfo
+            self.ids.container.contents_info_q, VerticalGroup
         )
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
