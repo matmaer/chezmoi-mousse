@@ -22,8 +22,7 @@ from ._chezmoi_command import (
 from ._chezmoi_paths import ChezmoiPaths, PathDict
 from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
-from ._str_enum_names import PathKind, ScreenName, TabName, TreeName
-from ._str_enum_tcss import Tcss
+from ._str_enum_names import PathKind, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     Chars,
     FlatBtn,
@@ -71,9 +70,8 @@ __all__ = [
     "PathKind",
     "ScreenName",
     "TabName",
-    "TreeName",
-    # ._str_enum_tcss
     "Tcss",
+    "TreeName",
     # ._str_enums
     "Chars",
     "FlatBtn",
