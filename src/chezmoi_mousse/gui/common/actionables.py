@@ -39,7 +39,6 @@ __all__ = [
     "OpButton",
     "OperateButtons",
     "SwitchSlider",
-    "SwitchWithLabel",
     "TreeTabButtons",
     "ViewTabButtons",
 ]
