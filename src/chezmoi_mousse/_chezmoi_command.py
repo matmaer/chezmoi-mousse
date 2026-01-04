@@ -10,7 +10,7 @@ from ._chezmoi_paths import ChezmoiPaths
 from ._str_enums import OperateStrings
 
 if TYPE_CHECKING:
-    from .gui.tabs.logs_tab import AppLog, OperateLog, ReadCmdLog
+    from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
 
 __all__ = [
     "ChezmoiCommand",

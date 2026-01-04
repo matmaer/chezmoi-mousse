@@ -8,7 +8,7 @@ from textual.widgets import Label, Link, Static
 
 from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabels, Tcss
 
-from ._custom_collapsible import CustomCollapsible
+from .custom_collapsible import CustomCollapsible
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds

@@ -18,7 +18,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from ._messages import CloseButtonMsg, OperateButtonMsg
+from .messages import CloseButtonMsg, OperateButtonMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, Switches

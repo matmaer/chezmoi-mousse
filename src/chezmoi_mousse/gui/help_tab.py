@@ -11,7 +11,8 @@ from textual.containers import (
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
 from chezmoi_mousse import IDS, FlatBtn, LinkBtn, OpBtnLabels, Switches, Tcss
-from chezmoi_mousse.shared import FlatButtonsVertical, FlatLink
+
+from .common.actionables import FlatButtonsVertical, FlatLink
 
 __all__ = ["HelpTab"]
 

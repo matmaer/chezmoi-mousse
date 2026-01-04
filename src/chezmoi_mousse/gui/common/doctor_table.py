@@ -1,12 +1,9 @@
-import json
 from typing import TYPE_CHECKING
 
 from rich.text import Text
-from textual.app import ComposeResult
-from textual.containers import Vertical
-from textual.widgets import DataTable, Label, Pretty
+from textual.widgets import DataTable
 
-from chezmoi_mousse import AppType, CommandResult, SectionLabels, Tcss
+from chezmoi_mousse import AppType, CommandResult, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -15,13 +12,7 @@ if TYPE_CHECKING:
 else:
     DataTableText = DataTable
 
-
-__all__ = [
-    "DoctorTable",
-    "DoctorTableView",
-    "PrettyTemplateData",
-    "TemplateDataView",
-]
+__all__ = ["DoctorTable"]
 
 
 class DoctorTable(DataTable[Text], AppType):
@@ -71,40 +62,3 @@ class DoctorTable(DataTable[Text], AppType):
             else:
                 row = [Text(cell_text) for cell_text in row]
                 self.add_row(*row)
-
-
-class DoctorTableView(Vertical, AppType):
-
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.doctor)
-
-    def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.doctor_output, classes=Tcss.main_section_label
-        )
-
-    def populate_doctor_data(self, command_result: CommandResult) -> None:
-        self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
-
-
-class PrettyTemplateData(Pretty):
-    def __init__(self, template_data: CommandResult) -> None:
-        parsed = json.loads(template_data.std_out)
-        super().__init__(parsed)
-
-
-class TemplateDataView(Vertical):
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        super().__init__(id=self.ids.view.template_data)
-
-    def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.template_data_output, classes=Tcss.main_section_label
-        )
-
-    def mount_template_data_output(
-        self, command_result: CommandResult
-    ) -> None:
-        self.mount(PrettyTemplateData(template_data=command_result))

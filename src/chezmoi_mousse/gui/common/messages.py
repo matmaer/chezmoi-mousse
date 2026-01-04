@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, InitCloneData, NodeData
 
-    from ._actionables import CloseButton, OpButton
+    from .actionables import CloseButton, OpButton
 
 __all__ = [
     "CloseButtonMsg",

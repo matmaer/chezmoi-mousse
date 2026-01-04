@@ -21,7 +21,8 @@ from chezmoi_mousse import (
     Tcss,
     TreeName,
 )
-from chezmoi_mousse.shared import CurrentApplyNodeMsg, CurrentReAddNodeMsg
+
+from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 if TYPE_CHECKING:
 

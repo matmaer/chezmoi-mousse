@@ -10,8 +10,8 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
 
-from ._custom_collapsible import CustomCollapsible
-from ._operate_mode import CommandOutput
+from .custom_collapsible import CustomCollapsible
+from .operate_mode import CommandOutput
 
 if TYPE_CHECKING:
     from collections.abc import Callable

@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
@@ -14,14 +16,22 @@ from chezmoi_mousse import (
     SplashData,
     Tcss,
 )
-from chezmoi_mousse.shared import (
-    DoctorTableView,
-    FlatButtonsVertical,
-    PwMgrInfoView,
-    TemplateDataView,
-)
 
-__all__ = ["ConfigTab", "ConfigTabSwitcher"]
+from .common.actionables import FlatButtonsVertical
+from .common.doctor_table import DoctorTable
+from .common.pretty_template_data import PrettyTemplateData
+from .common.pw_mgr_info import PwMgrInfoView
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
+
+
+__all__ = [
+    "ConfigTab",
+    "ConfigTabSwitcher",
+    "DoctorTableView",
+    "TemplateDataView",
+]
 
 
 class CatConfigView(Vertical):
@@ -100,6 +110,37 @@ class IgnoredView(Vertical):
         self.mount(
             ScrollableContainer(Pretty(command_result.std_out.splitlines()))
         )
+
+
+class DoctorTableView(Vertical, AppType):
+
+    def __init__(self, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.container.doctor)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.doctor_output, classes=Tcss.main_section_label
+        )
+
+    def populate_doctor_data(self, command_result: CommandResult) -> None:
+        self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
+
+
+class TemplateDataView(Vertical):
+    def __init__(self, ids: "AppIds"):
+        self.ids = ids
+        super().__init__(id=self.ids.view.template_data)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.template_data_output, classes=Tcss.main_section_label
+        )
+
+    def mount_template_data_output(
+        self, command_result: CommandResult
+    ) -> None:
+        self.mount(PrettyTemplateData(template_data=command_result))
 
 
 class ConfigTab(Horizontal, AppType):

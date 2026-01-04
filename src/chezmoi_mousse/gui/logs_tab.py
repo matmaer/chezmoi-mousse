@@ -8,14 +8,10 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import IDS, AppType, Tcss
-from chezmoi_mousse.shared import (
-    AppLog,
-    LogsTabButtons,
-    OperateLog,
-    ReadCmdLog,
-)
 
+from .common.actionables import LogsTabButtons
 from .common.git_log_view import GitLogGlobal
+from .common.loggers import AppLog, OperateLog, ReadCmdLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult

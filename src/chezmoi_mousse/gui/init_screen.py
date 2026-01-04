@@ -31,17 +31,13 @@ from chezmoi_mousse import (
     Tcss,
     WriteCmd,
 )
-from chezmoi_mousse.shared import (  # OperateLog,
-    CustomCollapsible,
-    CustomHeader,
-    DoctorTable,
-    FlatLink,
-    InitCloneCmdMsg,
-    OperateButtonMsg,
-    OperateButtons,
-    PrettyTemplateData,
-    SwitchWithLabel,
-)
+
+from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
+from .common.custom_collapsible import CustomCollapsible
+from .common.doctor_table import DoctorTable
+from .common.messages import InitCloneCmdMsg, OperateButtonMsg
+from .common.pretty_template_data import PrettyTemplateData
+from .common.screen_header import CustomHeader
 
 __all__ = ["InitChezmoi"]
 

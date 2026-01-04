@@ -10,7 +10,9 @@ from textual.widgets import Button, ContentSwitcher, Static
 from tomlkit import document, dumps, table  # type: ignore[import-untyped]
 
 from chezmoi_mousse import IDS, FlatBtn, Tcss
-from chezmoi_mousse.shared import DebugLog, FlatButtonsVertical
+
+from .common.actionables import FlatButtonsVertical
+from .common.loggers import DebugLog
 
 __all__ = ["DebugTab"]
 

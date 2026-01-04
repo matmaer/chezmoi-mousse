@@ -6,22 +6,17 @@ from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
 from chezmoi_mousse import IDS, AppType, LogStrings, TabName
-from chezmoi_mousse.shared import (
-    AppLog,
-    CustomHeader,
-    DebugLog,
-    OperateLog,
-    ReadCmdLog,
-)
 
-from .tabs.add_tab import AddTab
-from .tabs.apply_tab import ApplyTab
-from .tabs.common.trees import ExpandedTree, ListTree, ManagedTree
-from .tabs.config_tab import ConfigTab, ConfigTabSwitcher
-from .tabs.debug_tab import DebugTab
-from .tabs.help_tab import HelpTab
-from .tabs.logs_tab import LogsTab
-from .tabs.re_add_tab import ReAddTab
+from .add_tab import AddTab
+from .apply_tab import ApplyTab
+from .common.loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
+from .common.screen_header import CustomHeader
+from .common.trees import ExpandedTree, ListTree, ManagedTree
+from .config_tab import ConfigTab, ConfigTabSwitcher
+from .debug_tab import DebugTab
+from .help_tab import HelpTab
+from .logs_tab import LogsTab
+from .re_add_tab import ReAddTab
 
 __all__ = ["MainScreen"]
 

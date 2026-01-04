@@ -11,13 +11,10 @@ from textual.screen import Screen
 from textual.widgets import Footer, Label, Pretty, Tree
 
 from chezmoi_mousse import IDS, AppType, Chars, FlatBtn, LinkBtn, Tcss
-from chezmoi_mousse.shared import (
-    CustomCollapsible,
-    CustomHeader,
-    FlatButton,
-    FlatLink,
-    HeaderTitle,
-)
+
+from .common.actionables import FlatButton, FlatLink
+from .common.custom_collapsible import CustomCollapsible
+from .common.screen_header import CustomHeader, HeaderTitle
 
 type ParsedJson = dict[str, Any]
 

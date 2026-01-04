@@ -25,25 +25,24 @@ from chezmoi_mousse import (
     PathKind,
     TabName,
 )
-from chezmoi_mousse.shared import (
+
+from .add_tab import FilteredDirTree
+from .common.actionables import (
     CloseButton,
-    CloseButtonMsg,
-    CustomHeader,
     FlatButtonsVertical,
     LogsTabButtons,
-    OperateButtonMsg,
     OperateButtons,
-    OperateMode,
     ViewTabButtons,
 )
-
-from .init_chezmoi import InitChezmoi
+from .common.messages import CloseButtonMsg, OperateButtonMsg
+from .common.operate_mode import OperateMode
+from .common.screen_header import CustomHeader
+from .common.switch_slider import SwitchSlider
+from .common.switchers import TreeSwitcher
+from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
-from .main_tabs import MainScreen
-from .splash import SplashScreen
-from .tabs.add_tab import FilteredDirTree
-from .tabs.common.switch_slider import SwitchSlider
-from .tabs.common.switchers import TreeSwitcher
+from .main_screen import MainScreen
+from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
     from pathlib import Path
