@@ -49,14 +49,26 @@ def get_modules_to_test() -> list[Path]:
     return modules_to_test
 
 
+def get_modules_to_test_merged() -> list[Path]:
+    # Get modules that either have classes imported elsewhere or have __all__
+    modules_to_test = set(get_modules_to_test())
+    modules_with_all = set(
+        module_path
+        for module_path in get_module_paths()
+        + [Path("src/chezmoi_mousse/__init__.py")]
+        if get_exported_names(module_path) is not None
+    )
+    return list(modules_to_test | modules_with_all)
+
+
 @pytest.mark.parametrize(
     "module_path",
-    get_modules_to_test(),
+    get_modules_to_test_merged(),
     ids=lambda module_path: module_path.stem,
 )
-def test_module_exports_imported_classes(module_path: Path):
-    # Test that a module exports all classes that are imported elsewhere
-    # Get classes defined in this module
+def test_module_exports(module_path: Path):
+    # Test that a module exports all classes that are imported elsewhere,
+    # and that exported classes are imported elsewhere
     class_defs = get_module_ast_class_defs(module_path)
     defined_classes = {cls.name for cls in class_defs}
 
@@ -66,17 +78,35 @@ def test_module_exports_imported_classes(module_path: Path):
         for cls_name in defined_classes
         if get_modules_importing_class(cls_name)
     }
-
-    # Get exported names
     exported = get_exported_names(module_path)
 
-    if exported is None:
-        msg = f"Module {module_path.stem} has no __all__ but exports classes: {sorted(imported_classes)}"
-    else:
-        missing = imported_classes - exported
-        if missing:
-            msg = f"Module {module_path.stem} missing from __all__: {sorted(missing)}"
+    # Check if imported classes are exported
+    if imported_classes:
+        if exported is None:
+            pytest.fail(
+                f"Module {module_path.stem} has no __all__ but exports classes: {sorted(imported_classes)}"
+            )
         else:
-            return  # Test passes
+            missing = imported_classes - exported
+            if missing:
+                pytest.fail(
+                    f"Module {module_path.stem} missing from __all__: {sorted(missing)}"
+                )
 
-    pytest.fail(f"{msg}\n  File: {module_path}")
+    # Check if exported classes are imported elsewhere
+    if exported is not None:
+        # Assume all exported names except __version__ are classes
+        classes_exported = (
+            exported - {"__version__"}
+            if "__version__" in exported
+            else exported
+        )
+        never_imported = [
+            cls
+            for cls in classes_exported
+            if not get_modules_importing_class(cls)
+        ]
+        if never_imported:
+            pytest.fail(
+                f"Module {module_path.stem} exports classes never imported: {sorted(never_imported)}"
+            )

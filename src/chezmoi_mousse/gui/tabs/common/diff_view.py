@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, CommandResult, NodeData
 
-__all__ = ["DiffLines", "DiffView"]
+__all__ = ["DiffView"]
 
 
 class DiffStrings(StrEnum):

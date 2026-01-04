@@ -16,7 +16,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-__all__ = ["OperateMode", "LoadingModal"]
+__all__ = ["CommandOutput", "OperateMode"]
 
 
 class CommandOutput(ScrollableContainer):
