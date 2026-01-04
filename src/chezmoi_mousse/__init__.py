@@ -36,11 +36,11 @@ from ._str_enums import (
 from ._switch_data import Switches
 from ._type_checking import (
     AppType,
+    CmdResults,
     DiffData,
     InitCloneData,
     NodeData,
     ParsedConfig,
-    SplashData,
 )
 
 __all__ = [
@@ -50,16 +50,6 @@ __all__ = [
     # ._app_ids
     "IDS",
     "AppIds",
-    # ._type_checking
-    "AppType",
-    "DiffData",
-    "NodeData",
-    "ParsedConfig",
-    "SplashData",
-    "InitCloneData",
-    # ._operate_button_data
-    "OpBtnEnum",
-    "OpBtnLabels",
     # ._chezmoi_command
     "ChezmoiCommand",
     "CommandResult",
@@ -71,6 +61,9 @@ __all__ = [
     # ._chezmoi_paths
     "ChezmoiPaths",
     "PathDict",
+    # ._operate_button_data
+    "OpBtnEnum",
+    "OpBtnLabels",
     # ._str_enum_bindings
     "BindingAction",
     "BindingDescription",
@@ -91,6 +84,13 @@ __all__ = [
     "TabBtn",
     # ._switch_data
     "Switches",
+    # ._type_checking
+    "AppType",
+    "DiffData",
+    "NodeData",
+    "ParsedConfig",
+    "CmdResults",
+    "InitCloneData",
 ]
 
 

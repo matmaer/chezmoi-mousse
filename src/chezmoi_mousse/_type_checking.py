@@ -21,7 +21,7 @@ __all__ = [
     "InitCloneData",
     "NodeData",
     "ParsedConfig",
-    "SplashData",
+    "CmdResults",
 ]
 
 
@@ -68,13 +68,18 @@ class ParsedConfig:
 
 
 @dataclass(slots=True)
-class SplashData:
-    cat_config: CommandResult
-    doctor: CommandResult
-    git_log: CommandResult
-    ignored: CommandResult
-    template_data: CommandResult
-    verify: CommandResult
+class CmdResults:
+    cat_config: CommandResult | None = None
+    doctor: CommandResult | None = None
+    dump_config: CommandResult | None = None
+    git_log: CommandResult | None = None
+    ignored: CommandResult | None = None
+    managed_dirs: CommandResult | None = None
+    managed_files: CommandResult | None = None
+    status_dirs: CommandResult | None = None
+    status_files: CommandResult | None = None
+    template_data: CommandResult | None = None
+    verify: CommandResult | None = None
 
     @property
     def executed_commands(self) -> list[CommandResult]:
@@ -82,5 +87,5 @@ class SplashData:
         return [
             getattr(self, field.name)
             for field in fields(self)
-            if isinstance(getattr(self, field.name), CommandResult)
+            if getattr(self, field.name) is not None
         ]

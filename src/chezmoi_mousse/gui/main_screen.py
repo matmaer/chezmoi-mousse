@@ -12,7 +12,7 @@ from .apply_tab import ApplyTab
 from .common.loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
 from .common.screen_header import CustomHeader
 from .common.trees import ExpandedTree, ListTree, ManagedTree
-from .config_tab import ConfigTab, ConfigTabSwitcher
+from .config_tab import ConfigTab
 from .debug_tab import DebugTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
@@ -85,16 +85,12 @@ class MainScreen(Screen[None], AppType):
         self.populate_re_add_trees()
         self.log_splash_log_commands()
         self.populate_global_git_log()
-        self.populate_config_tab()
 
     @work
     async def log_splash_log_commands(self) -> None:
         # Log SplashScreen and OperateScreen commands, if any.
         self.app_log.info("--- Commands executed in loading screen ---")
-        if self.app.splash_data is None:
-            self.notify("No loading screen data available.")
-            return
-        commands_to_log = self.app.splash_data.executed_commands
+        commands_to_log = self.app.cmd_results.executed_commands
         if self.app.init_cmd_result is not None:
             self.operate_log.log_cmd_results(self.app.init_cmd_result)
             commands_to_log += [self.app.init_cmd_result]
@@ -135,15 +131,8 @@ class MainScreen(Screen[None], AppType):
 
     @work
     async def populate_global_git_log(self) -> None:
-        if self.app.splash_data is None:
+        if self.app.cmd_results.git_log is None:
             self.notify("No loading screen data available.", severity="error")
             return
         logs_tab = self.screen.query_exactly_one(LogsTab)
-        setattr(logs_tab, "git_log_result", self.app.splash_data.git_log)
-
-    @work
-    async def populate_config_tab(self) -> None:
-        config_tab_switcher = self.screen.query_one(
-            IDS.config.switcher.config_tab_q, ConfigTabSwitcher
-        )
-        setattr(config_tab_switcher, "splash_data", self.app.splash_data)
+        logs_tab.git_log_result = self.app.cmd_results.git_log

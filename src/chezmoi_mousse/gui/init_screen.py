@@ -11,6 +11,7 @@ from textual.widgets import (  # Static,; Switch,
     Footer,
     Input,
     Label,
+    Pretty,
     Select,
 )
 
@@ -34,7 +35,6 @@ from .common.actionables import FlatLink, OperateButtons  # , SwitchWithLabel
 from .common.custom_collapsible import CustomCollapsible
 from .common.doctor_table import DoctorTable
 from .common.messages import InitCloneCmdMsg, OperateButtonMsg
-from .common.pretty_template_data import PrettyTemplateData
 from .common.screen_header import CustomHeader
 
 __all__ = ["InitChezmoi"]
@@ -453,20 +453,23 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
 class InitCollapsibles(VerticalGroup, AppType):
     def __init__(self) -> None:
         super().__init__()
-        if self.app.splash_data is None:
-            raise ValueError("self.app.splash_data is None in OperateScreen")
-        self.splash_data = self.app.splash_data
 
     def compose(self) -> ComposeResult:
+        if self.app.cmd_results.doctor is None:
+            raise ValueError("self.app.cmd_results is None in OperateScreen")
+        elif self.app.cmd_results.template_data is None:
+            raise ValueError(
+                "self.app.cmd_results.template_data is None in OperateScreen"
+            )
         yield Label(
             SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label
         )
         yield CustomCollapsible(
-            DoctorTable(ids=IDS.init, doctor_data=self.splash_data.doctor),
+            DoctorTable(ids=IDS.init, doctor_data=self.app.cmd_results.doctor),
             title="Doctor Output",
         )
         yield CustomCollapsible(
-            PrettyTemplateData(self.splash_data.template_data),
+            Pretty(self.app.cmd_results.template_data),
             title="Template Data Output",
         )
 

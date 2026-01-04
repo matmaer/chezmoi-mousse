@@ -20,11 +20,11 @@ from chezmoi_mousse import (
     AppType,
     ChezmoiCommand,
     ChezmoiPaths,
+    CmdResults,
     CommandResult,
     GlobalCmd,
     ParsedConfig,
     ReadCmd,
-    SplashData,
     VerbArgs,
 )
 
@@ -123,7 +123,7 @@ class SplashLog(RichLog):
         self.styles.margin = 2
 
 
-class SplashScreen(Screen[SplashData | None], AppType):
+class SplashScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
@@ -225,26 +225,42 @@ class SplashScreen(Screen[SplashData | None], AppType):
         )
 
     @work(name="update_app")
-    async def update_app(self):
-        self.app.splash_data = SplashData(
-            cat_config=globals()["cat_config"],
-            doctor=globals()["doctor"],
-            git_log=globals()["git_log"],
-            ignored=globals()["ignored"],
-            # parsed_config=globals()["parsed_config"],
-            template_data=globals()["template_data"],
-            verify=globals()["verify"],
-        )
+    async def update_app(self) -> None:
         self.app.paths = ChezmoiPaths(
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],
             status_dirs_result=globals()["status_dirs"],
             status_files_result=globals()["status_files"],
         )
-        self.app.parsed_config = globals()["parsed_config"]
+        self.app.cmd_results.doctor = globals()["doctor"]
+        self.app.cmd_results.template_data = globals()["template_data"]
         if self.app.init_needed is True:
+            cmd_results = CmdResults(
+                doctor=globals()["doctor"],
+                template_data=globals()["template_data"],
+            )
+            self.app.cmd_results = cmd_results
             return
+        cmd_results = CmdResults(
+            cat_config=globals()["cat_config"],
+            doctor=globals()["doctor"],
+            dump_config=globals()["dump_config"],
+            git_log=globals()["git_log"],
+            ignored=globals()["ignored"],
+            managed_dirs=globals()["managed_dirs"],
+            managed_files=globals()["managed_files"],
+            status_dirs=globals()["status_dirs"],
+            status_files=globals()["status_files"],
+            template_data=globals()["template_data"],
+            verify=globals()["verify"],
+        )
+        self.app.cmd_results = cmd_results
         self.app.dest_dir = globals()["parsed_config"].dest_dir
+        self.app.parsed_config = globals()["parsed_config"]
+        self.app.parsed_template_data = json.loads(
+            globals()["template_data"].std_out
+        )
+        self.app.cmd_results.verify = globals()["verify"]
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

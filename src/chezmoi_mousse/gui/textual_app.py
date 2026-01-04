@@ -20,6 +20,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
+    CmdResults,
     NodeData,
     OpBtnLabels,
     PathKind,
@@ -52,7 +53,6 @@ if TYPE_CHECKING:
         ChezmoiPaths,
         CommandResult,
         ParsedConfig,
-        SplashData,
     )
 
 __all__ = ["ChezmoiGUI"]
@@ -136,15 +136,13 @@ class ChezmoiGUI(App[None]):
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
-        self.dev_mode: bool = dev_mode
         self.chezmoi_found: bool = chezmoi_found
+        self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = False
 
         # Manage state between screens
         self.init_cmd_result: "CommandResult | None" = None
-        self.splash_data: "SplashData | None" = None
-
         # Arbitrary max file size used by FilteredDirTree and ContentsView but
         # should be reasonable truncate for files to be considered as dotfiles.
         # TODO: make this configurable
@@ -153,6 +151,8 @@ class ChezmoiGUI(App[None]):
         self.git_auto_commit: bool = False
         self.git_auto_add: bool = False
         self.git_auto_push: bool = False
+        self.parsed_template_data: "ParsedConfig | None" = None
+        self.cmd_results: "CmdResults" = CmdResults()
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
@@ -164,7 +164,7 @@ class ChezmoiGUI(App[None]):
     async def run_splash_screen(self) -> None:
         # Run splash screen once to gather command outputs
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        if self.splash_data is None:
+        if self.chezmoi_found is False:
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen(InstallHelpScreen())
             return
@@ -172,11 +172,9 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.parsed_config is None:
-            raise ValueError(
-                "parsed_config or dest_dir is None after SplashScreen"
-            )
+            raise ValueError("self.parsed_config None after SplashScreen")
         if self.dest_dir is None:
-            raise ValueError("dest_dir is None after SplashScreen")
+            raise ValueError("self.dest_dir is None after SplashScreen")
         self.root_node_data = NodeData(
             path=self.dest_dir, path_kind=PathKind.DIR, found=True, status="F"
         )
