@@ -1,7 +1,5 @@
-import json
 import os
 from enum import StrEnum
-from pathlib import Path
 from typing import Any
 
 from textual import on
@@ -57,8 +55,10 @@ class InstallHelpScreen(Screen[None], AppType):
             )
         yield Footer(id=IDS.install_help.footer)
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
         self.screen.title = HeaderTitle.install_help
+        # all_lines: list[str] = self.app.cmd_results.url_data
+        # self.parsed_json_output = self.parse_indented_text(all_lines)
         self.update_path_widget()
         self.populate_tree()
 
@@ -72,8 +72,13 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def populate_tree(self) -> None:
         help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
-        data_file = Path(__file__).parent / "chezmoi_install_commands.json"
-        install_help: ParsedJson = json.loads(data_file.read_text())
+        if self.app.cmd_results.install_help_data is None:
+            self.app.notify(
+                "InstallHelpScreen: No install help data found",
+                severity="error",
+            )
+            return
+        install_help: ParsedJson = self.app.cmd_results.install_help_data
         help_tree.show_root = False
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)

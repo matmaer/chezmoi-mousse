@@ -1,7 +1,10 @@
 import json
+import urllib.request
 from collections import deque
+from enum import StrEnum
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import TypedDict
 
 from rich.segment import Segment
 from rich.style import Style
@@ -29,6 +32,15 @@ from chezmoi_mousse import (
 )
 
 __all__ = ["SplashScreen"]
+
+type Value = str | dict[str, "Value"]
+
+
+class Node(TypedDict):
+    text: str
+    indent: int
+    children: list["Node"]
+
 
 SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.cat_config,
@@ -77,6 +89,23 @@ status_dirs: "CommandResult | None" = None
 status_files: "CommandResult | None" = None
 template_data: "CommandResult | None" = None
 verify: "CommandResult | None" = None
+
+
+class TemplateStr(StrEnum):
+    """Strings to process the install help and latest chezmoi release."""
+
+    cross_platform = (
+        "chezmoi is available in many cross-platform package managers"
+    )
+    chezmoi_install_doc_url = "https://raw.githubusercontent.com/twpayne/chezmoi/refs/heads/master/assets/chezmoi.io/docs/install.md.tmpl"
+    chezmoi_latest_release_url = (
+        "https://api.github.com/repos/twpayne/chezmoi/releases/latest"
+    )
+    more_packages = "For more packages, see"
+    os_install = (
+        "Install chezmoi with your package manager with a single command"
+    )
+    version_tag = "{{ $version }}"
 
 
 class AnimatedFade(Static):
@@ -148,6 +177,11 @@ class SplashScreen(Screen[None], AppType):
         )
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
+            install_help_worker = self.get_install_screen_data()
+            await install_help_worker.wait()
+            self.app.cmd_results = CmdResults(
+                install_help_data=install_help_worker.result
+            )
             self.splash_log.styles.height = 1
             cmd_text = "chezmoi command"
             padding = LOG_PADDING_WIDTH - len(cmd_text)
@@ -223,6 +257,114 @@ class SplashScreen(Screen[None], AppType):
         self.app.call_from_thread(
             self.splash_log.write, f"[{color}]{log_text}[/{color}]"
         )
+
+    @work
+    async def get_install_screen_data(self) -> dict[str, Value]:
+        with urllib.request.urlopen(
+            TemplateStr.chezmoi_latest_release_url
+        ) as response:
+            data = json.load(response)
+            latest_version = data.get("tag_name")
+
+        req = urllib.request.Request(
+            TemplateStr.chezmoi_install_doc_url,
+            headers={"User-Agent": "python-urllib"},
+        )
+        with urllib.request.urlopen(req, timeout=2) as response:
+            # After decoding the response
+            content = response.read().decode("utf-8")
+            # Split into lines first
+            content_list = content.splitlines()
+            # Then filter
+            content_list = [
+                line
+                for line in content_list
+                if line.strip() and not line.strip().startswith("```")
+            ]
+        # Replace template strings
+        replacements: list[tuple[str, str]] = [
+            (TemplateStr.version_tag, latest_version),
+            ('"', ""),
+            ("=== ", ""),
+        ]
+        for old, new in replacements:
+            content_list = [line.replace(old, new) for line in content_list]
+        # Strip head and tail
+        first_idx = next(
+            (
+                i
+                for i, line in enumerate(content_list)
+                if line.startswith(TemplateStr.os_install)
+            )
+        )
+        last_idx = next(
+            (
+                i
+                for i, line in enumerate(content_list)
+                if line.startswith(TemplateStr.more_packages)
+            )
+        )
+        content_list = content_list[first_idx:last_idx]
+        # Split OS-specific and cross-platform commands
+        split_idx = next(
+            (
+                i
+                for i, line in enumerate(content_list)
+                if line.startswith(TemplateStr.cross_platform)
+            )
+        )
+        # Generate result
+        result = content_list[1:split_idx]  # OS-specific commands
+        result.append(
+            "Cross-Platform"
+        )  # Add a header and indent cross-platform
+        result.extend(f"    {line}" for line in content_list[split_idx + 1 :])
+        freebsd_idx = next(
+            (i for i, line in enumerate(result) if line.startswith("FreeBSD"))
+        )
+        # insert a list item before FreeBSD
+        result.insert(freebsd_idx, "Unix-like systems")
+        # increase indent for the next four lines (FreeBSD and OpenIndiana commands)
+        for i in range(freebsd_idx + 1, freebsd_idx + 5):
+            result[i] = f"    {result[i]}"
+
+        root_node: Node = {"text": "", "indent": -1, "children": []}
+        stack: list[Node] = [root_node]
+
+        # construct tree data structure
+        for line in result:
+            indent = len(line) - len(line.lstrip(" "))
+            # Pop nodes with greater or equal indentation
+            while stack and indent <= stack[-1]["indent"]:
+                stack.pop()
+            # Add new node
+            node: Node = {
+                "text": line.strip(),
+                "indent": indent,
+                "children": [],
+            }
+            stack[-1]["children"].append(
+                node
+            )  # will modify the root_node variable
+            stack.append(node)
+
+        # collapse tree into nested dictionary
+        def collapse(node: Node) -> Value:
+            # a node without children is the text of the command
+            if not node["children"]:
+                return node["text"]
+            # Single child becomes its value for a nested structure
+            if len(node["children"]) == 1:
+                return collapse(node["children"][0])
+            # Multiple children become a dictionary
+            return {
+                child["text"]: collapse(child) for child in node["children"]
+            }
+
+        # return final nested dict
+        return {
+            child["text"]: collapse(child) for child in root_node["children"]
+        }
 
     @work(name="update_app")
     async def update_app(self) -> None:

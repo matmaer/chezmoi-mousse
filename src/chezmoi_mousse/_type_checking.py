@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
     from .gui.textual_app import ChezmoiGUI
 
+type Value = str | dict[str, "Value"]
 
 __all__ = [
     "AppType",
@@ -80,6 +81,7 @@ class CmdResults:
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
     verify: CommandResult | None = None
+    install_help_data: dict[str, Value] | None = None
 
     @property
     def executed_commands(self) -> list[CommandResult]:
