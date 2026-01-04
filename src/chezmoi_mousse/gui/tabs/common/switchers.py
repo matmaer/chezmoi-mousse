@@ -17,8 +17,6 @@ from .git_log_view import GitLogPath
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse import AppIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
@@ -45,8 +43,6 @@ class TreeSwitcher(Vertical):
 
 
 class ViewSwitcher(Vertical):
-
-    destDir: "Path | None" = None
 
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids

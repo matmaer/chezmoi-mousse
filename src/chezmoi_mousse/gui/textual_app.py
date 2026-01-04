@@ -20,7 +20,9 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
+    NodeData,
     OpBtnLabels,
+    PathKind,
     TabName,
 )
 from chezmoi_mousse.shared import (
@@ -44,6 +46,8 @@ from .tabs.common.switch_slider import SwitchSlider
 from .tabs.common.switchers import TreeSwitcher
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import (
         ChezmoiCommand,
         ChezmoiPaths,
@@ -127,7 +131,9 @@ class ChezmoiGUI(App[None]):
         super().__init__()
         AppState.set_app(self)
 
+        self.dest_dir: "Path | None" = None
         self.paths: "ChezmoiPaths"
+        self.root_node_data: "NodeData | None" = None
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
@@ -167,7 +173,14 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.parsed_config is None:
-            raise ValueError("parsed_config is None after SplashScreen")
+            raise ValueError(
+                "parsed_config or dest_dir is None after SplashScreen"
+            )
+        if self.dest_dir is None:
+            raise ValueError("dest_dir is None after SplashScreen")
+        self.root_node_data = NodeData(
+            path=self.dest_dir, path_kind=PathKind.DIR, found=True, status="F"
+        )
         self.git_auto_add = self.parsed_config.git_auto_add
         self.git_auto_commit = self.parsed_config.git_auto_commit
         self.git_auto_push = self.parsed_config.git_auto_push

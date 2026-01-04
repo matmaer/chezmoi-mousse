@@ -1,5 +1,4 @@
 from enum import StrEnum
-from pathlib import Path
 
 from textual import work
 from textual.app import ComposeResult
@@ -39,11 +38,8 @@ class TabPanes(StrEnum):
 
 class MainScreen(Screen[None], AppType):
 
-    destDir: Path | None = None
-
     def __init__(self) -> None:
         super().__init__()
-
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
@@ -72,18 +68,6 @@ class MainScreen(Screen[None], AppType):
         yield Footer(id=IDS.main_tabs.footer)
 
     def on_mount(self) -> None:
-        self.initialize_loggers()
-        self.screen.query_one(
-            IDS.apply.tree.managed_q, ManagedTree
-        ).dest_dir = self.destDir
-        self.app_log.success("Apply tab managed tree populated.")
-        self.populate_other_apply_trees()
-        self.populate_re_add_trees()
-        self.log_splash_log_commands()
-        self.update_global_git_log()
-        self.update_config_tab()
-
-    def initialize_loggers(self) -> None:
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.app.cmd.app_log = self.app_log
@@ -101,6 +85,12 @@ class MainScreen(Screen[None], AppType):
         if self.app.dev_mode is True:
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.notify(LogStrings.dev_mode_enabled)
+        # Workers
+        self.populate_apply_trees()
+        self.populate_re_add_trees()
+        self.log_splash_log_commands()
+        self.populate_global_git_log()
+        self.populate_config_tab()
 
     @work
     async def log_splash_log_commands(self) -> None:
@@ -119,33 +109,37 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("--- End of loading screen commands ---")
 
     @work
-    async def populate_other_apply_trees(self) -> None:
+    async def populate_apply_trees(self) -> None:
+        self.screen.query_one(
+            IDS.apply.tree.managed_q, ManagedTree
+        ).populate_dest_dir()
+        self.app_log.success("Apply tab managed tree populated.")
         self.screen.query_one(
             IDS.apply.tree.expanded_q, ExpandedTree
-        ).dest_dir = self.destDir
+        ).populate_dest_dir()
         self.app_log.success("Apply tab expanded tree populated.")
-        self.screen.query_one(IDS.apply.tree.list_q, ListTree).dest_dir = (
-            self.destDir
-        )
-        self.app_log.success("Apply list populated.")
+        self.screen.query_one(
+            IDS.apply.tree.list_q, ListTree
+        ).populate_dest_dir()
+        self.app_log.success("Apply tab list tree populated.")
 
     @work
     async def populate_re_add_trees(self) -> None:
         self.screen.query_one(
             IDS.re_add.tree.managed_q, ManagedTree
-        ).dest_dir = self.destDir
+        ).populate_dest_dir()
         self.app_log.success("Re-Add tab managed tree populated.")
         self.screen.query_one(
             IDS.re_add.tree.expanded_q, ExpandedTree
-        ).dest_dir = self.destDir
+        ).populate_dest_dir()
         self.app_log.success("Re-Add tab expanded tree populated.")
-        self.screen.query_one(IDS.re_add.tree.list_q, ListTree).dest_dir = (
-            self.destDir
-        )
-        self.app_log.success("Re-Add list populated.")
+        self.screen.query_one(
+            IDS.re_add.tree.list_q, ListTree
+        ).populate_dest_dir()
+        self.app_log.success("Re-Add tab list tree populated.")
 
     @work
-    async def update_global_git_log(self) -> None:
+    async def populate_global_git_log(self) -> None:
         if self.app.splash_data is None:
             self.notify("No loading screen data available.", severity="error")
             return
@@ -153,7 +147,7 @@ class MainScreen(Screen[None], AppType):
         setattr(logs_tab, "git_log_result", self.app.splash_data.git_log)
 
     @work
-    async def update_config_tab(self) -> None:
+    async def populate_config_tab(self) -> None:
         config_tab_switcher = self.screen.query_one(
             IDS.config.switcher.config_tab_q, ConfigTabSwitcher
         )

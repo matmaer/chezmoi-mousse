@@ -237,7 +237,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(TabsBase, AppType):
 
-    destDir: Path | None = None
+    # destDir: Path | None = None
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.add)
@@ -252,18 +252,19 @@ class AddTab(TabsBase, AppType):
         self.operate_mode_container = self.query_one(
             IDS.add.container.op_mode_q, OperateMode
         )
-        if self.destDir is not None:
-            self.mount(
-                Horizontal(
-                    FilteredDirTree(self.destDir, id=IDS.add.tree.dir_tree),
-                    ContentsView(ids=IDS.add),
-                )
+        if self.app.dest_dir is None:
+            raise ValueError("self.app.dest_dir is None on AddTab mount")
+        self.mount(
+            Horizontal(
+                FilteredDirTree(self.app.dest_dir, id=IDS.add.tree.dir_tree),
+                ContentsView(ids=IDS.add),
             )
-            contents_view = self.query_one(
-                IDS.add.container.contents_q, ContentsView
-            )
-            contents_view.add_class(Tcss.border_title_top)
-            contents_view.border_title = f" {self.destDir} "
+        )
+        contents_view = self.query_one(
+            IDS.add.container.contents_q, ContentsView
+        )
+        contents_view.add_class(Tcss.border_title_top)
+        contents_view.border_title = f" {self.app.dest_dir} "
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)

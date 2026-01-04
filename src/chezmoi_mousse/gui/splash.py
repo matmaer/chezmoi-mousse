@@ -28,14 +28,6 @@ from chezmoi_mousse import (
     VerbArgs,
 )
 
-from .main_tabs import MainScreen
-from .tabs.add_tab import AddTab
-from .tabs.common.contents_view import ContentsView
-from .tabs.common.diff_view import DiffView
-from .tabs.common.git_log_view import GitLogPath
-from .tabs.common.switchers import ViewSwitcher
-from .tabs.common.trees import TreeBase
-
 __all__ = ["SplashScreen"]
 
 SPLASH_COMMANDS: list[ReadCmd] = [
@@ -252,14 +244,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
         self.app.parsed_config = globals()["parsed_config"]
         if self.app.init_needed is True:
             return
-        dest_dir = globals()["parsed_config"].dest_dir
-        AddTab.destDir = dest_dir
-        ContentsView.destDir = dest_dir
-        DiffView.destDir = dest_dir
-        GitLogPath.destDir = dest_dir
-        MainScreen.destDir = dest_dir
-        TreeBase.destDir = dest_dir
-        ViewSwitcher.destDir = dest_dir
+        self.app.dest_dir = globals()["parsed_config"].dest_dir
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

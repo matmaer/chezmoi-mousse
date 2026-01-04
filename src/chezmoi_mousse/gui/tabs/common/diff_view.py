@@ -18,8 +18,6 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse import AppIds, CommandResult, NodeData
 
 __all__ = ["DiffView"]
@@ -92,7 +90,7 @@ class DiffLines(VerticalGroup):
 
 class DiffView(Vertical, AppType):
 
-    destDir: "Path | None" = None
+    # destDir: "Path | None" = None
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
@@ -110,7 +108,7 @@ class DiffView(Vertical, AppType):
         yield DiffLines(ids=self.ids)
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.destDir} "
+        self.border_title = f" {self.app.dest_dir} "
         self.diff_lines = self.query_one(
             self.ids.container.diff_lines_q, DiffLines
         )
@@ -182,13 +180,17 @@ class DiffView(Vertical, AppType):
         return diff_data
 
     def watch_node_data(self) -> None:
-        if self.node_data is None or self.destDir is None:
+        if self.node_data is None:
             return
         diff_info = self.query_one(self.ids.container.diff_info_q, DiffInfo)
         diff_info.display = False
         self.diff_lines.display = False
+        if self.app.dest_dir is None:
+            raise ValueError(
+                "self.app.dest_dir is None in DiffView.watch_node_data"
+            )
         self.border_title = (
-            f" {self.node_data.path.relative_to(self.destDir)} "
+            f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         )
         diff_data: DiffData = self.create_diff_data()
 

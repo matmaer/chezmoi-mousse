@@ -52,7 +52,7 @@ class ContentsInfo(VerticalGroup, AppType):
 
 class ContentsView(Vertical, AppType):
 
-    destDir: "Path | None" = None
+    # destDir: "Path | None" = None
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
@@ -84,7 +84,7 @@ class ContentsView(Vertical, AppType):
         # TODO: make this configurable but should be reasonable truncate for
         # displaying enough of a file to judge operating on it.
         self.truncate_size = self.app.max_file_size // 10
-        self.border_title = f" {self.destDir} "
+        self.border_title = f" {self.app.dest_dir} "
         self.cat_config_label = self.query_one(
             self.ids.label.cat_config_output_q, Label
         )
@@ -171,10 +171,14 @@ class ContentsView(Vertical, AppType):
         return
 
     def watch_node_data(self) -> None:
-        if self.node_data is None or self.destDir is None:
+        if self.node_data is None:
             return
+        if self.app.dest_dir is None:
+            raise ValueError(
+                "self.app.dest_dir is None in ContentsView.watch_node_data"
+            )
         self.border_title = (
-            f" {self.node_data.path.relative_to(self.destDir)} "
+            f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         )
         self.cat_config_label.display = False
         self.file_read_label.display = False
