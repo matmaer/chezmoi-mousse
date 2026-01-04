@@ -5,11 +5,9 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
-from textual.widgets import DataTable, Label, Link, Static
+from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
 from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabels, Tcss
-
-from .custom_collapsible import CustomCollapsible
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -196,7 +194,7 @@ class PwMgrInfo(Enum):
         )
 
 
-class PwCollapsible(CustomCollapsible, AppType):
+class PwCollapsible(Collapsible, AppType):
 
     def __init__(self, pw_mgr_data: PwMgrData) -> None:
         self.pw_mgr_data = pw_mgr_data
@@ -226,6 +224,9 @@ class PwCollapsible(CustomCollapsible, AppType):
                 f"[$text-primary]Doctor check: "
                 f"{self.pw_mgr_data.doctor_check}[/]"
             ),
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+            collapsed=True,
         )
 
 

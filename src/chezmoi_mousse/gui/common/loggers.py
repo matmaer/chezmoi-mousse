@@ -6,11 +6,10 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual import work
 from textual.containers import ScrollableContainer
-from textual.widgets import RichLog, Static
+from textual.widgets import Collapsible, RichLog, Static
 
 from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
 
-from .custom_collapsible import CustomCollapsible
 from .operate_mode import CommandOutput
 
 if TYPE_CHECKING:
@@ -238,12 +237,15 @@ class CmdOutput(Static, AppType):
         )
 
 
-class OutputCollapsible(CustomCollapsible, AppType):
+class OutputCollapsible(Collapsible, AppType):
 
     def __init__(self, *, command_result: "CommandResult") -> None:
         super().__init__(
             CommandOutput(command_result),
             title=command_result.collapsible_title,
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+            collapsed=True,
         )
 
 

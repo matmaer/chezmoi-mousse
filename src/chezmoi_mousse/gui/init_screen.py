@@ -8,6 +8,7 @@ from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
 from textual.widgets import (  # Static,; Switch,
     Button,
+    Collapsible,
     Footer,
     Input,
     Label,
@@ -32,7 +33,6 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import FlatLink, OperateButtons  # , SwitchWithLabel
-from .common.custom_collapsible import CustomCollapsible
 from .common.doctor_data import DoctorTable
 from .common.messages import InitCloneCmdMsg, OperateButtonMsg
 from .common.screen_header import CustomHeader
@@ -464,11 +464,11 @@ class InitCollapsibles(VerticalGroup, AppType):
         yield Label(
             SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label
         )
-        yield CustomCollapsible(
+        yield Collapsible(
             DoctorTable(ids=IDS.init, doctor_data=self.app.cmd_results.doctor),
             title="Doctor Output",
         )
-        yield CustomCollapsible(
+        yield Collapsible(
             Pretty(self.app.cmd_results.template_data),
             title="Template Data Output",
         )

@@ -6,12 +6,11 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Footer, Label, Pretty, Tree
+from textual.widgets import Collapsible, Footer, Label, Pretty, Tree
 
 from chezmoi_mousse import IDS, AppType, Chars, FlatBtn, LinkBtn, Tcss
 
 from .common.actionables import FlatButton, FlatLink
-from .common.custom_collapsible import CustomCollapsible
 from .common.screen_header import CustomHeader, HeaderTitle
 
 type ParsedJson = dict[str, Any]
@@ -41,9 +40,12 @@ class InstallHelpScreen(Screen[None], AppType):
         yield Label(
             InstallHelpStrings.top_label, classes=Tcss.main_section_label
         )
-        yield CustomCollapsible(
+        yield Collapsible(
             Pretty(InstallHelpStrings.no_path_var),
             title=InstallHelpStrings.collapsible_title,
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+            collapsed=True,
         )
         with Horizontal():
             yield CommandsTree()
