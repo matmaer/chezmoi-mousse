@@ -6,14 +6,12 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
-from textual.widgets import (
+from textual.widgets import (  # Static,; Switch,
     Button,
     Footer,
     Input,
     Label,
     Select,
-    Static,
-    Switch,
 )
 
 from chezmoi_mousse import (
@@ -32,7 +30,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
+from .common.actionables import FlatLink, OperateButtons  # , SwitchWithLabel
 from .common.custom_collapsible import CustomCollapsible
 from .common.doctor_table import DoctorTable
 from .common.messages import InitCloneCmdMsg, OperateButtonMsg
@@ -489,7 +487,7 @@ class InitChezmoi(Screen[None], AppType):
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
-        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
+        # self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.operate_buttons = self.query_one(
             self.ids.container.operate_buttons_q, OperateButtons
         )
@@ -500,17 +498,17 @@ class InitChezmoi(Screen[None], AppType):
         #     self.ids.container.post_operate_q, VerticalGroup
         # )
         # self.post_op_container.display = False
-        self.init_info = self.query_one(self.ids.static.init_info_q, Static)
+        # self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         # self.operate_info = self.query_one(
         #     self.ids.static.operate_info_q, Static
         # )
         # self.operate_info.border_title = OpBtnLabels.init_run
         self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
-        self.repo_input = self.query_one(
-            self.ids.container.repo_input_q, InputInitCloneRepo
-        )
-        self.repo_input.display = False
-        self.update_init_info()
+        # self.repo_input = self.query_one(
+        #     self.ids.container.repo_input_q, InputInitCloneRepo
+        # )
+        # self.repo_input.display = False
+        # self.update_init_info()
 
         lines_to_write: list[str] = []
         # if self.query_exactly_one(Switch).value is False:
@@ -577,19 +575,19 @@ class InitChezmoi(Screen[None], AppType):
                 )
         # self.operate_info.update("\n".join(lines_to_write))
 
-    def update_init_info(self) -> None:
-        if self.query_exactly_one(Switch).value is False:
-            self.init_info.update(InitStrings.init_new_info)
-            return
-        current_select = self.repo_input.query_exactly_one(Select[str]).value
-        if current_select == "https":
-            self.init_info.update(InitStrings.https_url)
-        elif current_select == "ssh":
-            self.init_info.update(InitStrings.ssh_select)
-        elif current_select == "guess url":
-            self.init_info.update(InitStrings.guess_https)
-        elif current_select == "guess ssh":
-            self.init_info.update(InitStrings.guess_ssh)
+    # def update_init_info(self) -> None:
+    #     if self.query_exactly_one(Switch).value is False:
+    #         self.init_info.update(InitStrings.init_new_info)
+    #         return
+    #     current_select = self.repo_input.query_exactly_one(Select[str]).value
+    #     if current_select == "https":
+    #         self.init_info.update(InitStrings.https_url)
+    #     elif current_select == "ssh":
+    #         self.init_info.update(InitStrings.ssh_select)
+    #     elif current_select == "guess url":
+    #         self.init_info.update(InitStrings.guess_https)
+    #     elif current_select == "guess ssh":
+    #         self.init_info.update(InitStrings.guess_ssh)
 
     @work(exit_on_error=False)
     async def run_operate_command(self) -> None:
@@ -613,14 +611,14 @@ class InitChezmoi(Screen[None], AppType):
             self.init_chezmoi_btn.disabled = True
             self.close_btn.label = OpBtnLabels.reload
 
-    @on(Switch.Changed)
-    def handle_switch_state(self, event: Switch.Changed) -> None:
-        if event.value is True:
-            self.repo_input.display = True
-            self.init_chezmoi_btn.disabled = True
-        elif event.value is False:
-            self.repo_input.display = False
-        self.update_init_info()
+    # @on(Switch.Changed)
+    # def handle_switch_state(self, event: Switch.Changed) -> None:
+    #     if event.value is True:
+    #         self.repo_input.display = True
+    #         self.init_chezmoi_btn.disabled = True
+    #     elif event.value is False:
+    #         self.repo_input.display = False
+    #     self.update_init_info()
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
