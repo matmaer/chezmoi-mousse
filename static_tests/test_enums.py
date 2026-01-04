@@ -101,7 +101,6 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
     # Skip enums that are used dynamically, not in scope for static tests
     if class_data.class_name in EXCLUDE_ENUMS:
         pytest.skip(f"Skipping dynamic enum {class_data.class_name}")
-
     # Construct the member names to check
     enum_member_names: list[str] = []
     for class_node in class_data.class_nodes:
@@ -109,7 +108,6 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
             target = class_node.targets[0]
             if isinstance(target, ast.Name):
                 enum_member_names.append(target.id)
-
     # For each enum member, search for any usage in non-enum classes
     # or in other enum classes. We look for attribute access like
     # EnumClass.member_name (or nested attribute chains) and for
@@ -161,7 +159,6 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
                             ):
                                 found = True
                                 break
-
         if found is False:
             results.append(
                 f"{class_data.class_name}.{member_name} (in {class_data.module_path})"

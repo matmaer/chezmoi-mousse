@@ -1,7 +1,10 @@
 import json
+import urllib.request
 from collections import deque
+from enum import StrEnum
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import TypedDict
 
 from rich.segment import Segment
 from rich.style import Style
@@ -20,23 +23,24 @@ from chezmoi_mousse import (
     AppType,
     ChezmoiCommand,
     ChezmoiPaths,
+    CmdResults,
     CommandResult,
+    GlobalCmd,
     ParsedConfig,
     ReadCmd,
-    SplashData,
     VerbArgs,
 )
 
-from .main_tabs import MainScreen
-from .tabs.add_tab import AddTab
-from .tabs.common.contents_view import ContentsView
-from .tabs.common.diff_view import DiffView
-from .tabs.common.git_log_view import GitLogPath
-from .tabs.common.switchers import ViewSwitcher
-from .tabs.common.tabs_base import TabsBase
-from .tabs.common.trees import TreeBase
-
 __all__ = ["SplashScreen"]
+
+type Value = str | dict[str, "Value"]
+
+
+class Node(TypedDict):
+    text: str
+    indent: int
+    children: list["Node"]
+
 
 SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.cat_config,
@@ -87,6 +91,23 @@ template_data: "CommandResult | None" = None
 verify: "CommandResult | None" = None
 
 
+class TemplateStr(StrEnum):
+    """Strings to process the install help and latest chezmoi release."""
+
+    cross_platform = (
+        "chezmoi is available in many cross-platform package managers"
+    )
+    chezmoi_install_doc_url = "https://raw.githubusercontent.com/twpayne/chezmoi/refs/heads/master/assets/chezmoi.io/docs/install.md.tmpl"
+    chezmoi_latest_release_url = (
+        "https://api.github.com/repos/twpayne/chezmoi/releases/latest"
+    )
+    more_packages = "For more packages, see"
+    os_install = (
+        "Install chezmoi with your package manager with a single command"
+    )
+    version_tag = "{{ $version }}"
+
+
 class AnimatedFade(Static):
 
     def __init__(self) -> None:
@@ -131,7 +152,7 @@ class SplashLog(RichLog):
         self.styles.margin = 2
 
 
-class SplashScreen(Screen[SplashData | None], AppType):
+class SplashScreen(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
@@ -156,6 +177,11 @@ class SplashScreen(Screen[SplashData | None], AppType):
         )
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
+            install_help_worker = self.get_install_screen_data()
+            await install_help_worker.wait()
+            self.app.cmd_results = CmdResults(
+                install_help_data=install_help_worker.result
+            )
             self.splash_log.styles.height = 1
             cmd_text = "chezmoi command"
             padding = LOG_PADDING_WIDTH - len(cmd_text)
@@ -183,7 +209,7 @@ class SplashScreen(Screen[SplashData | None], AppType):
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
         result: CompletedProcess[str] = run(
-            splash_cmd.value,
+            GlobalCmd.live_run.value + splash_cmd.value,
             capture_output=True,
             shell=False,
             text=True,
@@ -203,10 +229,10 @@ class SplashScreen(Screen[SplashData | None], AppType):
             parsed_config = json.loads(cmd_result.std_out)
             globals()["parsed_config"] = ParsedConfig(
                 dest_dir=Path(parsed_config["destDir"]),
-                git_autoadd=parsed_config["git"]["autoadd"],
+                git_auto_add=parsed_config["git"]["autoadd"],
+                git_auto_commit=parsed_config["git"]["autocommit"],
+                git_auto_push=parsed_config["git"]["autopush"],
                 source_dir=Path(parsed_config["sourceDir"]),
-                git_autocommit=parsed_config["git"]["autocommit"],
-                git_autopush=parsed_config["git"]["autopush"],
             )
         elif splash_cmd in (
             ReadCmd.managed_dirs,
@@ -232,42 +258,151 @@ class SplashScreen(Screen[SplashData | None], AppType):
             self.splash_log.write, f"[{color}]{log_text}[/{color}]"
         )
 
+    @work
+    async def get_install_screen_data(self) -> dict[str, Value]:
+        with urllib.request.urlopen(
+            TemplateStr.chezmoi_latest_release_url
+        ) as response:
+            data = json.load(response)
+            latest_version = data.get("tag_name")
+
+        req = urllib.request.Request(
+            TemplateStr.chezmoi_install_doc_url,
+            headers={"User-Agent": "python-urllib"},
+        )
+        with urllib.request.urlopen(req, timeout=2) as response:
+            # After decoding the response
+            content = response.read().decode("utf-8")
+            # Split into lines first
+            content_list = content.splitlines()
+            # Then filter
+            content_list = [
+                line
+                for line in content_list
+                if line.strip() and not line.strip().startswith("```")
+            ]
+        # Replace template strings
+        replacements: list[tuple[str, str]] = [
+            (TemplateStr.version_tag, latest_version),
+            ('"', ""),
+            ("=== ", ""),
+        ]
+        for old, new in replacements:
+            content_list = [line.replace(old, new) for line in content_list]
+        # Strip head and tail
+        first_idx = next(
+            (
+                i
+                for i, line in enumerate(content_list)
+                if line.startswith(TemplateStr.os_install)
+            )
+        )
+        last_idx = next(
+            (
+                i
+                for i, line in enumerate(content_list)
+                if line.startswith(TemplateStr.more_packages)
+            )
+        )
+        content_list = content_list[first_idx:last_idx]
+        # Split OS-specific and cross-platform commands
+        split_idx = next(
+            (
+                i
+                for i, line in enumerate(content_list)
+                if line.startswith(TemplateStr.cross_platform)
+            )
+        )
+        # Generate result
+        result = content_list[1:split_idx]  # OS-specific commands
+        result.append(
+            "Cross-Platform"
+        )  # Add a header and indent cross-platform
+        result.extend(f"    {line}" for line in content_list[split_idx + 1 :])
+        freebsd_idx = next(
+            (i for i, line in enumerate(result) if line.startswith("FreeBSD"))
+        )
+        # insert a list item before FreeBSD
+        result.insert(freebsd_idx, "Unix-like systems")
+        # increase indent for the next four lines (FreeBSD and OpenIndiana commands)
+        for i in range(freebsd_idx + 1, freebsd_idx + 5):
+            result[i] = f"    {result[i]}"
+
+        root_node: Node = {"text": "", "indent": -1, "children": []}
+        stack: list[Node] = [root_node]
+
+        # construct tree data structure
+        for line in result:
+            indent = len(line) - len(line.lstrip(" "))
+            # Pop nodes with greater or equal indentation
+            while stack and indent <= stack[-1]["indent"]:
+                stack.pop()
+            # Add new node
+            node: Node = {
+                "text": line.strip(),
+                "indent": indent,
+                "children": [],
+            }
+            stack[-1]["children"].append(
+                node
+            )  # will modify the root_node variable
+            stack.append(node)
+
+        # collapse tree into nested dictionary
+        def collapse(node: Node) -> Value:
+            # a node without children is the text of the command
+            if not node["children"]:
+                return node["text"]
+            # Single child becomes its value for a nested structure
+            if len(node["children"]) == 1:
+                return collapse(node["children"][0])
+            # Multiple children become a dictionary
+            return {
+                child["text"]: collapse(child) for child in node["children"]
+            }
+
+        # return final nested dict
+        return {
+            child["text"]: collapse(child) for child in root_node["children"]
+        }
+
     @work(name="update_app")
-    async def update_app(self):
-        self.app.splash_data = SplashData(
-            cat_config=globals()["cat_config"],
-            doctor=globals()["doctor"],
-            git_log=globals()["git_log"],
-            ignored=globals()["ignored"],
-            parsed_config=globals()["parsed_config"],
-            template_data=globals()["template_data"],
-            verify=globals()["verify"],
-        )
-        self.app.cmd = ChezmoiCommand(
-            dev_mode=self.app.dev_mode,
-            managed_dirs=globals()["managed_dirs"],
-            managed_files=globals()["managed_files"],
-            status_dirs=globals()["status_dirs"],
-            status_files=globals()["status_files"],
-        )
+    async def update_app(self) -> None:
         self.app.paths = ChezmoiPaths(
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],
             status_dirs_result=globals()["status_dirs"],
             status_files_result=globals()["status_files"],
         )
+        self.app.cmd_results.doctor = globals()["doctor"]
+        self.app.cmd_results.template_data = globals()["template_data"]
         if self.app.init_needed is True:
+            cmd_results = CmdResults(
+                doctor=globals()["doctor"],
+                template_data=globals()["template_data"],
+            )
+            self.app.cmd_results = cmd_results
             return
-        dest_dir = globals()["parsed_config"].dest_dir
-        AddTab.destDir = dest_dir
-        ContentsView.destDir = dest_dir
-        DiffView.destDir = dest_dir
-        GitLogPath.destDir = dest_dir
-        MainScreen.destDir = dest_dir
-        TreeBase.destDir = dest_dir
-        ViewSwitcher.destDir = dest_dir
-        TabsBase.git_autocommit = globals()["parsed_config"].git_autocommit
-        TabsBase.git_autopush = globals()["parsed_config"].git_autopush
+        cmd_results = CmdResults(
+            cat_config=globals()["cat_config"],
+            doctor=globals()["doctor"],
+            dump_config=globals()["dump_config"],
+            git_log=globals()["git_log"],
+            ignored=globals()["ignored"],
+            managed_dirs=globals()["managed_dirs"],
+            managed_files=globals()["managed_files"],
+            status_dirs=globals()["status_dirs"],
+            status_files=globals()["status_files"],
+            template_data=globals()["template_data"],
+            verify=globals()["verify"],
+        )
+        self.app.cmd_results = cmd_results
+        self.app.dest_dir = globals()["parsed_config"].dest_dir
+        self.app.parsed_config = globals()["parsed_config"]
+        self.app.parsed_template_data = json.loads(
+            globals()["template_data"].std_out
+        )
+        self.app.cmd_results.verify = globals()["verify"]
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

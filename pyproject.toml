@@ -16,6 +16,7 @@ Repository = "https://github.com/matmaer/chezmoi-mousse"
 dev = [
     "black",
     "docformatter",
+    "faker>=40.1.0",
     "graphviz",
     "ipython",
     "isort",

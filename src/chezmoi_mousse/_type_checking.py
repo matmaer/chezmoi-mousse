@@ -9,17 +9,20 @@ from ._str_enum_names import PathKind
 
 if TYPE_CHECKING:
     from textual.widgets import Static
+    from textual.widgets.tree import TreeNode
 
     from .gui.textual_app import ChezmoiGUI
 
+type Value = str | dict[str, "Value"]
 
 __all__ = [
     "AppType",
     "DiffData",
+    "ExpandedNodeData",
     "InitCloneData",
     "NodeData",
     "ParsedConfig",
-    "SplashData",
+    "CmdResults",
 ]
 
 
@@ -31,6 +34,12 @@ class AppType:
 class DiffData:
     diff_cmd_label: str
     diff_lines: list[Static]
+
+
+@dataclass(slots=True)
+class ExpandedNodeData:
+    apply_expanded: list[TreeNode[NodeData]]
+    re_add_expanded: list[TreeNode[NodeData]]
 
 
 @dataclass(slots=True)
@@ -53,21 +62,26 @@ class NodeData:
 @dataclass(slots=True)
 class ParsedConfig:
     dest_dir: Path
-    git_autoadd: bool
+    git_auto_add: bool
+    git_auto_commit: bool
+    git_auto_push: bool
     source_dir: Path
-    git_autocommit: bool
-    git_autopush: bool
 
 
 @dataclass(slots=True)
-class SplashData:
-    cat_config: CommandResult
-    doctor: CommandResult
-    git_log: CommandResult
-    ignored: CommandResult
-    parsed_config: ParsedConfig
-    template_data: CommandResult
-    verify: CommandResult
+class CmdResults:
+    cat_config: CommandResult | None = None
+    doctor: CommandResult | None = None
+    dump_config: CommandResult | None = None
+    git_log: CommandResult | None = None
+    ignored: CommandResult | None = None
+    managed_dirs: CommandResult | None = None
+    managed_files: CommandResult | None = None
+    status_dirs: CommandResult | None = None
+    status_files: CommandResult | None = None
+    template_data: CommandResult | None = None
+    verify: CommandResult | None = None
+    install_help_data: dict[str, Value] | None = None
 
     @property
     def executed_commands(self) -> list[CommandResult]:
@@ -75,5 +89,5 @@ class SplashData:
         return [
             getattr(self, field.name)
             for field in fields(self)
-            if isinstance(getattr(self, field.name), CommandResult)
+            if getattr(self, field.name) is not None
         ]

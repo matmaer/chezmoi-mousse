@@ -4,21 +4,24 @@ from textual.message import Message
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import (
-        InitCloneData,
-        NodeData,
-        OpBtnEnum,
-        ScreenName,
-        TabName,
-    )
+    from chezmoi_mousse import AppIds, InitCloneData, NodeData
+
+    from .actionables import CloseButton, OpButton
 
 __all__ = [
-    "CurrentAddNodeMsg",
+    "CloseButtonMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
 ]
+
+
+class CloseButtonMsg(Message):
+    def __init__(self, *, button: "CloseButton", ids: "AppIds") -> None:
+        self.button = button
+        self.ids = ids
+        super().__init__()
 
 
 class CurrentApplyNodeMsg(Message):
@@ -34,13 +37,6 @@ class CurrentReAddNodeMsg(Message):
         super().__init__()
 
 
-class CurrentAddNodeMsg(Message):
-    # used to keep track in main screen to push the operate screen
-    def __init__(self, node_data: "NodeData") -> None:
-        self.node_data = node_data
-        super().__init__()
-
-
 class InitCloneCmdMsg(Message):
     def __init__(self, init_clone_data: "InitCloneData") -> None:
         self.init_clone_data = init_clone_data
@@ -49,13 +45,9 @@ class InitCloneCmdMsg(Message):
 
 class OperateButtonMsg(Message):
     def __init__(
-        self,
-        *,
-        btn_enum: "OpBtnEnum",
-        label: "str",
-        canvas_name: "TabName|ScreenName",
+        self, *, button: "OpButton", ids: "AppIds", pressed_label: str
     ) -> None:
-        self.btn_enum = btn_enum
-        self.label = label
-        self.canvas_name = canvas_name
+        self.button = button
+        self.ids = ids
+        self.pressed_label = pressed_label
         super().__init__()

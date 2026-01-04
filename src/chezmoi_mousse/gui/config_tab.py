@@ -1,7 +1,8 @@
-from textual import on
+from typing import TYPE_CHECKING
+
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
-from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
 from chezmoi_mousse import (
@@ -11,20 +12,20 @@ from chezmoi_mousse import (
     CommandResult,
     FlatBtn,
     SectionLabels,
-    SplashData,
     Tcss,
 )
-from chezmoi_mousse.shared import (
-    DoctorTableView,
-    FlatButtonsVertical,
-    PwMgrInfoView,
-    TemplateDataView,
-)
 
-__all__ = ["ConfigTab", "ConfigTabSwitcher"]
+from .common.actionables import FlatButtonsVertical
+from .common.doctor_data import DoctorTable, PwMgrInfoView
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
 
 
-class CatConfigView(Vertical):
+__all__ = ["ConfigTab", "DoctorTableView", "TemplateDataView"]
+
+
+class CatConfigView(Vertical, AppType):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(id=self.ids.view.cat_config)
@@ -34,13 +35,13 @@ class CatConfigView(Vertical):
             SectionLabels.cat_config_output, classes=Tcss.main_section_label
         )
 
-    def mount_cat_config_output(self, command_result: CommandResult) -> None:
-        self.mount(ScrollableContainer(Static(command_result.std_out)))
+    @work
+    async def on_mount(self) -> None:
+        if self.app.cmd_results.cat_config is not None:
+            self.mount(Static(self.app.cmd_results.cat_config.std_out))
 
 
-class ConfigTabSwitcher(ContentSwitcher):
-
-    splash_data: reactive["SplashData | None"] = reactive(None)
+class ConfigTabSwitcher(ContentSwitcher, AppType):
 
     def __init__(self):
         super().__init__(
@@ -55,35 +56,24 @@ class ConfigTabSwitcher(ContentSwitcher):
         yield IgnoredView(ids=IDS.config)
         yield TemplateDataView(ids=IDS.config)
 
-    def watch_splash_data(self):
-        if self.splash_data is None:
-            return
-
+    @work
+    async def on_mount(self):
+        if self.app.cmd_results.doctor is None:
+            raise RuntimeError("cmd_results.doctor is None")
         doctor_view = self.query_one(
             IDS.config.container.doctor_q, DoctorTableView
         )
         doctor_view.populate_doctor_data(
-            command_result=self.splash_data.doctor
+            command_result=self.app.cmd_results.doctor
         )
         pw_mgr_info_view = self.query_one(
             IDS.config.view.pw_mgr_info_q, PwMgrInfoView
         )
-        pw_mgr_info_view.populate_pw_mgr_info(self.splash_data.doctor)
-
-        cat_config_view = self.query_one(
-            IDS.config.view.cat_config_q, CatConfigView
-        )
-        cat_config_view.mount_cat_config_output(self.splash_data.cat_config)
-
+        pw_mgr_info_view.populate_pw_mgr_info(self.app.cmd_results.doctor)
         ignored_view = self.query_one(IDS.config.view.ignored_q, IgnoredView)
-        ignored_view.mount_ignored_output(self.splash_data.ignored)
-
-        template_data_view = self.query_one(
-            IDS.config.view.template_data_q, TemplateDataView
-        )
-        template_data_view.mount_template_data_output(
-            self.splash_data.template_data
-        )
+        if self.app.cmd_results.ignored is None:
+            raise RuntimeError("cmd_results.ignored is None")
+        ignored_view.mount_ignored_output(self.app.cmd_results.ignored)
 
 
 class IgnoredView(Vertical):
@@ -100,6 +90,37 @@ class IgnoredView(Vertical):
         self.mount(
             ScrollableContainer(Pretty(command_result.std_out.splitlines()))
         )
+
+
+class DoctorTableView(Vertical, AppType):
+
+    def __init__(self, ids: "AppIds") -> None:
+        self.ids = ids
+        super().__init__(id=self.ids.container.doctor)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.doctor_output, classes=Tcss.main_section_label
+        )
+
+    def populate_doctor_data(self, command_result: CommandResult) -> None:
+        self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
+
+
+class TemplateDataView(Vertical, AppType):
+    def __init__(self, ids: "AppIds"):
+        self.ids = ids
+        super().__init__(id=self.ids.view.template_data)
+
+    def compose(self) -> ComposeResult:
+        yield Label(
+            SectionLabels.template_data_output, classes=Tcss.main_section_label
+        )
+
+    @work
+    async def on_mount(self) -> None:
+        if self.app.parsed_template_data is not None:
+            self.mount(Pretty(self.app.parsed_template_data))
 
 
 class ConfigTab(Horizontal, AppType):

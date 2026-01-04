@@ -5,26 +5,37 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
+from ._app_state import AppState
 from ._chezmoi_paths import ChezmoiPaths
+from ._str_enums import OperateStrings
 
 if TYPE_CHECKING:
-    from .gui.tabs.logs_tab import AppLog, DebugLog, OperateLog, ReadCmdLog
+    from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
 
 __all__ = [
     "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
     "ReadCmd",
-    "ReadVerbs",
+    "ReadVerb",
     "VerbArgs",
     "WriteCmd",
+    "WriteVerb",
 ]
 
 
 class LogUtils:
 
     @staticmethod
-    def pretty_cmd_str(command: list[str]) -> str:
+    def formatted_time_str() -> str:
+        return f"{datetime.now().strftime("%H:%M:%S")}"
+
+    @staticmethod
+    def pretty_time() -> str:
+        return f"[$text-success][{datetime.now().strftime("%H:%M:%S")}][/]"
+
+    @staticmethod
+    def filtered_args_str(command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
         exclude = set(
             GlobalCmd.default_args.value
@@ -47,11 +58,19 @@ class GlobalCmd(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
+        "--verbose=true",
         "--use-builtin-git=true",
     ]
     live_run = ["chezmoi"] + default_args
-    dry_run = live_run + ["--dry-run"]
+    _dry_run = live_run + ["--dry-run"]
     # version = live_run + ["--version"] TODO
+
+    @classmethod
+    def base_cmd(cls) -> list[str]:
+        if AppState.changes_enabled() is True:
+            return cls.live_run.value
+        else:
+            return cls._dry_run.value
 
 
 class VerbArgs(Enum):
@@ -73,12 +92,13 @@ class VerbArgs(Enum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     init_do_not_guess = "--guess-repo-url=false"
-    init_guess_ssh = ["--ssh"]
+    init_guess_https = "--guess-repo-url=true"
+    init_guess_ssh = ["--guess-repo-url=true", "--ssh"]
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
 
 
-class ReadVerbs(Enum):
+class ReadVerb(Enum):
     cat = "cat"
     cat_config = "cat-config"
     data = "data"
@@ -95,59 +115,45 @@ class ReadVerbs(Enum):
 
 
 class ReadCmd(Enum):
-    cat = GlobalCmd.live_run.value + [ReadVerbs.cat.value]
-    cat_config = GlobalCmd.live_run.value + [ReadVerbs.cat_config.value]
-    diff = (
-        GlobalCmd.live_run.value + [ReadVerbs.diff.value] + VerbArgs.diff.value
-    )
-    diff_reverse = GlobalCmd.live_run.value + [
-        ReadVerbs.diff.value,
-        VerbArgs.reverse.value,
-    ]
-    doctor = GlobalCmd.live_run.value + [ReadVerbs.doctor.value]
-    dump_config = GlobalCmd.live_run.value + [
-        VerbArgs.format_json.value,
-        ReadVerbs.dump_config.value,
-    ]
-    git_log = (
-        GlobalCmd.live_run.value
-        + [ReadVerbs.git.value]
-        + VerbArgs.git_log.value
-    )
-    ignored = GlobalCmd.live_run.value + [ReadVerbs.ignored.value]
-    managed_dirs = GlobalCmd.live_run.value + [
-        ReadVerbs.managed.value,
+    cat = [ReadVerb.cat.value]
+    cat_config = [ReadVerb.cat_config.value]
+    diff = [ReadVerb.diff.value] + VerbArgs.diff.value
+    diff_reverse = [ReadVerb.diff.value, VerbArgs.reverse.value]
+    doctor = [ReadVerb.doctor.value]
+    dump_config = [VerbArgs.format_json.value, ReadVerb.dump_config.value]
+    git_log = [ReadVerb.git.value] + VerbArgs.git_log.value
+    ignored = [ReadVerb.ignored.value]
+    managed_dirs = [
+        ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
-    managed_files = GlobalCmd.live_run.value + [
-        ReadVerbs.managed.value,
+    managed_files = [
+        ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    source_path = GlobalCmd.live_run.value + [ReadVerbs.source_path.value]
-    status_dirs = GlobalCmd.live_run.value + [
-        ReadVerbs.status.value,
+    source_path = [ReadVerb.source_path.value]
+    status_dirs = [
+        ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
     ]
-    status_files = GlobalCmd.live_run.value + [
-        ReadVerbs.status.value,
+    status_files = [
+        ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
     ]
-    template_data = GlobalCmd.live_run.value + [ReadVerbs.data.value]
-    unmanaged = GlobalCmd.live_run.value + [
-        ReadVerbs.unmanaged.value + VerbArgs.path_style_absolute.value
-    ]
-    verify = GlobalCmd.live_run.value + [ReadVerbs.verify.value]
+    template_data = [ReadVerb.data.value]
+    unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
+    verify = [ReadVerb.verify.value]
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.value)
+        return f"[$success]chezmoi {LogUtils.filtered_args_str(self.value)}[/]"
 
 
-class WriteVerbs(Enum):
+class WriteVerb(Enum):
     add = "add"
     apply = "apply"
     destroy = "destroy"
@@ -157,24 +163,42 @@ class WriteVerbs(Enum):
 
 
 class WriteCmd(Enum):
-    add_dry = GlobalCmd.dry_run.value + [WriteVerbs.add.value]
-    add_live = GlobalCmd.live_run.value + [WriteVerbs.add.value]
-    apply_dry = GlobalCmd.dry_run.value + [WriteVerbs.apply.value]
-    apply_live = GlobalCmd.live_run.value + [WriteVerbs.apply.value]
-    destroy_dry = GlobalCmd.dry_run.value + [WriteVerbs.destroy.value]
-    destroy_live = GlobalCmd.live_run.value + [WriteVerbs.destroy.value]
-    forget_dry = GlobalCmd.dry_run.value + [WriteVerbs.forget.value]
-    forget_live = GlobalCmd.live_run.value + [WriteVerbs.forget.value]
-    init_guess_https = [WriteVerbs.init.value]
-    init_guess_ssh = [WriteVerbs.init.value] + VerbArgs.init_guess_ssh.value
-    init_new = [WriteVerbs.init.value]
-    init_no_guess = [WriteVerbs.init.value, VerbArgs.init_do_not_guess.value]
-    re_add_dry = GlobalCmd.dry_run.value + [WriteVerbs.re_add.value]
-    re_add_live = GlobalCmd.live_run.value + [WriteVerbs.re_add.value]
+    add = [WriteVerb.add.value]
+    apply = [WriteVerb.apply.value]
+    destroy = [WriteVerb.destroy.value]
+    forget = [WriteVerb.forget.value]
+    init_guess_https = [WriteVerb.init.value, VerbArgs.init_guess_https.value]
+    init_guess_ssh = [WriteVerb.init.value] + VerbArgs.init_guess_ssh.value
+    init_new = [WriteVerb.init.value]
+    init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
+    re_add = [WriteVerb.re_add.value]
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.value)
+        return (
+            f"[$text-success bold]"
+            f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
+        )
+
+    @property
+    def subprocess_arguments(self) -> list[str]:
+        return GlobalCmd.base_cmd() + self.value
+
+
+def _run_chezmoi_cmd(
+    command: list[str], read_cmd: ReadCmd | None, write_cmd: WriteCmd | None
+) -> CompletedProcess[str]:
+    if read_cmd is not None and read_cmd != ReadCmd.doctor:
+        time_out = 2
+    elif read_cmd == ReadCmd.doctor:
+        time_out = 4
+    elif write_cmd is not None:
+        time_out = 7
+    else:
+        raise ValueError("Both read_cmd and write_cmd are None")
+    return run(
+        command, capture_output=True, shell=False, text=True, timeout=time_out
+    )
 
 
 @dataclass(slots=True)
@@ -182,13 +206,23 @@ class CommandResult:
     completed_process: CompletedProcess[str]
     stripped_std_out: str
     stripped_std_err: str
-    pretty_time: str = f"[{datetime.now().strftime('%H:%M:%S')}]"
     read_cmd: ReadCmd | None = None
     write_cmd: WriteCmd | None = None
 
     @property
     def cmd_args(self) -> list[str]:
         return self.completed_process.args
+
+    @property
+    def collapsible_title(self) -> str:
+        if self.exit_code == 0:
+            return (
+                f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
+            )
+        else:
+            return (
+                f"{LogUtils.pretty_time()} [$text-warning]{self.pretty_cmd}[/]"
+            )
 
     @property
     def dry_run(self) -> bool:
@@ -200,71 +234,51 @@ class CommandResult:
 
     @property
     def pretty_cmd(self) -> str:
-        return LogUtils.pretty_cmd_str(self.cmd_args)
+        return f"{LogUtils.filtered_args_str(self.cmd_args)}"
 
     @property
     def std_out(self) -> str:
+        exit_code = f"Exit code {self.exit_code} ."
         if self.stripped_std_out == "" and "--dry-run" in self.cmd_args:
-            return "No output on stdout, command was executed with --dry-run."
-        elif self.stripped_std_out == "":
-            return "No output on stdout."
-        else:
-            return self.stripped_std_out
+            return f"{OperateStrings.no_stdout_write_cmd_dry} {exit_code}"
+        if self.stripped_std_out == "":
+            return f"{OperateStrings.no_stdout_write_cmd_live} {exit_code}"
+        return self.stripped_std_out
 
     @property
     def std_err(self) -> str:
+        exit_code = f"Exit code {self.exit_code} ."
+        if self.stripped_std_err == "" and "--dry-run" in self.cmd_args:
+            return f"{OperateStrings.no_stderr_write_cmd_dry} {exit_code}"
         if self.stripped_std_err == "":
-            return "No output on stderr."
-        else:
-            return self.stripped_std_err
+            return f"{OperateStrings.no_stderr_write_cmd_live} {exit_code}"
+        return self.stripped_std_err
 
 
 class ChezmoiCommand:
 
-    def __init__(
-        self,
-        *,
-        dev_mode: bool,
-        managed_dirs: CommandResult,
-        managed_files: CommandResult,
-        status_dirs: CommandResult,
-        status_files: CommandResult,
-    ) -> None:
-        self._dev_mode = dev_mode
-        self.paths = ChezmoiPaths(
-            managed_dirs_result=managed_dirs,
-            managed_files_result=managed_files,
-            status_dirs_result=status_dirs,
-            status_files_result=status_files,
-        )
-
+    def __init__(self) -> None:
+        self.app = AppState.get_app()
         self.app_log: AppLog | None = None
         self.read_cmd_log: ReadCmdLog | None = None
         self.operate_log: OperateLog | None = None
-        if self._dev_mode is True:
-            self.debug_log: DebugLog | None = None
 
     #################################
     # Command execution and logging #
     #################################
 
-    def _log_in_app_and_read_cmd_log(self, result: CommandResult):
-        if self.app_log is not None and self.read_cmd_log is not None:
-            self.app_log.log_cmd_results(result)
+    def _log_in_app(self, result: CommandResult):
+        if (
+            self.app_log is None
+            or self.read_cmd_log is None
+            or self.operate_log is None
+        ):
+            return
+        if result.read_cmd is not None:
             self.read_cmd_log.log_cmd_results(result)
-
-    def _log_in_app_and_operate_log(self, result: CommandResult):
-        if self.app_log is not None and self.operate_log is not None:
-            self.app_log.log_cmd_results(result)
+        elif result.write_cmd is not None:
             self.operate_log.log_cmd_results(result)
-
-    def update_managed_paths(self) -> None:
-        self.paths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
-        self.paths.managed_files_result = self.read(ReadCmd.managed_files)
-
-    def update_status_paths(self) -> None:
-        self.paths.status_files_result = self.read(ReadCmd.status_files)
-        self.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
+        self.app_log.log_cmd_results(result)
 
     @staticmethod
     def strip_output(cmd_output: str):
@@ -278,21 +292,12 @@ class ChezmoiCommand:
     def read(
         self, read_cmd: ReadCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
-        command: list[str] = read_cmd.value
-        if path_arg is None:
-            command: list[str] = command
-        else:
-            command: list[str] = command + [str(path_arg)]
-        if read_cmd == ReadCmd.doctor:
-            time_out = 4
-        else:
-            time_out = 2
-        result: CompletedProcess[str] = run(
-            command,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
+        base_cmd = GlobalCmd.live_run.value  # read commands always run live
+        command = base_cmd + read_cmd.value
+        if path_arg is not None:
+            command += [str(path_arg)]
+        result: CompletedProcess[str] = _run_chezmoi_cmd(
+            command, read_cmd=read_cmd, write_cmd=None
         )
         stripped_stdout = self.strip_output(result.stdout)
         stripped_stderr = self.strip_output(result.stderr)
@@ -302,55 +307,34 @@ class ChezmoiCommand:
             stripped_std_err=stripped_stderr,
             stripped_std_out=stripped_stdout,
         )
-        self._log_in_app_and_read_cmd_log(command_result)
+        self._log_in_app(command_result)
         return command_result
 
     def perform(
         self,
         write_cmd: WriteCmd,
         *,
-        path_arg: Path | None = None,
+        path_arg: str | None = None,
         init_arg: str | None = None,
-        changes_enabled: bool,
     ) -> CommandResult:
-        if changes_enabled is True:
-            base_cmd = GlobalCmd.live_run.value
-        else:
-            base_cmd = GlobalCmd.dry_run.value
-        if (
-            write_cmd
-            in (
-                WriteCmd.add_dry,
-                WriteCmd.add_live,
-                WriteCmd.apply_dry,
-                WriteCmd.apply_live,
-                WriteCmd.destroy_dry,
-                WriteCmd.destroy_live,
-                WriteCmd.forget_dry,
-                WriteCmd.forget_live,
-                WriteCmd.re_add_dry,
-                WriteCmd.re_add_live,
-            )
-            and path_arg is not None
-        ):
-            command: list[str] = write_cmd.value + [str(path_arg)]
-        elif write_cmd == WriteCmd.init_new:
-            command: list[str] = base_cmd + write_cmd.value
-        elif (
-            write_cmd
-            in (
-                WriteCmd.init_guess_https,
-                WriteCmd.init_guess_ssh,
-                WriteCmd.init_no_guess,
-            )
-            and init_arg is not None
-        ):
-            command: list[str] = base_cmd + write_cmd.value + [init_arg]
+        if write_cmd == WriteCmd.init_new:
+            command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
+            if init_arg is not None:
+                command: list[str] = (
+                    GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
+                )
+        elif init_arg is None:
+            if path_arg is None:
+                command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
+            else:
+                command: list[str] = (
+                    GlobalCmd.base_cmd() + write_cmd.value + [str(path_arg)]
+                )
         else:
             raise ValueError("Invalid arguments for perform()")
 
-        result: CompletedProcess[str] = run(
-            command, capture_output=True, shell=False, text=True, timeout=5
+        result: CompletedProcess[str] = _run_chezmoi_cmd(
+            command, read_cmd=None, write_cmd=write_cmd
         )
         stripped_stdout = self.strip_output(result.stdout)
         stripped_stderr = self.strip_output(result.stderr)
@@ -360,18 +344,15 @@ class ChezmoiCommand:
             stripped_std_out=stripped_stdout,
             write_cmd=write_cmd,
         )
-        self._log_in_app_and_operate_log(command_result)
-        if write_cmd == WriteCmd.add_live:
-            self.update_managed_paths()
-        elif (
-            write_cmd in (WriteCmd.apply_live, WriteCmd.re_add_live)
-            and path_arg is not None
-        ):
-            self.update_status_paths()
-        elif (
-            write_cmd in (WriteCmd.destroy_live, WriteCmd.forget_live)
-            and path_arg is not None
-        ):
-            self.update_status_paths()
-            self.update_managed_paths()
+        self._log_in_app(command_result)
+        if write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget):
+            ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
+            ChezmoiPaths.managed_files_result = self.read(
+                ReadCmd.managed_files
+            )
+            ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
+            ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
+        elif write_cmd in (WriteCmd.apply, WriteCmd.re_add):
+            ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
+            ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
         return command_result

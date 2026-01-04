@@ -14,7 +14,7 @@
   background-tint: $primary-muted;
   background: $primary-muted;
   border: block $primary-muted;
-  color: $foreground 70%;
+  color: $text-muted;
   width: 100%;
   &:hover {
     color: $foreground;
@@ -57,28 +57,6 @@
   color: $text-accent;
   text-align: center;
   width: 1fr;
-}
-
-.operate_info {
-  background-tint: $surface;
-  background: $surface;
-  border-subtitle-align: center;
-  border-title-align: center;
-  border: round $foreground;
-  padding: 0 1;
-  text-align: center;
-  &.operate_error {
-    border-subtitle-align: right;
-    border-title-align: left;
-    border: round $error;
-    text-align: left;
-  }
-  &.operate_success {
-    border-subtitle-align: right;
-    border-title-align: left;
-    border: round $success;
-    text-align: left;
-  }
 }
 
 .single_switch {
@@ -155,6 +133,20 @@
 /* Type Selector tcss */
 /**********************/
 
+LoadingModal {
+  align: center middle;
+  & Vertical {
+    padding: 1 2;
+    border: $panel;
+    height: auto;
+    width: auto;
+  }
+}
+
+ContentsView, ContentsInfo, DiffInfo, LoggersBase {
+  margin-bottom: 1;
+}
+
 CustomHeader {
   border-bottom: dashed $surface-lighten-3;
   color: $primary;
@@ -162,20 +154,6 @@ CustomHeader {
   text-style: bold;
   &>.changes_enabled_color {
     color: $warning;
-  }
-}
-
-CustomCollapsible {
-  border: none;
-  padding: 0;
-  .pw_mgr_group {
-    margin-bottom: 1;
-  }
-  .read_cmd_static {
-    background-tint: $surface;
-    background: $surface;
-    margin-bottom: 1;
-    margin-right: 1;
   }
 }
 
@@ -216,6 +194,16 @@ FlatLink {
     width: auto;
     padding: 0 0 0 1;
   }
+}
+
+InitChezmoi {
+  & OperateButtons {
+      margin-bottom: 1;
+  }
+}
+
+InitCollapsibles {
+  margin-top: 1;
 }
 
 InputInitCloneRepo {
@@ -286,10 +274,6 @@ InputInitCloneRepo {
   }
 }
 
-InitCollapsibles {
-  margin-top: 1;
-}
-
 InstallHelpScreen {
   & VerticalGroup {
     margin-left: 1;
@@ -299,61 +283,6 @@ InstallHelpScreen {
     border: $success;
     max-width: 100vw;
     color: $primary-lighten-3;
-  }
-}
-
-ContentsView, ContentsInfo, DiffInfo, LoggersBase {
-  margin-bottom: 1;
-}
-
-OperateButtons {
-  # height: 3;
-  dock: bottom;
-  .operate_button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-top: wide $primary-darken-3;
-    border-bottom: wide $surface;
-    color: $primary-lighten-3;
-    margin: 0 1;
-    text-style: none;
-    width: 1fr;
-    &:hover {
-      text-style: none;
-      color: $accent;
-      border-top: wide $accent-darken-3;
-    }
-    &:focus {
-      text-style: none;
-    }
-  }
-}
-
-OperateChezmoiScreen, OperateInitScreen {
-  & OperateButtons {
-      margin-bottom: 1;
-  }
-}
-
-SwitchSlider {
-  background-tint: $surface;
-  background: $surface;
-  border: round $primary;
-  border-left: none;
-  color: $foreground-darken-1;
-  dock: bottom;
-  layer: switches;
-  margin-bottom: 3;
-  offset-x: 0%;
-  padding-right: 1;
-  transition: offset 380ms;
-  width: auto;
-  & HorizontalGroup {
-    padding-bottom: 1;
-    width: auto;
-  }
-  &.-visible {
-    offset-x: -100%;
   }
 }
 
@@ -386,6 +315,67 @@ LogsTabButtons, TreeTabButtons, ViewTabButtons {
         color: $text-accent 80%;
       }
     }
+  }
+}
+
+.operate_button_group {
+  dock: bottom;
+  .operate_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-top: wide $primary-darken-3;
+    border-bottom: wide $surface;
+    color: $primary-lighten-3;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+    &:hover {
+      text-style: none;
+      color: $accent;
+      border-top: wide $accent-darken-3;
+    }
+    &:focus {
+      text-style: none;
+    }
+  }
+}
+
+OperateMode {
+  background-tint: $surface;
+  background: $surface;
+  height: auto;
+  &>.operate_info {
+    padding: 0 1;
+    height: auto;
+    border: round;
+    border: round $foreground;
+    border-subtitle-align: center;
+    border-title-align: center;
+    &>CommandOutput {
+      height: auto;
+    }
+  }
+}
+
+SwitchSlider {
+  background-tint: $surface;
+  background: $surface;
+  border: round $primary;
+  border-left: none;
+  color: $foreground-darken-1;
+  dock: bottom;
+  layer: switches;
+  margin-bottom: 3;
+  offset-x: 0%;
+  padding-right: 1;
+  transition: offset 380ms;
+  width: auto;
+  & HorizontalGroup {
+    padding-bottom: 1;
+    width: auto;
+  }
+  &.-visible {
+    offset-x: -100%;
   }
 }
 
@@ -423,8 +413,23 @@ CheckBox {
   }
 }
 
+Collapsible {
+  border: none;
+  padding: 0;
+  .pw_mgr_group {
+    margin-bottom: 1;
+    margin-right: 1;
+  }
+  .cmd_output {
+    background-tint: $surface;
+    background: $surface;
+    margin-bottom: 1;
+    margin-right: 1;
+  }
+}
+
 CollapsibleTitle {
-  color: $text-primary;
+  padding: 0;
   text-style: none;
   &:hover {
     text-style: bold;
@@ -473,7 +478,6 @@ Switch {
     &>.switch--slider {
       color: $error-darken-1;
     }
-
     &.-on>.switch--slider {
       color: $success-lighten-1;
     }
@@ -522,11 +526,9 @@ Tree {
     &>.tree--guides {
       color: $primary-lighten-3;
     }
-
     &>.tree--guides-hover {
       color: $primary-lighten-3;
     }
-
     &>.tree--guides-selected {
       color: $primary-lighten-3;
     }

@@ -9,12 +9,11 @@ from textual.widgets import Label, RichLog, Static
 
 from chezmoi_mousse import (
     AppType,
-    DestDirStrings,
     NodeData,
+    OperateStrings,
     PathKind,
     ReadCmd,
     SectionLabels,
-    TabName,
     Tcss,
 )
 
@@ -53,7 +52,7 @@ class ContentsInfo(VerticalGroup, AppType):
 
 class ContentsView(Vertical, AppType):
 
-    destDir: "Path | None" = None
+    # destDir: "Path | None" = None
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
@@ -85,7 +84,7 @@ class ContentsView(Vertical, AppType):
         # TODO: make this configurable but should be reasonable truncate for
         # displaying enough of a file to judge operating on it.
         self.truncate_size = self.app.max_file_size // 10
-        self.border_title = f" {self.destDir} "
+        self.border_title = f" {self.app.dest_dir} "
         self.cat_config_label = self.query_one(
             self.ids.label.cat_config_output_q, Label
         )
@@ -100,12 +99,9 @@ class ContentsView(Vertical, AppType):
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
         )
-        if self.ids.canvas_name == TabName.add:
-            self.contents_info_static_text.update(DestDirStrings.add)
-        elif self.ids.canvas_name == TabName.apply:
-            self.contents_info_static_text.update(DestDirStrings.cat)
-        elif self.ids.canvas_name == TabName.re_add:
-            self.contents_info_static_text.update(DestDirStrings.re_add)
+        self.contents_info_static_text.update(
+            OperateStrings.in_dest_dir_click_path
+        )
 
     def open_file_and_update_ui(self, file_path: "Path") -> None:
         try:
@@ -145,7 +141,7 @@ class ContentsView(Vertical, AppType):
             self.rich_log.write(error.strerror)
 
     def write_cat_output(self, file_path: "Path") -> None:
-        if file_path in self.app.cmd.paths.files:
+        if file_path in self.app.paths.files:
             self.cat_config_label.display = True
             cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
@@ -164,7 +160,7 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(cat_output.std_out)
 
     def write_dir_info(self, dir_path: "Path") -> None:
-        if dir_path in self.app.cmd.paths.dirs:
+        if dir_path in self.app.paths.dirs:
             self.contents_info_static_text.update(
                 f"{ContentsTabStrings.managed_dir}[$text-accent]{dir_path}[/]"
             )
@@ -175,10 +171,14 @@ class ContentsView(Vertical, AppType):
         return
 
     def watch_node_data(self) -> None:
-        if self.node_data is None or self.destDir is None:
+        if self.node_data is None:
             return
+        if self.app.dest_dir is None:
+            raise ValueError(
+                "self.app.dest_dir is None in ContentsView.watch_node_data"
+            )
         self.border_title = (
-            f" {self.node_data.path.relative_to(self.destDir)} "
+            f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         )
         self.cat_config_label.display = False
         self.file_read_label.display = False

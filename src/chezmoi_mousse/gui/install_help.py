@@ -1,7 +1,5 @@
-import json
 import os
 from enum import StrEnum
-from pathlib import Path
 from typing import Any
 
 from textual import on
@@ -11,13 +9,10 @@ from textual.screen import Screen
 from textual.widgets import Footer, Label, Pretty, Tree
 
 from chezmoi_mousse import IDS, AppType, Chars, FlatBtn, LinkBtn, Tcss
-from chezmoi_mousse.shared import (
-    CustomCollapsible,
-    CustomHeader,
-    FlatButton,
-    FlatLink,
-    HeaderTitle,
-)
+
+from .common.actionables import FlatButton, FlatLink
+from .common.custom_collapsible import CustomCollapsible
+from .common.screen_header import CustomHeader, HeaderTitle
 
 type ParsedJson = dict[str, Any]
 
@@ -32,8 +27,8 @@ class InstallHelpStrings(StrEnum):
 
 
 class CommandsTree(Tree[ParsedJson]):
-    ICON_NODE = Chars.right_triangle
-    ICON_NODE_EXPANDED = Chars.down_triangle
+    ICON_NODE = Chars.tree_collapsed
+    ICON_NODE_EXPANDED = Chars.tree_expanded
 
     def __init__(self) -> None:
         super().__init__(label=InstallHelpStrings.install_chezmoi)
@@ -56,12 +51,14 @@ class InstallHelpScreen(Screen[None], AppType):
                 FlatLink(
                     ids=IDS.install_help, link_enum=LinkBtn.chezmoi_install
                 ),
-                FlatButton(ids=IDS.install_help, button_enum=FlatBtn.exit_app),
+                FlatButton(ids=IDS.install_help, btn_enum=FlatBtn.exit_app),
             )
         yield Footer(id=IDS.install_help.footer)
 
-    def on_mount(self) -> None:
-        self.screen.title = HeaderTitle.header_install_help
+    async def on_mount(self) -> None:
+        self.screen.title = HeaderTitle.install_help
+        # all_lines: list[str] = self.app.cmd_results.url_data
+        # self.parsed_json_output = self.parse_indented_text(all_lines)
         self.update_path_widget()
         self.populate_tree()
 
@@ -75,8 +72,13 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def populate_tree(self) -> None:
         help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
-        data_file = Path(__file__).parent / "chezmoi_install_commands.json"
-        install_help: ParsedJson = json.loads(data_file.read_text())
+        if self.app.cmd_results.install_help_data is None:
+            self.app.notify(
+                "InstallHelpScreen: No install help data found",
+                severity="error",
+            )
+            return
+        install_help: ParsedJson = self.app.cmd_results.install_help_data
         help_tree.show_root = False
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)

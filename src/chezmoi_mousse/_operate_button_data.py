@@ -2,35 +2,33 @@
 imported at module init before launching the textual app, and attributes
 accessed after the app is launched.
 
-The initial_label attribute is used to construct the OperateButton class in
+The initial_label attribute is used to construct the OpButton class in
 shared/_buttons.py.
 """
 
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-from ._app_state import AppState
 from ._chezmoi_command import WriteCmd
+from ._str_enums import OperateStrings
 
 __all__ = ["OpBtnLabels", "OpBtnEnum"]
 
 
 class OpBtnLabels(StrEnum):
-    add_dir_run = "Run Chezmoi Add Dir"
-    add_dir_review = "Review Add Dir"
-    add_file_run = "Run Chezmoi Add File"
-    add_file_review = "Review Add File"
-    apply_review = "Review Apply"
+    add_run = "Run Chezmoi Add"
+    add_review = "Review Add Path"
+    apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
     destroy_run = "Run Chezmoi Destroy"
-    destroy_review = "Review Destroy"
+    destroy_review = "Review Destroy Path"
     exit_app = "Exit App"
     forget_run = "Run Chezmoi Forget"
-    forget_review = "Review Forget"
-    init_clone = "Init Clone Repo"
-    init_new = "Init New Repo"
-    re_add_review = "Review Re-Add"
+    forget_review = "Review Forget Path"
+    init_run = "Run Chezmoi Init"
+    init_review = "Review Init Chezmoi"
+    re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
     reload = "Reload"
 
@@ -38,44 +36,59 @@ class OpBtnLabels(StrEnum):
 @dataclass(slots=True)
 class OpBtnData:
     label: str
-    cmd_live: WriteCmd | None = None
-    cmd_dry: WriteCmd | None = None
+    pretty_cmd: str
+    write_cmd: WriteCmd
+    info_strings: list[str] | None = None
+    info_sub_title: str | None = None
+    info_title: str | None = None
 
 
 class OpBtnEnum(Enum):
-    add_file = OpBtnData(
-        label=OpBtnLabels.add_file_review,
-        cmd_dry=WriteCmd.add_dry,
-        cmd_live=WriteCmd.add_live,
+    add = OpBtnData(
+        label=OpBtnLabels.add_review,
+        pretty_cmd=WriteCmd.add.pretty_cmd,
+        write_cmd=WriteCmd.add,
+        info_strings=[OperateStrings.add_path_info],
+        info_sub_title=OperateStrings.add_subtitle,
+        info_title=OpBtnLabels.add_run,
     )
-    add_dir = OpBtnData(
-        label=OpBtnLabels.add_dir_review,
-        cmd_dry=WriteCmd.add_dry,
-        cmd_live=WriteCmd.add_live,
-    )
-    apply_path = OpBtnData(
-        cmd_dry=WriteCmd.apply_dry,
-        cmd_live=WriteCmd.apply_live,
+    apply = OpBtnData(
         label=OpBtnLabels.apply_review,
+        pretty_cmd=WriteCmd.apply.pretty_cmd,
+        write_cmd=WriteCmd.apply,
+        info_strings=[OperateStrings.apply_path_info],
+        info_sub_title=OperateStrings.apply_subtitle,
+        info_title=OpBtnLabels.apply_run,
     )
-    re_add_path = OpBtnData(
-        cmd_dry=WriteCmd.re_add_dry,
-        cmd_live=WriteCmd.re_add_live,
-        label=OpBtnLabels.re_add_review,
-    )
-    forget_path = OpBtnData(
-        label=OpBtnLabels.forget_review,
-        cmd_dry=WriteCmd.forget_dry,
-        cmd_live=WriteCmd.forget_live,
-    )
-    destroy_path = OpBtnData(
+    destroy = OpBtnData(
         label=OpBtnLabels.destroy_review,
-        cmd_dry=WriteCmd.destroy_dry,
-        cmd_live=WriteCmd.destroy_live,
+        pretty_cmd=WriteCmd.destroy.pretty_cmd,
+        write_cmd=WriteCmd.destroy,
+        info_strings=[OperateStrings.destroy_path_info],
+        info_sub_title=OperateStrings.destroy_subtitle,
+        info_title=OpBtnLabels.destroy_run,
     )
-    init_new = OpBtnData(label=OpBtnLabels.init_new)
-    init_clone = OpBtnData(label=OpBtnLabels.init_clone)
-    operate_exit = OpBtnData(label=OpBtnLabels.cancel)
+    forget = OpBtnData(
+        label=OpBtnLabels.forget_review,
+        pretty_cmd=WriteCmd.forget.pretty_cmd,
+        write_cmd=WriteCmd.forget,
+        info_strings=[OperateStrings.forget_path_info],
+        info_sub_title=OperateStrings.forget_subtitle,
+        info_title=OpBtnLabels.forget_run,
+    )
+    re_add = OpBtnData(
+        label=OpBtnLabels.re_add_review,
+        pretty_cmd=WriteCmd.re_add.pretty_cmd,
+        write_cmd=WriteCmd.re_add,
+        info_strings=[OperateStrings.re_add_path_info],
+        info_sub_title=OperateStrings.re_add_subtitle,
+        info_title=OpBtnLabels.re_add_run,
+    )
+    init = OpBtnData(
+        label=OpBtnLabels.init_review,
+        pretty_cmd=WriteCmd.init_new.pretty_cmd,
+        write_cmd=WriteCmd.init_new,
+    )
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
@@ -85,21 +98,27 @@ class OpBtnEnum(Enum):
         return self.value.label
 
     @property
-    def cmd_live(self) -> WriteCmd:
-        if self.value.cmd_live is None:
-            raise ValueError(f"No live command for button {self.name}")
-        return self.value.cmd_live
-
-    @property
-    def cmd_dry(self) -> WriteCmd:
-        if self.value.cmd_dry is None:
-            raise ValueError(f"No dry command for button {self.name}")
-        return self.value.cmd_dry
+    def pretty_cmd(self) -> str:
+        return self.value.pretty_cmd
 
     @property
     def write_cmd(self) -> WriteCmd:
+        return self.value.write_cmd
 
-        if AppState.changes_enabled():
-            return self.cmd_live
-        else:
-            return self.cmd_dry
+    @property
+    def full_cmd(self) -> list[str]:
+        return self.write_cmd.subprocess_arguments
+
+    @property
+    def info_strings(self) -> str:
+        if self.value.info_strings is None:
+            return ""
+        return "\n".join(self.value.info_strings)
+
+    @property
+    def info_sub_title(self) -> str | None:
+        return self.value.info_sub_title
+
+    @property
+    def info_title(self) -> str | None:
+        return self.value.info_title

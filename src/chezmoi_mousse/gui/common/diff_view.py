@@ -8,8 +8,8 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import (
     AppType,
-    DestDirStrings,
     DiffData,
+    OperateStrings,
     PathKind,
     ReadCmd,
     SectionLabels,
@@ -18,11 +18,9 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse import AppIds, CommandResult, NodeData
 
-__all__ = ["DiffLines", "DiffView"]
+__all__ = ["DiffView"]
 
 
 class DiffStrings(StrEnum):
@@ -47,13 +45,9 @@ class DiffInfo(VerticalGroup):
         yield ScrollableContainer(id=self.ids.container.diff_info)
 
     def on_mount(self) -> None:
-        if self.ids.canvas_name == TabName.re_add:
-            in_dest_dir_msg = DestDirStrings.diff_reverse
-        else:
-            in_dest_dir_msg = DestDirStrings.diff
         self.query_one(
             self.ids.container.diff_info_q, ScrollableContainer
-        ).mount(Static(in_dest_dir_msg))
+        ).mount(Static(OperateStrings.in_dest_dir_click_path))
         self.label = self.query_exactly_one(Label)
 
     def watch_info_lines(self) -> None:
@@ -96,7 +90,7 @@ class DiffLines(VerticalGroup):
 
 class DiffView(Vertical, AppType):
 
-    destDir: "Path | None" = None
+    # destDir: "Path | None" = None
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
@@ -106,17 +100,15 @@ class DiffView(Vertical, AppType):
         )
         if self.ids.canvas_name == TabName.re_add:
             self.diff_cmd = ReadCmd.diff_reverse
-            self.in_dest_dir_diff_msg = Static(DestDirStrings.diff_reverse)
         else:
             self.diff_cmd = ReadCmd.diff
-            self.in_dest_dir_diff_msg = Static(DestDirStrings.diff)
 
     def compose(self) -> ComposeResult:
         yield DiffInfo(ids=self.ids)
         yield DiffLines(ids=self.ids)
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.destDir} "
+        self.border_title = f" {self.app.dest_dir} "
         self.diff_lines = self.query_one(
             self.ids.container.diff_lines_q, DiffLines
         )
@@ -188,20 +180,24 @@ class DiffView(Vertical, AppType):
         return diff_data
 
     def watch_node_data(self) -> None:
-        if self.node_data is None or self.destDir is None:
+        if self.node_data is None:
             return
         diff_info = self.query_one(self.ids.container.diff_info_q, DiffInfo)
         diff_info.display = False
         self.diff_lines.display = False
+        if self.app.dest_dir is None:
+            raise ValueError(
+                "self.app.dest_dir is None in DiffView.watch_node_data"
+            )
         self.border_title = (
-            f" {self.node_data.path.relative_to(self.destDir)} "
+            f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         )
         diff_data: DiffData = self.create_diff_data()
 
         info_lines: list[Static] = []
         if (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path not in self.app.cmd.paths.status_files
+            and self.node_data.path not in self.app.paths.status_files
         ):
             diff_info.display = True
             diff_info.info_lines = [
@@ -210,7 +206,7 @@ class DiffView(Vertical, AppType):
             ]
         elif (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.cmd.paths.status_files
+            and self.node_data.path in self.app.paths.status_files
         ):
             diff_info.display = False
             self.diff_lines.display = True
@@ -219,9 +215,9 @@ class DiffView(Vertical, AppType):
 
         # Handle directory status paths
         status_paths = (
-            self.app.cmd.paths.list_apply_status_paths_in(self.node_data.path)
+            self.app.paths.list_apply_status_paths_in(self.node_data.path)
             if self.ids.canvas_name == TabName.apply
-            else self.app.cmd.paths.list_re_add_status_paths_in(
+            else self.app.paths.list_re_add_status_paths_in(
                 self.node_data.path
             )
         )
@@ -249,7 +245,7 @@ class DiffView(Vertical, AppType):
 
         if (
             self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path not in self.app.cmd.paths.status_dirs
+            and self.node_data.path not in self.app.paths.status_dirs
         ):
             info_lines.append(
                 Static(

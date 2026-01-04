@@ -5,7 +5,7 @@ Provides easy access, autocomplete, type checking or to generate the id
 dynamically.
 """
 
-from ._operate_button_data import OpBtnEnum
+from ._chezmoi_command import WriteVerb
 from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
@@ -27,6 +27,8 @@ __all__ = ["AppIds", "IDS"]
 class AppIds:
     __slots__ = (
         "canvas_name",
+        "close_q",
+        "close",
         "container",
         "datatable",
         "filter",
@@ -35,10 +37,12 @@ class AppIds:
         "header",
         "label",
         "logger",
-        "operate_btn",
+        "op_btn",
         "static",
         "switcher",
         "tab_btn",
+        "tab_id",
+        "tab_qid",
         "tree",
         "view",
     )
@@ -47,6 +51,10 @@ class AppIds:
         self.canvas_name = canvas_name
         self.footer = f"{self.canvas_name.name}_footer"
         self.header = f"{self.canvas_name.name}_header"
+        self.tab_id = f"{self.canvas_name.name}_tab_container"
+        self.tab_qid = f"#{self.tab_id}"
+        self.close = f"{self.canvas_name.name}_close_btn"
+        self.close_q = f"#{self.close}"
 
         self.container = ContainerIds(self)
         self.datatable = DataTableIds(self)
@@ -54,15 +62,12 @@ class AppIds:
         self.flat_btn = FlatButtonIds(self)
         self.label = LabelIds(self)
         self.logger = LoggerIds(self)
-        self.operate_btn = OperateButtonIds(self)
+        self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
         self.switcher = ContentSwitcherIds(self)
         self.tab_btn = TabButtonIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
-
-    def operate_button_id(self, qid: str = "", *, btn: OpBtnEnum) -> str:
-        return f"{qid}{self.canvas_name.name}_{btn.name}_op_btn"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name.name}_{name.name}"
@@ -85,6 +90,11 @@ class AppIds:
 
     def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
+
+    def operate_button_id(
+        self, qid: str = "", *, write_verb: WriteVerb
+    ) -> str:
+        return f"{qid}{self.canvas_name.name}_{write_verb.name}_op_btn"
 
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
         return f"{qid}{self.canvas_name.name}_{static.name}_static"
@@ -116,6 +126,7 @@ class CanvasIds:
         self.add = AppIds(TabName.add)
         self.apply = AppIds(TabName.apply)
         self.config = AppIds(TabName.config)
+        self.debug = AppIds(TabName.debug)
         self.help = AppIds(TabName.help)
         self.logs = AppIds(TabName.logs)
         self.re_add = AppIds(TabName.re_add)
@@ -124,9 +135,15 @@ class CanvasIds:
 class ContainerIds:
     def __init__(self, ids: AppIds):
         self.contents = ids.container_id(name=ContainerName.contents)
+        self.command_output = ids.container_id(
+            name=ContainerName.command_output
+        )
+        self.command_output_q = f"#{self.command_output}"
         self.contents_q = f"#{self.contents}"
         self.contents_info = ids.container_id(name=ContainerName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
+        self.debug_log = ids.container_id(name=ContainerName.debug_log)
+        self.debug_log_q = f"#{self.debug_log}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
         self.diff_info = ids.container_id(name=ContainerName.diff_info)
@@ -149,10 +166,12 @@ class ContainerIds:
             name=ContainerName.operate_buttons
         )
         self.operate_buttons_q = f"#{self.operate_buttons}"
-        self.post_operate = ids.container_id(name=ContainerName.post_operate)
-        self.post_operate_q = f"#{self.post_operate}"
-        self.pre_operate = ids.container_id(name=ContainerName.pre_operate)
-        self.pre_operate_q = f"#{self.pre_operate}"
+        self.op_mode = ids.container_id(name=ContainerName.op_mode)
+        self.op_mode_q = f"#{self.op_mode}"
+        self.op_result = ids.container_id(name=ContainerName.op_result)
+        self.op_result_q = f"#{self.op_result}"
+        self.op_review = ids.container_id(name=ContainerName.op_review)
+        self.op_review_q = f"#{self.op_review}"
         self.repo_input = ids.container_id(name=ContainerName.repo_input)
         self.repo_input_q = f"#{self.repo_input}"
         self.right_side = ids.container_id(name=ContainerName.right_side)
@@ -169,7 +188,10 @@ class ContentSwitcherIds:
             switcher=ContentSwitcherName.config_switcher
         )
         self.config_tab_q = f"#{self.config_tab}"
-
+        self.debug_tab = ids.content_switcher_id(
+            switcher=ContentSwitcherName.debug_switcher
+        )
+        self.debug_tab_q = f"#{self.debug_tab}"
         self.help_tab = ids.content_switcher_id(
             switcher=ContentSwitcherName.help_switcher
         )
@@ -323,6 +345,12 @@ class FlatButtonIds:
         self.apply_help_q = f"#{self.apply_help}"
         self.cat_config = ids.flat_button_id(btn=FlatBtn.cat_config)
         self.cat_config_q = f"#{self.cat_config}"
+        self.debug_test_paths = ids.flat_button_id(
+            btn=FlatBtn.debug_test_paths
+        )
+        self.debug_test_paths_q = f"#{self.debug_test_paths}"
+        self.debug_log = ids.flat_button_id(btn=FlatBtn.debug_log)
+        self.debug_log_q = f"#{self.debug_log}"
         self.diagram = ids.flat_button_id(btn=FlatBtn.diagram)
         self.diagram_q = f"#{self.diagram}"
         self.doctor = ids.flat_button_id(btn=FlatBtn.doctor)
@@ -375,30 +403,28 @@ class LoggerIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds):
-        self.add_dir = ids.operate_button_id(btn=OpBtnEnum.add_dir)
-        self.add_dir_q = f"#{self.add_dir}"
-        self.add_file = ids.operate_button_id(btn=OpBtnEnum.add_file)
-        self.add_file_q = f"#{self.add_file}"
-        self.apply_path = ids.operate_button_id(btn=OpBtnEnum.apply_path)
-        self.apply_path_q = f"#{self.apply_path}"
-        self.destroy_path = ids.operate_button_id(btn=OpBtnEnum.destroy_path)
-        self.destroy_path_q = f"#{self.destroy_path}"
-        self.forget_path = ids.operate_button_id(btn=OpBtnEnum.forget_path)
-        self.forget_path_q = f"#{self.forget_path}"
-        self.init_new = ids.operate_button_id(btn=OpBtnEnum.init_new)
-        self.init_new_q = f"#{self.init_new}"
-        self.init_clone = ids.operate_button_id(btn=OpBtnEnum.init_clone)
-        self.init_clone_q = f"#{self.init_clone}"
-        self.operate_exit = ids.operate_button_id(btn=OpBtnEnum.operate_exit)
-        self.operate_exit_q = f"#{self.operate_exit}"
-        self.re_add_path = ids.operate_button_id(btn=OpBtnEnum.re_add_path)
-        self.re_add_path_q = f"#{self.re_add_path}"
+        self.add = ids.operate_button_id(write_verb=WriteVerb.add)
+        self.add_q = f"#{self.add}"
+        self.apply = ids.operate_button_id(write_verb=WriteVerb.apply)
+        self.apply_q = f"#{self.apply}"
+        self.destroy = ids.operate_button_id(write_verb=WriteVerb.destroy)
+        self.destroy_q = f"#{self.destroy}"
+        self.forget = ids.operate_button_id(write_verb=WriteVerb.forget)
+        self.forget_q = f"#{self.forget}"
+        self.init = ids.operate_button_id(write_verb=WriteVerb.init)
+        self.init_q = f"#{self.init}"
+        self.re_add = ids.operate_button_id(write_verb=WriteVerb.re_add)
+        self.re_add_q = f"#{self.re_add}"
 
 
 class StaticIds:
     def __init__(self, ids: AppIds):
         self.contents_info = ids.static_id(static=StaticName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
+        self.debug_test_paths = ids.static_id(
+            static=StaticName.debug_test_paths
+        )
+        self.debug_test_paths_q = f"#{self.debug_test_paths}"
         self.diff_info = ids.static_id(static=StaticName.diff_info)
         self.diff_info_q = f"#{self.diff_info}"
         self.diff_lines = ids.static_id(static=StaticName.diff_lines)
@@ -407,10 +433,10 @@ class StaticIds:
         self.git_log_info_q = f"#{self.git_log_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)
         self.init_info_q = f"#{self.init_info}"
-        self.operate_info = ids.static_id(static=StaticName.operate_info)
-        self.operate_info_q = f"#{self.operate_info}"
-        self.operate_output = ids.static_id(static=StaticName.operate_output)
-        self.operate_output_q = f"#{self.operate_output}"
+        self.op_review_info = ids.static_id(static=StaticName.op_review_info)
+        self.op_review_info_q = f"#{self.op_review_info}"
+        self.op_result_info = ids.static_id(static=StaticName.op_result_info)
+        self.op_result_info_q = f"#{self.op_result_info}"
 
 
 class TabButtonIds:
@@ -419,7 +445,6 @@ class TabButtonIds:
     def __init__(self, ids: AppIds):
         self.app_log = ids.tab_button_id(btn=TabBtn.app_log)
         self.contents = ids.tab_button_id(btn=TabBtn.contents)
-        self.debug_log = ids.tab_button_id(btn=TabBtn.debug_log)
         self.diff = ids.tab_button_id(btn=TabBtn.diff)
         self.git_log = ids.tab_button_id(btn=TabBtn.git_log_path)
         self.git_log_global = ids.tab_button_id(btn=TabBtn.git_log_global)
@@ -463,6 +488,14 @@ class ViewIds:
         self.cat_config_q = f"#{self.cat_config}"
         self.ignored = ids.view_id(view=ViewName.git_ignored_view)
         self.ignored_q = f"#{self.ignored}"
+
+        # Debug tab
+        self.debug_log = ids.view_id(view=ViewName.debug_log_view)
+        self.debug_log_q = f"#{self.debug_log}"
+        self.debug_test_paths = ids.view_id(
+            view=ViewName.debug_test_paths_view
+        )
+        self.debug_test_paths_q = f"#{self.debug_test_paths}"
 
         # Views or shared across canvases
         self.pw_mgr_info = ids.view_id(view=ViewName.pw_mgr_info_view)

@@ -22,20 +22,17 @@ __all__ = ["TabsBase"]
 
 class TabsBase(Vertical):
 
-    git_autocommit: bool | None = None
-    git_autopush: bool | None = None
-
     def __init__(self, *, ids: "AppIds") -> None:
-        super().__init__()
+        super().__init__(id=ids.tab_id)
 
         self.ids = ids
         self.expand_all_state = False
 
     def update_view_node_data(self, node_data: "NodeData") -> None:
-        self.contents_view = self.query_one(
+        contents_view = self.query_one(
             self.ids.container.contents_q, ContentsView
         )
-        self.contents_view.node_data = node_data
+        contents_view.node_data = node_data
 
         diff_view = self.query_one(self.ids.container.diff_q, DiffView)
         diff_view.node_data = node_data
@@ -71,6 +68,7 @@ class TabsBase(Vertical):
 
     @on(Switch.Changed)
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
+        event.stop()
         if event.switch.id == self.ids.filter.unchanged:
             expanded_tree = self.query_one(
                 self.ids.tree.expanded_q, ExpandedTree

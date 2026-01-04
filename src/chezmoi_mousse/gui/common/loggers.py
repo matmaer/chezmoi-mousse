@@ -4,12 +4,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
+from textual import work
 from textual.containers import ScrollableContainer
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerbs, Tcss
+from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
 
-from ._custom_collapsible import CustomCollapsible
+from .custom_collapsible import CustomCollapsible
+from .operate_mode import CommandOutput
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -85,7 +87,7 @@ class AppLog(LoggersBase, AppType):
             self.success(LogStrings.chezmoi_found)
         else:
             self.error(LogStrings.chezmoi_not_found)
-        if self.app.dev_mode:
+        if self.app.dev_mode is True:
             self.warning(LogStrings.dev_mode_enabled)
 
     def log_doctor_exit_zero_msg(
@@ -109,13 +111,13 @@ class AppLog(LoggersBase, AppType):
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
-        if ReadVerbs.verify.value in command_result.cmd_args:
+        if ReadVerb.verify.value in command_result.cmd_args:
             if command_result.exit_code == 0:
                 self.success(self.verify_exit_zero)
             else:
                 self.success(self.verify_non_zero)
             return
-        elif ReadVerbs.doctor.value in command_result.cmd_args:
+        elif ReadVerb.doctor.value in command_result.cmd_args:
             if command_result.exit_code == 0:
                 self.log_doctor_exit_zero_msg(command_result)
             return
@@ -228,85 +230,41 @@ class DebugLog(LoggersBase, AppType):
             self.write(f"{key}: {value}")
 
 
-class OperateLog(LoggersBase, AppType):
+class CmdOutput(Static, AppType):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.operate, markup=True, max_lines=10000)
-
-    def on_mount(self) -> None:
-        self.ready_to_run(LogStrings.operate_log_initialized)
-
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self.write(self.log_command(command_result))
-        if command_result.exit_code == 0:
-            self.success("Success, stdout:")
-            if command_result.std_out == "":
-                self.dimmed("No output on stdout")
-            else:
-                self.dimmed(command_result.std_out)
-        elif command_result.exit_code != 0:
-            if command_result.std_err != "":
-                self.error("Failed, stderr:")
-                self.dimmed(f"{command_result.std_err}")
-            else:
-                self.warning("Non zero exit but no stderr output.")
-
-
-class ReadOutputCollapsible(CustomCollapsible, AppType):
-
-    def __init__(
-        self, command_result: "CommandResult", output: str, counter: int
-    ) -> None:
-        self.command_result = command_result
-        self.pretty_cmd = command_result.pretty_cmd
-        self.pretty_time = command_result.pretty_time
-        self.static_id = f"read_cmd_static_number_{counter}"
-
+    def __init__(self, command_result: "CommandResult") -> None:
         super().__init__(
-            Static(
-                output,
-                id=self.static_id,
-                markup=False,
-                classes=Tcss.read_cmd_static,
-            ),
-            title=f"{self.pretty_time} {self.pretty_cmd}",
+            command_result.std_out, markup=False, classes=Tcss.cmd_output
         )
 
-    def on_mount(self) -> None:
-        collapsible_title = self.query_exactly_one("CollapsibleTitle")
-        if self.command_result.exit_code == 0:
-            collapsible_title.styles.color = self.app.theme_variables[
-                "text-success"
-            ]
-        else:
-            collapsible_title.styles.color = self.app.theme_variables[
-                "text-warning"
-            ]
+
+class OutputCollapsible(CustomCollapsible, AppType):
+
+    def __init__(self, *, command_result: "CommandResult") -> None:
+        super().__init__(
+            CommandOutput(command_result),
+            title=command_result.collapsible_title,
+        )
+
+
+class OperateLog(ScrollableContainer, AppType):
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.logger.operate)
+
+    @work
+    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+        collapsible = OutputCollapsible(command_result=command_result)
+        self.mount(collapsible)
 
 
 class ReadCmdLog(ScrollableContainer, AppType):
 
-    collapsible_counter: int = 0
-
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.read)
+        self.ids = ids
 
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
-        # Don't log verify read-verb outputs as in produces no output.
-        if ReadVerbs.verify.value in command_result.cmd_args:
-            return
-
-        self.collapsible_counter += 1
-
-        output = (
-            command_result.std_out
-            if command_result.exit_code == 0
-            else command_result.std_err
-        )
-
-        collapsible = ReadOutputCollapsible(
-            command_result=command_result,
-            output=output,
-            counter=self.collapsible_counter,
-        )
+    @work
+    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+        collapsible = OutputCollapsible(command_result=command_result)
         self.mount(collapsible)

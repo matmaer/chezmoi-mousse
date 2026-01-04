@@ -21,28 +21,30 @@ from chezmoi_mousse import (
     Tcss,
     TreeName,
 )
-from chezmoi_mousse.shared import CurrentApplyNodeMsg, CurrentReAddNodeMsg
+
+from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, PathDict
 
-__all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
+__all__ = ["ExpandedTree", "ListTree", "ManagedTree"]
 
 
 class TreeBase(Tree[NodeData], AppType):
 
-    destDir: "Path"
+    ICON_NODE = Chars.tree_collapsed
+    ICON_NODE_EXPANDED = Chars.tree_expanded
 
-    ICON_NODE = Chars.right_triangle
-    ICON_NODE_EXPANDED = Chars.down_triangle
-
-    def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
+    def __init__(
+        self, ids: "AppIds", *, root_node_data: "NodeData", tree_name: TreeName
+    ) -> None:
         self.ids = ids
         super().__init__(
             label="root",
             id=self.ids.tree_id(tree=tree_name),
             classes=Tcss.tree_widget,
+            data=root_node_data,
         )
         self.expanded_nodes: list[TreeNode[NodeData]] = []
         self._initial_render = True
@@ -61,11 +63,12 @@ class TreeBase(Tree[NodeData], AppType):
         self.show_root: bool = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
+        self.root.data = self.app.root_node_data
 
-    def create_root_node_data(self, dest_dir: "Path") -> None:
-        self.root.data = NodeData(
-            path=dest_dir, path_kind=PathKind.DIR, found=True, status="F"
-        )
+    # def create_root_node_data(self, dest_dir: "Path") -> None:
+    #     self.root.data = NodeData(
+    #         path=dest_dir, path_kind=PathKind.DIR, found=True, status="F"
+    #     )
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
@@ -171,19 +174,15 @@ class TreeBase(Tree[NodeData], AppType):
 
         if self.ids.canvas_name == TabName.apply:
             paths: "PathDict" = (
-                (self.app.cmd.paths.apply_status_files)
+                (self.app.paths.apply_status_files)
                 if flat_list
-                else self.app.cmd.paths.apply_status_files_in(
-                    tree_node.data.path
-                )
+                else self.app.paths.apply_status_files_in(tree_node.data.path)
             )
         else:
             paths: "PathDict" = (
-                (self.app.cmd.paths.re_add_status_files)
+                (self.app.paths.re_add_status_files)
                 if flat_list
-                else self.app.cmd.paths.re_add_status_files_in(
-                    tree_node.data.path
-                )
+                else self.app.paths.re_add_status_files_in(tree_node.data.path)
             )
 
         for file_path, status_code in paths.items():
@@ -204,18 +203,18 @@ class TreeBase(Tree[NodeData], AppType):
 
         if self.ids.canvas_name == TabName.apply:
             paths: "PathDict" = (
-                (self.app.cmd.paths.apply_files_without_status)
+                (self.app.paths.apply_files_without_status)
                 if flat_list
-                else self.app.cmd.paths.apply_files_without_status_in(
+                else self.app.paths.apply_files_without_status_in(
                     tree_node.data.path
                 )
             )
 
         else:
             paths: "PathDict" = (
-                (self.app.cmd.paths.re_add_files_without_status)
+                (self.app.paths.re_add_files_without_status)
                 if flat_list
-                else self.app.cmd.paths.re_add_files_without_status_in(
+                else self.app.paths.re_add_files_without_status_in(
                     tree_node.data.path
                 )
             )
@@ -233,28 +232,28 @@ class TreeBase(Tree[NodeData], AppType):
             return
 
         if self.ids.canvas_name == TabName.apply:
-            result: "PathDict" = self.app.cmd.paths.apply_status_dirs_in(
+            result: "PathDict" = self.app.paths.apply_status_dirs_in(
                 tree_node.data.path
             )
             # Add dirs that contain status files but don't have direct status
-            for path in self.app.cmd.paths.dirs:
+            for path in self.app.paths.dirs:
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self.app.cmd.paths.has_apply_status_paths_in(path)
+                    and self.app.paths.has_apply_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
         else:
-            result: "PathDict" = self.app.cmd.paths.re_add_status_dirs_in(
+            result: "PathDict" = self.app.paths.re_add_status_dirs_in(
                 tree_node.data.path
             )
             # Add dirs that contain status files but don't have direct status
-            for path in self.app.cmd.paths.dirs:
+            for path in self.app.paths.dirs:
                 if (
                     path.parent == tree_node.data.path
                     and path not in result
-                    and self.app.cmd.paths.has_re_add_status_paths_in(path)
+                    and self.app.paths.has_re_add_status_paths_in(path)
                 ):
                     result[path] = " "
             dir_paths: "PathDict" = dict(sorted(result.items()))
@@ -276,18 +275,18 @@ class TreeBase(Tree[NodeData], AppType):
         if self.ids.canvas_name == TabName.apply:
             dir_paths: "PathDict" = {
                 path: "X"
-                for path in self.app.cmd.paths.dirs
+                for path in self.app.paths.dirs
                 if path.parent == tree_node.data.path
-                and path not in self.app.cmd.paths.apply_status_dirs
-                and not self.app.cmd.paths.has_apply_status_paths_in(path)
+                and path not in self.app.paths.apply_status_dirs
+                and not self.app.paths.has_apply_status_paths_in(path)
             }
         else:
             dir_paths: "PathDict" = {
                 path: "X"
-                for path in self.app.cmd.paths.dirs
+                for path in self.app.paths.dirs
                 if path.parent == tree_node.data.path
-                and path not in self.app.cmd.paths.re_add_status_dirs
-                and not self.app.cmd.paths.has_re_add_status_paths_in(path)
+                and path not in self.app.paths.re_add_status_dirs
+                and not self.app.paths.has_re_add_status_paths_in(path)
             }
 
         for dir_path, status_code in dir_paths.items():
@@ -341,17 +340,19 @@ class TreeBase(Tree[NodeData], AppType):
 
 class ExpandedTree(TreeBase):
 
-    dest_dir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.expanded_tree)
+        if self.app.root_node_data is None:
+            raise ValueError("root_node_data is None in ExpandedTree init")
+        super().__init__(
+            self.ids,
+            root_node_data=self.app.root_node_data,
+            tree_name=TreeName.expanded_tree,
+        )
 
-    def watch_dest_dir(self) -> None:
-        if self.dest_dir is None:
-            return
-        self.create_root_node_data(dest_dir=self.dest_dir)
+    def populate_dest_dir(self) -> None:
         self.expand_all_nodes(self.root)
 
     @on(TreeBase.NodeExpanded)
@@ -395,17 +396,19 @@ class ExpandedTree(TreeBase):
 
 class ListTree(TreeBase):
 
-    dest_dir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.list_tree)
+        if self.app.root_node_data is None:
+            raise ValueError("root_node_data is None in ListTree init")
+        super().__init__(
+            self.ids,
+            root_node_data=self.app.root_node_data,
+            tree_name=TreeName.list_tree,
+        )
 
-    def watch_dest_dir(self) -> None:
-        if self.dest_dir is None:
-            return
-        self.create_root_node_data(dest_dir=self.dest_dir)
+    def populate_dest_dir(self) -> None:
         self.add_status_files_in(tree_node=self.root, flat_list=True)
 
     def watch_unchanged(self) -> None:
@@ -419,17 +422,19 @@ class ListTree(TreeBase):
 
 class ManagedTree(TreeBase):
 
-    dest_dir: reactive["Path | None"] = reactive(None, init=False)
     unchanged: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.managed_tree)
+        if self.app.root_node_data is None:
+            raise ValueError("root_node_data is None in ManagedTree init")
+        super().__init__(
+            self.ids,
+            root_node_data=self.app.root_node_data,
+            tree_name=TreeName.managed_tree,
+        )
 
-    def watch_dest_dir(self) -> None:
-        if self.dest_dir is None:
-            return
-        self.create_root_node_data(dest_dir=self.dest_dir)
+    def populate_dest_dir(self) -> None:
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root, flat_list=False)
 

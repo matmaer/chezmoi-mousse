@@ -15,18 +15,16 @@ from ._chezmoi_command import (
     CommandResult,
     GlobalCmd,
     ReadCmd,
-    ReadVerbs,
+    ReadVerb,
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPaths, PathDict, PathList
+from ._chezmoi_paths import ChezmoiPaths, PathDict
 from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
-from ._str_enum_names import LogName, PathKind, ScreenName, TabName, TreeName
-from ._str_enum_tcss import Tcss
+from ._str_enum_names import PathKind, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     Chars,
-    DestDirStrings,
     FlatBtn,
     LinkBtn,
     LogStrings,
@@ -37,59 +35,60 @@ from ._str_enums import (
 from ._switch_data import Switches
 from ._type_checking import (
     AppType,
+    CmdResults,
     DiffData,
     InitCloneData,
     NodeData,
     ParsedConfig,
-    SplashData,
 )
 
 __all__ = [
     "__version__",
-    # App state
+    # ._app_state
     "AppState",
-    # Id related
+    # ._app_ids
     "IDS",
     "AppIds",
-    # Operations
-    "InitCloneData",
-    "OpBtnLabels",
-    "OpBtnEnum",
-    "OperateStrings",
-    # _chezmoi.py
+    # ._chezmoi_command
     "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
-    "PathDict",
-    "PathList",
     "ReadCmd",
-    "ReadVerbs",
-    "WriteCmd",
+    "ReadVerb",
     "VerbArgs",
-    # _chezmoi_paths.py
+    "WriteCmd",
+    # ._chezmoi_paths
     "ChezmoiPaths",
-    # Other
-    "AppType",
+    "PathDict",
+    # ._operate_button_data
+    "OpBtnEnum",
+    "OpBtnLabels",
+    # ._str_enum_bindings
     "BindingAction",
     "BindingDescription",
-    "Chars",
-    "DiffData",
-    "DestDirStrings",
-    "FlatBtn",
-    "LinkBtn",
-    "LogName",
-    "LogStrings",
-    "NodeData",
-    "ParsedConfig",
+    # ._str_enum_names
     "PathKind",
     "ScreenName",
-    "SectionLabels",
-    "SplashData",
-    "Switches",
-    "TabBtn",
     "TabName",
     "Tcss",
     "TreeName",
+    # ._str_enums
+    "Chars",
+    "FlatBtn",
+    "LinkBtn",
+    "LogStrings",
+    "OperateStrings",
+    "SectionLabels",
+    "TabBtn",
+    # ._switch_data
+    "Switches",
+    # ._type_checking
+    "AppType",
+    "DiffData",
+    "NodeData",
+    "ParsedConfig",
+    "CmdResults",
+    "InitCloneData",
 ]
 
 

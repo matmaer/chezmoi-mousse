@@ -7,7 +7,8 @@ from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 
 from chezmoi_mousse import Switches, TabName
-from chezmoi_mousse.shared import SwitchWithLabel
+
+from .actionables import SwitchWithLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds

@@ -2,12 +2,8 @@
 
 from enum import StrEnum
 
-from ._chezmoi_command import ReadCmd
-from ._switch_data import Switches
-
 __all__ = [
     "Chars",
-    "DestDirStrings",
     "FlatBtn",
     "LinkBtn",
     "LogStrings",
@@ -25,6 +21,8 @@ class FlatBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
+    debug_test_paths = "Fake Paths"
+    debug_log = "Debug Log"
     diagram = "Diagram"
     doctor = "Doctor"
     exit_app = "Exit App"
@@ -60,7 +58,6 @@ class TabBtn(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "App"
     contents = "Contents"
-    debug_log = "Debug"
     diff = "Diff"
     git_log_global = "Git"
     git_log_path = "Git-Log"
@@ -76,16 +73,19 @@ class TabBtn(StrEnum):
 
 
 class Chars(StrEnum):
-    bullet = "\u2022"  # BULLET
+    # bullet = "\u2022"  # BULLET
     burger = "\u2261"  # IDENTICAL TO
     check_mark = "\u2714"  # HEAVY CHECK MARK
-    down_triangle = "\u25be "  # BLACK DOWN-POINTING SMALL TRIANGLE
+    down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     # gear = "\u2699"  # GEAR
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
-    right_triangle = "\u25b8 "  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     warning_sign = "\u26a0"  # WARNING SIGN
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
+    # Used for Tree widgets
+    tree_collapsed = f"{right_triangle} "
+    tree_expanded = f"{down_triangle} "
 
 
 class LogStrings(StrEnum):
@@ -99,82 +99,70 @@ class LogStrings(StrEnum):
 
 
 class OperateStrings(StrEnum):
-    add_subtitle = f"path on disk {Chars.right_arrow} chezmoi repo"
+    add_path_info = (
+        "[dim]Add new targets to the source state. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    apply_path_info = (
+        "[dim]Chezmoi will ensure that the path is in the target state. "
+        "The command will run without prompting. "
+        "For targets modified since chezmoi last wrote it. If adding a "
+        "directory, it will be recursed in.[/]"
+    )
     auto_commit = (
-        f"[$text-warning]{Chars.warning_sign} Auto commit is enabled: "
+        f"[$text-warning]{Chars.warning_sign} Git auto commit is enabled: "
         "files will also be committed."
         f"{Chars.warning_sign}[/]"
     )
     auto_push = (
-        f"[$text-warning]{Chars.warning_sign} Auto push is enabled: "
+        f"[$text-warning]{Chars.warning_sign} Git auto push is enabled: "
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    cmd_output_subtitle = "Command Output"
-    destroy_path = (
-        "[$text-error]Permanently remove the path from disk and "
-        " chezmoi. MAKE SURE YOU HAVE A BACKUP![/]"
+    in_dest_dir_click_path = "Select a file or directory to operate on."
+    destroy_path_info = (
+        "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
+        "SURE YOU HAVE A BACKUP![/]"
     )
     destroy_subtitle = (
-        f"{Chars.x_mark} delete on disk and in chezmoi repo {Chars.x_mark}"
+        f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[$text-error]{Chars.x_mark}[/]"
     )
-    error_subtitle = "Operation failed with errors"
-    forget_path = (
-        "[$text-primary]Remove the path from the source state, i.e. stop "
-        "managing them.[/]"
+    forget_path_info = (
+        "[dim]Remove from the source state, i.e. stop managing them.[/]"
     )
     forget_subtitle = (
-        f"{Chars.x_mark} leave on disk but remove from chezmoi repo "
-        f"{Chars.x_mark}"
-    )
-    guess_https = "Let chezmoi guess the best URL to clone from."
-    guess_ssh = (
-        "Let chezmoi guess the best ssh scp-style address to clone from."
-    )
-    https_url = (
-        "Enter a complete URL, e.g., "
-        "[$text-primary]https://github.com/user/repo.git[/]. "
-        "If you have a PAT, make sure to include it in the URL, for example: "
-        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
-        "username/my-dotfiles.git[/] and delete the PAT after use."
-    )
-    init_new_info = (
-        "Ready to initialize a new chezmoi repository. Toggle the "
-        "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{Switches.init_repo_switch.label} [/]"
-        "switch to initialize by cloning an existing Github repository."
+        f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     )
     read_file = "[$success]Path.read()[/]"
-    ready_to_run = "[$success]Ready to run: [/]"
+    ready_to_run = "[$text]Ready to run[/]"
+    re_add_path_info = (
+        "[dim]Re-add modified files in the target state, preserving "
+        "any encrypted_ attributes. chezmoi will not overwrite templates, and "
+        "all entries that are not files are ignored. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
     re_add_subtitle = (
         f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     )
-    ssh_select = (
-        "Enter an SSH SCP-style URL, e.g., "
-        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
-        "private, make sure you have your SSH key pair set up before using "
-        "this option."
+    no_stdout_write_cmd_live = (
+        "No output on stdout, the command was executed live, i.e. "
+        "without --dry-run flag."
     )
-    success_subtitle = "Operation completed successfully"
-
-
-class DestDirStrings(StrEnum):
-    _click_path = "Select a file or directory to check"
-    _click_file = "Select a file to check"
-    _click_dir = "Select a directory to check"
-    add = (
-        f"Select a directory to check if it's managed or unmanaged and if it "
-        "contains files to add.\n"
-        f"{_click_file} {OperateStrings.read_file}."
+    no_stdout_write_cmd_dry = (
+        "No output on stdout, the command was executed "
+        " with the --dry-run flag."
     )
-    cat = f"{_click_file} [$success]{ReadCmd.cat.pretty_cmd}[/]."
-    diff = f"{_click_path} [$success]{ReadCmd.diff.pretty_cmd}[/]."
-    diff_reverse = (
-        f"{_click_path} [$success]{ReadCmd.diff_reverse.pretty_cmd}[/]."
+    no_stderr_write_cmd_live = (
+        "No output on stderr, the command was executed live, i.e. "
+        "without --dry-run flag."
     )
-    git_log_msg = f"{_click_path} [$success]{ReadCmd.git_log.pretty_cmd}[/]."
-    re_add = f"{_click_file} [$success]{OperateStrings.read_file}[/]."
+    no_stderr_write_cmd_dry = (
+        "No output on stderr, the command was executed "
+        " with the --dry-run flag."
+    )
 
 
 class SectionLabels(StrEnum):
@@ -185,12 +173,10 @@ class SectionLabels(StrEnum):
     file_read_output = "File Contents"
     cat_config_output = "Cat Config Output"
     contents_info = "Contents Info"
-    debug_log_output = "Debug Log Output"
     diff_info = "Diff Info"
     doctor_output = "Doctor Output"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
-    operate_output = "Operate Command Output"
     password_managers = "Password Manager Information"
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"

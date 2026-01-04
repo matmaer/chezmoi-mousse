@@ -9,16 +9,14 @@ from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import Tcss
-from chezmoi_mousse.shared import TreeTabButtons, ViewTabButtons
 
+from .actionables import TreeTabButtons, ViewTabButtons
 from .contents_view import ContentsView
 from .diff_view import DiffView
 from .git_log_view import GitLogPath
 from .trees import ExpandedTree, ListTree, ManagedTree
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse import AppIds
 
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
@@ -46,8 +44,6 @@ class TreeSwitcher(Vertical):
 
 class ViewSwitcher(Vertical):
 
-    destDir: "Path | None" = None
-
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids
         super().__init__(id=self.ids.container.right_side)
@@ -61,7 +57,7 @@ class ViewSwitcher(Vertical):
             yield ContentsView(ids=self.ids)
             yield GitLogPath(ids=self.ids)
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:
         view_switcher = self.query_one(
             self.ids.switcher.views_q, ContentSwitcher
