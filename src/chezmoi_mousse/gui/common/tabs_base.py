@@ -9,10 +9,8 @@ from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import Switches, Tcss
 
-from .contents_view import ContentsView
-from .diff_view import DiffView
-from .git_log_view import GitLogPath
 from .trees import ExpandedTree, ListTree, ManagedTree
+from .views import ContentsView, DiffView, GitLogPath
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, NodeData
