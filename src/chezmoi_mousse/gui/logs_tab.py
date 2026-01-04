@@ -10,8 +10,8 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import IDS, AppType, Tcss
 
 from .common.actionables import LogsTabButtons
-from .common.git_log_view import GitLogGlobal
 from .common.loggers import AppLog, OperateLog, ReadCmdLog
+from .common.views import GitLogGlobal
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
