@@ -14,16 +14,15 @@ from ._chezmoi_command import (
     ChezmoiCommand,
     CommandResult,
     GlobalCmd,
-    LogUtils,
     ReadCmd,
     ReadVerb,
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPaths, PathDict, PathList
+from ._chezmoi_paths import ChezmoiPaths, PathDict
 from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
-from ._str_enum_names import LogName, PathKind, ScreenName, TabName, TreeName
+from ._str_enum_names import PathKind, ScreenName, TabName, TreeName
 from ._str_enum_tcss import Tcss
 from ._str_enums import (
     Chars,
@@ -46,50 +45,52 @@ from ._type_checking import (
 
 __all__ = [
     "__version__",
-    # App state
+    # ._app_state
     "AppState",
-    # Id related
+    # ._app_ids
     "IDS",
     "AppIds",
-    # Operations
+    # ._type_checking
+    "AppType",
+    "DiffData",
+    "NodeData",
+    "ParsedConfig",
+    "SplashData",
     "InitCloneData",
-    "OpBtnLabels",
+    # ._operate_button_data
     "OpBtnEnum",
-    "OperateStrings",
-    # _chezmoi.py
+    "OpBtnLabels",
+    # ._chezmoi_command
     "ChezmoiCommand",
     "CommandResult",
     "GlobalCmd",
-    "LogUtils",
-    "PathDict",
-    "PathList",
     "ReadCmd",
     "ReadVerb",
-    "WriteCmd",
     "VerbArgs",
-    # _chezmoi_paths.py
+    "WriteCmd",
+    # ._chezmoi_paths
     "ChezmoiPaths",
-    # Other
-    "AppType",
+    "PathDict",
+    # ._str_enum_bindings
     "BindingAction",
     "BindingDescription",
-    "Chars",
-    "DiffData",
-    "FlatBtn",
-    "LinkBtn",
-    "LogName",
-    "LogStrings",
-    "NodeData",
-    "ParsedConfig",
+    # ._str_enum_names
     "PathKind",
     "ScreenName",
-    "SectionLabels",
-    "SplashData",
-    "Switches",
-    "TabBtn",
     "TabName",
-    "Tcss",
     "TreeName",
+    # ._str_enum_tcss
+    "Tcss",
+    # ._str_enums
+    "Chars",
+    "FlatBtn",
+    "LinkBtn",
+    "LogStrings",
+    "OperateStrings",
+    "SectionLabels",
+    "TabBtn",
+    # ._switch_data
+    "Switches",
 ]
 
 

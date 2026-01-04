@@ -9,6 +9,7 @@ from ._str_enum_names import PathKind
 
 if TYPE_CHECKING:
     from textual.widgets import Static
+    from textual.widgets.tree import TreeNode
 
     from .gui.textual_app import ChezmoiGUI
 
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
 __all__ = [
     "AppType",
     "DiffData",
+    "ExpandedNodeData",
     "InitCloneData",
     "NodeData",
     "ParsedConfig",
@@ -31,6 +33,12 @@ class AppType:
 class DiffData:
     diff_cmd_label: str
     diff_lines: list[Static]
+
+
+@dataclass(slots=True)
+class ExpandedNodeData:
+    apply_expanded: list[TreeNode[NodeData]]
+    re_add_expanded: list[TreeNode[NodeData]]
 
 
 @dataclass(slots=True)
