@@ -17,6 +17,7 @@ from chezmoi_mousse import (
     PathKind,
     ReadCmd,
     SectionLabels,
+    StatusCode,
     TabName,
     Tcss,
 )
@@ -395,19 +396,19 @@ class DiffView(Vertical, AppType):
             )
         )
         for path, status in status_paths.items():
-            if status == "A":
+            if status == StatusCode.Added:
                 info_lines.append(
                     Static(f"{path} (Added)", classes=Tcss.style_added)
                 )
-            elif status == "D":
+            elif status == StatusCode.Deleted:
                 info_lines.append(
                     Static(f"{path} (Deleted)", classes=Tcss.style_removed)
                 )
-            elif status == "M":
+            elif status == StatusCode.Modified:
                 info_lines.append(
                     Static(f"{path} (Modified)", classes=Tcss.style_changed)
                 )
-            elif status == " ":
+            elif status == StatusCode.No_Change:
                 info_lines.append(
                     Static(f"{path} (Unchanged)", classes=Tcss.style_unchanged)
                 )

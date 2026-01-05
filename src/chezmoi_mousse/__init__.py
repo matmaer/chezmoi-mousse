@@ -22,7 +22,14 @@ from ._chezmoi_command import (
 from ._chezmoi_paths import ChezmoiPaths
 from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
-from ._str_enum_names import PathKind, ScreenName, TabName, Tcss, TreeName
+from ._str_enum_names import (
+    PathKind,
+    ScreenName,
+    StatusCode,
+    TabName,
+    Tcss,
+    TreeName,
+)
 from ._str_enums import (
     Chars,
     FlatBtn,
@@ -70,6 +77,7 @@ __all__ = [
     # ._str_enum_names
     "PathKind",
     "ScreenName",
+    "StatusCode",
     "TabName",
     "Tcss",
     "TreeName",
@@ -85,11 +93,11 @@ __all__ = [
     "Switches",
     # ._type_checking
     "AppType",
+    "CmdResults",
     "DiffData",
+    "InitCloneData",
     "NodeData",
     "ParsedConfig",
-    "CmdResults",
-    "InitCloneData",
 ]
 
 

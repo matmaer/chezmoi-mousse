@@ -17,6 +17,7 @@ from chezmoi_mousse import (
     Chars,
     NodeData,
     PathKind,
+    StatusCode,
     TabName,
     Tcss,
     TreeName,
@@ -54,10 +55,10 @@ class TreeBase(Tree[NodeData], AppType):
     def on_mount(self) -> None:
         self.node_colors: dict[str, str] = {
             "Dir": self.app.theme_variables["text-primary"],
-            "D": self.app.theme_variables["text-error"],
-            "A": self.app.theme_variables["text-success"],
-            "M": self.app.theme_variables["text-warning"],
-            " ": self.app.theme_variables["text-secondary"],
+            StatusCode.Deleted: self.app.theme_variables["text-error"],
+            StatusCode.Added: self.app.theme_variables["text-success"],
+            StatusCode.Modified: self.app.theme_variables["text-warning"],
+            StatusCode.No_Change: self.app.theme_variables["text-secondary"],
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -70,21 +71,34 @@ class TreeBase(Tree[NodeData], AppType):
         italic: bool = False if node_data.found else True
         styled = "white"
         if node_data.path_kind == PathKind.FILE:
-            if node_data.status == "X":
+            if node_data.status == StatusCode.fake_status:
                 styled = "dim"
-            elif node_data.status in "ADM":
+            elif node_data.status in (
+                StatusCode.Added,
+                StatusCode.Deleted,
+                StatusCode.Modified,
+            ):
                 styled = Style(
                     color=self.node_colors[node_data.status], italic=italic
                 )
-            elif node_data.status == " ":
+            elif node_data.status == StatusCode.No_Change:
                 styled = "white"
         elif node_data.path_kind == PathKind.DIR:
-            if node_data.status in "ADM":
+            if node_data.status in (
+                StatusCode.Added,
+                StatusCode.Deleted,
+                StatusCode.Modified,
+            ):
                 styled = Style(
                     color=self.node_colors[node_data.status], italic=italic
                 )
-            elif node_data.status == "X" or node_data.status == " ":
-                styled = Style(color=self.node_colors[" "], italic=italic)
+            elif (
+                node_data.status == StatusCode.fake_no_status
+                or node_data.status == StatusCode.No_Change
+            ):
+                styled = Style(
+                    color=self.node_colors[StatusCode.No_Change], italic=italic
+                )
             else:
                 styled = Style(color=self.node_colors["Dir"], italic=italic)
 
@@ -155,7 +169,7 @@ class TreeBase(Tree[NodeData], AppType):
             for leaf in tree_node.children
             if leaf.data is not None
             and leaf.data.path_kind == PathKind.FILE
-            and leaf.data.status == "X"
+            and leaf.data.status == StatusCode.fake_no_status
         ]
         for leaf in current_unchanged_leaves:
             leaf.remove()
@@ -237,7 +251,7 @@ class TreeBase(Tree[NodeData], AppType):
                     and path not in result
                     and self.app.paths.has_apply_status_paths_in(path)
                 ):
-                    result[path] = " "
+                    result[path] = StatusCode.No_Change
             dir_paths: "PathDict" = dict(sorted(result.items()))
         else:
             result: "PathDict" = self.app.paths.re_add_status_dirs_in(
@@ -250,7 +264,7 @@ class TreeBase(Tree[NodeData], AppType):
                     and path not in result
                     and self.app.paths.has_re_add_status_paths_in(path)
                 ):
-                    result[path] = " "
+                    result[path] = StatusCode.No_Change
             dir_paths: "PathDict" = dict(sorted(result.items()))
 
         for dir_path, status_code in dir_paths.items():

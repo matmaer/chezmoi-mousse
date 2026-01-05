@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ._str_enum_names import StatusCode
+
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult
     from ._type_checking import PathDict, PathList
@@ -61,7 +63,8 @@ class ChezmoiPaths:
         return {
             path: status_pair[1]
             for path, status_pair in self.status_files.items()
-            if status_pair[1] in "ADM"  # Check second character only
+            if status_pair[1]  # Check second character only
+            in (StatusCode.Added, StatusCode.Deleted, StatusCode.Modified)
         }
 
     @property
@@ -71,8 +74,16 @@ class ChezmoiPaths:
             path: status_pair[0]
             for path, status_pair in self.status_files.items()
             if (
-                status_pair[0] == "M"
-                or (status_pair[0] == " " and status_pair[1] in "ADM")
+                status_pair[0] == StatusCode.Modified
+                or (
+                    status_pair[0] == StatusCode.No_Change
+                    and status_pair[1]
+                    in (
+                        StatusCode.Added,
+                        StatusCode.Deleted,
+                        StatusCode.Modified,
+                    )
+                )
             )
             and path.exists()
         }
@@ -84,10 +95,11 @@ class ChezmoiPaths:
         real_status_dirs = {
             path: status_pair[1]
             for path, status_pair in self.status_dirs.items()
-            if status_pair[1] in "ADM"  # Check second character only
+            if status_pair[1]  # Check second character only
+            in (StatusCode.Added, StatusCode.Deleted, StatusCode.Modified)
         }
         dirs_with_status_files = {
-            file_path.parent: " "
+            file_path.parent: StatusCode.No_Change
             for file_path, _ in self.apply_status_files.items()
             if file_path.parent not in real_status_dirs
         }
@@ -97,10 +109,10 @@ class ChezmoiPaths:
     def re_add_status_dirs(self) -> PathDict:
         # Dir status is not relevant to the re-add command, just return any
         # parent dir that contains re-add status files
-        # Return those directories with status " "
+        # Return those directories with status StatusCode.No_Change
         # No need to check for existence, as files within must exist
         return {
-            file_path.parent: " "
+            file_path.parent: StatusCode.No_Change
             for file_path in self.re_add_status_files.keys()
         }
 
@@ -108,7 +120,7 @@ class ChezmoiPaths:
     @property
     def apply_files_without_status(self) -> PathDict:
         return {
-            path: "X"
+            path: StatusCode.fake_no_status
             for path in self.files
             if path not in self.apply_status_files.keys()
         }
@@ -116,7 +128,7 @@ class ChezmoiPaths:
     @property
     def re_add_files_without_status(self) -> PathDict:
         return {
-            path: "X"
+            path: StatusCode.fake_no_status
             for path in self.files
             if path not in self.re_add_status_files.keys()
         }

@@ -24,6 +24,7 @@ from chezmoi_mousse import (
     NodeData,
     OpBtnLabels,
     PathKind,
+    StatusCode,
     TabName,
 )
 
@@ -176,7 +177,10 @@ class ChezmoiGUI(App[None]):
         if self.dest_dir is None:
             raise ValueError("self.dest_dir is None after SplashScreen")
         self.root_node_data = NodeData(
-            path=self.dest_dir, path_kind=PathKind.DIR, found=True, status="F"
+            path=self.dest_dir,
+            path_kind=PathKind.DIR,
+            found=True,
+            status=StatusCode.fake_dest_dir,
         )
         self.git_auto_add = self.parsed_config.git_auto_add
         self.git_auto_commit = self.parsed_config.git_auto_commit

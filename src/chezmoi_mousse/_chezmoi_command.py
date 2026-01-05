@@ -6,7 +6,7 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 from ._app_state import AppState
-from ._chezmoi_paths import ChezmoiPaths
+from ._chezmoi_paths import ChezmoiPaths, StatusCode
 from ._str_enums import OperateStrings
 
 if TYPE_CHECKING:
@@ -361,7 +361,7 @@ class ChezmoiCommand:
     def list_unmanaged_paths_in(self, dir_path: Path) -> "PathDict":
         unmanaged_paths = self.read(ReadCmd.unmanaged, path_arg=dir_path)
         return {
-            Path(line): "U"
+            Path(line): StatusCode.fake_unmanaged
             for line in unmanaged_paths.std_out.splitlines()
             if Path(line).is_relative_to(dir_path)
         }
