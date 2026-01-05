@@ -13,7 +13,7 @@
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
-  border: block $primary-muted;
+  border: inner $primary-muted;
   color: $text-muted;
   width: 100%;
   &:hover {
@@ -39,7 +39,7 @@
 .flat_section_label {
   background-tint: $primary-muted;
   background: $primary-muted;
-  border: block $primary-muted;
+  border: inner $primary-muted;
   color: $primary-lighten-3;
   text-align: center;
   width: 100%;
@@ -74,7 +74,7 @@
 .sub_section_label {
   background-tint: $panel;
   background: $panel;
-  border-top: block $panel;
+  border: wide $panel;
   color: $text-success;
   text-align: center;
   width: 1fr;
@@ -83,7 +83,7 @@
 .main_section_label {
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;
-  border: block $surface-lighten-1;
+  border: inner $surface-lighten-1;
   color: $text-accent;
   text-align: center;
   width: 1fr;
@@ -164,7 +164,7 @@ FlatButtonsVertical {
 FlatLink {
   background-tint: $primary-muted;
   background: $primary-muted;
-  border: block $primary-muted;
+  border: wide $primary-muted;
   color: $text-primary;
   content-align: center middle;
   padding: 0 1;
@@ -174,7 +174,7 @@ FlatLink {
     color: $text-accent;
     background: $primary-muted;
     background-tint: $primary-muted;
-    border: block $primary-muted;
+    border: wide $primary-muted;
   }
   &.guess_link {
     background: $panel;

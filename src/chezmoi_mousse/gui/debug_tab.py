@@ -63,7 +63,10 @@ class DebugTabSwitcher(ContentSwitcher):
             IDS.debug.static.debug_test_paths_q, Static
         )
         self.test_paths_static.add_class(Tcss.border_title_top)
-        self.test_paths_static.border_title = "Debug Test Paths"
+        self.test_paths_static.border_title = " Debug Test Paths "
+        self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
+        self.debug_log.add_class(Tcss.border_title_top)
+        self.debug_log.border_title = " Debug Log "
 
 
 class DebugTab(Horizontal):
