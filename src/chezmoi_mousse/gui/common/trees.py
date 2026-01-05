@@ -4,8 +4,6 @@ ReAddTab."""
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from rich.style import Style
-from rich.text import Text
 from textual import on
 from textual.events import Key
 from textual.reactive import reactive
@@ -70,49 +68,55 @@ class TreeBase(Tree[NodeData], AppType):
         self.root.data = self.app.root_node_data
 
     # the styling method for the node labels
-    def style_label(self, node_data: NodeData) -> Text:
-        italic: bool = False if node_data.found else True
-        styled = "white"
+    def style_label(self, node_data: NodeData) -> str:
+        italic = " italic" if not node_data.found else ""
         if node_data.path_kind == PathKind.FILE:
             if node_data.status in (
                 StatusCode.No_Change,
                 StatusCode.fake_no_status,
             ):
-                styled = "dim"
+                return f"[dim]{node_data.path.name}[/dim]"
             elif node_data.status in (
                 StatusCode.Added,
                 StatusCode.Deleted,
                 StatusCode.Modified,
             ):
-                styled = Style(
-                    color=self.node_colors[node_data.status], italic=italic
+                return (
+                    f"[{self.node_colors[node_data.status]}"
+                    f"{italic}]{node_data.path.name}[/]"
                 )
             elif node_data.status in StatusCode.No_Change:
-                styled = "white"
+                return f"[white]{node_data.path.name}[/white]"
             elif node_data.status == StatusCode.fake_no_status:
-                styled = "misty_rose"
+                return f"[misty_rose]{node_data.path.name}[/misty_rose]"
         elif node_data.path_kind == PathKind.DIR:
             if node_data.status in (
                 StatusCode.Added,
                 StatusCode.Deleted,
                 StatusCode.Modified,
             ):
-                styled = Style(
-                    color=self.node_colors[node_data.status], italic=italic
+                return (
+                    f"[{self.node_colors[node_data.status]}"
+                    f"{italic}]{node_data.path.name}[/]"
                 )
             elif node_data.status == StatusCode.No_Change:
-                styled = Style(
-                    color=self.node_colors[StatusCode.No_Change], italic=italic
+                return (
+                    f"[{self.node_colors[StatusCode.No_Change]}"
+                    f"{italic}]{node_data.path.name}[/]"
                 )
             elif node_data.status == StatusCode.fake_no_status:
-                styled = Style(
-                    color=self.node_colors[StatusCode.fake_no_status],
-                    italic=italic,
+                return (
+                    f"[{self.node_colors[StatusCode.fake_no_status]}"
+                    f"{italic}]{node_data.path.name}[/]"
                 )
             else:
-                styled = Style(color=self.node_colors["Dir"], italic=italic)
+                return (
+                    f"[{self.node_colors['Dir']}"
+                    f"{italic}]{node_data.path.name}[/]"
+                )
 
-        return Text(node_data.path.name, style=styled)
+        # Fallback
+        return node_data.path.name
 
     def notify_node_data_is_none(self, tree_node: TreeNode[NodeData]) -> None:
         self.app.notify(
@@ -165,7 +169,7 @@ class TreeBase(Tree[NodeData], AppType):
         node_data = NodeData(
             path=path, path_kind=path_kind, found=found, status=status_code
         )
-        node_label: Text = self.style_label(node_data)
+        node_label: str = self.style_label(node_data)
         if path_kind == PathKind.FILE:
             tree_node.add_leaf(label=node_label, data=node_data)
         else:
