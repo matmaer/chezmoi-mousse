@@ -16,10 +16,9 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 ## Use Case
 
-- Can be safely tested as no write operations are enabled by default.
-- To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer.
-This will enable commands changing your config files or the chezmoi state.
-- Run the app with your own user. Runnig the app with `sudo` or elevated permissions is **not needed**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
+- Can be safely used to visualize your chezmoi repository, as no write operations are enabled by default.
+- To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer. This will enable commands changing your config files or the chezmoi state. Test first in a VM or container, see the [Test][test-section] section.
+- Run the app with your own user. Running the app with `sudo` or elevated permissions is **not needed**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
 - The current implementation has only been used or tested with `autocommit` enabled, feedback is welcome on the issues page.
 
 ## Start
@@ -46,15 +45,27 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 
 ### App screenshot example
 
-![App screenshot](src/screenshots/app_sample_screenshot.png)
+![App screenshot](screenshots/app_sample_screenshot.png)
 
 ### App log example
 
-![App screenshot](src/screenshots/app_log_example.png)
+![App screenshot](screenshots/app_log_example.png)
 
 ### Operate result example
 
-![App screenshot](src/screenshots/operate_resut_example.png)
+![App screenshot](screenshots/operate_resut_example.png)
+
+## Test
+
+To test the app with without "real" dotfiles in a container or VM, in the src directory, you can run
+
+`CHEZMOI_MOUSSE_DEV=1 uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
+
+Then on the "Debug" tab, you can generate some files, and diffs.
+Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/master/#)
+
+![App screenshot](screenshots/debug_tab.png)
+
 
 ### Platform packaging
 - [x] Windows
@@ -75,7 +86,7 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 
 ## Available Chezmoi commands
 
-> Note: the lists for `Write Operations` and `Read Operations` below are a limited subset of availabble chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
+> Note: the lists for `Write Operations` and `Read Operations` below are a limited subset of available chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
 
 ### Write Operations
 
@@ -322,6 +333,8 @@ warnings
 
 ### Chezmoi not found screenshot
 
-If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](chezmoi.io/install), along with parsed install commands from the [chezmoi repository]((https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl)) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
+If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
-![App screenshot](src/screenshots/command_not_found.png)
+![App screenshot](screenshots/command_not_found.png)
+
+[test-section]: #test
