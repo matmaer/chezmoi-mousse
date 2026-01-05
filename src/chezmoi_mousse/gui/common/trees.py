@@ -65,11 +65,6 @@ class TreeBase(Tree[NodeData], AppType):
         self.add_class(Tcss.border_title_top)
         self.root.data = self.app.root_node_data
 
-    # def create_root_node_data(self, dest_dir: "Path") -> None:
-    #     self.root.data = NodeData(
-    #         path=dest_dir, path_kind=PathKind.DIR, found=True, status="F"
-    #     )
-
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> Text:
         italic: bool = False if node_data.found else True
