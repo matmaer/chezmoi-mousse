@@ -5,7 +5,7 @@
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
 > [!WARNING]
-> To use the app, clone from the latest tagged stable branch `git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`. The current HEAD will be updated soon.
+> It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
 
@@ -57,11 +57,13 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 
 ## Test
 
-To test the app with without "real" dotfiles in a container or VM, in the src directory, you can run
+To test the app without "real" dotfiles in a container or VM:
+
+In the src directory of the cloned repository, you can run
 
 `CHEZMOI_MOUSSE_DEV=1 uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
 
-Then on the "Debug" tab, you can generate some files, and diffs.
+Then on the "Debug" tab, you can generate some files in the home directory, and offer the possibility to modify the generated files to have diffs.
 Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/master/#)
 
 ![App screenshot](screenshots/debug_tab.png)
@@ -92,23 +94,23 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 
 > Note: see `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
 
-- [x] `chezmoi add` directory (non-recursive)
-- [x] `chezmoi add` file
+- [ ] `chezmoi add` directory
+- [ ] `chezmoi add` file
 - [ ] `chezmoi archive`
-- [x] `chezmoi apply` directory (non-recursive)
-- [x] `chezmoi apply` file
-- [x] `chezmoi destroy` directory (non-recursive)
-- [x] `chezmoi destroy` file
+- [ ] `chezmoi apply` directory
+- [ ] `chezmoi apply` file
+- [ ] `chezmoi destroy` directory
+- [ ] `chezmoi destroy` file
 - [ ] `chezmoi edit`
-- [x] `chezmoi forget` directory (non-recursive)
-- [x] `chezmoi forget` file
+- [ ] `chezmoi forget` directory
+- [ ] `chezmoi forget` file
 - [ ] `chezmoi generate`
 - [ ] `chezmoi import`
-- [x] `chezmoi init` new repository
+- [ ] `chezmoi init` new repository
 - [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
-- [x] `chezmoi re-add` directory (non-recursive)
-- [x] `chezmoi re-add` file
+- [ ] `chezmoi re-add` directory
+- [ ] `chezmoi re-add` file
 
 ### Read Operations
 
@@ -338,3 +340,4 @@ If the `chezmoi` command is not available, a screen will be shown with the value
 ![App screenshot](screenshots/command_not_found.png)
 
 [test-section]: #test
+[use-case-section]: #use-case
