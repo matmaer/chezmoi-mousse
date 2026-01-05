@@ -23,7 +23,7 @@ class FlatBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
-    debug_test_paths = "Fake Paths"
+    debug_test_paths = "Test Paths"
     debug_log = "Debug Log"
     diagram = "Diagram"
     doctor = "Doctor"

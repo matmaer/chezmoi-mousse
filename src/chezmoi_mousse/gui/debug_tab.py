@@ -55,7 +55,7 @@ class DebugTabSwitcher(ContentSwitcher):
         )
 
     def compose(self) -> ComposeResult:
-        yield Static("Debug Fake Paths", id=IDS.debug.static.debug_test_paths)
+        yield Static(id=IDS.debug.static.debug_test_paths)
         yield DebugLog(ids=IDS.debug)
 
     def on_mount(self) -> None:
@@ -63,7 +63,7 @@ class DebugTabSwitcher(ContentSwitcher):
             IDS.debug.static.debug_test_paths_q, Static
         )
         self.test_paths_static.add_class(Tcss.border_title_top)
-        self.test_paths_static.border_title = " Debug Test Paths "
+        self.test_paths_static.border_title = " Test Paths "
         self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
         self.debug_log.add_class(Tcss.border_title_top)
         self.debug_log.border_title = " Debug Log "
