@@ -25,11 +25,9 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 > Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
 
-On the command line, clone the repository at the latest tagged version:
+On the command line, clone the repository:
 
-`git clone --branch latest https://github.com/matmaer/chezmoi-mousse.git`
-
-> Note: You'll see a "detached HEAD" warning message - this is normal when checking out a tagged commit.
+`git clone https://github.com/matmaer/chezmoi-mousse.git`
 
 Change directory into the `src` directory of the cloned repository.
 
