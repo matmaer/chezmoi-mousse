@@ -109,10 +109,10 @@ class ChezmoiPaths:
     def re_add_status_dirs(self) -> PathDict:
         # Dir status is not relevant to the re-add command, just return any
         # parent dir that contains re-add status files
-        # Return those directories with status StatusCode.No_Change
+        # Return those directories with status StatusCode.fake_no_status
         # No need to check for existence, as files within must exist
         return {
-            file_path.parent: StatusCode.No_Change
+            file_path.parent: StatusCode.fake_no_status
             for file_path in self.re_add_status_files.keys()
         }
 

@@ -412,6 +412,13 @@ class DiffView(Vertical, AppType):
                 info_lines.append(
                     Static(f"{path} (Unchanged)", classes=Tcss.style_unchanged)
                 )
+            elif status == StatusCode.fake_no_status:
+                info_lines.append(
+                    Static(
+                        f"{path} (Fake No Status)",
+                        classes=Tcss.style_unchanged,
+                    )
+                )
             else:
                 info_lines.append(Static(f"{path} ({status})"))
         diff_info.display = True

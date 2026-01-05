@@ -59,6 +59,9 @@ class TreeBase(Tree[NodeData], AppType):
             StatusCode.Added: self.app.theme_variables["text-success"],
             StatusCode.Modified: self.app.theme_variables["text-warning"],
             StatusCode.No_Change: self.app.theme_variables["text-secondary"],
+            StatusCode.fake_no_status: self.app.theme_variables[
+                "secondary-lighten-2"
+            ],
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -71,7 +74,10 @@ class TreeBase(Tree[NodeData], AppType):
         italic: bool = False if node_data.found else True
         styled = "white"
         if node_data.path_kind == PathKind.FILE:
-            if node_data.status == StatusCode.fake_status:
+            if node_data.status in (
+                StatusCode.No_Change,
+                StatusCode.fake_no_status,
+            ):
                 styled = "dim"
             elif node_data.status in (
                 StatusCode.Added,
@@ -81,8 +87,10 @@ class TreeBase(Tree[NodeData], AppType):
                 styled = Style(
                     color=self.node_colors[node_data.status], italic=italic
                 )
-            elif node_data.status == StatusCode.No_Change:
+            elif node_data.status in StatusCode.No_Change:
                 styled = "white"
+            elif node_data.status == StatusCode.fake_no_status:
+                styled = "misty_rose"
         elif node_data.path_kind == PathKind.DIR:
             if node_data.status in (
                 StatusCode.Added,
@@ -92,12 +100,14 @@ class TreeBase(Tree[NodeData], AppType):
                 styled = Style(
                     color=self.node_colors[node_data.status], italic=italic
                 )
-            elif (
-                node_data.status == StatusCode.fake_no_status
-                or node_data.status == StatusCode.No_Change
-            ):
+            elif node_data.status == StatusCode.No_Change:
                 styled = Style(
                     color=self.node_colors[StatusCode.No_Change], italic=italic
+                )
+            elif node_data.status == StatusCode.fake_no_status:
+                styled = Style(
+                    color=self.node_colors[StatusCode.fake_no_status],
+                    italic=italic,
                 )
             else:
                 styled = Style(color=self.node_colors["Dir"], italic=italic)
@@ -264,7 +274,7 @@ class TreeBase(Tree[NodeData], AppType):
                     and path not in result
                     and self.app.paths.has_re_add_status_paths_in(path)
                 ):
-                    result[path] = StatusCode.No_Change
+                    result[path] = StatusCode.fake_no_status
             dir_paths: "PathDict" = dict(sorted(result.items()))
 
         for dir_path, status_code in dir_paths.items():
