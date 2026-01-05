@@ -13,16 +13,20 @@ if TYPE_CHECKING:
 
     from .gui.textual_app import ChezmoiGUI
 
+type PathDict = dict[Path, str]
+type PathList = list[Path]
 type Value = str | dict[str, "Value"]
 
 __all__ = [
     "AppType",
+    "CmdResults",
     "DiffData",
     "ExpandedNodeData",
     "InitCloneData",
     "NodeData",
     "ParsedConfig",
-    "CmdResults",
+    "PathDict",
+    "PathList",
 ]
 
 

@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult
+    from ._type_checking import PathDict, PathList
 
-type PathDict = dict[Path, str]
-type PathList = list[Path]
 
 __all__ = ["ChezmoiPaths"]
 
