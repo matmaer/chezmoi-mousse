@@ -1,4 +1,5 @@
 from asyncio import sleep
+from typing import TYPE_CHECKING
 
 from textual import work
 from textual.app import ComposeResult
@@ -7,7 +8,6 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import (
-    AppIds,
     AppType,
     CommandResult,
     OpBtnEnum,
@@ -15,6 +15,10 @@ from chezmoi_mousse import (
     TabName,
     Tcss,
 )
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
+
 
 __all__ = ["CommandOutput", "OperateMode"]
 
@@ -52,12 +56,13 @@ class LoadingModal(ModalScreen[None]):
 
 class OperateMode(Vertical, AppType):
 
-    def __init__(self, *, ids: AppIds) -> None:
+    def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.container.op_mode)
-        self.command: str | None = None
         self.ids = ids
-        self.path_arg: str | None = None
         self.btn_enum: OpBtnEnum | None = None
+        self.command: str | None = None
+        self.init_arg: str | None = None
+        self.path_arg: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Vertical(
@@ -105,7 +110,12 @@ class OperateMode(Vertical, AppType):
 
     def refresh_review_info(self) -> None:
         if self.btn_enum is not None:
-            self.update_review_info(self.btn_enum)
+            if self.ids.canvas_name in (
+                TabName.add,
+                TabName.apply,
+                TabName.re_add,
+            ):
+                self.update_review_info(self.btn_enum)
 
     @work(thread=True)
     def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
@@ -116,6 +126,8 @@ class OperateMode(Vertical, AppType):
         pretty_cmd = f"{btn_enum.write_cmd.pretty_cmd}"
         if self.path_arg is not None:
             pretty_cmd += f"[$text-success bold] {self.path_arg}[/]"
+        elif self.init_arg is not None:
+            pretty_cmd += f"[$text-success bold] {self.init_arg}[/]"
         loading_modal = LoadingModal(pretty_cmd)
         await self.app.push_screen(loading_modal)
         worker = self.run_perform_command(btn_enum)

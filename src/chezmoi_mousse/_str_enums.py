@@ -2,6 +2,8 @@
 
 from enum import StrEnum
 
+from ._switch_data import Switches
+
 __all__ = [
     "Chars",
     "FlatBtn",
@@ -163,6 +165,31 @@ class OperateStrings(StrEnum):
         "No output on stderr, the command was executed "
         " with the --dry-run flag."
     )
+    # Init screen info strings
+    guess_https = "Let chezmoi guess the best URL to clone from."
+    guess_ssh = (
+        "Let chezmoi guess the best ssh scp-style address to clone from."
+    )
+    init_new_info = (
+        "Ready to initialize a new chezmoi repository. Toggle the "
+        "[$foreground-darken-1 on $surface-lighten-1] "
+        f"{Switches.init_repo_switch.label} [/]"
+        "switch to initialize by cloning an existing Github repository."
+    )
+    https_url = (
+        "Enter a complete URL, e.g., "
+        "[$text-primary]https://github.com/user/repo.git[/]. "
+        "If you have a PAT, make sure to include it in the URL, for example: "
+        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
+        "username/my-dotfiles.git[/] and delete the PAT after use."
+    )
+    ssh_select = (
+        "Enter an SSH SCP-style URL, e.g., "
+        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
+        "private, make sure you have your SSH key pair set up before using "
+        "this option."
+    )
+    init_subtitle = "initialize chezmoi repository"
 
 
 class SectionLabels(StrEnum):
@@ -177,6 +204,7 @@ class SectionLabels(StrEnum):
     doctor_output = "Doctor Output"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
+    init_clone_repo = "Initialize Existing Chezmoi Repository"
     password_managers = "Password Manager Information"
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"

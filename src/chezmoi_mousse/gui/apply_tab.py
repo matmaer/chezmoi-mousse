@@ -4,10 +4,9 @@ from textual.containers import Horizontal
 
 from chezmoi_mousse import IDS, AppType
 
-from .common.actionables import OperateButtons
+from .common.actionables import OperateButtons, SwitchSlider
 from .common.messages import CurrentApplyNodeMsg
 from .common.operate_mode import OperateMode
-from .common.switch_slider import SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tabs_base import TabsBase
 

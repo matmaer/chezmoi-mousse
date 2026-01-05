@@ -32,32 +32,17 @@ else:
 __all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogGlobal"]
 
 
-class ContentsTabStrings(StrEnum):
-    cannot_decode = "Path cannot be decoded as UTF-8:"
-    empty_or_only_whitespace = "File is empty or contains only whitespace."
-    managed_dir = "Managed directory "
-    output_from_cat = "File does not exist on disk, output from "
-    permission_denied = "Permission denied to read file "
-    read_error = "Error reading path "
-    truncated = "\n--- File content truncated to "
-    unmanaged_dir = "Unmanaged directory "
-
-
-class ContentsInfo(VerticalGroup, AppType):
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.contents_info)
-
-    def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.contents_info,
-            classes=Tcss.sub_section_label,
-            id=self.ids.label.contents_info,
-        )
-        yield Static(id=self.ids.static.contents_info)
-
-
 class ContentsView(Vertical, AppType):
+
+    class ContentStr(StrEnum):
+        cannot_decode = "Path cannot be decoded as UTF-8:"
+        empty_or_only_whitespace = "File is empty or contains only whitespace."
+        managed_dir = "Managed directory "
+        output_from_cat = "File does not exist on disk, output from "
+        permission_denied = "Permission denied to read file "
+        read_error = "Error reading path "
+        truncated = "\n--- File content truncated to "
+        unmanaged_dir = "Unmanaged directory "
 
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
@@ -68,7 +53,15 @@ class ContentsView(Vertical, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield ContentsInfo(ids=self.ids)
+        yield VerticalGroup(
+            Label(
+                SectionLabels.contents_info,
+                classes=Tcss.sub_section_label,
+                id=self.ids.label.contents_info,
+            ),
+            Static(id=self.ids.static.contents_info),
+            id=self.ids.container.contents_info,
+        )
         yield Label(
             SectionLabels.cat_config_output,
             classes=Tcss.sub_section_label,
@@ -100,7 +93,7 @@ class ContentsView(Vertical, AppType):
         )
         self.file_read_label.display = False
         self.contents_info = self.query_one(
-            self.ids.container.contents_info_q, ContentsInfo
+            self.ids.container.contents_info_q, VerticalGroup
         )
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
@@ -114,35 +107,35 @@ class ContentsView(Vertical, AppType):
             file_size = file_path.stat().st_size
             if file_size == 0:
                 self.contents_info_static_text.update(
-                    ContentsTabStrings.empty_or_only_whitespace
+                    self.ContentStr.empty_or_only_whitespace
                 )
                 return
             with open(file_path, "rt", encoding="utf-8") as f:
                 f_contents = f.read(self.truncate_size)
             if f_contents.strip() == "":
                 self.contents_info_static_text.update(
-                    ContentsTabStrings.empty_or_only_whitespace
+                    self.ContentStr.empty_or_only_whitespace
                 )
                 return
             self.file_read_label.display = True
             self.rich_log.write(f_contents)
             if file_size > self.truncate_size:
                 self.rich_log.write(
-                    f"{ContentsTabStrings.truncated} {self.truncate_size / 1024} KiB ---"
+                    f"{self.ContentStr.truncated} {self.truncate_size / 1024} KiB ---"
                 )
         except PermissionError as error:
             self.contents_info_static_text.update(
-                f"{ContentsTabStrings.permission_denied}{file_path}"
+                f"{self.ContentStr.permission_denied}{file_path}"
             )
             self.rich_log.write(error.strerror)
             return
         except UnicodeDecodeError:
             self.contents_info_static_text.update(
-                f"{ContentsTabStrings.cannot_decode}{file_path}"
+                f"{self.ContentStr.cannot_decode}{file_path}"
             )
         except OSError as error:
             self.contents_info_static_text.update(
-                f"{ContentsTabStrings.read_error}{file_path}: {error}"
+                f"{self.ContentStr.read_error}{file_path}: {error}"
             )
             self.rich_log.write(error.strerror)
 
@@ -153,14 +146,11 @@ class ContentsView(Vertical, AppType):
                 ReadCmd.cat, path_arg=file_path
             )
             self.contents_info_static_text.update(
-                f"{ContentsTabStrings.output_from_cat}[$text-success]{cat_output.pretty_cmd}[/]"
+                f"{self.ContentStr.output_from_cat}[$text-success]{cat_output.pretty_cmd}[/]"
             )
             if cat_output.std_out.strip() == "":
                 self.rich_log.write(
-                    Text(
-                        ContentsTabStrings.empty_or_only_whitespace,
-                        style="dim",
-                    )
+                    Text(self.ContentStr.empty_or_only_whitespace, style="dim")
                 )
             else:
                 self.rich_log.write(cat_output.std_out)
@@ -168,11 +158,11 @@ class ContentsView(Vertical, AppType):
     def write_dir_info(self, dir_path: Path) -> None:
         if dir_path in self.app.paths.dirs:
             self.contents_info_static_text.update(
-                f"{ContentsTabStrings.managed_dir}[$text-accent]{dir_path}[/]"
+                f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
             )
         else:
             self.contents_info_static_text.update(
-                f"{ContentsTabStrings.unmanaged_dir}[$text-accent]{dir_path}[/]"
+                f"{self.ContentStr.unmanaged_dir}[$text-accent]{dir_path}[/]"
             )
         return
 
@@ -448,6 +438,13 @@ class GitLogDataTable(DataTable[Text], AppType):
         self.ids = ids
         super().__init__(id=self.ids.datatable.git_log)
 
+    def on_mount(self) -> None:
+        self.row_color = {
+            "ok": self.app.theme_variables["text-success"],
+            "warning": self.app.theme_variables["text-warning"],
+            "error": self.app.theme_variables["text-error"],
+        }
+
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [
             Text(cell_text, style=style) for cell_text in columns
@@ -462,19 +459,14 @@ class GitLogDataTable(DataTable[Text], AppType):
             return
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
-        styles = {
-            "ok": self.app.theme_variables["text-success"],
-            "warning": self.app.theme_variables["text-warning"],
-            "error": self.app.theme_variables["text-error"],
-        }
         for line in command_result.std_out.splitlines():
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
-                self._add_row_with_style(columns, styles["ok"])
+                self._add_row_with_style(columns, self.row_color["ok"])
             elif columns[1].split(maxsplit=1)[0] == "Update":
-                self._add_row_with_style(columns, styles["warning"])
+                self._add_row_with_style(columns, self.row_color["warning"])
             elif columns[1].split(maxsplit=1)[0] == "Remove":
-                self._add_row_with_style(columns, styles["error"])
+                self._add_row_with_style(columns, self.row_color["error"])
             else:
                 self.add_row(*(Text(cell) for cell in columns))
 

@@ -1,12 +1,11 @@
 import re
-from enum import StrEnum
 
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
-from textual.widgets import (  # Static,; Switch,
+from textual.widgets import (
     Button,
     Collapsible,
     Footer,
@@ -14,6 +13,8 @@ from textual.widgets import (  # Static,; Switch,
     Label,
     Pretty,
     Select,
+    Static,
+    Switch,
 )
 
 from chezmoi_mousse import (
@@ -32,38 +33,13 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from .common.actionables import FlatLink, OperateButtons  # , SwitchWithLabel
+from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
 from .common.doctor_data import DoctorTable
 from .common.messages import InitCloneCmdMsg, OperateButtonMsg
+from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 
 __all__ = ["InitChezmoi"]
-
-
-class InitStrings(StrEnum):
-    guess_https = "Let chezmoi guess the best URL to clone from."
-    guess_ssh = (
-        "Let chezmoi guess the best ssh scp-style address to clone from."
-    )
-    init_new_info = (
-        "Ready to initialize a new chezmoi repository. Toggle the "
-        "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{Switches.init_repo_switch.label} [/]"
-        "switch to initialize by cloning an existing Github repository."
-    )
-    https_url = (
-        "Enter a complete URL, e.g., "
-        "[$text-primary]https://github.com/user/repo.git[/]. "
-        "If you have a PAT, make sure to include it in the URL, for example: "
-        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
-        "username/my-dotfiles.git[/] and delete the PAT after use."
-    )
-    ssh_select = (
-        "Enter an SSH SCP-style URL, e.g., "
-        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
-        "private, make sure you have your SSH key pair set up before using "
-        "this option."
-    )
 
 
 class SSHSCP(Validator):
@@ -486,41 +462,38 @@ class InitChezmoi(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
+        yield HorizontalGroup(
+            Label(
+                SectionLabels.init_new_repo, classes=Tcss.main_section_label
+            ),
+            SwitchWithLabel(
+                ids=self.ids, switch_enum=Switches.init_repo_switch
+            ),
+        )
+        yield InputInitCloneRepo()
+        yield Static(id=self.ids.static.init_info)
         yield OperateButtons(self.ids)
+        yield OperateMode(ids=self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:
-        # self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
+        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.operate_buttons = self.query_one(
             self.ids.container.operate_buttons_q, OperateButtons
         )
         self.app.update_binding_description(
             BindingAction.exit_screen, BindingDescription.reload
         )
-        # self.post_op_container = self.query_one(
-        #     self.ids.container.post_operate_q, VerticalGroup
-        # )
-        # self.post_op_container.display = False
-        # self.init_info = self.query_one(self.ids.static.init_info_q, Static)
-        # self.operate_info = self.query_one(
-        #     self.ids.static.operate_info_q, Static
-        # )
-        # self.operate_info.border_title = OpBtnLabels.init_run
+        self.init_info = self.query_one(self.ids.static.init_info_q, Static)
+        self.update_init_info()
         self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
-        # self.repo_input = self.query_one(
-        #     self.ids.container.repo_input_q, InputInitCloneRepo
-        # )
-        # self.repo_input.display = False
-        # self.update_init_info()
+        self.repo_input = self.query_one(
+            self.ids.container.repo_input_q, InputInitCloneRepo
+        )
+        self.repo_input.display = False
 
+    def update_operate_info(self) -> None:
         lines_to_write: list[str] = []
-        # if self.query_exactly_one(Switch).value is False:
-        #     lines_to_write.append(
-        #         f"{OperateStrings.ready_to_run} "
-        #         f"{WriteCmd.init_new.pretty_cmd}[/]"
-        #     )
-        #     self.operate_info.update("\n".join(lines_to_write))
-        #     return
         if self.init_clone_data is None:
             lines_to_write.append(
                 "[$text-error]No init clone input provided yet."
@@ -578,32 +551,22 @@ class InitChezmoi(Screen[None], AppType):
                 )
         # self.operate_info.update("\n".join(lines_to_write))
 
-    # def update_init_info(self) -> None:
-    #     if self.query_exactly_one(Switch).value is False:
-    #         self.init_info.update(InitStrings.init_new_info)
-    #         return
-    #     current_select = self.repo_input.query_exactly_one(Select[str]).value
-    #     if current_select == "https":
-    #         self.init_info.update(InitStrings.https_url)
-    #     elif current_select == "ssh":
-    #         self.init_info.update(InitStrings.ssh_select)
-    #     elif current_select == "guess url":
-    #         self.init_info.update(InitStrings.guess_https)
-    #     elif current_select == "guess ssh":
-    #         self.init_info.update(InitStrings.guess_ssh)
+    def update_init_info(self) -> None:
+        if self.query_exactly_one(Switch).value is False:
+            self.init_info.update(OperateStrings.init_new_info)
+            return
+        current_select = self.repo_input.query_exactly_one(Select[str]).value
+        if current_select == "https":
+            self.init_info.update(OperateStrings.https_url)
+        elif current_select == "ssh":
+            self.init_info.update(OperateStrings.ssh_select)
+        elif current_select == "guess url":
+            self.init_info.update(OperateStrings.guess_https)
+        elif current_select == "guess ssh":
+            self.init_info.update(OperateStrings.guess_ssh)
 
     @work(exit_on_error=False)
     async def run_operate_command(self) -> None:
-        # self.app.init_cmd_result = self.app.cmd.perform(
-        #     write_cmd=self.init_cmd, init_arg=self.init_arg
-        # )
-        # self.pre_op_container = self.query_one(
-        #     self.ids.container.pre_operate_q, VerticalGroup
-        # )
-        # self.pre_op_container.display = False
-        # self.post_op_container.display = True
-        # output_log = self.query_one(self.ids.logger.operate_q, OperateLog)
-        # output_log.log_cmd_results(self.app.init_cmd_result)
         self.close_btn = self.query_one(IDS.init.close_q, Button)
         if (
             self.app.changes_enabled
@@ -614,14 +577,14 @@ class InitChezmoi(Screen[None], AppType):
             self.init_chezmoi_btn.disabled = True
             self.close_btn.label = OpBtnLabels.reload
 
-    # @on(Switch.Changed)
-    # def handle_switch_state(self, event: Switch.Changed) -> None:
-    #     if event.value is True:
-    #         self.repo_input.display = True
-    #         self.init_chezmoi_btn.disabled = True
-    #     elif event.value is False:
-    #         self.repo_input.display = False
-    #     self.update_init_info()
+    @on(Switch.Changed)
+    def handle_switch_state(self, event: Switch.Changed) -> None:
+        if event.value is True:
+            self.repo_input.display = True
+            self.init_chezmoi_btn.disabled = True
+        elif event.value is False:
+            self.repo_input.display = False
+        self.update_init_info()
 
     @on(OperateButtonMsg)
     def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
