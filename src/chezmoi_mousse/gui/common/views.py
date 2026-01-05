@@ -11,7 +11,6 @@ from textual.widgets import DataTable, Label, RichLog, Static
 
 from chezmoi_mousse import (
     AppType,
-    DiffData,
     NodeData,
     OperateStrings,
     PathKind,
@@ -31,6 +30,9 @@ else:
     DataTableText = DataTable
 
 __all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogGlobal"]
+
+
+type DiffWidgets = list[Label | Static]
 
 
 class ContentsView(Vertical, AppType):
@@ -202,68 +204,19 @@ class DiffStrings(StrEnum):
     contains_status_paths = (
         "Directory contains the following paths with a status (recursive)"
     )
-    no_dir_status = "No diff available, the directory has no status."
-    no_file_status = "No diff available, the file has no status."
+    contains_no_status_paths = "Contains no paths with a status."
+    dir_no_status = (
+        "[dim]No diff available, the directory has no status and "
+        "contains no paths with a status.[/]"
+    )
+    file_diff_lines = "File Diff Lines"
+    file_no_status = "[dim]No diff available, the file has no status.[/]"
+    mode_changes = "Mode Differences"
+    path_lines = "Path Differences"
     truncated = "\n--- Diff output truncated to 1000 lines ---\n"
 
 
-class DiffInfo(VerticalGroup):
-
-    info_lines: reactive[list[Static] | None] = reactive(None, init=False)
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.diff_info)
-
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.diff_info, classes=Tcss.sub_section_label)
-        yield ScrollableContainer(id=self.ids.container.diff_info)
-
-    def on_mount(self) -> None:
-        self.query_one(
-            self.ids.container.diff_info_q, ScrollableContainer
-        ).mount(Static(OperateStrings.in_dest_dir_click_path))
-        self.label = self.query_exactly_one(Label)
-
-    def watch_info_lines(self) -> None:
-        if self.info_lines is None:
-            return
-        self.label.update(DiffStrings.contains_status_paths)
-        diff_info = self.query_one(
-            self.ids.container.diff_info_q, ScrollableContainer
-        )
-        diff_info.remove_children()
-        diff_info.mount_all([Static(" ")] + self.info_lines)
-
-
-class DiffLines(VerticalGroup):
-
-    diff_data: reactive[DiffData | None] = reactive(None, init=False)
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.diff_lines)
-
-    def compose(self) -> ComposeResult:
-        yield Label(classes=Tcss.sub_section_label)
-        yield ScrollableContainer(id=self.ids.container.diff_output)
-
-    def on_mount(self) -> None:
-        self.display = False
-        self.label = self.query_exactly_one(Label)
-
-    def watch_diff_data(self) -> None:
-        if self.diff_data is None:
-            return
-        self.label.update(self.diff_data.diff_cmd_label)
-        diff_output = self.query_one(
-            self.ids.container.diff_output_q, ScrollableContainer
-        )
-        diff_output.remove_children()
-        diff_output.mount_all(self.diff_data.diff_lines)
-
-
-class DiffView(Vertical, AppType):
+class DiffView(ScrollableContainer, AppType):
 
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
@@ -278,54 +231,71 @@ class DiffView(Vertical, AppType):
             self.diff_cmd = ReadCmd.diff
 
     def compose(self) -> ComposeResult:
-        yield DiffInfo(ids=self.ids)
-        yield DiffLines(ids=self.ids)
+        yield Label(SectionLabels.diff_info, classes=Tcss.sub_section_label)
+        yield Static(f"{OperateStrings.in_dest_dir_click_path}")
 
     def on_mount(self) -> None:
         self.border_title = f" {self.app.dest_dir} "
-        self.diff_lines = self.query_one(
-            self.ids.container.diff_lines_q, DiffLines
-        )
 
-    def create_diff_data(self) -> DiffData:
-        static_list: list[Static] = []
-        if self.node_data is None:
-            raise ValueError("node_data is None")
-        diff_output: "CommandResult" = self.app.cmd.read(
-            self.diff_cmd, path_arg=self.node_data.path
-        )
-        diff_lines = diff_output.std_out.splitlines()
+    def mount_new_diff_widgets(self, diff_widgets: DiffWidgets) -> None:
+        self.remove_children()
+        self.mount_all(diff_widgets)
+
+    def mount_file_no_status_widgets(self, file_path: Path) -> None:
+        diff_widgets: DiffWidgets = [
+            Label(f"Managed file [$text-accent]{file_path}[/]"),
+            Static(f"{DiffStrings.file_no_status}"),
+        ]
+        self.mount_new_diff_widgets(diff_widgets)
+
+    def mount_dir_no_status_widgets(self, dir_path: Path) -> None:
+        diff_widgets: DiffWidgets = [
+            Label(f"Managed directory [$text-accent]{dir_path}[/]."),
+            Static(f"{DiffStrings.dir_no_status}"),
+        ]
+        self.mount_new_diff_widgets(diff_widgets)
+
+    def create_mode_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
+        diff_widgets: DiffWidgets = []
         mode_lines = [
             line
             for line in diff_lines
             if line.startswith(("old", "new", "changed", "deleted"))
         ]
-        if len(mode_lines) > 0:
-            for line in mode_lines:
-                if line.startswith(("old", "deleted")):
-                    static_list.append(
-                        Static(line, classes=Tcss.style_removed)
-                    )
-                elif line.startswith("new"):
-                    static_list.append(Static(line, classes=Tcss.style_added))
-                    diff_lines.remove(line)
-                elif line.startswith("changed"):
-                    static_list.append(
-                        Static(line, classes=Tcss.style_changed)
-                    )
-            static_list.append(Static(""))
+        if not mode_lines:
+            return []
+        diff_widgets.append(
+            Label(DiffStrings.mode_changes, classes=Tcss.sub_section_label)
+        )
+        for line in mode_lines:
+            if line.startswith(("old", "deleted")):
+                diff_widgets.append(Static(line, classes=Tcss.removed))
+            elif line.startswith("new"):
+                diff_widgets.append(Static(line, classes=Tcss.added))
+                diff_lines.remove(line)
+            elif line.startswith("changed"):
+                diff_widgets.append(Static(line, classes=Tcss.changed))
+        return diff_widgets
+
+    def create_path_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
+        diff_widgets: DiffWidgets = []
         path_lines = [
             line for line in diff_lines if line.startswith(("+++", "---"))
         ]
-        if len(path_lines) > 0:
-            for line in path_lines:
-                if line.startswith("---"):
-                    static_list.append(
-                        Static(line, classes=Tcss.style_removed)
-                    )
-                elif line.startswith("+++"):
-                    static_list.append(Static(line, classes=Tcss.style_added))
-            static_list.append(Static(""))
+        if not path_lines:
+            return []
+        diff_widgets.append(
+            Label(DiffStrings.path_lines, classes=Tcss.sub_section_label)
+        )
+        for line in path_lines:
+            if line.startswith("---"):
+                diff_widgets.append(Static(line, classes=Tcss.removed))
+            elif line.startswith("+++"):
+                diff_widgets.append(Static(line, classes=Tcss.added))
+        return diff_widgets
+
+    def create_file_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
+        diff_widgets: DiffWidgets = []
         file_lines = [
             line
             for line in diff_lines
@@ -336,29 +306,76 @@ class DiffView(Vertical, AppType):
         # temporary solution
         lines_limit = 1000
         lines = 0
+        file_lines = [
+            line
+            for line in diff_lines
+            if line.startswith(("+", "-", " "))
+            and not line.startswith(("+++", "---"))
+        ]
+        if not file_lines:
+            return []
+        diff_widgets.append(
+            Label(DiffStrings.file_diff_lines, classes=Tcss.sub_section_label)
+        )
         for line in file_lines:
             if line.startswith("-"):
-                static_list.append(Static(line, classes=Tcss.style_removed))
+                diff_widgets.append(Static(line, classes=Tcss.removed))
             elif line.startswith("+"):
-                static_list.append(Static(line, classes=Tcss.style_added))
+                diff_widgets.append(Static(line, classes=Tcss.added))
             elif line.startswith(" "):
-                static_list.append(Static(line, classes=Tcss.style_context))
+                diff_widgets.append(Static(line, classes=Tcss.context))
             lines += 1
             if lines >= lines_limit:
-                static_list.append(Static(" "))
-                static_list.append(Static(DiffStrings.truncated))
+                diff_widgets.append(Static(DiffStrings.truncated))
                 break
-        diff_data = DiffData(
-            diff_cmd_label=diff_output.pretty_cmd, diff_lines=static_list
+        return diff_widgets
+
+    def create_status_widgets(self, node_data: NodeData) -> DiffWidgets:
+        diff_widgets: DiffWidgets = []
+        status_paths = (
+            self.app.paths.list_apply_status_paths_in(node_data.path)
+            if self.ids.canvas_name == TabName.apply
+            else self.app.paths.list_re_add_status_paths_in(node_data.path)
         )
-        return diff_data
+        if status_paths:
+            diff_widgets.append(
+                Label(f"Managed directory [$text-accent]{node_data.path}[/].")
+            )
+        for path, status in status_paths.items():
+            if status == StatusCode.Added:
+                diff_widgets.append(
+                    Static(f"{path} (Added)", classes=Tcss.added)
+                )
+            elif status == StatusCode.Deleted:
+                diff_widgets.append(
+                    Static(f"{path} (Deleted)", classes=Tcss.removed)
+                )
+            elif status == StatusCode.Modified:
+                diff_widgets.append(
+                    Static(f"{path} (Modified)", classes=Tcss.changed)
+                )
+            elif status == StatusCode.No_Change:
+                diff_widgets.append(
+                    Static(f"{path} (Unchanged)", classes=Tcss.unchanged)
+                )
+            elif status == StatusCode.fake_no_status:
+                diff_widgets.append(
+                    Static(f"{path} (Fake No Status)", classes=Tcss.unchanged)
+                )
+            else:
+                self.app.notify(
+                    (
+                        "DiffView self.create_status_paths_widgets, unhandled "
+                        f"condition for {path} ({status})"
+                    ),
+                    severity="error",
+                )
+        diff_widgets.append(Static(DiffStrings.contains_no_status_paths))
+        return diff_widgets
 
     def watch_node_data(self) -> None:
         if self.node_data is None:
             return
-        diff_info = self.query_one(self.ids.container.diff_info_q, DiffInfo)
-        diff_info.display = False
-        self.diff_lines.display = False
         if self.app.dest_dir is None:
             raise ValueError(
                 "self.app.dest_dir is None in DiffView.watch_node_data"
@@ -366,78 +383,37 @@ class DiffView(Vertical, AppType):
         self.border_title = (
             f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         )
-        diff_data: DiffData = self.create_diff_data()
-
-        info_lines: list[Static] = []
+        diff_output: "CommandResult" = self.app.cmd.read(
+            self.diff_cmd, path_arg=self.node_data.path
+        )
+        diff_lines = diff_output.std_out.splitlines()
+        diff_widgets: DiffWidgets = []
+        diff_widgets.extend(self.create_mode_diff_widgets(diff_lines))
+        diff_widgets.extend(self.create_path_diff_widgets(diff_lines))
+        diff_widgets.extend(self.create_file_diff_widgets(diff_lines))
+        if diff_widgets:
+            self.mount_new_diff_widgets(diff_widgets)
+            return
         if (
             self.node_data.path_kind == PathKind.FILE
+            and self.node_data.path in self.app.paths.files
             and self.node_data.path not in self.app.paths.status_files
         ):
-            diff_info.display = True
-            diff_info.info_lines = [
-                Static(f"Managed file [$text-accent]{self.node_data.path}[/]"),
-                Static(f"{DiffStrings.no_file_status}"),
-            ]
-        elif (
-            self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.paths.status_files
-        ):
-            diff_info.display = False
-            self.diff_lines.display = True
-            self.diff_lines.diff_data = diff_data
+            self.mount_file_no_status_widgets(self.node_data.path)
             return
-
-        # Handle directory status paths
-        status_paths = (
-            self.app.paths.list_apply_status_paths_in(self.node_data.path)
-            if self.ids.canvas_name == TabName.apply
-            else self.app.paths.list_re_add_status_paths_in(
-                self.node_data.path
-            )
-        )
-        for path, status in status_paths.items():
-            if status == StatusCode.Added:
-                info_lines.append(
-                    Static(f"{path} (Added)", classes=Tcss.style_added)
-                )
-            elif status == StatusCode.Deleted:
-                info_lines.append(
-                    Static(f"{path} (Deleted)", classes=Tcss.style_removed)
-                )
-            elif status == StatusCode.Modified:
-                info_lines.append(
-                    Static(f"{path} (Modified)", classes=Tcss.style_changed)
-                )
-            elif status == StatusCode.No_Change:
-                info_lines.append(
-                    Static(f"{path} (Unchanged)", classes=Tcss.style_unchanged)
-                )
-            elif status == StatusCode.fake_no_status:
-                info_lines.append(
-                    Static(
-                        f"{path} (Fake No Status)",
-                        classes=Tcss.style_unchanged,
-                    )
-                )
-            else:
-                info_lines.append(Static(f"{path} ({status})"))
-        diff_info.display = True
-        diff_info.info_lines = info_lines
-
         if (
             self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path not in self.app.paths.status_dirs
+            and self.node_data.path in self.app.paths.dirs
         ):
-            info_lines.append(
-                Static(
-                    f"Managed directory [$text-accent]{self.node_data.path}[/]."
-                )
+            self.mount_dir_no_status_widgets(self.node_data.path)
+            return
+        # Notify unhandled condition with function, class and module name
+        self.notify(
+            (
+                f"Unhandled condition in {self.name} in "
+                f"{self.__class__.__name__} in module {__name__}."
             )
-            info_lines.append(Static(f"{DiffStrings.no_dir_status}"))
-
-        if len(diff_data.diff_lines) > 0:
-            self.diff_lines.display = True
-            self.diff_lines.diff_data = diff_data
+        )
 
 
 class GitLogDataTable(DataTable[Text], AppType):

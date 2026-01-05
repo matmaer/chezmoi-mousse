@@ -146,12 +146,6 @@ class ContainerIds:
         self.debug_log_q = f"#{self.debug_log}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
-        self.diff_info = ids.container_id(name=ContainerName.diff_info)
-        self.diff_info_q = f"#{self.diff_info}"
-        self.diff_lines = ids.container_id(name=ContainerName.diff_lines)
-        self.diff_lines_q = f"#{self.diff_lines}"
-        self.diff_output = ids.container_id(name=ContainerName.diff_output)
-        self.diff_output_q = f"#{self.diff_output}"
         self.doctor = ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
         self.git_log_path = ids.container_id(name=ContainerName.git_log_path)

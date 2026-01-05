@@ -43,7 +43,6 @@ from ._switch_data import Switches
 from ._type_checking import (
     AppType,
     CmdResults,
-    DiffData,
     InitCloneData,
     NodeData,
     ParsedConfig,
@@ -94,7 +93,6 @@ __all__ = [
     # ._type_checking
     "AppType",
     "CmdResults",
-    "DiffData",
     "InitCloneData",
     "NodeData",
     "ParsedConfig",

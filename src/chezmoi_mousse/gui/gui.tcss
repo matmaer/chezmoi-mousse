@@ -49,11 +49,41 @@
   min-width: 78;
 }
 
+.operate_button_group {
+  dock: bottom;
+  .operate_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-top: wide $primary-darken-3;
+    border-bottom: wide $surface;
+    color: $primary-lighten-3;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+    &:hover {
+      text-style: none;
+      color: $accent;
+      border-top: wide $accent-darken-3;
+    }
+    &:focus {
+      text-style: none;
+    }
+  }
+}
+
+.sub_section_label {
+  background-tint: $panel;
+  background: $panel;
+  border-top: block $panel;
+  color: $text-success;
+  text-align: center;
+  width: 1fr;
+}
+
 .main_section_label {
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;
-  border-bottom: inner $surface-lighten-1;
-  border-top: inner $surface-lighten-1;
+  border: block $surface-lighten-1;
   color: $text-accent;
   text-align: center;
   width: 1fr;
@@ -71,44 +101,6 @@
     background: $surface-lighten-1;
     background-tint: $surface-lighten-1;
   }
-}
-
-.style_added {
-  color: $text-success;
-  background: $success-muted;
-  background-tint: $success-muted;
-}
-
-.style_changed {
-  color: $text-warning;
-  background: $warning-muted;
-  background-tint: $warning-muted;
-}
-
-.style_context{
-  color: $text-disabled;
-  background: $surface;
-  background-tint: $surface;
-}
-
-.style_removed {
-  color: $text-error;
-  background: $error-muted;
-  background-tint: $error-muted;
-}
-
-.style_unchanged {
-  color: $text-primary;
-  background: $primary-muted;
-  background-tint: $primary-muted;
-}
-
-.sub_section_label {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  color: $text-success;
-  text-align: center;
-  width: 1fr;
 }
 
 .tab_left_vertical {
@@ -318,28 +310,6 @@ LogsTabButtons, TreeTabButtons, ViewTabButtons {
   }
 }
 
-.operate_button_group {
-  dock: bottom;
-  .operate_button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-top: wide $primary-darken-3;
-    border-bottom: wide $surface;
-    color: $primary-lighten-3;
-    margin: 0 1;
-    text-style: none;
-    width: 1fr;
-    &:hover {
-      text-style: none;
-      color: $accent;
-      border-top: wide $accent-darken-3;
-    }
-    &:focus {
-      text-style: none;
-    }
-  }
-}
-
 OperateMode {
   background-tint: $surface;
   background: $surface;
@@ -354,6 +324,38 @@ OperateMode {
     &>CommandOutput {
       height: auto;
     }
+  }
+}
+
+Static {
+  &.added {
+    color: $text-success;
+    background: $success-muted;
+    background-tint: $success-muted;
+  }
+
+  &.changed {
+    color: $text-warning;
+    background: $warning-muted;
+    background-tint: $warning-muted;
+  }
+
+  &.context{
+    color: $text-disabled;
+    background: $surface-lighten-1;
+    background-tint: $surface-lighten-1;
+  }
+
+  &.removed {
+    color: $text-error;
+    background: $error-muted;
+    background-tint: $error-muted;
+  }
+
+  &.unchanged {
+    color: $text-primary;
+    background: $primary-muted;
+    background-tint: $primary-muted;
   }
 }
 

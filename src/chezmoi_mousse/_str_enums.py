@@ -123,7 +123,7 @@ class OperateStrings(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    in_dest_dir_click_path = "Select a file or directory to operate on."
+    in_dest_dir_click_path = "<- Select a file or directory to operate on."
     destroy_path_info = (
         "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
         "SURE YOU HAVE A BACKUP![/]"

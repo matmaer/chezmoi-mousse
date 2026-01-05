@@ -23,9 +23,6 @@ class ContainerName(StrEnum):
     contents_info = auto()
     debug_log = auto()
     diff = auto()
-    diff_info = auto()
-    diff_lines = auto()
-    diff_output = auto()
     doctor = auto()
     git_log_global = auto()
     git_log_path = auto()
@@ -127,10 +124,13 @@ class TabName(StrEnum):
 
 
 class Tcss(StrEnum):
+    added = auto()
     border_title_top = auto()
+    changed = auto()
     changes_enabled_color = auto()
     cmd_output = auto()
     content_switcher_left = auto()
+    context = auto()
     doctor_table = auto()
     flat_button = auto()
     flat_section_label = auto()
@@ -145,17 +145,14 @@ class Tcss(StrEnum):
     operate_button_group = auto()
     operate_info = auto()
     pw_mgr_group = auto()
+    removed = auto()
     single_button_vertical = auto()
     single_switch = auto()
-    style_added = auto()
-    style_changed = auto()
-    style_context = auto()
-    style_removed = auto()
-    style_unchanged = auto()
     sub_section_label = auto()
     tab_button = auto()
     tab_left_vertical = auto()
     tree_widget = auto()
+    unchanged = auto()
 
     # add a property to return the name with a dot prefix
     @property

@@ -8,7 +8,6 @@ from ._chezmoi_command import CommandResult, WriteCmd
 from ._str_enum_names import PathKind
 
 if TYPE_CHECKING:
-    from textual.widgets import Static
     from textual.widgets.tree import TreeNode
 
     from .gui.textual_app import ChezmoiGUI
@@ -20,7 +19,6 @@ type Value = str | dict[str, "Value"]
 __all__ = [
     "AppType",
     "CmdResults",
-    "DiffData",
     "ExpandedNodeData",
     "InitCloneData",
     "NodeData",
@@ -32,12 +30,6 @@ __all__ = [
 
 class AppType:
     app: ChezmoiGUI
-
-
-@dataclass(slots=True)
-class DiffData:
-    diff_cmd_label: str
-    diff_lines: list[Static]
 
 
 @dataclass(slots=True)
