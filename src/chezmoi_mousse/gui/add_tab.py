@@ -237,8 +237,6 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(TabsBase, AppType):
 
-    # destDir: Path | None = None
-
     def __init__(self) -> None:
         super().__init__(ids=IDS.add)
         self.current_node: "NodeData | None" = None
