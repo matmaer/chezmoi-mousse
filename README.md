@@ -93,22 +93,22 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 > Note: see `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
 
 - [ ] `chezmoi add` directory
-- [ ] `chezmoi add` file
+- [x] `chezmoi add` file
 - [ ] `chezmoi archive`
 - [ ] `chezmoi apply` directory
-- [ ] `chezmoi apply` file
+- [x] `chezmoi apply` file
 - [ ] `chezmoi destroy` directory
-- [ ] `chezmoi destroy` file
+- [x] `chezmoi destroy` file
 - [ ] `chezmoi edit`
 - [ ] `chezmoi forget` directory
-- [ ] `chezmoi forget` file
+- [x] `chezmoi forget` file
 - [ ] `chezmoi generate`
 - [ ] `chezmoi import`
-- [ ] `chezmoi init` new repository
+- [x] `chezmoi init` new repository
 - [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
 - [ ] `chezmoi re-add` directory
-- [ ] `chezmoi re-add` file
+- [x] `chezmoi re-add` file
 
 ### Read Operations
 
