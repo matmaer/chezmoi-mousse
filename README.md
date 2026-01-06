@@ -49,9 +49,13 @@ If Python 3.13 with the latest `textual` version is available, and the module is
 
 ![App screenshot](screenshots/app_log_example.png)
 
+### Operate review example
+
+![App screenshot](screenshots/operate_review_example.png)
+
 ### Operate result example
 
-![App screenshot](screenshots/operate_resut_example.png)
+![App screenshot](screenshots/operate_result_example.png)
 
 ## Test
 
