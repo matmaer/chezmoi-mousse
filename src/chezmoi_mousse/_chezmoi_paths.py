@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._str_enum_names import StatusCode
+# from ._str_enum_names import StatusCode
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult
@@ -14,13 +15,91 @@ if TYPE_CHECKING:
 __all__ = ["ChezmoiPaths"]
 
 
+class StatusCode(StrEnum):
+    # Real status codes from chezmoi
+    Added = "A"
+    Deleted = "D"
+    Modified = "M"
+    No_Change = " "
+    # Run = "R" TODO: implement
+
+    # Fake status codes for internal use
+    fake_dest_dir = "F"  # used for destDir path
+    fake_status = "S"  # used for re-add dir paths
+    fake_no_status = "X"  # (no status depending on apply or re-add context)
+    fake_unmanaged = "U"
+
+
+@dataclass(slots=True)
+class PathData:
+    found: bool
+    status: StatusCode
+
+
+@dataclass(slots=True)
+class DirData:
+    found: bool
+    status: StatusCode
+    files: dict[Path, PathData] = field(default_factory=dict[Path, PathData])
+
+
 @dataclass(slots=True)
 class ChezmoiPaths:
-
+    dest_dir: Path
     managed_dirs_result: CommandResult
     managed_files_result: CommandResult
     status_dirs_result: CommandResult
     status_files_result: CommandResult
+    apply_dirs: dict[Path, DirData] = field(
+        init=False, default_factory=dict[Path, DirData]
+    )
+    re_add_dirs: dict[Path, DirData] = field(
+        init=False, default_factory=dict[Path, DirData]
+    )
+
+    def __post_init__(self) -> None:
+        """Populate apply_dirs and re_add_dirs with cached DirData for each
+        managed directory and dest_dir."""
+        dirs_to_process = [self.dest_dir] + list(self.dirs)
+
+        for dir_path in dirs_to_process:
+            # Populate apply_dirs
+            apply_status = StatusCode(
+                self.apply_status_dirs.get(dir_path, StatusCode.fake_no_status)
+            )
+            apply_files: dict[Path, PathData] = {}
+            for file_path in self.files:
+                if file_path.parent == dir_path:
+                    status = self.apply_status_files.get(
+                        file_path, StatusCode.fake_no_status
+                    )
+                    apply_files[file_path] = PathData(
+                        found=file_path.exists(), status=StatusCode(status)
+                    )
+            self.apply_dirs[dir_path] = DirData(
+                found=dir_path.exists(), status=apply_status, files=apply_files
+            )
+
+            # Populate re_add_dirs
+            re_add_status = StatusCode(
+                self.re_add_status_dirs.get(
+                    dir_path, StatusCode.fake_no_status
+                )
+            )
+            re_add_files: dict[Path, PathData] = {}
+            for file_path in self.files:
+                if file_path.parent == dir_path:
+                    status = self.re_add_status_files.get(
+                        file_path, StatusCode.fake_no_status
+                    )
+                    re_add_files[file_path] = PathData(
+                        found=file_path.exists(), status=StatusCode(status)
+                    )
+            self.re_add_dirs[dir_path] = DirData(
+                found=dir_path.exists(),
+                status=re_add_status,
+                files=re_add_files,
+            )
 
     @property
     def dirs(self) -> PathList:
@@ -144,8 +223,8 @@ class ChezmoiPaths:
 
     def apply_status_dirs_in(self, dir_path: Path) -> PathDict:
         return {
-            path: status
-            for path, status in self.apply_status_dirs.items()
+            path: self.apply_dirs[path].status
+            for path in self.apply_dirs
             if path.parent == dir_path
         }
 
@@ -165,23 +244,25 @@ class ChezmoiPaths:
 
     def re_add_status_dirs_in(self, dir_path: Path) -> PathDict:
         return {
-            path: status
-            for path, status in self.re_add_status_dirs.items()
+            path: self.re_add_dirs[path].status
+            for path in self.re_add_dirs
             if path.parent == dir_path
         }
 
     def apply_files_without_status_in(self, dir_path: Path) -> PathDict:
         return {
-            path: status
-            for path, status in self.apply_files_without_status.items()
-            if path.parent == dir_path
+            path: pathdata.status
+            for path, pathdata in self.apply_dirs[dir_path].files.items()
+            if pathdata.status
+            in (StatusCode.fake_no_status, StatusCode.No_Change)
         }
 
     def re_add_files_without_status_in(self, dir_path: Path) -> PathDict:
         return {
-            path: status
-            for path, status in self.re_add_files_without_status.items()
-            if path.parent == dir_path
+            path: pathdata.status
+            for path, pathdata in self.re_add_dirs[dir_path].files.items()
+            if pathdata.status
+            in (StatusCode.fake_no_status, StatusCode.No_Change)
         }
 
     def has_apply_status_paths_in(self, dir_path: Path) -> bool:
