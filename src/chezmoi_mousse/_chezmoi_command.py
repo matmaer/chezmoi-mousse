@@ -6,11 +6,10 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 from ._app_state import AppState
-from ._chezmoi_paths import ChezmoiPaths, StatusCode
+from ._chezmoi_paths import ChezmoiPaths
 from ._str_enums import OperateStrings
 
 if TYPE_CHECKING:
-    from ._type_checking import PathDict
     from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
 
 __all__ = [
@@ -357,11 +356,3 @@ class ChezmoiCommand:
             ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
             ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
         return command_result
-
-    def list_unmanaged_paths_in(self, dir_path: Path) -> "PathDict":
-        unmanaged_paths = self.read(ReadCmd.unmanaged, path_arg=dir_path)
-        return {
-            Path(line): StatusCode.fake_unmanaged
-            for line in unmanaged_paths.std_out.splitlines()
-            if Path(line).is_relative_to(dir_path)
-        }
