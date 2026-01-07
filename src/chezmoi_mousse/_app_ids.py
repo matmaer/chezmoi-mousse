@@ -339,12 +339,14 @@ class FlatButtonIds:
         self.apply_help_q = f"#{self.apply_help}"
         self.cat_config = ids.flat_button_id(btn=FlatBtn.cat_config)
         self.cat_config_q = f"#{self.cat_config}"
+        self.debug_dom_nodes = ids.flat_button_id(btn=FlatBtn.debug_dom_nodes)
+        self.debug_dom_nodes_q = f"#{self.debug_dom_nodes}"
+        self.debug_log = ids.flat_button_id(btn=FlatBtn.debug_log)
+        self.debug_log_q = f"#{self.debug_log}"
         self.debug_test_paths = ids.flat_button_id(
             btn=FlatBtn.debug_test_paths
         )
         self.debug_test_paths_q = f"#{self.debug_test_paths}"
-        self.debug_log = ids.flat_button_id(btn=FlatBtn.debug_log)
-        self.debug_log_q = f"#{self.debug_log}"
         self.diagram = ids.flat_button_id(btn=FlatBtn.diagram)
         self.diagram_q = f"#{self.diagram}"
         self.doctor = ids.flat_button_id(btn=FlatBtn.doctor)
@@ -385,6 +387,8 @@ class LoggerIds:
         self.contents_q = f"#{self.contents}"
         self.debug = ids.view_id(view=LogName.debug_logger)
         self.debug_q = f"#{self.debug}"
+        self.dom_nodes = ids.view_id(view=LogName.dom_node_logger)
+        self.dom_nodes_q = f"#{self.dom_nodes}"
         self.diff = ids.view_id(view=LogName.diff_logger)
         self.diff_q = f"#{self.diff}"
         self.operate = ids.view_id(view=LogName.operate_logger)
@@ -486,16 +490,16 @@ class ViewIds:
         # Debug tab
         self.debug_log = ids.view_id(view=ViewName.debug_log_view)
         self.debug_log_q = f"#{self.debug_log}"
-        self.debug_test_paths = ids.view_id(
-            view=ViewName.debug_test_paths_view
-        )
-        self.debug_test_paths_q = f"#{self.debug_test_paths}"
+        self.test_paths = ids.view_id(view=ViewName.debug_test_paths_view)
+        self.test_paths_q = f"#{self.test_paths}"
 
         # Views or shared across canvases
         self.pw_mgr_info = ids.view_id(view=ViewName.pw_mgr_info_view)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.template_data = ids.view_id(view=ViewName.template_data_view)
         self.template_data_q = f"#{self.template_data}"
+        self.test_paths = ids.view_id(view=ViewName.debug_test_paths_view)
+        self.test_paths_q = f"#{self.test_paths}"
 
 
 IDS = CanvasIds()

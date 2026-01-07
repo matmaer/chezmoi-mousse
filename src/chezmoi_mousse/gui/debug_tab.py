@@ -5,11 +5,11 @@ from pathlib import Path
 from faker import Faker
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, HorizontalGroup
-from textual.widgets import Button, ContentSwitcher, Static
+from textual.containers import Horizontal, HorizontalGroup, Vertical
+from textual.widgets import Button, ContentSwitcher, RichLog, Static
 from tomlkit import document, dumps, table  # type: ignore[import-untyped]
 
-from chezmoi_mousse import IDS, FlatBtn, Tcss
+from chezmoi_mousse import IDS, AppType, FlatBtn, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.loggers import DebugLog
@@ -47,68 +47,149 @@ class DebugBtnLabels(StrEnum):
     remove_paths = "Remove Test Paths"
 
 
-class DebugTabSwitcher(ContentSwitcher):
-    def __init__(self):
-        super().__init__(
-            id=IDS.debug.switcher.debug_tab,
-            initial=IDS.debug.static.debug_test_paths,
-        )
+# class DebugTabSwitcher(Horizontal, AppType):
 
-    def compose(self) -> ComposeResult:
-        yield Static(id=IDS.debug.static.debug_test_paths)
-        yield DebugLog(ids=IDS.debug)
+#     def compose(self) -> ComposeResult:
+#         yield FlatButtonsVertical(
+#             ids=IDS.debug,
+#             buttons=(
+#                 FlatBtn.debug_test_paths,
+#                 FlatBtn.debug_log,
+#                 FlatBtn.debug_dom_nodes,
+#             ),
+#         )
+#         with ContentSwitcher(
+#             id=IDS.debug.switcher.debug_tab, initial=IDS.debug.view.test_paths
+#         ):
+#             yield Vertical(
+#                 Static(id=IDS.debug.static.debug_test_paths),
+#                 HorizontalGroup(
+#                     Button(
+#                         classes=Tcss.operate_button,
+#                         label=DebugBtnLabels.create_paths,
+#                     ),
+#                     Button(
+#                         classes=Tcss.operate_button,
+#                         label=DebugBtnLabels.remove_paths,
+#                     ),
+#                     Button(
+#                         classes=Tcss.operate_button,
+#                         label=DebugBtnLabels.toggle_diffs,
+#                     ),
+#                     classes=Tcss.operate_button_group,
+#                 ),
+#                 id=IDS.debug.view.test_paths,
+#                 classes=Tcss.border_title_top,
+#             )
+#             yield DebugLog(ids=IDS.debug)
+#             yield RichLog(
+#                 id=IDS.debug.logger.dom_nodes,
+#                 auto_scroll=False,
+#                 highlight=True,
+#                 classes=Tcss.border_title_top,
+#             )
 
-    def on_mount(self) -> None:
-        self.test_paths_static = self.query_one(
-            IDS.debug.static.debug_test_paths_q, Static
-        )
-        self.test_paths_static.add_class(Tcss.border_title_top)
-        self.test_paths_static.border_title = " Test Paths "
-        self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
-        self.debug_log.add_class(Tcss.border_title_top)
-        self.debug_log.border_title = " Debug Log "
+#     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
+#     def switch_content(self, event: Button.Pressed) -> None:
+#         event.stop()
+#         switcher = self.query_one(
+#             IDS.debug.switcher.debug_tab_q, ContentSwitcher
+#         )
+#         if event.button.id == IDS.debug.flat_btn.debug_log:
+#             switcher.current = IDS.debug.logger.debug
+#         elif event.button.id == IDS.debug.flat_btn.debug_test_paths:
+#             switcher.current = IDS.debug.view.test_paths
+#         elif event.button.id == IDS.debug.flat_btn.debug_dom_nodes:
+#             switcher.current = IDS.debug.logger.dom_nodes
 
 
-class DebugTab(Horizontal):
+class DebugTab(Horizontal, AppType):
     def __init__(self):
         super().__init__()
         self.test_manager = TestPathManager()
 
     def compose(self) -> ComposeResult:
+
         yield FlatButtonsVertical(
             ids=IDS.debug,
-            buttons=(FlatBtn.debug_test_paths, FlatBtn.debug_log),
+            buttons=(
+                FlatBtn.debug_test_paths,
+                FlatBtn.debug_log,
+                FlatBtn.debug_dom_nodes,
+            ),
         )
-        yield DebugTabSwitcher()
-        yield HorizontalGroup(
-            Button(
-                classes=Tcss.operate_button, label=DebugBtnLabels.create_paths
-            ),
-            Button(
-                classes=Tcss.operate_button, label=DebugBtnLabels.remove_paths
-            ),
-            Button(
-                classes=Tcss.operate_button, label=DebugBtnLabels.toggle_diffs
-            ),
-            classes=Tcss.operate_button_group,
-        )
+        with ContentSwitcher(
+            id=IDS.debug.switcher.debug_tab, initial=IDS.debug.view.test_paths
+        ):
+            yield Vertical(
+                Static(id=IDS.debug.static.debug_test_paths),
+                HorizontalGroup(
+                    Button(
+                        classes=Tcss.operate_button,
+                        label=DebugBtnLabels.create_paths,
+                    ),
+                    Button(
+                        classes=Tcss.operate_button,
+                        label=DebugBtnLabels.remove_paths,
+                    ),
+                    Button(
+                        classes=Tcss.operate_button,
+                        label=DebugBtnLabels.toggle_diffs,
+                    ),
+                    classes=Tcss.operate_button_group,
+                ),
+                id=IDS.debug.view.test_paths,
+                classes=Tcss.border_title_top,
+            )
+            yield DebugLog(ids=IDS.debug)
+            yield RichLog(
+                id=IDS.debug.logger.dom_nodes,
+                auto_scroll=False,
+                highlight=True,
+                classes=Tcss.border_title_top,
+            )
 
     def on_mount(self) -> None:
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
         self.test_paths_static.update(self.test_manager.existing_test_paths())
+        self.test_paths_static.border_title = " Test Paths "
+        self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
+        self.debug_log.add_class(Tcss.border_title_top)
+        self.debug_log.border_title = " Debug Log "
+        self.dom_node_logger = self.query_one(
+            IDS.debug.logger.dom_nodes_q, RichLog
+        )
+        self.dom_node_logger.border_title = " DOM Nodes "
+        self.switcher = self.query_one(
+            IDS.debug.switcher.debug_tab_q, ContentSwitcher
+        )
+
+        self.app.call_later(self.log_dom_nodes)
+
+    def log_dom_nodes(self) -> None:
+        dom_items = [
+            item
+            for item in self.app.walk_children(with_self=True, method="depth")
+        ]
+        self.dom_node_logger.write(f"DOMNode count: {len(dom_items)}\n")
+        nodes_with_id = [item for item in dom_items if item.id is not None]
+        nodes_without_id = [item for item in dom_items if item.id is None]
+        for item in sorted(nodes_with_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+        for item in sorted(nodes_without_id, key=str):
+            self.dom_node_logger.write(f"{item}")
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(
-            IDS.debug.switcher.debug_tab_q, DebugTabSwitcher
-        )
         if event.button.id == IDS.debug.flat_btn.debug_log:
-            switcher.current = IDS.debug.logger.debug
+            self.switcher.current = IDS.debug.logger.debug
         elif event.button.id == IDS.debug.flat_btn.debug_test_paths:
-            switcher.current = IDS.debug.static.debug_test_paths
+            self.switcher.current = IDS.debug.view.test_paths
+        elif event.button.id == IDS.debug.flat_btn.debug_dom_nodes:
+            self.switcher.current = IDS.debug.logger.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:

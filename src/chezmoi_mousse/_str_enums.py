@@ -25,6 +25,7 @@ class FlatBtn(StrEnum):
     cat_config = "Cat Config"
     debug_test_paths = "Test Paths"
     debug_log = "Debug Log"
+    debug_dom_nodes = "DOM Nodes"
     diagram = "Diagram"
     doctor = "Doctor"
     exit_app = "Exit App"
