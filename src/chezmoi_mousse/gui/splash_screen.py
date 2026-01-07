@@ -82,11 +82,7 @@ doctor: "CommandResult | None" = None
 dump_config: "CommandResult | None" = None
 git_log: "CommandResult | None" = None
 ignored: "CommandResult | None" = None
-managed_dirs: "CommandResult | None" = None
-managed_files: "CommandResult | None" = None
 parsed_config: "ParsedConfig | None" = None
-status_dirs: "CommandResult | None" = None
-status_files: "CommandResult | None" = None
 template_data: "CommandResult | None" = None
 verify: "CommandResult | None" = None
 
@@ -392,7 +388,6 @@ class SplashScreen(Screen[None], AppType):
             ignored=globals()["ignored"],
             managed_dirs=globals()["managed_dirs"],
             managed_files=globals()["managed_files"],
-            status_dirs=globals()["status_dirs"],
             status_files=globals()["status_files"],
             template_data=globals()["template_data"],
             verify=globals()["verify"],

@@ -12,9 +12,7 @@ if TYPE_CHECKING:
 
     from .gui.textual_app import ChezmoiGUI
 
-type PathDict = dict[Path, str]
-type PathList = list[Path]
-type Value = str | dict[str, "Value"]
+type Value = str | dict[str, "Value"]  # recursive type alias
 
 __all__ = [
     "AppType",
@@ -23,8 +21,6 @@ __all__ = [
     "InitCloneData",
     "NodeData",
     "ParsedConfig",
-    "PathDict",
-    "PathList",
 ]
 
 
@@ -73,7 +69,7 @@ class CmdResults:
     ignored: CommandResult | None = None
     managed_dirs: CommandResult | None = None
     managed_files: CommandResult | None = None
-    status_dirs: CommandResult | None = None
+    # status_dirs: CommandResult | None = None
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
     verify: CommandResult | None = None

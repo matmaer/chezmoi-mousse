@@ -266,6 +266,15 @@ class TreeBase(Tree[NodeData], AppType):
                 "tree_node data is None in add_dirs_without_status_in"
             )
         if self.ids.canvas_name == TabName.apply:
+            if (
+                not (
+                    self.app.paths.has_apply_status_paths_in(
+                        dir_path=tree_node.data.path
+                    )
+                )
+                and tree_node.data.path not in self.app.paths.apply_dirs
+            ):
+                return
             dir_paths: "PathDict" = {
                 path: self.app.paths.apply_dirs[path].status
                 for path in self.app.paths.apply_dirs
@@ -273,7 +282,16 @@ class TreeBase(Tree[NodeData], AppType):
                 and self.app.paths.apply_dirs[path].status
                 == StatusCode.fake_no_status
             }
-        else:
+        elif self.ids.canvas_name == TabName.re_add:
+            if (
+                not (
+                    self.app.paths.has_re_add_status_paths_in(
+                        dir_path=tree_node.data.path
+                    )
+                )
+                and tree_node.data.path not in self.app.paths.re_add_dirs
+            ):
+                return
             dir_paths: "PathDict" = {
                 path: self.app.paths.re_add_dirs[path].status
                 for path in self.app.paths.re_add_dirs
@@ -281,6 +299,10 @@ class TreeBase(Tree[NodeData], AppType):
                 and self.app.paths.re_add_dirs[path].status
                 == StatusCode.fake_no_status
             }
+        else:
+            raise ValueError(
+                "Invalid canvas_name in add_dirs_without_status_in"
+            )
         for dir_path, status_code in dir_paths.items():
             if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
@@ -421,10 +443,7 @@ class ListTree(TreeBase):
             raise ValueError(
                 "tree_node data is None in add_files_without_status_in"
             )
-        if self.ids.canvas_name == TabName.apply:
-            paths: "PathDict" = self.app.paths.apply_files_without_status
-        else:
-            paths: "PathDict" = self.app.paths.re_add_files_without_status
+        paths: "PathDict" = self.app.paths.files_without_status
 
         for file_path, status_code in paths.items():
             if file_path in self.get_leaves_in(tree_node):

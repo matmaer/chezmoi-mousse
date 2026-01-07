@@ -11,7 +11,7 @@ from ._chezmoi_command import (
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPaths
+from ._chezmoi_paths import ChezmoiPaths, PathDict
 from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
 from ._str_enum_names import (
@@ -38,7 +38,6 @@ from ._type_checking import (
     InitCloneData,
     NodeData,
     ParsedConfig,
-    PathDict,
 )
 
 __all__ = [
