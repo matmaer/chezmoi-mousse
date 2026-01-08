@@ -51,9 +51,7 @@ class ContentsView(Vertical, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(
-            id=self.ids.container.contents, classes=Tcss.border_title_top
-        )
+        super().__init__(id=self.ids.container.contents, classes=Tcss.border_title_top)
 
     def compose(self) -> ComposeResult:
         yield VerticalGroup(
@@ -91,9 +89,7 @@ class ContentsView(Vertical, AppType):
             self.ids.label.cat_config_output_q, Label
         )
         self.cat_config_label.display = False
-        self.file_read_label = self.query_one(
-            self.ids.label.file_read_output_q, Label
-        )
+        self.file_read_label = self.query_one(self.ids.label.file_read_output_q, Label)
         self.file_read_label.display = False
         self.contents_info = self.query_one(
             self.ids.container.contents_info_q, VerticalGroup
@@ -101,9 +97,7 @@ class ContentsView(Vertical, AppType):
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
         )
-        self.contents_info_static_text.update(
-            OperateStrings.in_dest_dir_click_path
-        )
+        self.contents_info_static_text.update(OperateStrings.in_dest_dir_click_path)
 
     def open_file_and_update_ui(self, file_path: Path) -> None:
         try:
@@ -176,9 +170,7 @@ class ContentsView(Vertical, AppType):
             raise ValueError(
                 "self.app.dest_dir is None in ContentsView.watch_node_data"
             )
-        self.border_title = (
-            f" {self.node_data.path.relative_to(self.app.dest_dir)} "
-        )
+        self.border_title = f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         self.cat_config_label.display = False
         self.file_read_label.display = False
         self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
@@ -195,9 +187,7 @@ class ContentsView(Vertical, AppType):
             elif self.node_data.found is False:
                 self.write_cat_output(self.node_data.path)
             else:
-                self.app.notify(
-                    "Unexpected condition in ContentsView.watch_node_data"
-                )
+                self.app.notify("Unexpected condition in ContentsView.watch_node_data")
 
 
 class DiffStrings(StrEnum):
@@ -222,9 +212,7 @@ class DiffView(ScrollableContainer, AppType):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(
-            id=self.ids.container.diff, classes=Tcss.border_title_top
-        )
+        super().__init__(id=self.ids.container.diff, classes=Tcss.border_title_top)
         if self.ids.canvas_name == TabName.re_add:
             self.diff_cmd = ReadCmd.diff_reverse
         else:
@@ -279,9 +267,7 @@ class DiffView(ScrollableContainer, AppType):
 
     def create_path_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
         diff_widgets: DiffWidgets = []
-        path_lines = [
-            line for line in diff_lines if line.startswith(("+++", "---"))
-        ]
+        path_lines = [line for line in diff_lines if line.startswith(("+++", "---"))]
         if not path_lines:
             return []
         diff_widgets.append(
@@ -299,8 +285,7 @@ class DiffView(ScrollableContainer, AppType):
         file_lines = [
             line
             for line in diff_lines
-            if line.startswith(("+", "-", " "))
-            and not line.startswith(("+++", "---"))
+            if line.startswith(("+", "-", " ")) and not line.startswith(("+++", "---"))
         ]
         # TODO: make lines limit configurable, look into paging,
         # temporary solution
@@ -309,8 +294,7 @@ class DiffView(ScrollableContainer, AppType):
         file_lines = [
             line
             for line in diff_lines
-            if line.startswith(("+", "-", " "))
-            and not line.startswith(("+++", "---"))
+            if line.startswith(("+", "-", " ")) and not line.startswith(("+++", "---"))
         ]
         if not file_lines:
             return []
@@ -343,17 +327,11 @@ class DiffView(ScrollableContainer, AppType):
             )
         for path, status in status_paths.items():
             if status == StatusCode.Added:
-                diff_widgets.append(
-                    Static(f"{path} (Added)", classes=Tcss.added)
-                )
+                diff_widgets.append(Static(f"{path} (Added)", classes=Tcss.added))
             elif status == StatusCode.Deleted:
-                diff_widgets.append(
-                    Static(f"{path} (Deleted)", classes=Tcss.removed)
-                )
+                diff_widgets.append(Static(f"{path} (Deleted)", classes=Tcss.removed))
             elif status == StatusCode.Modified:
-                diff_widgets.append(
-                    Static(f"{path} (Modified)", classes=Tcss.changed)
-                )
+                diff_widgets.append(Static(f"{path} (Modified)", classes=Tcss.changed))
             elif status == StatusCode.No_Change:
                 diff_widgets.append(
                     Static(f"{path} (Unchanged)", classes=Tcss.unchanged)
@@ -377,12 +355,8 @@ class DiffView(ScrollableContainer, AppType):
         if self.node_data is None:
             return
         if self.app.dest_dir is None:
-            raise ValueError(
-                "self.app.dest_dir is None in DiffView.watch_node_data"
-            )
-        self.border_title = (
-            f" {self.node_data.path.relative_to(self.app.dest_dir)} "
-        )
+            raise ValueError("self.app.dest_dir is None in DiffView.watch_node_data")
+        self.border_title = f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         diff_output: "CommandResult" = self.app.cmd.read(
             self.diff_cmd, path_arg=self.node_data.path
         )
@@ -430,16 +404,11 @@ class GitLogDataTable(DataTable[Text], AppType):
         }
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
-        row: Iterable[Text] = [
-            Text(cell_text, style=style) for cell_text in columns
-        ]
+        row: Iterable[Text] = [Text(cell_text, style=style) for cell_text in columns]
         self.add_row(*row)
 
     def populate_datatable(self, command_result: "CommandResult") -> None:
-        if (
-            command_result.exit_code != 0
-            or not command_result.std_out.splitlines()
-        ):
+        if command_result.exit_code != 0 or not command_result.std_out.splitlines():
             return
         self.clear(columns=True)
         self.add_columns("COMMIT", "MESSAGE")
@@ -467,8 +436,7 @@ class GitLogPath(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Static(
-            OperateStrings.in_dest_dir_click_path,
-            id=self.ids.static.git_log_info,
+            OperateStrings.in_dest_dir_click_path, id=self.ids.static.git_log_info
         )
         yield GitLogDataTable(ids=self.ids)
 
@@ -479,13 +447,9 @@ class GitLogPath(Vertical, AppType):
         if self.path is None:
             return
         else:
-            dest_dir_info = self.query_one(
-                self.ids.static.git_log_info_q, Static
-            )
+            dest_dir_info = self.query_one(self.ids.static.git_log_info_q, Static)
             dest_dir_info.display = False
-        datatable = self.query_one(
-            self.ids.datatable.git_log_q, GitLogDataTable
-        )
+        datatable = self.query_one(self.ids.datatable.git_log_q, GitLogDataTable)
         command_result: "CommandResult" = self.app.cmd.read(
             ReadCmd.source_path, path_arg=self.path
         )
@@ -505,7 +469,5 @@ class GitLogGlobal(Vertical, AppType):
         yield GitLogDataTable(ids=self.ids)
 
     def update_global_git_log(self, command_result: "CommandResult") -> None:
-        datatable = self.query_one(
-            self.ids.datatable.git_log_q, GitLogDataTable
-        )
+        datatable = self.query_one(self.ids.datatable.git_log_q, GitLogDataTable)
         datatable.populate_datatable(command_result)

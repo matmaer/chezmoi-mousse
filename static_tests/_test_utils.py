@@ -6,9 +6,7 @@ BASE_DIR = Path("src", "chezmoi_mousse")
 
 def get_module_paths() -> list[Path]:
     py_files = [f for f in BASE_DIR.glob("**/*.py")]
-    py_files = [
-        f for f in py_files if f.name not in ("__init__.py", "__main__.py")
-    ]
+    py_files = [f for f in py_files if f.name not in ("__init__.py", "__main__.py")]
     return py_files
 
 

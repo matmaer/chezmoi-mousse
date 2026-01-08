@@ -94,14 +94,10 @@ class SSHSCP(Validator):
             The result of the validation.
         """
         if not value:
-            return ValidationResult.failure(
-                [SSHSCP.InvalidSSHSCP(self, value)]
-            )
+            return ValidationResult.failure([SSHSCP.InvalidSSHSCP(self, value)])
 
         if not self.SCP_PATTERN.match(value):
-            return ValidationResult.failure(
-                [SSHSCP.InvalidSSHSCP(self, value)]
-            )
+            return ValidationResult.failure([SSHSCP.InvalidSSHSCP(self, value)])
 
         return self.success()
 
@@ -247,14 +243,10 @@ class GUESS_SSH(Validator):
             The result of the validation.
         """
         if not value:
-            return ValidationResult.failure(
-                [GUESS_SSH.InvalidGuessSSH(self, value)]
-            )
+            return ValidationResult.failure([GUESS_SSH.InvalidGuessSSH(self, value)])
 
         if not self.VALID_PATTERN.match(value):
-            return ValidationResult.failure(
-                [GUESS_SSH.InvalidGuessSSH(self, value)]
-            )
+            return ValidationResult.failure([GUESS_SSH.InvalidGuessSSH(self, value)])
 
         return self.success()
 
@@ -366,8 +358,7 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.validation_result is None:
             self.notify(
-                "No validation result available on input submitted.",
-                severity="error",
+                "No validation result available on input submitted.", severity="error"
             )
             return
         select_widget: Select[str] = self.query_exactly_one(Select[str])
@@ -390,9 +381,7 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
                 self.notify("Valid SSH SCP-style address entered.")
                 valid_arg = True
             else:
-                self.notify(
-                    "Invalid SSH SCP-style address entered.", severity="error"
-                )
+                self.notify("Invalid SSH SCP-style address entered.", severity="error")
                 valid_arg = False
         elif select_widget.selection == "guess url":
             init_cmd = WriteCmd.init_guess_https
@@ -400,28 +389,20 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
                 self.notify("Valid input for chezmoi to guess the https URL.")
                 valid_arg = True
             else:
-                self.notify(
-                    "Invalid guess input entered for https.", severity="error"
-                )
+                self.notify("Invalid guess input entered for https.", severity="error")
                 valid_arg = False
         elif select_widget.selection == "guess ssh":
             init_cmd = WriteCmd.init_guess_ssh
             if event.validation_result.is_valid:
-                self.notify(
-                    "Valid input for chezmoi to guess the ssh address."
-                )
+                self.notify("Valid input for chezmoi to guess the ssh address.")
                 valid_arg = True
             else:
-                self.notify(
-                    "Invalid SSH SCP-style address entered.", severity="error"
-                )
+                self.notify("Invalid SSH SCP-style address entered.", severity="error")
         if init_cmd is None or valid_arg is None:
             raise ValueError("Failed to determine init clone command data.")
         self.screen.post_message(
             InitCloneCmdMsg(
-                InitCloneData(
-                    init_cmd=init_cmd, init_arg=init_arg, valid_arg=valid_arg
-                )
+                InitCloneData(init_cmd=init_cmd, init_arg=init_arg, valid_arg=valid_arg)
             )
         )
 
@@ -437,16 +418,13 @@ class InitCollapsibles(VerticalGroup, AppType):
             raise ValueError(
                 "self.app.cmd_results.template_data is None in OperateScreen"
             )
-        yield Label(
-            SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label
-        )
+        yield Label(SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(
             DoctorTable(ids=IDS.init, doctor_data=self.app.cmd_results.doctor),
             title="Doctor Output",
         )
         yield Collapsible(
-            Pretty(self.app.cmd_results.template_data),
-            title="Template Data Output",
+            Pretty(self.app.cmd_results.template_data), title="Template Data Output"
         )
 
 
@@ -463,12 +441,8 @@ class InitChezmoi(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
         yield HorizontalGroup(
-            Label(
-                SectionLabels.init_new_repo, classes=Tcss.main_section_label
-            ),
-            SwitchWithLabel(
-                ids=self.ids, switch_enum=Switches.init_repo_switch
-            ),
+            Label(SectionLabels.init_new_repo, classes=Tcss.main_section_label),
+            SwitchWithLabel(ids=self.ids, switch_enum=Switches.init_repo_switch),
         )
         yield InputInitCloneRepo()
         yield Static(id=self.ids.static.init_info)
@@ -495,9 +469,7 @@ class InitChezmoi(Screen[None], AppType):
     def update_operate_info(self) -> None:
         lines_to_write: list[str] = []
         if self.init_clone_data is None:
-            lines_to_write.append(
-                "[$text-error]No init clone input provided yet."
-            )
+            lines_to_write.append("[$text-error]No init clone input provided yet.")
         if (
             self.init_clone_data is not None
             and self.init_clone_data.init_cmd == WriteCmd.init_no_guess

@@ -72,6 +72,4 @@ def test_leftovers(py_file: Path) -> None:
 
     if visitor.debug_statements:
         statements_found = "\n".join(visitor.debug_statements)
-        pytest.fail(
-            f"Debug statements found in {py_file.name}:\n{statements_found}"
-        )
+        pytest.fail(f"Debug statements found in {py_file.name}:\n{statements_found}")

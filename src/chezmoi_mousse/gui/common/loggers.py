@@ -41,9 +41,7 @@ class LoggersBase(RichLog, AppType):
 
     def success(self, message: str) -> None:
         color = self.app.theme_variables["text-success"]
-        self.write(
-            f"{self._log_time()} [{color}]{Chars.check_mark} {message}[/]"
-        )
+        self.write(f"{self._log_time()} [{color}]{Chars.check_mark} {message}[/]")
 
     def warning(self, message: str) -> None:
         lines = message.splitlines()
@@ -89,9 +87,7 @@ class AppLog(LoggersBase, AppType):
         if self.app.dev_mode is True:
             self.warning(LogStrings.dev_mode_enabled)
 
-    def log_doctor_exit_zero_msg(
-        self, command_result: "CommandResult"
-    ) -> None:
+    def log_doctor_exit_zero_msg(self, command_result: "CommandResult") -> None:
         if "error" in command_result.std_out.lower():
             self.error(
                 f"{Chars.x_mark} One or more errors found, check the Config tab for details"
@@ -132,9 +128,7 @@ class AppLog(LoggersBase, AppType):
                 )
                 return
             else:
-                self.error(
-                    f"Exit code: {command_result.exit_code}, no stderr output"
-                )
+                self.error(f"Exit code: {command_result.exit_code}, no stderr output")
 
 
 class DebugLog(LoggersBase, AppType):
@@ -142,9 +136,7 @@ class DebugLog(LoggersBase, AppType):
     type Mro = tuple[type, ...]
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(
-            id=ids.logger.debug, markup=True, max_lines=10000, wrap=True
-        )
+        super().__init__(id=ids.logger.debug, markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
         self.ready_to_run(LogStrings.debug_log_initialized)
@@ -169,8 +161,7 @@ class DebugLog(LoggersBase, AppType):
             f"{qname}\n"
             for cls in mro
             if not any(
-                e in (qname := f"{cls.__module__}.{cls.__qualname__}")
-                for e in exclude
+                e in (qname := f"{cls.__module__}.{cls.__qualname__}") for e in exclude
             )
         )
         self.dimmed(pretty_mro)
@@ -232,9 +223,7 @@ class DebugLog(LoggersBase, AppType):
 class CmdOutput(Static, AppType):
 
     def __init__(self, command_result: "CommandResult") -> None:
-        super().__init__(
-            command_result.std_out, markup=False, classes=Tcss.cmd_output
-        )
+        super().__init__(command_result.std_out, markup=False, classes=Tcss.cmd_output)
 
 
 class OutputCollapsible(Collapsible, AppType):

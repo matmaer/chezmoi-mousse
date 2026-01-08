@@ -53,9 +53,7 @@ class LinkBtn(StrEnum):
     def link_text(self) -> str:
         if self.value == LinkBtn.chezmoi_guess.value:
             return "guess info"
-        return (
-            self.value.replace("https://", "").replace("www.", "").rstrip("/")
-        )
+        return self.value.replace("https://", "").replace("www.", "").rstrip("/")
 
 
 class TabBtn(StrEnum):
@@ -134,12 +132,8 @@ class OperateStrings(StrEnum):
         f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
         f"[$text-error]{Chars.x_mark}[/]"
     )
-    forget_path_info = (
-        "[dim]Remove from the source state, i.e. stop managing them.[/]"
-    )
-    forget_subtitle = (
-        f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
-    )
+    forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
+    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     # read_file = "[$success]Path.read()[/]"
     ready_to_run = "[$text]Ready to run[/]"
     re_add_path_info = (
@@ -148,30 +142,24 @@ class OperateStrings(StrEnum):
         "all entries that are not files are ignored. If adding a directory, it"
         " will be recursed in.[/]"
     )
-    re_add_subtitle = (
-        f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-    )
+    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     no_stdout_write_cmd_live = (
         "No output on stdout, the command was executed live, i.e. "
         "without --dry-run flag."
     )
     no_stdout_write_cmd_dry = (
-        "No output on stdout, the command was executed "
-        " with the --dry-run flag."
+        "No output on stdout, the command was executed " " with the --dry-run flag."
     )
     no_stderr_write_cmd_live = (
         "No output on stderr, the command was executed live, i.e. "
         "without --dry-run flag."
     )
     no_stderr_write_cmd_dry = (
-        "No output on stderr, the command was executed "
-        " with the --dry-run flag."
+        "No output on stderr, the command was executed " " with the --dry-run flag."
     )
     # Init screen info strings
     guess_https = "Let chezmoi guess the best URL to clone from."
-    guess_ssh = (
-        "Let chezmoi guess the best ssh scp-style address to clone from."
-    )
+    guess_ssh = "Let chezmoi guess the best ssh scp-style address to clone from."
     init_new_info = (
         "Ready to initialize a new chezmoi repository. Toggle the "
         "[$foreground-darken-1 on $surface-lighten-1] "
@@ -195,9 +183,9 @@ class OperateStrings(StrEnum):
 
 
 class SectionLabels(StrEnum):
-    """Strings used for textual Label classes except for the help_tab.py module
-    which has its own StrEnum class "HelpSections" and the install_help.py
-    module which has its own StrEnum class "InstallHelpStrings"."""
+    """Strings used for textual Label classes except for the help_tab.py module which
+    has its own StrEnum class "HelpSections" and the install_help.py module which has
+    its own StrEnum class "InstallHelpStrings"."""
 
     file_read_output = "File Contents"
     cat_config_output = "Cat Config Output"

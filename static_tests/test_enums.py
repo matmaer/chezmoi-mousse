@@ -2,11 +2,7 @@ import ast
 from typing import NamedTuple
 
 import pytest
-from _test_utils import (
-    get_module_ast_class_defs,
-    get_module_ast_tree,
-    get_module_paths,
-)
+from _test_utils import get_module_ast_class_defs, get_module_ast_tree, get_module_paths
 
 type AstClassDefs = list[ast.ClassDef]
 
@@ -41,10 +37,7 @@ for file_path in MODULE_PATHS:
     # Store module-level nodes
     module_tree = get_module_ast_tree(file_path)
     module_data_list.append(
-        ModuleData(
-            module_path=str(file_path),
-            module_nodes=list(ast.walk(module_tree)),
-        )
+        ModuleData(module_path=str(file_path), module_nodes=list(ast.walk(module_tree)))
     )
     class_defs: AstClassDefs = get_module_ast_class_defs(file_path)
     for class_def in class_defs:
@@ -92,9 +85,7 @@ def test_unique_enum_class_names() -> None:
 
 
 @pytest.mark.parametrize(
-    "class_data",
-    all_enum_classes,
-    ids=lambda x: f"{x.class_name} ({x.module_path})",
+    "class_data", all_enum_classes, ids=lambda x: f"{x.class_name} ({x.module_path})"
 )
 def test_enum_members_in_use(class_data: ClassData) -> None:
     results: list[str] = []

@@ -8,9 +8,7 @@ import chezmoi_mousse._app_ids as app_ids_module
 from chezmoi_mousse import AppIds
 
 
-def _get_class_public_members_strings(
-    class_object: type,
-) -> list[tuple[str, str]]:
+def _get_class_public_members_strings(class_object: type) -> list[tuple[str, str]]:
     members: list[tuple[str, str]] = []
     for name in dir(class_object):
         if not name.startswith("_"):
@@ -37,10 +35,7 @@ class UsageFinder(ast.NodeVisitor):
 
     def visit_Assign(self, node: ast.Assign):
         for target in node.targets:
-            if (
-                isinstance(target, ast.Attribute)
-                and target.attr == self.member_name
-            ):
+            if isinstance(target, ast.Attribute) and target.attr == self.member_name:
                 self.found = True
         self.generic_visit(node)  # recurse into nested attributes
 
@@ -48,10 +43,7 @@ class UsageFinder(ast.NodeVisitor):
         if node.name == self.exclude_class_name:
             # Visit the __init__ method to check for usage there
             for item in node.body:
-                if (
-                    isinstance(item, ast.FunctionDef)
-                    and item.name == "__init__"
-                ):
+                if isinstance(item, ast.FunctionDef) and item.name == "__init__":
                     self.visit(item)
         else:
             self.generic_visit(node)

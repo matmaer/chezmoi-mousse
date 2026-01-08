@@ -42,9 +42,7 @@ class LogUtils:
             + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
             + VerbArgs.diff.value
         )
-        return " ".join(
-            [part for part in command if part and part not in exclude]
-        )
+        return " ".join([part for part in command if part and part not in exclude])
 
 
 class GlobalCmd(Enum):
@@ -195,9 +193,7 @@ def _run_chezmoi_cmd(
         time_out = 7
     else:
         raise ValueError("Both read_cmd and write_cmd are None")
-    return run(
-        command, capture_output=True, shell=False, text=True, timeout=time_out
-    )
+    return run(command, capture_output=True, shell=False, text=True, timeout=time_out)
 
 
 @dataclass(slots=True)
@@ -215,13 +211,9 @@ class CommandResult:
     @property
     def collapsible_title(self) -> str:
         if self.exit_code == 0:
-            return (
-                f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
-            )
+            return f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
         else:
-            return (
-                f"{LogUtils.pretty_time()} [$text-warning]{self.pretty_cmd}[/]"
-            )
+            return f"{LogUtils.pretty_time()} [$text-warning]{self.pretty_cmd}[/]"
 
     @property
     def dry_run(self) -> bool:
@@ -284,13 +276,9 @@ class ChezmoiCommand:
         # remove trailing space and new lines but NOT leading whitespace
         stripped = cmd_output.lstrip("\n").rstrip()
         # remove intermediate empty lines
-        return "\n".join(
-            [line for line in stripped.splitlines() if line.strip() != ""]
-        )
+        return "\n".join([line for line in stripped.splitlines() if line.strip() != ""])
 
-    def read(
-        self, read_cmd: ReadCmd, *, path_arg: Path | None = None
-    ) -> CommandResult:
+    def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
         base_cmd = GlobalCmd.live_run.value  # read commands always run live
         command = base_cmd + read_cmd.value
         if path_arg is not None:
@@ -319,9 +307,7 @@ class ChezmoiCommand:
         if write_cmd == WriteCmd.init_new:
             command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
             if init_arg is not None:
-                command: list[str] = (
-                    GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
-                )
+                command: list[str] = GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
         elif init_arg is None:
             if path_arg is None:
                 command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
@@ -347,21 +333,13 @@ class ChezmoiCommand:
         if write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget):
             if self.app is None:
                 raise ValueError("self.app is None")
-            self.app.paths.managed_dirs_result = self.read(
-                ReadCmd.managed_dirs
-            )
-            self.app.paths.managed_files_result = self.read(
-                ReadCmd.managed_files
-            )
-            self.app.paths.status_files_result = self.read(
-                ReadCmd.status_files
-            )
+            self.app.paths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
+            self.app.paths.managed_files_result = self.read(ReadCmd.managed_files)
+            self.app.paths.status_files_result = self.read(ReadCmd.status_files)
             self.app.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
         elif write_cmd in (WriteCmd.apply, WriteCmd.re_add):
             if self.app is None:
                 raise ValueError("self.app is None")
-            self.app.paths.status_files_result = self.read(
-                ReadCmd.status_files
-            )
+            self.app.paths.status_files_result = self.read(ReadCmd.status_files)
             self.app.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
         return command_result

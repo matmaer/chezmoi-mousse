@@ -1,8 +1,7 @@
-"""Contains the IDS singleton and  classes to enable setting widget id's
-without hardcoded strings.
+"""Contains the IDS singleton and  classes to enable setting widget id's without
+hardcoded strings.
 
-Provides easy access, autocomplete, type checking or to generate the id
-dynamically.
+Provides easy access, autocomplete, type checking or to generate the id dynamically.
 """
 
 from ._chezmoi_command import WriteVerb
@@ -77,9 +76,7 @@ class AppIds:
     ) -> str:
         return f"{qid}{self.canvas_name.name}_{switcher.name}"
 
-    def datatable_id(
-        self, qid: str = "", *, datatable_name: DataTableName
-    ) -> str:
+    def datatable_id(self, qid: str = "", *, datatable_name: DataTableName) -> str:
         return f"{qid}{self.canvas_name.name}_{datatable_name.name}_datatable"
 
     def flat_button_id(self, qid: str = "", *, btn: FlatBtn) -> str:
@@ -91,9 +88,7 @@ class AppIds:
     def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
 
-    def operate_button_id(
-        self, qid: str = "", *, write_verb: WriteVerb
-    ) -> str:
+    def operate_button_id(self, qid: str = "", *, write_verb: WriteVerb) -> str:
         return f"{qid}{self.canvas_name.name}_{write_verb.name}_op_btn"
 
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
@@ -135,9 +130,7 @@ class CanvasIds:
 class ContainerIds:
     def __init__(self, ids: AppIds):
         self.contents = ids.container_id(name=ContainerName.contents)
-        self.command_output = ids.container_id(
-            name=ContainerName.command_output
-        )
+        self.command_output = ids.container_id(name=ContainerName.command_output)
         self.command_output_q = f"#{self.command_output}"
         self.contents_q = f"#{self.contents}"
         self.contents_info = ids.container_id(name=ContainerName.contents_info)
@@ -150,15 +143,11 @@ class ContainerIds:
         self.doctor_q = f"#{self.doctor}"
         self.git_log_path = ids.container_id(name=ContainerName.git_log_path)
         self.git_log_path_q = f"#{self.git_log_path}"
-        self.git_log_global = ids.container_id(
-            name=ContainerName.git_log_global
-        )
+        self.git_log_global = ids.container_id(name=ContainerName.git_log_global)
         self.git_log_global_q = f"#{self.git_log_global}"
         self.left_side = ids.container_id(name=ContainerName.left_side)
         self.left_side_q = f"#{self.left_side}"
-        self.operate_buttons = ids.container_id(
-            name=ContainerName.operate_buttons
-        )
+        self.operate_buttons = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q = f"#{self.operate_buttons}"
         self.op_mode = ids.container_id(name=ContainerName.op_mode)
         self.op_mode_q = f"#{self.op_mode}"
@@ -309,13 +298,9 @@ class DataTableIds:
     """DataTable widget their id's."""
 
     def __init__(self, ids: AppIds):
-        self.doctor = ids.datatable_id(
-            datatable_name=DataTableName.doctor_table
-        )
+        self.doctor = ids.datatable_id(datatable_name=DataTableName.doctor_table)
         self.doctor_q = f"#{self.doctor}"
-        self.git_log = ids.datatable_id(
-            datatable_name=DataTableName.git_log_table
-        )
+        self.git_log = ids.datatable_id(datatable_name=DataTableName.git_log_table)
         self.git_log_q = f"#{self.git_log}"
 
 
@@ -365,9 +350,7 @@ class LabelIds:
     """Label widgets their id's to target for show/hide or update the text."""
 
     def __init__(self, ids: AppIds):
-        self.cat_config_output = ids.label_id(
-            label=LabelName.cat_config_output
-        )
+        self.cat_config_output = ids.label_id(label=LabelName.cat_config_output)
         self.cat_config_output_q = f"#{self.cat_config_output}"
         self.contents_info = ids.label_id(label=LabelName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
@@ -417,9 +400,7 @@ class StaticIds:
     def __init__(self, ids: AppIds):
         self.contents_info = ids.static_id(static=StaticName.contents_info)
         self.contents_info_q = f"#{self.contents_info}"
-        self.debug_test_paths = ids.static_id(
-            static=StaticName.debug_test_paths
-        )
+        self.debug_test_paths = ids.static_id(static=StaticName.debug_test_paths)
         self.debug_test_paths_q = f"#{self.debug_test_paths}"
         self.diff_info = ids.static_id(static=StaticName.diff_info)
         self.diff_info_q = f"#{self.diff_info}"

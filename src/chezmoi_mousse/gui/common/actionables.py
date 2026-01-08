@@ -2,12 +2,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import (
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
@@ -123,9 +118,7 @@ class FlatButtonsVertical(Vertical):
 class OpButton(Button, AppType):
 
     def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum) -> None:
-        super().__init__(
-            classes=Tcss.operate_button, id=btn_id, label=btn_enum.label
-        )
+        super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
         self.btn_enum = btn_enum
 
 
@@ -133,8 +126,7 @@ class OperateButtons(HorizontalGroup):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
         super().__init__(
-            id=self.ids.container.operate_buttons,
-            classes=Tcss.operate_button_group,
+            id=self.ids.container.operate_buttons, classes=Tcss.operate_button_group
         )
 
     def compose(self) -> ComposeResult:
@@ -142,24 +134,14 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=self.ids.op_btn.add, btn_enum=OpBtnEnum.add)
 
         if self.ids.canvas_name == TabName.apply:
-            yield OpButton(
-                btn_id=self.ids.op_btn.apply, btn_enum=OpBtnEnum.apply
-            )
+            yield OpButton(btn_id=self.ids.op_btn.apply, btn_enum=OpBtnEnum.apply)
         if self.ids.canvas_name == TabName.re_add:
-            yield OpButton(
-                btn_id=self.ids.op_btn.re_add, btn_enum=OpBtnEnum.re_add
-            )
+            yield OpButton(btn_id=self.ids.op_btn.re_add, btn_enum=OpBtnEnum.re_add)
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
-            yield OpButton(
-                btn_id=self.ids.op_btn.forget, btn_enum=OpBtnEnum.forget
-            )
-            yield OpButton(
-                btn_id=self.ids.op_btn.destroy, btn_enum=OpBtnEnum.destroy
-            )
+            yield OpButton(btn_id=self.ids.op_btn.forget, btn_enum=OpBtnEnum.forget)
+            yield OpButton(btn_id=self.ids.op_btn.destroy, btn_enum=OpBtnEnum.destroy)
         if self.ids.canvas_name == ScreenName.init:
-            yield OpButton(
-                btn_id=self.ids.op_btn.init, btn_enum=OpBtnEnum.init
-            )
+            yield OpButton(btn_id=self.ids.op_btn.init, btn_enum=OpBtnEnum.init)
         yield CloseButton(ids=self.ids)
 
     @on(OpButton.Pressed, Tcss.operate_button.dot_prefix)
@@ -212,9 +194,7 @@ class SwitchWithLabel(HorizontalGroup):
     def __init__(self, *, ids: "AppIds", switch_enum: "Switches") -> None:
         self.ids = ids
         self.switch_enum = switch_enum
-        super().__init__(
-            id=self.ids.switch_horizontal_id(switch=self.switch_enum)
-        )
+        super().__init__(id=self.ids.switch_horizontal_id(switch=self.switch_enum))
 
     def compose(self) -> ComposeResult:
         yield Switch(id=self.ids.switch_id(switch=self.switch_enum))
@@ -297,11 +277,7 @@ class TreeTabButtons(TabButtonsBase):
 class ViewTabButtons(TabButtonsBase):
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids
-        self.view_tab_buttons = (
-            TabBtn.diff,
-            TabBtn.contents,
-            TabBtn.git_log_path,
-        )
+        self.view_tab_buttons = (TabBtn.diff, TabBtn.contents, TabBtn.git_log_path)
         super().__init__(
             ids=self.ids,
             buttons=self.view_tab_buttons,

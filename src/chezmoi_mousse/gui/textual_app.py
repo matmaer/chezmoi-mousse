@@ -46,12 +46,7 @@ from .splash_screen import SplashScreen
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import (
-        ChezmoiCommand,
-        ChezmoiPaths,
-        CommandResult,
-        ParsedConfig,
-    )
+    from chezmoi_mousse import ChezmoiCommand, ChezmoiPaths, CommandResult, ParsedConfig
 
 __all__ = ["ChezmoiGUI"]
 
@@ -182,15 +177,11 @@ class ChezmoiGUI(App[None]):
             init_left_side = self.screen.query_one(
                 ids.container.left_side_q, FlatButtonsVertical
             )
-            init_left_side.display = (
-                False if init_left_side.display is True else True
-            )
+            init_left_side.display = False if init_left_side.display is True else True
             switch_slider = self.screen.query_one(
                 ids.container.switch_slider_q, SwitchSlider
             )
-            switch_slider.display = (
-                False if switch_slider.display is True else True
-            )
+            switch_slider.display = False if switch_slider.display is True else True
         elif isinstance(self.screen, MainScreen):
             main_tabs = self.screen.query_exactly_one(Tabs)
             main_tabs.display = False if main_tabs.display is True else True
@@ -198,34 +189,24 @@ class ChezmoiGUI(App[None]):
                 left_side = self.screen.query_one(
                     ids.container.left_side_q, TreeSwitcher
                 )
-                left_side.display = (
-                    False if left_side.display is True else True
-                )
-                view_switcher_buttons = view_switcher_buttons = (
-                    self.screen.query_one(
-                        ids.switcher.view_buttons_q, ViewTabButtons
-                    )
+                left_side.display = False if left_side.display is True else True
+                view_switcher_buttons = view_switcher_buttons = self.screen.query_one(
+                    ids.switcher.view_buttons_q, ViewTabButtons
                 )
                 view_switcher_buttons.display = (
                     False if view_switcher_buttons.display is True else True
                 )
             elif ids.canvas_name == TabName.add:
                 left_side = self.screen.query_exactly_one(FilteredDirTree)
-                left_side.display = (
-                    False if left_side.display is True else True
-                )
+                left_side.display = False if left_side.display is True else True
             switch_slider = self.screen.query_one(
                 ids.container.switch_slider_q, SwitchSlider
             )
-            switch_slider.display = (
-                False if switch_slider.display is True else True
-            )
+            switch_slider.display = False if switch_slider.display is True else True
 
     def get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
-            raise ValueError(
-                "get_switch_slider_widget called outside of MainScreen"
-            )
+            raise ValueError("get_switch_slider_widget called outside of MainScreen")
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         if active_tab == TabName.apply:
             return self.screen.query_one(
@@ -292,11 +273,7 @@ class ChezmoiGUI(App[None]):
     def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
-        if event.tabbed_content.active in (
-            TabName.apply,
-            TabName.re_add,
-            TabName.add,
-        ):
+        if event.tabbed_content.active in (TabName.apply, TabName.re_add, TabName.add):
             slider: SwitchSlider = self.get_switch_slider_widget()
             slider_visible = slider.has_class("-visible")
             new_description = (
@@ -394,9 +371,7 @@ class ChezmoiGUI(App[None]):
                 IDS.re_add.switcher.view_buttons_q, ViewTabButtons
             )
         elif active_tab == TabName.add:
-            left_side = self.screen.query_one(
-                IDS.add.tree.dir_tree_q, FilteredDirTree
-            )
+            left_side = self.screen.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
             operation_buttons = self.screen.query_one(
                 IDS.add.container.operate_buttons_q
             )
@@ -430,9 +405,7 @@ class ChezmoiGUI(App[None]):
                 False if view_switcher_buttons.display is True else True
             )
         if switch_slider is not None:
-            switch_slider.display = (
-                False if switch_slider.display is True else True
-            )
+            switch_slider.display = False if switch_slider.display is True else True
 
         new_description = (
             BindingDescription.maximize
@@ -447,18 +420,14 @@ class ChezmoiGUI(App[None]):
     def action_exit_screen(self) -> None:
         self.screen.dismiss()
 
-    def check_action(
-        self, action: str, parameters: tuple[object, ...]
-    ) -> bool | None:
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
                 switch_slider = self.get_switch_slider_widget()
                 if header.display is False or switch_slider.display is False:
                     return False
-                active_tab = self.screen.query_exactly_one(
-                    TabbedContent
-                ).active
+                active_tab = self.screen.query_exactly_one(TabbedContent).active
                 if active_tab == TabName.apply:
                     return True
                 elif active_tab == TabName.re_add:
@@ -553,20 +522,15 @@ class CustomScrollBarRender(ScrollBarRender):
             upper = {"@mouse.up": "scroll_up"}
             lower = {"@mouse.up": "scroll_down"}
 
-            upper_back_segment = Segment(
-                blank, _Style(bgcolor=back, meta=upper)
-            )
-            lower_back_segment = Segment(
-                blank, _Style(bgcolor=back, meta=lower)
-            )
+            upper_back_segment = Segment(blank, _Style(bgcolor=back, meta=upper))
+            lower_back_segment = Segment(blank, _Style(bgcolor=back, meta=lower))
 
             segments = [upper_back_segment] * int(size)
             segments[end_index:] = [lower_back_segment] * (size - end_index)
             if vertical:
                 segments[start_index:end_index] = [
                     _Segment(
-                        blank,
-                        _Style(color=bar, reverse=True, meta=foreground_meta),
+                        blank, _Style(color=bar, reverse=True, meta=foreground_meta)
                     )
                 ] * (end_index - start_index)
                 if start_index < len(segments):
@@ -575,11 +539,7 @@ class CustomScrollBarRender(ScrollBarRender):
                         segments[start_index] = _Segment(
                             bar_character * width_thickness,
                             (
-                                _Style(
-                                    bgcolor=back,
-                                    color=bar,
-                                    meta=foreground_meta,
-                                )
+                                _Style(bgcolor=back, color=bar, meta=foreground_meta)
                                 if vertical
                                 else _Style(
                                     bgcolor=back,
@@ -603,9 +563,7 @@ class CustomScrollBarRender(ScrollBarRender):
                                 )
                                 if vertical
                                 else _Style(
-                                    bgcolor=back,
-                                    color=bar,
-                                    meta=foreground_meta,
+                                    bgcolor=back, color=bar, meta=foreground_meta
                                 )
                             ),
                         )
@@ -624,6 +582,4 @@ class CustomScrollBarRender(ScrollBarRender):
         if vertical:
             return Segments(segments, new_lines=True)
         else:
-            return Segments(
-                (segments + [_Segment.line()]) * thickness, new_lines=False
-            )
+            return Segments((segments + [_Segment.line()]) * thickness, new_lines=False)

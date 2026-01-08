@@ -89,9 +89,7 @@ class OperateMode(Vertical, AppType):
         self.op_review_container = self.query_one(
             self.ids.container.op_review_q, Vertical
         )
-        self.review_info = self.query_one(
-            self.ids.static.op_review_info_q, Static
-        )
+        self.review_info = self.query_one(self.ids.static.op_review_info_q, Static)
 
     def update_review_info(self, btn_enum: "OpBtnEnum") -> None:
         self.btn_enum = btn_enum
@@ -113,18 +111,12 @@ class OperateMode(Vertical, AppType):
 
     def refresh_review_info(self) -> None:
         if self.btn_enum is not None:
-            if self.ids.canvas_name in (
-                TabName.add,
-                TabName.apply,
-                TabName.re_add,
-            ):
+            if self.ids.canvas_name in (TabName.add, TabName.apply, TabName.re_add):
                 self.update_review_info(self.btn_enum)
 
     @work(thread=True)
     def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
-        return self.app.cmd.perform(
-            btn_enum.write_cmd, path_arg=str(self.path_arg)
-        )
+        return self.app.cmd.perform(btn_enum.write_cmd, path_arg=str(self.path_arg))
 
     @work(exit_on_error=False)
     async def run_command(self, btn_enum: "OpBtnEnum") -> None:

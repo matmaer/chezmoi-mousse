@@ -1,6 +1,6 @@
-"""This module does not import anything from textual, it only contains classes
-imported at module init before launching the textual app, and attributes
-accessed after the app is launched.
+"""This module does not import anything from textual, it only contains classes imported
+at module init before launching the textual app, and attributes accessed after the app
+is launched.
 
 The initial_label attribute is used to construct the OpButton class in
 shared/_buttons.py.

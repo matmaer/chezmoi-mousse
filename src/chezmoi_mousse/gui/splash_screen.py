@@ -95,17 +95,13 @@ verify: "CommandResult | None" = None
 class TemplateStr(StrEnum):
     """Strings to process the install help and latest chezmoi release."""
 
-    cross_platform = (
-        "chezmoi is available in many cross-platform package managers"
-    )
+    cross_platform = "chezmoi is available in many cross-platform package managers"
     chezmoi_install_doc_url = "https://raw.githubusercontent.com/twpayne/chezmoi/refs/heads/master/assets/chezmoi.io/docs/install.md.tmpl"
     chezmoi_latest_release_url = (
         "https://api.github.com/repos/twpayne/chezmoi/releases/latest"
     )
     more_packages = "For more packages, see"
-    os_install = (
-        "Install chezmoi with your package manager with a single command"
-    )
+    os_install = "Install chezmoi with your package manager with a single command"
     version_tag = "{{ $version }}"
 
 
@@ -125,15 +121,10 @@ class AnimatedFade(Static):
         gradient.colors.reverse()
         fade.extend([color.hex for color in gradient.colors])
         self.fade_line_styles = deque(
-            [
-                Style(color=color, bgcolor="#000000", bold=True)
-                for color in fade
-            ]
+            [Style(color=color, bgcolor="#000000", bold=True) for color in fade]
         )
         self.fade_line_styles.rotate(-2)
-        self.set_interval(
-            name="refresh_self", interval=0.1, callback=self.refresh
-        )
+        self.set_interval(name="refresh_self", interval=0.1, callback=self.refresh)
 
     def render_lines(self, crop: Region) -> list[Strip]:
         self.fade_line_styles.rotate()
@@ -261,15 +252,12 @@ class SplashScreen(Screen[None], AppType):
 
     @work
     async def get_install_screen_data(self) -> dict[str, Value]:
-        with urllib.request.urlopen(
-            TemplateStr.chezmoi_latest_release_url
-        ) as response:
+        with urllib.request.urlopen(TemplateStr.chezmoi_latest_release_url) as response:
             data = json.load(response)
             latest_version = data.get("tag_name")
 
         req = urllib.request.Request(
-            TemplateStr.chezmoi_install_doc_url,
-            headers={"User-Agent": "python-urllib"},
+            TemplateStr.chezmoi_install_doc_url, headers={"User-Agent": "python-urllib"}
         )
         with urllib.request.urlopen(req, timeout=2) as response:
             # After decoding the response
@@ -316,9 +304,7 @@ class SplashScreen(Screen[None], AppType):
         )
         # Generate result
         result = content_list[1:split_idx]  # OS-specific commands
-        result.append(
-            "Cross-Platform"
-        )  # Add a header and indent cross-platform
+        result.append("Cross-Platform")  # Add a header and indent cross-platform
         result.extend(f"    {line}" for line in content_list[split_idx + 1 :])
         freebsd_idx = next(
             (i for i, line in enumerate(result) if line.startswith("FreeBSD"))
@@ -339,14 +325,8 @@ class SplashScreen(Screen[None], AppType):
             while stack and indent <= stack[-1]["indent"]:
                 stack.pop()
             # Add new node
-            node: Node = {
-                "text": line.strip(),
-                "indent": indent,
-                "children": [],
-            }
-            stack[-1]["children"].append(
-                node
-            )  # will modify the root_node variable
+            node: Node = {"text": line.strip(), "indent": indent, "children": []}
+            stack[-1]["children"].append(node)  # will modify the root_node variable
             stack.append(node)
 
         # collapse tree into nested dictionary
@@ -358,14 +338,10 @@ class SplashScreen(Screen[None], AppType):
             if len(node["children"]) == 1:
                 return collapse(node["children"][0])
             # Multiple children become a dictionary
-            return {
-                child["text"]: collapse(child) for child in node["children"]
-            }
+            return {child["text"]: collapse(child) for child in node["children"]}
 
         # return final nested dict
-        return {
-            child["text"]: collapse(child) for child in root_node["children"]
-        }
+        return {child["text"]: collapse(child) for child in root_node["children"]}
 
     @work(name="update_app")
     async def update_app(self) -> None:
@@ -380,8 +356,7 @@ class SplashScreen(Screen[None], AppType):
         self.app.cmd_results.template_data = globals()["template_data"]
         if self.app.init_needed is True:
             cmd_results = CmdResults(
-                doctor=globals()["doctor"],
-                template_data=globals()["template_data"],
+                doctor=globals()["doctor"], template_data=globals()["template_data"]
             )
             self.app.cmd_results = cmd_results
             return
@@ -408,9 +383,7 @@ class SplashScreen(Screen[None], AppType):
         self.app.cmd_results = cmd_results
         self.app.dest_dir = globals()["parsed_config"].dest_dir
         self.app.parsed_config = globals()["parsed_config"]
-        self.app.parsed_template_data = json.loads(
-            globals()["template_data"].std_out
-        )
+        self.app.parsed_template_data = json.loads(globals()["template_data"].std_out)
         self.app.cmd_results.verify = globals()["verify"]
 
     def all_workers_finished(self) -> None:
@@ -427,6 +400,4 @@ class SplashScreen(Screen[None], AppType):
                 if all(w for w in self.workers if w.is_finished):
                     self.dismiss()
             else:
-                raise RuntimeError(
-                    "update_app worker did not complete successfully"
-                )
+                raise RuntimeError("update_app worker did not complete successfully")

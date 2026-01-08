@@ -23,8 +23,7 @@ def get_exported_names(module_path: Path) -> set[str] | None:
                     return {
                         e.value
                         for e in node.value.elts
-                        if isinstance(e, ast.Constant)
-                        and isinstance(e.value, str)
+                        if isinstance(e, ast.Constant) and isinstance(e.value, str)
                     }
                 except AttributeError:
                     return None
@@ -54,8 +53,7 @@ def get_modules_to_test_merged() -> list[Path]:
     modules_to_test = set(get_modules_to_test())
     modules_with_all = set(
         module_path
-        for module_path in get_module_paths()
-        + [Path("src/chezmoi_mousse/__init__.py")]
+        for module_path in get_module_paths() + [Path("src/chezmoi_mousse/__init__.py")]
         if get_exported_names(module_path) is not None
     )
     return list(modules_to_test | modules_with_all)
@@ -97,14 +95,10 @@ def test_module_exports(module_path: Path):
     if exported is not None:
         # Assume all exported names except __version__ are classes
         classes_exported = (
-            exported - {"__version__"}
-            if "__version__" in exported
-            else exported
+            exported - {"__version__"} if "__version__" in exported else exported
         )
         never_imported = [
-            cls
-            for cls in classes_exported
-            if not get_modules_importing_class(cls)
+            cls for cls in classes_exported if not get_modules_importing_class(cls)
         ]
         if never_imported:
             pytest.fail(

@@ -28,9 +28,7 @@ class BorderTitle(StrEnum):
 
 class LogsTab(Vertical, AppType):
 
-    git_log_result: reactive["CommandResult | None"] = reactive(
-        None, init=False
-    )
+    git_log_result: reactive["CommandResult | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield LogsTabButtons(ids=IDS.logs)
@@ -45,17 +43,13 @@ class LogsTab(Vertical, AppType):
             yield GitLogGlobal(ids=IDS.logs)
 
     def on_mount(self) -> None:
-        switcher = self.query_one(
-            IDS.logs.switcher.logs_tab_q, ContentSwitcher
-        )
+        switcher = self.query_one(IDS.logs.switcher.logs_tab_q, ContentSwitcher)
         switcher.border_title = BorderTitle.app_log
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_one(
-            IDS.logs.switcher.logs_tab_q, ContentSwitcher
-        )
+        switcher = self.query_one(IDS.logs.switcher.logs_tab_q, ContentSwitcher)
         if event.button.id == IDS.logs.tab_btn.app_log:
             switcher.current = IDS.logs.logger.app
             switcher.border_title = BorderTitle.app_log

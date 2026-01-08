@@ -14,13 +14,9 @@ __all__ = ["CustomHeader", "HeaderTitle"]
 
 class HeaderTitle(StrEnum):
     read_mode = "-  c h e z m o i  m o u s s e  --  r e a d  m o d e  -"
-    dry_run_mode = (
-        "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
-    )
+    dry_run_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
     live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
-    install_help = (
-        "- c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  -"
-    )
+    install_help = "- c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  -"
 
 
 class CustomHeader(Header, AppType):

@@ -37,9 +37,7 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.install_help)
-        yield Label(
-            InstallHelpStrings.top_label, classes=Tcss.main_section_label
-        )
+        yield Label(InstallHelpStrings.top_label, classes=Tcss.main_section_label)
         yield Collapsible(
             Pretty(InstallHelpStrings.no_path_var),
             title=InstallHelpStrings.collapsible_title,
@@ -50,9 +48,7 @@ class InstallHelpScreen(Screen[None], AppType):
         with Horizontal():
             yield CommandsTree()
             yield VerticalGroup(
-                FlatLink(
-                    ids=IDS.install_help, link_enum=LinkBtn.chezmoi_install
-                ),
+                FlatLink(ids=IDS.install_help, link_enum=LinkBtn.chezmoi_install),
                 FlatButton(ids=IDS.install_help, btn_enum=FlatBtn.exit_app),
             )
         yield Footer(id=IDS.install_help.footer)
@@ -76,8 +72,7 @@ class InstallHelpScreen(Screen[None], AppType):
         help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
         if self.app.cmd_results.install_help_data is None:
             self.app.notify(
-                "InstallHelpScreen: No install help data found",
-                severity="error",
+                "InstallHelpScreen: No install help data found", severity="error"
             )
             return
         install_help: ParsedJson = self.app.cmd_results.install_help_data

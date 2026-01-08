@@ -35,13 +35,7 @@ from ._str_enums import (
     TabBtn,
 )
 from ._switch_data import Switches
-from ._type_checking import (
-    AppType,
-    CmdResults,
-    InitCloneData,
-    NodeData,
-    ParsedConfig,
-)
+from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedConfig
 
 __all__ = [
     "__version__",

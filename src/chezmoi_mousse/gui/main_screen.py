@@ -43,22 +43,14 @@ class MainScreen(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.main_tabs)
         with TabbedContent():
-            yield TabPane(
-                TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply
-            )
-            yield TabPane(
-                TabPanes.re_add_tab_label, ReAddTab(), id=TabName.re_add
-            )
+            yield TabPane(TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply)
+            yield TabPane(TabPanes.re_add_tab_label, ReAddTab(), id=TabName.re_add)
             yield TabPane(TabPanes.add_tab_label, AddTab(), id=TabName.add)
             yield TabPane(TabPanes.logs_tab_label, LogsTab(), id=TabName.logs)
-            yield TabPane(
-                TabPanes.config_tab_label, ConfigTab(), id=TabName.config
-            )
+            yield TabPane(TabPanes.config_tab_label, ConfigTab(), id=TabName.config)
             yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
             if self.app.dev_mode is True:
-                yield TabPane(
-                    TabPanes.debug_tab_label, DebugTab(), id=TabName.debug
-                )
+                yield TabPane(TabPanes.debug_tab_label, DebugTab(), id=TabName.debug)
 
         yield Footer(id=IDS.main_tabs.footer)
 
@@ -67,9 +59,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.app.cmd.app_log = self.app_log
         # Initialize Operate logger
-        self.operate_log = self.query_one(
-            IDS.logs.logger.operate_q, OperateLog
-        )
+        self.operate_log = self.query_one(IDS.logs.logger.operate_q, OperateLog)
         self.app.cmd.operate_log = self.operate_log
         self.app_log.success(LogStrings.operate_log_initialized)
         # Initialize ReadCmd logger
@@ -101,17 +91,13 @@ class MainScreen(Screen[None], AppType):
 
     @work
     async def populate_apply_trees(self) -> None:
-        self.screen.query_one(
-            IDS.apply.tree.managed_q, ManagedTree
-        ).populate_dest_dir()
+        self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_dest_dir()
         self.app_log.success("Apply tab managed tree populated.")
         self.screen.query_one(
             IDS.apply.tree.expanded_q, ExpandedTree
         ).populate_dest_dir()
         self.app_log.success("Apply tab expanded tree populated.")
-        self.screen.query_one(
-            IDS.apply.tree.list_q, ListTree
-        ).populate_dest_dir()
+        self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Apply tab list tree populated.")
 
     @work
@@ -124,9 +110,7 @@ class MainScreen(Screen[None], AppType):
             IDS.re_add.tree.expanded_q, ExpandedTree
         ).populate_dest_dir()
         self.app_log.success("Re-Add tab expanded tree populated.")
-        self.screen.query_one(
-            IDS.re_add.tree.list_q, ListTree
-        ).populate_dest_dir()
+        self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Re-Add tab list tree populated.")
 
     @work

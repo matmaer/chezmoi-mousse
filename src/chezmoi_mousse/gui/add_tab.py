@@ -122,10 +122,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
-                    and (
-                        p.parent in self.app.paths.dirs
-                        or p.parent == self.path
-                    )
+                    and (p.parent in self.app.paths.dirs or p.parent == self.path)
                     and p not in self.app.paths.files
                     and self._file_of_interest(p)
                 )
@@ -143,10 +140,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
-                    and (
-                        p.parent in self.app.paths.dirs
-                        or p.parent == self.path
-                    )
+                    and (p.parent in self.app.paths.dirs or p.parent == self.path)
                     and p not in self.app.paths.files
                     and self._file_of_interest(p)
                 )
@@ -164,10 +158,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file(follow_symlinks=False)
                     and p not in self.app.paths.files
-                    and (
-                        p.parent in self.app.paths.dirs
-                        or p.parent == self.path
-                    )
+                    and (p.parent in self.app.paths.dirs or p.parent == self.path)
                     and self._file_of_interest(p)
                 )
             )
@@ -176,10 +167,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             return (
                 p
                 for p in paths
-                if (
-                    p.is_dir(follow_symlinks=False)
-                    and self._has_unmanaged_paths_in(p)
-                )
+                if (p.is_dir(follow_symlinks=False) and self._has_unmanaged_paths_in(p))
                 or (
                     p.is_file(follow_symlinks=False)
                     and p not in self.app.paths.files
@@ -206,10 +194,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             for idx, p in enumerate(dir_path.iterdir(), start=1):
                 if idx > max_entries:
                     return False
-                elif (
-                    p not in self.app.paths.dirs
-                    and p not in self.app.paths.files
-                ):
+                elif p not in self.app.paths.dirs and p not in self.app.paths.files:
                     return True
             return True
         except (PermissionError, OSError):
@@ -258,25 +243,20 @@ class AddTab(TabsBase, AppType):
                 ContentsView(ids=IDS.add),
             )
         )
-        contents_view = self.query_one(
-            IDS.add.container.contents_q, ContentsView
-        )
+        contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         contents_view.add_class(Tcss.border_title_top)
         contents_view.border_title = f" {self.app.dest_dir} "
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
     def update_contents_view(
-        self,
-        event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected,
+        self, event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected
     ) -> None:
         event.stop()
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        contents_view = self.query_one(
-            IDS.add.container.contents_q, ContentsView
-        )
+        contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         contents_view.border_title = f" {event.node.data.path} "
 
         path_kind = (
@@ -285,10 +265,7 @@ class AddTab(TabsBase, AppType):
             else PathKind.FILE
         )
         self.current_node = NodeData(
-            found=True,
-            path=event.node.data.path,
-            status="",
-            path_kind=path_kind,
+            found=True, path=event.node.data.path, status="", path_kind=path_kind
         )
         contents_view.node_data = self.current_node
         self.operate_mode_container.path_arg = self.current_node.path

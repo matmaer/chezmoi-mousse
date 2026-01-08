@@ -1,5 +1,4 @@
-"""Contains subclassed textual classes shared between the ApplyTab and
-ReAddTab."""
+"""Contains subclassed textual classes shared between the ApplyTab and ReAddTab."""
 
 from typing import TYPE_CHECKING
 
@@ -57,9 +56,7 @@ class ViewSwitcher(Vertical):
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:
-        view_switcher = self.query_one(
-            self.ids.switcher.views_q, ContentSwitcher
-        )
+        view_switcher = self.query_one(self.ids.switcher.views_q, ContentSwitcher)
         if event.button.id == self.ids.tab_btn.contents:
             view_switcher.current = self.ids.container.contents
         elif event.button.id == self.ids.tab_btn.diff:

@@ -4,9 +4,7 @@ from pathlib import Path
 import pytest
 from _test_utils import get_module_ast_tree, get_module_paths
 
-GUI_MODULE_PATHS = [
-    Path.cwd() / p for p in get_module_paths() if "gui" in p.parts
-]
+GUI_MODULE_PATHS = [Path.cwd() / p for p in get_module_paths() if "gui" in p.parts]
 
 
 def get_module_exports(module_path: Path) -> set[str]:

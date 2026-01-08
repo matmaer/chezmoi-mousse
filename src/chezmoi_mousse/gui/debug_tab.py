@@ -64,16 +64,13 @@ class DebugTab(Horizontal, AppType):
                 Static(id=IDS.debug.static.debug_test_paths),
                 HorizontalGroup(
                     Button(
-                        classes=Tcss.operate_button,
-                        label=DbgOpBtnLabel.create_paths,
+                        classes=Tcss.operate_button, label=DbgOpBtnLabel.create_paths
                     ),
                     Button(
-                        classes=Tcss.operate_button,
-                        label=DbgOpBtnLabel.remove_paths,
+                        classes=Tcss.operate_button, label=DbgOpBtnLabel.remove_paths
                     ),
                     Button(
-                        classes=Tcss.operate_button,
-                        label=DbgOpBtnLabel.toggle_diffs,
+                        classes=Tcss.operate_button, label=DbgOpBtnLabel.toggle_diffs
                     ),
                     classes=Tcss.operate_button_group,
                 ),
@@ -93,9 +90,7 @@ class DebugTab(Horizontal, AppType):
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
-        self.test_paths_static.update(
-            self.test_manager.list_existing_test_paths()
-        )
+        self.test_paths_static.update(self.test_manager.list_existing_test_paths())
         self.debug_test_path_view = self.query_one(
             IDS.debug.view.test_paths_q, Vertical
         )
@@ -103,20 +98,15 @@ class DebugTab(Horizontal, AppType):
         self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
         self.debug_log.add_class(Tcss.border_title_top)
         self.debug_log.border_title = " Debug Log "
-        self.dom_node_logger = self.query_one(
-            IDS.debug.logger.dom_nodes_q, RichLog
-        )
+        self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.dom_node_logger.border_title = " DOM Nodes "
-        self.switcher = self.query_one(
-            IDS.debug.switcher.debug_tab_q, ContentSwitcher
-        )
+        self.switcher = self.query_one(IDS.debug.switcher.debug_tab_q, ContentSwitcher)
 
         self.app.call_later(self.log_dom_nodes)
 
     def log_dom_nodes(self) -> None:
         dom_items = [
-            item
-            for item in self.app.walk_children(with_self=True, method="depth")
+            item for item in self.app.walk_children(with_self=True, method="depth")
         ]
         self.dom_node_logger.write(f"DOMNode count: {len(dom_items)}\n")
         nodes_with_id = [item for item in dom_items if item.id is not None]
@@ -186,9 +176,7 @@ class TestPathManager:
     def _create_fake_toml_file(self):
         doc = document()
         doc["title"] = self.fake.sentence(nb_words=6)
-        doc["version"] = self.fake.pyfloat(
-            left_digits=1, right_digits=2, positive=True
-        )
+        doc["version"] = self.fake.pyfloat(left_digits=1, right_digits=2, positive=True)
         doc["debug"] = self.fake.boolean()
         doc["hosts"] = [self.fake.hostname() for _ in range(10)]
         doc["ports"] = [self.fake.port_number() for _ in range(10)]
@@ -203,16 +191,10 @@ class TestPathManager:
         parts: list[str] = []
         parts.append(self.fake.sentence(nb_words=6))
         parts.append(
-            "".join(
-                random.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60)
-            )
+            "".join(random.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60))
         )
-        parts.append(
-            "".join(chr(random.randint(0x0600, 0x06FF)) for _ in range(30))
-        )
-        parts.append(
-            "".join(chr(random.randint(0x4E00, 0x9FFF)) for _ in range(30))
-        )
+        parts.append("".join(chr(random.randint(0x0600, 0x06FF)) for _ in range(30)))
+        parts.append("".join(chr(random.randint(0x4E00, 0x9FFF)) for _ in range(30)))
         # emoji sequences and variation selectors
         parts.append("🙂🚀🔥" * 10 + ProblemChars.VARSEL)
         # combining sequences
@@ -239,9 +221,7 @@ class TestPathManager:
         existing_paths = [str(p) for p in self.all_test_paths if p.exists()]
         if not existing_paths:
             return "[$text-primary]No test paths exist.[/]"
-        return "[$text-success]Existing paths:[/]\n" + "\n".join(
-            existing_paths
-        )
+        return "[$text-success]Existing paths:[/]\n" + "\n".join(existing_paths)
 
     def create_test_paths(self) -> str:
         # If all paths exist, do nothing
@@ -277,9 +257,7 @@ class TestPathManager:
                 with open(file_path, mode) as f:
                     f.write(content)
                 created_paths.append(str(file_path))
-        return "[$text-success](Re)Created paths:[/]\n" + "\n".join(
-            created_paths
-        )
+        return "[$text-success](Re)Created paths:[/]\n" + "\n".join(created_paths)
 
     def remove_test_paths(self) -> str:
         removed_paths: list[str] = []
@@ -306,18 +284,16 @@ class TestPathManager:
             # Modify LARGE file
             large_path = Path(dir) / Files.LARGE
             if large_path.exists():
-                modified_content = self.large_file.replace("the", "").replace(
-                    "o", "O"
-                )
+                modified_content = self.large_file.replace("the", "").replace("o", "O")
                 with open(large_path, "w") as f:
                     f.write(modified_content)
                 modified.append(str(large_path))
             # Modify TOML file
             toml_path = Path(dir) / Files.TOML
             if toml_path.exists():
-                modified_content = self.toml_file.replace(
-                    "title", "new_title"
-                ).replace("true", "false")
+                modified_content = self.toml_file.replace("title", "new_title").replace(
+                    "true", "false"
+                )
                 with open(toml_path, "w") as f:
                     f.write(modified_content)
                 modified.append(str(toml_path))

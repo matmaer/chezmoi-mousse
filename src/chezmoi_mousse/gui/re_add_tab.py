@@ -32,9 +32,7 @@ class ReAddTab(TabsBase, AppType):
         )
 
     @on(CurrentReAddNodeMsg)
-    def handle_new_re_add_node_selected(
-        self, msg: CurrentReAddNodeMsg
-    ) -> None:
+    def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
         msg.stop()
         self.update_view_node_data(msg.node_data)
         self.operate_mode_container.path_arg = msg.node_data.path

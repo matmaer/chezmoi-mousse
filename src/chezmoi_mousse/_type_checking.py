@@ -12,13 +12,7 @@ if TYPE_CHECKING:
 
 type Value = str | dict[str, "Value"]  # recursive type alias
 
-__all__ = [
-    "AppType",
-    "CmdResults",
-    "InitCloneData",
-    "NodeData",
-    "ParsedConfig",
-]
+__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData", "ParsedConfig"]
 
 
 class AppType:

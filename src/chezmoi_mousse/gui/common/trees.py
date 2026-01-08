@@ -1,5 +1,4 @@
-"""Contains subclassed textual classes shared between the ApplyTab and
-ReAddTab."""
+"""Contains subclassed textual classes shared between the ApplyTab and ReAddTab."""
 
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -60,9 +59,7 @@ class TreeBase(Tree[NodeData], AppType):
             StatusCode.Added: self.app.theme_variables["text-success"],
             StatusCode.Modified: self.app.theme_variables["text-warning"],
             StatusCode.No_Change: self.app.theme_variables["text-secondary"],
-            StatusCode.fake_no_status: self.app.theme_variables[
-                "secondary-lighten-2"
-            ],
+            StatusCode.fake_no_status: self.app.theme_variables["secondary-lighten-2"],
         }
         self.guide_depth: int = 3
         self.show_root: bool = False
@@ -74,10 +71,7 @@ class TreeBase(Tree[NodeData], AppType):
     def style_label(self, node_data: NodeData) -> str:
         italic = " italic" if not node_data.found else ""
         if node_data.path_kind == PathKind.FILE:
-            if node_data.status in (
-                StatusCode.No_Change,
-                StatusCode.fake_no_status,
-            ):
+            if node_data.status in (StatusCode.No_Change, StatusCode.fake_no_status):
                 return f"[dim]{node_data.path.name}[/dim]"
             elif node_data.status in (
                 StatusCode.Added,
@@ -110,8 +104,7 @@ class TreeBase(Tree[NodeData], AppType):
                 )
             else:
                 return (
-                    f"[{self.node_colors['Dir']}"
-                    f"{italic}]{node_data.path.name}[/]"
+                    f"[{self.node_colors['Dir']}" f"{italic}]{node_data.path.name}[/]"
                 )
 
         # Fallback
@@ -185,9 +178,7 @@ class TreeBase(Tree[NodeData], AppType):
         else:
             tree_node.add(label=node_label, data=node_data)
 
-    def remove_files_without_status_in(
-        self, *, tree_node: TreeNode[NodeData]
-    ) -> None:
+    def remove_files_without_status_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         current_unchanged_leaves: list[TreeNode[NodeData]] = [
             leaf
             for leaf in tree_node.children
@@ -218,13 +209,9 @@ class TreeBase(Tree[NodeData], AppType):
                 tree_node, file_path, status_code, path_kind=PathKind.FILE
             )
 
-    def add_files_without_status_in(
-        self, *, tree_node: TreeNode[NodeData]
-    ) -> None:
+    def add_files_without_status_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         if tree_node.data is None:
-            raise ValueError(
-                "tree_node data is None in add_files_without_status_in"
-            )
+            raise ValueError("tree_node data is None in add_files_without_status_in")
         if self.ids.canvas_name == TabName.apply:
             paths: "PathDict" = self.app.paths.apply_files_without_status_in(
                 tree_node.data.path
@@ -259,13 +246,9 @@ class TreeBase(Tree[NodeData], AppType):
                 tree_node, dir_path, status_code, path_kind=PathKind.DIR
             )
 
-    def add_dirs_without_status_in(
-        self, *, tree_node: TreeNode[NodeData]
-    ) -> None:
+    def add_dirs_without_status_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         if tree_node.data is None:
-            raise ValueError(
-                "tree_node data is None in add_dirs_without_status_in"
-            )
+            raise ValueError("tree_node data is None in add_dirs_without_status_in")
         if self.ids.canvas_name == TabName.apply:
             if (
                 not (
@@ -280,8 +263,7 @@ class TreeBase(Tree[NodeData], AppType):
                 path: self.app.paths.apply_dirs[path].status
                 for path in self.app.paths.apply_dirs
                 if path.parent == tree_node.data.path
-                and self.app.paths.apply_dirs[path].status
-                == StatusCode.fake_no_status
+                and self.app.paths.apply_dirs[path].status == StatusCode.fake_no_status
             }
         elif self.ids.canvas_name == TabName.re_add:
             if (
@@ -297,13 +279,10 @@ class TreeBase(Tree[NodeData], AppType):
                 path: self.app.paths.re_add_dirs[path].status
                 for path in self.app.paths.re_add_dirs
                 if path.parent == tree_node.data.path
-                and self.app.paths.re_add_dirs[path].status
-                == StatusCode.fake_no_status
+                and self.app.paths.re_add_dirs[path].status == StatusCode.fake_no_status
             }
         else:
-            raise ValueError(
-                "Invalid canvas_name in add_dirs_without_status_in"
-            )
+            raise ValueError("Invalid canvas_name in add_dirs_without_status_in")
         for dir_path, status_code in dir_paths.items():
             if dir_path in self.get_dir_nodes_in(tree_node):
                 continue
@@ -312,9 +291,7 @@ class TreeBase(Tree[NodeData], AppType):
             )
 
     @on(Tree.NodeSelected)
-    def send_node_context_message(
-        self, event: Tree.NodeSelected[NodeData]
-    ) -> None:
+    def send_node_context_message(self, event: Tree.NodeSelected[NodeData]) -> None:
         if event.node.data is None:
             raise ValueError("event.node.data is None in send_node_context")
         if self.ids.canvas_name == TabName.apply:
@@ -364,9 +341,7 @@ class ExpandedTree(TreeBase):
         self.update_visible_nodes()
 
     @on(TreeBase.NodeExpanded)
-    def add_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
-    ) -> None:
+    def add_node_children(self, event: TreeBase.NodeExpanded[NodeData]) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)
         if self.unchanged:
@@ -388,10 +363,7 @@ class ExpandedTree(TreeBase):
             self.add_status_dirs_in(tree_node=tree_node)
             self.add_status_files_in(tree_node=tree_node)
             for child in tree_node.children:
-                if (
-                    child.data is not None
-                    and child.data.path_kind == PathKind.DIR
-                ):
+                if child.data is not None and child.data.path_kind == PathKind.DIR:
                     child.expand()
                     self.expand_all_nodes(child)
 
@@ -427,14 +399,10 @@ class ListTree(TreeBase):
                 tree_node, file_path, status_code, path_kind=PathKind.FILE
             )
 
-    def add_files_without_status_in(
-        self, *, tree_node: TreeNode[NodeData]
-    ) -> None:
+    def add_files_without_status_in(self, *, tree_node: TreeNode[NodeData]) -> None:
         # Override to always use flat list for ListTree
         if tree_node.data is None:
-            raise ValueError(
-                "tree_node data is None in add_files_without_status_in"
-            )
+            raise ValueError("tree_node data is None in add_files_without_status_in")
         paths: "PathDict" = self.app.paths.no_status_files
 
         for file_path, status_code in paths.items():
@@ -464,9 +432,7 @@ class ManagedTree(TreeBase):
         self.update_visible_nodes()
 
     @on(TreeBase.NodeExpanded)
-    def update_node_children(
-        self, event: TreeBase.NodeExpanded[NodeData]
-    ) -> None:
+    def update_node_children(self, event: TreeBase.NodeExpanded[NodeData]) -> None:
         self.add_status_dirs_in(tree_node=event.node)
         self.add_status_files_in(tree_node=event.node)
         if self.unchanged:

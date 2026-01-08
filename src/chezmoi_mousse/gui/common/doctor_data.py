@@ -24,9 +24,7 @@ class DoctorTable(DataTable[Text], AppType):
 
     def __init__(self, ids: "AppIds", doctor_data: CommandResult) -> None:
         super().__init__(
-            id=ids.datatable.doctor,
-            show_cursor=False,
-            classes=Tcss.doctor_table,
+            id=ids.datatable.doctor, show_cursor=False, classes=Tcss.doctor_table
         )
         self.doctor_data = doctor_data.std_out.splitlines()
 
@@ -48,8 +46,7 @@ class DoctorTable(DataTable[Text], AppType):
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [
-                    Text(cell_text, style=self.dr_style["info"])
-                    for cell_text in row
+                    Text(cell_text, style=self.dr_style["info"]) for cell_text in row
                 ]
                 self.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
@@ -60,8 +57,7 @@ class DoctorTable(DataTable[Text], AppType):
                 self.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
-                    Text(cell_text, style=self.dr_style["warning"])
-                    for cell_text in row
+                    Text(cell_text, style=self.dr_style["warning"]) for cell_text in row
                 ]
                 self.add_row(*new_row)
             else:
@@ -189,40 +185,33 @@ class PwMgrInfo(Enum):
         for member in PwMgrInfo:
             if member.value.doctor_check == doctor_check:
                 return member.value
-        raise ValueError(
-            f"No PwMgrInfo member for doctor_check '{doctor_check}'"
-        )
+        raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
 
 
 class PwCollapsible(Collapsible, AppType):
 
     def __init__(self, pw_mgr_data: PwMgrData) -> None:
         self.pw_mgr_data = pw_mgr_data
-        self.stripped_link = self.pw_mgr_data.link.replace(
-            "https://", ""
-        ).replace("www.", "")
+        self.stripped_link = self.pw_mgr_data.link.replace("https://", "").replace(
+            "www.", ""
+        )
 
         super().__init__(
             VerticalGroup(
-                Label(
-                    SectionLabels.project_link, classes=Tcss.sub_section_label
-                ),
+                Label(SectionLabels.project_link, classes=Tcss.sub_section_label),
                 Link(self.stripped_link, url=self.pw_mgr_data.link),
                 Label(
-                    SectionLabels.project_description,
-                    classes=Tcss.sub_section_label,
+                    SectionLabels.project_description, classes=Tcss.sub_section_label
                 ),
                 Static(self.pw_mgr_data.description, markup=False),
                 Label(
-                    InfoStrings.additional_info_label,
-                    classes=Tcss.sub_section_label,
+                    InfoStrings.additional_info_label, classes=Tcss.sub_section_label
                 ),
                 Static(self.pw_mgr_data.info, markup=False),
                 classes=Tcss.pw_mgr_group,
             ),
             title=(
-                f"[$text-primary]Doctor check: "
-                f"{self.pw_mgr_data.doctor_check}[/]"
+                f"[$text-primary]Doctor check: " f"{self.pw_mgr_data.doctor_check}[/]"
             ),
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
@@ -237,9 +226,7 @@ class PwMgrInfoView(Vertical):
         super().__init__(id=self.ids.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
-        yield Label(
-            SectionLabels.password_managers, classes=Tcss.main_section_label
-        )
+        yield Label(SectionLabels.password_managers, classes=Tcss.main_section_label)
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
         doctor_lines = doctor_results.std_out.splitlines()
