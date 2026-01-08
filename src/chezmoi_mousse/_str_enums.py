@@ -11,6 +11,7 @@ __all__ = [
     "LogStrings",
     "OperateStrings",
     "SectionLabels",
+    "StatusCode",
     "TabBtn",
 ]
 
@@ -23,6 +24,7 @@ class FlatBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
+    debug_test_paths_status = "Test Paths Status"
     debug_test_paths = "Test Paths"
     debug_log = "Debug Log"
     debug_dom_nodes = "DOM Nodes"
@@ -211,3 +213,17 @@ class SectionLabels(StrEnum):
     project_description = "Project Description"
     project_link = "Project Link"
     template_data_output = "Chezmoi Data Output"
+
+
+class StatusCode(StrEnum):
+    # Real status codes from chezmoi
+    Added = "A"
+    Deleted = "D"
+    Modified = "M"
+    No_Change = " "
+    # Run = "R" TODO: implement
+    # Fake status codes for internal use
+    fake_dest_dir = "F"  # used for destDir path
+    # fake_status = "S"  # used for re-add dir paths
+    fake_no_status = "X"  # (no status depending on apply or re-add context)
+    # fake_unmanaged = "U"

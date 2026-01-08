@@ -9,7 +9,6 @@ __all__ = [
     "PathKind",
     "ScreenName",
     "StaticName",
-    "StatusCode",
     "TabName",
     "Tcss",
     "TreeName",
@@ -97,21 +96,6 @@ class StaticName(StrEnum):
     init_info = auto()
     op_result_info = auto()
     op_review_info = auto()
-
-
-class StatusCode(StrEnum):
-    # Real status codes from chezmoi
-    Added = "A"
-    Deleted = "D"
-    Modified = "M"
-    No_Change = " "
-    # Run = "R" TODO: implement
-
-    # Fake status codes for internal use
-    fake_dest_dir = "F"  # used for destDir path
-    # fake_status = "S"  # used for re-add dir paths
-    fake_no_status = "X"  # (no status depending on apply or re-add context)
-    # fake_unmanaged = "U"
 
 
 class TabName(StrEnum):

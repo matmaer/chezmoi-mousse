@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._str_enum_names import StatusCode
+from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult

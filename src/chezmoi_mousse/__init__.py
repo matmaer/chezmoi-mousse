@@ -23,14 +23,7 @@ from ._chezmoi_command import (
 from ._chezmoi_paths import ChezmoiPaths, PathDict
 from ._operate_button_data import OpBtnEnum, OpBtnLabels
 from ._str_enum_bindings import BindingAction, BindingDescription
-from ._str_enum_names import (
-    PathKind,
-    ScreenName,
-    StatusCode,
-    TabName,
-    Tcss,
-    TreeName,
-)
+from ._str_enum_names import PathKind, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     Chars,
     FlatBtn,
@@ -38,6 +31,7 @@ from ._str_enums import (
     LogStrings,
     OperateStrings,
     SectionLabels,
+    StatusCode,
     TabBtn,
 )
 from ._switch_data import Switches
