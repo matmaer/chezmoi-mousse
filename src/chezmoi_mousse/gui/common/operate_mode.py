@@ -1,4 +1,5 @@
 from asyncio import sleep
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import work
@@ -15,6 +16,8 @@ from chezmoi_mousse import (
     TabName,
     Tcss,
 )
+
+from .messages import CompletedOpMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -62,7 +65,8 @@ class OperateMode(Vertical, AppType):
         self.btn_enum: OpBtnEnum | None = None
         self.command: str | None = None
         self.init_arg: str | None = None
-        self.path_arg: str | None = None
+        self.path_arg: Path | None = None
+        # self.path_arg: str | None = None
 
     def compose(self) -> ComposeResult:
         yield Vertical(
@@ -119,7 +123,9 @@ class OperateMode(Vertical, AppType):
 
     @work(thread=True)
     def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
-        return self.app.cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
+        return self.app.cmd.perform(
+            btn_enum.write_cmd, path_arg=str(self.path_arg)
+        )
 
     @work(exit_on_error=False)
     async def run_command(self, btn_enum: "OpBtnEnum") -> None:
@@ -153,5 +159,6 @@ class OperateMode(Vertical, AppType):
             )
         )
         self.op_result_container.display = True
+        self.app.post_message(CompletedOpMsg(path_arg=self.path_arg))
         await sleep(1)
         loading_modal.dismiss()

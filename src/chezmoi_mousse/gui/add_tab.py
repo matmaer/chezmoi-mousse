@@ -291,7 +291,7 @@ class AddTab(TabsBase, AppType):
             path_kind=path_kind,
         )
         contents_view.node_data = self.current_node
-        self.operate_mode_container.path_arg = str(self.current_node.path)
+        self.operate_mode_container.path_arg = self.current_node.path
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

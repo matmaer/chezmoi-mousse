@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from textual.message import Message
 
 if TYPE_CHECKING:
+    from pathlib import Path
 
     from chezmoi_mousse import AppIds, InitCloneData, NodeData
 
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CloseButtonMsg",
+    "CompletedOpMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
@@ -21,6 +23,12 @@ class CloseButtonMsg(Message):
     def __init__(self, *, button: "CloseButton", ids: "AppIds") -> None:
         self.button = button
         self.ids = ids
+        super().__init__()
+
+
+class CompletedOpMsg(Message):
+    def __init__(self, *, path_arg: "Path | None") -> None:
+        self.path_arg = path_arg
         super().__init__()
 
 

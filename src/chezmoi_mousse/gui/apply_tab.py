@@ -35,4 +35,4 @@ class ApplyTab(TabsBase, AppType):
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
         msg.stop()
         self.update_view_node_data(msg.node_data)
-        self.operate_mode_container.path_arg = str(msg.node_data.path)
+        self.operate_mode_container.path_arg = msg.node_data.path
