@@ -139,7 +139,7 @@ class OperateStrings(StrEnum):
     forget_subtitle = (
         f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     )
-    read_file = "[$success]Path.read()[/]"
+    # read_file = "[$success]Path.read()[/]"
     ready_to_run = "[$text]Ready to run[/]"
     re_add_path_info = (
         "[dim]Re-add modified files in the target state, preserving "
@@ -205,7 +205,7 @@ class SectionLabels(StrEnum):
     doctor_output = "Doctor Output"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
-    init_clone_repo = "Initialize Existing Chezmoi Repository"
+    # init_clone_repo = "Initialize Existing Chezmoi Repository"
     password_managers = "Password Manager Information"
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"

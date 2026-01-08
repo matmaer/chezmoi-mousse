@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from ._str_enum_names import StatusCode
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult
@@ -11,21 +12,6 @@ if TYPE_CHECKING:
 type PathDict = dict[Path, str]
 
 __all__ = ["ChezmoiPaths", "PathDict"]
-
-
-class StatusCode(StrEnum):
-    # Real status codes from chezmoi
-    Added = "A"
-    Deleted = "D"
-    Modified = "M"
-    No_Change = " "
-    # Run = "R" TODO: implement
-
-    # Fake status codes for internal use
-    fake_dest_dir = "F"  # used for destDir path
-    fake_status = "S"  # used for re-add dir paths
-    fake_no_status = "X"  # (no status depending on apply or re-add context)
-    fake_unmanaged = "U"
 
 
 @dataclass(slots=True)

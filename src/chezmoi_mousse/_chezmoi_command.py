@@ -110,7 +110,7 @@ class ReadVerb(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
-    unmanaged = "unmanaged"
+    # unmanaged = "unmanaged"
     verify = "verify"
 
 
@@ -145,7 +145,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     template_data = [ReadVerb.data.value]
-    unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
+    # unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
     verify = [ReadVerb.verify.value]
 
     @property

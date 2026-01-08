@@ -38,6 +38,7 @@ __all__ = [
     "LogsTabButtons",
     "OpButton",
     "OperateButtons",
+    "SwitchWithLabel",
     "SwitchSlider",
     "TreeTabButtons",
     "ViewTabButtons",

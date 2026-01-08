@@ -8,8 +8,6 @@ from ._chezmoi_command import CommandResult, WriteCmd
 from ._str_enum_names import PathKind
 
 if TYPE_CHECKING:
-    from textual.widgets.tree import TreeNode
-
     from .gui.textual_app import ChezmoiGUI
 
 type Value = str | dict[str, "Value"]  # recursive type alias
@@ -17,7 +15,6 @@ type Value = str | dict[str, "Value"]  # recursive type alias
 __all__ = [
     "AppType",
     "CmdResults",
-    "ExpandedNodeData",
     "InitCloneData",
     "NodeData",
     "ParsedConfig",
@@ -26,12 +23,6 @@ __all__ = [
 
 class AppType:
     app: ChezmoiGUI
-
-
-@dataclass(slots=True)
-class ExpandedNodeData:
-    apply_expanded: list[TreeNode[NodeData]]
-    re_add_expanded: list[TreeNode[NodeData]]
 
 
 @dataclass(slots=True)

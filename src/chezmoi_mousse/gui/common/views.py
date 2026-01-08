@@ -201,9 +201,9 @@ class ContentsView(Vertical, AppType):
 
 
 class DiffStrings(StrEnum):
-    contains_status_paths = (
-        "Directory contains the following paths with a status (recursive)"
-    )
+    # contains_status_paths = (
+    #     "Directory contains the following paths with a status (recursive)"
+    # )
     contains_no_status_paths = "Contains no paths with a status."
     dir_no_status = (
         "[dim]No diff available, the directory has no status and "
