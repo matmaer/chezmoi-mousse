@@ -1,5 +1,4 @@
 from asyncio import sleep
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import work
@@ -20,6 +19,8 @@ from chezmoi_mousse import (
 from .messages import CompletedOpMsg
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import AppIds
 
 
@@ -65,8 +66,7 @@ class OperateMode(Vertical, AppType):
         self.btn_enum: OpBtnEnum | None = None
         self.command: str | None = None
         self.init_arg: str | None = None
-        self.path_arg: Path | None = None
-        # self.path_arg: str | None = None
+        self.path_arg: "Path | None" = None
 
     def compose(self) -> ComposeResult:
         yield Vertical(
