@@ -48,6 +48,7 @@ class TreeBase(Tree[NodeData], AppType):
             data=root_node_data,
         )
         self.expanded_nodes: list[TreeNode[NodeData]] = []
+        self.visible_nodes: list[TreeNode[NodeData]] = []
         self._initial_render = True
         self._first_focus = True
         self._user_interacted = False
@@ -120,25 +121,25 @@ class TreeBase(Tree[NodeData], AppType):
         # Recursively calling collect_nodes to collect expanded nodes
         nodes: list[TreeNode[NodeData]] = [self.root]
 
-        def collect_nodes(
+        def collect_expanded(
             current_node: TreeNode[NodeData],
         ) -> list[TreeNode[NodeData]]:
             expanded: list[TreeNode[NodeData]] = []
             for child in current_node.children:
                 if child.is_expanded:
                     expanded.append(child)
-                    expanded.extend(collect_nodes(child))
+                    expanded.extend(collect_expanded(child))
             return expanded
 
-        nodes.extend(collect_nodes(self.root))
+        nodes.extend(collect_expanded(self.root))
         self.expanded_nodes = nodes
 
-    def get_visible_nodes(self) -> list[TreeNode[NodeData]]:
+    def update_visible_nodes(self) -> None:
         # Recursively calling collect_visible to collect visible nodes
-        visible: list[TreeNode[NodeData]] = []
+        nodes: list[TreeNode[NodeData]] = []
 
         def collect_visible(node: TreeNode[NodeData]):
-            visible.append(node)
+            nodes.append(node)
             if node.is_expanded:
                 for child in node.children:
                     collect_visible(child)
@@ -147,7 +148,7 @@ class TreeBase(Tree[NodeData], AppType):
         for child in self.root.children:
             collect_visible(child)
 
-        return visible
+        self.visible_nodes = nodes
 
     def get_leaves_in(self, tree_node: TreeNode[NodeData]) -> list["Path"]:
         return [
@@ -366,6 +367,7 @@ class ExpandedTree(TreeBase):
     def populate_dest_dir(self) -> None:
         self.expand_all_nodes(self.root)
         self.update_expanded_nodes()
+        self.update_visible_nodes()
 
     @on(TreeBase.NodeExpanded)
     def add_node_children(
@@ -377,10 +379,12 @@ class ExpandedTree(TreeBase):
             self.add_dirs_without_status_in(tree_node=event.node)
             self.add_files_without_status_in(tree_node=event.node)
         self.update_expanded_nodes()
+        self.update_visible_nodes()
 
     @on(Tree.NodeCollapsed)
     def on_node_collapsed(self, event: Tree.NodeCollapsed[NodeData]) -> None:
         self.update_expanded_nodes()
+        self.update_visible_nodes()
 
     def expand_all_nodes(self, tree_node: TreeNode[NodeData]) -> None:
         # Recursively expand all directory nodes
@@ -475,6 +479,7 @@ class ManagedTree(TreeBase):
         self.add_status_dirs_in(tree_node=self.root)
         self.add_status_files_in(tree_node=self.root)
         self.update_expanded_nodes()
+        self.update_visible_nodes()
 
     @on(TreeBase.NodeExpanded)
     def update_node_children(
@@ -486,10 +491,12 @@ class ManagedTree(TreeBase):
             self.add_dirs_without_status_in(tree_node=event.node)
             self.add_files_without_status_in(tree_node=event.node)
         self.update_expanded_nodes()
+        self.update_visible_nodes()
 
     @on(Tree.NodeCollapsed)
     def on_node_collapsed(self, event: Tree.NodeCollapsed[NodeData]) -> None:
         self.update_expanded_nodes()
+        self.update_visible_nodes()
 
     def watch_unchanged(self) -> None:
         for node in self.expanded_nodes:
