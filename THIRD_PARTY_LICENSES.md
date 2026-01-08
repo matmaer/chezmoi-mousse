@@ -8,7 +8,7 @@ This project incorporates code from third-party libraries. The following section
 
 - **Project**: chezmoi
 - **Source**: https://github.com/twpayne/chezmoi
-- **Copyright**: Copyright (c) 2018-2025 Tom Payne
+- **Copyright**: Copyright (c) 2018 Tom Payne
 - **License**: MIT License
 - **Usage**: Command-line tool that this application provides a GUI interface for
 
