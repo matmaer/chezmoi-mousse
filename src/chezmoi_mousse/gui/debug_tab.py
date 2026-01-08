@@ -16,8 +16,6 @@ from .common.loggers import DebugLog
 
 __all__ = ["DebugTab"]
 
-fake = Faker()
-
 
 class ProblemChars(StrEnum):
     BIDI_PDF = "\u202c"
@@ -29,7 +27,6 @@ class ProblemChars(StrEnum):
 
 
 class Dirs(StrEnum):
-    # HOME = str(Path.home())
     TEST_DIR = str(Path.home() / "_test_dir")
     SUB_DIR = str(Path.home() / "_test_dir" / "_test_sub_dir")
     DIR_STATUS_TEST = str(Path.home() / "_test_dir" / "_test_dir_status")
@@ -46,19 +43,16 @@ class Files(StrEnum):
         return [Path.home() / cls.TOML, Path.home() / cls.LARGE]
 
 
-class DebugBtnLabels(StrEnum):
+class DbgOpBtnLabel(StrEnum):
+    create_paths = "(Re)Create Test Paths"
     toggle_diffs = "Toggle Diffs"
-    reset_paths = "(Re)Create Test Paths"
     remove_paths = "Remove Test Paths"
+    path_info = "Show Path Info"
 
 
 class DebugTab(Horizontal, AppType):
-    def __init__(self):
-        super().__init__()
-        self.test_manager = TestPathManager()
 
     def compose(self) -> ComposeResult:
-
         yield FlatButtonsVertical(
             ids=IDS.debug,
             buttons=(
@@ -75,15 +69,19 @@ class DebugTab(Horizontal, AppType):
                 HorizontalGroup(
                     Button(
                         classes=Tcss.operate_button,
-                        label=DebugBtnLabels.reset_paths,
+                        label=DbgOpBtnLabel.create_paths,
                     ),
                     Button(
                         classes=Tcss.operate_button,
-                        label=DebugBtnLabels.remove_paths,
+                        label=DbgOpBtnLabel.remove_paths,
                     ),
                     Button(
                         classes=Tcss.operate_button,
-                        label=DebugBtnLabels.toggle_diffs,
+                        label=DbgOpBtnLabel.toggle_diffs,
+                    ),
+                    Button(
+                        classes=Tcss.operate_button,
+                        label=DbgOpBtnLabel.toggle_diffs,
                     ),
                     classes=Tcss.operate_button_group,
                 ),
@@ -99,6 +97,7 @@ class DebugTab(Horizontal, AppType):
             )
 
     def on_mount(self) -> None:
+        self.test_manager = TestPathManager()
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
@@ -148,21 +147,32 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == DebugBtnLabels.toggle_diffs:
+        if event.button.label == DbgOpBtnLabel.toggle_diffs:
             result = self.test_manager.create_file_diffs()
             self.test_paths_static.update(result)
-        elif event.button.label == DebugBtnLabels.reset_paths:
-            result = self.test_manager.reset_test_paths()
+        elif event.button.label == DbgOpBtnLabel.create_paths:
+            result = self.test_manager.create_test_paths()
             self.test_paths_static.update(result)
-        elif event.button.label == DebugBtnLabels.remove_paths:
+        elif event.button.label == DbgOpBtnLabel.remove_paths:
             result = self.test_manager.remove_test_paths()
             self.test_paths_static.update(result)
 
 
 class TestPathManager:
+
+    __slots__ = (
+        "all_test_paths",
+        "fake",
+        "large_file",
+        "test_file_binary",
+        "toml_file",
+        "tricky_utf8_file",
+    )
+
     def __init__(self):
-        self.test_file_binary = fake.binary(length=2048)
-        self.large_file = fake.text(max_nb_chars=700000)
+        self.fake = Faker()
+        self.test_file_binary = self.fake.binary(length=2048)
+        self.large_file = self.fake.text(max_nb_chars=700000)
         self.toml_file = self._create_fake_toml_file()
         self.tricky_utf8_file = self._create_tricky_utf8_file()
         self.all_test_paths = self._all_test_paths()
@@ -183,23 +193,23 @@ class TestPathManager:
 
     def _create_fake_toml_file(self):
         doc = document()
-        doc["title"] = fake.sentence(nb_words=6)
-        doc["version"] = fake.pyfloat(
+        doc["title"] = self.fake.sentence(nb_words=6)
+        doc["version"] = self.fake.pyfloat(
             left_digits=1, right_digits=2, positive=True
         )
-        doc["debug"] = fake.boolean()
-        doc["hosts"] = [fake.hostname() for _ in range(10)]
-        doc["ports"] = [fake.port_number() for _ in range(10)]
+        doc["debug"] = self.fake.boolean()
+        doc["hosts"] = [self.fake.hostname() for _ in range(10)]
+        doc["ports"] = [self.fake.port_number() for _ in range(10)]
         some_table = table()
-        some_table["id"] = fake.uuid4()
-        some_table["date"] = fake.date_time().isoformat()
-        some_table["text"] = fake.paragraph(nb_sentences=12)
+        some_table["id"] = self.fake.uuid4()
+        some_table["date"] = self.fake.date_time().isoformat()
+        some_table["text"] = self.fake.paragraph(nb_sentences=12)
         doc["some_table"] = some_table
         return dumps(doc)
 
     def _create_tricky_utf8_file(self):
         parts: list[str] = []
-        parts.append(fake.sentence(nb_words=6))
+        parts.append(self.fake.sentence(nb_words=6))
         parts.append(
             "".join(
                 random.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60)
@@ -224,11 +234,11 @@ class TestPathManager:
         )
         parts.append(
             ProblemChars.BIDI_RLO
-            + fake.word()
+            + self.fake.word()
             + " .ext"
             + ProblemChars.BIDI_PDF
             + ProblemChars.ZWS
-            + fake.word()
+            + self.fake.word()
         )
         parts.append("A" + ProblemChars.ZWJ + "B" + ProblemChars.ZWJ + "C")
         return "\n".join(parts)
@@ -241,7 +251,7 @@ class TestPathManager:
             existing_paths
         )
 
-    def reset_test_paths(self) -> str:
+    def create_test_paths(self) -> str:
         # If all paths exist, do nothing
         if all(p.exists() for p in self.all_test_paths):
             return "[$text-warning]All test paths already exist.[/]"
