@@ -447,7 +447,7 @@ class ListTree(TreeBase):
             raise ValueError(
                 "tree_node data is None in add_files_without_status_in"
             )
-        paths: "PathDict" = self.app.paths.files_without_status
+        paths: "PathDict" = self.app.paths.no_status_files
 
         for file_path, status_code in paths.items():
             if file_path in self.get_leaves_in(tree_node):

@@ -37,9 +37,13 @@ class ChezmoiPaths:
 
     dirs: "list[Path]" = field(default_factory=list[Path], init=False)
     files: "list[Path]" = field(default_factory=list[Path], init=False)
-    files_without_status: "PathDict" = field(
+    status_files: "PathDict" = field(
         default_factory=dict[Path, str], init=False
     )
+    no_status_files: "PathDict" = field(
+        default_factory=dict[Path, str], init=False
+    )  # In use to populate listTree in gui/common/trees.py
+
     apply_dirs: "dict[Path, DirData]" = field(
         default_factory=dict[Path, DirData], init=False
     )
@@ -58,9 +62,6 @@ class ChezmoiPaths:
     _re_add_status_paths: "PathDict" = field(
         default_factory=dict[Path, str], init=False
     )
-    status_files: "PathDict" = field(
-        default_factory=dict[Path, str], init=False
-    )
     _status_dirs: "PathDict" = field(
         default_factory=dict[Path, str], init=False
     )
@@ -69,7 +70,7 @@ class ChezmoiPaths:
         self._update_managed_paths()
         self._update_status_paths()
 
-        for dir_path in [self.dest_dir] + list(self.dirs):
+        for dir_path in self.dirs:
             # Populate apply_dirs
             apply_status = StatusCode(
                 self.apply_status_dirs.get(dir_path, StatusCode.fake_no_status)
@@ -109,7 +110,7 @@ class ChezmoiPaths:
             )
 
     def _update_managed_paths(self) -> None:
-        self.dirs = [
+        self.dirs = [self.dest_dir] + [
             Path(line)
             for line in self.managed_dirs_result.std_out.splitlines()
         ]
@@ -130,7 +131,7 @@ class ChezmoiPaths:
             for line in self.status_files_result.std_out.splitlines()
             if line.strip() != ""
         }
-        self.files_without_status = {
+        self.no_status_files = {
             path: StatusCode.fake_no_status
             for path in self.files
             if path not in self.status_files.keys()
