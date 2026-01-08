@@ -52,7 +52,7 @@ class ChezmoiPaths:
     dirs: "list[Path]" = field(default_factory=list[Path], init=False)
     files: "list[Path]" = field(default_factory=list[Path], init=False)
     files_without_status: "PathDict" = field(
-        default_factory=PathDict.__value__, init=False
+        default_factory=dict[Path, str], init=False
     )
     apply_dirs: "dict[Path, DirData]" = field(
         default_factory=dict[Path, DirData], init=False
@@ -64,19 +64,19 @@ class ChezmoiPaths:
         default_factory=dict[Path, DirData], init=False
     )
     re_add_status_files: "PathDict" = field(
-        default_factory=PathDict.__value__, init=False
+        default_factory=dict[Path, str], init=False
     )
     re_add_status_dirs: "PathDict" = field(
-        default_factory=PathDict.__value__, init=False
+        default_factory=dict[Path, str], init=False
     )
     _re_add_status_paths: "PathDict" = field(
-        default_factory=PathDict.__value__, init=False
+        default_factory=dict[Path, str], init=False
     )
     status_files: "PathDict" = field(
-        default_factory=PathDict.__value__, init=False
+        default_factory=dict[Path, str], init=False
     )
     _status_dirs: "PathDict" = field(
-        default_factory=PathDict.__value__, init=False
+        default_factory=dict[Path, str], init=False
     )
 
     def __post_init__(self) -> None:
