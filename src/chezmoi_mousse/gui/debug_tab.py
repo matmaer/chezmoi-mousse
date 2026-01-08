@@ -55,11 +55,7 @@ class DebugTab(Horizontal, AppType):
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
             ids=IDS.debug,
-            buttons=(
-                FlatBtn.debug_test_paths,
-                FlatBtn.debug_log,
-                FlatBtn.debug_dom_nodes,
-            ),
+            buttons=(FlatBtn.test_paths, FlatBtn.debug_log, FlatBtn.dom_nodes),
         )
         with ContentSwitcher(
             id=IDS.debug.switcher.debug_tab, initial=IDS.debug.view.test_paths
@@ -139,9 +135,9 @@ class DebugTab(Horizontal, AppType):
         event.stop()
         if event.button.id == IDS.debug.flat_btn.debug_log:
             self.switcher.current = IDS.debug.logger.debug
-        elif event.button.id == IDS.debug.flat_btn.debug_test_paths:
+        elif event.button.id == IDS.debug.flat_btn.test_paths:
             self.switcher.current = IDS.debug.view.test_paths
-        elif event.button.id == IDS.debug.flat_btn.debug_dom_nodes:
+        elif event.button.id == IDS.debug.flat_btn.dom_nodes:
             self.switcher.current = IDS.debug.logger.dom_nodes
 
     @on(Button.Pressed)

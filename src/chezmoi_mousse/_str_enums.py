@@ -24,17 +24,16 @@ class FlatBtn(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
-    debug_test_paths_status = "Test Paths Status"
-    debug_test_paths = "Test Paths"
     debug_log = "Debug Log"
-    debug_dom_nodes = "DOM Nodes"
     diagram = "Diagram"
     doctor = "Doctor"
+    dom_nodes = "DOM Nodes"
     exit_app = "Exit App"
     ignored = "Ignored"
     pw_mgr_info = "Password Managers"
     re_add_help = "Re-Add Help"
     template_data = "Template Data"
+    test_paths = "Test Paths"
 
 
 class LinkBtn(StrEnum):

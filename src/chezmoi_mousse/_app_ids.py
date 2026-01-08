@@ -339,14 +339,10 @@ class FlatButtonIds:
         self.apply_help_q = f"#{self.apply_help}"
         self.cat_config = ids.flat_button_id(btn=FlatBtn.cat_config)
         self.cat_config_q = f"#{self.cat_config}"
-        self.debug_dom_nodes = ids.flat_button_id(btn=FlatBtn.debug_dom_nodes)
-        self.debug_dom_nodes_q = f"#{self.debug_dom_nodes}"
+        self.dom_nodes = ids.flat_button_id(btn=FlatBtn.dom_nodes)
+        self.dom_nodes_q = f"#{self.dom_nodes}"
         self.debug_log = ids.flat_button_id(btn=FlatBtn.debug_log)
         self.debug_log_q = f"#{self.debug_log}"
-        self.debug_test_paths = ids.flat_button_id(
-            btn=FlatBtn.debug_test_paths
-        )
-        self.debug_test_paths_q = f"#{self.debug_test_paths}"
         self.diagram = ids.flat_button_id(btn=FlatBtn.diagram)
         self.diagram_q = f"#{self.diagram}"
         self.doctor = ids.flat_button_id(btn=FlatBtn.doctor)
@@ -361,6 +357,8 @@ class FlatButtonIds:
         self.re_add_help_q = f"#{self.re_add_help}"
         self.template_data = ids.flat_button_id(btn=FlatBtn.template_data)
         self.template_data_q = f"#{self.template_data}"
+        self.test_paths = ids.flat_button_id(btn=FlatBtn.test_paths)
+        self.test_paths_q = f"#{self.test_paths}"
 
 
 class LabelIds:
