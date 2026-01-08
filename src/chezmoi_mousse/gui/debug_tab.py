@@ -29,7 +29,7 @@ class ProblemChars(StrEnum):
 
 
 class Dirs(StrEnum):
-    HOME = str(Path.home())
+    # HOME = str(Path.home())
     TEST_DIR = str(Path.home() / "_test_dir")
     SUB_DIR = str(Path.home() / "_test_dir" / "_test_sub_dir")
     DIR_STATUS_TEST = str(Path.home() / "_test_dir" / "_test_dir_status")
@@ -40,6 +40,10 @@ class Files(StrEnum):
     TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
     LARGE = "_test_file_large.txt"
     BINARY = "_test_file_binary.bin"
+
+    @classmethod
+    def files_in_home(cls) -> list[Path]:
+        return [Path.home() / cls.TOML, Path.home() / cls.LARGE]
 
 
 class DebugBtnLabels(StrEnum):
@@ -216,6 +220,9 @@ class TestPathManager:
 
     def list_existing_test_paths(self) -> str:
         existing_paths: list[str] = []
+        for file_path in Files.files_in_home():
+            if file_path.exists():
+                existing_paths.append(str(file_path))
         for dir in Dirs:
             for file_name in Files:
                 file_path = Path(dir) / file_name
@@ -231,17 +238,22 @@ class TestPathManager:
     def reset_test_paths(self) -> str:
         created_paths: list[Path | str] = []
         for dir in Dirs:
-            if dir != Dirs.HOME:
-                Path(dir).mkdir(parents=True, exist_ok=True)
-                created_paths.append(dir)
+            Path(dir).mkdir(parents=True, exist_ok=True)
+            created_paths.append(dir)
         for dir in Dirs:
             for file_name in Files:
                 content = ""
                 mode = "w"
                 if file_name == Files.TOML:
                     content = self.toml_file
+                    file_path = Path.home() / file_name
+                    with open(file_path, mode) as f:
+                        f.write(content)
                 elif file_name == Files.LARGE:
                     content = self.large_file
+                    file_path = Path.home() / file_name
+                    with open(file_path, mode) as f:
+                        f.write(content)
                 elif file_name == Files.TRICKY_UTF8 and dir == Dirs.TEST_DIR:
                     content = self.tricky_utf8_file
                 elif file_name == Files.BINARY and dir == Dirs.TEST_DIR:
@@ -250,33 +262,40 @@ class TestPathManager:
                 if content == "":
                     continue
                 file_path = Path(dir) / file_name
-                if file_path.exists():
-                    file_path.unlink()
                 with open(file_path, mode) as f:
                     f.write(content)
                 created_paths.append(file_path)
-        result = "[$text-primary]Created paths:[/]\n" + "\n".join(
+        result = "[$text-success](Re)Created paths:[/]\n" + "\n".join(
             p for p in map(str, created_paths)
         )
         return result
 
     def remove_test_paths(self) -> str:
         removed_paths: list[str] = []
+        for file_path in Files.files_in_home():
+            if file_path.exists():
+                file_path.unlink()
+                removed_paths.append(str(file_path))
         for dir in reversed(Dirs):
             for file_name in Files:
                 file_path = Path(dir) / file_name
                 if file_path.exists():
                     file_path.unlink()
                     removed_paths.append(str(file_path))
-            if Path(dir).exists() and dir != Dirs.HOME:
+            if Path(dir).exists():
                 Path(dir).rmdir()
                 removed_paths.append(dir)
-        result = "[$text-primary]Removed paths:[/]\n" + "\n".join(
+        if len(removed_paths) == 0:
+            return "[$text-warning]No test paths to remove.[/]"
+        result = "[$text-success]Removed paths:[/]\n" + "\n".join(
             p for p in removed_paths
         )
         return result
 
     def create_file_diffs(self) -> str:
+        current_files = self.list_existing_test_paths()
+        if "No test paths exist" in current_files:
+            return "[$text-warning]No test paths exist to modify.[/]"
         modified: list[Path] = []
 
         # Update the files
