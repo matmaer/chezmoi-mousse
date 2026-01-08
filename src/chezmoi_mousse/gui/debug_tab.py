@@ -75,10 +75,6 @@ class DebugTab(Horizontal, AppType):
                         classes=Tcss.operate_button,
                         label=DbgOpBtnLabel.toggle_diffs,
                     ),
-                    Button(
-                        classes=Tcss.operate_button,
-                        label=DbgOpBtnLabel.toggle_diffs,
-                    ),
                     classes=Tcss.operate_button_group,
                 ),
                 id=IDS.debug.view.test_paths,
