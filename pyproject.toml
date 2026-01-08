@@ -5,7 +5,7 @@ description = "Visual interface in the terminal for the chezmoi dotfile managar,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual>=6.11.0",
+    "textual>=7.0.1",
     "watchdog",
 ]
 
@@ -16,7 +16,7 @@ Repository = "https://github.com/matmaer/chezmoi-mousse"
 dev = [
     "black",
     "docformatter",
-    "faker>=40.1.0",
+    "faker",
     "graphviz",
     "ipython",
     "isort",
