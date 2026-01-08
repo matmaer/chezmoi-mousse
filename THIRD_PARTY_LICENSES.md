@@ -17,7 +17,7 @@ This project incorporates code from third-party libraries. The following section
 ```
 The MIT License (MIT)
 
-Copyright (c) 2018-2025 Tom Payne
+Copyright (c) 2018 Tom Payne
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
