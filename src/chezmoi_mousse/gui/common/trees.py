@@ -37,15 +37,15 @@ class TreeBase(Tree[NodeData], AppType):
 
     unchanged: reactive[bool] = reactive(False, init=False)
 
-    def __init__(
-        self, ids: "AppIds", *, root_node_data: "NodeData", tree_name: TreeName
-    ) -> None:
+    root_node_data: NodeData
+
+    def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
         self.ids = ids
         super().__init__(
             label="root",
             id=self.ids.tree_id(tree=tree_name),
             classes=Tcss.tree_widget,
-            data=root_node_data,
+            data=self.root_node_data,
         )
         self.expanded_nodes: list[TreeNode[NodeData]] = []
         self.visible_nodes: list[TreeNode[NodeData]] = []
@@ -68,7 +68,7 @@ class TreeBase(Tree[NodeData], AppType):
         self.show_root: bool = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
-        self.root.data = self.app.root_node_data
+        self.root.data = self.root_node_data
 
     # the styling method for the node labels
     def style_label(self, node_data: NodeData) -> str:
@@ -356,13 +356,7 @@ class ExpandedTree(TreeBase):
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
-        if self.app.root_node_data is None:
-            raise ValueError("root_node_data is None in ExpandedTree init")
-        super().__init__(
-            self.ids,
-            root_node_data=self.app.root_node_data,
-            tree_name=TreeName.expanded_tree,
-        )
+        super().__init__(self.ids, tree_name=TreeName.expanded_tree)
 
     def populate_dest_dir(self) -> None:
         self.expand_all_nodes(self.root)
@@ -413,13 +407,7 @@ class ListTree(TreeBase):
 
     def __init__(self, ids: "AppIds") -> None:
         self.ids = ids
-        if self.app.root_node_data is None:
-            raise ValueError("root_node_data is None in ListTree init")
-        super().__init__(
-            self.ids,
-            root_node_data=self.app.root_node_data,
-            tree_name=TreeName.list_tree,
-        )
+        super().__init__(self.ids, tree_name=TreeName.list_tree)
 
     def populate_dest_dir(self) -> None:
         self.add_status_files_in(tree_node=self.root)
@@ -467,13 +455,7 @@ class ManagedTree(TreeBase):
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        if self.app.root_node_data is None:
-            raise ValueError("root_node_data is None in ManagedTree init")
-        super().__init__(
-            self.ids,
-            root_node_data=self.app.root_node_data,
-            tree_name=TreeName.managed_tree,
-        )
+        super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
     def populate_dest_dir(self) -> None:
         self.add_status_dirs_in(tree_node=self.root)

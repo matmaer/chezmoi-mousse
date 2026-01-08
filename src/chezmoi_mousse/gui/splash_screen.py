@@ -26,10 +26,15 @@ from chezmoi_mousse import (
     CmdResults,
     CommandResult,
     GlobalCmd,
+    NodeData,
     ParsedConfig,
+    PathKind,
     ReadCmd,
+    StatusCode,
     VerbArgs,
 )
+
+from .common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
 
@@ -380,6 +385,14 @@ class SplashScreen(Screen[None], AppType):
             )
             self.app.cmd_results = cmd_results
             return
+
+        TreeBase.root_node_data = NodeData(
+            path=globals()["parsed_config"].dest_dir,
+            path_kind=PathKind.DIR,
+            found=True,
+            status=StatusCode.fake_dest_dir,
+        )
+
         cmd_results = CmdResults(
             cat_config=globals()["cat_config"],
             doctor=globals()["doctor"],
