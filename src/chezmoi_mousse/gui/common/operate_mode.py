@@ -64,7 +64,6 @@ class OperateMode(Vertical, AppType):
         super().__init__(id=ids.container.op_mode)
         self.ids = ids
         self.btn_enum: OpBtnEnum | None = None
-        self.command: str | None = None
         self.init_arg: str | None = None
         self.path_arg: "Path | None" = None
 
