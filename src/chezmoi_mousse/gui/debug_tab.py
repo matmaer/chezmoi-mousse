@@ -165,6 +165,21 @@ class TestPathManager:
         self.large_file = fake.text(max_nb_chars=700000)
         self.toml_file = self._create_fake_toml_file()
         self.tricky_utf8_file = self._create_tricky_utf8_file()
+        self.all_test_paths = self._all_test_paths()
+
+    def _all_test_paths(self) -> list[Path]:
+        paths: list[Path] = []
+        # Home files
+        paths.extend(Files.files_in_home())
+        # Dirs
+        for dir in Dirs:
+            paths.append(Path(dir))
+            paths.append(Path(dir) / Files.TOML)
+            paths.append(Path(dir) / Files.LARGE)
+            if dir == Dirs.TEST_DIR:
+                paths.append(Path(dir) / Files.TRICKY_UTF8)
+                paths.append(Path(dir) / Files.BINARY)
+        return paths
 
     def _create_fake_toml_file(self):
         doc = document()
@@ -219,108 +234,89 @@ class TestPathManager:
         return "\n".join(parts)
 
     def list_existing_test_paths(self) -> str:
-        existing_paths: list[str] = []
-        for file_path in Files.files_in_home():
-            if file_path.exists():
-                existing_paths.append(str(file_path))
-        for dir in Dirs:
-            for file_name in Files:
-                file_path = Path(dir) / file_name
-                if file_path.exists():
-                    existing_paths.append(str(file_path))
-        existing = "[$text-success]Existing paths:[/]\n" + "\n".join(
-            p for p in existing_paths
+        existing_paths = [str(p) for p in self.all_test_paths if p.exists()]
+        if not existing_paths:
+            return "[$text-primary]No test paths exist.[/]"
+        return "[$text-success]Existing paths:[/]\n" + "\n".join(
+            existing_paths
         )
-        if len(existing_paths) == 0:
-            existing = "[$text-primary]No test paths exist.[/]"
-        return existing
 
     def reset_test_paths(self) -> str:
-        created_paths: list[Path | str] = []
+        # If all paths exist, do nothing
+        if all(p.exists() for p in self.all_test_paths):
+            return "[$text-warning]All test paths already exist.[/]"
+        created_paths: list[str] = []
+        # Create directories
         for dir in Dirs:
             Path(dir).mkdir(parents=True, exist_ok=True)
             created_paths.append(dir)
+        # Home files
+        home_files: dict[Files, str] = {
+            Files.TOML: self.toml_file,
+            Files.LARGE: self.large_file,
+        }
+        for file_name, content in home_files.items():
+            file_path = Path.home() / file_name
+            with open(file_path, "w") as f:
+                f.write(content)
+            created_paths.append(str(file_path))
+        # Dir files
         for dir in Dirs:
-            for file_name in Files:
-                content = ""
-                mode = "w"
-                if file_name == Files.TOML:
-                    content = self.toml_file
-                    file_path = Path.home() / file_name
-                    with open(file_path, mode) as f:
-                        f.write(content)
-                elif file_name == Files.LARGE:
-                    content = self.large_file
-                    file_path = Path.home() / file_name
-                    with open(file_path, mode) as f:
-                        f.write(content)
-                elif file_name == Files.TRICKY_UTF8 and dir == Dirs.TEST_DIR:
-                    content = self.tricky_utf8_file
-                elif file_name == Files.BINARY and dir == Dirs.TEST_DIR:
-                    content = self.test_file_binary
-                    mode = "wb"
-                if content == "":
-                    continue
+            dir_files: dict[str, str | bytes] = {
+                Files.TOML: self.toml_file,
+                Files.LARGE: self.large_file,
+            }
+            if dir == Dirs.TEST_DIR:
+                dir_files[Files.TRICKY_UTF8] = self.tricky_utf8_file
+                dir_files[Files.BINARY] = self.test_file_binary
+            for file_name, content in dir_files.items():
+                mode = "wb" if isinstance(content, bytes) else "w"
                 file_path = Path(dir) / file_name
                 with open(file_path, mode) as f:
                     f.write(content)
-                created_paths.append(file_path)
-        result = "[$text-success](Re)Created paths:[/]\n" + "\n".join(
-            p for p in map(str, created_paths)
+                created_paths.append(str(file_path))
+        return "[$text-success](Re)Created paths:[/]\n" + "\n".join(
+            created_paths
         )
-        return result
 
     def remove_test_paths(self) -> str:
         removed_paths: list[str] = []
-        for file_path in Files.files_in_home():
-            if file_path.exists():
-                file_path.unlink()
-                removed_paths.append(str(file_path))
+        # Remove files first
+        for path in self.all_test_paths:
+            if path.exists() and path.is_file():
+                path.unlink()
+                removed_paths.append(str(path))
+        # Then remove directories
         for dir in reversed(Dirs):
-            for file_name in Files:
-                file_path = Path(dir) / file_name
-                if file_path.exists():
-                    file_path.unlink()
-                    removed_paths.append(str(file_path))
-            if Path(dir).exists():
-                Path(dir).rmdir()
+            dir_path = Path(dir)
+            if dir_path.exists():
+                dir_path.rmdir()
                 removed_paths.append(dir)
-        if len(removed_paths) == 0:
+        if not removed_paths:
             return "[$text-warning]No test paths to remove.[/]"
-        result = "[$text-success]Removed paths:[/]\n" + "\n".join(
-            p for p in removed_paths
-        )
-        return result
+        return "[$text-success]Removed paths:[/]\n" + "\n".join(removed_paths)
 
     def create_file_diffs(self) -> str:
-        current_files = self.list_existing_test_paths()
-        if "No test paths exist" in current_files:
+        if "No test paths exist" in self.list_existing_test_paths():
             return "[$text-warning]No test paths exist to modify.[/]"
-        modified: list[Path] = []
-
-        # Update the files
+        modified: list[str] = []
         for dir in Dirs:
-            # Update LARGE file
-            large_file = self.large_file.replace("the", "").replace("o", "O")
+            # Modify LARGE file
             large_path = Path(dir) / Files.LARGE
-            try:
+            if large_path.exists():
+                modified_content = self.large_file.replace("the", "").replace(
+                    "o", "O"
+                )
                 with open(large_path, "w") as f:
-                    f.write(large_file)
-                modified.append(large_path)
-            except FileNotFoundError:
-                continue
-            # Update TOML file
-            toml_file = self.toml_file.replace("title", "new_title").replace(
-                "true", "false"
-            )
+                    f.write(modified_content)
+                modified.append(str(large_path))
+            # Modify TOML file
             toml_path = Path(dir) / Files.TOML
-            try:
+            if toml_path.exists():
+                modified_content = self.toml_file.replace(
+                    "title", "new_title"
+                ).replace("true", "false")
                 with open(toml_path, "w") as f:
-                    f.write(toml_file)
-                modified.append(toml_path)
-            except FileNotFoundError:
-                continue
-        result = "[$text-warning]Modified paths:[/]\n" + "\n".join(
-            p for p in map(str, modified)
-        )
-        return result
+                    f.write(modified_content)
+                modified.append(str(toml_path))
+        return "[$text-primary]Modified paths:[/]\n" + "\n".join(modified)
