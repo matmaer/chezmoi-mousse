@@ -6,7 +6,6 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 from ._app_state import AppState
-from ._chezmoi_paths import ChezmoiPaths
 from ._str_enums import OperateStrings
 
 if TYPE_CHECKING:
@@ -346,13 +345,23 @@ class ChezmoiCommand:
         )
         self._log_in_app(command_result)
         if write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget):
-            ChezmoiPaths.managed_dirs_result = self.read(ReadCmd.managed_dirs)
-            ChezmoiPaths.managed_files_result = self.read(
+            if self.app is None:
+                raise ValueError("self.app is None")
+            self.app.paths.managed_dirs_result = self.read(
+                ReadCmd.managed_dirs
+            )
+            self.app.paths.managed_files_result = self.read(
                 ReadCmd.managed_files
             )
-            ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
-            ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
+            self.app.paths.status_files_result = self.read(
+                ReadCmd.status_files
+            )
+            self.app.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
         elif write_cmd in (WriteCmd.apply, WriteCmd.re_add):
-            ChezmoiPaths.status_files_result = self.read(ReadCmd.status_files)
-            ChezmoiPaths.status_dirs_result = self.read(ReadCmd.status_dirs)
+            if self.app is None:
+                raise ValueError("self.app is None")
+            self.app.paths.status_files_result = self.read(
+                ReadCmd.status_files
+            )
+            self.app.paths.status_dirs_result = self.read(ReadCmd.status_dirs)
         return command_result
