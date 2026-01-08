@@ -1,104 +1,82 @@
-# Byte-compiled / optimized / DLL files
+# Caches
 __pycache__/
-*.py[cod]
-*$py.class
+.cache/
+.pytest_cache/
+.ruff_cache/
 
 # C extensions
 *.so
 
 # Distribution / packaging
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-.venv/
 .build/
+.eggs/
+.installed.cfg
+.Python
+.venv/
+*.egg
+*.egg-info/
 develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
-lib/
-lib64/
+env.bak/
+env/
+ENV/
+MANIFEST
 parts/
 sdist/
 var/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+venv.bak/
+venv/
 
-# Installer logs
-pip-log.txt
+# Logs
+*.log
 pip-delete-this-directory.txt
+pip-log.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
 .hypothesis/
-.pytest_cache/
+.nox/
+.tox/
+*.cover
+coverage.xml
+htmlcov/
+nosetests.xml
 test-results/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
 # mypy
-.mypy_cache/
 .dmypy.json
+.mypy_cache/
 dmypy.json
 
-# Pyre type checker
-.pyre/
-
-# pytype
-.pytype/
-
-# VS Code
-.vscode/
-
-# PyCharm
-.idea/
-
-# Mac
-.DS_Store
-
 # Backup files
-*~
 *.bak
-*.swp
 *.swo
-
-# dotenv
-.env
-.env.*
-
-# Poetry
-poetry.lock
+*.swp
+*~
 
 # PDM
-pdm.lock
 __pypackages__/
 
 # Editor configs
-*.sublime-workspace
 *.sublime-project
-
-# Local configuration files
-*.local
+*.sublime-workspace
 
 # System files
-Thumbs.db
-ehthumbs.db
+.DS_Store
 Desktop.ini
+ehthumbs.db
+Thumbs.db
 
 # Misc
-*.log
+.idea/
+.ipynb_checkpoints
+.ipython/
+.pyre/
+.pytype/
+.vscode/
+*.lock
+*.py[cod]
+*$py.class
