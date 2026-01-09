@@ -166,7 +166,6 @@ class ContainerIds:
 class ContentSwitcherIds:
     def __init__(self, ids: AppIds):
         self.ids = ids
-
         self.config_tab = ids.content_switcher_id(
             switcher=ContentSwitcherName.config_switcher
         )
@@ -179,89 +178,30 @@ class ContentSwitcherIds:
             switcher=ContentSwitcherName.help_switcher
         )
         self.help_tab_q = f"#{self.help_tab}"
-
         self.init_screen = ids.content_switcher_id(
             switcher=ContentSwitcherName.init_screen_switcher
         )
         self.init_screen_q = f"#{self.init_screen}"
-
         self.logs_tab = ids.content_switcher_id(
             switcher=ContentSwitcherName.logs_switcher
         )
         self.logs_tab_q = f"#{self.logs_tab}"
-        self.logs_tab_buttons = ids.content_switcher_id(
-            switcher=ContentSwitcherName.logs_tab_buttons
-        )
-        self.logs_tab_buttons_q = f"#{self.logs_tab_buttons}"
-
         self.apply_trees = ids.content_switcher_id(
             switcher=ContentSwitcherName.apply_tree_switcher
         )
         self.apply_trees_q = f"#{self.apply_trees}"
-        self.apply_tree_buttons = ids.content_switcher_id(
-            switcher=ContentSwitcherName.apply_tree_buttons
-        )
-        self.apply_tree_buttons_q = f"#{self.apply_tree_buttons}"
-
-        self.re_add_trees = ids.content_switcher_id(
-            switcher=ContentSwitcherName.re_add_tree_switcher
-        )
-        self.re_add_trees_q = f"#{self.re_add_trees}"
-        self.re_add_tree_buttons = ids.content_switcher_id(
-            switcher=ContentSwitcherName.re_add_tree_buttons
-        )
-        self.re_add_tree_buttons_q = f"#{self.re_add_tree_buttons}"
-
         self.apply_views = ids.content_switcher_id(
             switcher=ContentSwitcherName.apply_view_switcher
         )
         self.apply_views_q = f"#{self.apply_views}"
-        self.apply_view_buttons = ids.content_switcher_id(
-            switcher=ContentSwitcherName.apply_view_buttons
+        self.re_add_trees = ids.content_switcher_id(
+            switcher=ContentSwitcherName.re_add_tree_switcher
         )
-
+        self.re_add_trees_q = f"#{self.re_add_trees}"
         self.re_add_views = ids.content_switcher_id(
             switcher=ContentSwitcherName.re_add_view_switcher
         )
         self.re_add_views_q = f"#{self.re_add_views}"
-        self.re_add_view_buttons = ids.content_switcher_id(
-            switcher=ContentSwitcherName.re_add_view_buttons
-        )
-        self.re_add_view_buttons_q = f"#{self.re_add_view_buttons}"
-        self.re_add_views_vertical = ids.content_switcher_id(
-            switcher=ContentSwitcherName.re_add_views_vertical
-        )
-        self.re_add_views_vertical_q = f"#{self.re_add_views_vertical}"
-
-    @property
-    def tree_buttons(self) -> str:
-        if self.ids.canvas_name == TabName.apply:
-            return self.apply_tree_buttons
-        elif self.ids.canvas_name == TabName.re_add:
-            return self.re_add_tree_buttons
-        else:
-            raise ValueError(
-                "ContentSwitcherIds.switcher_buttons accessed when not in Apply, ReAdd, or Logs tab"
-            )
-
-    @property
-    def tree_buttons_q(self) -> str:
-        return f"#{self.tree_buttons}"
-
-    @property
-    def view_buttons(self) -> str:
-        if self.ids.canvas_name == TabName.apply:
-            return self.apply_view_buttons
-        elif self.ids.canvas_name == TabName.re_add:
-            return self.re_add_view_buttons
-        else:
-            raise ValueError(
-                "ContentSwitcherIds.switcher_buttons accessed when not in Apply, ReAdd, or Logs tab"
-            )
-
-    @property
-    def view_buttons_q(self) -> str:
-        return f"#{self.view_buttons}"
 
     @property
     def trees(self) -> str:

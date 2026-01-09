@@ -221,10 +221,8 @@ class SwitchSlider(VerticalGroup):
 
 
 class TabButtonsBase(Horizontal):
-    def __init__(
-        self, *, ids: "AppIds", buttons: tuple[SubTabLabel, ...], container_id: str
-    ):
-        super().__init__(id=container_id)
+    def __init__(self, *, ids: "AppIds", buttons: tuple[SubTabLabel, ...]):
+        super().__init__()
         self.ids = ids
         self.buttons = buttons
 
@@ -256,22 +254,14 @@ class LogsTabButtons(TabButtonsBase, AppType):
             SubTabLabel.operate_log,
             SubTabLabel.git_log_global,
         )
-        super().__init__(
-            ids=self.ids,
-            buttons=self.tab_buttons,
-            container_id=self.ids.switcher.logs_tab_buttons,
-        )
+        super().__init__(ids=self.ids, buttons=self.tab_buttons)
 
 
 class TreeTabButtons(TabButtonsBase):
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids
         self.tree_tab_buttons = (SubTabLabel.tree, SubTabLabel.list)
-        super().__init__(
-            ids=self.ids,
-            buttons=self.tree_tab_buttons,
-            container_id=self.ids.switcher.tree_buttons,
-        )
+        super().__init__(ids=self.ids, buttons=self.tree_tab_buttons)
 
 
 class ViewTabButtons(TabButtonsBase):
@@ -282,8 +272,4 @@ class ViewTabButtons(TabButtonsBase):
             SubTabLabel.contents,
             SubTabLabel.git_log_path,
         )
-        super().__init__(
-            ids=self.ids,
-            buttons=self.view_tab_buttons,
-            container_id=self.ids.switcher.view_buttons,
-        )
+        super().__init__(ids=self.ids, buttons=self.view_tab_buttons)

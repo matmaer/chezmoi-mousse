@@ -34,31 +34,25 @@ class ContainerName(StrEnum):
     git_log_global = auto()
     git_log_path = auto()
     left_side = auto()
-    operate_buttons = auto()
     op_mode = auto()
     op_result = auto()
     op_review = auto()
+    operate_buttons = auto()
     repo_input = auto()
     right_side = auto()
     switch_slider = auto()
 
 
 class ContentSwitcherName(StrEnum):
-    apply_tree_buttons = auto()
     apply_tree_switcher = auto()
-    apply_view_buttons = auto()
     apply_view_switcher = auto()
     config_switcher = auto()
     debug_switcher = auto()
     help_switcher = auto()
     init_screen_switcher = auto()
     logs_switcher = auto()
-    logs_tab_buttons = auto()
-    re_add_tree_buttons = auto()
     re_add_tree_switcher = auto()
-    re_add_view_buttons = auto()
     re_add_view_switcher = auto()
-    re_add_views_vertical = auto()
 
 
 class DataTableName(StrEnum):
