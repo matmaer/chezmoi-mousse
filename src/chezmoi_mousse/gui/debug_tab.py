@@ -61,7 +61,6 @@ class DebugTab(Horizontal, AppType):
                     Button(classes=Tcss.operate_button, label=OpBtnLabel.create_paths),
                     Button(classes=Tcss.operate_button, label=OpBtnLabel.remove_paths),
                     Button(classes=Tcss.operate_button, label=OpBtnLabel.toggle_diffs),
-                    classes=Tcss.operate_button_group,
                 ),
                 id=IDS.debug.view.test_paths,
                 classes=Tcss.border_title_top,

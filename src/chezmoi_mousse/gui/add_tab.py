@@ -229,7 +229,6 @@ class AddTab(TabsBase, AppType):
     def compose(self) -> ComposeResult:
         yield OperateMode(ids=IDS.add)
         yield SwitchSlider(ids=IDS.add)
-        yield OperateButtons(IDS.add)
 
     def on_mount(self) -> None:
         self.operate_mode_container = self.query_one(
@@ -241,7 +240,8 @@ class AddTab(TabsBase, AppType):
             Horizontal(
                 FilteredDirTree(self.app.dest_dir, id=IDS.add.tree.dir_tree),
                 ContentsView(ids=IDS.add),
-            )
+            ),
+            OperateButtons(IDS.add),
         )
         contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         contents_view.add_class(Tcss.border_title_top)

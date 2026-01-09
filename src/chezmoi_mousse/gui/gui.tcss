@@ -49,25 +49,22 @@
   min-width: 78;
 }
 
-.operate_button_group {
-  dock: bottom;
-  .operate_button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-top: wide $primary-darken-3;
-    border-bottom: wide $surface;
-    color: $primary-lighten-3;
-    margin: 0 1;
+.operate_button {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border-top: wide $primary-darken-3;
+  border-bottom: wide $surface;
+  color: $primary-lighten-3;
+  margin: 0 1;
+  text-style: none;
+  width: 1fr;
+  &:hover {
     text-style: none;
-    width: 1fr;
-    &:hover {
-      text-style: none;
-      color: $accent;
-      border-top: wide $accent-darken-3;
-    }
-    &:focus {
-      text-style: none;
-    }
+    color: $accent;
+    border-top: wide $accent-darken-3;
+  }
+  &:focus {
+    text-style: none;
   }
 }
 
@@ -278,7 +275,7 @@ InstallHelpScreen {
   }
 }
 
-TabButtons, TreeTabButtons, ViewTabButtons {
+TabButtons {
   height: 1;
   width: 100%;
   &>.single_button_vertical {

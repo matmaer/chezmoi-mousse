@@ -123,9 +123,7 @@ class OpButton(Button, AppType):
 class OperateButtons(HorizontalGroup):
     def __init__(self, ids: "AppIds"):
         self.ids = ids
-        super().__init__(
-            id=self.ids.container.operate_buttons, classes=Tcss.operate_button_group
-        )
+        super().__init__(id=self.ids.container.operate_buttons)
 
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
