@@ -1,6 +1,6 @@
 from enum import StrEnum, auto
 
-from ._operate_button_data import OpBtnLabel
+from ._enum_data import OpBtnLabel
 
 __all__ = ["BindingAction", "BindingDescription"]
 

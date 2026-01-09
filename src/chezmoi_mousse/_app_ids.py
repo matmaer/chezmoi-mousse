@@ -5,6 +5,7 @@ Provides easy access, autocomplete, type checking or to generate the id dynamica
 """
 
 from ._chezmoi_command import WriteVerb
+from ._enum_data import SwitchEnum
 from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
@@ -18,7 +19,6 @@ from ._str_enum_names import (
     ViewName,
 )
 from ._str_enums import FlatBtnLabel, LinkBtn, TabBtn
-from ._switch_data import SwitchEnum
 
 __all__ = ["AppIds", "IDS"]
 

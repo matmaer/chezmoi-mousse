@@ -2,8 +2,6 @@
 
 from enum import StrEnum
 
-from ._switch_data import SwitchEnum
-
 __all__ = [
     "Chars",
     "FlatBtnLabel",
@@ -122,6 +120,14 @@ class OpBtnLabel(StrEnum):
     toggle_diffs = "Toggle Diffs"
 
 
+class SwitchLabel(StrEnum):
+    init_repo = "Init existing repo"
+    expand_all = "Expand all dirs"
+    unchanged = "Show unchanged files"
+    unmanaged_dirs = "Show unmanaged dirs"
+    unwanted = "Show unwanted paths"
+
+
 class OperateString(StrEnum):
     add_path_info = (
         "[dim]Add new targets to the source state. If adding a directory, it"
@@ -185,7 +191,7 @@ class OperateString(StrEnum):
     init_new_info = (
         "Ready to initialize a new chezmoi repository. Toggle the "
         "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{SwitchEnum.init_repo_switch.label} [/]"
+        f"{SwitchLabel.init_repo} [/]"
         "switch to initialize by cloning an existing Github repository."
     )
     https_url = (

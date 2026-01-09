@@ -21,7 +21,7 @@ from ._chezmoi_command import (
     WriteCmd,
 )
 from ._chezmoi_paths import ChezmoiPath, PathDict
-from ._operate_button_data import OpBtnEnum
+from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_bindings import BindingAction, BindingDescription
 from ._str_enum_names import PathKind, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
@@ -35,7 +35,6 @@ from ._str_enums import (
     StatusCode,
     TabBtn,
 )
-from ._switch_data import SwitchEnum
 from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedConfig
 
 __all__ = [
