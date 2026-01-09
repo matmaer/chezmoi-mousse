@@ -29,7 +29,6 @@ class ContainerName(StrEnum):
     contents = auto()
     diff = auto()
     doctor = auto()
-    git_log_global = auto()
     git_log_path = auto()
     left_side = auto()
     op_mode = auto()

@@ -126,17 +126,15 @@ class CanvasIds:
 class ContainerIds:
     def __init__(self, ids: AppIds):
         self.contents = ids.container_id(name=ContainerName.contents)
+        self.contents_q = f"#{self.contents}"
         self.command_output = ids.container_id(name=ContainerName.command_output)
         self.command_output_q = f"#{self.command_output}"
-        self.contents_q = f"#{self.contents}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
         self.doctor = ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
         self.git_log_path = ids.container_id(name=ContainerName.git_log_path)
         self.git_log_path_q = f"#{self.git_log_path}"
-        self.git_log_global = ids.container_id(name=ContainerName.git_log_global)
-        self.git_log_global_q = f"#{self.git_log_global}"
         self.left_side = ids.container_id(name=ContainerName.left_side)
         self.left_side_q = f"#{self.left_side}"
         self.operate_buttons = ids.container_id(name=ContainerName.operate_buttons)

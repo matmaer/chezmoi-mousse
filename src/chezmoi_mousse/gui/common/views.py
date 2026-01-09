@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 else:
     DataTableText = DataTable
 
-__all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogGlobal"]
+__all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogDataTable"]
 
 
 type DiffWidgets = list[Label | Static]
@@ -452,17 +452,3 @@ class GitLogPath(Vertical, AppType):
             ReadCmd.git_log, path_arg=Path(command_result.std_out)
         )
         datatable.populate_datatable(git_log_result)
-
-
-class GitLogGlobal(Vertical, AppType):
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.git_log_global)
-
-    def compose(self) -> ComposeResult:
-        yield GitLogDataTable(ids=self.ids)
-
-    def update_global_git_log(self, command_result: "CommandResult") -> None:
-        datatable = self.query_one(self.ids.datatable.git_log_q, GitLogDataTable)
-        datatable.populate_datatable(command_result)
