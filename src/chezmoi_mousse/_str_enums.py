@@ -3,6 +3,7 @@
 from enum import StrEnum
 
 __all__ = [
+    "BindingDescription",
     "Chars",
     "FlatBtnLabel",
     "LinkBtn",
@@ -11,6 +12,7 @@ __all__ = [
     "OperateString",
     "SectionLabel",
     "StatusCode",
+    "SwitchLabel",
     "TabBtn",
 ]
 
