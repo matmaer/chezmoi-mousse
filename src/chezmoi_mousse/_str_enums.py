@@ -13,7 +13,7 @@ __all__ = [
     "SectionLabel",
     "StatusCode",
     "SwitchLabel",
-    "TabBtn",
+    "SubTabLabel",
 ]
 
 #########################################
@@ -57,7 +57,7 @@ class LinkBtn(StrEnum):
         return self.value.replace("https://", "").replace("www.", "").rstrip("/")
 
 
-class TabBtn(StrEnum):
+class SubTabLabel(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "App"
     contents = "Contents"

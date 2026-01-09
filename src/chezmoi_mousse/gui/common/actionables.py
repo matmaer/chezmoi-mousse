@@ -13,8 +13,8 @@ from chezmoi_mousse import (
     OpBtnEnum,
     OpBtnLabel,
     ScreenName,
+    SubTabLabel,
     SwitchEnum,
-    TabBtn,
     TabName,
     Tcss,
 )
@@ -222,7 +222,7 @@ class SwitchSlider(VerticalGroup):
 
 class TabButtonsBase(Horizontal):
     def __init__(
-        self, *, ids: "AppIds", buttons: tuple[TabBtn, ...], container_id: str
+        self, *, ids: "AppIds", buttons: tuple[SubTabLabel, ...], container_id: str
     ):
         super().__init__(id=container_id)
         self.ids = ids
@@ -251,10 +251,10 @@ class LogsTabButtons(TabButtonsBase, AppType):
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids
         self.tab_buttons = (
-            TabBtn.app_log,
-            TabBtn.read_log,
-            TabBtn.operate_log,
-            TabBtn.git_log_global,
+            SubTabLabel.app_log,
+            SubTabLabel.read_log,
+            SubTabLabel.operate_log,
+            SubTabLabel.git_log_global,
         )
         super().__init__(
             ids=self.ids,
@@ -266,7 +266,7 @@ class LogsTabButtons(TabButtonsBase, AppType):
 class TreeTabButtons(TabButtonsBase):
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids
-        self.tree_tab_buttons = (TabBtn.tree, TabBtn.list)
+        self.tree_tab_buttons = (SubTabLabel.tree, SubTabLabel.list)
         super().__init__(
             ids=self.ids,
             buttons=self.tree_tab_buttons,
@@ -277,7 +277,11 @@ class TreeTabButtons(TabButtonsBase):
 class ViewTabButtons(TabButtonsBase):
     def __init__(self, *, ids: "AppIds"):
         self.ids = ids
-        self.view_tab_buttons = (TabBtn.diff, TabBtn.contents, TabBtn.git_log_path)
+        self.view_tab_buttons = (
+            SubTabLabel.diff,
+            SubTabLabel.contents,
+            SubTabLabel.git_log_path,
+        )
         super().__init__(
             ids=self.ids,
             buttons=self.view_tab_buttons,

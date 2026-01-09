@@ -18,7 +18,7 @@ from ._str_enum_names import (
     TreeName,
     ViewName,
 )
-from ._str_enums import FlatBtnLabel, LinkBtn, TabBtn
+from ._str_enums import FlatBtnLabel, LinkBtn, SubTabLabel
 
 __all__ = ["AppIds", "IDS"]
 
@@ -100,7 +100,7 @@ class AppIds:
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
 
-    def tab_button_id(self, qid: str = "", *, btn: TabBtn) -> str:
+    def tab_button_id(self, qid: str = "", *, btn: SubTabLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_tab_btn"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
@@ -420,15 +420,15 @@ class TabButtonIds:
     """Buttons used by ContentSwitcher classes to switch views."""
 
     def __init__(self, ids: AppIds):
-        self.app_log = ids.tab_button_id(btn=TabBtn.app_log)
-        self.contents = ids.tab_button_id(btn=TabBtn.contents)
-        self.diff = ids.tab_button_id(btn=TabBtn.diff)
-        self.git_log = ids.tab_button_id(btn=TabBtn.git_log_path)
-        self.git_log_global = ids.tab_button_id(btn=TabBtn.git_log_global)
-        self.list = ids.tab_button_id(btn=TabBtn.list)
-        self.operate_log = ids.tab_button_id(btn=TabBtn.operate_log)
-        self.read_log = ids.tab_button_id(btn=TabBtn.read_log)
-        self.tree = ids.tab_button_id(btn=TabBtn.tree)
+        self.app_log = ids.tab_button_id(btn=SubTabLabel.app_log)
+        self.contents = ids.tab_button_id(btn=SubTabLabel.contents)
+        self.diff = ids.tab_button_id(btn=SubTabLabel.diff)
+        self.git_log = ids.tab_button_id(btn=SubTabLabel.git_log_path)
+        self.git_log_global = ids.tab_button_id(btn=SubTabLabel.git_log_global)
+        self.list = ids.tab_button_id(btn=SubTabLabel.list)
+        self.operate_log = ids.tab_button_id(btn=SubTabLabel.operate_log)
+        self.read_log = ids.tab_button_id(btn=SubTabLabel.read_log)
+        self.tree = ids.tab_button_id(btn=SubTabLabel.tree)
 
 
 class TreeIds:

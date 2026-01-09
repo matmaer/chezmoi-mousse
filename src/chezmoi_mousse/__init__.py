@@ -40,7 +40,7 @@ from ._str_enums import (
     OperateString,
     SectionLabel,
     StatusCode,
-    TabBtn,
+    SubTabLabel,
 )
 from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedConfig
 
@@ -75,7 +75,7 @@ __all__ = [
     "SectionLabel",
     "StatusCode",
     "SwitchEnum",
-    "TabBtn",
+    "SubTabLabel",
     "TabName",
     "Tcss",
     "TreeName",
