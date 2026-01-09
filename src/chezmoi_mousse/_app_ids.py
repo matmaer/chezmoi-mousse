@@ -218,25 +218,8 @@ class ContentSwitcherIds:
     def trees_q(self) -> str:
         return f"#{self.trees}"
 
-    @property
-    def views(self) -> str:
-        if self.ids.canvas_name == TabName.apply:
-            return self.apply_views
-        elif self.ids.canvas_name == TabName.re_add:
-            return self.re_add_views
-        else:
-            raise ValueError(
-                "ContentSwitcherIds.views accessed when not in Apply or ReAdd tab"
-            )
-
-    @property
-    def views_q(self) -> str:
-        return f"#{self.views}"
-
 
 class DataTableIds:
-    """DataTable widget their id's."""
-
     def __init__(self, ids: AppIds):
         self.doctor = ids.datatable_id(datatable_name=DataTableName.doctor_table)
         self.doctor_q = f"#{self.doctor}"

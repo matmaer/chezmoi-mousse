@@ -47,16 +47,14 @@ class ViewSwitcher(Vertical):
 
     def compose(self) -> ComposeResult:
         yield ViewTabButtons(ids=self.ids)
-        with ContentSwitcher(
-            id=self.ids.switcher.views, initial=self.ids.container.diff
-        ):
+        with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(ids=self.ids)
             yield ContentsView(ids=self.ids)
             yield GitLogPath(ids=self.ids)
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:
-        view_switcher = self.query_one(self.ids.switcher.views_q, ContentSwitcher)
+        view_switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.id == self.ids.tab_btn.contents:
             view_switcher.current = self.ids.container.contents
         elif event.button.id == self.ids.tab_btn.diff:
