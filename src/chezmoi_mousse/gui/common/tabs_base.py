@@ -6,7 +6,7 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import SwitchEnum, Tcss
+from chezmoi_mousse import SubTabLabel, SwitchEnum, Tcss
 
 from .trees import ExpandedTree, ListTree, ManagedTree
 from .views import ContentsView, DiffView, GitLogPath
@@ -37,18 +37,18 @@ class TabsBase(Vertical):
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id in (self.ids.tab_btn.tree, self.ids.tab_btn.list):
+        if event.button.label in (SubTabLabel.tree, SubTabLabel.list):
             # toggle expand all switch enabled disabled state
             tree_switcher = self.query_one(self.ids.switcher.trees_q, ContentSwitcher)
             expand_all_switch = self.query_one(self.ids.filter.expand_all_q, Switch)
-            if event.button.id == self.ids.tab_btn.tree:
+            if event.button.label == SubTabLabel.tree:
                 if self.expand_all_state is True:
                     tree_switcher.current = self.ids.tree.expanded
                 else:
                     tree_switcher.current = self.ids.tree.managed
                 expand_all_switch.disabled = False
                 expand_all_switch.tooltip = SwitchEnum.expand_all.enabled_tooltip
-            elif event.button.id == self.ids.tab_btn.list:
+            elif event.button.label == SubTabLabel.list:
                 expand_all_switch.disabled = True
                 expand_all_switch.tooltip = SwitchEnum.expand_all.disabled_tooltip
                 tree_switcher.current = self.ids.tree.list

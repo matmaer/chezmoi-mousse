@@ -31,7 +31,6 @@ class AppIds:
         "container",
         "datatable",
         "filter",
-        "flat_btn",
         "footer",
         "header",
         "label",
@@ -39,7 +38,6 @@ class AppIds:
         "op_btn",
         "static",
         "switcher",
-        "tab_btn",
         "tab_id",
         "tab_qid",
         "tree",
@@ -63,7 +61,6 @@ class AppIds:
         self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
         self.switcher = ContentSwitcherIds(self)
-        self.tab_btn = TabButtonIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
 
@@ -282,21 +279,6 @@ class StaticIds:
         self.op_review_info_q = f"#{self.op_review_info}"
         self.op_result_info = ids.static_id(static=StaticName.op_result_info)
         self.op_result_info_q = f"#{self.op_result_info}"
-
-
-class TabButtonIds:
-    """Buttons used by ContentSwitcher classes to switch views."""
-
-    def __init__(self, ids: AppIds):
-        self.app_log = ids.tab_button_id(btn=SubTabLabel.app_log)
-        self.contents = ids.tab_button_id(btn=SubTabLabel.contents)
-        self.diff = ids.tab_button_id(btn=SubTabLabel.diff)
-        self.git_log = ids.tab_button_id(btn=SubTabLabel.git_log_path)
-        self.git_log_global = ids.tab_button_id(btn=SubTabLabel.git_log_global)
-        self.list = ids.tab_button_id(btn=SubTabLabel.list)
-        self.operate_log = ids.tab_button_id(btn=SubTabLabel.operate_log)
-        self.read_log = ids.tab_button_id(btn=SubTabLabel.read_log)
-        self.tree = ids.tab_button_id(btn=SubTabLabel.tree)
 
 
 class TreeIds:

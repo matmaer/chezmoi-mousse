@@ -9,7 +9,7 @@ from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import IDS, AppType, Tcss
 
-from .common.actionables import LogsTabButtons
+from .common.actionables import LogsTabButtons, SubTabLabel
 from .common.loggers import AppLog, OperateLog, ReadCmdLog
 from .common.views import GitLogGlobal
 
@@ -47,16 +47,16 @@ class LogsTab(Vertical, AppType):
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == IDS.logs.tab_btn.app_log:
+        if event.button.label == SubTabLabel.app_log:
             self.switcher.current = IDS.logs.logger.app
             self.switcher.border_title = BorderTitle.app_log
-        elif event.button.id == IDS.logs.tab_btn.read_log:
+        elif event.button.label == SubTabLabel.read_log:
             self.switcher.current = IDS.logs.logger.read
             self.switcher.border_title = BorderTitle.read_cmd_log
-        elif event.button.id == IDS.logs.tab_btn.operate_log:
+        elif event.button.label == SubTabLabel.operate_log:
             self.switcher.current = IDS.logs.logger.operate
             self.switcher.border_title = BorderTitle.operate_log
-        elif event.button.id == IDS.logs.tab_btn.git_log_global:
+        elif event.button.label == SubTabLabel.git_log_global:
             self.switcher.border_title = BorderTitle.git_log_global
             self.switcher.current = IDS.logs.container.git_log_global
 

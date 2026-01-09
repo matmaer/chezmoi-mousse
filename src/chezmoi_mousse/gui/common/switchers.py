@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import Tcss
+from chezmoi_mousse import SubTabLabel, Tcss
 
 from .actionables import TreeTabButtons, ViewTabButtons
 from .trees import ExpandedTree, ListTree, ManagedTree
@@ -55,9 +55,9 @@ class ViewSwitcher(Vertical):
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:
         view_switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == self.ids.tab_btn.contents:
+        if event.button.label == SubTabLabel.contents:
             view_switcher.current = self.ids.container.contents
-        elif event.button.id == self.ids.tab_btn.diff:
+        elif event.button.label == SubTabLabel.diff:
             view_switcher.current = self.ids.container.diff
-        elif event.button.id == self.ids.tab_btn.git_log:
+        elif event.button.label == SubTabLabel.git_log_path:
             view_switcher.current = self.ids.container.git_log_path
