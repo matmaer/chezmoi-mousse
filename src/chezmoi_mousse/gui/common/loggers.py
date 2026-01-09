@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual import work
 from textual.containers import ScrollableContainer
-from textual.widgets import Collapsible, RichLog, Static
+from textual.widgets import Collapsible, RichLog
 
-from chezmoi_mousse import AppType, Chars, LogString, ReadVerb, Tcss
+from chezmoi_mousse import AppType, Chars, LogString, ReadVerb
 
 from .operate_mode import CommandOutput
 
@@ -218,12 +218,6 @@ class DebugLog(LoggersBase, AppType):
     def print_env_vars(self) -> None:
         for key, value in os.environ.items():
             self.write(f"{key}: {value}")
-
-
-class CmdOutput(Static, AppType):
-
-    def __init__(self, command_result: "CommandResult") -> None:
-        super().__init__(command_result.std_out, markup=False, classes=Tcss.cmd_output)
 
 
 class OutputCollapsible(Collapsible, AppType):
