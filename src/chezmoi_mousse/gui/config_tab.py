@@ -1,34 +1,19 @@
-from typing import TYPE_CHECKING
-
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import (
-    IDS,
-    AppIds,
-    AppType,
-    CommandResult,
-    FlatBtnLabel,
-    SectionLabel,
-    Tcss,
-)
+from chezmoi_mousse import IDS, AppType, CommandResult, FlatBtnLabel, SectionLabel, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
-
 
 __all__ = ["ConfigTab"]
 
 
 class CatConfigView(Vertical, AppType):
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        super().__init__(id=self.ids.view.cat_config)
+    def __init__(self):
+        super().__init__(id=IDS.config.view.cat_config)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
@@ -47,11 +32,11 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         )
 
     def compose(self) -> ComposeResult:
-        yield DoctorTableView(ids=IDS.config)
+        yield DoctorTableView()
         yield PwMgrInfoView(ids=IDS.config)
-        yield CatConfigView(ids=IDS.config)
-        yield IgnoredView(ids=IDS.config)
-        yield TemplateDataView(ids=IDS.config)
+        yield CatConfigView()
+        yield IgnoredView()
+        yield TemplateDataView()
 
     @work
     async def on_mount(self):
@@ -68,9 +53,8 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
 
 
 class IgnoredView(Vertical):
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        super().__init__(id=self.ids.view.ignored)
+    def __init__(self):
+        super().__init__(id=IDS.config.view.ignored)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
@@ -81,21 +65,19 @@ class IgnoredView(Vertical):
 
 class DoctorTableView(Vertical, AppType):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.doctor)
+    def __init__(self) -> None:
+        super().__init__(id=IDS.config.container.doctor)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
 
     def populate_doctor_data(self, command_result: CommandResult) -> None:
-        self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
+        self.mount(DoctorTable(ids=IDS.config, doctor_data=command_result))
 
 
 class TemplateDataView(Vertical, AppType):
-    def __init__(self, ids: "AppIds"):
-        self.ids = ids
-        super().__init__(id=self.ids.view.template_data)
+    def __init__(self):
+        super().__init__(id=IDS.config.view.template_data)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
