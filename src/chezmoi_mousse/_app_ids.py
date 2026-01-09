@@ -162,10 +162,6 @@ class ContainerIds:
 class ContentSwitcherIds:
     def __init__(self, ids: AppIds):
         self.ids = ids
-        self.init_screen = ids.content_switcher_id(
-            switcher=ContentSwitcherName.init_screen_switcher
-        )
-        self.init_screen_q = f"#{self.init_screen}"
         self.apply_trees = ids.content_switcher_id(
             switcher=ContentSwitcherName.apply_tree_switcher
         )

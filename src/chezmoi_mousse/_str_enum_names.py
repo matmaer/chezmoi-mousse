@@ -45,7 +45,6 @@ class ContainerName(StrEnum):
 class ContentSwitcherName(StrEnum):
     apply_tree_switcher = auto()
     apply_view_switcher = auto()
-    init_screen_switcher = auto()
     re_add_tree_switcher = auto()
     re_add_view_switcher = auto()
 
