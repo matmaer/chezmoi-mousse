@@ -345,13 +345,6 @@ class SplashScreen(Screen[None], AppType):
 
     @work(name="update_app")
     async def update_app(self) -> None:
-        self.app.paths = ChezmoiPath(
-            dest_dir=globals()["parsed_config"].dest_dir,
-            managed_dirs_result=globals()["managed_dirs"],
-            managed_files_result=globals()["managed_files"],
-            status_dirs_result=globals()["status_dirs"],
-            status_files_result=globals()["status_files"],
-        )
         self.app.cmd_results.doctor = globals()["doctor"]
         self.app.cmd_results.template_data = globals()["template_data"]
         if self.app.init_needed is True:
@@ -360,6 +353,13 @@ class SplashScreen(Screen[None], AppType):
             )
             self.app.cmd_results = cmd_results
             return
+        self.app.paths = ChezmoiPath(
+            dest_dir=globals()["parsed_config"].dest_dir,
+            managed_dirs_result=globals()["managed_dirs"],
+            managed_files_result=globals()["managed_files"],
+            status_dirs_result=globals()["status_dirs"],
+            status_files_result=globals()["status_files"],
+        )
 
         TreeBase.root_node_data = NodeData(
             path=globals()["parsed_config"].dest_dir,
