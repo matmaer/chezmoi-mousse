@@ -278,7 +278,7 @@ InstallHelpScreen {
   }
 }
 
-LogsTabButtons, TreeTabButtons, ViewTabButtons {
+TabButtons, TreeTabButtons, ViewTabButtons {
   height: 1;
   width: 100%;
   &>.single_button_vertical {

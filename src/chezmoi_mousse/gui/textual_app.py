@@ -30,10 +30,9 @@ from .apply_tab import ApplyTab
 from .common.actionables import (
     CloseButton,
     FlatButtonsVertical,
-    LogsTabButtons,
     OperateButtons,
     SwitchSlider,
-    ViewTabButtons,
+    TabButtons,
 )
 from .common.messages import CloseButtonMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
@@ -194,9 +193,7 @@ class ChezmoiGUI(App[None]):
                 )
                 left_side.display = False if left_side.display is True else True
                 active_tab_widget = self.get_tab_widget()
-                view_switcher_buttons = active_tab_widget.query_exactly_one(
-                    ViewTabButtons
-                )
+                view_switcher_buttons = active_tab_widget.query(TabButtons).last()
                 view_switcher_buttons.display = (
                     False if view_switcher_buttons.display is True else True
                 )
@@ -371,7 +368,7 @@ class ChezmoiGUI(App[None]):
 
         if active_tab in (TabName.apply, TabName.re_add):
             active_tab_widget = self.get_tab_widget()
-            view_switcher_buttons = active_tab_widget.query_exactly_one(ViewTabButtons)
+            view_switcher_buttons = active_tab_widget.query(TabButtons).last()
 
         if active_tab == TabName.apply:
             left_side = self.screen.query_one(
@@ -402,7 +399,7 @@ class ChezmoiGUI(App[None]):
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
         elif active_tab == TabName.logs:
-            logs_tab_buttons = self.screen.query_exactly_one(LogsTabButtons)
+            logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = (
                 False if logs_tab_buttons.display is True else True
             )

@@ -7,9 +7,9 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import IDS, AppType, Tcss
+from chezmoi_mousse import IDS, AppType, SubTabLabel, Tcss
 
-from .common.actionables import LogsTabButtons, SubTabLabel
+from .common.actionables import TabButtons
 from .common.loggers import AppLog, OperateLog, ReadCmdLog
 from .common.views import GitLogGlobal
 
@@ -31,7 +31,15 @@ class LogsTab(Vertical, AppType):
     git_log_result: reactive["CommandResult | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
-        yield LogsTabButtons(ids=IDS.logs)
+        yield TabButtons(
+            ids=IDS.logs,
+            buttons=(
+                SubTabLabel.app_log,
+                SubTabLabel.read_log,
+                SubTabLabel.operate_log,
+                SubTabLabel.git_log_global,
+            ),
+        )
         with ContentSwitcher(
             initial=IDS.logs.logger.app, classes=Tcss.border_title_top
         ):

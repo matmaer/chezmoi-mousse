@@ -30,13 +30,11 @@ __all__ = [
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",
-    "LogsTabButtons",
+    "TabButtons",
     "OpButton",
     "OperateButtons",
     "SwitchWithLabel",
     "SwitchSlider",
-    "TreeTabButtons",
-    "ViewTabButtons",
 ]
 
 
@@ -132,7 +130,6 @@ class OperateButtons(HorizontalGroup):
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
             yield OpButton(btn_id=self.ids.op_btn.add, btn_enum=OpBtnEnum.add)
-
         if self.ids.canvas_name == TabName.apply:
             yield OpButton(btn_id=self.ids.op_btn.apply, btn_enum=OpBtnEnum.apply)
         if self.ids.canvas_name == TabName.re_add:
@@ -220,7 +217,7 @@ class SwitchSlider(VerticalGroup):
         self.query(HorizontalGroup).last().styles.padding = 0
 
 
-class TabButtonsBase(Horizontal):
+class TabButtons(Horizontal):
     def __init__(self, *, ids: "AppIds", buttons: tuple[SubTabLabel, ...]):
         super().__init__()
         self.ids = ids
@@ -243,33 +240,3 @@ class TabButtonsBase(Horizontal):
         for btn in self.query(Button):
             btn.remove_class(Tcss.last_clicked_tab_btn)
         event.button.add_class(Tcss.last_clicked_tab_btn)
-
-
-class LogsTabButtons(TabButtonsBase, AppType):
-    def __init__(self, *, ids: "AppIds"):
-        self.ids = ids
-        self.tab_buttons = (
-            SubTabLabel.app_log,
-            SubTabLabel.read_log,
-            SubTabLabel.operate_log,
-            SubTabLabel.git_log_global,
-        )
-        super().__init__(ids=self.ids, buttons=self.tab_buttons)
-
-
-class TreeTabButtons(TabButtonsBase):
-    def __init__(self, *, ids: "AppIds"):
-        self.ids = ids
-        self.tree_tab_buttons = (SubTabLabel.tree, SubTabLabel.list)
-        super().__init__(ids=self.ids, buttons=self.tree_tab_buttons)
-
-
-class ViewTabButtons(TabButtonsBase):
-    def __init__(self, *, ids: "AppIds"):
-        self.ids = ids
-        self.view_tab_buttons = (
-            SubTabLabel.diff,
-            SubTabLabel.contents,
-            SubTabLabel.git_log_path,
-        )
-        super().__init__(ids=self.ids, buttons=self.view_tab_buttons)
