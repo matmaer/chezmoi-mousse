@@ -162,26 +162,10 @@ class ContainerIds:
 class ContentSwitcherIds:
     def __init__(self, ids: AppIds):
         self.ids = ids
-        self.config_tab = ids.content_switcher_id(
-            switcher=ContentSwitcherName.config_switcher
-        )
-        self.config_tab_q = f"#{self.config_tab}"
-        self.debug_tab = ids.content_switcher_id(
-            switcher=ContentSwitcherName.debug_switcher
-        )
-        self.debug_tab_q = f"#{self.debug_tab}"
-        self.help_tab = ids.content_switcher_id(
-            switcher=ContentSwitcherName.help_switcher
-        )
-        self.help_tab_q = f"#{self.help_tab}"
         self.init_screen = ids.content_switcher_id(
             switcher=ContentSwitcherName.init_screen_switcher
         )
         self.init_screen_q = f"#{self.init_screen}"
-        self.logs_tab = ids.content_switcher_id(
-            switcher=ContentSwitcherName.logs_switcher
-        )
-        self.logs_tab_q = f"#{self.logs_tab}"
         self.apply_trees = ids.content_switcher_id(
             switcher=ContentSwitcherName.apply_tree_switcher
         )

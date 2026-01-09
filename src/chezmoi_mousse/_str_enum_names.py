@@ -45,11 +45,7 @@ class ContainerName(StrEnum):
 class ContentSwitcherName(StrEnum):
     apply_tree_switcher = auto()
     apply_view_switcher = auto()
-    config_switcher = auto()
-    debug_switcher = auto()
-    help_switcher = auto()
     init_screen_switcher = auto()
-    logs_switcher = auto()
     re_add_tree_switcher = auto()
     re_add_view_switcher = auto()
 

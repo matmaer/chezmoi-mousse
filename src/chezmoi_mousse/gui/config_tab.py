@@ -27,9 +27,7 @@ class CatConfigView(Vertical, AppType):
 class ConfigTabSwitcher(ContentSwitcher, AppType):
 
     def __init__(self):
-        super().__init__(
-            id=IDS.config.switcher.config_tab, initial=IDS.config.container.doctor
-        )
+        super().__init__(initial=IDS.config.container.doctor)
 
     def compose(self) -> ComposeResult:
         yield DoctorTableView()
@@ -105,8 +103,8 @@ class ConfigTab(Horizontal, AppType):
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
+        switcher = self.query_exactly_one(ConfigTabSwitcher)
         event.stop()
-        switcher = self.query_one(IDS.config.switcher.config_tab_q, ConfigTabSwitcher)
         if event.button.id == IDS.config.flat_btn.doctor:
             switcher.current = IDS.config.container.doctor
         if event.button.id == IDS.config.flat_btn.pw_mgr_info:

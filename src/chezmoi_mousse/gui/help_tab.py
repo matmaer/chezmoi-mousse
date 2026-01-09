@@ -155,16 +155,14 @@ class HelpTab(Horizontal):
                 FlatBtnLabel.diagram,
             ),
         )
-        with ContentSwitcher(
-            id=IDS.help.switcher.help_tab, initial=IDS.help.view.apply_help
-        ):
+        with ContentSwitcher(initial=IDS.help.view.apply_help):
             yield ApplyTabHelp()
             yield ReAddTabHelp()
             yield AddTabHelp()
             yield ChezmoiDiagram()
 
     def on_mount(self) -> None:
-        self.switcher = self.query_one(IDS.help.switcher.help_tab_q, ContentSwitcher)
+        self.switcher = self.query_exactly_one(ContentSwitcher)
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:

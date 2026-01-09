@@ -54,9 +54,7 @@ class DebugTab(Horizontal, AppType):
                 FlatBtnLabel.dom_nodes,
             ),
         )
-        with ContentSwitcher(
-            id=IDS.debug.switcher.debug_tab, initial=IDS.debug.view.test_paths
-        ):
+        with ContentSwitcher(initial=IDS.debug.view.test_paths):
             yield Vertical(
                 Static(id=IDS.debug.static.debug_test_paths),
                 HorizontalGroup(
@@ -91,8 +89,6 @@ class DebugTab(Horizontal, AppType):
         self.debug_log.border_title = " Debug Log "
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.dom_node_logger.border_title = " DOM Nodes "
-        self.switcher = self.query_one(IDS.debug.switcher.debug_tab_q, ContentSwitcher)
-
         self.app.call_later(self.log_dom_nodes)
 
     def log_dom_nodes(self) -> None:
@@ -110,12 +106,13 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
+        switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.id == IDS.debug.flat_btn.debug_log:
-            self.switcher.current = IDS.debug.logger.debug
+            switcher.current = IDS.debug.logger.debug
         elif event.button.id == IDS.debug.flat_btn.test_paths:
-            self.switcher.current = IDS.debug.view.test_paths
+            switcher.current = IDS.debug.view.test_paths
         elif event.button.id == IDS.debug.flat_btn.dom_nodes:
-            self.switcher.current = IDS.debug.logger.dom_nodes
+            switcher.current = IDS.debug.logger.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
