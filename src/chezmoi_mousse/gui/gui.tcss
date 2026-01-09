@@ -13,7 +13,10 @@
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
-  border: inner $primary-muted;
+  border-bottom: inner $primary-muted;
+  border-left: none;
+  border-right: none;
+  border-top: inner $primary-muted;
   color: $text-muted;
   width: 100%;
   &:hover {
@@ -34,15 +37,6 @@
       color: $text-accent;
     }
   }
-}
-
-.flat_section_label {
-  background-tint: $primary-muted;
-  background: $primary-muted;
-  border: inner $primary-muted;
-  color: $primary-lighten-3;
-  text-align: center;
-  width: 100%;
 }
 
 .flow_diagram {
@@ -68,22 +62,35 @@
   }
 }
 
-.sub_section_label {
-  background-tint: $panel;
-  background: $panel;
-  border: wide $panel;
-  color: $text-success;
+Label{
+  padding: 0 1;
   text-align: center;
-  width: 1fr;
-}
-
-.main_section_label {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border: inner $surface-lighten-1;
-  color: $text-accent;
-  text-align: center;
-  width: 1fr;
+  border-left: none;
+  border-right: none;
+  &.flat_section_label {
+    background-tint: $primary-muted;
+    background: $primary-muted;
+    border-bottom: wide $primary-muted;
+    border-top: wide $primary-muted;
+    color: $primary-lighten-3;
+    width: 100%;
+  }
+  &.sub_section_label {
+    background-tint: $panel;
+    background: $panel;
+    border-bottom: wide $panel;
+    border-top: block $panel;
+    color: $text-success;
+    width: 100%;
+  }
+  &.main_section_label {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
+    color: $text-accent;
+    width: 100%;
+  }
 }
 
 .single_switch {
@@ -91,7 +98,7 @@
   background: $surface-lighten-1;
   border: inner $surface-lighten-1;
   color: $foreground-darken-1;
-  padding-right: 2;
+  padding-left: 0;
   height: 3;
   width: auto;
   & Switch {
@@ -366,7 +373,7 @@ SwitchSlider {
   layer: switches;
   margin-bottom: 3;
   offset-x: 0%;
-  padding-right: 1;
+  padding-left: 2;
   transition: offset 380ms;
   width: auto;
   & HorizontalGroup {
