@@ -9,7 +9,7 @@ from textual.containers import Horizontal, HorizontalGroup, Vertical
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 from tomlkit import document, dumps, table  # type: ignore[import-untyped]
 
-from chezmoi_mousse import IDS, AppType, FlatBtn, Tcss
+from chezmoi_mousse import IDS, AppType, FlatBtn, OpBtnLabels, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.loggers import DebugLog
@@ -43,13 +43,6 @@ class Files(StrEnum):
         return [Path.home() / cls.TOML, Path.home() / cls.LARGE]
 
 
-class DbgOpBtnLabel(StrEnum):
-    create_paths = "(Re)Create Test Paths"
-    toggle_diffs = "Toggle Diffs"
-    remove_paths = "Remove Test Paths"
-    path_info = "Show Path Info"
-
-
 class DebugTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
@@ -63,15 +56,9 @@ class DebugTab(Horizontal, AppType):
             yield Vertical(
                 Static(id=IDS.debug.static.debug_test_paths),
                 HorizontalGroup(
-                    Button(
-                        classes=Tcss.operate_button, label=DbgOpBtnLabel.create_paths
-                    ),
-                    Button(
-                        classes=Tcss.operate_button, label=DbgOpBtnLabel.remove_paths
-                    ),
-                    Button(
-                        classes=Tcss.operate_button, label=DbgOpBtnLabel.toggle_diffs
-                    ),
+                    Button(classes=Tcss.operate_button, label=OpBtnLabels.create_paths),
+                    Button(classes=Tcss.operate_button, label=OpBtnLabels.remove_paths),
+                    Button(classes=Tcss.operate_button, label=OpBtnLabels.toggle_diffs),
                     classes=Tcss.operate_button_group,
                 ),
                 id=IDS.debug.view.test_paths,
@@ -129,13 +116,13 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == DbgOpBtnLabel.toggle_diffs:
+        if event.button.label == OpBtnLabels.toggle_diffs:
             result = self.test_manager.create_file_diffs()
             self.test_paths_static.update(result)
-        elif event.button.label == DbgOpBtnLabel.create_paths:
+        elif event.button.label == OpBtnLabels.create_paths:
             result = self.test_manager.create_test_paths()
             self.test_paths_static.update(result)
-        elif event.button.label == DbgOpBtnLabel.remove_paths:
+        elif event.button.label == OpBtnLabels.remove_paths:
             result = self.test_manager.remove_test_paths()
             self.test_paths_static.update(result)
 

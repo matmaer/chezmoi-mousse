@@ -9,6 +9,7 @@ __all__ = [
     "FlatBtn",
     "LinkBtn",
     "LogStrings",
+    "OpBtnLabels",
     "OperateStrings",
     "SectionLabels",
     "StatusCode",
@@ -98,6 +99,27 @@ class LogStrings(StrEnum):
     dev_mode_enabled = "Dev mode enabled"
     operate_log_initialized = "Operate log initialized"
     read_log_initialized = "Read command log initialized"
+
+
+class OpBtnLabels(StrEnum):
+    add_review = "Review Add Path"
+    add_run = "Run Chezmoi Add"
+    apply_review = "Review Apply Path"
+    apply_run = "Run Chezmoi Apply"
+    cancel = "Cancel"
+    create_paths = "(Re)Create Test Paths"
+    destroy_review = "Review Destroy Path"
+    destroy_run = "Run Chezmoi Destroy"
+    exit_app = "Exit App"
+    forget_review = "Review Forget Path"
+    forget_run = "Run Chezmoi Forget"
+    init_review = "Review Init Chezmoi"
+    init_run = "Run Chezmoi Init"
+    re_add_review = "Review Re-Add Path"
+    re_add_run = "Run Chezmoi Re-Add"
+    reload = "Reload"
+    remove_paths = "Remove Test Paths"
+    toggle_diffs = "Toggle Diffs"
 
 
 class OperateStrings(StrEnum):

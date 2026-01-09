@@ -1,36 +1,14 @@
 """This module does not import anything from textual, it only contains classes imported
 at module init before launching the textual app, and attributes accessed after the app
-is launched.
-
-The initial_label attribute is used to construct the OpButton class in
-shared/_buttons.py.
-"""
+is launched."""
 
 from dataclasses import dataclass
-from enum import Enum, StrEnum
+from enum import Enum
 
 from ._chezmoi_command import WriteCmd
-from ._str_enums import OperateStrings
+from ._str_enums import OpBtnLabels, OperateStrings
 
-__all__ = ["OpBtnLabels", "OpBtnEnum"]
-
-
-class OpBtnLabels(StrEnum):
-    add_run = "Run Chezmoi Add"
-    add_review = "Review Add Path"
-    apply_review = "Review Apply Path"
-    apply_run = "Run Chezmoi Apply"
-    cancel = "Cancel"
-    destroy_run = "Run Chezmoi Destroy"
-    destroy_review = "Review Destroy Path"
-    exit_app = "Exit App"
-    forget_run = "Run Chezmoi Forget"
-    forget_review = "Review Forget Path"
-    init_run = "Run Chezmoi Init"
-    init_review = "Review Init Chezmoi"
-    re_add_review = "Review Re-Add Path"
-    re_add_run = "Run Chezmoi Re-Add"
-    reload = "Reload"
+__all__ = ["OpBtnEnum"]
 
 
 @dataclass(slots=True)
