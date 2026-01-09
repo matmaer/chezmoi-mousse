@@ -52,10 +52,7 @@ class InitCloneCmdMsg(Message):
 
 
 class OperateButtonMsg(Message):
-    def __init__(
-        self, *, button: "OpButton", ids: "AppIds", pressed_label: str
-    ) -> None:
+    def __init__(self, *, button: "OpButton", ids: "AppIds") -> None:
         self.button = button
         self.ids = ids
-        self.pressed_label = pressed_label
         super().__init__()

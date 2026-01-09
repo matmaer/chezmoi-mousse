@@ -144,44 +144,9 @@ class OperateButtons(HorizontalGroup):
         event.stop()  # We post our own message.
         if not isinstance(event.button, OpButton):
             raise TypeError("event.button is not an OpButton")
-        pressed_label = str(event.button.label)
-        self.post_message(
-            OperateButtonMsg(
-                button=event.button, ids=self.ids, pressed_label=pressed_label
-            )
-        )
-
-        if event.button.label == OpBtnLabel.init_review:
-            event.button.label = OpBtnLabel.init_run
-
-        elif event.button.label == OpBtnLabel.add_review:
-            event.button.label = OpBtnLabel.add_run
-
-        elif event.button.label == OpBtnLabel.apply_review:
-            self.query_one(self.ids.op_btn.forget_q).display = False
-            self.query_one(self.ids.op_btn.destroy_q).display = False
-            event.button.label = OpBtnLabel.apply_run
-
-        elif event.button.label == OpBtnLabel.destroy_review:
-            self.query_one(self.ids.op_btn.forget_q).display = False
-            if self.ids.canvas_name == TabName.apply:
-                self.query_one(self.ids.op_btn.apply_q).display = False
-            elif self.ids.canvas_name == TabName.re_add:
-                self.query_one(self.ids.op_btn.re_add_q).display = False
-            event.button.label = OpBtnLabel.destroy_run
-
-        elif event.button.label == OpBtnLabel.forget_review:
-            self.query_one(self.ids.op_btn.destroy_q).display = False
-            if self.ids.canvas_name == TabName.apply:
-                self.query_one(self.ids.op_btn.apply_q).display = False
-            elif self.ids.canvas_name == TabName.re_add:
-                self.query_one(self.ids.op_btn.re_add_q).display = False
-            event.button.label = OpBtnLabel.forget_run
-
-        elif event.button.label == OpBtnLabel.re_add_review:
-            self.query_one(self.ids.op_btn.forget_q).display = False
-            self.query_one(self.ids.op_btn.destroy_q).display = False
-            event.button.label = OpBtnLabel.re_add_run
+        # Only send a message; visual state and label changes
+        # are handled in the App's OperateButtonMsg handler.
+        self.post_message(OperateButtonMsg(button=event.button, ids=self.ids))
 
 
 class SwitchWithLabel(HorizontalGroup):

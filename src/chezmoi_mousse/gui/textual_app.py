@@ -257,17 +257,51 @@ class ChezmoiGUI(App[None]):
         operate_buttons = self.screen.query_one(
             msg.ids.container.operate_buttons_q, OperateButtons
         )
-        if "Review" in msg.pressed_label:
+        if "Review" in str(msg.button.label):
             operate_buttons.visible = False
+            if msg.button.label == OpBtnLabel.init_review:
+                msg.button.label = OpBtnLabel.init_run
+
+            elif msg.button.label == OpBtnLabel.add_review:
+                msg.button.label = OpBtnLabel.add_run
+
+            elif msg.button.label == OpBtnLabel.apply_review:
+                operate_buttons.query_one(msg.ids.op_btn.forget_q).display = False
+                operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
+                msg.button.label = OpBtnLabel.apply_run
+
+            elif msg.button.label == OpBtnLabel.destroy_review:
+                operate_buttons.query_one(msg.ids.op_btn.forget_q).display = False
+                if msg.ids.canvas_name == TabName.apply:
+                    operate_buttons.query_one(msg.ids.op_btn.apply_q).display = False
+                elif msg.ids.canvas_name == TabName.re_add:
+                    operate_buttons.query_one(msg.ids.op_btn.re_add_q).display = False
+                msg.button.label = OpBtnLabel.destroy_run
+
+            elif msg.button.label == OpBtnLabel.forget_review:
+                operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
+                if msg.ids.canvas_name == TabName.apply:
+                    operate_buttons.query_one(msg.ids.op_btn.apply_q).display = False
+                elif msg.ids.canvas_name == TabName.re_add:
+                    operate_buttons.query_one(msg.ids.op_btn.re_add_q).display = False
+                msg.button.label = OpBtnLabel.forget_run
+
+            elif msg.button.label == OpBtnLabel.re_add_review:
+                operate_buttons.query_one(msg.ids.op_btn.forget_q).display = False
+                operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
+                msg.button.label = OpBtnLabel.re_add_run
+
             self.toggle_operate_display(ids=msg.ids)
             operate_mode_container.update_review_info(msg.button.btn_enum)
             operate_mode_container.display = True
             operate_buttons.visible = True
             self.screen.query_exactly_one(CustomHeader).read_mode = False
             self.refresh_bindings()
+        # Second click: "*Run" variants – execute the command.
         elif "Run" in str(msg.button.label):
             close_btn.label = OpBtnLabel.reload
             operate_mode_container.run_command(msg.button.btn_enum)
+            operate_buttons.visible = True
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
