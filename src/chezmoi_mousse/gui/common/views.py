@@ -11,7 +11,6 @@ from textual.widgets import DataTable, Label, RichLog, Static
 
 from chezmoi_mousse import (
     AppType,
-    NodeData,
     OperateString,
     PathKind,
     ReadCmd,
@@ -314,7 +313,7 @@ class DiffView(ScrollableContainer, AppType):
                 break
         return diff_widgets
 
-    def create_status_widgets(self, node_data: NodeData) -> DiffWidgets:
+    def create_status_widgets(self, node_data: "NodeData") -> DiffWidgets:
         diff_widgets: DiffWidgets = []
         status_paths = (
             self.app.paths.list_apply_status_paths_in(node_data.path)
