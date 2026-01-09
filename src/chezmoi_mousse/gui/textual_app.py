@@ -87,8 +87,6 @@ class ChezmoiGUI(App[None]):
             "ctrl+q",
             action="quit",
             description="Quit",
-            tooltip="Quit the app and return to the command prompt.",
-            show=True,
             key_display="Ctrl-q",
             priority=True,
         ),
