@@ -133,10 +133,6 @@ class ContainerIds:
         self.command_output = ids.container_id(name=ContainerName.command_output)
         self.command_output_q = f"#{self.command_output}"
         self.contents_q = f"#{self.contents}"
-        self.contents_info = ids.container_id(name=ContainerName.contents_info)
-        self.contents_info_q = f"#{self.contents_info}"
-        self.debug_log = ids.container_id(name=ContainerName.debug_log)
-        self.debug_log_q = f"#{self.debug_log}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
         self.doctor = ids.container_id(name=ContainerName.doctor)

@@ -28,7 +28,6 @@ class ContainerName(StrEnum):
     command_output = auto()
     contents = auto()
     contents_info = auto()
-    debug_log = auto()
     diff = auto()
     doctor = auto()
     git_log_global = auto()

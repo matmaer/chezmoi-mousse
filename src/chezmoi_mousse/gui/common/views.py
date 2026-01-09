@@ -60,7 +60,6 @@ class ContentsView(Vertical, AppType):
                 id=self.ids.label.contents_info,
             ),
             Static(id=self.ids.static.contents_info),
-            id=self.ids.container.contents_info,
         )
         yield Label(
             SectionLabel.cat_config_output,
@@ -90,26 +89,23 @@ class ContentsView(Vertical, AppType):
         self.cat_config_label.display = False
         self.file_read_label = self.query_one(self.ids.label.file_read_output_q, Label)
         self.file_read_label.display = False
-        self.contents_info = self.query_one(
-            self.ids.container.contents_info_q, VerticalGroup
-        )
-        self.contents_info_static_text = self.contents_info.query_one(
+        self.contents_info_static = self.query_one(
             self.ids.static.contents_info_q, Static
         )
-        self.contents_info_static_text.update(OperateString.in_dest_dir_click_path)
+        self.contents_info_static.update(OperateString.in_dest_dir_click_path)
 
     def open_file_and_update_ui(self, file_path: Path) -> None:
         try:
             file_size = file_path.stat().st_size
             if file_size == 0:
-                self.contents_info_static_text.update(
+                self.contents_info_static.update(
                     self.ContentStr.empty_or_only_whitespace
                 )
                 return
             with open(file_path, "rt", encoding="utf-8") as f:
                 f_contents = f.read(self.truncate_size)
             if f_contents.strip() == "":
-                self.contents_info_static_text.update(
+                self.contents_info_static.update(
                     self.ContentStr.empty_or_only_whitespace
                 )
                 return
@@ -120,17 +116,17 @@ class ContentsView(Vertical, AppType):
                     f"{self.ContentStr.truncated} {self.truncate_size / 1024} KiB ---"
                 )
         except PermissionError as error:
-            self.contents_info_static_text.update(
+            self.contents_info_static.update(
                 f"{self.ContentStr.permission_denied}{file_path}"
             )
             self.rich_log.write(error.strerror)
             return
         except UnicodeDecodeError:
-            self.contents_info_static_text.update(
+            self.contents_info_static.update(
                 f"{self.ContentStr.cannot_decode}{file_path}"
             )
         except OSError as error:
-            self.contents_info_static_text.update(
+            self.contents_info_static.update(
                 f"{self.ContentStr.read_error}{file_path}: {error}"
             )
             self.rich_log.write(error.strerror)
@@ -141,7 +137,7 @@ class ContentsView(Vertical, AppType):
             cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
             )
-            self.contents_info_static_text.update(
+            self.contents_info_static.update(
                 f"{self.ContentStr.output_from_cat}[$text-success]{cat_output.pretty_cmd}[/]"
             )
             if cat_output.std_out.strip() == "":
@@ -153,11 +149,11 @@ class ContentsView(Vertical, AppType):
 
     def write_dir_info(self, dir_path: Path) -> None:
         if dir_path in self.app.paths.dirs:
-            self.contents_info_static_text.update(
+            self.contents_info_static.update(
                 f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
             )
         else:
-            self.contents_info_static_text.update(
+            self.contents_info_static.update(
                 f"{self.ContentStr.unmanaged_dir}[$text-accent]{dir_path}[/]"
             )
         return
@@ -176,11 +172,11 @@ class ContentsView(Vertical, AppType):
         self.rich_log.clear()
 
         if self.node_data.path_kind == PathKind.DIR:
-            self.contents_info.display = True
+            self.query_exactly_one(VerticalGroup).display = True
             self.write_dir_info(self.node_data.path)
             return
         elif self.node_data.path_kind == PathKind.FILE:
-            self.contents_info.display = False
+            self.query_exactly_one(VerticalGroup).display = False
             if self.node_data.found is True:
                 self.open_file_and_update_ui(self.node_data.path)
             elif self.node_data.found is False:
