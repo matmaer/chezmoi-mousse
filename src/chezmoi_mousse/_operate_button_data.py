@@ -14,7 +14,6 @@ __all__ = ["OpBtnEnum"]
 @dataclass(slots=True)
 class OpBtnData:
     label: str
-    pretty_cmd: str
     write_cmd: WriteCmd
     info_strings: list[str] | None = None
     info_sub_title: str | None = None
@@ -24,7 +23,6 @@ class OpBtnData:
 class OpBtnEnum(Enum):
     add = OpBtnData(
         label=OpBtnLabel.add_review,
-        pretty_cmd=WriteCmd.add.pretty_cmd,
         write_cmd=WriteCmd.add,
         info_strings=[OperateString.add_path_info],
         info_sub_title=OperateString.add_subtitle,
@@ -32,7 +30,6 @@ class OpBtnEnum(Enum):
     )
     apply = OpBtnData(
         label=OpBtnLabel.apply_review,
-        pretty_cmd=WriteCmd.apply.pretty_cmd,
         write_cmd=WriteCmd.apply,
         info_strings=[OperateString.apply_path_info],
         info_sub_title=OperateString.apply_subtitle,
@@ -40,7 +37,6 @@ class OpBtnEnum(Enum):
     )
     destroy = OpBtnData(
         label=OpBtnLabel.destroy_review,
-        pretty_cmd=WriteCmd.destroy.pretty_cmd,
         write_cmd=WriteCmd.destroy,
         info_strings=[OperateString.destroy_path_info],
         info_sub_title=OperateString.destroy_subtitle,
@@ -48,7 +44,6 @@ class OpBtnEnum(Enum):
     )
     forget = OpBtnData(
         label=OpBtnLabel.forget_review,
-        pretty_cmd=WriteCmd.forget.pretty_cmd,
         write_cmd=WriteCmd.forget,
         info_strings=[OperateString.forget_path_info],
         info_sub_title=OperateString.forget_subtitle,
@@ -56,7 +51,6 @@ class OpBtnEnum(Enum):
     )
     re_add = OpBtnData(
         label=OpBtnLabel.re_add_review,
-        pretty_cmd=WriteCmd.re_add.pretty_cmd,
         write_cmd=WriteCmd.re_add,
         info_strings=[OperateString.re_add_path_info],
         info_sub_title=OperateString.re_add_subtitle,
@@ -64,7 +58,6 @@ class OpBtnEnum(Enum):
     )
     init = OpBtnData(
         label=OpBtnLabel.init_review,
-        pretty_cmd=WriteCmd.init_new.pretty_cmd,
         write_cmd=WriteCmd.init_new,
         info_strings=[OperateString.init_new_info],
         info_sub_title=OperateString.init_subtitle,
@@ -80,7 +73,7 @@ class OpBtnEnum(Enum):
 
     @property
     def pretty_cmd(self) -> str:
-        return self.value.pretty_cmd
+        return self.write_cmd.pretty_cmd
 
     @property
     def write_cmd(self) -> WriteCmd:
