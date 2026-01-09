@@ -1,6 +1,7 @@
 from enum import StrEnum, auto
 
 __all__ = [
+    "BindingAction",
     "ContainerName",
     "ContentSwitcherName",
     "DataTableName",
@@ -14,6 +15,13 @@ __all__ = [
     "TreeName",
     "ViewName",
 ]
+
+
+class BindingAction(StrEnum):
+    exit_screen = auto()
+    toggle_dry_run = auto()
+    toggle_maximized = auto()
+    toggle_switch_slider_visibility = auto()
 
 
 class ContainerName(StrEnum):

@@ -120,6 +120,19 @@ class OpBtnLabel(StrEnum):
     toggle_diffs = "Toggle Diffs"
 
 
+class BindingDescription(StrEnum):
+    # Screen bindings
+    cancel = OpBtnLabel.cancel
+    reload = OpBtnLabel.reload
+    # Tab bindings
+    hide_filters = "Hide filters"
+    show_filters = "Show filters"
+    # Shared bindings
+    toggle_dry_run = "Toggle --dry-run"
+    maximize = "Maximize"
+    minimize = "Minimize"
+
+
 class SwitchLabel(StrEnum):
     init_repo = "Init existing repo"
     expand_all = "Expand all dirs"
