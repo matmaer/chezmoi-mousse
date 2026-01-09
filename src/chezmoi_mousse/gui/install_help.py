@@ -8,7 +8,7 @@ from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Collapsible, Footer, Label, Pretty, Tree
 
-from chezmoi_mousse import IDS, AppType, Chars, FlatBtn, LinkBtn, Tcss
+from chezmoi_mousse import IDS, AppType, Chars, FlatBtnLabel, LinkBtn, Tcss
 
 from .common.actionables import FlatButton, FlatLink
 from .common.screen_header import CustomHeader, HeaderTitle
@@ -49,7 +49,7 @@ class InstallHelpScreen(Screen[None], AppType):
             yield CommandsTree()
             yield VerticalGroup(
                 FlatLink(ids=IDS.install_help, link_enum=LinkBtn.chezmoi_install),
-                FlatButton(ids=IDS.install_help, btn_enum=FlatBtn.exit_app),
+                FlatButton(ids=IDS.install_help, btn_enum=FlatBtnLabel.exit_app),
             )
         yield Footer(id=IDS.install_help.footer)
 

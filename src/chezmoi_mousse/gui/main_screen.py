@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import IDS, AppType, LogStrings, TabName
+from chezmoi_mousse import IDS, AppType, LogString, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -61,15 +61,15 @@ class MainScreen(Screen[None], AppType):
         # Initialize Operate logger
         self.operate_log = self.query_one(IDS.logs.logger.operate_q, OperateLog)
         self.app.cmd.operate_log = self.operate_log
-        self.app_log.success(LogStrings.operate_log_initialized)
+        self.app_log.success(LogString.operate_log_initialized)
         # Initialize ReadCmd logger
         self.read_cmd_log = self.query_one(IDS.logs.logger.read_q, ReadCmdLog)
         self.app.cmd.read_cmd_log = self.read_cmd_log
-        self.app_log.success(LogStrings.read_log_initialized)
+        self.app_log.success(LogString.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
-            self.notify(LogStrings.dev_mode_enabled)
+            self.notify(LogString.dev_mode_enabled)
         # Workers
         self.populate_apply_trees()
         self.populate_re_add_trees()

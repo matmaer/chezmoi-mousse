@@ -2,16 +2,16 @@
 
 from enum import StrEnum
 
-from ._switch_data import Switches
+from ._switch_data import SwitchEnum
 
 __all__ = [
     "Chars",
-    "FlatBtn",
+    "FlatBtnLabel",
     "LinkBtn",
-    "LogStrings",
-    "OpBtnLabels",
-    "OperateStrings",
-    "SectionLabels",
+    "LogString",
+    "OpBtnLabel",
+    "OperateString",
+    "SectionLabel",
     "StatusCode",
     "TabBtn",
 ]
@@ -21,7 +21,7 @@ __all__ = [
 #########################################
 
 
-class FlatBtn(StrEnum):
+class FlatBtnLabel(StrEnum):
     add_help = "Add Help"
     apply_help = "Apply Help"
     cat_config = "Cat Config"
@@ -91,7 +91,7 @@ class Chars(StrEnum):
     tree_expanded = f"{down_triangle} "
 
 
-class LogStrings(StrEnum):
+class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
     chezmoi_found = "Found chezmoi command"
@@ -101,7 +101,7 @@ class LogStrings(StrEnum):
     read_log_initialized = "Read command log initialized"
 
 
-class OpBtnLabels(StrEnum):
+class OpBtnLabel(StrEnum):
     add_review = "Review Add Path"
     add_run = "Run Chezmoi Add"
     apply_review = "Review Apply Path"
@@ -122,7 +122,7 @@ class OpBtnLabels(StrEnum):
     toggle_diffs = "Toggle Diffs"
 
 
-class OperateStrings(StrEnum):
+class OperateString(StrEnum):
     add_path_info = (
         "[dim]Add new targets to the source state. If adding a directory, it"
         " will be recursed in.[/]"
@@ -185,7 +185,7 @@ class OperateStrings(StrEnum):
     init_new_info = (
         "Ready to initialize a new chezmoi repository. Toggle the "
         "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{Switches.init_repo_switch.label} [/]"
+        f"{SwitchEnum.init_repo_switch.label} [/]"
         "switch to initialize by cloning an existing Github repository."
     )
     https_url = (
@@ -204,7 +204,7 @@ class OperateStrings(StrEnum):
     init_subtitle = "initialize chezmoi repository"
 
 
-class SectionLabels(StrEnum):
+class SectionLabel(StrEnum):
     """Strings used for textual Label classes except for the help_tab.py module which
     has its own StrEnum class "HelpSections" and the install_help.py module which has
     its own StrEnum class "InstallHelpStrings"."""

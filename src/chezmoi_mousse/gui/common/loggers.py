@@ -8,7 +8,7 @@ from textual import work
 from textual.containers import ScrollableContainer
 from textual.widgets import Collapsible, RichLog, Static
 
-from chezmoi_mousse import AppType, Chars, LogStrings, ReadVerb, Tcss
+from chezmoi_mousse import AppType, Chars, LogString, ReadVerb, Tcss
 
 from .operate_mode import CommandOutput
 
@@ -79,13 +79,13 @@ class AppLog(LoggersBase, AppType):
         )
 
     def on_mount(self) -> None:
-        self.ready_to_run(LogStrings.app_log_initialized)
+        self.ready_to_run(LogString.app_log_initialized)
         if self.app.chezmoi_found:
-            self.success(LogStrings.chezmoi_found)
+            self.success(LogString.chezmoi_found)
         else:
-            self.error(LogStrings.chezmoi_not_found)
+            self.error(LogString.chezmoi_not_found)
         if self.app.dev_mode is True:
-            self.warning(LogStrings.dev_mode_enabled)
+            self.warning(LogString.dev_mode_enabled)
 
     def log_doctor_exit_zero_msg(self, command_result: "CommandResult") -> None:
         if "error" in command_result.std_out.lower():
@@ -139,7 +139,7 @@ class DebugLog(LoggersBase, AppType):
         super().__init__(id=ids.logger.debug, markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
-        self.ready_to_run(LogStrings.debug_log_initialized)
+        self.ready_to_run(LogString.debug_log_initialized)
 
     def completed_process(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))

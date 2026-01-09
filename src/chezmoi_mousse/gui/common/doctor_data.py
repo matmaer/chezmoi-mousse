@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabels, Tcss
+from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -198,11 +198,9 @@ class PwCollapsible(Collapsible, AppType):
 
         super().__init__(
             VerticalGroup(
-                Label(SectionLabels.project_link, classes=Tcss.sub_section_label),
+                Label(SectionLabel.project_link, classes=Tcss.sub_section_label),
                 Link(self.stripped_link, url=self.pw_mgr_data.link),
-                Label(
-                    SectionLabels.project_description, classes=Tcss.sub_section_label
-                ),
+                Label(SectionLabel.project_description, classes=Tcss.sub_section_label),
                 Static(self.pw_mgr_data.description, markup=False),
                 Label(
                     InfoStrings.additional_info_label, classes=Tcss.sub_section_label
@@ -226,7 +224,7 @@ class PwMgrInfoView(Vertical):
         super().__init__(id=self.ids.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.password_managers, classes=Tcss.main_section_label)
+        yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
         doctor_lines = doctor_results.std_out.splitlines()

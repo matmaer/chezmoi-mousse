@@ -17,8 +17,8 @@ from ._str_enum_names import (
     TreeName,
     ViewName,
 )
-from ._str_enums import FlatBtn, LinkBtn, TabBtn
-from ._switch_data import Switches
+from ._str_enums import FlatBtnLabel, LinkBtn, TabBtn
+from ._switch_data import SwitchEnum
 
 __all__ = ["AppIds", "IDS"]
 
@@ -79,7 +79,7 @@ class AppIds:
     def datatable_id(self, qid: str = "", *, datatable_name: DataTableName) -> str:
         return f"{qid}{self.canvas_name.name}_{datatable_name.name}_datatable"
 
-    def flat_button_id(self, qid: str = "", *, btn: FlatBtn) -> str:
+    def flat_button_id(self, qid: str = "", *, btn: FlatBtnLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_flat_btn"
 
     def label_id(self, qid: str = "", *, label: LabelName) -> str:
@@ -94,10 +94,10 @@ class AppIds:
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
         return f"{qid}{self.canvas_name.name}_{static.name}_static"
 
-    def switch_horizontal_id(self, qid: str = "", *, switch: Switches) -> str:
+    def switch_horizontal_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch_horizontal"
 
-    def switch_id(self, qid: str = "", *, switch: Switches) -> str:
+    def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
 
     def tab_button_id(self, qid: str = "", *, btn: TabBtn) -> str:
@@ -306,43 +306,43 @@ class DataTableIds:
 
 class FilterIds:
     def __init__(self, ids: AppIds):
-        self.expand_all = ids.switch_id(switch=Switches.expand_all)
+        self.expand_all = ids.switch_id(switch=SwitchEnum.expand_all)
         self.expand_all_q = f"#{self.expand_all}"
-        self.unchanged = ids.switch_id(switch=Switches.unchanged)
+        self.unchanged = ids.switch_id(switch=SwitchEnum.unchanged)
         self.unchanged_q = f"#{self.unchanged}"
-        self.unmanaged_dirs = ids.switch_id(switch=Switches.unmanaged_dirs)
+        self.unmanaged_dirs = ids.switch_id(switch=SwitchEnum.unmanaged_dirs)
         self.unmanaged_dirs_q = f"#{self.unmanaged_dirs}"
-        self.unwanted = ids.switch_id(switch=Switches.unwanted)
+        self.unwanted = ids.switch_id(switch=SwitchEnum.unwanted)
         self.unwanted_q = f"#{self.unwanted}"
 
 
 class FlatButtonIds:
     def __init__(self, ids: AppIds):
-        self.add_help = ids.flat_button_id(btn=FlatBtn.add_help)
+        self.add_help = ids.flat_button_id(btn=FlatBtnLabel.add_help)
         self.add_help_q = f"#{self.add_help}"
-        self.apply_help = ids.flat_button_id(btn=FlatBtn.apply_help)
+        self.apply_help = ids.flat_button_id(btn=FlatBtnLabel.apply_help)
         self.apply_help_q = f"#{self.apply_help}"
-        self.cat_config = ids.flat_button_id(btn=FlatBtn.cat_config)
+        self.cat_config = ids.flat_button_id(btn=FlatBtnLabel.cat_config)
         self.cat_config_q = f"#{self.cat_config}"
-        self.dom_nodes = ids.flat_button_id(btn=FlatBtn.dom_nodes)
+        self.dom_nodes = ids.flat_button_id(btn=FlatBtnLabel.dom_nodes)
         self.dom_nodes_q = f"#{self.dom_nodes}"
-        self.debug_log = ids.flat_button_id(btn=FlatBtn.debug_log)
+        self.debug_log = ids.flat_button_id(btn=FlatBtnLabel.debug_log)
         self.debug_log_q = f"#{self.debug_log}"
-        self.diagram = ids.flat_button_id(btn=FlatBtn.diagram)
+        self.diagram = ids.flat_button_id(btn=FlatBtnLabel.diagram)
         self.diagram_q = f"#{self.diagram}"
-        self.doctor = ids.flat_button_id(btn=FlatBtn.doctor)
+        self.doctor = ids.flat_button_id(btn=FlatBtnLabel.doctor)
         self.doctor_q = f"#{self.doctor}"
-        self.exit_app = ids.flat_button_id(btn=FlatBtn.exit_app)
+        self.exit_app = ids.flat_button_id(btn=FlatBtnLabel.exit_app)
         self.exit_app_q = f"#{self.exit_app}"
-        self.ignored = ids.flat_button_id(btn=FlatBtn.ignored)
+        self.ignored = ids.flat_button_id(btn=FlatBtnLabel.ignored)
         self.ignored_q = f"#{self.ignored}"
-        self.pw_mgr_info = ids.flat_button_id(btn=FlatBtn.pw_mgr_info)
+        self.pw_mgr_info = ids.flat_button_id(btn=FlatBtnLabel.pw_mgr_info)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
-        self.re_add_help = ids.flat_button_id(btn=FlatBtn.re_add_help)
+        self.re_add_help = ids.flat_button_id(btn=FlatBtnLabel.re_add_help)
         self.re_add_help_q = f"#{self.re_add_help}"
-        self.template_data = ids.flat_button_id(btn=FlatBtn.template_data)
+        self.template_data = ids.flat_button_id(btn=FlatBtnLabel.template_data)
         self.template_data_q = f"#{self.template_data}"
-        self.test_paths = ids.flat_button_id(btn=FlatBtn.test_paths)
+        self.test_paths = ids.flat_button_id(btn=FlatBtnLabel.test_paths)
         self.test_paths_q = f"#{self.test_paths}"
 
 

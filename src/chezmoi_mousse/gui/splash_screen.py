@@ -22,7 +22,7 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     ChezmoiCommand,
-    ChezmoiPaths,
+    ChezmoiPath,
     CmdResults,
     CommandResult,
     GlobalCmd,
@@ -345,7 +345,7 @@ class SplashScreen(Screen[None], AppType):
 
     @work(name="update_app")
     async def update_app(self) -> None:
-        self.app.paths = ChezmoiPaths(
+        self.app.paths = ChezmoiPath(
             dest_dir=globals()["parsed_config"].dest_dir,
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],

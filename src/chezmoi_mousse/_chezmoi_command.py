@@ -6,7 +6,7 @@ from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
 from ._app_state import AppState
-from ._str_enums import OperateStrings
+from ._str_enums import OperateString
 
 if TYPE_CHECKING:
     from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
@@ -231,18 +231,18 @@ class CommandResult:
     def std_out(self) -> str:
         exit_code = f"Exit code {self.exit_code} ."
         if self.stripped_std_out == "" and "--dry-run" in self.cmd_args:
-            return f"{OperateStrings.no_stdout_write_cmd_dry} {exit_code}"
+            return f"{OperateString.no_stdout_write_cmd_dry} {exit_code}"
         if self.stripped_std_out == "":
-            return f"{OperateStrings.no_stdout_write_cmd_live} {exit_code}"
+            return f"{OperateString.no_stdout_write_cmd_live} {exit_code}"
         return self.stripped_std_out
 
     @property
     def std_err(self) -> str:
         exit_code = f"Exit code {self.exit_code} ."
         if self.stripped_std_err == "" and "--dry-run" in self.cmd_args:
-            return f"{OperateStrings.no_stderr_write_cmd_dry} {exit_code}"
+            return f"{OperateString.no_stderr_write_cmd_dry} {exit_code}"
         if self.stripped_std_err == "":
-            return f"{OperateStrings.no_stderr_write_cmd_live} {exit_code}"
+            return f"{OperateString.no_stderr_write_cmd_live} {exit_code}"
         return self.stripped_std_err
 
 

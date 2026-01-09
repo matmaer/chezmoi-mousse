@@ -8,12 +8,12 @@ from textual.widgets import Button, Label, Link, Switch
 from chezmoi_mousse import (
     IDS,
     AppType,
-    FlatBtn,
+    FlatBtnLabel,
     LinkBtn,
     OpBtnEnum,
-    OpBtnLabels,
+    OpBtnLabel,
     ScreenName,
-    Switches,
+    SwitchEnum,
     TabBtn,
     TabName,
     Tcss,
@@ -22,7 +22,7 @@ from chezmoi_mousse import (
 from .messages import CloseButtonMsg, OperateButtonMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, Switches
+    from chezmoi_mousse import AppIds, SwitchEnum
 
 
 __all__ = [
@@ -43,14 +43,14 @@ __all__ = [
 class CloseButton(Button, AppType):
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(
-            id=ids.close, classes=Tcss.operate_button, label=OpBtnLabels.cancel
+            id=ids.close, classes=Tcss.operate_button, label=OpBtnLabel.cancel
         )
         self.ids = ids
 
     def on_mount(self) -> None:
         self.display = False
         if self.ids.close == IDS.init.close:
-            self.label = OpBtnLabels.exit_app
+            self.label = OpBtnLabel.exit_app
             self.display = True
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
@@ -58,14 +58,14 @@ class CloseButton(Button, AppType):
         if not isinstance(event.button, CloseButton):
             raise TypeError("event.button is not a CloseButton")
         event.stop()  # We post our own message.
-        if event.button.label == OpBtnLabels.exit_app:
+        if event.button.label == OpBtnLabel.exit_app:
             self.app.exit()
             return
         self.post_message(CloseButtonMsg(button=event.button, ids=self.ids))
 
 
 class FlatButton(Button):
-    def __init__(self, *, ids: "AppIds", btn_enum: FlatBtn) -> None:
+    def __init__(self, *, ids: "AppIds", btn_enum: FlatBtnLabel) -> None:
         self.ids = ids
         super().__init__(
             classes=Tcss.flat_button,
@@ -94,8 +94,8 @@ class FlatLink(Link):
 
 class FlatButtonsVertical(Vertical):
 
-    def __init__(self, *, ids: "AppIds", buttons: tuple[FlatBtn, ...]) -> None:
-        self.buttons: tuple[FlatBtn, ...] = buttons
+    def __init__(self, *, ids: "AppIds", buttons: tuple[FlatBtnLabel, ...]) -> None:
+        self.buttons: tuple[FlatBtnLabel, ...] = buttons
         self.ids = ids
         super().__init__(
             id=self.ids.container.left_side, classes=Tcss.tab_left_vertical
@@ -156,42 +156,42 @@ class OperateButtons(HorizontalGroup):
             )
         )
 
-        if event.button.label == OpBtnLabels.init_review:
-            event.button.label = OpBtnLabels.init_run
+        if event.button.label == OpBtnLabel.init_review:
+            event.button.label = OpBtnLabel.init_run
 
-        elif event.button.label == OpBtnLabels.add_review:
-            event.button.label = OpBtnLabels.add_run
+        elif event.button.label == OpBtnLabel.add_review:
+            event.button.label = OpBtnLabel.add_run
 
-        elif event.button.label == OpBtnLabels.apply_review:
+        elif event.button.label == OpBtnLabel.apply_review:
             self.query_one(self.ids.op_btn.forget_q).display = False
             self.query_one(self.ids.op_btn.destroy_q).display = False
-            event.button.label = OpBtnLabels.apply_run
+            event.button.label = OpBtnLabel.apply_run
 
-        elif event.button.label == OpBtnLabels.destroy_review:
+        elif event.button.label == OpBtnLabel.destroy_review:
             self.query_one(self.ids.op_btn.forget_q).display = False
             if self.ids.canvas_name == TabName.apply:
                 self.query_one(self.ids.op_btn.apply_q).display = False
             elif self.ids.canvas_name == TabName.re_add:
                 self.query_one(self.ids.op_btn.re_add_q).display = False
-            event.button.label = OpBtnLabels.destroy_run
+            event.button.label = OpBtnLabel.destroy_run
 
-        elif event.button.label == OpBtnLabels.forget_review:
+        elif event.button.label == OpBtnLabel.forget_review:
             self.query_one(self.ids.op_btn.destroy_q).display = False
             if self.ids.canvas_name == TabName.apply:
                 self.query_one(self.ids.op_btn.apply_q).display = False
             elif self.ids.canvas_name == TabName.re_add:
                 self.query_one(self.ids.op_btn.re_add_q).display = False
-            event.button.label = OpBtnLabels.forget_run
+            event.button.label = OpBtnLabel.forget_run
 
-        elif event.button.label == OpBtnLabels.re_add_review:
+        elif event.button.label == OpBtnLabel.re_add_review:
             self.query_one(self.ids.op_btn.forget_q).display = False
             self.query_one(self.ids.op_btn.destroy_q).display = False
-            event.button.label = OpBtnLabels.re_add_run
+            event.button.label = OpBtnLabel.re_add_run
 
 
 class SwitchWithLabel(HorizontalGroup):
 
-    def __init__(self, *, ids: "AppIds", switch_enum: "Switches") -> None:
+    def __init__(self, *, ids: "AppIds", switch_enum: "SwitchEnum") -> None:
         self.ids = ids
         self.switch_enum = switch_enum
         super().__init__(id=self.ids.switch_horizontal_id(switch=self.switch_enum))
@@ -208,9 +208,9 @@ class SwitchSlider(VerticalGroup):
         self.ids = ids
         super().__init__(id=self.ids.container.switch_slider)
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
-            self.switches = (Switches.unchanged, Switches.expand_all)
+            self.switches = (SwitchEnum.unchanged, SwitchEnum.expand_all)
         else:  # for the AddTab
-            self.switches = (Switches.unmanaged_dirs, Switches.unwanted)
+            self.switches = (SwitchEnum.unmanaged_dirs, SwitchEnum.unwanted)
 
     def compose(self) -> ComposeResult:
         for switch_enum in self.switches:

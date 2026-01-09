@@ -25,10 +25,10 @@ from chezmoi_mousse import (
     InitCloneData,
     LinkBtn,
     OpBtnEnum,
-    OpBtnLabels,
-    OperateStrings,
-    SectionLabels,
-    Switches,
+    OpBtnLabel,
+    OperateString,
+    SectionLabel,
+    SwitchEnum,
     Tcss,
     WriteCmd,
 )
@@ -418,7 +418,7 @@ class InitCollapsibles(VerticalGroup, AppType):
             raise ValueError(
                 "self.app.cmd_results.template_data is None in OperateScreen"
             )
-        yield Label(SectionLabels.pre_init_cmd_output, classes=Tcss.sub_section_label)
+        yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(
             DoctorTable(ids=IDS.init, doctor_data=self.app.cmd_results.doctor),
             title="Doctor Output",
@@ -441,8 +441,8 @@ class InitChezmoi(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield CustomHeader(self.ids)
         yield HorizontalGroup(
-            Label(SectionLabels.init_new_repo, classes=Tcss.main_section_label),
-            SwitchWithLabel(ids=self.ids, switch_enum=Switches.init_repo_switch),
+            Label(SectionLabel.init_new_repo, classes=Tcss.main_section_label),
+            SwitchWithLabel(ids=self.ids, switch_enum=SwitchEnum.init_repo_switch),
         )
         yield InputInitCloneRepo()
         yield Static(id=self.ids.static.init_info)
@@ -477,7 +477,7 @@ class InitChezmoi(Screen[None], AppType):
             if self.init_clone_data.valid_arg is True:
                 lines_to_write.append(
                     (
-                        f"{OperateStrings.ready_to_run} "
+                        f"{OperateString.ready_to_run} "
                         f"{WriteCmd.init_no_guess.pretty_cmd} "
                         f'{self.init_clone_data.init_arg}"[/]'
                     )
@@ -494,7 +494,7 @@ class InitChezmoi(Screen[None], AppType):
             if self.init_clone_data.valid_arg is True:
                 lines_to_write.append(
                     (
-                        f"{OperateStrings.ready_to_run} "
+                        f"{OperateString.ready_to_run} "
                         f"{self.init_clone_data.init_cmd.pretty_cmd} "
                         f"{self.init_clone_data.init_arg}[/]"
                     )
@@ -511,7 +511,7 @@ class InitChezmoi(Screen[None], AppType):
             if self.init_clone_data.valid_arg is True:
                 lines_to_write.append(
                     (
-                        f"{OperateStrings.ready_to_run} "
+                        f"{OperateString.ready_to_run} "
                         f"{self.init_clone_data.init_cmd.pretty_cmd} "
                         f"{self.init_clone_data.init_arg}[/]"
                     )
@@ -525,17 +525,17 @@ class InitChezmoi(Screen[None], AppType):
 
     def update_init_info(self) -> None:
         if self.query_exactly_one(Switch).value is False:
-            self.init_info.update(OperateStrings.init_new_info)
+            self.init_info.update(OperateString.init_new_info)
             return
         current_select = self.repo_input.query_exactly_one(Select[str]).value
         if current_select == "https":
-            self.init_info.update(OperateStrings.https_url)
+            self.init_info.update(OperateString.https_url)
         elif current_select == "ssh":
-            self.init_info.update(OperateStrings.ssh_select)
+            self.init_info.update(OperateString.ssh_select)
         elif current_select == "guess url":
-            self.init_info.update(OperateStrings.guess_https)
+            self.init_info.update(OperateString.guess_https)
         elif current_select == "guess ssh":
-            self.init_info.update(OperateStrings.guess_ssh)
+            self.init_info.update(OperateString.guess_ssh)
 
     @work(exit_on_error=False)
     async def run_operate_command(self) -> None:
@@ -547,7 +547,7 @@ class InitChezmoi(Screen[None], AppType):
         ):
             self.app.init_needed = False
             self.init_chezmoi_btn.disabled = True
-            self.close_btn.label = OpBtnLabels.reload
+            self.close_btn.label = OpBtnLabel.reload
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
@@ -565,7 +565,7 @@ class InitChezmoi(Screen[None], AppType):
             self.init_cmd = WriteCmd.init_new
             self.init_arg = None
             # self.run_operate_command()
-        elif msg.button.label == OpBtnLabels.reload:
+        elif msg.button.label == OpBtnLabel.reload:
             self.dismiss()
 
     @on(InitCloneCmdMsg)

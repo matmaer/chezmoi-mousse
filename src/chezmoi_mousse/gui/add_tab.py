@@ -108,7 +108,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
-        # Switches: Red - Red (default)
+        # SwitchEnum: Red - Red (default)
         if self.unmanaged_dirs is False and self.unwanted is False:
             return (
                 p
@@ -127,7 +127,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and self._file_of_interest(p)
                 )
             )
-        # Switches: Green - Red
+        # SwitchEnum: Green - Red
         elif self.unmanaged_dirs is True and self.unwanted is False:
             return (
                 p
@@ -145,7 +145,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and self._file_of_interest(p)
                 )
             )
-        # Switches: Red - Green
+        # SwitchEnum: Red - Green
         elif self.unmanaged_dirs is False and self.unwanted is True:
             return (
                 p
@@ -162,7 +162,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and self._file_of_interest(p)
                 )
             )
-        # Switches: Green - Green, include all unmanaged paths
+        # SwitchEnum: Green - Green, include all unmanaged paths
         else:
             return (
                 p

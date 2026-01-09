@@ -12,10 +12,10 @@ from textual.widgets import DataTable, Label, RichLog, Static
 from chezmoi_mousse import (
     AppType,
     NodeData,
-    OperateStrings,
+    OperateString,
     PathKind,
     ReadCmd,
-    SectionLabels,
+    SectionLabel,
     StatusCode,
     TabName,
     Tcss,
@@ -56,7 +56,7 @@ class ContentsView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield VerticalGroup(
             Label(
-                SectionLabels.contents_info,
+                SectionLabel.contents_info,
                 classes=Tcss.sub_section_label,
                 id=self.ids.label.contents_info,
             ),
@@ -64,12 +64,12 @@ class ContentsView(Vertical, AppType):
             id=self.ids.container.contents_info,
         )
         yield Label(
-            SectionLabels.cat_config_output,
+            SectionLabel.cat_config_output,
             classes=Tcss.sub_section_label,
             id=self.ids.label.cat_config_output,
         )
         yield Label(
-            SectionLabels.file_read_output,
+            SectionLabel.file_read_output,
             classes=Tcss.sub_section_label,
             id=self.ids.label.file_read_output,
         )
@@ -97,7 +97,7 @@ class ContentsView(Vertical, AppType):
         self.contents_info_static_text = self.contents_info.query_one(
             self.ids.static.contents_info_q, Static
         )
-        self.contents_info_static_text.update(OperateStrings.in_dest_dir_click_path)
+        self.contents_info_static_text.update(OperateString.in_dest_dir_click_path)
 
     def open_file_and_update_ui(self, file_path: Path) -> None:
         try:
@@ -219,8 +219,8 @@ class DiffView(ScrollableContainer, AppType):
             self.diff_cmd = ReadCmd.diff
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.diff_info, classes=Tcss.sub_section_label)
-        yield Static(f"{OperateStrings.in_dest_dir_click_path}")
+        yield Label(SectionLabel.diff_info, classes=Tcss.sub_section_label)
+        yield Static(f"{OperateString.in_dest_dir_click_path}")
 
     def on_mount(self) -> None:
         self.border_title = f" {self.app.dest_dir} "
@@ -436,7 +436,7 @@ class GitLogPath(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Static(
-            OperateStrings.in_dest_dir_click_path, id=self.ids.static.git_log_info
+            OperateString.in_dest_dir_click_path, id=self.ids.static.git_log_info
         )
         yield GitLogDataTable(ids=self.ids)
 

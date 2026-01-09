@@ -11,7 +11,7 @@ from chezmoi_mousse import (
     AppType,
     CommandResult,
     OpBtnEnum,
-    OperateStrings,
+    OperateString,
     TabName,
     Tcss,
 )
@@ -95,16 +95,16 @@ class OperateMode(Vertical, AppType):
         self.btn_enum = btn_enum
         info_lines: list[str] = []
         cmd_text = (
-            f"{OperateStrings.ready_to_run} "
+            f"{OperateString.ready_to_run} "
             f"{self.btn_enum.write_cmd.pretty_cmd} "
             f"[$text-success bold]{self.path_arg}[/]"
         )
         info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
             if self.app.git_auto_commit is True:
-                info_lines.append(OperateStrings.auto_commit)
+                info_lines.append(OperateString.auto_commit)
             if self.app.git_auto_push is True:
-                info_lines.append(OperateStrings.auto_push)
+                info_lines.append(OperateString.auto_push)
         self.review_info.update("\n".join(info_lines))
         self.op_review_container.border_title = self.btn_enum.info_title
         self.op_review_container.border_subtitle = self.btn_enum.info_sub_title

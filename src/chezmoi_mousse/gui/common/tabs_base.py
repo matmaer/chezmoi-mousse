@@ -6,7 +6,7 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import Switches, Tcss
+from chezmoi_mousse import SwitchEnum, Tcss
 
 from .trees import ExpandedTree, ListTree, ManagedTree
 from .views import ContentsView, DiffView, GitLogPath
@@ -47,10 +47,10 @@ class TabsBase(Vertical):
                 else:
                     tree_switcher.current = self.ids.tree.managed
                 expand_all_switch.disabled = False
-                expand_all_switch.tooltip = Switches.expand_all.enabled_tooltip
+                expand_all_switch.tooltip = SwitchEnum.expand_all.enabled_tooltip
             elif event.button.id == self.ids.tab_btn.list:
                 expand_all_switch.disabled = True
-                expand_all_switch.tooltip = Switches.expand_all.disabled_tooltip
+                expand_all_switch.tooltip = SwitchEnum.expand_all.disabled_tooltip
                 tree_switcher.current = self.ids.tree.list
 
     @on(Switch.Changed)

@@ -1,6 +1,6 @@
 from enum import StrEnum, auto
 
-from ._operate_button_data import OpBtnLabels
+from ._operate_button_data import OpBtnLabel
 
 __all__ = ["BindingAction", "BindingDescription"]
 
@@ -14,8 +14,8 @@ class BindingAction(StrEnum):
 
 class BindingDescription(StrEnum):
     # Screen bindings
-    cancel = OpBtnLabels.cancel
-    reload = OpBtnLabels.reload
+    cancel = OpBtnLabel.cancel
+    reload = OpBtnLabel.reload
     # Tab bindings
     hide_filters = "Hide filters"
     show_filters = "Show filters"

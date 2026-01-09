@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
 
-__all__ = ["Switches"]
+__all__ = ["SwitchEnum"]
 
 
 class SwitchLabel(StrEnum):
@@ -19,7 +19,7 @@ class SwitchData:
     disabled_tooltip: str | None
 
 
-class Switches(Enum):
+class SwitchEnum(Enum):
 
     init_repo_switch = SwitchData(
         label=SwitchLabel.init_repo,

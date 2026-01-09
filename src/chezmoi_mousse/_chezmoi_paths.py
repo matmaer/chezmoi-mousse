@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 type PathDict = dict[Path, str]
 
-__all__ = ["ChezmoiPaths", "PathDict"]
+__all__ = ["ChezmoiPath", "PathDict"]
 
 
 @dataclass(slots=True)
@@ -28,7 +28,7 @@ class DirData:
 
 
 @dataclass(slots=True)
-class ChezmoiPaths:
+class ChezmoiPath:
     dest_dir: Path
     managed_dirs_result: CommandResult
     managed_files_result: CommandResult

@@ -21,7 +21,7 @@ from chezmoi_mousse import (
     Chars,
     ChezmoiCommand,
     CmdResults,
-    OpBtnLabels,
+    OpBtnLabel,
     TabName,
 )
 
@@ -46,7 +46,7 @@ from .splash_screen import SplashScreen
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import ChezmoiCommand, ChezmoiPaths, CommandResult, ParsedConfig
+    from chezmoi_mousse import ChezmoiCommand, ChezmoiPath, CommandResult, ParsedConfig
 
 __all__ = ["ChezmoiGUI"]
 
@@ -124,7 +124,7 @@ class ChezmoiGUI(App[None]):
         AppState.set_app(self)
 
         self.dest_dir: "Path | None" = None
-        self.paths: "ChezmoiPaths"
+        self.paths: "ChezmoiPath"
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
@@ -244,7 +244,7 @@ class ChezmoiGUI(App[None]):
             self.screen.query_exactly_one(CustomHeader).read_mode = False
             self.refresh_bindings()
         elif "Run" in str(msg.button.label):
-            close_btn.label = OpBtnLabels.reload
+            close_btn.label = OpBtnLabel.reload
             operate_mode_container.run_command(msg.button.btn_enum)
 
     @on(CloseButtonMsg)
@@ -261,7 +261,7 @@ class ChezmoiGUI(App[None]):
         operate_buttons.refresh(recompose=True)
         msg.button.display = False
         operate_buttons.visible = True
-        if msg.button.label == OpBtnLabels.reload:
+        if msg.button.label == OpBtnLabel.reload:
             self.notify("Reloading to be implemented.", severity="error")
         self.screen.query_exactly_one(CustomHeader).read_mode = True
 

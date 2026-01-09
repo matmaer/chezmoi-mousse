@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical, VerticalGroup
 from textual.widgets import Button, ContentSwitcher, Label, Static
 
-from chezmoi_mousse import IDS, FlatBtn, LinkBtn, OpBtnLabels, Switches, Tcss
+from chezmoi_mousse import IDS, FlatBtnLabel, LinkBtn, OpBtnLabel, SwitchEnum, Tcss
 
 from .common.actionables import FlatButtonsVertical, FlatLink
 
@@ -49,19 +49,19 @@ class HelpStrings(StrEnum):
     available_buttons = "Available Buttons"
     # Add tab
     add_tab_help = "Add Tab Help"
-    unmanaged_dirs_filter = f"{Switches.unmanaged_dirs.label} Filter"
-    unwanted_filter = f"{Switches.unwanted.label} Filter"
+    unmanaged_dirs_filter = f"{SwitchEnum.unmanaged_dirs.label} Filter"
+    unwanted_filter = f"{SwitchEnum.unwanted.label} Filter"
     # Apply tab
     apply_tab_help = "Apply Tab Help"
-    apply_dir_button = f"{OpBtnLabels.apply_review} Button"
-    apply_file_button = f"{OpBtnLabels.apply_run} Button"
+    apply_dir_button = f"{OpBtnLabel.apply_review} Button"
+    apply_file_button = f"{OpBtnLabel.apply_run} Button"
     # Re-Add tab
     re_add_tab_help = "Re-Add Tab Help"
-    re_add_dir_button = f"{OpBtnLabels.re_add_review} Button"
-    re_add_file_button = f"{OpBtnLabels.re_add_run} Button"
+    re_add_dir_button = f"{OpBtnLabel.re_add_review} Button"
+    re_add_file_button = f"{OpBtnLabel.re_add_run} Button"
     # Common filters for Apply and Re-Add tabs
-    expand_all_filter = f"{Switches.expand_all.label} Filter"
-    unchanged_filter = f"{Switches.unchanged.label} Filter"
+    expand_all_filter = f"{SwitchEnum.expand_all.label} Filter"
+    unchanged_filter = f"{SwitchEnum.unchanged.label} Filter"
 
 
 class SharedBtnHelp(VerticalGroup):
@@ -77,9 +77,9 @@ class SharedFiltersHelp(VerticalGroup):
     def compose(self) -> ComposeResult:
         yield Label(HelpStrings.available_filters, classes=Tcss.flat_section_label)
         yield Label(HelpStrings.unchanged_filter, classes=Tcss.sub_section_label)
-        yield Static(Switches.unchanged.enabled_tooltip)
+        yield Static(SwitchEnum.unchanged.enabled_tooltip)
         yield Label(HelpStrings.expand_all_filter, classes=Tcss.sub_section_label)
-        yield Static(Switches.expand_all.enabled_tooltip)
+        yield Static(SwitchEnum.expand_all.enabled_tooltip)
 
 
 class ApplyTabHelp(Vertical):
@@ -126,9 +126,9 @@ class AddTabHelp(Vertical):
             yield Label(
                 HelpStrings.unmanaged_dirs_filter, classes=Tcss.sub_section_label
             )
-            yield Static(Switches.unmanaged_dirs.enabled_tooltip)
+            yield Static(SwitchEnum.unmanaged_dirs.enabled_tooltip)
             yield Label(HelpStrings.unwanted_filter, classes=Tcss.sub_section_label)
-            yield Static(Switches.unwanted.enabled_tooltip)
+            yield Static(SwitchEnum.unwanted.enabled_tooltip)
             yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_add)
             yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)
 
@@ -149,10 +149,10 @@ class HelpTab(Horizontal):
         yield FlatButtonsVertical(
             ids=IDS.help,
             buttons=(
-                FlatBtn.apply_help,
-                FlatBtn.re_add_help,
-                FlatBtn.add_help,
-                FlatBtn.diagram,
+                FlatBtnLabel.apply_help,
+                FlatBtnLabel.re_add_help,
+                FlatBtnLabel.add_help,
+                FlatBtnLabel.diagram,
             ),
         )
         with ContentSwitcher(

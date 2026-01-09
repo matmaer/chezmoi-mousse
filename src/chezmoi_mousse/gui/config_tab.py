@@ -10,8 +10,8 @@ from chezmoi_mousse import (
     AppIds,
     AppType,
     CommandResult,
-    FlatBtn,
-    SectionLabels,
+    FlatBtnLabel,
+    SectionLabel,
     Tcss,
 )
 
@@ -31,7 +31,7 @@ class CatConfigView(Vertical, AppType):
         super().__init__(id=self.ids.view.cat_config)
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.cat_config_output, classes=Tcss.main_section_label)
+        yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
 
     @work
     async def on_mount(self) -> None:
@@ -73,7 +73,7 @@ class IgnoredView(Vertical):
         super().__init__(id=self.ids.view.ignored)
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.ignored_output, classes=Tcss.main_section_label)
+        yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
 
     def mount_ignored_output(self, command_result: CommandResult) -> None:
         self.mount(ScrollableContainer(Pretty(command_result.std_out.splitlines())))
@@ -86,7 +86,7 @@ class DoctorTableView(Vertical, AppType):
         super().__init__(id=self.ids.container.doctor)
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.doctor_output, classes=Tcss.main_section_label)
+        yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
 
     def populate_doctor_data(self, command_result: CommandResult) -> None:
         self.mount(DoctorTable(ids=self.ids, doctor_data=command_result))
@@ -98,7 +98,7 @@ class TemplateDataView(Vertical, AppType):
         super().__init__(id=self.ids.view.template_data)
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabels.template_data_output, classes=Tcss.main_section_label)
+        yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
 
     @work
     async def on_mount(self) -> None:
@@ -112,11 +112,11 @@ class ConfigTab(Horizontal, AppType):
         yield FlatButtonsVertical(
             ids=IDS.config,
             buttons=(
-                FlatBtn.doctor,
-                FlatBtn.pw_mgr_info,
-                FlatBtn.cat_config,
-                FlatBtn.ignored,
-                FlatBtn.template_data,
+                FlatBtnLabel.doctor,
+                FlatBtnLabel.pw_mgr_info,
+                FlatBtnLabel.cat_config,
+                FlatBtnLabel.ignored,
+                FlatBtnLabel.template_data,
             ),
         )
         yield ConfigTabSwitcher()
