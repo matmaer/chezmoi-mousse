@@ -107,11 +107,11 @@ class DebugTab(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.id == IDS.debug.flat_btn.debug_log:
+        if event.button.label == FlatBtnLabel.debug_log:
             switcher.current = IDS.debug.logger.debug
-        elif event.button.id == IDS.debug.flat_btn.test_paths:
+        elif event.button.label == FlatBtnLabel.test_paths:
             switcher.current = IDS.debug.view.test_paths
-        elif event.button.id == IDS.debug.flat_btn.dom_nodes:
+        elif event.button.label == FlatBtnLabel.dom_nodes:
             switcher.current = IDS.debug.logger.dom_nodes
 
     @on(Button.Pressed)

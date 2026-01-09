@@ -167,11 +167,11 @@ class HelpTab(Horizontal):
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.id == IDS.help.flat_btn.apply_help:
+        if event.button.label == FlatBtnLabel.apply_help:
             self.switcher.current = IDS.help.view.apply_help
-        elif event.button.id == IDS.help.flat_btn.re_add_help:
+        elif event.button.label == FlatBtnLabel.re_add_help:
             self.switcher.current = IDS.help.view.re_add_help
-        elif event.button.id == IDS.help.flat_btn.add_help:
+        elif event.button.label == FlatBtnLabel.add_help:
             self.switcher.current = IDS.help.view.add_help
-        elif event.button.id == IDS.help.flat_btn.diagram:
+        elif event.button.label == FlatBtnLabel.diagram:
             self.switcher.current = IDS.help.view.diagram

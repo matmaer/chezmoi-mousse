@@ -105,13 +105,13 @@ class ConfigTab(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         switcher = self.query_exactly_one(ConfigTabSwitcher)
         event.stop()
-        if event.button.id == IDS.config.flat_btn.doctor:
+        if event.button.label == FlatBtnLabel.doctor:
             switcher.current = IDS.config.container.doctor
-        if event.button.id == IDS.config.flat_btn.pw_mgr_info:
+        if event.button.label == FlatBtnLabel.pw_mgr_info:
             switcher.current = IDS.config.view.pw_mgr_info
-        elif event.button.id == IDS.config.flat_btn.cat_config:
+        elif event.button.label == FlatBtnLabel.cat_config:
             switcher.current = IDS.config.view.cat_config
-        elif event.button.id == IDS.config.flat_btn.ignored:
+        elif event.button.label == FlatBtnLabel.ignored:
             switcher.current = IDS.config.view.ignored
-        elif event.button.id == IDS.config.flat_btn.template_data:
+        elif event.button.label == FlatBtnLabel.template_data:
             switcher.current = IDS.config.view.template_data

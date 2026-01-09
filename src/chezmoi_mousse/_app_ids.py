@@ -58,7 +58,6 @@ class AppIds:
         self.container = ContainerIds(self)
         self.datatable = DataTableIds(self)
         self.filter = FilterIds(self)
-        self.flat_btn = FlatButtonIds(self)
         self.label = LabelIds(self)
         self.logger = LoggerIds(self)
         self.op_btn = OperateButtonIds(self)
@@ -213,36 +212,6 @@ class FilterIds:
         self.unmanaged_dirs_q = f"#{self.unmanaged_dirs}"
         self.unwanted = ids.switch_id(switch=SwitchEnum.unwanted)
         self.unwanted_q = f"#{self.unwanted}"
-
-
-class FlatButtonIds:
-    def __init__(self, ids: AppIds):
-        self.add_help = ids.flat_button_id(btn=FlatBtnLabel.add_help)
-        self.add_help_q = f"#{self.add_help}"
-        self.apply_help = ids.flat_button_id(btn=FlatBtnLabel.apply_help)
-        self.apply_help_q = f"#{self.apply_help}"
-        self.cat_config = ids.flat_button_id(btn=FlatBtnLabel.cat_config)
-        self.cat_config_q = f"#{self.cat_config}"
-        self.dom_nodes = ids.flat_button_id(btn=FlatBtnLabel.dom_nodes)
-        self.dom_nodes_q = f"#{self.dom_nodes}"
-        self.debug_log = ids.flat_button_id(btn=FlatBtnLabel.debug_log)
-        self.debug_log_q = f"#{self.debug_log}"
-        self.diagram = ids.flat_button_id(btn=FlatBtnLabel.diagram)
-        self.diagram_q = f"#{self.diagram}"
-        self.doctor = ids.flat_button_id(btn=FlatBtnLabel.doctor)
-        self.doctor_q = f"#{self.doctor}"
-        self.exit_app = ids.flat_button_id(btn=FlatBtnLabel.exit_app)
-        self.exit_app_q = f"#{self.exit_app}"
-        self.ignored = ids.flat_button_id(btn=FlatBtnLabel.ignored)
-        self.ignored_q = f"#{self.ignored}"
-        self.pw_mgr_info = ids.flat_button_id(btn=FlatBtnLabel.pw_mgr_info)
-        self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
-        self.re_add_help = ids.flat_button_id(btn=FlatBtnLabel.re_add_help)
-        self.re_add_help_q = f"#{self.re_add_help}"
-        self.template_data = ids.flat_button_id(btn=FlatBtnLabel.template_data)
-        self.template_data_q = f"#{self.template_data}"
-        self.test_paths = ids.flat_button_id(btn=FlatBtnLabel.test_paths)
-        self.test_paths_q = f"#{self.test_paths}"
 
 
 class LabelIds:
