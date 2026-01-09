@@ -256,4 +256,4 @@ class StatusCode(StrEnum):
     fake_dest_dir = "F"  # used for destDir path
     # fake_status = "S"  # used for re-add dir paths
     fake_no_status = "X"  # (no status depending on apply or re-add context)
-    # fake_unmanaged = "U"
+    fake_unmanaged = "U"

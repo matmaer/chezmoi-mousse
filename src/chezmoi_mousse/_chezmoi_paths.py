@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ._str_enum_names import PathKind
 from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
@@ -11,20 +12,42 @@ if TYPE_CHECKING:
 
 type PathDict = dict[Path, str]
 
-__all__ = ["ChezmoiPath", "PathDict"]
+__all__ = ["ChezmoiPath", "PathDict", "DirNode", "FileNode"]
 
 
 @dataclass(slots=True)
-class PathData:
+class FileNode:
     found: bool
     status: StatusCode
 
 
 @dataclass(slots=True)
-class DirData:
+class ManagedPath:
+    found: bool
+    apply_status: StatusCode
+    re_add_status: StatusCode
+
+
+@dataclass(slots=True)
+class NodeDataNew:
+    path_data: ManagedPath
+    file_children: dict[Path, ManagedPath] = field(
+        default_factory=dict[Path, ManagedPath]
+    )  # Will always be empty for files so safe to iterate over
+    dir_children: dict[Path, ManagedPath] = field(
+        default_factory=dict[Path, ManagedPath]
+    )  # Will always be empty for files so safe to iterate over
+    unmanaged_children: dict[Path, PathKind] = field(
+        default_factory=dict[Path, PathKind]
+    )  # Will always be empty for files so safe to iterate over, for dirs will contain
+    # unmanaged child paths recursively
+
+
+@dataclass(slots=True)
+class DirNode:
     found: bool
     status: StatusCode
-    files: dict[Path, PathData] = field(default_factory=dict[Path, PathData])
+    files: dict[Path, FileNode] = field(default_factory=dict[Path, FileNode])
 
 
 @dataclass(slots=True)
@@ -42,14 +65,14 @@ class ChezmoiPath:
         default_factory=dict[Path, str], init=False
     )  # In use to populate listTree in gui/common/trees.py
 
-    apply_dirs: "dict[Path, DirData]" = field(
-        default_factory=dict[Path, DirData], init=False
+    apply_dirs: "dict[Path, DirNode]" = field(
+        default_factory=dict[Path, DirNode], init=False
     )
     apply_status_files: "PathDict" = field(init=False)
     apply_status_dirs: "PathDict" = field(init=False)
     _apply_status_paths: "PathDict" = field(init=False)
-    re_add_dirs: "dict[Path, DirData]" = field(
-        default_factory=dict[Path, DirData], init=False
+    re_add_dirs: "dict[Path, DirNode]" = field(
+        default_factory=dict[Path, DirNode], init=False
     )
     re_add_status_files: "PathDict" = field(default_factory=dict[Path, str], init=False)
     re_add_status_dirs: "PathDict" = field(default_factory=dict[Path, str], init=False)
@@ -67,16 +90,16 @@ class ChezmoiPath:
             apply_status = StatusCode(
                 self.apply_status_dirs.get(dir_path, StatusCode.fake_no_status)
             )
-            apply_files: dict[Path, PathData] = {}
+            apply_files: dict[Path, FileNode] = {}
             for file_path in self.files:
                 if file_path.parent == dir_path:
                     status = self.apply_status_files.get(
                         file_path, StatusCode.fake_no_status
                     )
-                    apply_files[file_path] = PathData(
+                    apply_files[file_path] = FileNode(
                         found=file_path.exists(), status=StatusCode(status)
                     )
-            self.apply_dirs[dir_path] = DirData(
+            self.apply_dirs[dir_path] = DirNode(
                 found=dir_path.exists(), status=apply_status, files=apply_files
             )
 
@@ -84,16 +107,16 @@ class ChezmoiPath:
             re_add_status = StatusCode(
                 self.re_add_status_dirs.get(dir_path, StatusCode.fake_no_status)
             )
-            re_add_files: dict[Path, PathData] = {}
+            re_add_files: dict[Path, FileNode] = {}
             for file_path in self.files:
                 if file_path.parent == dir_path:
                     status = self.re_add_status_files.get(
                         file_path, StatusCode.fake_no_status
                     )
-                    re_add_files[file_path] = PathData(
+                    re_add_files[file_path] = FileNode(
                         found=file_path.exists(), status=StatusCode(status)
                     )
-            self.re_add_dirs[dir_path] = DirData(
+            self.re_add_dirs[dir_path] = DirNode(
                 found=dir_path.exists(), status=re_add_status, files=re_add_files
             )
 

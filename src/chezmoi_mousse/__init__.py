@@ -20,7 +20,7 @@ from ._chezmoi_command import (
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPath, PathDict
+from ._chezmoi_paths import ChezmoiPath, DirNode, FileNode, PathDict
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_names import (
     BindingAction,
@@ -56,6 +56,8 @@ __all__ = [
     "ChezmoiPath",
     "CmdResults",
     "CommandResult",
+    "DirNode",
+    "FileNode",
     "FlatBtnLabel",
     "GlobalCmd",
     "IDS",
@@ -74,14 +76,13 @@ __all__ = [
     "ScreenName",
     "SectionLabel",
     "StatusCode",
-    "SwitchEnum",
     "SubTabLabel",
+    "SwitchEnum",
     "TabName",
     "Tcss",
     "TreeName",
     "VerbArgs",
     "WriteCmd",
-    # ._str_enums
 ]
 
 try:
