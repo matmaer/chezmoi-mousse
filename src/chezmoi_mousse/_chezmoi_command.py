@@ -5,8 +5,12 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
+from textual.containers import VerticalGroup
+from textual.widgets import Collapsible, Label, Static
+
 from ._app_state import AppState
-from ._str_enums import OperateString
+from ._str_enum_names import Tcss
+from ._str_enums import Chars, LogString, SectionLabel
 
 if TYPE_CHECKING:
     from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
@@ -199,17 +203,43 @@ def _run_chezmoi_cmd(
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
-    stripped_std_out: str
-    stripped_std_err: str
-    read_cmd: ReadCmd | None = None
-    write_cmd: WriteCmd | None = None
+    write_cmd: bool
+
+    def __post_init__(self) -> None:
+        self.completed_process.stdout = self.get_text(self.completed_process.stdout)
+        self.completed_process.stderr = self.get_text(self.completed_process.stderr)
+
+    def has_text(self, s: str) -> bool:
+        return s != "" and not s.isspace()
+
+    def get_text(self, output: str) -> str:
+        if not self.has_text(output):
+            return ""
+        lines = output.splitlines()
+        # Remove leading lines with no text
+        start = 0
+        while start < len(lines) and not self.has_text(lines[start]):
+            start += 1
+        # Remove trailing lines with no text
+        end = len(lines)
+        while end > start and not self.has_text(lines[end - 1]):
+            end -= 1
+        return "\n".join(lines[start:end])
 
     @property
     def cmd_args(self) -> list[str]:
         return self.completed_process.args
 
+    @property  # merely a shortcut for easy access
+    def std_out(self) -> str:
+        return self.completed_process.stdout
+
+    @property  # merely a shortcut for easy access
+    def std_err(self) -> str:
+        return self.completed_process.stderr
+
     @property
-    def collapsible_title(self) -> str:
+    def pretty_collapsible_title(self) -> str:
         if self.exit_code == 0:
             return f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
         else:
@@ -228,22 +258,41 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.cmd_args)}"
 
     @property
-    def std_out(self) -> str:
-        exit_code = f"Exit code {self.exit_code} ."
-        if self.stripped_std_out == "" and "--dry-run" in self.cmd_args:
-            return f"{OperateString.no_stdout_write_cmd_dry} {exit_code}"
-        if self.stripped_std_out == "":
-            return f"{OperateString.no_stdout_write_cmd_live} {exit_code}"
-        return self.stripped_std_out
-
-    @property
-    def std_err(self) -> str:
-        exit_code = f"Exit code {self.exit_code} ."
-        if self.stripped_std_err == "" and "--dry-run" in self.cmd_args:
-            return f"{OperateString.no_stderr_write_cmd_dry} {exit_code}"
-        if self.stripped_std_err == "":
-            return f"{OperateString.no_stderr_write_cmd_live} {exit_code}"
-        return self.stripped_std_err
+    def pretty_collapsible(self) -> VerticalGroup:
+        collapsible_contents: list[Label | Static] = []
+        stdout_empty = (
+            LogString.no_stdout_write_cmd_dry
+            if self.write_cmd is True and self.dry_run is True
+            else LogString.no_stdout
+        )
+        stderr_empty = (
+            LogString.no_stderr_write_cmd_dry
+            if self.write_cmd is True and self.dry_run is True
+            else LogString.no_stderr
+        )
+        std_out_text = self.std_out if self.std_out != "" else stdout_empty
+        std_err_text = self.std_err if self.std_err != "" else stderr_empty
+        collapsible_contents.extend(
+            [
+                Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
+                Static(f"{std_out_text}"),
+            ]
+        )
+        collapsible_contents.extend(
+            [
+                Label(SectionLabel.stderr_output, classes=Tcss.sub_section_label),
+                Static(f"{std_err_text}"),
+            ]
+        )
+        return VerticalGroup(
+            Collapsible(
+                *collapsible_contents,
+                title=self.pretty_collapsible_title,
+                collapsed_symbol=Chars.right_triangle,
+                expanded_symbol=Chars.down_triangle,
+                collapsed=True,
+            )
+        )
 
 
 class ChezmoiCommand:
@@ -258,25 +307,17 @@ class ChezmoiCommand:
     # Command execution and logging #
     #################################
 
-    def _log_in_app(self, result: CommandResult):
-        if (
-            self.app_log is None
-            or self.read_cmd_log is None
-            or self.operate_log is None
-        ):
+    def _log_read_cmd(self, result: CommandResult):
+        if self.app_log is None or self.read_cmd_log is None:
             return
-        if result.read_cmd is not None:
-            self.read_cmd_log.log_cmd_results(result)
-        elif result.write_cmd is not None:
-            self.operate_log.log_cmd_results(result)
+        self.read_cmd_log.log_cmd_results(result)
         self.app_log.log_cmd_results(result)
 
-    @staticmethod
-    def strip_output(cmd_output: str):
-        # remove trailing space and new lines but NOT leading whitespace
-        stripped = cmd_output.lstrip("\n").rstrip()
-        # remove intermediate empty lines
-        return "\n".join([line for line in stripped.splitlines() if line.strip() != ""])
+    def _log_write_cmd(self, result: CommandResult):
+        if self.app_log is None or self.operate_log is None:
+            return
+        self.operate_log.log_cmd_results(result)
+        self.app_log.log_cmd_results(result)
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
         base_cmd = GlobalCmd.live_run.value  # read commands always run live
@@ -286,15 +327,8 @@ class ChezmoiCommand:
         result: CompletedProcess[str] = _run_chezmoi_cmd(
             command, read_cmd=read_cmd, write_cmd=None
         )
-        stripped_stdout = self.strip_output(result.stdout)
-        stripped_stderr = self.strip_output(result.stderr)
-        command_result = CommandResult(
-            completed_process=result,
-            read_cmd=read_cmd,
-            stripped_std_err=stripped_stderr,
-            stripped_std_out=stripped_stdout,
-        )
-        self._log_in_app(command_result)
+        command_result = CommandResult(completed_process=result, write_cmd=False)
+        self._log_read_cmd(command_result)
         return command_result
 
     def perform(
@@ -321,15 +355,8 @@ class ChezmoiCommand:
         result: CompletedProcess[str] = _run_chezmoi_cmd(
             command, read_cmd=None, write_cmd=write_cmd
         )
-        stripped_stdout = self.strip_output(result.stdout)
-        stripped_stderr = self.strip_output(result.stderr)
-        command_result = CommandResult(
-            completed_process=result,
-            stripped_std_err=stripped_stderr,
-            stripped_std_out=stripped_stdout,
-            write_cmd=write_cmd,
-        )
-        self._log_in_app(command_result)
+        command_result = CommandResult(completed_process=result, write_cmd=True)
+        self._log_write_cmd(command_result)
         if write_cmd in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget):
             if self.app is None:
                 raise ValueError("self.app is None")

@@ -107,6 +107,7 @@ class Tcss(StrEnum):
     border_title_top = auto()
     changed = auto()
     changes_enabled_color = auto()
+    cmd_output = auto()
     content_switcher_left = auto()
     context = auto()
     doctor_table = auto()

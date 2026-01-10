@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import work
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
@@ -16,6 +16,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
+from .loggers import OutputCollapsible
 from .messages import CompletedOpMsg
 
 if TYPE_CHECKING:
@@ -24,26 +25,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 
-__all__ = ["CommandOutput", "OperateMode"]
-
-
-class CommandOutput(ScrollableContainer):
-    def __init__(self, cmd_result: "CommandResult | None" = None) -> None:
-        super().__init__()
-        self.cmd_result = cmd_result
-
-    def on_mount(self) -> None:
-        if self.cmd_result is not None:
-            self.update_cmd_output(self.cmd_result)
-
-    def update_cmd_output(self, cmd_result: "CommandResult") -> None:
-        self.remove_children()
-        self.mount(
-            Label("Output from stdout", classes=Tcss.sub_section_label),
-            Static(cmd_result.std_out, markup=False),
-            Label("Output from stderr", classes=Tcss.sub_section_label),
-            Static(cmd_result.std_err, markup=False),
-        )
+__all__ = ["OperateMode"]
 
 
 class LoadingModal(ModalScreen[None]):
@@ -75,7 +57,6 @@ class OperateMode(Vertical, AppType):
         )
         yield Vertical(
             Static(id=self.ids.static.op_result_info),
-            CommandOutput(),
             id=self.ids.container.op_result,
             classes=Tcss.operate_info,
         )
@@ -136,20 +117,10 @@ class OperateMode(Vertical, AppType):
         self.op_review_container.display = False
         result_info = self.query_one(self.ids.static.op_result_info_q, Static)
         result_info.update(
-            (
-                f"Command {pretty_cmd} completed with exit code "
-                f"{cmd_result.exit_code}."
-            )
+            (f"Command completed with exit code {cmd_result.exit_code}, results:\n")
         )
-        self.mount(
-            ScrollableContainer(
-                Label("Output from stdout", classes=Tcss.sub_section_label),
-                Static(cmd_result.std_out),
-                Label("Output from stderr", classes=Tcss.sub_section_label),
-                Static(cmd_result.std_err),
-            )
-        )
-        self.op_result_container.display = True
+        self.mount(OutputCollapsible(cmd_result), after=result_info)
         self.app.post_message(CompletedOpMsg(path_arg=self.path_arg))
         await sleep(1)
+        self.op_result_container.display = True
         loading_modal.dismiss()

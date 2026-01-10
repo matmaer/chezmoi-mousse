@@ -92,13 +92,33 @@ class Chars(StrEnum):
 
 
 class LogString(StrEnum):
+    no_stdout = "No output on stdout"
+    no_stderr = "No output on stderr"
     app_log_initialized = "Application log initialized"
-    debug_log_initialized = "Debug log initialized"
     chezmoi_found = "Found chezmoi command"
     chezmoi_not_found = "chezmoi command not found"
+    debug_log_initialized = "Debug log initialized"
     dev_mode_enabled = "Dev mode enabled"
+    doctor_errors_found = "One or more errors found"
+    doctor_fails_found = "One or more tests failed"
+    doctor_no_issue_found = "No warnings, failed or error entries found"
+    doctor_warnings_found = "Only warnings found, probably safe to ignore"
     operate_log_initialized = "Operate log initialized"
     read_log_initialized = "Read command log initialized"
+    result_output = "Command result output"
+    see_config_tab = "See the Config tab for the doctor command output."
+    std_err_logged = "Command stderr available in an Output log view"
+    succes_no_output = f"Success, {no_stdout.lower}"
+    success_with_output = "Success, output will be processed"
+    verbose_output = "Verbose command output"
+    verify_exit_zero = "All targets match their target state"
+    verify_non_zero = "Not all targets match their target state"
+    no_stdout_write_cmd_dry = (
+        "No output on stdout, the command was executed  with the --dry-run flag."
+    )
+    no_stderr_write_cmd_dry = (
+        "No output on stderr, the command was executed  with the --dry-run flag."
+    )
 
 
 class OpBtnLabel(StrEnum):
@@ -186,20 +206,6 @@ class OperateString(StrEnum):
         " will be recursed in.[/]"
     )
     re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-    no_stdout_write_cmd_live = (
-        "No output on stdout, the command was executed live, i.e. "
-        "without --dry-run flag."
-    )
-    no_stdout_write_cmd_dry = (
-        "No output on stdout, the command was executed " " with the --dry-run flag."
-    )
-    no_stderr_write_cmd_live = (
-        "No output on stderr, the command was executed live, i.e. "
-        "without --dry-run flag."
-    )
-    no_stderr_write_cmd_dry = (
-        "No output on stderr, the command was executed " " with the --dry-run flag."
-    )
     # Init screen info strings
     guess_https = "Let chezmoi guess the best URL to clone from."
     guess_ssh = "Let chezmoi guess the best ssh scp-style address to clone from."
@@ -242,6 +248,8 @@ class SectionLabel(StrEnum):
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"
     project_link = "Project Link"
+    stderr_output = "Output from stderr"
+    stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
 
 

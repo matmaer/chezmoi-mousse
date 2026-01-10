@@ -5,12 +5,10 @@ from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from textual import work
-from textual.containers import ScrollableContainer
-from textual.widgets import Collapsible, RichLog
+from textual.containers import ScrollableContainer, VerticalGroup
+from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, Chars, LogString, ReadVerb
-
-from .operate_mode import CommandOutput
+from chezmoi_mousse import AppType, Chars, LogString, ReadVerb, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -18,117 +16,98 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, CommandResult
 
-__all__ = ["AppLog", "DebugLog", "OperateLog", "ReadCmdLog"]
+__all__ = ["AppLog", "DebugLog", "OperateLog", "OutputCollapsible", "ReadCmdLog"]
 
 
 class LoggersBase(RichLog, AppType):
 
-    def _log_time(self) -> str:
+    def log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
-
-    def log_command(self, command_result: "CommandResult") -> str:
-        time = self._log_time()
-        color = self.app.theme_variables["primary-lighten-3"]
-        return f"{time} [{color}]{command_result.pretty_cmd}[/]"
 
     def ready_to_run(self, message: str) -> None:
         color = self.app.theme_variables["accent-darken-3"]
-        self.write(f"{self._log_time()} [{color}]--- {message} ---[/]")
+        self.write(f"{self.log_time()} [{color}]--- {message} ---[/]")
 
     def info(self, message: str) -> None:
         color = self.app.theme_variables["text-secondary"]
-        self.write(f"{self._log_time()} [{color}]{message}[/]")
+        self.write(f"{self.log_time()} [{color}]{message}[/]")
 
-    def success(self, message: str) -> None:
-        color = self.app.theme_variables["text-success"]
-        self.write(f"{self._log_time()} [{color}]{Chars.check_mark} {message}[/]")
-
-    def warning(self, message: str) -> None:
-        lines = message.splitlines()
-        color = self.app.theme_variables["text-warning"]
-        for line in [line for line in lines if line.strip() != ""]:
-            escaped_line = escape(line)
-            self.write(f"{self._log_time()} [{color}]{escaped_line}[/]")
-
-    def error(self, message: str) -> None:
+    def error(self, message: str, with_time: bool = True) -> None:
         color = self.app.theme_variables["text-error"]
-        time = self._log_time()
-        self.write(f"{time} [{color}]{message}[/]")
+        time = f"{self.log_time()} " if with_time else ""
+        self.write(f"{time}[{color}]{message}[/]")
 
     def dimmed(self, message: str) -> None:
         if message.strip() == "":
             return
         lines: list[str] = message.splitlines()
-        color = self.app.theme_variables["text-disabled"]
+        color = self.app.theme_variables["foreground-darken-2"]
         for line in lines:
             if line.strip() != "":
                 escaped_line = escape(line)
-                self.write(f"    [{color}]{escaped_line}[/]")
+                self.write(f"[{color}]{escaped_line}[/]")
 
 
 class AppLog(LoggersBase, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.app, markup=True, max_lines=10000)
-        self.succes_no_output = "Success, no output"
-        self.success_with_output = "Success, output will be processed"
-        self.std_err_logged = "Command stderr available in an Output log view"
-        self.verify_exit_zero = "All targets match their target state"
-        self.verify_non_zero = (
-            "Targets not matching their target state will be processed"
-        )
 
     def on_mount(self) -> None:
         self.ready_to_run(LogString.app_log_initialized)
         if self.app.chezmoi_found:
-            self.success(LogString.chezmoi_found)
+            self.success(LogString.chezmoi_found, with_time=False)
         else:
-            self.error(LogString.chezmoi_not_found)
+            self.error(LogString.chezmoi_not_found, with_time=False)
         if self.app.dev_mode is True:
-            self.warning(LogString.dev_mode_enabled)
-
-    def log_doctor_exit_zero_msg(self, command_result: "CommandResult") -> None:
-        if "error" in command_result.std_out.lower():
-            self.error(
-                f"{Chars.x_mark} One or more errors found, check the Config tab for details"
-            )
-            return
-        elif "failed" in command_result.std_out.lower():
             self.warning(
-                f"{Chars.warning_sign} One or more tests failed, check the Config tab for details"
+                f"{Chars.warning_sign} {LogString.dev_mode_enabled}", with_time=False
             )
-            return
-        elif "warning" in command_result.std_out.lower():
-            self.success("Only warnings found, see the Config tab")
-            return
-        else:
-            self.success("No warnings, failed or error entries found")
+
+    def log_command(self, command_result: "CommandResult") -> str:
+        time = self.log_time()
+        color = self.app.theme_variables["primary-lighten-3"]
+        return f"{time} [{color}]{command_result.pretty_cmd}[/]"
+
+    def success(self, message: str, with_time: bool = False) -> None:
+        color = self.app.theme_variables["text-success"]
+        time = f"{self.log_time()} " if with_time else ""
+        self.write(f"{time}[{color}]{Chars.check_mark} {message}[/]")
+
+    def warning(self, message: str, with_time: bool = True) -> None:
+        lines = message.splitlines()
+        color = self.app.theme_variables["text-warning"]
+        for line in [line for line in lines if line.strip() != ""]:
+            time = f"{self.log_time()} " if with_time else ""
+            self.write(f"{time}[{color}]{line}[/]")
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
         if ReadVerb.verify.value in command_result.cmd_args:
             if command_result.exit_code == 0:
-                self.success(self.verify_exit_zero)
+                self.success(LogString.verify_exit_zero, with_time=False)
             else:
-                self.success(self.verify_non_zero)
+                self.success(LogString.verify_non_zero, with_time=False)
             return
         elif ReadVerb.doctor.value in command_result.cmd_args:
-            if command_result.exit_code == 0:
-                self.log_doctor_exit_zero_msg(command_result)
-            return
+            if "error" in command_result.std_out.lower():
+                self.error(LogString.doctor_errors_found, with_time=False)
+            elif "failed" in command_result.std_out.lower():
+                self.error(LogString.doctor_fails_found, with_time=False)
+            elif "warning" in command_result.std_out.lower():
+                self.warning(LogString.doctor_warnings_found, with_time=False)
+            else:
+                self.success(LogString.doctor_no_issue_found, with_time=False)
+            self.dimmed(LogString.see_config_tab)
         elif command_result.exit_code == 0:
             if command_result.std_out == "":
-                self.success(self.succes_no_output)
-            elif command_result.std_out != "":
-                self.success(self.success_with_output)
-        elif command_result.exit_code != 0:
-            if command_result.std_err != "":
-                self.error(
-                    f"{self.std_err_logged}, exit code: {command_result.exit_code}"
-                )
-                return
+                self.success(LogString.succes_no_output)
             else:
-                self.error(f"Exit code: {command_result.exit_code}, no stderr output")
+                self.success(LogString.success_with_output)
+        if command_result.std_err != "":
+            self.error(
+                f"{LogString.std_err_logged}, exit code: {command_result.exit_code}"
+            )
 
 
 class DebugLog(LoggersBase, AppType):
@@ -141,13 +120,9 @@ class DebugLog(LoggersBase, AppType):
     def on_mount(self) -> None:
         self.ready_to_run(LogString.debug_log_initialized)
 
-    def completed_process(self, command_result: "CommandResult") -> None:
-        self.write(self.log_command(command_result))
-        self.dimmed(f"{dir(command_result)}")
-
     def mro(self, mro: Mro) -> None:
         color = self.app.theme_variables["accent-darken-2"]
-        self.write(f"{self._log_time()} [{color}]Method Resolution Order:[/]")
+        self.write(f"{self.log_time()} [{color}]Method Resolution Order:[/]")
 
         exclude = {
             "typing.Generic",
@@ -186,7 +161,8 @@ class DebugLog(LoggersBase, AppType):
                         source = inspect.getsource(member)
                         self.dimmed(source)
                     except OSError as e:
-                        self.error(f"Could not retrieve source: {e}")
+                        self.error("Could not retrieve source")
+                        self.dimmed(f"{e}")
 
         def _type_for(name: str) -> str:
             try:
@@ -213,23 +189,22 @@ class DebugLog(LoggersBase, AppType):
             source = inspect.getsource(callable)
             self.dimmed(source)
         except OSError as e:
-            self.error(f"Could not retrieve source: {e}")
+            self.error("Could not retrieve source")
+            self.dimmed(f"{e}")
 
     def print_env_vars(self) -> None:
         for key, value in os.environ.items():
             self.write(f"{key}: {value}")
 
 
-class OutputCollapsible(Collapsible, AppType):
+class OutputCollapsible(VerticalGroup, AppType):
 
-    def __init__(self, *, command_result: "CommandResult") -> None:
-        super().__init__(
-            CommandOutput(command_result),
-            title=command_result.collapsible_title,
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
-            collapsed=True,
-        )
+    def __init__(self, command_result: "CommandResult") -> None:
+        super().__init__(classes=Tcss.cmd_output)
+        self.cmd_result = command_result
+
+    def on_mount(self) -> None:
+        self.mount(self.cmd_result.pretty_collapsible)
 
 
 class OperateLog(ScrollableContainer, AppType):
@@ -239,7 +214,7 @@ class OperateLog(ScrollableContainer, AppType):
 
     @work
     async def log_cmd_results(self, command_result: "CommandResult") -> None:
-        collapsible = OutputCollapsible(command_result=command_result)
+        collapsible = OutputCollapsible(command_result)
         self.mount(collapsible)
 
 
@@ -251,5 +226,4 @@ class ReadCmdLog(ScrollableContainer, AppType):
 
     @work
     async def log_cmd_results(self, command_result: "CommandResult") -> None:
-        collapsible = OutputCollapsible(command_result=command_result)
-        self.mount(collapsible)
+        self.mount(command_result.pretty_collapsible)
