@@ -210,7 +210,7 @@ diff
 - :negative_squared_cross_mark: diff.args
 - :green_square: diff.command (`chezmoi --use-builtin-diff`)
 - :black_circle: diff.exclude
-- :green_square: diff.pager (`chezmoi --no-pager`)
+- :green_square: diff.pager (`chezmoi --no-pager --use-builtin-diff`)
 - :negative_squared_cross_mark: diff.pagerArgs
 - :green_square: diff.reverse
 - :black_circle: diff.scriptContents
