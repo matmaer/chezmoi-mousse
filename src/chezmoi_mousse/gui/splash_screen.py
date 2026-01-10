@@ -3,7 +3,6 @@ import urllib.request
 from collections import deque
 from enum import StrEnum
 from pathlib import Path
-from subprocess import CompletedProcess, run
 from typing import TypedDict
 
 from rich.segment import Segment
@@ -21,10 +20,10 @@ from textual.worker import WorkerState
 from chezmoi_mousse import (
     IDS,
     AppType,
+    ChezmoiCommand,
     ChezmoiPath,
     CmdResults,
     CommandResult,
-    GlobalCmd,
     NodeData,
     ParsedConfig,
     PathKind,
@@ -199,14 +198,8 @@ class SplashScreen(Screen[None], AppType):
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        result: CompletedProcess[str] = run(
-            GlobalCmd.live_run.value + splash_cmd.value,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=2,
-        )
-        cmd_result = CommandResult(completed_process=result, write_cmd=False)
+        chezmoi_cmd = ChezmoiCommand()
+        cmd_result = chezmoi_cmd.read(splash_cmd)
         cmd_text = cmd_result.pretty_cmd
         globals()[splash_cmd.name] = cmd_result
         if splash_cmd == ReadCmd.dump_config:
