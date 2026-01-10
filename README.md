@@ -208,7 +208,7 @@ dashlane
 
 diff
 - :negative_squared_cross_mark: diff.args
-- :green_square: diff.command (`chezmoi diff --use-builtin-diff`)
+- :green_square: diff.command (`chezmoi --use-builtin-diff diff`)
 - :black_circle: diff.exclude
 - :green_square: diff.pager (`chezmoi diff --no-pager`)
 - :negative_squared_cross_mark: diff.pagerArgs

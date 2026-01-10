@@ -44,7 +44,6 @@ class LogUtils:
             GlobalCmd.default_args.value
             + filter_git_log_args
             + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
-            + VerbArgs.diff.value
         )
         return " ".join([part for part in command if part and part not in exclude])
 
@@ -61,6 +60,7 @@ class GlobalCmd(Enum):
         "--progress=false",
         "--verbose=true",
         "--use-builtin-git=true",
+        "--use-builtin-diff=true",
     ]
     live_run = ["chezmoi"] + default_args
     _dry_run = live_run + ["--dry-run"]
@@ -77,11 +77,9 @@ class GlobalCmd(Enum):
 class VerbArgs(Enum):
     # encrypt = "--encrypt"
     # debug = "--debug"
-    diff = ["--use-builtin-diff", "--no-pager"]
     format_json = "--format=json"
     git_log = [
         "--",
-        "--no-pager",
         "log",
         "--date-order",
         "--format=%ar by %cn;%s",
@@ -118,7 +116,7 @@ class ReadVerb(Enum):
 class ReadCmd(Enum):
     cat = [ReadVerb.cat.value]
     cat_config = [ReadVerb.cat_config.value]
-    diff = [ReadVerb.diff.value] + VerbArgs.diff.value
+    diff = [ReadVerb.diff.value]
     diff_reverse = [ReadVerb.diff.value, VerbArgs.reverse.value]
     doctor = [ReadVerb.doctor.value]
     dump_config = [VerbArgs.format_json.value, ReadVerb.dump_config.value]
