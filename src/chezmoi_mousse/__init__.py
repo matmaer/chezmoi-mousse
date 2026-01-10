@@ -14,7 +14,6 @@ from ._app_state import AppState
 from ._chezmoi_command import (
     ChezmoiCommand,
     CommandResult,
-    GlobalCmd,
     ReadCmd,
     ReadVerb,
     VerbArgs,
@@ -59,7 +58,6 @@ __all__ = [
     "DirNode",
     "FileNode",
     "FlatBtnLabel",
-    "GlobalCmd",
     "IDS",
     "InitCloneData",
     "LinkBtn",

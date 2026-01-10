@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 __all__ = [
     "ChezmoiCommand",
     "CommandResult",
-    "GlobalCmd",
     "ReadCmd",
     "ReadVerb",
     "VerbArgs",
