@@ -8,11 +8,11 @@ from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import SubTabLabel, SwitchEnum, Tcss
 
-from .trees import ExpandedTree, ListTree, ManagedTree
+from .trees import ExpandedTree, ListTree, ManagedTree, NodeData
 from .views import ContentsView, DiffView, GitLogPath
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, NodeData
+    from chezmoi_mousse import AppIds
 
 __all__ = ["TabsBase"]
 

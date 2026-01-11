@@ -4,15 +4,14 @@ from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._chezmoi_command import CommandResult, WriteCmd
-from ._str_enum_names import PathKind
-
 if TYPE_CHECKING:
+    from ._chezmoi_command import CommandResult, WriteCmd
     from .gui.textual_app import ChezmoiGUI
+
 
 type Value = str | dict[str, "Value"]  # recursive type alias
 
-__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData", "ParsedConfig"]
+__all__ = ["AppType", "CmdResults", "InitCloneData", "ParsedConfig"]
 
 
 class AppType:
@@ -24,16 +23,6 @@ class InitCloneData:
     init_cmd: WriteCmd
     init_arg: str
     valid_arg: bool
-
-
-@dataclass(slots=True)
-class NodeData:
-    found: bool
-    path: Path
-    # Chezmoi status codes processed: A, D, M, or a space
-    # Additional "node status" codes: X (no status but managed)
-    status: str
-    path_kind: PathKind
 
 
 @dataclass(slots=True)
@@ -54,7 +43,7 @@ class CmdResults:
     ignored: CommandResult | None = None
     managed_dirs: CommandResult | None = None
     managed_files: CommandResult | None = None
-    # status_dirs: CommandResult | None = None
+    status_dirs: CommandResult | None = None
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
     verify: CommandResult | None = None

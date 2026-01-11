@@ -5,9 +5,10 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, InitCloneData, NodeData
+    from chezmoi_mousse import AppIds, InitCloneData
 
     from .actionables import CloseButton, OpButton
+    from .trees import NodeData
 
 __all__ = [
     "CloseButtonMsg",

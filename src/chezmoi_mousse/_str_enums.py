@@ -105,12 +105,10 @@ class LogString(StrEnum):
     doctor_warnings_found = "Only warnings found, probably safe to ignore"
     operate_log_initialized = "Operate log initialized"
     read_log_initialized = "Read command log initialized"
-    result_output = "Command result output"
     see_config_tab = "See the Config tab for the doctor command output."
     std_err_logged = "Command stderr available in an Output log view"
     succes_no_output = f"Success, {no_stdout.lower}"
     success_with_output = "Success, output will be processed"
-    verbose_output = "Verbose command output"
     verify_exit_zero = "All targets match their target state"
     verify_non_zero = "Not all targets match their target state"
     no_stdout_write_cmd_dry = (
@@ -260,8 +258,47 @@ class StatusCode(StrEnum):
     Modified = "M"
     No_Change = " "
     # Run = "R" TODO: implement
-    # Fake status codes for internal use
-    fake_dest_dir = "F"  # used for destDir path
-    # fake_status = "S"  # used for re-add dir paths
-    fake_no_status = "X"  # (no status depending on apply or re-add context)
-    fake_unmanaged = "U"
+
+    # -----------------------------------------------------------------------------#
+    # Fake status codes for internal use to decide rendering a node and its color. #
+    # -----------------------------------------------------------------------------#
+
+    # The root NodeData instance.
+    root_node = "Q"
+
+    # NodeData instances in the Add tab.
+    unmanaged = "U"
+
+    # NodeData instances for managed files absent from chezmoi status output for files.
+    file_no_status = "X"
+
+    # Managed directories without a status which also DO NOT have status children no
+    # matter how deeply nested they are, similar to file_no_status.
+    dir_no_status = "N"
+
+    # Managed directories without a status which have status children, no matter how
+    # deeply nested they are.
+    dir_with_status_children = "S"
+
+    # Methods to access or evaluate status pair values for the PathNode objects.
+    # Fake status codes left and right, are always the same unlike real status codes.
+
+    @classmethod
+    def root_node_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+        return (cls.root_node, cls.root_node)
+
+    @classmethod
+    def unmanaged_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+        return (cls.unmanaged, cls.unmanaged)
+
+    @classmethod
+    def file_no_status_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+        return (cls.file_no_status, cls.file_no_status)
+
+    @classmethod
+    def dir_no_status_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+        return (cls.dir_no_status, cls.dir_no_status)
+
+    @classmethod
+    def dir_with_status_children_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+        return (cls.dir_with_status_children, cls.dir_with_status_children)

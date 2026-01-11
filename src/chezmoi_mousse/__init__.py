@@ -13,13 +13,13 @@ from ._app_ids import IDS, AppIds
 from ._app_state import AppState
 from ._chezmoi_command import (
     ChezmoiCommand,
+    ChezmoiPathNodes,
     CommandResult,
     ReadCmd,
     ReadVerb,
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPath, DirNode, FileNode, PathDict
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_names import (
     BindingAction,
@@ -41,7 +41,7 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
-from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedConfig
+from ._type_checking import AppType, CmdResults, InitCloneData, ParsedConfig
 
 __all__ = [
     "__version__",
@@ -52,22 +52,18 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "ChezmoiCommand",
-    "ChezmoiPath",
+    "ChezmoiPathNodes",
     "CmdResults",
     "CommandResult",
-    "DirNode",
-    "FileNode",
     "FlatBtnLabel",
     "IDS",
     "InitCloneData",
     "LinkBtn",
     "LogString",
-    "NodeData",
     "OpBtnEnum",
     "OpBtnLabel",
     "OperateString",
     "ParsedConfig",
-    "PathDict",
     "PathKind",
     "ReadCmd",
     "ReadVerb",

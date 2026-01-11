@@ -20,6 +20,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
+    ChezmoiPathNodes,
     CmdResults,
     OpBtnLabel,
     TabName,
@@ -50,7 +51,7 @@ from .splash_screen import SplashScreen
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import ChezmoiCommand, ChezmoiPath, CommandResult, ParsedConfig
+    from chezmoi_mousse import ChezmoiCommand, CommandResult, ParsedConfig
 
 __all__ = ["ChezmoiGUI"]
 
@@ -126,7 +127,7 @@ class ChezmoiGUI(App[None]):
         AppState.set_app(self)
 
         self.dest_dir: "Path | None" = None
-        self.paths: "ChezmoiPath"
+        self.managed = ChezmoiPathNodes()
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False

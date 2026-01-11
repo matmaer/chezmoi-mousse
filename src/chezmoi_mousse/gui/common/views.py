@@ -22,7 +22,9 @@ from chezmoi_mousse import (
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse import AppIds, CommandResult, NodeData
+    from chezmoi_mousse import AppIds, CommandResult
+
+    from .trees import NodeData
 
     DataTableText = DataTable[Text]
 else:
@@ -132,7 +134,7 @@ class ContentsView(Vertical, AppType):
             self.rich_log.write(error.strerror)
 
     def write_cat_output(self, file_path: Path) -> None:
-        if file_path in self.app.paths.files:
+        if file_path in self.app.managed.files:
             self.cat_config_label.display = True
             cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
@@ -148,7 +150,7 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(cat_output.std_out)
 
     def write_dir_info(self, dir_path: Path) -> None:
-        if dir_path in self.app.paths.dirs:
+        if dir_path in self.app.managed.dirs:
             self.contents_info_static.update(
                 f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
             )
@@ -311,16 +313,19 @@ class DiffView(ScrollableContainer, AppType):
 
     def create_status_widgets(self, node_data: "NodeData") -> DiffWidgets:
         diff_widgets: DiffWidgets = []
-        status_paths = (
-            self.app.paths.list_apply_status_paths_in(node_data.path)
-            if self.ids.canvas_name == TabName.apply
-            else self.app.paths.list_re_add_status_paths_in(node_data.path)
+        status_paths = self.app.managed.status_paths_in(node_data.path)
+        if not status_paths:
+            return [Static(DiffStrings.contains_no_status_paths)]
+
+        diff_widgets.append(
+            Label(f"Managed directory [$text-accent]{node_data.path}[/].")
         )
-        if status_paths:
-            diff_widgets.append(
-                Label(f"Managed directory [$text-accent]{node_data.path}[/].")
+        for path, path_data in status_paths.items():
+            status = (
+                path_data.status_pair[1]
+                if self.ids.canvas_name == TabName.apply
+                else path_data.status_pair[0]
             )
-        for path, status in status_paths.items():
             if status == StatusCode.Added:
                 diff_widgets.append(Static(f"{path} (Added)", classes=Tcss.added))
             elif status == StatusCode.Deleted:
@@ -331,9 +336,9 @@ class DiffView(ScrollableContainer, AppType):
                 diff_widgets.append(
                     Static(f"{path} (Unchanged)", classes=Tcss.unchanged)
                 )
-            elif status == StatusCode.fake_no_status:
+            elif status == StatusCode.file_no_status:
                 diff_widgets.append(
-                    Static(f"{path} (Fake No Status)", classes=Tcss.unchanged)
+                    Static(f"{path} (No Status)", classes=Tcss.unchanged)
                 )
             else:
                 self.app.notify(
@@ -343,7 +348,6 @@ class DiffView(ScrollableContainer, AppType):
                     ),
                     severity="error",
                 )
-        diff_widgets.append(Static(DiffStrings.contains_no_status_paths))
         return diff_widgets
 
     def watch_node_data(self) -> None:
@@ -365,14 +369,14 @@ class DiffView(ScrollableContainer, AppType):
             return
         if (
             self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.paths.files
-            and self.node_data.path not in self.app.paths.status_files
+            and self.node_data.path in self.app.managed.files
+            and self.node_data.path not in self.app.managed.no_status_files
         ):
             self.mount_file_no_status_widgets(self.node_data.path)
             return
         if (
             self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path in self.app.paths.dirs
+            and self.node_data.path in self.app.managed.dirs
         ):
             self.mount_dir_no_status_widgets(self.node_data.path)
             return
