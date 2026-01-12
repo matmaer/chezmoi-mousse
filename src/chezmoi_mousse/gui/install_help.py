@@ -55,8 +55,6 @@ class InstallHelpScreen(Screen[None], AppType):
 
     async def on_mount(self) -> None:
         self.screen.title = HeaderTitle.install_help
-        # all_lines: list[str] = self.app.cmd_results.url_data
-        # self.parsed_json_output = self.parse_indented_text(all_lines)
         self.update_path_widget()
         self.populate_tree()
 
