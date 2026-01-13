@@ -47,10 +47,8 @@ class TreeBase(Tree[NodeData], AppType):
             data=self.root_node_data,
         )
         self.ids = ids
-        self.paths: NodeDict = {}
         self.expanded_nodes: list[TreeNode[NodeData]] = []
         self.visible_nodes: list[TreeNode[NodeData]] = []
-        self.paths: NodeDict = {}
 
     def on_mount(self) -> None:
         self.node_colors: dict[str, str] = {
@@ -75,22 +73,6 @@ class TreeBase(Tree[NodeData], AppType):
         self.root.data = self.root_node_data
         if self.app.dest_dir is None:
             raise ValueError("self.app.dest_dir is None")
-        self.paths[self.app.dest_dir] = self.root_node_data
-        self.populate_paths()
-
-    def populate_paths(self) -> None:
-        for path, path_node in self.app.managed.path_nodes.items():
-            status_code = (
-                path_node.status_pair[1]
-                if self.ids.canvas_name == TabName.apply
-                else path_node.status_pair[0]
-            )
-            self.paths[path] = NodeData(
-                found=path_node.found,
-                path_kind=path_node.path_kind,
-                path=path_node.path,
-                status=status_code,
-            )
 
     def update_expanded_nodes(self) -> None:
         # Recursively calling collect_nodes to collect expanded nodes
@@ -125,36 +107,87 @@ class TreeBase(Tree[NodeData], AppType):
 
         self.visible_nodes = nodes
 
-    def create_and_add_node(
-        self, *, node_data: NodeData, tree_node: TreeNode[NodeData]
-    ) -> None:
-        italic = " italic" if not node_data.found else ""
-        color = self.node_colors[node_data.status]
-        node_label = f"[{color}" f"{italic}]{node_data.path.name}[/]"
-        if node_data.path_kind == PathKind.FILE:
-            tree_node.add_leaf(label=node_label, data=node_data)
+    def create_and_add_node(self, tree_node: TreeNode[NodeData]) -> None:
+        if tree_node.data is None:
+            raise ValueError("tree_node is None")
+        italic = " italic" if not tree_node.data.found else ""
+        color = self.node_colors[tree_node.data.status]
+        node_label = f"[{color}" f"{italic}]{tree_node.data.path.name}[/]"
+        if tree_node.data.path_kind == PathKind.FILE:
+            tree_node.add_leaf(label=node_label, data=tree_node.data)
         else:
-            tree_node.add(label=node_label, data=node_data)
+            tree_node.add(label=node_label, data=tree_node.data)
 
     def create_all_nodes(self) -> None:
-        if self.root.data is None:
-            raise ValueError(f"self.root.data is None in {self.name}")
-        # Create nodes from self.paths (which already has correct status values)
-        # Sort by depth to ensure parents are created before children
-        path_to_node: dict[Path, TreeNode[NodeData]] = {}
-        sorted_paths = sorted(self.paths.keys(), key=lambda p: len(p.parts))
+        if self.app.dest_dir is None:
+            raise ValueError("self.app.dest_dir is None")
 
-        for path in sorted_paths:
-            node_data = self.paths[path]
-            parent_path = path.parent
-            if parent_path == self.root.data.path:
-                parent_node = self.root
-            elif parent_path in path_to_node:
-                parent_node = path_to_node[parent_path]
-            else:
+        # Track created TreeNodes to find parents when building tree
+        node_map: dict[Path, TreeNode[NodeData]] = {self.app.dest_dir: self.root}
+
+        # Create NodeData with appropriate status code for this tree type
+        node_data_items = [
+            NodeData(
+                found=path_node.found,
+                path_kind=path_node.path_kind,
+                path=path_node.path,
+                status=(
+                    path_node.status_pair[1]
+                    if self.ids.canvas_name == TabName.apply
+                    else path_node.status_pair[0]
+                ),
+            )
+            for path_node in self.app.managed.path_nodes.values()
+        ]
+
+        # Sort node data: directories first, then files, both alphabetically
+        def sort_key(node_data: NodeData) -> tuple[Path, int, str]:
+            # 0 for directories (come first), 1 for files (come second)
+            is_file = 1 if node_data.path_kind == PathKind.FILE else 0
+            return (node_data.path.parent, is_file, node_data.path.name)
+
+        # Process nodes in sorted order
+        for node_data in sorted(node_data_items, key=sort_key):
+            path = node_data.path
+
+            # Skip paths that aren't under dest_dir
+            if not path.is_relative_to(self.app.dest_dir):
                 continue
-            self.create_and_add_node(node_data=node_data, tree_node=parent_node)
-            path_to_node[path] = parent_node.children[-1]
+
+            # Get all parts of the path relative to dest_dir
+            relative_parts = path.relative_to(self.app.dest_dir).parts
+
+            # Walk down from root, creating intermediate nodes as needed
+            current_node = self.root
+            current_path = self.app.dest_dir
+
+            for i, part in enumerate(relative_parts):
+                current_path = current_path / part
+
+                # If this is the final part, create the actual node with data
+                if i == len(relative_parts) - 1:
+                    italic = " italic" if not node_data.found else ""
+                    color = self.node_colors[node_data.status]
+                    node_label = f"[{color}{italic}]{part}[/]"
+
+                    if node_data.path_kind == PathKind.FILE:
+                        new_node = current_node.add_leaf(
+                            label=node_label, data=node_data
+                        )
+                    else:
+                        new_node = current_node.add(label=node_label, data=node_data)
+
+                    node_map[current_path] = new_node
+                else:
+                    # Create intermediate directory if it doesn't exist
+                    if current_path not in node_map:
+                        color = self.node_colors[StatusCode.dir_no_status]
+                        intermediate_node = current_node.add(
+                            label=f"[{color}]{part}[/]", data=None
+                        )
+                        node_map[current_path] = intermediate_node
+
+                    current_node = node_map[current_path]
 
     def toggle_paths_without_status(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
@@ -178,7 +211,7 @@ class TreeBase(Tree[NodeData], AppType):
             if tree_node.data is None:
                 raise ValueError(f"tree_node data is None in {self.name}")
             if show_unchanged is True and tree_node not in all_unchanged:
-                self.create_and_add_node(node_data=tree_node.data, tree_node=tree_node)
+                self.create_and_add_node(tree_node)
             elif show_unchanged is False and tree_node in all_unchanged:
                 tree_node.remove()
 
