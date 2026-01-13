@@ -48,8 +48,7 @@ class ChezmoiPathNodes:
             path: node
             for path, node in self.path_nodes.items()
             if node.path_kind == PathKind.DIR
-            and node.status_pair
-            != (StatusCode.file_no_status, StatusCode.file_no_status)
+            and node.status_pair != (StatusCode.dir_no_status, StatusCode.dir_no_status)
         }
 
     @property
@@ -68,8 +67,7 @@ class ChezmoiPathNodes:
             path: node
             for path, node in self.path_nodes.items()
             if node.path_kind == PathKind.DIR
-            and node.status_pair
-            == (StatusCode.file_no_status, StatusCode.file_no_status)
+            and node.status_pair == (StatusCode.dir_no_status, StatusCode.dir_no_status)
         }
 
     @property
