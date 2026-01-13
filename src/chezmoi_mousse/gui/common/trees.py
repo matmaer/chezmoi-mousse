@@ -160,21 +160,21 @@ class TreeBase(Tree[NodeData], AppType):
     def toggle_paths_without_status(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
     ) -> None:
-        current_unchanged_files: list[TreeNode[NodeData]] = [
+        all_unchanged: list[TreeNode[NodeData]] = [
             child
             for child in tree_node.children
             if child.data is not None
-            and child.data.path_kind == PathKind.FILE
-            and child.data.status == StatusCode.file_no_status
+            and (
+                (
+                    child.data.path_kind == PathKind.FILE
+                    and child.data.status == StatusCode.file_no_status
+                )
+                or (
+                    child.data.path_kind == PathKind.DIR
+                    and child.data.status == StatusCode.dir_no_status
+                )
+            )
         ]
-        current_unchanged_dirs: list[TreeNode[NodeData]] = [
-            child
-            for child in tree_node.children
-            if child.data is not None
-            and child.data.path_kind == PathKind.DIR
-            and child.data.status == StatusCode.dir_no_status
-        ]
-        all_unchanged = current_unchanged_files + current_unchanged_dirs
         for tree_node in all_unchanged:
             if tree_node.data is None:
                 raise ValueError(f"tree_node data is None in {self.name}")

@@ -187,10 +187,10 @@ class WriteCmd(Enum):
 def _run_chezmoi_cmd(
     command: list[str], read_cmd: ReadCmd | None, write_cmd: WriteCmd | None
 ) -> CompletedProcess[str]:
-    if read_cmd is not None and read_cmd != ReadCmd.doctor:
-        time_out = 2
-    elif read_cmd == ReadCmd.doctor:
+    if read_cmd == ReadCmd.doctor:
         time_out = 4
+    elif read_cmd is not None:
+        time_out = 2
     elif write_cmd is not None:
         time_out = 7
     else:
@@ -258,18 +258,15 @@ class CommandResult:
     @property
     def pretty_collapsible(self) -> VerticalGroup:
         collapsible_contents: list[Label | Static] = []
+        is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
-            LogString.no_stdout_write_cmd_dry
-            if self.write_cmd is True and self.dry_run is True
-            else LogString.no_stdout
+            LogString.no_stdout_write_cmd_dry if is_dry_write else LogString.no_stdout
         )
         stderr_empty = (
-            LogString.no_stderr_write_cmd_dry
-            if self.write_cmd is True and self.dry_run is True
-            else LogString.no_stderr
+            LogString.no_stderr_write_cmd_dry if is_dry_write else LogString.no_stderr
         )
-        std_out_text = self.std_out if self.std_out != "" else stdout_empty
-        std_err_text = self.std_err if self.std_err != "" else stderr_empty
+        std_out_text = self.std_out or stdout_empty
+        std_err_text = self.std_err or stderr_empty
         collapsible_contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
@@ -336,19 +333,14 @@ class ChezmoiCommand:
         path_arg: str | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        if write_cmd == WriteCmd.init_new:
-            command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
-            if init_arg is not None:
-                command: list[str] = GlobalCmd.base_cmd() + write_cmd.value + [init_arg]
-        elif init_arg is None:
-            if path_arg is None:
-                command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
-            else:
-                command: list[str] = (
-                    GlobalCmd.base_cmd() + write_cmd.value + [str(path_arg)]
-                )
-        else:
-            raise ValueError("Invalid arguments for perform()")
+        command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
+
+        if init_arg is not None:
+            if write_cmd != WriteCmd.init_new:
+                raise ValueError("init_arg only valid with WriteCmd.init_new")
+            command.append(init_arg)
+        elif path_arg is not None:
+            command.append(str(path_arg))
 
         result: CompletedProcess[str] = _run_chezmoi_cmd(
             command, read_cmd=None, write_cmd=write_cmd

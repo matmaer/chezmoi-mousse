@@ -90,11 +90,12 @@ class AppLog(LoggersBase, AppType):
                 self.success(LogString.verify_non_zero, with_time=False)
             return
         elif ReadVerb.doctor.value in command_result.cmd_args:
-            if "error" in command_result.std_out.lower():
+            output_lower = command_result.std_out.lower()
+            if "error" in output_lower:
                 self.error(LogString.doctor_errors_found, with_time=False)
-            elif "failed" in command_result.std_out.lower():
+            elif "failed" in output_lower:
                 self.error(LogString.doctor_fails_found, with_time=False)
-            elif "warning" in command_result.std_out.lower():
+            elif "warning" in output_lower:
                 self.warning(LogString.doctor_warnings_found, with_time=False)
             else:
                 self.success(LogString.doctor_no_issue_found, with_time=False)

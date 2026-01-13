@@ -180,31 +180,29 @@ class ChezmoiGUI(App[None]):
             init_left_side = self.screen.query_one(
                 ids.container.left_side_q, FlatButtonsVertical
             )
-            init_left_side.display = False if init_left_side.display is True else True
+            init_left_side.display = not init_left_side.display
             switch_slider = self.screen.query_one(
                 ids.container.switch_slider_q, SwitchSlider
             )
-            switch_slider.display = False if switch_slider.display is True else True
+            switch_slider.display = not switch_slider.display
         elif isinstance(self.screen, MainScreen):
             main_tabs = self.screen.query_exactly_one(Tabs)
-            main_tabs.display = False if main_tabs.display is True else True
+            main_tabs.display = not main_tabs.display
             if ids.canvas_name in (TabName.apply, TabName.re_add):
                 left_side = self.screen.query_one(
                     ids.container.left_side_q, TreeSwitcher
                 )
-                left_side.display = False if left_side.display is True else True
+                left_side.display = not left_side.display
                 active_tab_widget = self.get_tab_widget()
                 view_switcher_buttons = active_tab_widget.query(TabButtons).last()
-                view_switcher_buttons.display = (
-                    False if view_switcher_buttons.display is True else True
-                )
+                view_switcher_buttons.display = not view_switcher_buttons.display
             elif ids.canvas_name == TabName.add:
                 left_side = self.screen.query_exactly_one(FilteredDirTree)
-                left_side.display = False if left_side.display is True else True
+                left_side.display = not left_side.display
             switch_slider = self.screen.query_one(
                 ids.container.switch_slider_q, SwitchSlider
             )
-            switch_slider.display = False if switch_slider.display is True else True
+            switch_slider.display = not switch_slider.display
 
     def get_tab_widget(
         self,
@@ -397,9 +395,9 @@ class ChezmoiGUI(App[None]):
         view_switcher_buttons = None
 
         header = self.screen.query_exactly_one(CustomHeader)
-        header.display = False if header.display is True else True
+        header.display = not header.display
         main_tabs = self.screen.query_exactly_one(Tabs)
-        main_tabs.display = False if main_tabs.display is True else True
+        main_tabs.display = not main_tabs.display
 
         if active_tab in (TabName.apply, TabName.re_add):
             active_tab_widget = self.get_tab_widget()
@@ -448,17 +446,13 @@ class ChezmoiGUI(App[None]):
             )
 
         if left_side is not None:
-            left_side.display = False if left_side.display is True else True
+            left_side.display = not left_side.display
         if operation_buttons is not None:
-            operation_buttons.display = (
-                False if operation_buttons.display is True else True
-            )
+            operation_buttons.display = not operation_buttons.display
         if view_switcher_buttons is not None:
-            view_switcher_buttons.display = (
-                False if view_switcher_buttons.display is True else True
-            )
+            view_switcher_buttons.display = not view_switcher_buttons.display
         if switch_slider is not None:
-            switch_slider.display = False if switch_slider.display is True else True
+            switch_slider.display = not switch_slider.display
 
         new_description = (
             BindingDescription.maximize
@@ -481,18 +475,7 @@ class ChezmoiGUI(App[None]):
                 if header.display is False or switch_slider.display is False:
                     return False
                 active_tab = self.screen.query_exactly_one(TabbedContent).active
-                if active_tab == TabName.apply:
-                    return True
-                elif active_tab == TabName.re_add:
-                    return True
-                elif active_tab == TabName.add:
-                    return True
-                elif active_tab == TabName.logs:
-                    return False
-                elif active_tab == TabName.config:
-                    return False
-                elif active_tab == TabName.help:
-                    return False
+                return active_tab in (TabName.apply, TabName.re_add, TabName.add)
             else:
                 return False
         elif action == BindingAction.toggle_dry_run:
