@@ -9,11 +9,10 @@ from chezmoi_mousse import IDS, AppType, LogString, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.loggers import AppLog, DebugLog, OperateLog, ReadCmdLog
+from .common.loggers import AppLog, OperateLog, ReadCmdLog
 from .common.screen_header import CustomHeader
 from .common.trees import ExpandedTree, ListTree, ManagedTree
 from .config_tab import ConfigTab
-from .debug_tab import DebugTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
@@ -38,7 +37,6 @@ class MainScreen(Screen[None], AppType):
         self.app_log: "AppLog"
         self.read_log: "ReadCmdLog"
         self.operate_log: "OperateLog"
-        self.debug_log: "DebugLog"
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.main_tabs)
@@ -50,6 +48,8 @@ class MainScreen(Screen[None], AppType):
             yield TabPane(TabPanes.config_tab_label, ConfigTab(), id=TabName.config)
             yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
             if self.app.dev_mode is True:
+                from .debug_tab import DebugTab
+
                 yield TabPane(TabPanes.debug_tab_label, DebugTab(), id=TabName.debug)
 
         yield Footer(id=IDS.main_tabs.footer)
@@ -68,6 +68,8 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(LogString.read_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:
+            from .common.loggers import DebugLog
+
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.notify(LogString.dev_mode_enabled)
         # Workers
