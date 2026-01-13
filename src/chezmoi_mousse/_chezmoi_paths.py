@@ -191,11 +191,14 @@ class ChezmoiPathNodes:
     def status_paths_in(self, dir_path: Path, recursive: bool = False) -> PathNodeDict:
         # Return all paths with a status in the provided directory, recursively or not.
         managed_children = self.managed_paths_in(dir_path, recursive)
+        no_status_pairs = {
+            StatusCode.file_no_status_pair(),
+            StatusCode.dir_no_status_pair(),
+        }
         return {
             path: path_node
             for path, path_node in managed_children.items()
-            if path_node.status_pair != StatusCode.file_no_status_pair()
-            or StatusCode.dir_no_status_pair()
+            if path_node.status_pair not in no_status_pairs
         }
 
     def paths_without_status_in(
@@ -203,11 +206,14 @@ class ChezmoiPathNodes:
     ) -> PathNodeDict:
         # Used when toggling the "show unchanged" switch for the Tree widgets.
         managed_children = self.managed_paths_in(dir_path, recursive)
+        no_status_pairs = {
+            StatusCode.file_no_status_pair(),
+            StatusCode.dir_no_status_pair(),
+        }
         return {
             path: path_node
             for path, path_node in managed_children.items()
-            if path_node.status_pair == StatusCode.file_no_status_pair()
-            or StatusCode.dir_no_status_pair()
+            if path_node.status_pair in no_status_pairs
         }
 
     def has_status_paths_in(self, dir_path: Path) -> bool:
