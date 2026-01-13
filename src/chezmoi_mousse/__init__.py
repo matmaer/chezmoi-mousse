@@ -13,13 +13,13 @@ from ._app_ids import IDS, AppIds
 from ._app_state import AppState
 from ._chezmoi_command import (
     ChezmoiCommand,
-    ChezmoiPathNodes,
     CommandResult,
     ReadCmd,
     ReadVerb,
     VerbArgs,
     WriteCmd,
 )
+from ._chezmoi_paths import ChezmoiPathNodes
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_names import (
     BindingAction,
