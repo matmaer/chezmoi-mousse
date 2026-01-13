@@ -102,7 +102,7 @@ class ChezmoiPathNodes:
             self.changed_node_paths[parsed_path] = new_node
         return new_node
 
-    def create_file_nodes(
+    def _create_file_nodes(
         self, *, managed_files: str, status_files: str
     ) -> PathNodeDict:
         file_node_dict: PathNodeDict = {}
@@ -135,7 +135,7 @@ class ChezmoiPathNodes:
             )
         return dict(sorted(file_node_dict.items()))
 
-    def create_dir_nodes(
+    def _create_dir_nodes(
         self, *, managed_dirs: str, status_dirs: str, file_node_dict: PathNodeDict
     ) -> PathNodeDict:
         dir_node_dict: PathNodeDict = {}
@@ -193,11 +193,11 @@ class ChezmoiPathNodes:
     ) -> None:
         self.changed_node_paths.clear()
         # Parse status files and managed files
-        file_node_dict = self.create_file_nodes(
+        file_node_dict = self._create_file_nodes(
             managed_files=managed_files, status_files=status_files
         )
         # Parse status dirs and managed dirs
-        dir_node_dict = self.create_dir_nodes(
+        dir_node_dict = self._create_dir_nodes(
             managed_dirs=managed_dirs,
             status_dirs=status_dirs,
             file_node_dict=file_node_dict,
