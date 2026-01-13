@@ -122,8 +122,6 @@ class TreeBase(Tree[NodeData], AppType):
         # Track created TreeNodes to find parents when building tree
         node_map: dict[Path, TreeNode[NodeData]] = {self.app.dest_dir: self.root}
 
-        # Process directories first, then files, both sorted alphabetically
-        # This leverages ChezmoiPathNodes.dirs and .files properties
         def create_node_data(path_node: "PathNode") -> NodeData:
             return NodeData(
                 found=path_node.found,
@@ -136,6 +134,21 @@ class TreeBase(Tree[NodeData], AppType):
                 ),
             )
 
+        def ensure_parent_exists(path: Path) -> TreeNode[NodeData]:
+            if path in node_map:
+                return node_map[path]
+
+            # Create the parent's parent first (recursion)
+            parent_node = ensure_parent_exists(path.parent)
+
+            # Create this intermediate directory node
+            color = self.node_colors[StatusCode.dir_no_status]
+            intermediate_node = parent_node.add(
+                label=f"[{color}]{path.name}[/]", data=None
+            )
+            node_map[path] = intermediate_node
+            return intermediate_node
+
         # Combine sorted dirs and files
         sorted_dirs = sorted(self.app.managed.dirs.values(), key=lambda n: n.path)
         sorted_files = sorted(self.app.managed.files.values(), key=lambda n: n.path)
@@ -144,44 +157,20 @@ class TreeBase(Tree[NodeData], AppType):
             node_data = create_node_data(path_node)
             path = node_data.path
 
-            # Skip paths that aren't under dest_dir
-            if not path.is_relative_to(self.app.dest_dir):
-                continue
+            # Ensure parent exists
+            parent_node = ensure_parent_exists(path.parent)
 
-            # Get all parts of the path relative to dest_dir
-            relative_parts = path.relative_to(self.app.dest_dir).parts
+            # Create the actual node
+            italic = " italic" if not node_data.found else ""
+            color = self.node_colors[node_data.status]
+            node_label = f"[{color}{italic}]{path.name}[/]"
 
-            # Walk down from root, creating intermediate nodes as needed
-            current_node = self.root
-            current_path = self.app.dest_dir
+            if node_data.path_kind == PathKind.FILE:
+                new_node = parent_node.add_leaf(label=node_label, data=node_data)
+            else:
+                new_node = parent_node.add(label=node_label, data=node_data)
 
-            for i, part in enumerate(relative_parts):
-                current_path = current_path / part
-
-                # If this is the final part, create the actual node with data
-                if i == len(relative_parts) - 1:
-                    italic = " italic" if not node_data.found else ""
-                    color = self.node_colors[node_data.status]
-                    node_label = f"[{color}{italic}]{part}[/]"
-
-                    if node_data.path_kind == PathKind.FILE:
-                        new_node = current_node.add_leaf(
-                            label=node_label, data=node_data
-                        )
-                    else:
-                        new_node = current_node.add(label=node_label, data=node_data)
-
-                    node_map[current_path] = new_node
-                else:
-                    # Create intermediate directory if it doesn't exist
-                    if current_path not in node_map:
-                        color = self.node_colors[StatusCode.dir_no_status]
-                        intermediate_node = current_node.add(
-                            label=f"[{color}]{part}[/]", data=None
-                        )
-                        node_map[current_path] = intermediate_node
-
-                    current_node = node_map[current_path]
+            node_map[path] = new_node
 
     def toggle_paths_without_status(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
