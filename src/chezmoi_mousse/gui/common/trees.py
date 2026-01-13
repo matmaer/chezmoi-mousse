@@ -145,10 +145,10 @@ class TreeBase(Tree[NodeData], AppType):
                 current = found_child
             return current
 
-        all_nodes = (*self.app.managed.dirs.values(), *self.app.managed.files.values())
+        all_nodes = (*self.app.managed.dirs.items(), *self.app.managed.files.items())
 
-        for path_node in all_nodes:
-            parent_node = get_or_create_node(path_node.path.parent)
+        for path, path_node in all_nodes:
+            parent_node = get_or_create_node(path.parent)
 
             status = (
                 path_node.status_pair[1]
@@ -157,18 +157,18 @@ class TreeBase(Tree[NodeData], AppType):
             )
             italic = " italic" if not path_node.found else ""
             color = self.node_colors[status]
-            label = f"[{color}{italic}]{path_node.path.name}[/]"
+            label = f"[{color}{italic}]{path.name}[/]"
 
             node_data = NodeData(
                 found=path_node.found,
                 path_kind=path_node.path_kind,
-                path=path_node.path,
+                path=path,
                 status=status,
             )
             # check if node already exists
             existing_node = None
             for child in parent_node.children:
-                if child.data and child.data.path == path_node.path:
+                if child.data and child.data.path == path:
                     existing_node = child
                     break
             if existing_node:
