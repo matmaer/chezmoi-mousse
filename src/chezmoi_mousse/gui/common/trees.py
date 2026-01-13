@@ -124,8 +124,10 @@ class TreeBase(Tree[NodeData], AppType):
 
         # Sort paths to ensure parents are processed before children
         # Directories first, then files, both by path
+        dir_items = self.app.managed.dirs.items()
+        file_items = self.app.managed.files.items()
         all_nodes = sorted(
-            (*self.app.managed.dirs.items(), *self.app.managed.files.items()),
+            [*dir_items, *file_items],
             key=lambda item: (item[1].path_kind != PathKind.DIR, item[0]),
         )
 
