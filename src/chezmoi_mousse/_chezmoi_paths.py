@@ -1,23 +1,13 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from ._str_enum_names import PathKind
 from ._str_enums import StatusCode
+from ._type_checking import PathNode
 
 type PathNodeDict = dict[Path, PathNode]
 
 
 __all__ = ["ChezmoiPathNodes"]
-
-
-@dataclass(slots=True)
-class PathNode:
-    found: bool
-    path: Path
-    # Chezmoi status codes processed: A, D, M, or a space
-    # Additional "node status" codes: X (no status but managed)
-    path_kind: PathKind
-    status_pair: tuple[StatusCode, StatusCode]
 
 
 class ChezmoiPathNodes:
@@ -117,8 +107,9 @@ class ChezmoiPathNodes:
         result: PathNodeDict = {}
         # Parse status files
         for line in status_files.splitlines():
-            result[Path(line[2:])] = self._create_path_node(
-                Path(line[2:]),
+            file_path = Path(line[3:])
+            result[file_path] = self._create_path_node(
+                file_path,
                 path_kind=PathKind.FILE,
                 status_pair=(StatusCode(line[0]), StatusCode(line[1])),
             )
@@ -136,8 +127,9 @@ class ChezmoiPathNodes:
         # Parse status dirs
         for line in status_dirs.splitlines():
             # No check for existing entries as we didn't process any dirs yet.
-            result[Path(line[2:])] = self._create_path_node(
-                Path(line[2:]),
+            dir_path = Path(line[3:])
+            result[dir_path] = self._create_path_node(
+                dir_path,
                 path_kind=PathKind.DIR,
                 status_pair=(StatusCode(line[0]), StatusCode(line[1])),
             )
@@ -146,26 +138,28 @@ class ChezmoiPathNodes:
         for line in managed_dirs.splitlines():
             # First determine if the directory has any files or directories, no matter
             # how deeply nested with a status.
+            dir_path = Path(line)
             has_status_descendant = any(
-                path_node.path.is_relative_to(Path(line))
+                path_node.path.is_relative_to(dir_path)
                 and path_node.status_pair != StatusCode.file_no_status_pair()
                 and path_node.status_pair != StatusCode.dir_no_status_pair()
                 for path_node in result.values()
             )
             if has_status_descendant:
-                result[Path(line)] = self._create_path_node(
-                    Path(line),
+                result[dir_path] = self._create_path_node(
+                    dir_path,
                     path_kind=PathKind.DIR,
                     status_pair=StatusCode.dir_with_status_children_pair(),
                 )
         # Give all remaining managed dirs not yet in result, a no-status status pair.
         for line in managed_dirs.splitlines():
-            if Path(line) in result.keys():
+            dir_path = Path(line)
+            if dir_path in result.keys():
                 # Avoid overwriting parsed dirs with status or status_parent as they
                 # also appear in the managed dirs command output.
                 continue
-            result[Path(line)] = self._create_path_node(
-                Path(line),
+            result[dir_path] = self._create_path_node(
+                dir_path,
                 path_kind=PathKind.DIR,
                 status_pair=StatusCode.dir_no_status_pair(),
             )

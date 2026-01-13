@@ -1,33 +1,30 @@
 """Contains subclassed textual classes shared between the ApplyTab and ReAddTab."""
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from textual import on
 from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppType, Chars, PathKind, StatusCode, TabName, Tcss, TreeName
+from chezmoi_mousse import (
+    AppIds,
+    AppType,
+    Chars,
+    NodeData,
+    PathKind,
+    PathNode,
+    StatusCode,
+    TabName,
+    Tcss,
+    TreeName,
+)
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
-if TYPE_CHECKING:
-
-    from chezmoi_mousse import AppIds
-
 type NodeDict = dict[Path, NodeData]
 
-__all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase", "NodeData"]
-
-
-@dataclass(slots=True)
-class NodeData:
-    found: bool
-    path: Path
-    status: StatusCode
-    path_kind: PathKind
+__all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
 
 
 class TreeBase(Tree[NodeData], AppType):
@@ -125,9 +122,10 @@ class TreeBase(Tree[NodeData], AppType):
         # Track created TreeNodes to find parents when building tree
         node_map: dict[Path, TreeNode[NodeData]] = {self.app.dest_dir: self.root}
 
-        # Create NodeData with appropriate status code for this tree type
-        node_data_items = [
-            NodeData(
+        # Process directories first, then files, both sorted alphabetically
+        # This leverages ChezmoiPathNodes.dirs and .files properties
+        def create_node_data(path_node: "PathNode") -> NodeData:
+            return NodeData(
                 found=path_node.found,
                 path_kind=path_node.path_kind,
                 path=path_node.path,
@@ -137,17 +135,13 @@ class TreeBase(Tree[NodeData], AppType):
                     else path_node.status_pair[0]
                 ),
             )
-            for path_node in self.app.managed.path_nodes.values()
-        ]
 
-        # Sort node data: directories first, then files, both alphabetically
-        def sort_key(node_data: NodeData) -> tuple[Path, int, str]:
-            # 0 for directories (come first), 1 for files (come second)
-            is_file = 1 if node_data.path_kind == PathKind.FILE else 0
-            return (node_data.path.parent, is_file, node_data.path.name)
+        # Combine sorted dirs and files
+        sorted_dirs = sorted(self.app.managed.dirs.values(), key=lambda n: n.path)
+        sorted_files = sorted(self.app.managed.files.values(), key=lambda n: n.path)
 
-        # Process nodes in sorted order
-        for node_data in sorted(node_data_items, key=sort_key):
+        for path_node in sorted_dirs + sorted_files:
+            node_data = create_node_data(path_node)
             path = node_data.path
 
             # Skip paths that aren't under dest_dir

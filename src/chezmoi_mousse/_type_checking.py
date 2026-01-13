@@ -6,32 +6,24 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult, WriteCmd
+    from ._chezmoi_paths import PathKind, StatusCode
     from .gui.textual_app import ChezmoiGUI
 
 
 type Value = str | dict[str, "Value"]  # recursive type alias
 
-__all__ = ["AppType", "CmdResults", "InitCloneData", "ParsedConfig"]
+__all__ = [
+    "AppType",
+    "CmdResults",
+    "InitCloneData",
+    "NodeData",
+    "ParsedConfig",
+    "PathNode",
+]
 
 
 class AppType:
     app: ChezmoiGUI
-
-
-@dataclass(slots=True)
-class InitCloneData:
-    init_cmd: WriteCmd
-    init_arg: str
-    valid_arg: bool
-
-
-@dataclass(slots=True)
-class ParsedConfig:
-    dest_dir: Path
-    git_auto_add: bool
-    git_auto_commit: bool
-    git_auto_push: bool
-    source_dir: Path
 
 
 @dataclass(slots=True)
@@ -57,3 +49,37 @@ class CmdResults:
             for field in fields(self)
             if getattr(self, field.name) is not None
         ]
+
+
+@dataclass(slots=True)
+class InitCloneData:
+    init_cmd: WriteCmd
+    init_arg: str
+    valid_arg: bool
+
+
+@dataclass(slots=True)
+class NodeData:
+    found: bool
+    path: Path
+    status: StatusCode
+    path_kind: PathKind
+
+
+@dataclass(slots=True)
+class ParsedConfig:
+    dest_dir: Path
+    git_auto_add: bool
+    git_auto_commit: bool
+    git_auto_push: bool
+    source_dir: Path
+
+
+@dataclass(slots=True)
+class PathNode:
+    found: bool
+    path: Path
+    # Chezmoi status codes processed: A, D, M, or a space
+    # Additional "node status" codes: X (no status but managed)
+    path_kind: PathKind
+    status_pair: tuple[StatusCode, StatusCode]
