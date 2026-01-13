@@ -13,7 +13,6 @@ from chezmoi_mousse import (
     Chars,
     NodeData,
     PathKind,
-    PathNode,
     StatusCode,
     TabName,
     Tcss,
@@ -119,58 +118,44 @@ class TreeBase(Tree[NodeData], AppType):
         if self.app.dest_dir is None:
             raise ValueError("self.app.dest_dir is None")
 
-        # Track created TreeNodes to find parents when building tree
         node_map: dict[Path, TreeNode[NodeData]] = {self.app.dest_dir: self.root}
 
-        def create_node_data(path_node: "PathNode") -> NodeData:
-            return NodeData(
+        def get_or_create_node(path: Path) -> TreeNode[NodeData]:
+            if path in node_map:
+                return node_map[path]
+            parent_node = get_or_create_node(path.parent)
+            color = self.node_colors[StatusCode.dir_no_status]
+            node_map[path] = parent_node.add(
+                label=f"[{color}]{path.name}[/]", data=None
+            )
+            return node_map[path]
+
+        all_paths = (*self.app.managed.dirs.values(), *self.app.managed.files.values())
+
+        for path_node in all_paths:
+            parent_node = get_or_create_node(path_node.path.parent)
+
+            status = (
+                path_node.status_pair[1]
+                if self.ids.canvas_name == TabName.apply
+                else path_node.status_pair[0]
+            )
+            italic = " italic" if not path_node.found else ""
+            color = self.node_colors[status]
+            label = f"[{color}{italic}]{path_node.path.name}[/]"
+
+            node_data = NodeData(
                 found=path_node.found,
                 path_kind=path_node.path_kind,
                 path=path_node.path,
-                status=(
-                    path_node.status_pair[1]
-                    if self.ids.canvas_name == TabName.apply
-                    else path_node.status_pair[0]
-                ),
+                status=status,
             )
-
-        def ensure_parent_exists(path: Path) -> TreeNode[NodeData]:
-            if path in node_map:
-                return node_map[path]
-
-            # Create the parent's parent first (recursion)
-            parent_node = ensure_parent_exists(path.parent)
-
-            # Create this intermediate directory node
-            color = self.node_colors[StatusCode.dir_no_status]
-            intermediate_node = parent_node.add(
-                label=f"[{color}]{path.name}[/]", data=None
-            )
-            node_map[path] = intermediate_node
-            return intermediate_node
-
-        # Combine sorted dirs and files
-        sorted_dirs = sorted(self.app.managed.dirs.values(), key=lambda n: n.path)
-        sorted_files = sorted(self.app.managed.files.values(), key=lambda n: n.path)
-
-        for path_node in sorted_dirs + sorted_files:
-            node_data = create_node_data(path_node)
-            path = node_data.path
-
-            # Ensure parent exists
-            parent_node = ensure_parent_exists(path.parent)
-
-            # Create the actual node
-            italic = " italic" if not node_data.found else ""
-            color = self.node_colors[node_data.status]
-            node_label = f"[{color}{italic}]{path.name}[/]"
-
-            if node_data.path_kind == PathKind.FILE:
-                new_node = parent_node.add_leaf(label=node_label, data=node_data)
+            if path_node.path_kind == PathKind.FILE:
+                node_map[path_node.path] = parent_node.add_leaf(
+                    label=label, data=node_data
+                )
             else:
-                new_node = parent_node.add(label=node_label, data=node_data)
-
-            node_map[path] = new_node
+                node_map[path_node.path] = parent_node.add(label=label, data=node_data)
 
     def toggle_paths_without_status(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool

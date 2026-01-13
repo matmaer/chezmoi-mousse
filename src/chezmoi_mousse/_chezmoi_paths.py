@@ -1,13 +1,23 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from ._str_enum_names import PathKind
 from ._str_enums import StatusCode
-from ._type_checking import PathNode
 
 type PathNodeDict = dict[Path, PathNode]
 
 
 __all__ = ["ChezmoiPathNodes"]
+
+
+@dataclass(slots=True)
+class PathNode:
+    found: bool
+    path: Path
+    # Chezmoi status codes processed: A, D, M, or a space
+    # Additional "node status" codes: X (no status but managed)
+    path_kind: PathKind
+    status_pair: tuple[StatusCode, StatusCode]
 
 
 class ChezmoiPathNodes:

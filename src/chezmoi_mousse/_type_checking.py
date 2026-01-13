@@ -12,14 +12,7 @@ if TYPE_CHECKING:
 
 type Value = str | dict[str, "Value"]  # recursive type alias
 
-__all__ = [
-    "AppType",
-    "CmdResults",
-    "InitCloneData",
-    "NodeData",
-    "ParsedConfig",
-    "PathNode",
-]
+__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData", "ParsedConfig"]
 
 
 class AppType:
@@ -73,13 +66,3 @@ class ParsedConfig:
     git_auto_commit: bool
     git_auto_push: bool
     source_dir: Path
-
-
-@dataclass(slots=True)
-class PathNode:
-    found: bool
-    path: Path
-    # Chezmoi status codes processed: A, D, M, or a space
-    # Additional "node status" codes: X (no status but managed)
-    path_kind: PathKind
-    status_pair: tuple[StatusCode, StatusCode]
