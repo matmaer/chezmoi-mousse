@@ -23,6 +23,7 @@ from chezmoi_mousse import (
     ChezmoiCommand,
     CmdResults,
     CommandResult,
+    NodeData,
     ParsedConfig,
     PathKind,
     ReadCmd,
@@ -30,7 +31,7 @@ from chezmoi_mousse import (
     VerbArgs,
 )
 
-from .common.trees import NodeData, TreeBase
+from .common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
 

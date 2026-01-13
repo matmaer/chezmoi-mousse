@@ -10,7 +10,10 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Label, RichLog, Static
 
 from chezmoi_mousse import (
+    AppIds,
     AppType,
+    CommandResult,
+    NodeData,
     OperateString,
     PathKind,
     ReadCmd,
@@ -21,11 +24,6 @@ from chezmoi_mousse import (
 )
 
 if TYPE_CHECKING:
-
-    from chezmoi_mousse import AppIds, CommandResult
-
-    from .trees import NodeData
-
     DataTableText = DataTable[Text]
 else:
     DataTableText = DataTable

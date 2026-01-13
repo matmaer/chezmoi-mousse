@@ -8,12 +8,11 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Switch
 
-from chezmoi_mousse import IDS, AppType, Chars, PathKind, StatusCode, Tcss
+from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, StatusCode, Tcss
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.operate_mode import OperateMode
 from .common.tabs_base import TabsBase
-from .common.trees import NodeData
 from .common.views import ContentsView
 
 __all__ = ["AddTab", "FilteredDirTree"]
