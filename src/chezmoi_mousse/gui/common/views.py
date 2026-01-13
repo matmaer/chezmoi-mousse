@@ -233,7 +233,10 @@ class DiffView(ScrollableContainer, AppType):
 
     def mount_dir_no_status_widgets(self, dir_path: Path) -> None:
         diff_widgets: DiffWidgets = [
-            Label(f"Managed directory [$text-accent]{dir_path}[/]."),
+            Label(
+                f"Managed directory [$text-accent]{dir_path}[/]",
+                classes=Tcss.main_section_label,
+            ),
             Static(f"{DiffStrings.dir_no_status}"),
         ]
         self.mount_new_diff_widgets(diff_widgets)
