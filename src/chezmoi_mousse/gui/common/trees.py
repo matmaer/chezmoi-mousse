@@ -115,24 +115,39 @@ class TreeBase(Tree[NodeData], AppType):
             tree_node.add(label=node_label, data=tree_node.data)
 
     def create_all_nodes(self) -> None:
-        if self.app.dest_dir is None:
+        dest_dir = self.app.dest_dir
+        if dest_dir is None:
             raise ValueError("self.app.dest_dir is None")
 
-        node_map: dict[Path, TreeNode[NodeData]] = {self.app.dest_dir: self.root}
-
         def get_or_create_node(path: Path) -> TreeNode[NodeData]:
-            if path in node_map:
-                return node_map[path]
-            parent_node = get_or_create_node(path.parent)
-            color = self.node_colors[StatusCode.dir_no_status]
-            node_map[path] = parent_node.add(
-                label=f"[{color}]{path.name}[/]", data=None
-            )
-            return node_map[path]
+            if path == dest_dir:
+                return self.root
+            parts = path.parts[len(dest_dir.parts) :]
+            current = self.root
+            current_path = dest_dir
+            for part in parts:
+                current_path = current_path / part
+                found_child = None
+                for child in current.children:
+                    if child.data and child.data.path == current_path:
+                        found_child = child
+                        break
+                if found_child is None:
+                    node_data = NodeData(
+                        found=True,
+                        path_kind=PathKind.DIR,
+                        path=current_path,
+                        status=StatusCode.dir_no_status,
+                    )
+                    color = self.node_colors[StatusCode.dir_no_status]
+                    label = f"[{color}]{part}[/]"
+                    found_child = current.add(label=label, data=node_data)
+                current = found_child
+            return current
 
-        all_paths = (*self.app.managed.dirs.values(), *self.app.managed.files.values())
+        all_nodes = (*self.app.managed.dirs.values(), *self.app.managed.files.values())
 
-        for path_node in all_paths:
+        for path_node in all_nodes:
             parent_node = get_or_create_node(path_node.path.parent)
 
             status = (
@@ -150,12 +165,21 @@ class TreeBase(Tree[NodeData], AppType):
                 path=path_node.path,
                 status=status,
             )
-            if path_node.path_kind == PathKind.FILE:
-                node_map[path_node.path] = parent_node.add_leaf(
-                    label=label, data=node_data
-                )
+            # check if node already exists
+            existing_node = None
+            for child in parent_node.children:
+                if child.data and child.data.path == path_node.path:
+                    existing_node = child
+                    break
+            if existing_node:
+                # update data and label
+                existing_node.data = node_data
+                existing_node.label = label
             else:
-                node_map[path_node.path] = parent_node.add(label=label, data=node_data)
+                if path_node.path_kind == PathKind.FILE:
+                    parent_node.add_leaf(label=label, data=node_data)
+                else:
+                    parent_node.add(label=label, data=node_data)
 
     def toggle_paths_without_status(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
