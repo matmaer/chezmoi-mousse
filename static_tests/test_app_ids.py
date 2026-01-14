@@ -2,7 +2,11 @@ import ast
 from pathlib import Path
 
 import pytest
-from _test_utils import get_modules_importing_class
+from _test_utils import (
+    get_module_ast_tree,
+    get_module_paths,
+    get_modules_importing_class,
+)
 
 import chezmoi_mousse._app_ids as app_ids_module
 from chezmoi_mousse import AppIds
@@ -62,8 +66,7 @@ def test_app_ids_member_in_use(member_name: str, member_type: str):
     paths_to_check: set[Path] = set(get_modules_importing_class(class_name))
     paths_to_check.add(Path(app_ids_module.__file__))
     for py_file in paths_to_check:
-        content = py_file.read_text()
-        tree = ast.parse(content, filename=str(py_file))
+        tree = get_module_ast_tree(py_file)
 
         finder = UsageFinder(member_name, exclude_class_name=class_name)
         finder.visit(tree)
@@ -73,3 +76,36 @@ def test_app_ids_member_in_use(member_name: str, member_type: str):
 
     if not is_used:
         pytest.fail(f"\nNot in use: {member_name} {member_type}")
+
+
+def test_app_ids_used_in_gui():
+
+    gui_modules = [p for p in get_module_paths() if "gui" in p.parts]
+
+    results: list[str] = []
+    class_name = "AppIds"
+
+    for member_name, member_type in _get_class_public_members_strings(AppIds):
+        # Skip methods, as they are usually not directly referenced in GUI code, however
+        # this needs to be improved in the future
+        if member_type == "method":
+            continue
+
+        found_in_gui = False
+
+        # Check for direct usage in AST
+        for gui_module in gui_modules:
+            content = gui_module.read_text()
+            tree = ast.parse(content, filename=str(gui_module))
+
+            finder = UsageFinder(member_name, exclude_class_name=class_name)
+            finder.visit(tree)
+            if finder.found:
+                found_in_gui = True
+                break
+
+        if not found_in_gui:
+            results.append(f"{member_name}")
+
+    if results:
+        pytest.fail("AppIds members not used in gui/:\n" + "\n".join(results))
