@@ -10,7 +10,7 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import SubTabLabel, Tcss
 
 from .actionables import TabButtons
-from .trees import ExpandedTree, ListTree, ManagedTree
+from .trees import ListTree, ManagedTree
 from .views import ContentsView, DiffView, GitLogPath
 
 if TYPE_CHECKING:
@@ -36,7 +36,6 @@ class TreeSwitcher(Vertical):
         ):
             yield ManagedTree(ids=self.ids)
             yield ListTree(ids=self.ids)
-            yield ExpandedTree(ids=self.ids)
 
 
 class ViewSwitcher(Vertical):

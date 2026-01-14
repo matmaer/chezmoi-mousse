@@ -6,7 +6,7 @@ from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import AppIds, NodeData, SubTabLabel, SwitchEnum, Tcss
 
-from .trees import ExpandedTree, ListTree, ManagedTree
+from .trees import ListTree, ManagedTree
 from .views import ContentsView, DiffView, GitLogPath
 
 __all__ = ["TabsBase"]
@@ -52,19 +52,8 @@ class TabsBase(Vertical):
     def handle_tree_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == self.ids.filter.unchanged:
-            expanded_tree = self.query_one(self.ids.tree.expanded_q, ExpandedTree)
-            expanded_tree.unchanged = event.value
-
             list_tree = self.query_one(self.ids.tree.list_q, ListTree)
             list_tree.unchanged = event.value
 
             managed_tree = self.query_one(self.ids.tree.managed_q, ManagedTree)
             managed_tree.unchanged = event.value
-
-        elif event.switch.id == self.ids.filter.expand_all:
-            self.expand_all_state = event.value
-            tree_switcher = self.query_one(self.ids.switcher.trees_q, ContentSwitcher)
-            if event.value is True:
-                tree_switcher.current = self.ids.tree.expanded
-            else:
-                tree_switcher.current = self.ids.tree.managed

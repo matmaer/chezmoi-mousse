@@ -23,7 +23,7 @@ from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 type NodeDict = dict[Path, NodeData]
 
-__all__ = ["ExpandedTree", "ListTree", "ManagedTree", "TreeBase"]
+__all__ = ["ListTree", "ManagedTree", "TreeBase"]
 
 
 class TreeBase(Tree[NodeData], AppType):
@@ -155,6 +155,9 @@ class TreeBase(Tree[NodeData], AppType):
                 created_nodes[path] = parent_node.add_leaf(label=label, data=node_data)
             else:
                 created_nodes[path] = parent_node.add(label=label, data=node_data)
+        self.toggle_paths_without_status(tree_node=self.root, show_unchanged=False)
+        self.update_visible_nodes()
+        self.update_expanded_nodes()
 
     def toggle_paths_without_status(
         self, *, tree_node: TreeNode[NodeData], show_unchanged: bool
@@ -192,45 +195,6 @@ class TreeBase(Tree[NodeData], AppType):
             self.post_message(CurrentReAddNodeMsg(event.node.data))
 
 
-class ExpandedTree(TreeBase):
-
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.expanded_tree)
-
-    def populate_dest_dir(self) -> None:
-        self.create_all_nodes()
-        for child in self.root.children:
-            if child.data is not None and child.data.path_kind == PathKind.DIR:
-                child.expand()
-        self.update_expanded_nodes()
-        self.update_visible_nodes()
-
-    def expand_all_nodes(self, tree_node: TreeNode[NodeData]) -> None:
-        for child in tree_node.children:
-            if child.data is not None and child.data.path_kind == PathKind.DIR:
-                child.expand()
-                self.expand_all_nodes(child)
-
-    def watch_unchanged(self) -> None:
-        for tree_node in self.expanded_nodes:
-            self.toggle_paths_without_status(
-                tree_node=tree_node, show_unchanged=self.unchanged
-            )
-
-    @on(TreeBase.NodeExpanded)
-    def add_node_children(self, event: TreeBase.NodeExpanded[NodeData]) -> None:
-        event.stop()
-        self.update_expanded_nodes()
-        self.update_visible_nodes()
-
-    @on(Tree.NodeCollapsed)
-    def on_node_collapsed(self, event: Tree.NodeCollapsed[NodeData]) -> None:
-        event.stop()
-        self.update_expanded_nodes()
-        self.update_visible_nodes()
-
-
 class ListTree(TreeBase):
 
     def __init__(self, ids: "AppIds") -> None:
@@ -250,7 +214,7 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.create_all_nodes()
-        self.update_expanded_nodes()
+        self.expanded_nodes = [self.root]
         self.update_visible_nodes()
 
     def watch_unchanged(self) -> None:
