@@ -39,7 +39,6 @@ class AppIds:
         "static",
         "switcher",
         "tab_id",
-        "tab_qid",
         "tree",
         "view",
     )
@@ -49,7 +48,6 @@ class AppIds:
         self.footer = f"{self.canvas_name.name}_footer"
         self.header = f"{self.canvas_name.name}_header"
         self.tab_id = f"{self.canvas_name.name}_tab_container"
-        self.tab_qid = f"#{self.tab_id}"
         self.close = f"{self.canvas_name.name}_close_btn"
         self.close_q = f"#{self.close}"
 
