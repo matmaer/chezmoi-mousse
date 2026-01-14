@@ -95,8 +95,7 @@ def test_app_ids_used_in_gui():
 
         # Check for direct usage in AST
         for gui_module in gui_modules:
-            content = gui_module.read_text()
-            tree = ast.parse(content, filename=str(gui_module))
+            tree = get_module_ast_tree(gui_module)
 
             finder = UsageFinder(member_name, exclude_class_name=class_name)
             finder.visit(tree)

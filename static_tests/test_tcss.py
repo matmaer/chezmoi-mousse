@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import get_modules_importing_class
+from _test_utils import get_module_ast_tree, get_modules_importing_class
 
 from chezmoi_mousse._str_enum_names import Tcss
 
@@ -43,9 +43,8 @@ def test_not_in_use() -> None:
 )
 def test_no_hardcoded(py_file: Path) -> None:
     results: list[str] = []
-    tree = ast.parse(py_file.read_text())
 
-    for node in ast.walk(tree):
+    for node in ast.walk(get_module_ast_tree(py_file)):
         if not isinstance(node, ast.Call):
             # tcss classes are always set in ast.Call nodes
             continue

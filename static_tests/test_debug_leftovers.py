@@ -2,7 +2,7 @@ import ast
 from pathlib import Path
 
 import pytest
-from _test_utils import get_module_paths
+from _test_utils import get_module_ast_tree, get_module_paths
 
 
 class DebugStatementVisitor(ast.NodeVisitor):
@@ -63,12 +63,8 @@ class DebugStatementVisitor(ast.NodeVisitor):
     "py_file", get_module_paths(), ids=lambda py_file: py_file.name
 )
 def test_leftovers(py_file: Path) -> None:
-
-    content = py_file.read_text()
-    tree = ast.parse(content)
-
     visitor = DebugStatementVisitor()
-    visitor.visit(tree)
+    visitor.visit(get_module_ast_tree(py_file))
 
     if visitor.debug_statements:
         statements_found = "\n".join(visitor.debug_statements)
