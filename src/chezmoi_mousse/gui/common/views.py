@@ -15,10 +15,8 @@ from chezmoi_mousse import (
     CommandResult,
     NodeData,
     OperateString,
-    PathKind,
     ReadCmd,
     SectionLabel,
-    StatusCode,
     TabName,
     Tcss,
 )
@@ -132,7 +130,7 @@ class ContentsView(Vertical, AppType):
             self.rich_log.write(error.strerror)
 
     def write_cat_output(self, file_path: Path) -> None:
-        if file_path in self.app.managed.files:
+        if file_path in self.app.paths.cache.managed_files:
             self.cat_config_label.display = True
             cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
@@ -148,7 +146,7 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(cat_output.std_out)
 
     def write_dir_info(self, dir_path: Path) -> None:
-        if dir_path in self.app.managed.dirs:
+        if dir_path in self.app.paths.cache.managed_dirs:
             self.contents_info_static.update(
                 f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
             )
@@ -170,19 +168,6 @@ class ContentsView(Vertical, AppType):
         self.file_read_label.display = False
         self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
         self.rich_log.clear()
-
-        if self.node_data.path_kind == PathKind.DIR:
-            self.query_exactly_one(VerticalGroup).display = True
-            self.write_dir_info(self.node_data.path)
-            return
-        elif self.node_data.path_kind == PathKind.FILE:
-            self.query_exactly_one(VerticalGroup).display = False
-            if self.node_data.found is True:
-                self.open_file_and_update_ui(self.node_data.path)
-            elif self.node_data.found is False:
-                self.write_cat_output(self.node_data.path)
-            else:
-                self.app.notify("Unexpected condition in ContentsView.watch_node_data")
 
 
 class DiffStrings(StrEnum):
@@ -314,41 +299,9 @@ class DiffView(ScrollableContainer, AppType):
 
     def create_status_widgets(self, node_data: "NodeData") -> DiffWidgets:
         diff_widgets: DiffWidgets = []
-        status_paths = self.app.managed.status_paths_in(node_data.path)
-        if not status_paths:
-            return [Static(DiffStrings.contains_no_status_paths)]
-
         diff_widgets.append(
             Label(f"Managed directory [$text-accent]{node_data.path}[/].")
         )
-        for path, path_data in status_paths.items():
-            status = (
-                path_data.status_pair[1]
-                if self.ids.canvas_name == TabName.apply
-                else path_data.status_pair[0]
-            )
-            if status == StatusCode.Added:
-                diff_widgets.append(Static(f"{path} (Added)", classes=Tcss.added))
-            elif status == StatusCode.Deleted:
-                diff_widgets.append(Static(f"{path} (Deleted)", classes=Tcss.removed))
-            elif status == StatusCode.Modified:
-                diff_widgets.append(Static(f"{path} (Modified)", classes=Tcss.changed))
-            elif status == StatusCode.No_Change:
-                diff_widgets.append(
-                    Static(f"{path} (Unchanged)", classes=Tcss.unchanged)
-                )
-            elif status == StatusCode.file_no_status:
-                diff_widgets.append(
-                    Static(f"{path} (No Status)", classes=Tcss.unchanged)
-                )
-            else:
-                self.app.notify(
-                    (
-                        "DiffView self.create_status_paths_widgets, unhandled "
-                        f"condition for {path} ({status})"
-                    ),
-                    severity="error",
-                )
         return diff_widgets
 
     def watch_node_data(self) -> None:
@@ -368,17 +321,10 @@ class DiffView(ScrollableContainer, AppType):
         if diff_widgets:
             self.mount_new_diff_widgets(diff_widgets)
             return
-        if (
-            self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.managed.files
-            and self.node_data.path not in self.app.managed.no_status_files
-        ):
+        if self.node_data.path in self.app.paths.cache.managed_files:
             self.mount_file_no_status_widgets(self.node_data.path)
             return
-        if (
-            self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path in self.app.managed.dirs
-        ):
+        if self.node_data.path in self.app.paths.cache.managed_dirs:
             self.mount_dir_no_status_widgets(self.node_data.path)
             return
         # Notify unhandled condition with function, class and module name

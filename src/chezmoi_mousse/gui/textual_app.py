@@ -20,7 +20,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
-    ChezmoiPathNodes,
+    ChezmoiPaths,
     CmdResults,
     OpBtnLabel,
     TabName,
@@ -127,7 +127,7 @@ class ChezmoiGUI(App[None]):
         AppState.set_app(self)
 
         self.dest_dir: "Path | None" = None
-        self.managed = ChezmoiPathNodes()
+        self.paths: "ChezmoiPaths"
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False

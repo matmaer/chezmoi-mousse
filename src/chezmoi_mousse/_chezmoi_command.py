@@ -358,10 +358,10 @@ class ChezmoiCommand:
                 raise ValueError("self.app is None")
             if self.app.dest_dir is None:
                 raise ValueError("self.app.dest_dir is None")
-            self.app.managed.update_path_dict(
-                managed_dirs=self.read(ReadCmd.managed_dirs).std_out,
-                managed_files=self.read(ReadCmd.managed_files).std_out,
-                status_dirs=self.read(ReadCmd.status_dirs).std_out,
-                status_files=self.read(ReadCmd.status_files).std_out,
+            self.app.paths.update_cache(
+                self.read(ReadCmd.managed_dirs),
+                self.read(ReadCmd.managed_files),
+                self.read(ReadCmd.status_dirs),
+                self.read(ReadCmd.status_files),
             )
         return command_result

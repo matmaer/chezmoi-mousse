@@ -262,6 +262,9 @@ class StatusCode(StrEnum):
     # -----------------------------------------------------------------------------#
     # Fake status codes for internal use to decide rendering a node and its color. #
     # -----------------------------------------------------------------------------#
+    # Paths present in chezmoi status, but not in chezmoi managed. No extra logic needed
+    # to treat these as fake, maps 1:1 with chezmoi.
+    no_status = "X"
 
     # The root NodeData instance.
     root_node = "Q"
@@ -269,11 +272,8 @@ class StatusCode(StrEnum):
     # NodeData instances in the Add tab.
     unmanaged = "U"
 
-    # NodeData instances for managed files absent from chezmoi status output for files.
-    file_no_status = "X"
-
     # Managed directories without a status which also DO NOT have status children no
-    # matter how deeply nested they are, similar to file_no_status.
+    # matter how deeply nested they are.
     dir_no_status = "N"
 
     # Managed directories without a status which have status children, no matter how
@@ -290,10 +290,6 @@ class StatusCode(StrEnum):
     @classmethod
     def unmanaged_pair(cls) -> tuple["StatusCode", "StatusCode"]:
         return (cls.unmanaged, cls.unmanaged)
-
-    @classmethod
-    def file_no_status_pair(cls) -> tuple["StatusCode", "StatusCode"]:
-        return (cls.file_no_status, cls.file_no_status)
 
     @classmethod
     def dir_no_status_pair(cls) -> tuple["StatusCode", "StatusCode"]:
