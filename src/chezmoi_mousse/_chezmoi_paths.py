@@ -2,10 +2,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from rich.text import Text
+from textual.containers import Vertical
 from textual.widgets import DataTable, Label, RichLog, Static
 
 from ._chezmoi_command import ChezmoiCommand, CommandResult
-from ._str_enums import StatusCode
+from ._str_enum_names import Tcss
+from ._str_enums import OperateString, SectionLabel, StatusCode
 
 type StatusPath = dict[Path, StatusCode]
 
@@ -102,4 +104,10 @@ class ChezmoiPaths:
             re_add_files=self._create_status_dicts(
                 file_paths, status_files.std_out.splitlines(), index=1
             ),
+        )
+
+    def create_des_dir_widgets(self) -> Vertical:
+        return Vertical(
+            Label(SectionLabel.diff_info, classes=Tcss.sub_section_label),
+            Static(f"{OperateString.in_dest_dir_click_path}"),
         )
