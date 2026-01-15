@@ -5,7 +5,7 @@ from rich.text import Text
 from textual.containers import Vertical
 from textual.widgets import DataTable, Label, RichLog, Static
 
-from ._chezmoi_command import ChezmoiCommand, CommandResult
+from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd
 from ._str_enum_names import Tcss
 from ._str_enums import OperateString, SectionLabel, StatusCode
 
@@ -17,22 +17,16 @@ __all__ = ["ChezmoiPaths"]
 @dataclass(slots=True)
 class PathWidgets:
     # widgets for a managed file or dir path and the root dir
-    content: list[Label | Static]
+    content: list[Label | Static] | RichLog
     diff: list[Label | Static]
     git_log: DataTable[Text]
 
 
 @dataclass(slots=True)
-class FileWidgets(PathWidgets):
-    # file widgets only, used when they don't exist on disk in the Contents tab
-    cat: RichLog
-
-
-@dataclass(slots=True)
 class DirNode:
     dir_widgets: PathWidgets
-    status_files: dict[Path, FileWidgets]
-    no_status_files: dict[Path, FileWidgets]
+    status_files: dict[Path, PathWidgets]
+    no_status_files: dict[Path, PathWidgets]
 
 
 @dataclass
@@ -111,3 +105,23 @@ class ChezmoiPaths:
             Label(SectionLabel.diff_info, classes=Tcss.sub_section_label),
             Static(f"{OperateString.in_dest_dir_click_path}"),
         )
+
+    def create_cat_widget(self, path: Path) -> RichLog:
+        source_output = self.cmd.read(ReadCmd.source_path, path_arg=path)
+        source_path = Path(source_output.std_out.splitlines()[0])
+        cat_output = self.cmd.read(ReadCmd.cat, path_arg=source_path)
+        cat_log = RichLog(auto_scroll=False, highlight=True, min_width=10)
+        cat_log.write(cat_output)
+        return cat_log
+
+    def create_changed_file_node_widgets(self, path: Path) -> dict[Path, PathWidgets]:
+
+        diff: list[Label | Static] = []
+        git_log: DataTable[Text] = DataTable()
+
+        file_widgets = PathWidgets(
+            content=self.create_cat_widget(path=path), diff=diff, git_log=git_log
+        )
+        return {path: file_widgets}
+
+    def create_dest_dir_node(self) -> DirNode: ...
