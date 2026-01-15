@@ -1,13 +1,7 @@
-"""Contains subclassed textual classes shared between the ApplyTab and ReAddTab."""
-
-from pathlib import Path
-
 from textual.reactive import reactive
 from textual.widgets import Tree
 
 from chezmoi_mousse import AppIds, AppType, Chars, NodeData, Tcss, TreeName
-
-type NodeDict = dict[Path, NodeData]
 
 
 class TreeBase(Tree[NodeData], AppType):
@@ -30,9 +24,8 @@ class ListTree(TreeBase):
         self.ids = ids
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
-    # will be implemented later after ManagedTree and ExpandedTree are done
     def populate_dest_dir(self) -> None:
-        pass
+        self.app.notify_not_implemented(self.ids, self, self.populate_dest_dir)
 
 
 class ManagedTree(TreeBase):
@@ -42,4 +35,4 @@ class ManagedTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
     def populate_dest_dir(self) -> None:
-        self.expanded_nodes = [self.root]
+        self.app.notify_not_implemented(self.ids, self, self.populate_dest_dir)
