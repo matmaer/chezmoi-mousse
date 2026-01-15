@@ -256,7 +256,7 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.cmd_args)}"
 
     @property
-    def pretty_collapsible(self) -> VerticalGroup:
+    def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
         collapsible_contents: list[Label | Static] = []
         is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
@@ -285,7 +285,7 @@ class CommandResult:
                 title=self.pretty_collapsible_title,
                 collapsed_symbol=Chars.right_triangle,
                 expanded_symbol=Chars.down_triangle,
-                collapsed=True,
+                collapsed=collapsed,
             )
         )
 
@@ -358,10 +358,10 @@ class ChezmoiCommand:
                 raise ValueError("self.app is None")
             if self.app.dest_dir is None:
                 raise ValueError("self.app.dest_dir is None")
-            self.app.managed.update_path_dict(
-                managed_dirs=self.read(ReadCmd.managed_dirs).std_out,
-                managed_files=self.read(ReadCmd.managed_files).std_out,
-                status_dirs=self.read(ReadCmd.status_dirs).std_out,
-                status_files=self.read(ReadCmd.status_files).std_out,
+            self.app.paths.update_cache(
+                self.read(ReadCmd.managed_dirs),
+                self.read(ReadCmd.managed_files),
+                self.read(ReadCmd.status_dirs),
+                self.read(ReadCmd.status_files),
             )
         return command_result

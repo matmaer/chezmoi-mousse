@@ -21,17 +21,13 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     ChezmoiCommand,
+    ChezmoiPaths,
     CmdResults,
     CommandResult,
-    NodeData,
     ParsedConfig,
-    PathKind,
     ReadCmd,
-    StatusCode,
     VerbArgs,
 )
-
-from .common.trees import TreeBase
 
 __all__ = ["SplashScreen"]
 
@@ -334,17 +330,11 @@ class SplashScreen(Screen[None], AppType):
                 doctor=globals()["doctor"], template_data=globals()["template_data"]
             )
             return
-        TreeBase.root_node_data = NodeData(
-            path=globals()["parsed_config"].dest_dir,
-            path_kind=PathKind.DIR,
-            found=True,
-            status=StatusCode.root_node,
-        )
-        self.app.managed.update_path_dict(
-            managed_dirs=globals()["managed_dirs"].std_out,
-            managed_files=globals()["managed_files"].std_out,
-            status_dirs=globals()["status_dirs"].std_out,
-            status_files=globals()["status_files"].std_out,
+        self.app.paths = ChezmoiPaths(
+            managed_dirs_cmd_result=globals()["managed_dirs"],
+            managed_files_cmd_result=globals()["managed_files"],
+            status_dirs_cmd_result=globals()["status_dirs"],
+            status_files_cmd_result=globals()["status_files"],
         )
 
         cmd_results = CmdResults(

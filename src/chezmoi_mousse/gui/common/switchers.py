@@ -11,7 +11,7 @@ from chezmoi_mousse import SubTabLabel, Tcss
 
 from .actionables import TabButtons
 from .trees import ListTree, ManagedTree
-from .views import ContentsView, DiffView, GitLogPath
+from .views import ContentsView, DiffView, GitLog
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -47,12 +47,12 @@ class ViewSwitcher(Vertical):
     def compose(self) -> ComposeResult:
         yield TabButtons(
             ids=self.ids,
-            buttons=(SubTabLabel.diff, SubTabLabel.contents, SubTabLabel.git_log_path),
+            buttons=(SubTabLabel.diff, SubTabLabel.contents, SubTabLabel.git_log),
         )
         with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(ids=self.ids)
             yield ContentsView(ids=self.ids)
-            yield GitLogPath(ids=self.ids)
+            yield GitLog(ids=self.ids)
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:
@@ -61,5 +61,5 @@ class ViewSwitcher(Vertical):
             view_switcher.current = self.ids.container.contents
         elif event.button.label == SubTabLabel.diff:
             view_switcher.current = self.ids.container.diff
-        elif event.button.label == SubTabLabel.git_log_path:
-            view_switcher.current = self.ids.container.git_log_path
+        elif event.button.label == SubTabLabel.git_log:
+            view_switcher.current = self.ids.container.git_log

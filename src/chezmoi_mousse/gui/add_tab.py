@@ -8,7 +8,7 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Switch
 
-from chezmoi_mousse import IDS, AppType, Chars, NodeData, PathKind, StatusCode, Tcss
+from chezmoi_mousse import IDS, AppType, Chars, NodeData, Tcss
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.operate_mode import OperateMode
@@ -116,14 +116,17 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (
                     p.is_dir(follow_symlinks=False)
                     and not self._is_unwanted_dir(p)
-                    and p in self.app.managed.dirs
+                    and p in self.app.paths.cache.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
-                    and (p.parent in self.app.managed.dirs or p.parent == self.path)
-                    and p not in self.app.managed.files
+                    and (
+                        p.parent in self.app.paths.cache.managed_dirs
+                        or p.parent == self.path
+                    )
+                    and p not in self.app.paths.cache.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -140,8 +143,11 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
-                    and (p.parent in self.app.managed.dirs or p.parent == self.path)
-                    and p not in self.app.managed.files
+                    and (
+                        p.parent in self.app.paths.cache.managed_dirs
+                        or p.parent == self.path
+                    )
+                    and p not in self.app.paths.cache.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -152,13 +158,16 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_dir(follow_symlinks=False)
-                    and p in self.app.managed.dirs
+                    and p in self.app.paths.cache.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.managed.files
-                    and (p.parent in self.app.managed.dirs or p.parent == self.path)
+                    and p not in self.app.paths.cache.managed_files
+                    and (
+                        p.parent in self.app.paths.cache.managed_dirs
+                        or p.parent == self.path
+                    )
                     and self._file_of_interest(p)
                 )
             )
@@ -170,7 +179,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (p.is_dir(follow_symlinks=False) and self._has_unmanaged_paths_in(p))
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.managed.files
+                    and p not in self.app.paths.cache.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -194,7 +203,10 @@ class FilteredDirTree(DirectoryTree, AppType):
             for idx, p in enumerate(dir_path.iterdir(), start=1):
                 if idx > max_entries:
                     return False
-                elif p not in self.app.managed.dirs and p not in self.app.managed.files:
+                elif (
+                    p not in self.app.paths.cache.managed_dirs
+                    and p not in self.app.paths.cache.managed_files
+                ):
                     return True
             return True
         except (PermissionError, OSError):
@@ -259,17 +271,7 @@ class AddTab(TabsBase, AppType):
         contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         contents_view.border_title = f" {event.node.data.path} "
 
-        path_kind = (
-            PathKind.DIR
-            if isinstance(event, DirectoryTree.DirectorySelected)
-            else PathKind.FILE
-        )
-        self.current_node = NodeData(
-            found=True,
-            path=event.node.data.path,
-            status=StatusCode.unmanaged,
-            path_kind=path_kind,
-        )
+        self.current_node = NodeData(found=True, path=event.node.data.path)
         contents_view.node_data = self.current_node
         self.operate_mode_container.path_arg = self.current_node.path
 

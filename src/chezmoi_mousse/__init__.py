@@ -19,7 +19,7 @@ from ._chezmoi_command import (
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPathNodes
+from ._chezmoi_paths import ChezmoiPaths
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_names import (
     BindingAction,
@@ -52,7 +52,7 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "ChezmoiCommand",
-    "ChezmoiPathNodes",
+    "ChezmoiPaths",
     "CmdResults",
     "CommandResult",
     "FlatBtnLabel",

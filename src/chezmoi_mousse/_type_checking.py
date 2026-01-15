@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult, WriteCmd
-    from ._chezmoi_paths import PathKind, StatusCode
     from .gui.textual_app import ChezmoiGUI
 
 
@@ -55,8 +54,6 @@ class InitCloneData:
 class NodeData:
     found: bool
     path: Path
-    status: StatusCode
-    path_kind: PathKind
 
 
 @dataclass(slots=True)

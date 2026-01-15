@@ -20,7 +20,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     ChezmoiCommand,
-    ChezmoiPathNodes,
+    ChezmoiPaths,
     CmdResults,
     OpBtnLabel,
     TabName,
@@ -50,6 +50,7 @@ from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from typing import Any
 
     from chezmoi_mousse import ChezmoiCommand, CommandResult, ParsedConfig
 
@@ -127,7 +128,7 @@ class ChezmoiGUI(App[None]):
         AppState.set_app(self)
 
         self.dest_dir: "Path | None" = None
-        self.managed = ChezmoiPathNodes()
+        self.paths: "ChezmoiPaths"
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
@@ -148,6 +149,26 @@ class ChezmoiGUI(App[None]):
         self.git_auto_push: bool = False
         self.parsed_template_data: "ParsedConfig | None" = None
         self.cmd_results: "CmdResults" = CmdResults()
+
+    def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
+        mro = obj.__class__.__mro__
+        method_name = method.__name__
+        exclude_prefixes = ["_"]
+        exclude_names = ["object", "AppType", "MessagePump", "DOMNode", "Widget"]
+        self.notify(
+            f"Not implemented in {ids.canvas_name}: {method_name}\n"
+            + ".".join(
+                [
+                    f"{cls.__name__}"
+                    for cls in reversed(mro)
+                    if not (
+                        any(cls.__name__.startswith(p) for p in exclude_prefixes)
+                        or cls.__name__ in exclude_names
+                    )
+                ]
+            ),
+            timeout=10,
+        )
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)

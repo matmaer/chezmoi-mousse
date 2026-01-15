@@ -15,10 +15,8 @@ from chezmoi_mousse import (
     CommandResult,
     NodeData,
     OperateString,
-    PathKind,
     ReadCmd,
     SectionLabel,
-    StatusCode,
     TabName,
     Tcss,
 )
@@ -28,8 +26,7 @@ if TYPE_CHECKING:
 else:
     DataTableText = DataTable
 
-__all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogDataTable"]
-
+__all__ = ["ContentsView", "DiffView", "GitLog"]
 
 type DiffWidgets = list[Label | Static]
 
@@ -132,7 +129,7 @@ class ContentsView(Vertical, AppType):
             self.rich_log.write(error.strerror)
 
     def write_cat_output(self, file_path: Path) -> None:
-        if file_path in self.app.managed.files:
+        if file_path in self.app.paths.cache.managed_files:
             self.cat_config_label.display = True
             cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
@@ -148,7 +145,7 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(cat_output.std_out)
 
     def write_dir_info(self, dir_path: Path) -> None:
-        if dir_path in self.app.managed.dirs:
+        if dir_path in self.app.paths.cache.managed_dirs:
             self.contents_info_static.update(
                 f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
             )
@@ -170,19 +167,6 @@ class ContentsView(Vertical, AppType):
         self.file_read_label.display = False
         self.rich_log = self.query_one(self.ids.logger.contents_q, RichLog)
         self.rich_log.clear()
-
-        if self.node_data.path_kind == PathKind.DIR:
-            self.query_exactly_one(VerticalGroup).display = True
-            self.write_dir_info(self.node_data.path)
-            return
-        elif self.node_data.path_kind == PathKind.FILE:
-            self.query_exactly_one(VerticalGroup).display = False
-            if self.node_data.found is True:
-                self.open_file_and_update_ui(self.node_data.path)
-            elif self.node_data.found is False:
-                self.write_cat_output(self.node_data.path)
-            else:
-                self.app.notify("Unexpected condition in ContentsView.watch_node_data")
 
 
 class DiffStrings(StrEnum):
@@ -314,41 +298,9 @@ class DiffView(ScrollableContainer, AppType):
 
     def create_status_widgets(self, node_data: "NodeData") -> DiffWidgets:
         diff_widgets: DiffWidgets = []
-        status_paths = self.app.managed.status_paths_in(node_data.path)
-        if not status_paths:
-            return [Static(DiffStrings.contains_no_status_paths)]
-
         diff_widgets.append(
             Label(f"Managed directory [$text-accent]{node_data.path}[/].")
         )
-        for path, path_data in status_paths.items():
-            status = (
-                path_data.status_pair[1]
-                if self.ids.canvas_name == TabName.apply
-                else path_data.status_pair[0]
-            )
-            if status == StatusCode.Added:
-                diff_widgets.append(Static(f"{path} (Added)", classes=Tcss.added))
-            elif status == StatusCode.Deleted:
-                diff_widgets.append(Static(f"{path} (Deleted)", classes=Tcss.removed))
-            elif status == StatusCode.Modified:
-                diff_widgets.append(Static(f"{path} (Modified)", classes=Tcss.changed))
-            elif status == StatusCode.No_Change:
-                diff_widgets.append(
-                    Static(f"{path} (Unchanged)", classes=Tcss.unchanged)
-                )
-            elif status == StatusCode.file_no_status:
-                diff_widgets.append(
-                    Static(f"{path} (No Status)", classes=Tcss.unchanged)
-                )
-            else:
-                self.app.notify(
-                    (
-                        "DiffView self.create_status_paths_widgets, unhandled "
-                        f"condition for {path} ({status})"
-                    ),
-                    severity="error",
-                )
         return diff_widgets
 
     def watch_node_data(self) -> None:
@@ -368,17 +320,10 @@ class DiffView(ScrollableContainer, AppType):
         if diff_widgets:
             self.mount_new_diff_widgets(diff_widgets)
             return
-        if (
-            self.node_data.path_kind == PathKind.FILE
-            and self.node_data.path in self.app.managed.files
-            and self.node_data.path not in self.app.managed.no_status_files
-        ):
+        if self.node_data.path in self.app.paths.cache.managed_files:
             self.mount_file_no_status_widgets(self.node_data.path)
             return
-        if (
-            self.node_data.path_kind == PathKind.DIR
-            and self.node_data.path in self.app.managed.dirs
-        ):
+        if self.node_data.path in self.app.paths.cache.managed_dirs:
             self.mount_dir_no_status_widgets(self.node_data.path)
             return
         # Notify unhandled condition with function, class and module name
@@ -390,11 +335,16 @@ class DiffView(ScrollableContainer, AppType):
         )
 
 
-class GitLogDataTable(DataTable[Text], AppType):
+class GitLog(ScrollableContainer, AppType):
+
+    path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.datatable.git_log)
+        super().__init__(id=self.ids.container.git_log, classes=Tcss.border_title_top)
+
+    def compose(self) -> ComposeResult:
+        yield DataTable(id=self.ids.datatable.git_log)
 
     def on_mount(self) -> None:
         self.row_color = {
@@ -402,16 +352,20 @@ class GitLogDataTable(DataTable[Text], AppType):
             "warning": self.app.theme_variables["text-warning"],
             "error": self.app.theme_variables["text-error"],
         }
+        self.border_title = f" {self.app.dest_dir} "
+        self.datatable: DataTable[Text] = self.query_one(
+            self.ids.datatable.git_log_q, DataTable
+        )
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [Text(cell_text, style=style) for cell_text in columns]
-        self.add_row(*row)
+        self.datatable.add_row(*row)
 
     def populate_datatable(self, command_result: "CommandResult") -> None:
         if command_result.exit_code != 0 or not command_result.std_out.splitlines():
             return
-        self.clear(columns=True)
-        self.add_columns("COMMIT", "MESSAGE")
+        self.datatable.clear(columns=True)
+        self.datatable.add_columns("COMMIT", "MESSAGE")
         for line in command_result.std_out.splitlines():
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
@@ -421,39 +375,4 @@ class GitLogDataTable(DataTable[Text], AppType):
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 self._add_row_with_style(columns, self.row_color["error"])
             else:
-                self.add_row(*(Text(cell) for cell in columns))
-
-
-class GitLogPath(Vertical, AppType):
-
-    path: reactive["Path | None"] = reactive(None, init=False)
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(
-            id=self.ids.container.git_log_path, classes=Tcss.border_title_top
-        )
-
-    def compose(self) -> ComposeResult:
-        yield Static(
-            OperateString.in_dest_dir_click_path, id=self.ids.static.git_log_info
-        )
-        yield GitLogDataTable(ids=self.ids)
-
-    def on_mount(self) -> None:
-        self.border_title = f" {self.app.dest_dir} "
-
-    def watch_path(self) -> None:
-        if self.path is None:
-            return
-        else:
-            dest_dir_info = self.query_one(self.ids.static.git_log_info_q, Static)
-            dest_dir_info.display = False
-        datatable = self.query_one(self.ids.datatable.git_log_q, GitLogDataTable)
-        command_result: "CommandResult" = self.app.cmd.read(
-            ReadCmd.source_path, path_arg=self.path
-        )
-        git_log_result: "CommandResult" = self.app.cmd.read(
-            ReadCmd.git_log, path_arg=Path(command_result.std_out)
-        )
-        datatable.populate_datatable(git_log_result)
+                self.datatable.add_row(*(Text(cell) for cell in columns))
