@@ -22,7 +22,15 @@ class PathWidgets:
 
 @dataclass(slots=True)
 class FileWidgets(PathWidgets):
+    # file widgets only, used when they don't exist on disk in the Contents tab
     cat: RichLog
+
+
+@dataclass(slots=True)
+class DirNode:
+    dir_widgets: PathWidgets
+    status_files: dict[Path, FileWidgets]
+    no_status_files: dict[Path, FileWidgets]
 
 
 @dataclass
@@ -33,13 +41,8 @@ class PathsCache:
     apply_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     re_add_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     re_add_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
-
-
-@dataclass(slots=True)
-class DirNode:
-    dir_widgets: PathWidgets
-    status_files: list[FileWidgets]
-    no_status_files: list[FileWidgets]
+    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
 
 
 class ChezmoiPaths:
