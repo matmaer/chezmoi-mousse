@@ -256,7 +256,7 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.cmd_args)}"
 
     @property
-    def pretty_collapsible(self) -> VerticalGroup:
+    def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
         collapsible_contents: list[Label | Static] = []
         is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
@@ -285,7 +285,7 @@ class CommandResult:
                 title=self.pretty_collapsible_title,
                 collapsed_symbol=Chars.right_triangle,
                 expanded_symbol=Chars.down_triangle,
-                collapsed=True,
+                collapsed=collapsed,
             )
         )
 
