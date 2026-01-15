@@ -1,12 +1,15 @@
 import os
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Collapsible, Footer, Label, Pretty, Tree
+
+if TYPE_CHECKING:
+    from typing import Any
 
 from chezmoi_mousse import IDS, AppType, Chars, FlatBtnLabel, LinkBtn, Tcss
 
