@@ -310,18 +310,6 @@ class ChezmoiCommand:
         self.cmd_log.log_cmd_results(result)
         self.app_log.log_cmd_results(result)
 
-    # def _log_read_cmd(self, result: CommandResult):
-    #     if self.app_log is None or self.read_cmd_log is None:
-    #         return
-    #     self.read_cmd_log.log_cmd_results(result)
-    #     self.app_log.log_cmd_results(result)
-
-    # def _log_write_cmd(self, result: CommandResult):
-    #     if self.app_log is None or self.operate_log is None:
-    #         return
-    #     self.operate_log.log_cmd_results(result)
-    #     self.app_log.log_cmd_results(result)
-
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
         base_cmd = GlobalCmd.live_run.value  # read commands always run live
         command = base_cmd + read_cmd.value
