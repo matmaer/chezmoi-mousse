@@ -9,7 +9,7 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import IDS, AppType, SubTabLabel, Tcss
 
 from .common.actionables import TabButtons
-from .common.loggers import AppLog, OperateLog, ReadCmdLog
+from .common.loggers import AppLog, CmdLog
 from .common.views import GitLog
 
 if TYPE_CHECKING:
@@ -25,17 +25,11 @@ class LogsTab(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield TabButtons(
             ids=IDS.logs,
-            buttons=(
-                SubTabLabel.app_log,
-                SubTabLabel.read_log,
-                SubTabLabel.operate_log,
-                SubTabLabel.git_log,
-            ),
+            buttons=(SubTabLabel.app_log, SubTabLabel.cmd_log, SubTabLabel.git_log),
         )
         with ContentSwitcher(initial=IDS.logs.logger.app):
             yield AppLog(ids=IDS.logs)
-            yield ReadCmdLog(ids=IDS.logs)
-            yield OperateLog(ids=IDS.logs)
+            yield CmdLog(ids=IDS.logs)
             yield GitLog(ids=IDS.logs)
 
     def on_mount(self) -> None:
@@ -47,10 +41,8 @@ class LogsTab(Vertical, AppType):
         event.stop()
         if event.button.label == SubTabLabel.app_log:
             self.switcher.current = IDS.logs.logger.app
-        elif event.button.label == SubTabLabel.read_log:
-            self.switcher.current = IDS.logs.logger.read
-        elif event.button.label == SubTabLabel.operate_log:
-            self.switcher.current = IDS.logs.logger.operate
+        elif event.button.label == SubTabLabel.cmd_log:
+            self.switcher.current = IDS.logs.logger.cmd
         elif event.button.label == SubTabLabel.git_log:
             self.switcher.current = self.git_log_table.id
 

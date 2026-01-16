@@ -60,12 +60,11 @@ class LabelName(StrEnum):
 
 class LogName(StrEnum):
     app_logger = auto()
+    cmd_logger = auto()
     contents_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
     diff_logger = auto()
-    operate_logger = auto()
-    read_logger = auto()
     splash_logger = auto()
 
 

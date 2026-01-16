@@ -9,7 +9,7 @@ from chezmoi_mousse import IDS, AppType, LogString, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.loggers import AppLog, OperateLog, ReadCmdLog
+from .common.loggers import AppLog, CmdLog
 from .common.screen_header import CustomHeader
 from .common.trees import ListTree, ManagedTree
 from .config_tab import ConfigTab
@@ -35,8 +35,7 @@ class MainScreen(Screen[None], AppType):
     def __init__(self) -> None:
         super().__init__()
         self.app_log: "AppLog"
-        self.read_log: "ReadCmdLog"
-        self.operate_log: "OperateLog"
+        self.cmd_log: "CmdLog"
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.main_tabs)
@@ -58,14 +57,10 @@ class MainScreen(Screen[None], AppType):
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.app.cmd.app_log = self.app_log
-        # Initialize Operate logger
-        self.operate_log = self.query_one(IDS.logs.logger.operate_q, OperateLog)
-        self.app.cmd.operate_log = self.operate_log
-        self.app_log.success(LogString.operate_log_initialized)
-        # Initialize ReadCmd logger
-        self.read_cmd_log = self.query_one(IDS.logs.logger.read_q, ReadCmdLog)
-        self.app.cmd.read_cmd_log = self.read_cmd_log
-        self.app_log.success(LogString.read_log_initialized)
+        # Initialize chezmoi commands logger
+        self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
+        self.app.cmd.cmd_log = self.cmd_log
+        self.app_log.success(LogString.cmd_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:
             from .common.loggers import DebugLog
@@ -84,11 +79,11 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("--- Commands executed in loading screen ---")
         commands_to_log = self.app.cmd_results.executed_commands
         if self.app.init_cmd_result is not None:
-            self.operate_log.log_cmd_results(self.app.init_cmd_result)
+            self.cmd_log.log_cmd_results(self.app.init_cmd_result)
             commands_to_log += [self.app.init_cmd_result]
         for cmd in commands_to_log:
             self.app_log.log_cmd_results(cmd)
-            self.read_cmd_log.log_cmd_results(cmd)
+            self.cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
 
     @work

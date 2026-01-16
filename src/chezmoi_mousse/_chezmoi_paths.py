@@ -30,15 +30,15 @@ class DirNode:
 
 
 @dataclass
-class PathsCache:
+class PathCache:
     managed_dirs: list[Path] = field(default_factory=list[Path])  # used in the Add tab
     managed_files: list[Path] = field(default_factory=list[Path])  # used in the Add tab
+    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     apply_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     apply_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
+    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     re_add_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
-    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
-    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
 
 
 class ChezmoiPaths:
@@ -54,7 +54,7 @@ class ChezmoiPaths:
         self.managed_files_result = managed_files_cmd_result
         self.status_dirs_result = status_dirs_cmd_result
         self.status_files_result = status_files_cmd_result
-        self.cache: PathsCache = PathsCache()
+        self.cache: PathCache = PathCache()
         self.update_cache(
             self.managed_dirs_result,
             self.managed_files_result,
@@ -83,7 +83,7 @@ class ChezmoiPaths:
     ):
         dir_paths = [Path(p) for p in managed_dirs.std_out.splitlines()]
         file_paths = [Path(p) for p in managed_files.std_out.splitlines()]
-        self.cache = PathsCache(
+        self.cache = PathCache(
             managed_dirs=dir_paths,  # used in the Add tab
             managed_files=file_paths,  # used in the Add tab
             apply_dirs=self._create_status_dicts(

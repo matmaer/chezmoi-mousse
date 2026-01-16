@@ -13,7 +13,7 @@ from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
 if TYPE_CHECKING:
-    from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
+    from .gui.common.loggers import AppLog, CmdLog
 
 
 __all__ = [
@@ -237,13 +237,6 @@ class CommandResult:
         return self.completed_process.stderr
 
     @property
-    def pretty_collapsible_title(self) -> str:
-        if self.exit_code == 0:
-            return f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
-        else:
-            return f"{LogUtils.pretty_time()} [$text-warning]{self.pretty_cmd}[/]"
-
-    @property
     def dry_run(self) -> bool:
         return "--dry-run" in self.cmd_args
 
@@ -257,6 +250,14 @@ class CommandResult:
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
+        success_color = "$text-success" if self.write_cmd else "$success"
+        warning_color = "$text-warning" if self.write_cmd else "$warning"
+        colored_command = (
+            f"[{success_color}]{self.pretty_cmd}[/]"
+            if self.exit_code == 0
+            else f"[{warning_color}]{self.pretty_cmd}[/]"
+        )
+        collapsible_title = f"{LogUtils.pretty_time()} {colored_command}"
         collapsible_contents: list[Label | Static] = []
         is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
@@ -282,7 +283,7 @@ class CommandResult:
         return VerticalGroup(
             Collapsible(
                 *collapsible_contents,
-                title=self.pretty_collapsible_title,
+                title=collapsible_title,
                 collapsed_symbol=Chars.right_triangle,
                 expanded_symbol=Chars.down_triangle,
                 collapsed=collapsed,
@@ -295,23 +296,18 @@ class ChezmoiCommand:
     def __init__(self) -> None:
         self.app = AppState.get_app()
         self.app_log: AppLog | None = None
-        self.read_cmd_log: ReadCmdLog | None = None
-        self.operate_log: OperateLog | None = None
+        self.cmd_log: CmdLog | None = None
+        # self.read_cmd_log: ReadCmdLog | None = None
+        # self.operate_log: OperateLog | None = None
 
     #################################
     # Command execution and logging #
     #################################
 
-    def _log_read_cmd(self, result: CommandResult):
-        if self.app_log is None or self.read_cmd_log is None:
+    def _log_chezmoi_command(self, result: CommandResult):
+        if self.app_log is None or self.cmd_log is None:
             return
-        self.read_cmd_log.log_cmd_results(result)
-        self.app_log.log_cmd_results(result)
-
-    def _log_write_cmd(self, result: CommandResult):
-        if self.app_log is None or self.operate_log is None:
-            return
-        self.operate_log.log_cmd_results(result)
+        self.cmd_log.log_cmd_results(result)
         self.app_log.log_cmd_results(result)
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
@@ -323,7 +319,7 @@ class ChezmoiCommand:
             command, read_cmd=read_cmd, write_cmd=None
         )
         command_result = CommandResult(completed_process=result, write_cmd=False)
-        self._log_read_cmd(command_result)
+        self._log_chezmoi_command(command_result)
         return command_result
 
     def perform(
@@ -346,7 +342,7 @@ class ChezmoiCommand:
             command, read_cmd=None, write_cmd=write_cmd
         )
         command_result = CommandResult(completed_process=result, write_cmd=True)
-        self._log_write_cmd(command_result)
+        self._log_chezmoi_command(command_result)
         if write_cmd in (
             WriteCmd.add,
             WriteCmd.apply,
