@@ -26,8 +26,7 @@ if TYPE_CHECKING:
 else:
     DataTableText = DataTable
 
-__all__ = ["ContentsView", "DiffView", "GitLogPath", "GitLogDataTable"]
-
+__all__ = ["ContentsView", "DiffView", "GitLog"]
 
 type DiffWidgets = list[Label | Static]
 
@@ -336,11 +335,16 @@ class DiffView(ScrollableContainer, AppType):
         )
 
 
-class GitLogDataTable(DataTable[Text], AppType):
+class GitLog(ScrollableContainer, AppType):
+
+    path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         self.ids = ids
-        super().__init__(id=self.ids.datatable.git_log)
+        super().__init__(id=self.ids.container.git_log, classes=Tcss.border_title_top)
+
+    def compose(self) -> ComposeResult:
+        yield DataTable(id=self.ids.datatable.git_log)
 
     def on_mount(self) -> None:
         self.row_color = {
@@ -348,16 +352,20 @@ class GitLogDataTable(DataTable[Text], AppType):
             "warning": self.app.theme_variables["text-warning"],
             "error": self.app.theme_variables["text-error"],
         }
+        self.border_title = f" {self.app.dest_dir} "
+        self.datatable: DataTable[Text] = self.query_one(
+            self.ids.datatable.git_log_q, DataTable
+        )
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: Iterable[Text] = [Text(cell_text, style=style) for cell_text in columns]
-        self.add_row(*row)
+        self.datatable.add_row(*row)
 
     def populate_datatable(self, command_result: "CommandResult") -> None:
         if command_result.exit_code != 0 or not command_result.std_out.splitlines():
             return
-        self.clear(columns=True)
-        self.add_columns("COMMIT", "MESSAGE")
+        self.datatable.clear(columns=True)
+        self.datatable.add_columns("COMMIT", "MESSAGE")
         for line in command_result.std_out.splitlines():
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
@@ -367,39 +375,4 @@ class GitLogDataTable(DataTable[Text], AppType):
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 self._add_row_with_style(columns, self.row_color["error"])
             else:
-                self.add_row(*(Text(cell) for cell in columns))
-
-
-class GitLogPath(Vertical, AppType):
-
-    path: reactive["Path | None"] = reactive(None, init=False)
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(
-            id=self.ids.container.git_log_path, classes=Tcss.border_title_top
-        )
-
-    def compose(self) -> ComposeResult:
-        yield Static(
-            OperateString.in_dest_dir_click_path, id=self.ids.static.git_log_info
-        )
-        yield GitLogDataTable(ids=self.ids)
-
-    def on_mount(self) -> None:
-        self.border_title = f" {self.app.dest_dir} "
-
-    def watch_path(self) -> None:
-        if self.path is None:
-            return
-        else:
-            dest_dir_info = self.query_one(self.ids.static.git_log_info_q, Static)
-            dest_dir_info.display = False
-        datatable = self.query_one(self.ids.datatable.git_log_q, GitLogDataTable)
-        command_result: "CommandResult" = self.app.cmd.read(
-            ReadCmd.source_path, path_arg=self.path
-        )
-        git_log_result: "CommandResult" = self.app.cmd.read(
-            ReadCmd.git_log, path_arg=Path(command_result.std_out)
-        )
-        datatable.populate_datatable(git_log_result)
+                self.datatable.add_row(*(Text(cell) for cell in columns))

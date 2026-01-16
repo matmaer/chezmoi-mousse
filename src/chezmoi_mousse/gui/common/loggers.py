@@ -1,6 +1,7 @@
 import inspect
 import os
 from datetime import datetime
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
@@ -17,6 +18,13 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult
 
 __all__ = ["AppLog", "DebugLog", "OperateLog", "OutputCollapsible", "ReadCmdLog"]
+
+
+class BorderTitle(StrEnum):
+    app_log = " App Log "
+    git_log_global = " Global Git Log "
+    read_cmd_log = " Read Log "
+    operate_log = " Operate Log "
 
 
 class LoggersBase(RichLog, AppType):
@@ -51,10 +59,16 @@ class LoggersBase(RichLog, AppType):
 class AppLog(LoggersBase, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.app, markup=True, max_lines=10000)
+        super().__init__(
+            id=ids.logger.app,
+            markup=True,
+            max_lines=10000,
+            classes=Tcss.border_title_top,
+        )
 
     def on_mount(self) -> None:
         self.ready_to_run(LogString.app_log_initialized)
+        self.border_title = BorderTitle.app_log
         if self.app.chezmoi_found:
             self.success(LogString.chezmoi_found, with_time=False)
         else:
@@ -116,7 +130,13 @@ class DebugLog(LoggersBase, AppType):
     type Mro = tuple[type, ...]
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.debug, markup=True, max_lines=10000, wrap=True)
+        super().__init__(
+            id=ids.logger.debug,
+            markup=True,
+            max_lines=10000,
+            wrap=True,
+            classes=Tcss.border_title_top,
+        )
 
     def on_mount(self) -> None:
         self.ready_to_run(LogString.debug_log_initialized)
@@ -213,6 +233,10 @@ class OperateLog(ScrollableContainer, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.operate)
 
+    def on_mount(self) -> None:
+        self.add_class(Tcss.border_title_top)
+        self.border_title = BorderTitle.operate_log
+
     @work
     async def log_cmd_results(self, command_result: "CommandResult") -> None:
         collapsible = OutputCollapsible(command_result)
@@ -224,6 +248,10 @@ class ReadCmdLog(ScrollableContainer, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.read)
         self.ids = ids
+
+    def on_mount(self) -> None:
+        self.add_class(Tcss.border_title_top)
+        self.border_title = BorderTitle.read_cmd_log
 
     @work
     async def log_cmd_results(self, command_result: "CommandResult") -> None:

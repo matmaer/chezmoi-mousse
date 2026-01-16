@@ -131,8 +131,8 @@ class ContainerIds:
         self.diff_q = f"#{self.diff}"
         self.doctor = ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
-        self.git_log_path = ids.container_id(name=ContainerName.git_log_path)
-        self.git_log_path_q = f"#{self.git_log_path}"
+        self.git_log = ids.container_id(name=ContainerName.git_log)
+        self.git_log_q = f"#{self.git_log}"
         self.left_side = ids.container_id(name=ContainerName.left_side)
         self.left_side_q = f"#{self.left_side}"
         self.operate_buttons = ids.container_id(name=ContainerName.operate_buttons)

@@ -6,7 +6,7 @@ from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import AppIds, NodeData, SubTabLabel, SwitchEnum, Tcss
 
-from .views import ContentsView, DiffView, GitLogPath
+from .views import ContentsView, DiffView, GitLog
 
 __all__ = ["TabsBase"]
 
@@ -26,7 +26,7 @@ class TabsBase(Vertical):
         diff_view = self.query_one(self.ids.container.diff_q, DiffView)
         diff_view.node_data = node_data
 
-        git_log_path = self.query_one(self.ids.container.git_log_path_q, GitLogPath)
+        git_log_path = self.query_one(self.ids.container.git_log_q, GitLog)
         git_log_path.path = node_data.path
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
