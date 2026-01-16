@@ -17,6 +17,9 @@ class TreeBase(Tree[NodeData], AppType):
         )
         self.ids = ids
 
+    def on_mount(self) -> None:
+        self.show_root = False
+
 
 class ListTree(TreeBase):
 
