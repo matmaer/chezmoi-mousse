@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import work
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import ScrollableContainer, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
@@ -16,7 +16,6 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from .loggers import OutputCollapsible
 from .messages import CompletedOpMsg
 
 if TYPE_CHECKING:
@@ -119,7 +118,9 @@ class OperateMode(Vertical, AppType):
         result_info.update(
             (f"Command completed with exit code {cmd_result.exit_code}, results:\n")
         )
-        self.mount(OutputCollapsible(cmd_result), after=result_info)
+        self.mount(
+            ScrollableContainer(cmd_result.pretty_collapsible), after=result_info
+        )
         self.app.post_message(CompletedOpMsg(path_arg=self.path_arg))
         await sleep(1)
         self.op_result_container.display = True

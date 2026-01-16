@@ -60,12 +60,11 @@ class LinkBtn(StrEnum):
 class SubTabLabel(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "App"
+    cmd_log = "Chezmoi Commands"
     contents = "Contents"
     diff = "Diff"
     git_log = "Git-Log"
     list = "List"
-    operate_log = "Operate"
-    read_log = "Read"
     tree = "Tree"
 
 
@@ -91,31 +90,30 @@ class Chars(StrEnum):
 
 
 class LogString(StrEnum):
-    no_stdout = "No output on stdout"
-    no_stderr = "No output on stderr"
     app_log_initialized = "Application log initialized"
     chezmoi_found = "Found chezmoi command"
     chezmoi_not_found = "chezmoi command not found"
+    cmd_log_initialized = "Chezmoi commands log initialized"
     debug_log_initialized = "Debug log initialized"
     dev_mode_enabled = "Dev mode enabled"
     doctor_errors_found = "One or more errors found"
     doctor_fails_found = "One or more tests failed"
     doctor_no_issue_found = "No warnings, failed or error entries found"
     doctor_warnings_found = "Only warnings found, probably safe to ignore"
-    operate_log_initialized = "Operate log initialized"
-    read_log_initialized = "Read command log initialized"
-    see_config_tab = "See the Config tab for the doctor command output."
-    std_err_logged = "Command stderr available in an Output log view"
-    succes_no_output = f"Success, {no_stdout.lower}"
-    success_with_output = "Success, output will be processed"
-    verify_exit_zero = "All targets match their target state"
-    verify_non_zero = "Not all targets match their target state"
+    no_stderr = "No output on stderr"
+    no_stdout = "No output on stdout"
     no_stdout_write_cmd_dry = (
         "No output on stdout, the command was executed  with the --dry-run flag."
     )
     no_stderr_write_cmd_dry = (
         "No output on stderr, the command was executed  with the --dry-run flag."
     )
+    see_config_tab = "See the Config tab for the doctor command output."
+    std_err_logged = "Command stderr available in an Output log view"
+    succes_no_output = f"Success, {no_stdout.lower}"
+    success_with_output = "Success, output will be processed"
+    verify_exit_zero = "All targets match their target state"
+    verify_non_zero = "Not all targets match their target state"
 
 
 class OpBtnLabel(StrEnum):

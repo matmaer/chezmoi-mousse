@@ -1,12 +1,11 @@
 import inspect
 import os
 from datetime import datetime
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from textual import work
-from textual.containers import ScrollableContainer, VerticalGroup
+from textual.containers import ScrollableContainer
 from textual.widgets import RichLog
 
 from chezmoi_mousse import AppType, Chars, LogString, ReadVerb, Tcss
@@ -17,14 +16,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, CommandResult
 
-__all__ = ["AppLog", "DebugLog", "OperateLog", "OutputCollapsible", "ReadCmdLog"]
-
-
-class BorderTitle(StrEnum):
-    app_log = " App Log "
-    git_log_global = " Global Git Log "
-    read_cmd_log = " Read Log "
-    operate_log = " Operate Log "
+__all__ = ["AppLog", "CmdLog", "DebugLog"]
 
 
 class LoggersBase(RichLog, AppType):
@@ -68,7 +60,6 @@ class AppLog(LoggersBase, AppType):
 
     def on_mount(self) -> None:
         self.ready_to_run(LogString.app_log_initialized)
-        self.border_title = BorderTitle.app_log
         if self.app.chezmoi_found:
             self.success(LogString.chezmoi_found, with_time=False)
         else:
@@ -218,41 +209,43 @@ class DebugLog(LoggersBase, AppType):
             self.write(f"{key}: {value}")
 
 
-class OutputCollapsible(VerticalGroup, AppType):
-
-    def __init__(self, command_result: "CommandResult") -> None:
-        super().__init__(classes=Tcss.cmd_output)
-        self.cmd_result = command_result
-
-    def on_mount(self) -> None:
-        self.mount(self.cmd_result.pretty_collapsible)
-
-
-class OperateLog(ScrollableContainer, AppType):
+class CmdLog(ScrollableContainer, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.operate)
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.border_title_top)
-        self.border_title = BorderTitle.operate_log
-
-    @work
-    async def log_cmd_results(self, command_result: "CommandResult") -> None:
-        collapsible = OutputCollapsible(command_result)
-        self.mount(collapsible)
-
-
-class ReadCmdLog(ScrollableContainer, AppType):
-
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.read)
+        super().__init__(id=ids.logger.cmd, classes=Tcss.border_title_top)
         self.ids = ids
-
-    def on_mount(self) -> None:
-        self.add_class(Tcss.border_title_top)
-        self.border_title = BorderTitle.read_cmd_log
 
     @work
     async def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.mount(command_result.pretty_collapsible)
+
+
+# class OperateLog(ScrollableContainer, AppType):
+
+#     def __init__(self, ids: "AppIds") -> None:
+#         super().__init__(id=ids.logger.operate)
+
+#     def on_mount(self) -> None:
+#         self.add_class(Tcss.border_title_top)
+#         self.border_title = BorderTitle.operate_log
+
+#     @work
+#     async def log_cmd_results(self, command_result: "CommandResult") -> None:
+#         # collapsible = OutputCollapsible(command_result)
+#         # self.mount(collapsible)
+#         self.mount(VerticalGroup(command_result.pretty_collapsible))
+
+
+# class ReadCmdLog(ScrollableContainer, AppType):
+
+#     def __init__(self, ids: "AppIds") -> None:
+#         super().__init__(id=ids.logger.read)
+#         self.ids = ids
+
+#     def on_mount(self) -> None:
+#         self.add_class(Tcss.border_title_top)
+#         self.border_title = BorderTitle.read_cmd_log
+
+#     @work
+#     async def log_cmd_results(self, command_result: "CommandResult") -> None:
+#         self.mount(VerticalGroup(command_result.pretty_collapsible))

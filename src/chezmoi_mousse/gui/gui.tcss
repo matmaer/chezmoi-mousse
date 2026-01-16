@@ -328,7 +328,7 @@ OperateMode {
     border: round $foreground;
     border-subtitle-align: center;
     border-title-align: center;
-    &>CommandOutput {
+    &>ScrollableContainer {
       height: auto;
     }
   }

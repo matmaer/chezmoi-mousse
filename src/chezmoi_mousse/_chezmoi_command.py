@@ -13,7 +13,7 @@ from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
 if TYPE_CHECKING:
-    from .gui.common.loggers import AppLog, OperateLog, ReadCmdLog
+    from .gui.common.loggers import AppLog, CmdLog
 
 
 __all__ = [
@@ -295,24 +295,31 @@ class ChezmoiCommand:
     def __init__(self) -> None:
         self.app = AppState.get_app()
         self.app_log: AppLog | None = None
-        self.read_cmd_log: ReadCmdLog | None = None
-        self.operate_log: OperateLog | None = None
+        self.cmd_log: CmdLog | None = None
+        # self.read_cmd_log: ReadCmdLog | None = None
+        # self.operate_log: OperateLog | None = None
 
     #################################
     # Command execution and logging #
     #################################
 
-    def _log_read_cmd(self, result: CommandResult):
-        if self.app_log is None or self.read_cmd_log is None:
+    def _log_chezmoi_command(self, result: CommandResult):
+        if self.app_log is None or self.cmd_log is None:
             return
-        self.read_cmd_log.log_cmd_results(result)
+        self.cmd_log.log_cmd_results(result)
         self.app_log.log_cmd_results(result)
 
-    def _log_write_cmd(self, result: CommandResult):
-        if self.app_log is None or self.operate_log is None:
-            return
-        self.operate_log.log_cmd_results(result)
-        self.app_log.log_cmd_results(result)
+    # def _log_read_cmd(self, result: CommandResult):
+    #     if self.app_log is None or self.read_cmd_log is None:
+    #         return
+    #     self.read_cmd_log.log_cmd_results(result)
+    #     self.app_log.log_cmd_results(result)
+
+    # def _log_write_cmd(self, result: CommandResult):
+    #     if self.app_log is None or self.operate_log is None:
+    #         return
+    #     self.operate_log.log_cmd_results(result)
+    #     self.app_log.log_cmd_results(result)
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
         base_cmd = GlobalCmd.live_run.value  # read commands always run live
@@ -323,7 +330,7 @@ class ChezmoiCommand:
             command, read_cmd=read_cmd, write_cmd=None
         )
         command_result = CommandResult(completed_process=result, write_cmd=False)
-        self._log_read_cmd(command_result)
+        self._log_chezmoi_command(command_result)
         return command_result
 
     def perform(
@@ -346,7 +353,7 @@ class ChezmoiCommand:
             command, read_cmd=None, write_cmd=write_cmd
         )
         command_result = CommandResult(completed_process=result, write_cmd=True)
-        self._log_write_cmd(command_result)
+        self._log_chezmoi_command(command_result)
         if write_cmd in (
             WriteCmd.add,
             WriteCmd.apply,

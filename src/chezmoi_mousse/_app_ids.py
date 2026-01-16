@@ -225,18 +225,16 @@ class LoggerIds:
     def __init__(self, ids: AppIds):
         self.app = ids.view_id(view=LogName.app_logger)
         self.app_q = f"#{self.app}"
+        self.cmd = ids.view_id(view=LogName.cmd_logger)
+        self.cmd_q = f"#{self.cmd}"
         self.contents = ids.view_id(view=LogName.contents_logger)
         self.contents_q = f"#{self.contents}"
         self.debug = ids.view_id(view=LogName.debug_logger)
         self.debug_q = f"#{self.debug}"
-        self.dom_nodes = ids.view_id(view=LogName.dom_node_logger)
-        self.dom_nodes_q = f"#{self.dom_nodes}"
         self.diff = ids.view_id(view=LogName.diff_logger)
         self.diff_q = f"#{self.diff}"
-        self.operate = ids.view_id(view=LogName.operate_logger)
-        self.operate_q = f"#{self.operate}"
-        self.read = ids.view_id(view=LogName.read_logger)
-        self.read_q = f"#{self.read}"
+        self.dom_nodes = ids.view_id(view=LogName.dom_node_logger)
+        self.dom_nodes_q = f"#{self.dom_nodes}"
         self.splash = ids.view_id(view=LogName.splash_logger)
         self.splash_q = f"#{self.splash}"
 
