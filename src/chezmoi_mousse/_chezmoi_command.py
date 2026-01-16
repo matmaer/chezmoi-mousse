@@ -237,13 +237,6 @@ class CommandResult:
         return self.completed_process.stderr
 
     @property
-    def pretty_collapsible_title(self) -> str:
-        if self.exit_code == 0:
-            return f"{LogUtils.pretty_time()} [$text-success]{self.pretty_cmd}[/]"
-        else:
-            return f"{LogUtils.pretty_time()} [$text-warning]{self.pretty_cmd}[/]"
-
-    @property
     def dry_run(self) -> bool:
         return "--dry-run" in self.cmd_args
 
@@ -257,6 +250,14 @@ class CommandResult:
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
+        success_color = "$text-success" if self.write_cmd else "$success"
+        warning_color = "$text-warning" if self.write_cmd else "$warning"
+        colored_command = (
+            f"[{success_color}]{self.pretty_cmd}[/]"
+            if self.exit_code == 0
+            else f"[{warning_color}]{self.pretty_cmd}[/]"
+        )
+        collapsible_title = f"{LogUtils.pretty_time()} {colored_command}"
         collapsible_contents: list[Label | Static] = []
         is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
@@ -282,7 +283,7 @@ class CommandResult:
         return VerticalGroup(
             Collapsible(
                 *collapsible_contents,
-                title=self.pretty_collapsible_title,
+                title=collapsible_title,
                 collapsed_symbol=Chars.right_triangle,
                 expanded_symbol=Chars.down_triangle,
                 collapsed=collapsed,
