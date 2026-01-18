@@ -2,12 +2,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from rich.text import Text
-from textual.containers import Vertical
-from textual.widgets import DataTable, Label, RichLog, Static
+from textual.widgets import DataTable, Label, RichLog, Static, TextArea
 
 from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd
-from ._str_enum_names import Tcss
-from ._str_enums import OperateString, SectionLabel, StatusCode
+from ._str_enums import StatusCode
 
 type StatusPath = dict[Path, StatusCode]
 
@@ -17,9 +15,29 @@ __all__ = ["ChezmoiPaths"]
 @dataclass(slots=True)
 class PathWidgets:
     # widgets for a managed file or dir path and the root dir
-    content: list[Label | Static] | RichLog
+    content: list[Label | Static] | RichLog | TextArea
     diff: list[Label | Static]
+    diff_reverse: list[Label | Static]
     git_log: DataTable[Text]
+
+
+type PathDataDict = dict[Path, PathWidgets]
+
+
+class FilePathWidgets:
+    def __init__(
+        self,
+        managed_files_cmd_result: CommandResult,
+        status_files_cmd_result: CommandResult,
+    ) -> None:
+        self.cmd = ChezmoiCommand()
+        self.managed_file_lines = managed_files_cmd_result.std_out.splitlines()
+        self.status_file_lines = status_files_cmd_result.std_out.splitlines()
+
+    def get_file_path_data_dict(self) -> PathDataDict:
+        file_path_widgets_dict: dict[Path, PathWidgets] = {}
+
+        return file_path_widgets_dict
 
 
 @dataclass(slots=True)
@@ -31,25 +49,31 @@ class DirNode:
 
 @dataclass
 class PathCache:
-    managed_dirs: list[Path] = field(default_factory=list[Path])  # used in the Add tab
-    managed_files: list[Path] = field(default_factory=list[Path])  # used in the Add tab
-    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    # used in the Add tab, needs to be phased out
+    managed_dirs: list[Path] = field(default_factory=list[Path])
+    managed_files: list[Path] = field(default_factory=list[Path])
+    # contains managed dirs with their status (real or fake status 'X')
     apply_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     apply_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
-    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     re_add_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
 
 
 class ChezmoiPaths:
+
+    dest_dir: Path
+
     def __init__(
         self,
+        git_log_cmd_result: CommandResult,
         managed_dirs_cmd_result: CommandResult,
         managed_files_cmd_result: CommandResult,
         status_dirs_cmd_result: CommandResult,
         status_files_cmd_result: CommandResult,
     ) -> None:
+        self.dest_dir_node: "DirNode"
         self.cmd = ChezmoiCommand()
+        self.git_log_result = git_log_cmd_result
         self.managed_dirs_result = managed_dirs_cmd_result
         self.managed_files_result = managed_files_cmd_result
         self.status_dirs_result = status_dirs_cmd_result
@@ -100,12 +124,6 @@ class ChezmoiPaths:
             ),
         )
 
-    def create_des_dir_widgets(self) -> Vertical:
-        return Vertical(
-            Label(SectionLabel.diff_info, classes=Tcss.sub_section_label),
-            Static(f"{OperateString.in_dest_dir_click_path}"),
-        )
-
     def create_cat_widget(self, path: Path) -> RichLog:
         source_output = self.cmd.read(ReadCmd.source_path, path_arg=path)
         source_path = Path(source_output.std_out.splitlines()[0])
@@ -113,15 +131,3 @@ class ChezmoiPaths:
         cat_log = RichLog(auto_scroll=False, highlight=True, min_width=10)
         cat_log.write(cat_output)
         return cat_log
-
-    def create_changed_file_node_widgets(self, path: Path) -> dict[Path, PathWidgets]:
-
-        diff: list[Label | Static] = []
-        git_log: DataTable[Text] = DataTable()
-
-        file_widgets = PathWidgets(
-            content=self.create_cat_widget(path=path), diff=diff, git_log=git_log
-        )
-        return {path: file_widgets}
-
-    def create_dest_dir_node(self) -> DirNode: ...

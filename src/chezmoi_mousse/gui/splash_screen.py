@@ -330,13 +330,14 @@ class SplashScreen(Screen[None], AppType):
                 doctor=globals()["doctor"], template_data=globals()["template_data"]
             )
             return
+        ChezmoiPaths.dest_dir = globals()["parsed_config"].dest_dir
         self.app.paths = ChezmoiPaths(
+            git_log_cmd_result=globals()["git_log"],
             managed_dirs_cmd_result=globals()["managed_dirs"],
             managed_files_cmd_result=globals()["managed_files"],
             status_dirs_cmd_result=globals()["status_dirs"],
             status_files_cmd_result=globals()["status_files"],
         )
-
         cmd_results = CmdResults(
             cat_config=globals()["cat_config"],
             doctor=globals()["doctor"],
