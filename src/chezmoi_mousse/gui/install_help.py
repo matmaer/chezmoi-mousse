@@ -13,7 +13,7 @@ from chezmoi_mousse import IDS, AppType, Chars, FlatBtnLabel, LinkBtn, Tcss
 from .common.actionables import FlatButton, FlatLink
 from .common.screen_header import CustomHeader, HeaderTitle
 
-type ParsedJson = dict[str, Any]
+type ParsedJson = dict[str, "Any"]
 
 __all__ = ["InstallHelpScreen"]
 
