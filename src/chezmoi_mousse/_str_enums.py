@@ -233,6 +233,7 @@ class SectionLabel(StrEnum):
 
     file_read_output = "File Contents"
     cat_config_output = "Cat Config Output"
+    file_does_not_exist = "(the target does not exist)"
     contents_info = "Contents Info"
     diff_info = "Diff Info"
     doctor_output = "Doctor Output"
