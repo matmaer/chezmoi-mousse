@@ -340,29 +340,31 @@ Static {
     background: $success-muted;
     background-tint: $success-muted;
   }
-
   &.changed {
     color: $text-warning;
     background: $warning-muted;
     background-tint: $warning-muted;
   }
-
   &.context{
     color: $text-disabled;
     background: $surface-lighten-1;
     background-tint: $surface-lighten-1;
   }
-
   &.removed {
     color: $text-error;
     background: $error-muted;
     background-tint: $error-muted;
   }
-
   &.unchanged {
     color: $text-primary;
     background: $primary-muted;
     background-tint: $primary-muted;
+  }
+  &.unhandled {
+    /* only used for debugging by visualizing unhandled formatting conditions */
+    color: $foreground;
+    background: $error-darken-3;
+    background-tint: $error-darken-3;
   }
 }
 

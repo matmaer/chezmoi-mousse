@@ -169,7 +169,9 @@ class WriteCmd(Enum):
 
 
 def _run_chezmoi_cmd(
-    command: list[str], read_cmd: ReadCmd | None, write_cmd: WriteCmd | None
+    command: list[str],
+    read_cmd: ReadCmd | None = None,
+    write_cmd: WriteCmd | None = None,
 ) -> CompletedProcess[str]:
     if read_cmd == ReadCmd.doctor:
         time_out = 4
@@ -186,39 +188,44 @@ def _run_chezmoi_cmd(
 class CommandResult:
     completed_process: CompletedProcess[str]
     write_cmd: bool
+    path_arg: Path | None = None
+    std_out: str = ""
+    std_err: str = ""
 
     def __post_init__(self) -> None:
-        self.completed_process.stdout = self._get_text(self.completed_process.stdout)
-        self.completed_process.stderr = self._get_text(self.completed_process.stderr)
-
-    def _line_has_text(self, line: str) -> bool:
-        return line != "" and not line.isspace()
+        self.std_out = self._get_text(self.completed_process.stdout)
+        self.std_err = self._get_text(self.completed_process.stderr)
 
     def _get_text(self, output: str) -> str:
-        if not self._line_has_text(output):
+        def _line_has_text(line: str) -> bool:
+            return line != "" and not line.isspace()
+
+        if not _line_has_text(output):
             return ""
         lines = output.splitlines()
         if len(lines) == 0:
-            return "" if not self._line_has_text(lines[0]) else lines[0]
+            return "" if not _line_has_text(lines[0]) else lines[0]
         # Remove leading lines with no text
         start = 0
-        while start < len(lines) and not self._line_has_text(lines[start]):
+        while start < len(lines) and not _line_has_text(lines[start]):
             start += 1
         # Remove trailing lines with no text
         end = len(lines)
-        while end > start and not self._line_has_text(lines[end - 1]):
+        while end > start and not _line_has_text(lines[end - 1]):
             end -= 1
         if start == end:
-            return "" if not self._line_has_text(lines[start]) else lines[start]
+            return "" if not _line_has_text(lines[start]) else lines[start]
         return "\n".join(lines[start:end])
 
     @property
     def pretty_time(self) -> str:
+        # formats time with square brackets and green text like "[13:33:04]"
         return f"[$text-success][{datetime.now().strftime("%H:%M:%S")}][/]"
 
     @property
-    def dry_run(self) -> bool:
-        return "--dry-run" in self.completed_process.args
+    def dry_run_str(self) -> str:
+        dry_run = "--dry-run" in self.completed_process.args and self.write_cmd is True
+        return "(dry run)" if dry_run else ""
 
     @property
     def exit_code(self) -> int:
@@ -229,38 +236,41 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
+    def full_command(self) -> str:
+        return " ".join([a for a in self.completed_process.args])
+
+    @property
     def log_entry(self) -> str:
         success_color = "$text-success" if self.write_cmd else "$success"
         warning_color = "$text-warning" if self.write_cmd else "$warning"
         colored_command = (
             f"[{success_color}]{self.filtered_cmd}[/]"
-            if self.exit_code == 0
+            if self.completed_process.returncode == 0
             else f"[{warning_color}]{self.filtered_cmd}[/]"
         )
         return f"{self.pretty_time} {colored_command}"
 
     @property
+    def curated_std_out(self):
+        return self.std_out or f"{LogString.no_stdout} {self.dry_run_str}"
+
+    @property
+    def curated_std_err(self):
+        return self.std_out or f"{LogString.no_stdout} {self.dry_run_str}"
+
+    @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
         collapsible_contents: list[Label | Static] = []
-        is_dry_write = self.write_cmd and self.dry_run
-        stdout_empty = (
-            LogString.no_stdout_write_cmd_dry if is_dry_write else LogString.no_stdout
-        )
-        stderr_empty = (
-            LogString.no_stderr_write_cmd_dry if is_dry_write else LogString.no_stderr
-        )
-        std_out_text = self.completed_process.stdout or stdout_empty
-        std_err_text = self.completed_process.stderr or stderr_empty
         collapsible_contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
-                Static(f"{std_out_text}"),
+                Static(f"{self.curated_std_out}", markup=False),
             ]
         )
         collapsible_contents.extend(
             [
                 Label(SectionLabel.stderr_output, classes=Tcss.sub_section_label),
-                Static(f"{std_err_text}"),
+                Static(f"{self.curated_std_err}", markup=False),
             ]
         )
         return VerticalGroup(
@@ -272,6 +282,22 @@ class CommandResult:
                 collapsed=collapsed,
             )
         )
+
+    @property
+    def parsed_managed_dirs(self) -> list[Path]:
+        if ReadVerb.managed not in self.completed_process.args:
+            raise ValueError(
+                f"Asked for parsed managed dirs for command\n {self.log_entry}"
+            )
+        return [Path(p) for p in self.completed_process.stdout]
+
+    @property
+    def parsed_managed_files(self) -> list[Path]:
+        if ReadVerb.managed not in self.completed_process.args:
+            raise ValueError(
+                f"Asked for parsed managed files for command\n {self.full_command}"
+            )
+        return [Path(p) for p in self.completed_process.stdout]
 
 
 class ChezmoiCommand:
@@ -295,11 +321,16 @@ class ChezmoiCommand:
         base_cmd = GlobalCmd.live_run.value  # read commands always run live
         command = base_cmd + read_cmd.value
         if path_arg is not None:
-            command += [str(path_arg)]
-        result: CompletedProcess[str] = _run_chezmoi_cmd(
-            command, read_cmd=read_cmd, write_cmd=None
+            path_str = str(path_arg)
+            if read_cmd == ReadCmd.cat and not path_arg.exists():
+                path_str = _run_chezmoi_cmd(
+                    command, read_cmd=ReadCmd.source_path
+                ).stdout
+            command += [path_str]
+        result: CompletedProcess[str] = _run_chezmoi_cmd(command, read_cmd=read_cmd)
+        command_result = CommandResult(
+            completed_process=result, path_arg=path_arg, write_cmd=False
         )
-        command_result = CommandResult(completed_process=result, write_cmd=False)
         self._log_chezmoi_command(command_result)
         return command_result
 
@@ -307,7 +338,7 @@ class ChezmoiCommand:
         self,
         write_cmd: WriteCmd,
         *,
-        path_arg: str | None = None,
+        path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
         command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
@@ -319,10 +350,10 @@ class ChezmoiCommand:
         elif path_arg is not None:
             command.append(str(path_arg))
 
-        result: CompletedProcess[str] = _run_chezmoi_cmd(
-            command, read_cmd=None, write_cmd=write_cmd
+        result: CompletedProcess[str] = _run_chezmoi_cmd(command, write_cmd=write_cmd)
+        command_result = CommandResult(
+            completed_process=result, path_arg=path_arg, write_cmd=True
         )
-        command_result = CommandResult(completed_process=result, write_cmd=True)
         self._log_chezmoi_command(command_result)
         if write_cmd in (
             WriteCmd.add,

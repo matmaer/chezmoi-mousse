@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
-    from chezmoi_mousse import ChezmoiCommand, CommandResult, ParsedConfig
+    from chezmoi_mousse import ChezmoiCommand, CommandResult, DirNodeDict, ParsedConfig
 
 __all__ = ["ChezmoiGUI"]
 
@@ -129,6 +129,7 @@ class ChezmoiGUI(App[None]):
 
         self.dest_dir: "Path | None" = None
         self.paths: "ChezmoiPaths"
+        self.dir_node_dict: "DirNodeDict"
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
@@ -519,15 +520,6 @@ class ChezmoiGUI(App[None]):
         elif action == BindingAction.exit_screen:
             if isinstance(self.screen, (InstallHelpScreen, MainScreen)):
                 return False
-            elif isinstance(self.screen, InitChezmoi):
-                if self.init_cmd_result is None:
-                    return None
-                elif self.init_cmd_result.dry_run is True:
-                    return None
-                elif self.init_cmd_result.dry_run is False:
-                    return True
-                else:
-                    return None
         return True
 
 

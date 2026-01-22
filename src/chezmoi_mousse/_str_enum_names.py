@@ -130,6 +130,7 @@ class Tcss(StrEnum):
     tab_left_vertical = auto()
     tree_widget = auto()
     unchanged = auto()
+    unhandled = auto()
 
     # add a property to return the name with a dot prefix
     @property

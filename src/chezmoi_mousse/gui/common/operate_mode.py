@@ -96,7 +96,7 @@ class OperateMode(Vertical, AppType):
 
     @work(thread=True)
     def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
-        return self.app.cmd.perform(btn_enum.write_cmd, path_arg=str(self.path_arg))
+        return self.app.cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
 
     @work(exit_on_error=False)
     async def run_command(self, btn_enum: "OpBtnEnum") -> None:

@@ -42,6 +42,7 @@ from ._str_enums import (
     SubTabLabel,
 )
 from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedConfig
+from ._widget_factory import DirNodeDict, PathDict
 
 __all__ = [
     "__version__",
@@ -55,6 +56,8 @@ __all__ = [
     "ChezmoiPaths",
     "CmdResults",
     "CommandResult",
+    "DirNodeDict",
+    "PathDict",
     "FlatBtnLabel",
     "IDS",
     "InitCloneData",
