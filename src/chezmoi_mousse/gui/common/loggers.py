@@ -88,14 +88,14 @@ class AppLog(LoggersBase, AppType):
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.write(self.log_command(command_result))
-        if ReadVerb.verify.value in command_result.cmd_args:
+        if ReadVerb.verify.value in command_result.completed_process.args:
             if command_result.exit_code == 0:
                 self.success(LogString.verify_exit_zero, with_time=False)
             else:
                 self.success(LogString.verify_non_zero, with_time=False)
             return
-        elif ReadVerb.doctor.value in command_result.cmd_args:
-            output_lower = command_result.std_out.lower()
+        elif ReadVerb.doctor.value in command_result.completed_process.args:
+            output_lower = command_result.completed_process.stdout.lower()
             if "error" in output_lower:
                 self.error(LogString.doctor_errors_found, with_time=False)
             elif "failed" in output_lower:
@@ -106,11 +106,11 @@ class AppLog(LoggersBase, AppType):
                 self.success(LogString.doctor_no_issue_found, with_time=False)
             self.dimmed(LogString.see_config_tab)
         elif command_result.exit_code == 0:
-            if command_result.std_out == "":
+            if command_result.completed_process.stdout == "":
                 self.success(LogString.succes_no_output)
             else:
                 self.success(LogString.success_with_output)
-        if command_result.std_err != "":
+        if command_result.completed_process.stderr != "":
             self.error(
                 f"{LogString.std_err_logged}, exit code: {command_result.exit_code}"
             )

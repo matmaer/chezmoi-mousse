@@ -198,7 +198,7 @@ class SplashScreen(Screen[None], AppType):
         cmd_text = cmd_result.filtered_cmd
         globals()[splash_cmd.name] = cmd_result
         if splash_cmd == ReadCmd.dump_config:
-            parsed_config = json.loads(cmd_result.std_out)
+            parsed_config = json.loads(cmd_result.completed_process.stdout)
             globals()["parsed_config"] = ParsedConfig(
                 dest_dir=Path(parsed_config["destDir"]),
                 git_auto_add=parsed_config["git"]["autoadd"],
@@ -353,7 +353,9 @@ class SplashScreen(Screen[None], AppType):
         self.app.cmd_results = cmd_results
         self.app.dest_dir = globals()["parsed_config"].dest_dir
         self.app.parsed_config = globals()["parsed_config"]
-        self.app.parsed_template_data = json.loads(globals()["template_data"].std_out)
+        self.app.parsed_template_data = json.loads(
+            globals()["template_data"].completed_process.stdout
+        )
         self.app.cmd_results.verify = globals()["verify"]
 
     def all_workers_finished(self) -> None:
