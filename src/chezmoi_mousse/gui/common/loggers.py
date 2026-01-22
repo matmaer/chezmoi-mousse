@@ -72,7 +72,7 @@ class AppLog(LoggersBase, AppType):
     def log_command(self, command_result: "CommandResult") -> str:
         time = self.log_time()
         color = self.app.theme_variables["primary-lighten-3"]
-        return f"{time} [{color}]{command_result.pretty_cmd}[/]"
+        return f"{time} [{color}]{command_result.filtered_cmd}[/]"
 
     def success(self, message: str, with_time: bool = False) -> None:
         color = self.app.theme_variables["text-success"]
@@ -218,34 +218,3 @@ class CmdLog(ScrollableContainer, AppType):
     @work
     async def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.mount(command_result.pretty_collapsible)
-
-
-# class OperateLog(ScrollableContainer, AppType):
-
-#     def __init__(self, ids: "AppIds") -> None:
-#         super().__init__(id=ids.logger.operate)
-
-#     def on_mount(self) -> None:
-#         self.add_class(Tcss.border_title_top)
-#         self.border_title = BorderTitle.operate_log
-
-#     @work
-#     async def log_cmd_results(self, command_result: "CommandResult") -> None:
-#         # collapsible = OutputCollapsible(command_result)
-#         # self.mount(collapsible)
-#         self.mount(VerticalGroup(command_result.pretty_collapsible))
-
-
-# class ReadCmdLog(ScrollableContainer, AppType):
-
-#     def __init__(self, ids: "AppIds") -> None:
-#         super().__init__(id=ids.logger.read)
-#         self.ids = ids
-
-#     def on_mount(self) -> None:
-#         self.add_class(Tcss.border_title_top)
-#         self.border_title = BorderTitle.read_cmd_log
-
-#     @work
-#     async def log_cmd_results(self, command_result: "CommandResult") -> None:
-#         self.mount(VerticalGroup(command_result.pretty_collapsible))

@@ -147,10 +147,6 @@ class ReadCmd(Enum):
     # unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
     verify = [ReadVerb.verify.value]
 
-    @property
-    def pretty_cmd(self) -> str:
-        return f"[$success]chezmoi {LogUtils.filtered_args_str(self.value)}[/]"
-
 
 class WriteVerb(Enum):
     add = "add"
@@ -178,10 +174,6 @@ class WriteCmd(Enum):
             f"[$text-success bold]"
             f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
         )
-
-    @property
-    def subprocess_arguments(self) -> list[str]:
-        return GlobalCmd.base_cmd() + self.value
 
 
 def _run_chezmoi_cmd(
@@ -253,9 +245,9 @@ class CommandResult:
         success_color = "$text-success" if self.write_cmd else "$success"
         warning_color = "$text-warning" if self.write_cmd else "$warning"
         colored_command = (
-            f"[{success_color}]{self.pretty_cmd}[/]"
+            f"[{success_color}]{self.filtered_cmd}[/]"
             if self.exit_code == 0
-            else f"[{warning_color}]{self.pretty_cmd}[/]"
+            else f"[{warning_color}]{self.filtered_cmd}[/]"
         )
         collapsible_title = f"{LogUtils.pretty_time()} {colored_command}"
         collapsible_contents: list[Label | Static] = []
@@ -297,8 +289,6 @@ class ChezmoiCommand:
         self.app = AppState.get_app()
         self.app_log: AppLog | None = None
         self.cmd_log: CmdLog | None = None
-        # self.read_cmd_log: ReadCmdLog | None = None
-        # self.operate_log: OperateLog | None = None
 
     #################################
     # Command execution and logging #
