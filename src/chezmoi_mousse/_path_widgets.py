@@ -8,20 +8,18 @@ from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd
 from ._str_enums import StatusCode
 
 type StatusPath = dict[Path, StatusCode]
+type StatusPair = tuple[StatusCode, StatusCode]
 
 __all__ = ["ChezmoiPaths"]
 
 
 @dataclass(slots=True)
-class PathWidgets:
+class PathWidgetsData:
     # widgets for a managed file or dir path and the root dir
     content: list[Label | Static] | RichLog | TextArea
     diff: list[Label | Static]
     diff_reverse: list[Label | Static]
     git_log: DataTable[Text]
-
-
-type PathDataDict = dict[Path, PathWidgets]
 
 
 class FilePathWidgets:
@@ -31,24 +29,45 @@ class FilePathWidgets:
         status_files_cmd_result: CommandResult,
     ) -> None:
         self.cmd = ChezmoiCommand()
-        self.managed_file_lines = managed_files_cmd_result.std_out.splitlines()
-        self.status_file_lines = status_files_cmd_result.std_out.splitlines()
+        self.managed_lines = (
+            managed_files_cmd_result.completed_process.stdout.splitlines()
+        )
+        self.status_lines = (
+            status_files_cmd_result.completed_process.stdout.splitlines()
+        )
 
-    def get_file_path_data_dict(self) -> PathDataDict:
-        file_path_widgets_dict: dict[Path, PathWidgets] = {}
-
-        return file_path_widgets_dict
+    def _create_status_pair_dicts(self) -> dict[Path, StatusPair]:
+        status_paths: dict[Path, StatusPair] = {}
+        for line in self.status_lines:
+            path = Path(line[3:])
+            if line[3:] not in self.managed_lines:
+                status_paths[path] = (StatusCode.no_status, StatusCode.no_status)
+            else:
+                status_paths[path] = StatusCode(line[0]), StatusCode(line[1])
+        return status_paths
 
 
 @dataclass(slots=True)
 class DirNode:
-    dir_widgets: PathWidgets
-    status_files: dict[Path, PathWidgets]
-    no_status_files: dict[Path, PathWidgets]
+    dir_widgets: PathWidgetsData
+    status_files: dict[Path, PathWidgetsData]
+    no_status_files: dict[Path, PathWidgetsData]
 
 
 @dataclass
 class PathCache:
+    # used in the Add tab, needs to be phased out
+    managed_dirs: list[Path] = field(default_factory=list[Path])
+    managed_files: list[Path] = field(default_factory=list[Path])
+    # contains managed dirs with their status (real or fake status 'X')
+    apply_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
+    apply_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
+    re_add_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
+    re_add_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
+
+
+@dataclass
+class ParsedOutputs:
     # used in the Add tab, needs to be phased out
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
@@ -105,28 +124,32 @@ class ChezmoiPaths:
         status_dirs: CommandResult,
         status_files: CommandResult,
     ):
-        dir_paths = [Path(p) for p in managed_dirs.std_out.splitlines()]
-        file_paths = [Path(p) for p in managed_files.std_out.splitlines()]
+        dir_paths = [
+            Path(p) for p in managed_dirs.completed_process.stdout.splitlines()
+        ]
+        file_paths = [
+            Path(p) for p in managed_files.completed_process.stdout.splitlines()
+        ]
         self.cache = PathCache(
             managed_dirs=dir_paths,  # used in the Add tab
             managed_files=file_paths,  # used in the Add tab
             apply_dirs=self._create_status_dicts(
-                dir_paths, status_dirs.std_out.splitlines(), index=0
+                dir_paths, status_dirs.completed_process.stdout.splitlines(), index=0
             ),
             apply_files=self._create_status_dicts(
-                file_paths, status_files.std_out.splitlines(), index=0
+                file_paths, status_files.completed_process.stdout.splitlines(), index=0
             ),
             re_add_dirs=self._create_status_dicts(
-                dir_paths, status_dirs.std_out.splitlines(), index=1
+                dir_paths, status_dirs.completed_process.stdout.splitlines(), index=1
             ),
             re_add_files=self._create_status_dicts(
-                file_paths, status_files.std_out.splitlines(), index=1
+                file_paths, status_files.completed_process.stdout.splitlines(), index=1
             ),
         )
 
     def create_cat_widget(self, path: Path) -> RichLog:
         source_output = self.cmd.read(ReadCmd.source_path, path_arg=path)
-        source_path = Path(source_output.std_out.splitlines()[0])
+        source_path = Path(source_output.completed_process.stdout.splitlines()[0])
         cat_output = self.cmd.read(ReadCmd.cat, path_arg=source_path)
         cat_log = RichLog(auto_scroll=False, highlight=True, min_width=10)
         cat_log.write(cat_output)
