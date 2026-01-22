@@ -229,7 +229,7 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
-    def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
+    def log_entry(self) -> str:
         success_color = "$text-success" if self.write_cmd else "$success"
         warning_color = "$text-warning" if self.write_cmd else "$warning"
         colored_command = (
@@ -237,7 +237,10 @@ class CommandResult:
             if self.exit_code == 0
             else f"[{warning_color}]{self.filtered_cmd}[/]"
         )
-        collapsible_title = f"{self.pretty_time} {colored_command}"
+        return f"{self.pretty_time} {colored_command}"
+
+    @property
+    def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
         collapsible_contents: list[Label | Static] = []
         is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
@@ -263,7 +266,7 @@ class CommandResult:
         return VerticalGroup(
             Collapsible(
                 *collapsible_contents,
-                title=collapsible_title,
+                title=self.log_entry,
                 collapsed_symbol=Chars.right_triangle,
                 expanded_symbol=Chars.down_triangle,
                 collapsed=collapsed,
