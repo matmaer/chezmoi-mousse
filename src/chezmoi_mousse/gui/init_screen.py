@@ -478,13 +478,13 @@ class InitChezmoi(Screen[None], AppType):
                 lines_to_write.append(
                     (
                         f"{OperateString.ready_to_run} "
-                        f"{WriteCmd.init_no_guess.pretty_cmd} "
+                        f"{WriteCmd.init_no_guess.bold_review_cmd} "
                         f'{self.init_clone_data.init_arg}"[/]'
                     )
                 )
             elif self.init_clone_data.valid_arg is False:
                 lines_to_write.append(
-                    f"[$text-error]{WriteCmd.init_no_guess.pretty_cmd} "
+                    f"[$text-error]{WriteCmd.init_no_guess.bold_review_cmd} "
                     ": invalid URL or SSH SCP-style address."
                 )
         elif (
@@ -495,13 +495,13 @@ class InitChezmoi(Screen[None], AppType):
                 lines_to_write.append(
                     (
                         f"{OperateString.ready_to_run} "
-                        f"{self.init_clone_data.init_cmd.pretty_cmd} "
+                        f"{self.init_clone_data.init_cmd.bold_review_cmd} "
                         f"{self.init_clone_data.init_arg}[/]"
                     )
                 )
             elif self.init_clone_data.valid_arg is False:
                 lines_to_write.append(
-                    f"{self.init_clone_data.init_cmd.pretty_cmd} [$text-error]"
+                    f"{self.init_clone_data.init_cmd.bold_review_cmd} [$text-error]"
                     ": invalid guess https input.[/]"
                 )
         elif (
@@ -512,13 +512,13 @@ class InitChezmoi(Screen[None], AppType):
                 lines_to_write.append(
                     (
                         f"{OperateString.ready_to_run} "
-                        f"{self.init_clone_data.init_cmd.pretty_cmd} "
+                        f"{self.init_clone_data.init_cmd.bold_review_cmd} "
                         f"{self.init_clone_data.init_arg}[/]"
                     )
                 )
             elif self.init_clone_data.valid_arg is False:
                 lines_to_write.append(
-                    f"{self.init_clone_data.init_cmd.pretty_cmd} [$text-error]"
+                    f"{self.init_clone_data.init_cmd.bold_review_cmd} [$text-error]"
                     ": invalid guess ssh input.[/]"
                 )
         # self.operate_info.update("\n".join(lines_to_write))

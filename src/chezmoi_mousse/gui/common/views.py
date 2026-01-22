@@ -137,12 +137,12 @@ class ContentsView(Vertical, AppType):
             self.contents_info_static.update(
                 f"{self.ContentStr.output_from_cat}[$text-success]{cat_output.filtered_cmd}[/]"
             )
-            if cat_output.std_out.strip() == "":
+            if cat_output.completed_process.stdout.strip() == "":
                 self.rich_log.write(
                     Text(self.ContentStr.empty_or_only_whitespace, style="dim")
                 )
             else:
-                self.rich_log.write(cat_output.std_out)
+                self.rich_log.write(cat_output.completed_process.stdout)
 
     def write_dir_info(self, dir_path: Path) -> None:
         if dir_path in self.app.paths.cache.managed_dirs:
@@ -312,7 +312,7 @@ class DiffView(ScrollableContainer, AppType):
         diff_output: "CommandResult" = self.app.cmd.read(
             self.diff_cmd, path_arg=self.node_data.path
         )
-        diff_lines = diff_output.std_out.splitlines()
+        diff_lines = diff_output.completed_process.stdout.splitlines()
         diff_widgets: DiffWidgets = []
         diff_widgets.extend(self.create_mode_diff_widgets(diff_lines))
         diff_widgets.extend(self.create_path_diff_widgets(diff_lines))
@@ -362,11 +362,14 @@ class GitLog(ScrollableContainer, AppType):
         self.datatable.add_row(*row)
 
     def populate_datatable(self, command_result: "CommandResult") -> None:
-        if command_result.exit_code != 0 or not command_result.std_out.splitlines():
+        if (
+            command_result.exit_code != 0
+            or not command_result.completed_process.stdout.splitlines()
+        ):
             return
         self.datatable.clear(columns=True)
         self.datatable.add_columns("COMMIT", "MESSAGE")
-        for line in command_result.std_out.splitlines():
+        for line in command_result.completed_process.stdout.splitlines():
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
                 self._add_row_with_style(columns, self.row_color["ok"])

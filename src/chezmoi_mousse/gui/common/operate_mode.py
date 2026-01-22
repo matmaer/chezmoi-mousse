@@ -76,7 +76,7 @@ class OperateMode(Vertical, AppType):
         info_lines: list[str] = []
         cmd_text = (
             f"{OperateString.ready_to_run} "
-            f"{self.btn_enum.write_cmd.pretty_cmd} "
+            f"{self.btn_enum.write_cmd.bold_review_cmd} "
             f"[$text-success bold]{self.path_arg}[/]"
         )
         info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
@@ -100,7 +100,7 @@ class OperateMode(Vertical, AppType):
 
     @work(exit_on_error=False)
     async def run_command(self, btn_enum: "OpBtnEnum") -> None:
-        pretty_cmd = f"{btn_enum.write_cmd.pretty_cmd}"
+        pretty_cmd = f"{btn_enum.write_cmd.bold_review_cmd}"
         if self.path_arg is not None:
             pretty_cmd += f"[$text-success bold] {self.path_arg}[/]"
         elif self.init_arg is not None:

@@ -26,7 +26,7 @@ class DoctorTable(DataTable[Text], AppType):
         super().__init__(
             id=ids.datatable.doctor, show_cursor=False, classes=Tcss.doctor_table
         )
-        self.doctor_data = doctor_data.std_out.splitlines()
+        self.doctor_data = doctor_data.completed_process.stdout.splitlines()
 
     def on_mount(self) -> None:
         if len(self.doctor_data) < 2:
@@ -227,7 +227,7 @@ class PwMgrInfoView(Vertical):
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
     def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
-        doctor_lines = doctor_results.std_out.splitlines()
+        doctor_lines = doctor_results.completed_process.stdout.splitlines()
         pw_mgr_data_list: list[PwMgrData] = []
 
         for line in doctor_lines[1:]:  # Skip header line

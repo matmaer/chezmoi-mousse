@@ -21,7 +21,7 @@ class CatConfigView(Vertical, AppType):
     @work
     async def on_mount(self) -> None:
         if self.app.cmd_results.cat_config is not None:
-            self.mount(Static(self.app.cmd_results.cat_config.std_out))
+            self.mount(Static(self.app.cmd_results.cat_config.completed_process.stdout))
 
 
 class ConfigTabSwitcher(ContentSwitcher, AppType):
@@ -58,7 +58,11 @@ class IgnoredView(Vertical):
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
 
     def mount_ignored_output(self, command_result: CommandResult) -> None:
-        self.mount(ScrollableContainer(Pretty(command_result.std_out.splitlines())))
+        self.mount(
+            ScrollableContainer(
+                Pretty(command_result.completed_process.stdout.splitlines())
+            )
+        )
 
 
 class DoctorTableView(Vertical, AppType):

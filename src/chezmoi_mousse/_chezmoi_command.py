@@ -30,14 +30,6 @@ __all__ = [
 class LogUtils:
 
     @staticmethod
-    def formatted_time_str() -> str:
-        return f"{datetime.now().strftime("%H:%M:%S")}"
-
-    @staticmethod
-    def pretty_time() -> str:
-        return f"[$text-success][{datetime.now().strftime("%H:%M:%S")}][/]"
-
-    @staticmethod
     def filtered_args_str(command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
         exclude = set(
@@ -169,7 +161,7 @@ class WriteCmd(Enum):
     re_add = [WriteVerb.re_add.value]
 
     @property
-    def pretty_cmd(self) -> str:
+    def bold_review_cmd(self) -> str:
         return (
             f"[$text-success bold]"
             f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
@@ -196,49 +188,45 @@ class CommandResult:
     write_cmd: bool
 
     def __post_init__(self) -> None:
-        self.completed_process.stdout = self.get_text(self.completed_process.stdout)
-        self.completed_process.stderr = self.get_text(self.completed_process.stderr)
+        self.completed_process.stdout = self._get_text(self.completed_process.stdout)
+        self.completed_process.stderr = self._get_text(self.completed_process.stderr)
 
-    def has_text(self, s: str) -> bool:
-        return s != "" and not s.isspace()
+    def _line_has_text(self, line: str) -> bool:
+        return line != "" and not line.isspace()
 
-    def get_text(self, output: str) -> str:
-        if not self.has_text(output):
+    def _get_text(self, output: str) -> str:
+        if not self._line_has_text(output):
             return ""
         lines = output.splitlines()
+        if len(lines) == 0:
+            return "" if not self._line_has_text(lines[0]) else lines[0]
         # Remove leading lines with no text
         start = 0
-        while start < len(lines) and not self.has_text(lines[start]):
+        while start < len(lines) and not self._line_has_text(lines[start]):
             start += 1
         # Remove trailing lines with no text
         end = len(lines)
-        while end > start and not self.has_text(lines[end - 1]):
+        while end > start and not self._line_has_text(lines[end - 1]):
             end -= 1
+        if start == end:
+            return "" if not self._line_has_text(lines[start]) else lines[start]
         return "\n".join(lines[start:end])
 
     @property
-    def cmd_args(self) -> list[str]:
-        return self.completed_process.args
-
-    @property  # merely a shortcut for easy access
-    def std_out(self) -> str:
-        return self.completed_process.stdout
-
-    @property  # merely a shortcut for easy access
-    def std_err(self) -> str:
-        return self.completed_process.stderr
+    def pretty_time(self) -> str:
+        return f"[$text-success][{datetime.now().strftime("%H:%M:%S")}][/]"
 
     @property
     def dry_run(self) -> bool:
-        return "--dry-run" in self.cmd_args
+        return "--dry-run" in self.completed_process.args
 
     @property
     def exit_code(self) -> int:
         return self.completed_process.returncode
 
     @property
-    def pretty_cmd(self) -> str:
-        return f"{LogUtils.filtered_args_str(self.cmd_args)}"
+    def filtered_cmd(self) -> str:
+        return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
@@ -249,7 +237,7 @@ class CommandResult:
             if self.exit_code == 0
             else f"[{warning_color}]{self.filtered_cmd}[/]"
         )
-        collapsible_title = f"{LogUtils.pretty_time()} {colored_command}"
+        collapsible_title = f"{self.pretty_time} {colored_command}"
         collapsible_contents: list[Label | Static] = []
         is_dry_write = self.write_cmd and self.dry_run
         stdout_empty = (
@@ -258,8 +246,8 @@ class CommandResult:
         stderr_empty = (
             LogString.no_stderr_write_cmd_dry if is_dry_write else LogString.no_stderr
         )
-        std_out_text = self.std_out or stdout_empty
-        std_err_text = self.std_err or stderr_empty
+        std_out_text = self.completed_process.stdout or stdout_empty
+        std_err_text = self.completed_process.stderr or stderr_empty
         collapsible_contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
