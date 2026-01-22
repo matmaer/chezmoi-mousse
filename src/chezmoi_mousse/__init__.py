@@ -19,8 +19,8 @@ from ._chezmoi_command import (
     VerbArgs,
     WriteCmd,
 )
-from ._chezmoi_paths import ChezmoiPaths
 from ._enum_data import OpBtnEnum, SwitchEnum
+from ._path_widgets import ChezmoiPaths
 from ._str_enum_names import (
     BindingAction,
     PathKind,
