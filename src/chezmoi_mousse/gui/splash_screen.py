@@ -195,7 +195,7 @@ class SplashScreen(Screen[None], AppType):
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
         chezmoi_cmd = ChezmoiCommand()
         cmd_result = chezmoi_cmd.read(splash_cmd)
-        cmd_text = cmd_result.pretty_cmd
+        cmd_text = cmd_result.filtered_cmd
         globals()[splash_cmd.name] = cmd_result
         if splash_cmd == ReadCmd.dump_config:
             parsed_config = json.loads(cmd_result.std_out)
@@ -212,7 +212,7 @@ class SplashScreen(Screen[None], AppType):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ):
-            cmd_text = cmd_result.pretty_cmd.replace(
+            cmd_text = cmd_result.filtered_cmd.replace(
                 VerbArgs.include_dirs.value, "dirs"
             ).replace(VerbArgs.include_files.value, "files")
         padding = LOG_PADDING_WIDTH - len(cmd_text)

@@ -72,16 +72,8 @@ class OpBtnEnum(Enum):
         return self.value.label
 
     @property
-    def pretty_cmd(self) -> str:
-        return self.write_cmd.pretty_cmd
-
-    @property
     def write_cmd(self) -> WriteCmd:
         return self.value.write_cmd
-
-    @property
-    def full_cmd(self) -> list[str]:
-        return self.write_cmd.subprocess_arguments
 
     @property
     def info_strings(self) -> str:

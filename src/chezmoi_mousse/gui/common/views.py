@@ -135,7 +135,7 @@ class ContentsView(Vertical, AppType):
                 ReadCmd.cat, path_arg=file_path
             )
             self.contents_info_static.update(
-                f"{self.ContentStr.output_from_cat}[$text-success]{cat_output.pretty_cmd}[/]"
+                f"{self.ContentStr.output_from_cat}[$text-success]{cat_output.filtered_cmd}[/]"
             )
             if cat_output.std_out.strip() == "":
                 self.rich_log.write(
