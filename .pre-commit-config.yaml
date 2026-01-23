@@ -51,14 +51,14 @@ repos:
   # When running with --fix, Ruff's lint hook should be placed BEFORE Black
   # as Ruff's fix behavior can output code changes that require reformatting.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.11
+    rev: v0.14.14
     hooks:
       - id: ruff-check
         types_or: [ python, pyi ]
         args: [ --fix, --ignore=I001 ]
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.12.0
+    rev: 26.1.0
     hooks:
       - id: black
         name: black
