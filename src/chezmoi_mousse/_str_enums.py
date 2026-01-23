@@ -255,44 +255,55 @@ class StatusCode(StrEnum):
     Deleted = "D"
     Modified = "M"
     No_Change = " "
-    # Run = "R" TODO: implement
+    Run = "R"  # not implemented but included to show up with operate buttons disabled
+    # Managed files or dirs absent from chezmoi status output.
+    no_status = "X"  # Fake status for internal use.
 
-    # -----------------------------------------------------------------------------#
-    # Fake status codes for internal use to decide rendering a node and its color. #
-    # -----------------------------------------------------------------------------#
-    # Paths present in chezmoi status, but not in chezmoi managed. No extra logic needed
-    # to treat these as fake, maps 1:1 with chezmoi.
-    no_status = "X"
 
-    # The root NodeData instance.
-    root_node = "Q"
+# class StatusCode(StrEnum):
+#     # Real status codes from chezmoi
+#     Added = "A"
+#     Deleted = "D"
+#     Modified = "M"
+#     No_Change = " "
+#     # Run = "R" TODO: implement
 
-    # NodeData instances in the Add tab.
-    unmanaged = "U"
+#     # -----------------------------------------------------------------------------#
+#     # Fake status codes for internal use to decide rendering a node and its color. #
+#     # -----------------------------------------------------------------------------#
+#     # Paths present in chezmoi status, but not in chezmoi managed. No extra logic needed
+#     # to treat these as fake, maps 1:1 with chezmoi.
+#     no_status = "X"
 
-    # Managed directories without a status which also DO NOT have status children no
-    # matter how deeply nested they are.
-    dir_no_status = "N"
+#     # The root NodeData instance.
+#     root_node = "Q"
 
-    # Managed directories without a status which have status children, no matter how
-    # deeply nested they are.
-    dir_with_status_children = "S"
+#     # NodeData instances in the Add tab.
+#     unmanaged = "U"
 
-    # Methods to access or evaluate status pair values for the PathNode objects.
-    # Fake status codes left and right, are always the same unlike real status codes.
+#     # Managed directories without a status which also DO NOT have status children no
+#     # matter how deeply nested they are.
+#     dir_no_status = "N"
 
-    @classmethod
-    def root_node_pair(cls) -> tuple["StatusCode", "StatusCode"]:
-        return (cls.root_node, cls.root_node)
+#     # Managed directories without a status which have status children, no matter how
+#     # deeply nested they are.
+#     dir_with_status_children = "S"
 
-    @classmethod
-    def unmanaged_pair(cls) -> tuple["StatusCode", "StatusCode"]:
-        return (cls.unmanaged, cls.unmanaged)
+#     # Methods to access or evaluate status pair values for the PathNode objects.
+#     # Fake status codes left and right, are always the same unlike real status codes.
 
-    @classmethod
-    def dir_no_status_pair(cls) -> tuple["StatusCode", "StatusCode"]:
-        return (cls.dir_no_status, cls.dir_no_status)
+#     @classmethod
+#     def root_node_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+#         return (cls.root_node, cls.root_node)
 
-    @classmethod
-    def dir_with_status_children_pair(cls) -> tuple["StatusCode", "StatusCode"]:
-        return (cls.dir_with_status_children, cls.dir_with_status_children)
+#     @classmethod
+#     def unmanaged_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+#         return (cls.unmanaged, cls.unmanaged)
+
+#     @classmethod
+#     def dir_no_status_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+#         return (cls.dir_no_status, cls.dir_no_status)
+
+#     @classmethod
+#     def dir_with_status_children_pair(cls) -> tuple["StatusCode", "StatusCode"]:
+#         return (cls.dir_with_status_children, cls.dir_with_status_children)
