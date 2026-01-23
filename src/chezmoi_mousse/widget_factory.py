@@ -21,6 +21,7 @@ __all__ = ["GitLogTable"]
 
 @dataclass(slots=True)
 class PathWidgets:
+    label_str: str
     contents: list[Static] | TextArea
     diff_apply: list[Static]
     diff_reverse: list[Static]
@@ -32,7 +33,7 @@ class PathNode(AppType):
     def __init__(
         self, path: Path, path_kind: PathKind, status_code: StatusCode
     ) -> None:
-        self.path_label = ""  # must be constructed based on path.name and status_code
+        self.status_code = status_code
         self.path = path
         self.path_kind = path_kind
         self.path_widgets: PathWidgets = self.create_widgets()
@@ -44,6 +45,7 @@ class PathNode(AppType):
             path_contents = self.create_dir_content_widgets()
 
         return PathWidgets(
+            label_str=self.path.name,  # to be constructed based status_code and exists
             contents=path_contents,
             diff_apply=self.create_diff_statics(reverse=False),
             diff_reverse=self.create_diff_statics(reverse=True),
