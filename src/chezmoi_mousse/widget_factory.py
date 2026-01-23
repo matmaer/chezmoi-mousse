@@ -13,6 +13,7 @@ from textual.widgets.text_area import BUILTIN_LANGUAGES
 
 from ._chezmoi_command import ReadCmd
 from ._str_enum_names import PathKind, Tcss
+from ._str_enums import StatusCode
 from ._type_checking import AppType
 
 __all__ = ["GitLogTable"]
@@ -26,9 +27,12 @@ class PathWidgets:
     git_log: DataTable[str]
 
 
-class WidgetFactory(AppType):
+class PathNode(AppType):
 
-    def __init__(self, path: Path, path_kind: PathKind) -> None:
+    def __init__(
+        self, path: Path, path_kind: PathKind, status_code: StatusCode
+    ) -> None:
+        self.path_label = ""  # must be constructed based on path.name and status_code
         self.path = path
         self.path_kind = path_kind
         self.path_widgets: PathWidgets = self.create_widgets()
