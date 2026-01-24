@@ -229,6 +229,10 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
+    def full_command(self) -> str:
+        return " ".join([a for a in self.completed_process.args])
+
+    @property
     def log_entry(self) -> str:
         success_color = "$text-success" if self.write_cmd else "$success"
         warning_color = "$text-warning" if self.write_cmd else "$warning"
@@ -272,6 +276,22 @@ class CommandResult:
                 collapsed=collapsed,
             )
         )
+
+    @property
+    def parsed_managed_dirs(self) -> list[Path]:
+        if ReadVerb.managed not in self.completed_process.args:
+            raise ValueError(
+                f"Asked for parsed managed dirs for command\n {self.log_entry}"
+            )
+        return [Path(p) for p in self.completed_process.stdout]
+
+    @property
+    def parsed_managed_files(self) -> list[Path]:
+        if ReadVerb.managed not in self.completed_process.args:
+            raise ValueError(
+                f"Asked for parsed managed files for command\n {self.full_command}"
+            )
+        return [Path(p) for p in self.completed_process.stdout]
 
 
 class ChezmoiCommand:
