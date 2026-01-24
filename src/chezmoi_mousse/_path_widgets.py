@@ -41,7 +41,7 @@ class FilePathWidgets:
         for line in self.status_lines:
             path = Path(line[3:])
             if line[3:] not in self.managed_lines:
-                status_paths[path] = (StatusCode.no_status, StatusCode.no_status)
+                status_paths[path] = (StatusCode.X, StatusCode.X)
             else:
                 status_paths[path] = StatusCode(line[0]), StatusCode(line[1])
         return status_paths
@@ -112,7 +112,7 @@ class ChezmoiPaths:
         for line in status_lines:
             path = Path(line[3:])
             if path not in managed_paths:
-                status_paths.append({path: StatusCode.no_status})
+                status_paths.append({path: StatusCode.X})
             else:
                 status_paths.append({path: StatusCode(line[index])})
         return status_paths

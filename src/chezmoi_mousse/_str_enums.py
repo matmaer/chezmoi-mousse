@@ -257,4 +257,4 @@ class StatusCode(StrEnum):
     No_Change = " "
     Run = "R"  # not implemented but included to show up with operate buttons disabled
     # Managed files or dirs absent from chezmoi status output.
-    no_status = "X"  # Fake status for internal use.
+    X = "X"  # Fake status for internal use.
