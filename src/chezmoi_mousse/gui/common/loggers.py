@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
-from textual import work
 from textual.containers import ScrollableContainer
 from textual.widgets import RichLog
 
@@ -215,6 +214,5 @@ class CmdLog(ScrollableContainer, AppType):
         super().__init__(id=ids.logger.cmd, classes=Tcss.border_title_top)
         self.ids = ids
 
-    @work
-    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+    def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.mount(command_result.pretty_collapsible)
