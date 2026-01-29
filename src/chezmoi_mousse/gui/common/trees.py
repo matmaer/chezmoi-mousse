@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from textual.reactive import reactive
 from textual.widgets import Tree
+from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import AppIds, AppType, Chars, NodeData, Tcss, TreeName
 
@@ -20,6 +23,23 @@ class TreeBase(Tree[NodeData], AppType):
     def on_mount(self) -> None:
         self.show_root = False
 
+    def add_path_to_tree(
+        self,
+        path: Path,
+        root: TreeNode[NodeData],
+        nodes: dict[Path, TreeNode[NodeData]],
+    ) -> TreeNode[NodeData]:
+        if path in nodes:
+            return nodes[path]
+        parent = path.parent
+        if parent != path:  # not root
+            parent_node = self.add_path_to_tree(parent, root, nodes)
+        else:
+            parent_node = root
+        node = parent_node.add(path.name, data=NodeData(found=True, path=path))
+        nodes[path] = node
+        return node
+
 
 class ListTree(TreeBase):
 
@@ -28,7 +48,11 @@ class ListTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.list_tree)
 
     def populate_dest_dir(self) -> None:
-        self.app.notify_not_implemented(self.ids, self, self.populate_dest_dir)
+        self.clear()
+        root = self.root
+        for dir_node in self.app.dir_node_dict.values():
+            for file_path in dir_node.status_files | dir_node.x_files:
+                root.add(str(file_path), data=NodeData(found=True, path=file_path))
 
 
 class ManagedTree(TreeBase):
@@ -38,4 +62,13 @@ class ManagedTree(TreeBase):
         super().__init__(self.ids, tree_name=TreeName.managed_tree)
 
     def populate_dest_dir(self) -> None:
-        self.app.notify_not_implemented(self.ids, self, self.populate_dest_dir)
+        self.clear()
+        nodes: dict[Path, TreeNode[NodeData]] = {}
+        root = self.root
+        assert self.app.dest_dir is not None
+        nodes[self.app.dest_dir] = root
+        for dir_path in self.app.dir_node_dict:
+            self.add_path_to_tree(dir_path, root, nodes)
+        for dir_node in self.app.dir_node_dict.values():
+            for file_path in dir_node.status_files | dir_node.x_files:
+                self.add_path_to_tree(file_path, root, nodes)
