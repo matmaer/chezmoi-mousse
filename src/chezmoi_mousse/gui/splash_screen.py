@@ -21,7 +21,6 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     ChezmoiCommand,
-    ChezmoiPaths,
     CmdResults,
     CommandResult,
     ParsedConfig,
@@ -329,14 +328,7 @@ class SplashScreen(Screen[None], AppType):
                 doctor=globals()["doctor"], template_data=globals()["template_data"]
             )
             return
-        ChezmoiPaths.dest_dir = globals()["parsed_config"].dest_dir
-        self.app.paths = ChezmoiPaths(
-            git_log_cmd_result=globals()["git_log"],
-            managed_dirs_cmd_result=globals()["managed_dirs"],
-            managed_files_cmd_result=globals()["managed_files"],
-            status_dirs_cmd_result=globals()["status_dirs"],
-            status_files_cmd_result=globals()["status_files"],
-        )
+        self.app.dest_dir = globals()["parsed_config"].dest_dir
         cmd_results = CmdResults(
             cat_config=globals()["cat_config"],
             doctor=globals()["doctor"],
@@ -359,7 +351,7 @@ class SplashScreen(Screen[None], AppType):
 
     @work
     async def update_dir_node_dict(self) -> None:
-        path_dict = PathDict(
+        path_dict_instance = PathDict(
             dest_dir=globals()["parsed_config"].dest_dir,
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],
@@ -367,8 +359,9 @@ class SplashScreen(Screen[None], AppType):
             status_files_result=globals()["status_files"],
             cmd=self.app.cmd,
             theme_variables=self.app.theme_variables,
-        ).dir_node_dict
-        self.app.dir_node_dict = path_dict
+        )
+        self.app.path_dict = path_dict_instance
+        self.app.dir_node_dict = path_dict_instance.dir_node_dict
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

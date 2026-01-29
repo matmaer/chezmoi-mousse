@@ -20,7 +20,6 @@ from ._chezmoi_command import (
     WriteCmd,
 )
 from ._enum_data import OpBtnEnum, SwitchEnum
-from ._path_widgets import ChezmoiPaths
 from ._str_enum_names import (
     BindingAction,
     PathKind,
@@ -53,7 +52,6 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "ChezmoiCommand",
-    "ChezmoiPaths",
     "CmdResults",
     "CommandResult",
     "DirNodeDict",

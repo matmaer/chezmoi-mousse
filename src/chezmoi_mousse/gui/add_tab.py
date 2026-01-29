@@ -107,6 +107,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         self.border_title = " destDir "
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        assert self.app.path_dict is not None
 
         # SwitchEnum: Red - Red (default)
         if self.unmanaged_dirs is False and self.unwanted is False:
@@ -116,17 +117,17 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (
                     p.is_dir(follow_symlinks=False)
                     and not self._is_unwanted_dir(p)
-                    and p in self.app.paths.cache.managed_dirs
+                    and p in self.app.path_dict.cache.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.paths.cache.managed_dirs
+                        p.parent in self.app.path_dict.cache.managed_dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.paths.cache.managed_files
+                    and p not in self.app.path_dict.cache.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -144,10 +145,10 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.paths.cache.managed_dirs
+                        p.parent in self.app.path_dict.cache.managed_dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.paths.cache.managed_files
+                    and p not in self.app.path_dict.cache.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -158,14 +159,14 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_dir(follow_symlinks=False)
-                    and p in self.app.paths.cache.managed_dirs
+                    and p in self.app.path_dict.cache.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.paths.cache.managed_files
+                    and p not in self.app.path_dict.cache.managed_files
                     and (
-                        p.parent in self.app.paths.cache.managed_dirs
+                        p.parent in self.app.path_dict.cache.managed_dirs
                         or p.parent == self.path
                     )
                     and self._file_of_interest(p)
@@ -179,7 +180,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (p.is_dir(follow_symlinks=False) and self._has_unmanaged_paths_in(p))
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.paths.cache.managed_files
+                    and p not in self.app.path_dict.cache.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -197,6 +198,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
     def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
+        assert self.app.path_dict is not None
         # Assume a directory with more than max_entries is not of interest
         max_entries = 300
         try:
@@ -204,8 +206,8 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if idx > max_entries:
                     return False
                 elif (
-                    p not in self.app.paths.cache.managed_dirs
-                    and p not in self.app.paths.cache.managed_files
+                    p not in self.app.path_dict.cache.managed_dirs
+                    and p not in self.app.path_dict.cache.managed_files
                 ):
                     return True
             return True

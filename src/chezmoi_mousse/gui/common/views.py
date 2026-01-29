@@ -129,7 +129,8 @@ class ContentsView(Vertical, AppType):
             self.rich_log.write(error.strerror)
 
     def write_cat_output(self, file_path: Path) -> None:
-        if file_path in self.app.paths.cache.managed_files:
+        assert self.app.path_dict is not None
+        if file_path in self.app.path_dict.cache.managed_files:
             self.cat_config_label.display = True
             cat_output: "CommandResult" = self.app.cmd.read(
                 ReadCmd.cat, path_arg=file_path
@@ -145,7 +146,8 @@ class ContentsView(Vertical, AppType):
                 self.rich_log.write(cat_output.completed_process.stdout)
 
     def write_dir_info(self, dir_path: Path) -> None:
-        if dir_path in self.app.paths.cache.managed_dirs:
+        assert self.app.path_dict is not None
+        if dir_path in self.app.path_dict.cache.managed_dirs:
             self.contents_info_static.update(
                 f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
             )
@@ -308,6 +310,7 @@ class DiffView(ScrollableContainer, AppType):
             return
         if self.app.dest_dir is None:
             raise ValueError("self.app.dest_dir is None in DiffView.watch_node_data")
+        assert self.app.path_dict is not None
         self.border_title = f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         diff_output: "CommandResult" = self.app.cmd.read(
             self.diff_cmd, path_arg=self.node_data.path
@@ -320,10 +323,10 @@ class DiffView(ScrollableContainer, AppType):
         if diff_widgets:
             self.mount_new_diff_widgets(diff_widgets)
             return
-        if self.node_data.path in self.app.paths.cache.managed_files:
+        if self.node_data.path in self.app.path_dict.cache.managed_files:
             self.mount_file_no_status_widgets(self.node_data.path)
             return
-        if self.node_data.path in self.app.paths.cache.managed_dirs:
+        if self.node_data.path in self.app.path_dict.cache.managed_dirs:
             self.mount_dir_no_status_widgets(self.node_data.path)
             return
         # Notify unhandled condition with function, class and module name
