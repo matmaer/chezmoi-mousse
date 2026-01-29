@@ -164,6 +164,7 @@ class DiffWidgets:
         "index": Tcss.context,
         "changed": Tcss.changed,
         "deleted": Tcss.removed,
+        "unhandled": Tcss.unhandled,
     }
 
     def __init__(self, diff_result: CommandResult) -> None:
@@ -173,15 +174,13 @@ class DiffWidgets:
         # Populate the container with diff widgets
         if not diff_result.std_out:
             self.container = ScrollableContainer(Static(LogString.no_stdout))
+        classes = self.STATIC_TCSS["unhandled"]
         for line in self.std_out_lines:
-            classes = (
-                Tcss.unhandled
-            )  # visualize unhandled line start conditions for debugging
             for prefix, tcss in self.STATIC_TCSS.items():
                 if line.startswith(prefix):
                     classes = tcss
                     break
-            self.widgets.append(Static(line, classes=classes))
+            self.widgets.append(Static(line, classes=classes.value))
         self.container = ScrollableContainer(*self.widgets)
 
 
