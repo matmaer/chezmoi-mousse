@@ -33,16 +33,6 @@ type DiffWidgets = list[Label | Static]
 
 class ContentsView(Vertical, AppType):
 
-    class ContentStr(StrEnum):
-        cannot_decode = "Path cannot be decoded as UTF-8:"
-        empty_or_only_whitespace = "File is empty or contains only whitespace."
-        managed_dir = "Managed directory "
-        output_from_cat = "File does not exist on disk, output from "
-        permission_denied = "Permission denied to read file "
-        read_error = "Error reading path "
-        truncated = "\n--- File content truncated to "
-        unmanaged_dir = "Unmanaged directory "
-
     node_data: reactive["NodeData | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
@@ -90,72 +80,6 @@ class ContentsView(Vertical, AppType):
             self.ids.static.contents_info_q, Static
         )
         self.contents_info_static.update(OperateString.in_dest_dir_click_path)
-
-    def open_file_and_update_ui(self, file_path: Path) -> None:
-        try:
-            file_size = file_path.stat().st_size
-            if file_size == 0:
-                self.contents_info_static.update(
-                    self.ContentStr.empty_or_only_whitespace
-                )
-                return
-            with open(file_path, "rt", encoding="utf-8") as f:
-                f_contents = f.read(self.truncate_size)
-            if f_contents.strip() == "":
-                self.contents_info_static.update(
-                    self.ContentStr.empty_or_only_whitespace
-                )
-                return
-            self.file_read_label.display = True
-            self.rich_log.write(f_contents)
-            if file_size > self.truncate_size:
-                self.rich_log.write(
-                    f"{self.ContentStr.truncated} {self.truncate_size / 1024} KiB ---"
-                )
-        except PermissionError as error:
-            self.contents_info_static.update(
-                f"{self.ContentStr.permission_denied}{file_path}"
-            )
-            self.rich_log.write(error.strerror)
-            return
-        except UnicodeDecodeError:
-            self.contents_info_static.update(
-                f"{self.ContentStr.cannot_decode}{file_path}"
-            )
-        except OSError as error:
-            self.contents_info_static.update(
-                f"{self.ContentStr.read_error}{file_path}: {error}"
-            )
-            self.rich_log.write(error.strerror)
-
-    def write_cat_output(self, file_path: Path) -> None:
-        assert self.app.path_dict is not None
-        if file_path in self.app.path_dict.cache.managed_files:
-            self.cat_config_label.display = True
-            cat_output: "CommandResult" = self.app.cmd.read(
-                ReadCmd.cat, path_arg=file_path
-            )
-            self.contents_info_static.update(
-                f"{self.ContentStr.output_from_cat}[$text-success]{cat_output.filtered_cmd}[/]"
-            )
-            if cat_output.completed_process.stdout.strip() == "":
-                self.rich_log.write(
-                    Text(self.ContentStr.empty_or_only_whitespace, style="dim")
-                )
-            else:
-                self.rich_log.write(cat_output.completed_process.stdout)
-
-    def write_dir_info(self, dir_path: Path) -> None:
-        assert self.app.path_dict is not None
-        if dir_path in self.app.path_dict.cache.managed_dirs:
-            self.contents_info_static.update(
-                f"{self.ContentStr.managed_dir}[$text-accent]{dir_path}[/]"
-            )
-        else:
-            self.contents_info_static.update(
-                f"{self.ContentStr.unmanaged_dir}[$text-accent]{dir_path}[/]"
-            )
-        return
 
     def watch_node_data(self) -> None:
         if self.node_data is None:
