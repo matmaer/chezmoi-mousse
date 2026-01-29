@@ -15,8 +15,7 @@ from textual.containers import ScrollableContainer
 from textual.widgets import DataTable, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from ._app_state import AppState
-from ._chezmoi_command import CommandResult, ReadCmd
+from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd
 from ._str_enum_names import Tcss
 from ._str_enums import LogString
 
@@ -127,14 +126,11 @@ class DirContentWidgets:
     the directory contents."""
 
     def __init__(
-        self, dir_path: Path, has_status_paths: bool, has_x_paths: bool
+        self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
     ) -> None:
-        self.app = AppState.get_app()
-        if self.app is None:
-            raise ValueError("self.app is None")
         self.widget: Static
         self.container: ScrollableContainer
-        if dir_path == self.app.dest_dir:
+        if dir_path == dest_dir:
             self.widget = Static("in dest dir")
         elif has_status_paths and has_x_paths:
             self.widget = Static(
@@ -191,19 +187,18 @@ class DiffWidgets:
 
 class GitLogTable:
 
-    def __init__(self, git_log_result: CommandResult) -> None:
-        self.data_table: DataTable[str] = DataTable()
-        self.app = AppState.get_app()
-        if self.app is None:
-            raise ValueError("self.app is None")
+    def __init__(
+        self, git_log_result: CommandResult, theme_variables: dict[str, str]
+    ) -> None:
         self.row_color = {
-            "ok": self.app.theme_variables["text-success"],
-            "warning": self.app.theme_variables["text-warning"],
-            "error": self.app.theme_variables["text-error"],
+            "ok": theme_variables["text-success"],
+            "warning": theme_variables["text-warning"],
+            "error": theme_variables["text-error"],
         }
         self.lines = git_log_result.std_out.splitlines()
         if len(self.lines) == 0:
             raise ValueError("Requested to construct a Git log table without data.")
+        self.data_table: DataTable[str] = DataTable[str]()
         self._populate_datatable()
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
@@ -272,11 +267,12 @@ class PathDict:
         managed_files_result: CommandResult,
         status_dirs_result: CommandResult,
         status_files_result: CommandResult,
+        cmd: ChezmoiCommand,
+        theme_variables: dict[str, str],
     ) -> None:
-        self.app = AppState.get_app()
-        if self.app is None:
-            raise ValueError("self.app is None")
         self.dest_dir = dest_dir
+        self.cmd = cmd
+        self.theme_variables = theme_variables
         self.managed_dir_paths = [
             Path(p) for p in managed_dirs_result.std_out.splitlines()
         ]
@@ -297,14 +293,13 @@ class PathDict:
         self.create_dir_node_dict()
 
     def create_managed_file_node_widgets(self):
-        if self.app is None:
-            raise ValueError("self.app is None")
         for file_path in self.managed_file_paths:
             self.file_path_widgets[file_path] = FileWidgets(
                 contents=FileContentWidgets(file_path=file_path),
-                diff=DiffWidgets(self.app.cmd.read(ReadCmd.diff, path_arg=file_path)),
+                diff=DiffWidgets(self.cmd.read(ReadCmd.diff, path_arg=file_path)),
                 git_log=GitLogTable(
-                    self.app.cmd.read(ReadCmd.git_log, path_arg=file_path)
+                    self.cmd.read(ReadCmd.git_log, path_arg=file_path),
+                    self.theme_variables,
                 ).data_table,
             )
 
@@ -323,8 +318,6 @@ class PathDict:
         ) or any(path.is_relative_to(dir_path) for path in self.managed_dir_paths)
 
     def create_managed_dir_node_widgets(self):
-        if self.app is None:
-            raise ValueError("self.app is None")
         for dir_path in self.managed_dir_paths:
             has_status_paths = self.has_status_paths_in(dir_path)
             has_x_paths = self.has_x_paths_in(dir_path)
@@ -332,14 +325,16 @@ class PathDict:
                 dir_path=dir_path,
                 has_status_paths=has_status_paths,
                 has_x_paths=has_x_paths,
+                dest_dir=self.dest_dir,
             )
             self.dir_path_widgets[dir_path] = DirWidgets(
                 contents=dir_content_widgets.container,
                 diff=DiffWidgets(
-                    self.app.cmd.read(ReadCmd.diff, path_arg=dir_path)
+                    self.cmd.read(ReadCmd.diff, path_arg=dir_path)
                 ).container,
                 git_log=GitLogTable(
-                    self.app.cmd.read(ReadCmd.git_log, path_arg=dir_path)
+                    self.cmd.read(ReadCmd.git_log, path_arg=dir_path),
+                    self.theme_variables,
                 ).data_table,
             )
 

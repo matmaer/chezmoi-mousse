@@ -25,6 +25,7 @@ from chezmoi_mousse import (
     CmdResults,
     CommandResult,
     ParsedConfig,
+    PathDict,
     ReadCmd,
     VerbArgs,
 )
@@ -65,9 +66,7 @@ SPLASH = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".replace(
-    "===", "=\u200b=\u200b="
-).splitlines()
+""".replace("===", "=\u200b=\u200b=").splitlines()
 
 FADE_HEIGHT = len(SPLASH)
 FADE_WIDTH = len(max(SPLASH, key=len))
@@ -358,6 +357,19 @@ class SplashScreen(Screen[None], AppType):
         )
         self.app.cmd_results.verify = globals()["verify"]
 
+    @work
+    async def update_dir_node_dict(self) -> None:
+        path_dict = PathDict(
+            dest_dir=globals()["parsed_config"].dest_dir,
+            managed_dirs_result=globals()["managed_dirs"],
+            managed_files_result=globals()["managed_files"],
+            status_dirs_result=globals()["status_dirs"],
+            status_files_result=globals()["status_files"],
+            cmd=self.app.cmd,
+            theme_variables=self.app.theme_variables,
+        ).dir_node_dict
+        self.app.dir_node_dict = path_dict
+
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
             self.dismiss(None)
@@ -367,6 +379,9 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
+            update_dir_node_worker = self.update_dir_node_dict()
+            if update_dir_node_worker.state != WorkerState.SUCCESS:
+                return
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
                 if all(w for w in self.workers if w.is_finished):
