@@ -220,7 +220,7 @@ class CommandResult:
     @property
     def pretty_time(self) -> str:
         # formats time with square brackets and green text like "[13:33:04]"
-        return f"[$text-success][{datetime.now().strftime("%H:%M:%S")}][/]"
+        return f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
 
     @property
     def dry_run_str(self) -> str:
@@ -256,7 +256,7 @@ class CommandResult:
 
     @property
     def curated_std_err(self):
-        return self.std_out or f"{LogString.no_stdout} {self.dry_run_str}"
+        return self.std_err or f"{LogString.no_stderr} {self.dry_run_str}"
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
@@ -283,22 +283,6 @@ class CommandResult:
             )
         )
 
-    @property
-    def parsed_managed_dirs(self) -> list[Path]:
-        if ReadVerb.managed not in self.completed_process.args:
-            raise ValueError(
-                f"Asked for parsed managed dirs for command\n {self.log_entry}"
-            )
-        return [Path(p) for p in self.completed_process.stdout]
-
-    @property
-    def parsed_managed_files(self) -> list[Path]:
-        if ReadVerb.managed not in self.completed_process.args:
-            raise ValueError(
-                f"Asked for parsed managed files for command\n {self.full_command}"
-            )
-        return [Path(p) for p in self.completed_process.stdout]
-
 
 class ChezmoiCommand:
 
@@ -322,10 +306,14 @@ class ChezmoiCommand:
         command = base_cmd + read_cmd.value
         if path_arg is not None:
             path_str = str(path_arg)
+            source_path_str = _run_chezmoi_cmd(
+                base_cmd + ReadCmd.source_path.value + [path_str],
+                read_cmd=ReadCmd.source_path,
+            ).stdout.strip()
             if read_cmd == ReadCmd.cat and not path_arg.exists():
-                path_str = _run_chezmoi_cmd(
-                    command, read_cmd=ReadCmd.source_path
-                ).stdout
+                path_str = source_path_str
+            elif read_cmd == ReadCmd.git_log:
+                path_str = source_path_str
             command += [path_str]
         result: CompletedProcess[str] = _run_chezmoi_cmd(command, read_cmd=read_cmd)
         command_result = CommandResult(

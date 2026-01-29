@@ -202,7 +202,7 @@ class GitLogTable:
             "error": self.app.theme_variables["text-error"],
         }
         self.lines = git_log_result.std_out.splitlines()
-        if len(self.lines) < 2:
+        if len(self.lines) == 0:
             raise ValueError("Requested to construct a Git log table without data.")
         self._populate_datatable()
 
