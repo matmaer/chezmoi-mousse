@@ -283,14 +283,20 @@ class PathDict:
         self.dest_dir = dest_dir
         self.cmd = cmd
         self.theme_variables = theme_variables
-        self.managed_dirs = [Path(p) for p in managed_dirs_result.std_out.splitlines()]
-        self.managed_files = [
-            Path(p) for p in managed_files_result.std_out.splitlines()
-        ]
+
+        self.managed_dirs: list[Path] = []
+        self.managed_files: list[Path] = []
+        self.status_dir_paths: list[Path] = []
+        self.status_file_paths: list[Path] = []
+        self._update_managed_and_status_paths(
+            managed_dirs_result,
+            managed_files_result,
+            status_dirs_result,
+            status_files_result,
+        )
+
         self.status_dir_lines = status_dirs_result.std_out.splitlines()
         self.status_file_lines = status_files_result.std_out.splitlines()
-        self.status_dir_paths = [Path(p[3:]) for p in self.status_dir_lines]
-        self.status_file_paths = [Path(p[3:]) for p in self.status_file_lines]
         self.file_path_widgets: FileWidgetDict = {}
         self.create_managed_file_node_widgets()
         self.dir_path_widgets: DirWidgetDict = {}
@@ -312,16 +318,23 @@ class PathDict:
             ),
         )
 
-    def create_managed_file_node_widgets(self):
-        for file_path in self.managed_files:
-            self.file_path_widgets[file_path] = FileWidgets(
-                contents=FileContentWidgets(file_path=file_path),
-                diff=DiffWidgets(self.cmd.read(ReadCmd.diff, path_arg=file_path)),
-                git_log=GitLogTable(
-                    self.cmd.read(ReadCmd.git_log, path_arg=file_path),
-                    self.theme_variables,
-                ).data_table,
-            )
+    def _update_managed_and_status_paths(
+        self,
+        managed_dirs_result: CommandResult,
+        managed_files_result: CommandResult,
+        status_dirs_result: CommandResult,
+        status_files_result: CommandResult,
+    ) -> None:
+        self.managed_dirs = [Path(p) for p in managed_dirs_result.std_out.splitlines()]
+        self.managed_files = [
+            Path(p) for p in managed_files_result.std_out.splitlines()
+        ]
+        self.status_dirs = [
+            Path(p[3:]) for p in status_dirs_result.std_out.splitlines()
+        ]
+        self.status_files = [
+            Path(p[3:]) for p in status_files_result.std_out.splitlines()
+        ]
 
     def _create_status_dicts(
         self, managed_paths: list[Path], status_lines: list[str], index: int
@@ -334,6 +347,17 @@ class PathDict:
             else:
                 status_paths.append({path: StatusCode(line[index])})
         return status_paths
+
+    def create_managed_file_node_widgets(self):
+        for file_path in self.managed_files:
+            self.file_path_widgets[file_path] = FileWidgets(
+                contents=FileContentWidgets(file_path=file_path),
+                diff=DiffWidgets(self.cmd.read(ReadCmd.diff, path_arg=file_path)),
+                git_log=GitLogTable(
+                    self.cmd.read(ReadCmd.git_log, path_arg=file_path),
+                    self.theme_variables,
+                ).data_table,
+            )
 
     def has_status_paths_in(self, dir_path: Path) -> bool:
         # Return True if any status path is a descendant of the
@@ -390,6 +414,12 @@ class PathDict:
             )
 
     def update_cache(self):
+        self._update_managed_and_status_paths(
+            self.cmd.read(ReadCmd.managed_dirs),
+            self.cmd.read(ReadCmd.managed_files),
+            self.cmd.read(ReadCmd.status_dirs),
+            self.cmd.read(ReadCmd.status_files),
+        )
         self.file_path_widgets = {}
         self.create_managed_file_node_widgets()
         self.dir_path_widgets = {}
