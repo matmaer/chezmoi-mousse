@@ -128,8 +128,8 @@ class ChezmoiGUI(App[None]):
         AppState.set_app(self)
 
         self.dest_dir: "Path | None" = None
-        self.path_dict: "PathDict | None" = None
-        self.dir_node_dict: "DirNodeDict"
+        self.paths: "PathDict | None" = None
+        self.dir_nodes: "DirNodeDict"
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False

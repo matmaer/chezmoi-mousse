@@ -234,7 +234,7 @@ class DiffView(ScrollableContainer, AppType):
             return
         if self.app.dest_dir is None:
             raise ValueError("self.app.dest_dir is None in DiffView.watch_node_data")
-        assert self.app.path_dict is not None
+        assert self.app.paths is not None
         self.border_title = f" {self.node_data.path.relative_to(self.app.dest_dir)} "
         diff_output: "CommandResult" = self.app.cmd.read(
             self.diff_cmd, path_arg=self.node_data.path
@@ -247,10 +247,10 @@ class DiffView(ScrollableContainer, AppType):
         if diff_widgets:
             self.mount_new_diff_widgets(diff_widgets)
             return
-        if self.node_data.path in self.app.path_dict.cache.managed_files:
+        if self.node_data.path in self.app.paths.cache.managed_files:
             self.mount_file_no_status_widgets(self.node_data.path)
             return
-        if self.node_data.path in self.app.path_dict.cache.managed_dirs:
+        if self.node_data.path in self.app.paths.managed_dir_paths:
             self.mount_dir_no_status_widgets(self.node_data.path)
             return
         # Notify unhandled condition with function, class and module name

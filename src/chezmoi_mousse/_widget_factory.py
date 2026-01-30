@@ -264,9 +264,8 @@ type StatusPath = dict[Path, StatusCode]
 @dataclass
 class PathCache:
     # used in the Add tab, needs to be phased out
-    managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
-    # contains managed dirs with their status (real or fake status 'X')
+
     apply_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     apply_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     re_add_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
@@ -304,7 +303,6 @@ class PathDict:
         self.dir_node_dict: DirNodeDict = {}
         self.create_dir_node_dict()
         self.cache = PathCache(
-            managed_dirs=self.managed_dir_paths,
             managed_files=self.managed_file_paths,
             apply_dirs=self._create_status_dicts(
                 self.managed_dir_paths, self.status_dir_lines, 0
@@ -405,7 +403,6 @@ class PathDict:
         self.dir_node_dict = {}
         self.create_dir_node_dict()
         self.cache = PathCache(
-            managed_dirs=self.managed_dir_paths,
             managed_files=self.managed_file_paths,
             apply_dirs=self._create_status_dicts(
                 self.managed_dir_paths, self.status_dir_lines, 0

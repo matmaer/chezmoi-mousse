@@ -50,7 +50,7 @@ class ListTree(TreeBase):
     def populate_dest_dir(self) -> None:
         self.clear()
         root = self.root
-        for dir_node in self.app.dir_node_dict.values():
+        for dir_node in self.app.dir_nodes.values():
             for file_path in dir_node.status_files | dir_node.x_files:
                 root.add(str(file_path), data=NodeData(found=True, path=file_path))
 
@@ -67,8 +67,8 @@ class ManagedTree(TreeBase):
         root = self.root
         assert self.app.dest_dir is not None
         nodes[self.app.dest_dir] = root
-        for dir_path in self.app.dir_node_dict:
+        for dir_path in self.app.dir_nodes:
             self.add_path_to_tree(dir_path, root, nodes)
-        for dir_node in self.app.dir_node_dict.values():
+        for dir_node in self.app.dir_nodes.values():
             for file_path in dir_node.status_files | dir_node.x_files:
                 self.add_path_to_tree(file_path, root, nodes)

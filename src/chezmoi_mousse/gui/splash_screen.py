@@ -360,8 +360,8 @@ class SplashScreen(Screen[None], AppType):
             cmd=self.app.cmd,
             theme_variables=self.app.theme_variables,
         )
-        self.app.path_dict = path_dict_instance
-        self.app.dir_node_dict = path_dict_instance.dir_node_dict
+        self.app.paths = path_dict_instance
+        self.app.dir_nodes = path_dict_instance.dir_node_dict
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
