@@ -301,9 +301,6 @@ class PathDict:
             status_dirs_result,
             status_files_result,
         )
-
-        self.status_dir_lines = status_dirs_result.std_out.splitlines()
-        self.status_file_lines = status_files_result.std_out.splitlines()
         self.apply_file_widgets: FileWidgetDict = {}
         self.re_add_file_widgets: FileWidgetDict = {}
         self.create_managed_file_node_widgets()
@@ -312,8 +309,6 @@ class PathDict:
         self.create_managed_dir_node_widgets()
         self.apply_dir_node_dict: DirNodeDict = {}
         self.re_add_dir_node_dict: DirNodeDict = {}
-
-        self.dir_node_dict: DirNodeDict = {}
         self.create_dir_node_dict()
 
     def _update_managed_and_status_paths(
