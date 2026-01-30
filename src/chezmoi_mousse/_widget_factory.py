@@ -220,8 +220,9 @@ class GitLogTable:
 
 @dataclass(slots=True)
 class FileWidgets:
+    label: str
     contents: FileContentWidgets
-    diff: DiffWidgets
+    diff: ScrollableContainer
     git_log: DataTable[str]
 
 
@@ -275,7 +276,14 @@ class PathDict:
         self.dest_dir = dest_dir
         self.cmd = cmd
         self.theme_variables = theme_variables
-
+        self.node_colors: dict[str, str] = {
+            StatusCode.Added: self.theme_variables["text-success"],
+            StatusCode.Deleted: self.theme_variables["text-error"],
+            StatusCode.Modified: self.theme_variables["text-warning"],
+            StatusCode.No_Change: self.theme_variables["warning-darken-2"],
+            StatusCode.Run: self.theme_variables["error"],
+            StatusCode.X: self.theme_variables["text-secondary"],
+        }
         self.managed_dirs: list[Path] = []
         self.managed_files: list[Path] = []
         self.status_dirs: list[Path] = []
@@ -295,10 +303,15 @@ class PathDict:
 
         self.status_dir_lines = status_dirs_result.std_out.splitlines()
         self.status_file_lines = status_files_result.std_out.splitlines()
-        self.file_path_widgets: FileWidgetDict = {}
+        self.apply_file_widgets: FileWidgetDict = {}
+        self.re_add_file_widgets: FileWidgetDict = {}
         self.create_managed_file_node_widgets()
-        self.dir_path_widgets: DirWidgetDict = {}
+        self.apply_dir_widgets: DirWidgetDict = {}
+        self.re_add_dir_widgets: DirWidgetDict = {}
         self.create_managed_dir_node_widgets()
+        self.apply_dir_node_dict: DirNodeDict = {}
+        self.re_add_dir_node_dict: DirNodeDict = {}
+
         self.dir_node_dict: DirNodeDict = {}
         self.create_dir_node_dict()
 
@@ -332,13 +345,36 @@ class PathDict:
 
     def create_managed_file_node_widgets(self):
         for file_path in self.managed_files:
-            self.file_path_widgets[file_path] = FileWidgets(
-                contents=FileContentWidgets(file_path=file_path),
-                diff=DiffWidgets(self.cmd.read(ReadCmd.diff, path_arg=file_path)),
-                git_log=GitLogTable(
-                    self.cmd.read(ReadCmd.git_log, path_arg=file_path),
-                    self.theme_variables,
-                ).data_table,
+            italic = " italic" if not file_path.exists() else ""
+            apply_color = self.node_colors.get(
+                self.apply_file_status.get(file_path, StatusCode.X)
+            )
+            apply_node_label = f"[{apply_color}" f"{italic}]{file_path.name}[/]"
+            re_add_color = self.node_colors.get(
+                self.re_add_file_status.get(file_path, StatusCode.X)
+            )
+            re_add_node_label = f"[{re_add_color}" f"{italic}]{file_path.name}[/]"
+            git_log_table = GitLogTable(
+                self.cmd.read(ReadCmd.git_log, path_arg=file_path), self.theme_variables
+            ).data_table
+            apply_diff = DiffWidgets(
+                self.cmd.read(ReadCmd.diff, path_arg=file_path)
+            ).container
+            re_add_diff = DiffWidgets(
+                self.cmd.read(ReadCmd.diff_reverse, path_arg=file_path)
+            ).container
+            contents = FileContentWidgets(file_path=file_path)
+            self.apply_file_widgets[file_path] = FileWidgets(
+                contents=contents,
+                diff=apply_diff,
+                git_log=git_log_table,
+                label=apply_node_label,
+            )
+            self.re_add_file_widgets[file_path] = FileWidgets(
+                contents=contents,
+                diff=re_add_diff,
+                git_log=git_log_table,
+                label=re_add_node_label,
             )
 
     def has_status_paths_in(self, dir_path: Path) -> bool:
@@ -365,29 +401,51 @@ class PathDict:
                 has_x_paths=has_x_paths,
                 dest_dir=self.dest_dir,
             )
-            self.dir_path_widgets[dir_path] = DirWidgets(
+            git_log_table = GitLogTable(
+                self.cmd.read(ReadCmd.git_log, path_arg=dir_path), self.theme_variables
+            ).data_table
+            self.apply_dir_widgets[dir_path] = DirWidgets(
                 contents=dir_content_widgets.container,
                 diff=DiffWidgets(
                     self.cmd.read(ReadCmd.diff, path_arg=dir_path)
                 ).container,
-                git_log=GitLogTable(
-                    self.cmd.read(ReadCmd.git_log, path_arg=dir_path),
-                    self.theme_variables,
-                ).data_table,
+                git_log=git_log_table,
+            )
+            self.re_add_dir_widgets[dir_path] = DirWidgets(
+                contents=dir_content_widgets.container,
+                diff=DiffWidgets(
+                    self.cmd.read(ReadCmd.diff_reverse, path_arg=dir_path)
+                ).container,
+                git_log=git_log_table,
             )
 
     def create_dir_node_dict(self):
-        for dir_path, dir_widgets in self.dir_path_widgets.items():
+        for dir_path, dir_widgets in self.apply_dir_widgets.items():
             status_files: FileWidgetDict = {}
             x_files: FileWidgetDict = {}
-            for file_path, file_widgets in self.file_path_widgets.items():
+            for file_path, file_widgets in self.apply_file_widgets.items():
                 if file_path.parent == dir_path:  # Only direct children
                     if file_path in self.status_files:
                         status_files[file_path] = file_widgets
                     elif file_path in self.managed_files:
                         x_files[file_path] = file_widgets
-            # Use the precomputed recursive values from PathDict methods
-            self.dir_node_dict[dir_path] = DirNode(
+            self.apply_dir_node_dict[dir_path] = DirNode(
+                widgets=dir_widgets,
+                status_files=status_files,
+                x_files=x_files,
+                has_status_paths=self.has_status_paths_in(dir_path),
+                has_x_paths=self.has_x_paths_in(dir_path),
+            )
+        for dir_path, dir_widgets in self.re_add_dir_widgets.items():
+            status_files: FileWidgetDict = {}
+            x_files: FileWidgetDict = {}
+            for file_path, file_widgets in self.re_add_file_widgets.items():
+                if file_path.parent == dir_path:  # Only direct children
+                    if file_path in self.status_files:
+                        status_files[file_path] = file_widgets
+                    elif file_path in self.managed_files:
+                        x_files[file_path] = file_widgets
+            self.re_add_dir_node_dict[dir_path] = DirNode(
                 widgets=dir_widgets,
                 status_files=status_files,
                 x_files=x_files,
@@ -402,9 +460,3 @@ class PathDict:
             self.cmd.read(ReadCmd.status_dirs),
             self.cmd.read(ReadCmd.status_files),
         )
-        self.file_path_widgets = {}
-        self.create_managed_file_node_widgets()
-        self.dir_path_widgets = {}
-        self.create_managed_dir_node_widgets()
-        self.dir_node_dict = {}
-        self.create_dir_node_dict()
