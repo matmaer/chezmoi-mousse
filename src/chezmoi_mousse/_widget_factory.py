@@ -16,7 +16,7 @@ from textual.widgets import DataTable, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
 from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd
-from ._str_enum_names import Tcss
+from ._str_enum_names import TabName, Tcss
 from ._str_enums import LogString, StatusCode
 
 __all__ = ["DirNodeDict", "PathDict"]
@@ -241,6 +241,7 @@ type DirWidgetDict = dict[Path, DirWidgets]
 
 @dataclass(slots=True)
 class DirNode:
+    label: str
     widgets: DirWidgets
     status_files: FileWidgetDict = field(
         default_factory=dict[Path, FileWidgets]
@@ -343,38 +344,45 @@ class PathDict:
             if parsed_path not in self.status_files:
                 self.x_files.append(parsed_path)
 
+    def create_label(self, path: Path, tab_name: TabName) -> str:
+        italic = " italic" if not path.exists() else ""
+        apply_color = self.node_colors.get(
+            self.apply_file_status.get(path, StatusCode.X)
+        )
+        if tab_name == TabName.apply:
+            apply_color = self.node_colors.get(
+                self.apply_file_status.get(path, StatusCode.X)
+            )
+            return f"[{apply_color}" f"{italic}]{path.name}[/]"
+        elif tab_name == TabName.re_add:
+            re_add_color = self.node_colors.get(
+                self.re_add_file_status.get(path, StatusCode.X)
+            )
+            return f"[{re_add_color}" f"{italic}]{path.name}[/]"
+        else:
+            raise ValueError(f"Unhandled tab name: {tab_name}")
+
     def create_managed_file_node_widgets(self):
         for file_path in self.managed_files:
-            italic = " italic" if not file_path.exists() else ""
-            apply_color = self.node_colors.get(
-                self.apply_file_status.get(file_path, StatusCode.X)
-            )
-            apply_node_label = f"[{apply_color}" f"{italic}]{file_path.name}[/]"
-            re_add_color = self.node_colors.get(
-                self.re_add_file_status.get(file_path, StatusCode.X)
-            )
-            re_add_node_label = f"[{re_add_color}" f"{italic}]{file_path.name}[/]"
             git_log_table = GitLogTable(
                 self.cmd.read(ReadCmd.git_log, path_arg=file_path), self.theme_variables
             ).data_table
-            apply_diff = DiffWidgets(
-                self.cmd.read(ReadCmd.diff, path_arg=file_path)
-            ).container
-            re_add_diff = DiffWidgets(
-                self.cmd.read(ReadCmd.diff_reverse, path_arg=file_path)
-            ).container
             contents = FileContentWidgets(file_path=file_path)
             self.apply_file_widgets[file_path] = FileWidgets(
                 contents=contents,
-                diff=apply_diff,
+                diff=DiffWidgets(
+                    self.cmd.read(ReadCmd.diff, path_arg=file_path)
+                ).container,
                 git_log=git_log_table,
-                label=apply_node_label,
+                label=self.create_label(file_path, TabName.apply),
             )
             self.re_add_file_widgets[file_path] = FileWidgets(
                 contents=contents,
-                diff=re_add_diff,
+                diff=DiffWidgets(
+                    self.cmd.read(ReadCmd.diff_reverse, path_arg=file_path)
+                ).container,
                 git_log=git_log_table,
-                label=re_add_node_label,
+                label=self.create_label(file_path, TabName.re_add),
             )
 
     def has_status_paths_in(self, dir_path: Path) -> bool:
@@ -430,6 +438,7 @@ class PathDict:
                     elif file_path in self.managed_files:
                         x_files[file_path] = file_widgets
             self.apply_dir_node_dict[dir_path] = DirNode(
+                label=self.create_label(dir_path, TabName.apply),
                 widgets=dir_widgets,
                 status_files=status_files,
                 x_files=x_files,
@@ -446,6 +455,7 @@ class PathDict:
                     elif file_path in self.managed_files:
                         x_files[file_path] = file_widgets
             self.re_add_dir_node_dict[dir_path] = DirNode(
+                label=self.create_label(dir_path, TabName.re_add),
                 widgets=dir_widgets,
                 status_files=status_files,
                 x_files=x_files,
