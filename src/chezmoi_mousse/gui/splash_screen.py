@@ -362,6 +362,8 @@ class SplashScreen(Screen[None], AppType):
         )
         self.app.paths = path_dict_instance
         self.app.dir_nodes = path_dict_instance.apply_dir_node_dict
+        self.app.apply_dir_nodes = path_dict_instance.apply_dir_node_dict
+        self.app.re_add_dir_nodes = path_dict_instance.re_add_dir_node_dict
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
