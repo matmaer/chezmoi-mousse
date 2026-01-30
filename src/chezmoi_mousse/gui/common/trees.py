@@ -48,31 +48,27 @@ class TreeBase(Tree[NodeData], AppType):
 class ListTree(TreeBase):
 
     def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.list_tree)
+        super().__init__(ids, tree_name=TreeName.list_tree)
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        root = self.root
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files | dir_node.x_files:
-                root.add(str(file_path), data=NodeData(found=True, path=file_path))
+                self.root.add(str(file_path), data=NodeData(found=True, path=file_path))
 
 
 class ManagedTree(TreeBase):
 
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(self.ids, tree_name=TreeName.managed_tree)
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(ids, tree_name=TreeName.managed_tree)
 
     def populate_dest_dir(self) -> None:
         self.clear()
         nodes: dict[Path, TreeNode[NodeData]] = {}
-        root = self.root
         assert self.app.dest_dir is not None
-        nodes[self.app.dest_dir] = root
+        nodes[self.app.dest_dir] = self.root
         for dir_path in self.dir_nodes:
-            self.add_path_to_tree(dir_path, root, nodes)
+            self.add_path_to_tree(dir_path, self.root, nodes)
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files | dir_node.x_files:
-                self.add_path_to_tree(file_path, root, nodes)
+                self.add_path_to_tree(file_path, self.root, nodes)

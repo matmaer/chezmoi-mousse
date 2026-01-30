@@ -151,77 +151,6 @@ class DiffView(ScrollableContainer, AppType):
         ]
         self.mount_new_diff_widgets(diff_widgets)
 
-    def create_mode_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
-        diff_widgets: DiffWidgets = []
-        mode_lines = [
-            line
-            for line in diff_lines
-            if line.startswith(("old", "new", "changed", "deleted"))
-        ]
-        if not mode_lines:
-            return []
-        diff_widgets.append(
-            Label(DiffStrings.mode_changes, classes=Tcss.sub_section_label)
-        )
-        for line in mode_lines:
-            if line.startswith(("old", "deleted")):
-                diff_widgets.append(Static(line, classes=Tcss.removed))
-            elif line.startswith("new"):
-                diff_widgets.append(Static(line, classes=Tcss.added))
-                diff_lines.remove(line)
-            elif line.startswith("changed"):
-                diff_widgets.append(Static(line, classes=Tcss.changed))
-        return diff_widgets
-
-    def create_path_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
-        diff_widgets: DiffWidgets = []
-        path_lines = [line for line in diff_lines if line.startswith(("+++", "---"))]
-        if not path_lines:
-            return []
-        diff_widgets.append(
-            Label(DiffStrings.path_lines, classes=Tcss.sub_section_label)
-        )
-        for line in path_lines:
-            if line.startswith("---"):
-                diff_widgets.append(Static(line, classes=Tcss.removed))
-            elif line.startswith("+++"):
-                diff_widgets.append(Static(line, classes=Tcss.added))
-        return diff_widgets
-
-    def create_file_diff_widgets(self, diff_lines: list[str]) -> DiffWidgets:
-        diff_widgets: DiffWidgets = []
-        file_lines = [
-            line
-            for line in diff_lines
-            if line.startswith(("+", "-", " ")) and not line.startswith(("+++", "---"))
-        ]
-        # TODO: make lines limit configurable, look into paging,
-        # temporary solution
-        lines_limit = 1000
-        lines = 0
-        file_lines = [
-            line
-            for line in diff_lines
-            if line.startswith(("+", "-", " ")) and not line.startswith(("+++", "---"))
-        ]
-        if not file_lines:
-            return []
-        diff_widgets.append(
-            Label(DiffStrings.file_diff_lines, classes=Tcss.sub_section_label)
-        )
-        for line in file_lines:
-            if line.startswith("-"):
-                diff_widgets.append(Static(line, classes=Tcss.removed))
-            elif line.startswith("+"):
-                diff_widgets.append(Static(line, classes=Tcss.added))
-            elif line.startswith(" "):
-                diff_widgets.append(Static(line, classes=Tcss.context))
-            lines += 1
-            if lines >= lines_limit:
-                diff_widgets.append(Static(DiffStrings.truncated))
-                break
-        return diff_widgets
-
     def create_status_widgets(self, node_data: "NodeData") -> DiffWidgets:
         diff_widgets: DiffWidgets = []
         diff_widgets.append(
@@ -236,14 +165,7 @@ class DiffView(ScrollableContainer, AppType):
             raise ValueError("self.app.dest_dir is None in DiffView.watch_node_data")
         assert self.app.paths is not None
         self.border_title = f" {self.node_data.path.relative_to(self.app.dest_dir)} "
-        diff_output: "CommandResult" = self.app.cmd.read(
-            self.diff_cmd, path_arg=self.node_data.path
-        )
-        diff_lines = diff_output.completed_process.stdout.splitlines()
         diff_widgets: DiffWidgets = []
-        diff_widgets.extend(self.create_mode_diff_widgets(diff_lines))
-        diff_widgets.extend(self.create_path_diff_widgets(diff_lines))
-        diff_widgets.extend(self.create_file_diff_widgets(diff_lines))
         if diff_widgets:
             self.mount_new_diff_widgets(diff_widgets)
             return

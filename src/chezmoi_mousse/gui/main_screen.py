@@ -90,7 +90,6 @@ class MainScreen(Screen[None], AppType):
     async def populate_apply_trees(self) -> None:
         self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_dest_dir()
         self.app_log.success("Apply tab managed tree populated.")
-        self.app_log.success("Apply tab expanded tree populated.")
         self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Apply tab list tree populated.")
 
@@ -100,7 +99,6 @@ class MainScreen(Screen[None], AppType):
             IDS.re_add.tree.managed_q, ManagedTree
         ).populate_dest_dir()
         self.app_log.success("Re-Add tab managed tree populated.")
-        self.app_log.success("Re-Add tab expanded tree populated.")
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Re-Add tab list tree populated.")
 
