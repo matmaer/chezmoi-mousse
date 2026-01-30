@@ -247,10 +247,10 @@ class DiffView(ScrollableContainer, AppType):
         if diff_widgets:
             self.mount_new_diff_widgets(diff_widgets)
             return
-        if self.node_data.path in self.app.paths.cache.managed_files:
+        if self.node_data.path in self.app.paths.managed_files:
             self.mount_file_no_status_widgets(self.node_data.path)
             return
-        if self.node_data.path in self.app.paths.managed_dir_paths:
+        if self.node_data.path in self.app.paths.managed_dirs:
             self.mount_dir_no_status_widgets(self.node_data.path)
             return
         # Notify unhandled condition with function, class and module name

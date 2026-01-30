@@ -263,9 +263,6 @@ type StatusPath = dict[Path, StatusCode]
 
 @dataclass
 class PathCache:
-    # used in the Add tab, needs to be phased out
-    managed_files: list[Path] = field(default_factory=list[Path])
-
     apply_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     apply_files: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
     re_add_dirs: list[StatusPath] = field(default_factory=list[dict[Path, StatusCode]])
@@ -286,10 +283,8 @@ class PathDict:
         self.dest_dir = dest_dir
         self.cmd = cmd
         self.theme_variables = theme_variables
-        self.managed_dir_paths = [
-            Path(p) for p in managed_dirs_result.std_out.splitlines()
-        ]
-        self.managed_file_paths = [
+        self.managed_dirs = [Path(p) for p in managed_dirs_result.std_out.splitlines()]
+        self.managed_files = [
             Path(p) for p in managed_files_result.std_out.splitlines()
         ]
         self.status_dir_lines = status_dirs_result.std_out.splitlines()
@@ -303,23 +298,22 @@ class PathDict:
         self.dir_node_dict: DirNodeDict = {}
         self.create_dir_node_dict()
         self.cache = PathCache(
-            managed_files=self.managed_file_paths,
             apply_dirs=self._create_status_dicts(
-                self.managed_dir_paths, self.status_dir_lines, 0
+                self.managed_dirs, self.status_dir_lines, 0
             ),
             apply_files=self._create_status_dicts(
-                self.managed_file_paths, self.status_file_lines, 0
+                self.managed_files, self.status_file_lines, 0
             ),
             re_add_dirs=self._create_status_dicts(
-                self.managed_dir_paths, self.status_dir_lines, 1
+                self.managed_dirs, self.status_dir_lines, 1
             ),
             re_add_files=self._create_status_dicts(
-                self.managed_file_paths, self.status_file_lines, 1
+                self.managed_files, self.status_file_lines, 1
             ),
         )
 
     def create_managed_file_node_widgets(self):
-        for file_path in self.managed_file_paths:
+        for file_path in self.managed_files:
             self.file_path_widgets[file_path] = FileWidgets(
                 contents=FileContentWidgets(file_path=file_path),
                 diff=DiffWidgets(self.cmd.read(ReadCmd.diff, path_arg=file_path)),
@@ -351,12 +345,12 @@ class PathDict:
     def has_x_paths_in(self, dir_path: Path) -> bool:
         # Return True if any managed path is a descendant of the
         # provided directory.
-        return any(
-            path.is_relative_to(dir_path) for path in self.managed_file_paths
-        ) or any(path.is_relative_to(dir_path) for path in self.managed_dir_paths)
+        return any(path.is_relative_to(dir_path) for path in self.managed_files) or any(
+            path.is_relative_to(dir_path) for path in self.managed_dirs
+        )
 
     def create_managed_dir_node_widgets(self):
-        for dir_path in self.managed_dir_paths:
+        for dir_path in self.managed_dirs:
             has_status_paths = self.has_status_paths_in(dir_path)
             has_x_paths = self.has_x_paths_in(dir_path)
             dir_content_widgets = DirContentWidgets(
@@ -384,7 +378,7 @@ class PathDict:
                 if file_path.parent == dir_path:  # Only direct children
                     if file_path in self.status_file_paths:
                         status_files[file_path] = file_widgets
-                    elif file_path in self.managed_file_paths:
+                    elif file_path in self.managed_files:
                         x_files[file_path] = file_widgets
             # Use the precomputed recursive values from PathDict methods
             self.dir_node_dict[dir_path] = DirNode(
@@ -403,17 +397,16 @@ class PathDict:
         self.dir_node_dict = {}
         self.create_dir_node_dict()
         self.cache = PathCache(
-            managed_files=self.managed_file_paths,
             apply_dirs=self._create_status_dicts(
-                self.managed_dir_paths, self.status_dir_lines, 0
+                self.managed_dirs, self.status_dir_lines, 0
             ),
             apply_files=self._create_status_dicts(
-                self.managed_file_paths, self.status_file_lines, 0
+                self.managed_files, self.status_file_lines, 0
             ),
             re_add_dirs=self._create_status_dicts(
-                self.managed_dir_paths, self.status_dir_lines, 1
+                self.managed_dirs, self.status_dir_lines, 1
             ),
             re_add_files=self._create_status_dicts(
-                self.managed_file_paths, self.status_file_lines, 1
+                self.managed_files, self.status_file_lines, 1
             ),
         )
