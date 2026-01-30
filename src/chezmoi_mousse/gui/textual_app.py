@@ -129,7 +129,6 @@ class ChezmoiGUI(App[None]):
 
         self.dest_dir: "Path | None" = None
         self.paths: "PathDict | None" = None
-        self.dir_nodes: "DirNodeDict"
         self.apply_dir_nodes: "DirNodeDict" = {}
         self.re_add_dir_nodes: "DirNodeDict" = {}
 

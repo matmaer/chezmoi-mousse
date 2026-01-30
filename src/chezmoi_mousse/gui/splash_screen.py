@@ -361,7 +361,6 @@ class SplashScreen(Screen[None], AppType):
             theme_variables=self.app.theme_variables,
         )
         self.app.paths = path_dict_instance
-        self.app.dir_nodes = path_dict_instance.apply_dir_node_dict
         self.app.apply_dir_nodes = path_dict_instance.apply_dir_node_dict
         self.app.re_add_dir_nodes = path_dict_instance.re_add_dir_node_dict
 

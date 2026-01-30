@@ -4,7 +4,7 @@ from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, Chars, NodeData, Tcss, TreeName
+from chezmoi_mousse import AppIds, AppType, Chars, NodeData, TabName, Tcss, TreeName
 
 
 class TreeBase(Tree[NodeData], AppType):
@@ -19,6 +19,10 @@ class TreeBase(Tree[NodeData], AppType):
             label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
         self.ids = ids
+        if self.ids.canvas_name == TabName.apply:
+            self.dir_nodes = self.app.apply_dir_nodes
+        else:
+            self.dir_nodes = self.app.re_add_dir_nodes
 
     def on_mount(self) -> None:
         self.show_root = False
@@ -50,7 +54,7 @@ class ListTree(TreeBase):
     def populate_dest_dir(self) -> None:
         self.clear()
         root = self.root
-        for dir_node in self.app.dir_nodes.values():
+        for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files | dir_node.x_files:
                 root.add(str(file_path), data=NodeData(found=True, path=file_path))
 
@@ -67,8 +71,8 @@ class ManagedTree(TreeBase):
         root = self.root
         assert self.app.dest_dir is not None
         nodes[self.app.dest_dir] = root
-        for dir_path in self.app.dir_nodes:
+        for dir_path in self.dir_nodes:
             self.add_path_to_tree(dir_path, root, nodes)
-        for dir_node in self.app.dir_nodes.values():
+        for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files | dir_node.x_files:
                 self.add_path_to_tree(file_path, root, nodes)
