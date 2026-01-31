@@ -286,6 +286,7 @@ class PathDict:
             StatusCode.X: self.theme_variables["text-secondary"],
         }
         self.managed_dirs: list[Path] = []
+        self.managed_dirs: list[Path] = [self.dest_dir]
         self.managed_files: list[Path] = []
         self.status_dirs: list[Path] = []
         self.status_files: list[Path] = []
@@ -404,8 +405,12 @@ class PathDict:
                 has_x_paths=has_x_paths,
                 dest_dir=self.dest_dir,
             )
+            if dir_path == self.dest_dir:
+                path_arg = None
+            else:
+                path_arg = dir_path
             git_log_table = GitLogTable(
-                self.cmd.read(ReadCmd.git_log, path_arg=dir_path), self.theme_variables
+                self.cmd.read(ReadCmd.git_log, path_arg=path_arg), self.theme_variables
             ).data_table
             self.apply_dir_widgets[dir_path] = DirWidgets(
                 contents=dir_content_widgets.container,
