@@ -356,5 +356,4 @@ class ChezmoiCommand:
                 raise ValueError("self.app.dest_dir is None")
             if self.app.paths is None:
                 raise ValueError("self.app.paths is None")
-            self.app.paths.update_cache()
         return command_result

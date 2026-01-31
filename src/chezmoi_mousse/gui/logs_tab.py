@@ -13,14 +13,14 @@ from .common.loggers import AppLog, CmdLog
 from .common.views import GitLog
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
+    from textual.widgets import DataTable
 
 __all__ = ["LogsTab"]
 
 
 class LogsTab(Vertical, AppType):
 
-    git_log_result: reactive["CommandResult | None"] = reactive(None, init=False)
+    git_log_result: reactive["DataTable[str] | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(
@@ -34,7 +34,7 @@ class LogsTab(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.git_log_table = self.query_one(IDS.logs.container.git_log_q, GitLog)
+        self.git_log = self.query_one(IDS.logs.container.git_log_q, GitLog)
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -44,9 +44,10 @@ class LogsTab(Vertical, AppType):
         elif event.button.label == SubTabLabel.cmd_log:
             self.switcher.current = IDS.logs.logger.cmd
         elif event.button.label == SubTabLabel.git_log:
-            self.switcher.current = self.git_log_table.id
+            self.switcher.current = IDS.logs.container.git_log
 
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:
             return
-        self.git_log_table.populate_datatable(self.git_log_result)
+        self.git_log.remove_children()
+        self.git_log.mount(self.git_log_result)

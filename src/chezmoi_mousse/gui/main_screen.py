@@ -104,8 +104,7 @@ class MainScreen(Screen[None], AppType):
 
     @work
     async def populate_global_git_log(self) -> None:
-        if self.app.cmd_results.git_log is None:
-            self.notify("No loading screen data available.", severity="error")
+        if self.app.paths is None:
             return
         logs_tab = self.screen.query_exactly_one(LogsTab)
-        logs_tab.git_log_result = self.app.cmd_results.git_log
+        logs_tab.git_log_result = self.app.paths.global_git_log_table

@@ -1,10 +1,3 @@
-"""These classes accept a CommandResult or Path object for the CatFileWidgets class.
-
-These are factories in the sense they don't contain anything but an init method to
-construct a collection of textual widgets which can be cached and used to set the
-content for ContentSwitchers when clicking paths in the Tree and DirectoryTree widgets.
-"""
-
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -65,7 +58,6 @@ class FileContentWidgets:
         self, cat_result: CommandResult | None = None, file_path: Path | None = None
     ) -> None:
         self.widget: Static | TextArea
-        self.container: ScrollableContainer
         if file_path is not None:
             self.path_arg = file_path
             self.to_show = self._read_file(file_path)
@@ -84,7 +76,6 @@ class FileContentWidgets:
             text_obj = Text(self.to_show)
             ReprHighlighter().highlight(text_obj)
             self.widget = Static(text_obj)
-        self.container = ScrollableContainer(self.widget)
 
     def _detect_language(self, lines: list[str]) -> str | None:
         if self.path_arg is None:
@@ -121,9 +112,7 @@ class FileContentWidgets:
             return f"{ContentStr.read_error}"
 
 
-class DirContentWidgets:
-    """Produces a ScrollableContainer containing Labels and Static widgets to illustrate
-    the directory contents."""
+class DirContentData:
 
     def __init__(
         self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
@@ -147,9 +136,18 @@ class DirContentWidgets:
         self.container = ScrollableContainer(self.widget)
 
 
+class DirContentWidgets:
+
+    def __init__(self, dir_path: Path) -> None:
+        self.widget = Static(f"Directory {dir_path}")
+
+
+type ContentWidgetDict = dict[Path, FileContentWidgets | DirContentWidgets]
+
+
 class DiffWidgets:
-    """Creates a .container attribute containing a ScrollableContainer with Static
-    widgets for each diff line in the CommandResult output.
+    """Creates a list of Static in the .widgets attribute widgets for each diff line in
+    the CommandResult output.
 
     If no diff is available, aka stdout is empty, it will contain one Static informing
     that there is no diff available.
@@ -169,11 +167,9 @@ class DiffWidgets:
 
     def __init__(self, diff_result: CommandResult) -> None:
         self.widgets: list[Static] = []
-        self.container: ScrollableContainer
         self.std_out_lines = diff_result.std_out.splitlines()
-        # Populate the container with diff widgets
         if not diff_result.std_out:
-            self.container = ScrollableContainer(Static(LogString.no_stdout))
+            self.widgets = [Static(LogString.no_stdout)]
         classes = self.STATIC_TCSS["unhandled"]
         for line in self.std_out_lines:
             for prefix, tcss in self.STATIC_TCSS.items():
@@ -181,7 +177,9 @@ class DiffWidgets:
                     classes = tcss
                     break
             self.widgets.append(Static(line, classes=classes.value))
-        self.container = ScrollableContainer(*self.widgets)
+
+
+type DiffWidgetDict = dict[Path, list[Static]]
 
 
 class GitLogTable:
@@ -218,12 +216,13 @@ class GitLogTable:
                 self.data_table.add_row(*columns)
 
 
+type GitLogTableDict = dict[Path, DataTable[str]]
+
+
 @dataclass(slots=True)
 class FileWidgets:
     label: str
     contents: FileContentWidgets
-    diff: ScrollableContainer
-    git_log: DataTable[str]
 
 
 type FileWidgetDict = dict[Path, FileWidgets]
@@ -232,8 +231,6 @@ type FileWidgetDict = dict[Path, FileWidgets]
 @dataclass(slots=True)
 class DirWidgets:
     contents: ScrollableContainer
-    diff: ScrollableContainer
-    git_log: DataTable[str]
 
 
 type DirWidgetDict = dict[Path, DirWidgets]
@@ -302,6 +299,13 @@ class PathDict:
             status_dirs_result,
             status_files_result,
         )
+        self.git_log_tables: GitLogTableDict = {}
+        self._update_git_log_tables()
+        self.apply_diff_widgets: DiffWidgetDict = {}
+        self.re_add_diff_widgets: DiffWidgetDict = {}
+        self._update_diff_widgets()
+        self.content_widgets: ContentWidgetDict = {}
+        self._update_content_widgets()
         self.apply_file_widgets: FileWidgetDict = {}
         self.re_add_file_widgets: FileWidgetDict = {}
         self.create_managed_file_node_widgets()
@@ -340,6 +344,38 @@ class PathDict:
             if parsed_path not in self.status_files:
                 self.x_files.append(parsed_path)
 
+    def _update_git_log_tables(self):
+        all_paths = self.managed_dirs + self.managed_files
+        self.git_log_tables[self.dest_dir] = GitLogTable(
+            self.cmd.read(ReadCmd.git_log), self.theme_variables
+        ).data_table
+        for path in all_paths:
+            if path == self.dest_dir:
+                continue
+            self.git_log_tables[path] = GitLogTable(
+                self.cmd.read(ReadCmd.git_log, path_arg=path), self.theme_variables
+            ).data_table
+
+    @property
+    def global_git_log_table(self) -> DataTable[str]:
+        return self.git_log_tables[self.dest_dir]
+
+    def _update_diff_widgets(self):
+        all_paths = self.managed_dirs + self.managed_files
+        for path in all_paths:
+            self.apply_diff_widgets[path] = DiffWidgets(
+                self.cmd.read(ReadCmd.diff, path_arg=path)
+            ).widgets
+            self.re_add_diff_widgets[path] = DiffWidgets(
+                self.cmd.read(ReadCmd.diff_reverse, path_arg=path)
+            ).widgets
+
+    def _update_content_widgets(self):
+        for path in self.managed_files:
+            self.content_widgets[path] = FileContentWidgets(file_path=path)
+        for path in self.managed_dirs:
+            self.content_widgets[path] = DirContentWidgets(dir_path=path)
+
     def create_label(self, path: Path, tab_name: TabName) -> str:
         italic = " italic" if not path.exists() else ""
         apply_color = self.node_colors.get(
@@ -358,29 +394,6 @@ class PathDict:
         else:
             raise ValueError(f"Unhandled tab name: {tab_name}")
 
-    def create_managed_file_node_widgets(self):
-        for file_path in self.managed_files:
-            git_log_table = GitLogTable(
-                self.cmd.read(ReadCmd.git_log, path_arg=file_path), self.theme_variables
-            ).data_table
-            contents = FileContentWidgets(file_path=file_path)
-            self.apply_file_widgets[file_path] = FileWidgets(
-                contents=contents,
-                diff=DiffWidgets(
-                    self.cmd.read(ReadCmd.diff, path_arg=file_path)
-                ).container,
-                git_log=git_log_table,
-                label=self.create_label(file_path, TabName.apply),
-            )
-            self.re_add_file_widgets[file_path] = FileWidgets(
-                contents=contents,
-                diff=DiffWidgets(
-                    self.cmd.read(ReadCmd.diff_reverse, path_arg=file_path)
-                ).container,
-                git_log=git_log_table,
-                label=self.create_label(file_path, TabName.re_add),
-            )
-
     def has_status_paths_in(self, dir_path: Path) -> bool:
         # Return True if any path with a status other than X, is a descendant of the
         # provided directory.
@@ -395,36 +408,31 @@ class PathDict:
             path.is_relative_to(dir_path) for path in self.x_dirs
         )
 
+    def create_managed_file_node_widgets(self):
+        for file_path in self.managed_files:
+            contents = FileContentWidgets(file_path=file_path)
+            self.apply_file_widgets[file_path] = FileWidgets(
+                contents=contents, label=self.create_label(file_path, TabName.apply)
+            )
+            self.re_add_file_widgets[file_path] = FileWidgets(
+                contents=contents, label=self.create_label(file_path, TabName.re_add)
+            )
+
     def create_managed_dir_node_widgets(self):
         for dir_path in self.managed_dirs:
             has_status_paths = self.has_status_paths_in(dir_path)
             has_x_paths = self.has_x_paths_in(dir_path)
-            dir_content_widgets = DirContentWidgets(
+            dir_content_widgets = DirContentData(
                 dir_path=dir_path,
                 has_status_paths=has_status_paths,
                 has_x_paths=has_x_paths,
                 dest_dir=self.dest_dir,
             )
-            if dir_path == self.dest_dir:
-                path_arg = None
-            else:
-                path_arg = dir_path
-            git_log_table = GitLogTable(
-                self.cmd.read(ReadCmd.git_log, path_arg=path_arg), self.theme_variables
-            ).data_table
             self.apply_dir_widgets[dir_path] = DirWidgets(
-                contents=dir_content_widgets.container,
-                diff=DiffWidgets(
-                    self.cmd.read(ReadCmd.diff, path_arg=dir_path)
-                ).container,
-                git_log=git_log_table,
+                contents=dir_content_widgets.container
             )
             self.re_add_dir_widgets[dir_path] = DirWidgets(
-                contents=dir_content_widgets.container,
-                diff=DiffWidgets(
-                    self.cmd.read(ReadCmd.diff_reverse, path_arg=dir_path)
-                ).container,
-                git_log=git_log_table,
+                contents=dir_content_widgets.container
             )
 
     def create_dir_node_dict(self):
@@ -462,11 +470,3 @@ class PathDict:
                 has_status_paths=self.has_status_paths_in(dir_path),
                 has_x_paths=self.has_x_paths_in(dir_path),
             )
-
-    def update_cache(self):
-        self._update_managed_and_status_paths(
-            self.cmd.read(ReadCmd.managed_dirs),
-            self.cmd.read(ReadCmd.managed_files),
-            self.cmd.read(ReadCmd.status_dirs),
-            self.cmd.read(ReadCmd.status_files),
-        )

@@ -1,10 +1,13 @@
 from pathlib import Path
 
+from textual import on
 from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import AppIds, AppType, Chars, NodeData, TabName, Tcss, TreeName
+
+from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 
 class TreeBase(Tree[NodeData], AppType):
@@ -43,6 +46,15 @@ class TreeBase(Tree[NodeData], AppType):
         node = parent_node.add(path.name, data=NodeData(found=True, path=path))
         nodes[path] = node
         return node
+
+    @on(Tree.NodeSelected)
+    def send_node_context_message(self, event: Tree.NodeSelected[NodeData]) -> None:
+        if event.node.data is None:
+            raise ValueError("event.node.data is None in send_node_context")
+        if self.ids.canvas_name == TabName.apply:
+            self.post_message(CurrentApplyNodeMsg(event.node.data))
+        elif self.ids.canvas_name == TabName.re_add:
+            self.post_message(CurrentReAddNodeMsg(event.node.data))
 
 
 class ListTree(TreeBase):

@@ -267,11 +267,11 @@ class AddTab(TabsBase, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
-        contents_view.border_title = f" {event.node.data.path} "
+        # contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
+        # contents_view.border_title = f" {event.node.data.path} "
 
         self.current_node = NodeData(found=True, path=event.node.data.path)
-        contents_view.node_data = self.current_node
+        # contents_view.node_data = self.current_node
         self.operate_mode_container.path_arg = self.current_node.path
 
     @on(Switch.Changed)

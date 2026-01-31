@@ -9,6 +9,7 @@ from .common.messages import CurrentApplyNodeMsg
 from .common.operate_mode import OperateMode
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tabs_base import TabsBase
+from .common.views import ContentsView, DiffView, GitLog
 
 __all__ = ["ApplyTab"]
 
@@ -30,9 +31,24 @@ class ApplyTab(TabsBase, AppType):
         self.operate_mode_container = self.query_one(
             IDS.apply.container.op_mode_q, OperateMode
         )
+        self.contents_view = self.query_one(
+            IDS.apply.container.contents_q, ContentsView
+        )
+        self.git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLog)
+        self.diff_view = self.query_one(IDS.apply.container.diff_q, DiffView)
 
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
         msg.stop()
-        self.update_view_node_data(msg.node_data)
+        if self.app.paths is None:
+            return
+        self.git_log_view.git_log_result = self.app.paths.git_log_tables[
+            msg.node_data.path
+        ]
         self.operate_mode_container.path_arg = msg.node_data.path
+        self.diff_view.diff_widgets = self.app.paths.apply_diff_widgets[
+            msg.node_data.path
+        ]
+        self.contents_view.content_widgets = self.app.paths.content_widgets[
+            msg.node_data.path
+        ]

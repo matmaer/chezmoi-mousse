@@ -4,9 +4,11 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher, Switch
 
-from chezmoi_mousse import AppIds, NodeData, SubTabLabel, SwitchEnum, Tcss
+from chezmoi_mousse import AppIds, SubTabLabel, SwitchEnum, Tcss
 
-from .views import ContentsView, DiffView, GitLog
+# from chezmoi_mousse import AppIds, NodeData, SubTabLabel, SwitchEnum, Tcss
+
+# from .views import ContentsView
 
 __all__ = ["TabsBase"]
 
@@ -18,16 +20,6 @@ class TabsBase(Vertical):
 
         self.ids = ids
         self.expand_all_state = False
-
-    def update_view_node_data(self, node_data: "NodeData") -> None:
-        contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
-        contents_view.node_data = node_data
-
-        diff_view = self.query_one(self.ids.container.diff_q, DiffView)
-        diff_view.node_data = node_data
-
-        git_log_path = self.query_one(self.ids.container.git_log_q, GitLog)
-        git_log_path.path = node_data.path
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def handle_tab_button_pressed(self, event: Button.Pressed) -> None:
