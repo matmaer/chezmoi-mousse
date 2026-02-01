@@ -30,15 +30,13 @@ class ContentsView(Vertical, AppType):
         # TODO: make this configurable but should be reasonable truncate for
         # displaying enough of a file to judge operating on it.
         self.truncate_size = self.app.max_file_size // 10
-        self.border_title = f" {self.app.dest_dir} "
+        if self.app.paths is None:
+            raise ValueError("self.app.paths is None in ContentsView on_mount")
+        self.border_title = f" {self.app.paths.dest_dir} "
 
     def watch_content_widgets(self) -> None:
         if self.content_widgets is None:
             return
-        if self.app.dest_dir is None:
-            raise ValueError(
-                "self.app.dest_dir is None in ContentsView.watch_node_data"
-            )
         self.remove_children()
         self.mount(self.content_widgets.widget)
 
@@ -65,7 +63,9 @@ class DiffView(ScrollableContainer, AppType):
         super().__init__(id=self.ids.container.diff, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.dest_dir} "
+        if self.app.paths is None:
+            raise ValueError("self.app.paths is None in DiffView on_mount")
+        self.border_title = f" {self.app.paths.dest_dir} "
 
     def watch_diff_widgets(self) -> None:
         if self.diff_widgets is None:
@@ -83,7 +83,9 @@ class GitLog(ScrollableContainer, AppType):
         super().__init__(id=self.ids.container.git_log, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.dest_dir} "
+        if self.app.paths is None:
+            raise ValueError("self.app.paths is None in GitLog on_mount")
+        self.border_title = f" {self.app.paths.dest_dir} "
 
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:

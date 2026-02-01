@@ -352,8 +352,6 @@ class ChezmoiCommand:
         ):
             if self.app is None:
                 raise ValueError("self.app is None")
-            if self.app.dest_dir is None:
-                raise ValueError("self.app.dest_dir is None")
             if self.app.paths is None:
                 raise ValueError("self.app.paths is None")
         return command_result

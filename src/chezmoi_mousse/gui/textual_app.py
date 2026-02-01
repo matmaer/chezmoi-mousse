@@ -49,7 +49,6 @@ from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from typing import Any
 
     from chezmoi_mousse import ChezmoiCommand, CommandResult, DirNodeDict, ParsedConfig
@@ -127,7 +126,6 @@ class ChezmoiGUI(App[None]):
         super().__init__()
         AppState.set_app(self)
 
-        self.dest_dir: "Path | None" = None
         self.paths: "PathDict | None" = None
         self.apply_dir_nodes: "DirNodeDict" = {}
         self.re_add_dir_nodes: "DirNodeDict" = {}
@@ -191,8 +189,6 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.parsed_config is None:
             raise ValueError("self.parsed_config None after SplashScreen")
-        if self.dest_dir is None:
-            raise ValueError("self.dest_dir is None after SplashScreen")
         self.git_auto_add = self.parsed_config.git_auto_add
         self.git_auto_commit = self.parsed_config.git_auto_commit
         self.git_auto_push = self.parsed_config.git_auto_push

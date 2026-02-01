@@ -77,8 +77,8 @@ class ManagedTree(TreeBase):
     def populate_dest_dir(self) -> None:
         self.clear()
         nodes: dict[Path, TreeNode[NodeData]] = {}
-        assert self.app.dest_dir is not None
-        nodes[self.app.dest_dir] = self.root
+        assert self.app.paths is not None
+        nodes[self.app.paths.dest_dir] = self.root
         for dir_path in self.dir_nodes:
             self.add_path_to_tree(dir_path, self.root, nodes)
         for dir_node in self.dir_nodes.values():

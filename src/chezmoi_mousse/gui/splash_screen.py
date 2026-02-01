@@ -328,7 +328,6 @@ class SplashScreen(Screen[None], AppType):
                 doctor=globals()["doctor"], template_data=globals()["template_data"]
             )
             return
-        self.app.dest_dir = globals()["parsed_config"].dest_dir
         cmd_results = CmdResults(
             cat_config=globals()["cat_config"],
             doctor=globals()["doctor"],
@@ -342,7 +341,6 @@ class SplashScreen(Screen[None], AppType):
             verify=globals()["verify"],
         )
         self.app.cmd_results = cmd_results
-        self.app.dest_dir = globals()["parsed_config"].dest_dir
         self.app.parsed_config = globals()["parsed_config"]
         self.app.parsed_template_data = json.loads(
             globals()["template_data"].completed_process.stdout
