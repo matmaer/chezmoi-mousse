@@ -346,9 +346,6 @@ class SplashScreen(Screen[None], AppType):
             globals()["template_data"].completed_process.stdout
         )
         self.app.cmd_results.verify = globals()["verify"]
-
-    @work
-    async def update_dir_node_dict(self) -> None:
         path_dict_instance = PathDict(
             dest_dir=globals()["parsed_config"].dest_dir,
             managed_dirs_result=globals()["managed_dirs"],
@@ -371,12 +368,7 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            update_dir_node_worker = self.update_dir_node_dict()
-            if update_dir_node_worker.state != WorkerState.SUCCESS:
-                return
             update_app_worker = self.update_app()
             if update_app_worker.state == WorkerState.SUCCESS:
                 if all(w for w in self.workers if w.is_finished):
                     self.dismiss()
-            else:
-                raise RuntimeError("update_app worker did not complete successfully")
