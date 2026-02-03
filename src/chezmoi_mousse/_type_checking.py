@@ -52,7 +52,6 @@ class InitCloneData:
 
 @dataclass(slots=True)
 class NodeData:
-    found: bool
     path: Path
 
 

@@ -270,7 +270,7 @@ class AddTab(TabsBase, AppType):
         # contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         # contents_view.border_title = f" {event.node.data.path} "
 
-        self.current_node = NodeData(found=True, path=event.node.data.path)
+        self.current_node = NodeData(path=event.node.data.path)
         # contents_view.node_data = self.current_node
         self.operate_mode_container.path_arg = self.current_node.path
 

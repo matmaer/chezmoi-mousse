@@ -29,6 +29,8 @@ class TreeBase(Tree[NodeData], AppType):
 
     def on_mount(self) -> None:
         self.show_root = False
+        self.border_title = " destDir "
+        self.add_class(Tcss.border_title_top)
 
     def add_path_to_tree(
         self,
@@ -43,7 +45,7 @@ class TreeBase(Tree[NodeData], AppType):
             parent_node = self.add_path_to_tree(parent, root, nodes)
         else:
             parent_node = root
-        node = parent_node.add(path.name, data=NodeData(found=True, path=path))
+        node = parent_node.add(path.name, data=NodeData(path=path))
         nodes[path] = node
         return node
 
@@ -65,8 +67,10 @@ class ListTree(TreeBase):
     def populate_dest_dir(self) -> None:
         self.clear()
         for dir_node in self.dir_nodes.values():
-            for file_path in dir_node.status_files | dir_node.x_files:
-                self.root.add(str(file_path), data=NodeData(found=True, path=file_path))
+            for file_path in dir_node.status_files:
+                self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
+            for file_path in dir_node.x_files:
+                self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
 
 
 class ManagedTree(TreeBase):
