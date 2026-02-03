@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import AppType, Chars, CommandResult, SectionLabel, Tcss
+from chezmoi_mousse import IDS, AppType, Chars, CommandResult, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -219,9 +219,8 @@ class PwCollapsible(Collapsible, AppType):
 
 class PwMgrInfoView(Vertical):
 
-    def __init__(self, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.view.pw_mgr_info)
+    def __init__(self):
+        super().__init__(id=IDS.config.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)

@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import IDS, AppType, CommandResult, FlatBtnLabel, SectionLabel, Tcss
+from chezmoi_mousse import IDS, AppType, FlatBtnLabel, SectionLabel, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
@@ -18,11 +18,6 @@ class CatConfigView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
 
-    @work
-    async def on_mount(self) -> None:
-        if self.app.cmd_results.cat_config is not None:
-            self.mount(Static(self.app.cmd_results.cat_config.completed_process.stdout))
-
 
 class ConfigTabSwitcher(ContentSwitcher, AppType):
 
@@ -31,23 +26,38 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
 
     def compose(self) -> ComposeResult:
         yield DoctorTableView()
-        yield PwMgrInfoView(ids=IDS.config)
+        yield PwMgrInfoView()
         yield CatConfigView()
         yield IgnoredView()
         yield TemplateDataView()
 
     @work
     async def on_mount(self):
+        cat_config_view = self.query_one(IDS.config.view.cat_config_q, CatConfigView)
+        if self.app.cmd_results.cat_config is not None:
+            cat_config_view.mount(
+                Static(self.app.cmd_results.cat_config.completed_process.stdout)
+            )
         if self.app.cmd_results.doctor is None:
             raise RuntimeError("cmd_results.doctor is None")
         doctor_view = self.query_one(IDS.config.container.doctor_q, DoctorTableView)
-        doctor_view.populate_doctor_data(command_result=self.app.cmd_results.doctor)
+        doctor_view.mount(
+            (DoctorTable(ids=IDS.config, doctor_data=self.app.cmd_results.doctor))
+        )
         pw_mgr_info_view = self.query_one(IDS.config.view.pw_mgr_info_q, PwMgrInfoView)
         pw_mgr_info_view.populate_pw_mgr_info(self.app.cmd_results.doctor)
         ignored_view = self.query_one(IDS.config.view.ignored_q, IgnoredView)
         if self.app.cmd_results.ignored is None:
             raise RuntimeError("cmd_results.ignored is None")
-        ignored_view.mount_ignored_output(self.app.cmd_results.ignored)
+        ignored_view.mount(
+            ScrollableContainer(
+                Pretty(self.app.cmd_results.ignored.std_out.splitlines())
+            )
+        )
+        template_data_view = self.query_one(
+            IDS.config.view.template_data_q, TemplateDataView
+        )
+        template_data_view.mount(Pretty(self.app.parsed_template_data))
 
 
 class IgnoredView(Vertical):
@@ -56,13 +66,6 @@ class IgnoredView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
-
-    def mount_ignored_output(self, command_result: CommandResult) -> None:
-        self.mount(
-            ScrollableContainer(
-                Pretty(command_result.completed_process.stdout.splitlines())
-            )
-        )
 
 
 class DoctorTableView(Vertical, AppType):
@@ -73,9 +76,6 @@ class DoctorTableView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
 
-    def populate_doctor_data(self, command_result: CommandResult) -> None:
-        self.mount(DoctorTable(ids=IDS.config, doctor_data=command_result))
-
 
 class TemplateDataView(Vertical, AppType):
     def __init__(self):
@@ -83,11 +83,6 @@ class TemplateDataView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
-
-    @work
-    async def on_mount(self) -> None:
-        if self.app.parsed_template_data is not None:
-            self.mount(Pretty(self.app.parsed_template_data))
 
 
 class ConfigTab(Horizontal, AppType):
