@@ -5,7 +5,17 @@ from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, Chars, NodeData, TabName, Tcss, TreeName
+from chezmoi_mousse import (
+    AppIds,
+    AppType,
+    Chars,
+    DirNode,
+    DirNodeDict,
+    NodeData,
+    TabName,
+    Tcss,
+    TreeName,
+)
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
@@ -23,31 +33,14 @@ class TreeBase(Tree[NodeData], AppType):
         )
         self.ids = ids
         if self.ids.canvas_name == TabName.apply:
-            self.dir_nodes = self.app.apply_dir_nodes
+            self.dir_nodes: DirNodeDict = self.app.apply_dir_nodes
         else:
-            self.dir_nodes = self.app.re_add_dir_nodes
+            self.dir_nodes: DirNodeDict = self.app.re_add_dir_nodes
 
     def on_mount(self) -> None:
         self.show_root = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
-
-    def add_path_to_tree(
-        self,
-        path: Path,
-        root: TreeNode[NodeData],
-        nodes: dict[Path, TreeNode[NodeData]],
-    ) -> TreeNode[NodeData]:
-        if path in nodes:
-            return nodes[path]
-        parent = path.parent
-        if parent != path:  # not root
-            parent_node = self.add_path_to_tree(parent, root, nodes)
-        else:
-            parent_node = root
-        node = parent_node.add(path.name, data=NodeData(path=path))
-        nodes[path] = node
-        return node
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[NodeData]) -> None:
@@ -69,8 +62,6 @@ class ListTree(TreeBase):
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files:
                 self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
-            for file_path in dir_node.x_files:
-                self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
 
 
 class ManagedTree(TreeBase):
@@ -80,11 +71,20 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        nodes: dict[Path, TreeNode[NodeData]] = {}
         assert self.app.paths is not None
-        nodes[self.app.paths.dest_dir] = self.root
-        for dir_path in self.dir_nodes:
-            self.add_path_to_tree(dir_path, self.root, nodes)
-        for dir_node in self.dir_nodes.values():
-            for file_path in dir_node.status_files | dir_node.x_files:
-                self.add_path_to_tree(file_path, self.root, nodes)
+        nodes: dict[Path, TreeNode[NodeData]] = {self.app.paths.dest_dir: self.root}
+        self.root.data = NodeData(path=self.app.paths.dest_dir)
+        # Sort directories by path depth to ensure parents are added before children
+        for dir_path in sorted(self.dir_nodes.keys(), key=lambda p: len(p.parts)):
+            dir_node: DirNode = self.dir_nodes[dir_path]
+            if dir_path == self.app.paths.dest_dir:
+                # Add files directly under the root
+                for file_path in dir_node.status_files.keys() | dir_node.x_files.keys():
+                    self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
+            else:
+                parent_node: TreeNode[NodeData] = nodes[dir_path.parent]
+                new_node = parent_node.add(dir_path.name, data=NodeData(path=dir_path))
+                nodes[dir_path] = new_node
+                # Add files as leaves under this directory
+                for file_path in dir_node.status_files.keys() | dir_node.x_files.keys():
+                    new_node.add_leaf(file_path.name, data=NodeData(path=file_path))
