@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 type Value = str | dict[str, "Value"]  # recursive type alias
 
-__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData", "ParsedConfig"]
+__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData"]
 
 
 class AppType:
@@ -53,12 +53,3 @@ class InitCloneData:
 @dataclass(slots=True)
 class NodeData:
     path: Path
-
-
-@dataclass(slots=True)
-class ParsedConfig:
-    dest_dir: Path
-    git_auto_add: bool
-    git_auto_commit: bool
-    git_auto_push: bool
-    source_dir: Path

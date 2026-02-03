@@ -51,7 +51,9 @@ from .splash_screen import SplashScreen
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse import ChezmoiCommand, CommandResult, DirNodeDict, ParsedConfig
+    from textual.widgets import Pretty
+
+    from chezmoi_mousse import ChezmoiCommand, CommandResult
 
 __all__ = ["ChezmoiGUI"]
 
@@ -127,8 +129,6 @@ class ChezmoiGUI(App[None]):
         AppState.set_app(self)
 
         self.paths: "PathDict | None" = None
-        self.apply_dir_nodes: "DirNodeDict" = {}
-        self.re_add_dir_nodes: "DirNodeDict" = {}
 
         self.cmd = ChezmoiCommand()
         self.changes_enabled: bool = False
@@ -143,11 +143,10 @@ class ChezmoiGUI(App[None]):
         # should be reasonable truncate for files to be considered as dotfiles.
         # TODO: make this configurable
         self.max_file_size: int = 500 * 1024  # 500 KiB
-        self.parsed_config: "ParsedConfig | None" = None
         self.git_auto_commit: bool = False
         self.git_auto_add: bool = False
         self.git_auto_push: bool = False
-        self.parsed_template_data: "ParsedConfig | None" = None
+        self.pretty_template_data: "Pretty | None" = None
         self.cmd_results: "CmdResults" = CmdResults()
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
@@ -178,7 +177,6 @@ class ChezmoiGUI(App[None]):
 
     @work
     async def run_splash_screen(self) -> None:
-        # Run splash screen once to gather command outputs
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.chezmoi_found is False:
             # Chezmoi command not found, SplashScreen will return None
@@ -187,11 +185,6 @@ class ChezmoiGUI(App[None]):
         if self.init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        if self.parsed_config is None:
-            raise ValueError("self.parsed_config None after SplashScreen")
-        self.git_auto_add = self.parsed_config.git_auto_add
-        self.git_auto_commit = self.parsed_config.git_auto_commit
-        self.git_auto_push = self.parsed_config.git_auto_push
         self.push_screen(MainScreen())
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:

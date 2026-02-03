@@ -14,7 +14,7 @@ from textual.containers import Center, Middle
 from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import RichLog, Static
+from textual.widgets import Pretty, RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import (
@@ -23,7 +23,6 @@ from chezmoi_mousse import (
     ChezmoiCommand,
     CmdResults,
     CommandResult,
-    ParsedConfig,
     PathDict,
     ReadCmd,
     VerbArgs,
@@ -78,7 +77,6 @@ doctor: "CommandResult | None" = None
 dump_config: "CommandResult | None" = None
 git_log: "CommandResult | None" = None
 ignored: "CommandResult | None" = None
-parsed_config: "ParsedConfig | None" = None
 template_data: "CommandResult | None" = None
 verify: "CommandResult | None" = None
 
@@ -160,15 +158,15 @@ class SplashScreen(Screen[None], AppType):
         )
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
+            self.splash_log.styles.height = 1
+            cmd_text = "chezmoi command"
+            padding = LOG_PADDING_WIDTH - len(cmd_text)
+            self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
             install_help_worker = self.get_install_screen_data()
             await install_help_worker.wait()
             self.app.cmd_results = CmdResults(
                 install_help_data=install_help_worker.result
             )
-            self.splash_log.styles.height = 1
-            cmd_text = "chezmoi command"
-            padding = LOG_PADDING_WIDTH - len(cmd_text)
-            self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
             return
 
         status_worker = self.run_io_worker(ReadCmd.status_files)
@@ -195,16 +193,7 @@ class SplashScreen(Screen[None], AppType):
         cmd_result = chezmoi_cmd.read(splash_cmd)
         cmd_text = cmd_result.filtered_cmd
         globals()[splash_cmd.name] = cmd_result
-        if splash_cmd == ReadCmd.dump_config:
-            parsed_config = json.loads(cmd_result.completed_process.stdout)
-            globals()["parsed_config"] = ParsedConfig(
-                dest_dir=Path(parsed_config["destDir"]),
-                git_auto_add=parsed_config["git"]["autoadd"],
-                git_auto_commit=parsed_config["git"]["autocommit"],
-                git_auto_push=parsed_config["git"]["autopush"],
-                source_dir=Path(parsed_config["sourceDir"]),
-            )
-        elif splash_cmd in (
+        if splash_cmd in (
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
@@ -341,13 +330,15 @@ class SplashScreen(Screen[None], AppType):
             verify=globals()["verify"],
         )
         self.app.cmd_results = cmd_results
-        self.app.parsed_config = globals()["parsed_config"]
-        self.app.parsed_template_data = json.loads(
-            globals()["template_data"].completed_process.stdout
+        parsed_config = json.loads(globals()["dump_config"].completed_process.stdout)
+        self.app.pretty_template_data = Pretty(
+            json.loads(globals()["template_data"].completed_process.stdout)
         )
-        self.app.cmd_results.verify = globals()["verify"]
-        path_dict_instance = PathDict(
-            dest_dir=globals()["parsed_config"].dest_dir,
+        self.app.git_auto_add = parsed_config["git"]["autoadd"]
+        self.app.git_auto_commit = parsed_config["git"]["autocommit"]
+        self.app.git_auto_push = parsed_config["git"]["autopush"]
+        self.app.paths = PathDict(
+            dest_dir=Path(parsed_config["destDir"]),
             managed_dirs_result=globals()["managed_dirs"],
             managed_files_result=globals()["managed_files"],
             status_dirs_result=globals()["status_dirs"],
@@ -355,9 +346,6 @@ class SplashScreen(Screen[None], AppType):
             cmd=self.app.cmd,
             theme_variables=self.app.theme_variables,
         )
-        self.app.paths = path_dict_instance
-        self.app.apply_dir_nodes = path_dict_instance.apply_dir_node_dict
-        self.app.re_add_dir_nodes = path_dict_instance.re_add_dir_node_dict
 
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:

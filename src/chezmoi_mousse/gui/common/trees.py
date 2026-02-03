@@ -32,10 +32,11 @@ class TreeBase(Tree[NodeData], AppType):
             label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
         self.ids = ids
+        assert self.app.paths is not None
         if self.ids.canvas_name == TabName.apply:
-            self.dir_nodes: DirNodeDict = self.app.apply_dir_nodes
+            self.dir_nodes: DirNodeDict = self.app.paths.apply_dir_node_dict
         else:
-            self.dir_nodes: DirNodeDict = self.app.re_add_dir_nodes
+            self.dir_nodes: DirNodeDict = self.app.paths.re_add_dir_node_dict
 
     def on_mount(self) -> None:
         self.show_root = False

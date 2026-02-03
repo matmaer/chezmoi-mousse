@@ -57,7 +57,9 @@ class ConfigTabSwitcher(ContentSwitcher, AppType):
         template_data_view = self.query_one(
             IDS.config.view.template_data_q, TemplateDataView
         )
-        template_data_view.mount(Pretty(self.app.parsed_template_data))
+        if self.app.pretty_template_data is None:
+            raise RuntimeError("app.pretty_template_data is None")
+        template_data_view.mount(self.app.pretty_template_data)
 
 
 class IgnoredView(Vertical):

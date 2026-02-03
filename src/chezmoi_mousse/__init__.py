@@ -40,7 +40,7 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
-from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedConfig
+from ._type_checking import AppType, CmdResults, InitCloneData, NodeData
 from ._widget_factory import DirNode, DirNodeDict, PathDict
 
 __all__ = [
@@ -66,7 +66,6 @@ __all__ = [
     "OpBtnEnum",
     "OpBtnLabel",
     "OperateString",
-    "ParsedConfig",
     "PathKind",
     "ReadCmd",
     "ReadVerb",

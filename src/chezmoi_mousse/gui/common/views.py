@@ -1,4 +1,3 @@
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual.containers import ScrollableContainer, Vertical
@@ -39,19 +38,6 @@ class ContentsView(Vertical, AppType):
             return
         self.remove_children()
         self.mount(self.content_widgets.widget)
-
-
-class DiffStrings(StrEnum):
-    contains_no_status_paths = "Contains no paths with a status."
-    dir_no_status = (
-        "[dim]No diff available, the directory has no status and "
-        "contains no paths with a status.[/]"
-    )
-    file_diff_lines = "File Diff Lines"
-    file_no_status = "[dim]No diff available, the file has no status.[/]"
-    mode_changes = "Mode Differences"
-    path_lines = "Path Differences"
-    truncated = "\n--- Diff output truncated to 1000 lines ---\n"
 
 
 class DiffView(ScrollableContainer, AppType):
