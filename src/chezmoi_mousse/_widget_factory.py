@@ -18,14 +18,9 @@ __all__ = ["DirNodeDict", "PathDict"]
 class ContentStr(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
     empty_or_only_whitespace = "File is empty or contains only whitespace."
-    managed_dir = "Managed directory"
-    output_from_cat = (
-        "File does not exist on disk, output from chezmoi cat on source path."
-    )
     permission_denied = "Permission denied to read file"
     read_error = "Error reading path"
     truncated = "\n--- File content truncated to"
-    unmanaged_dir = "Unmanaged directory"
 
 
 class FileContentWidgets:

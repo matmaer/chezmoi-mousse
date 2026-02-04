@@ -7,7 +7,6 @@ __all__ = [
     "DataTableName",
     "LabelName",
     "LogName",
-    "PathKind",
     "ScreenName",
     "StaticName",
     "TabName",
@@ -68,11 +67,6 @@ class LogName(StrEnum):
     splash_logger = auto()
 
 
-class PathKind(StrEnum):
-    DIR = auto()
-    FILE = auto()
-
-
 class ScreenName(StrEnum):
     install_help = auto()
     main_tabs = auto()
@@ -106,7 +100,6 @@ class Tcss(StrEnum):
     border_title_top = auto()
     changed = auto()
     changes_enabled_color = auto()
-    cmd_output = auto()
     content_switcher_left = auto()
     context = auto()
     doctor_table = auto()
@@ -129,7 +122,6 @@ class Tcss(StrEnum):
     tab_button = auto()
     tab_left_vertical = auto()
     tree_widget = auto()
-    unchanged = auto()
     unhandled = auto()
 
     # add a property to return the name with a dot prefix

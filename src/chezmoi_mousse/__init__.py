@@ -20,14 +20,7 @@ from ._chezmoi_command import (
     WriteCmd,
 )
 from ._enum_data import OpBtnEnum, SwitchEnum
-from ._str_enum_names import (
-    BindingAction,
-    PathKind,
-    ScreenName,
-    TabName,
-    Tcss,
-    TreeName,
-)
+from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     BindingDescription,
     Chars,
@@ -66,7 +59,6 @@ __all__ = [
     "OpBtnEnum",
     "OpBtnLabel",
     "OperateString",
-    "PathKind",
     "ReadCmd",
     "ReadVerb",
     "ScreenName",

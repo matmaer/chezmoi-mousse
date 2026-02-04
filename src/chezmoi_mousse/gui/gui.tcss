@@ -544,13 +544,3 @@ Tree {
     }
   }
 }
-
-VerticalGroup{
-  .cmd_output {
-    background-tint: $surface;
-    background: $surface;
-    border-left: wide $surface;
-    margin-bottom: 1;
-    padding: 0;
-  }
-}
