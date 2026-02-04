@@ -23,10 +23,11 @@ from chezmoi_mousse import (
     ChezmoiCommand,
     CmdResults,
     CommandResult,
-    PathDict,
     ReadCmd,
     VerbArgs,
 )
+
+from .widget_factory import PathDict
 
 __all__ = ["SplashScreen"]
 

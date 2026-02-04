@@ -16,6 +16,7 @@ __all__ = [
     "CurrentReAddNodeMsg",
     "InitCloneCmdMsg",
     "OperateButtonMsg",
+    "ProgressTextMsg",
 ]
 
 
@@ -55,4 +56,10 @@ class OperateButtonMsg(Message):
     def __init__(self, *, button: "OpButton", ids: "AppIds") -> None:
         self.button = button
         self.ids = ids
+        super().__init__()
+
+
+class ProgressTextMsg(Message):
+    def __init__(self, text: str) -> None:
+        self.text = text
         super().__init__()

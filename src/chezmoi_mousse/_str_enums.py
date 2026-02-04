@@ -175,7 +175,6 @@ class OperateString(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    in_dest_dir_click_path = "<- Select a file or directory to operate on."
     destroy_path_info = (
         "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
         "SURE YOU HAVE A BACKUP![/]"
@@ -221,11 +220,6 @@ class OperateString(StrEnum):
 
 
 class SectionLabel(StrEnum):
-    """Strings used for textual Label classes except for the help_tab.py module which
-    has its own StrEnum class "HelpSections" and the install_help.py module which has
-    its own StrEnum class "InstallHelpStrings"."""
-
-    file_read_output = "File Contents"
     cat_config_output = "Cat Config Output"
     file_does_not_exist = "(the target does not exist)"
     doctor_output = "Doctor Output"
@@ -247,6 +241,5 @@ class StatusCode(StrEnum):
     Deleted = "D"
     Modified = "M"
     No_Change = " "
-    Run = "R"  # not implemented but included to show up with operate buttons disabled
-    # Managed files or dirs absent from chezmoi status output.
-    X = "X"  # Fake status for internal use.
+    Run = "R"  # not implemented TODO: disable operate buttons
+    X = "X"  # Fake X status: managed paths absent from chezmoi status output

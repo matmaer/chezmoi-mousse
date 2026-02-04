@@ -22,7 +22,6 @@ from chezmoi_mousse import (
     ChezmoiCommand,
     CmdResults,
     OpBtnLabel,
-    PathDict,
     TabName,
 )
 
@@ -36,7 +35,6 @@ from .common.actionables import (
     TabButtons,
 )
 from .common.messages import CloseButtonMsg, OperateButtonMsg
-from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
@@ -45,8 +43,10 @@ from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
+from .operate_mode import OperateMode
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
+from .widget_factory import PathDict
 
 if TYPE_CHECKING:
     from typing import Any

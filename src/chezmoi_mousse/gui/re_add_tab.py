@@ -6,10 +6,10 @@ from chezmoi_mousse import IDS, AppType
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.messages import CurrentReAddNodeMsg
-from .common.operate_mode import OperateMode
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tabs_base import TabsBase
 from .common.views import ContentsView, DiffView, GitLog
+from .operate_mode import OperateMode
 
 __all__ = ["ReAddTab"]
 
@@ -51,4 +51,4 @@ class ReAddTab(TabsBase, AppType):
         self.operate_mode_container.path_arg = msg.node_data.path
         self.contents_view.content_widgets = self.app.paths.content_widgets[
             msg.node_data.path
-        ]
+        ].widget

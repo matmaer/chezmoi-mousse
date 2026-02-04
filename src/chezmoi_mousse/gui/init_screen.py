@@ -36,8 +36,8 @@ from chezmoi_mousse import (
 from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
 from .common.doctor_data import DoctorTable
 from .common.messages import InitCloneCmdMsg, OperateButtonMsg
-from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
+from .operate_mode import OperateMode
 
 __all__ = ["InitChezmoi"]
 

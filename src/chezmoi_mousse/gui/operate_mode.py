@@ -16,7 +16,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from .messages import CompletedOpMsg
+from .common.messages import CompletedOpMsg, ProgressTextMsg
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -35,8 +35,19 @@ class LoadingModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Label(f"Running {self.pretty_cmd}")
-            yield LoadingIndicator()
+            yield Label(f"Running {self.pretty_cmd}", id="loading-label")
+            yield LoadingIndicator(id="loading-indicator")
+
+    def on_progress_message(self, message: ProgressTextMsg) -> None:
+        label = self.query_one("#loading-label", Label)
+        label.update(message.text)
+
+        # Update LoadingIndicator based on message
+        indicator = self.query_one("#loading-indicator", LoadingIndicator)
+        if "Initializing" in message.text:
+            indicator.loading = True  # Start animation
+        else:
+            indicator.loading = False  # Stop animation
 
 
 class OperateMode(Vertical, AppType):
@@ -125,3 +136,7 @@ class OperateMode(Vertical, AppType):
         await sleep(1)
         self.op_result_container.display = True
         loading_modal.dismiss()
+
+
+class LoadMainScreen(Vertical, AppType):
+    pass

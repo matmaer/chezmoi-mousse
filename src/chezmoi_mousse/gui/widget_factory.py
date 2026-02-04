@@ -8,11 +8,17 @@ from textual.containers import ScrollableContainer
 from textual.widgets import DataTable, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd
-from ._str_enum_names import TabName, Tcss
-from ._str_enums import LogString, StatusCode
+from chezmoi_mousse import (
+    ChezmoiCommand,
+    CommandResult,
+    LogString,
+    ReadCmd,
+    StatusCode,
+    TabName,
+    Tcss,
+)
 
-__all__ = ["DirNodeDict", "PathDict"]
+__all__ = ["PathDict"]
 
 
 class ContentStr(StrEnum):
@@ -24,8 +30,8 @@ class ContentStr(StrEnum):
 
 
 class FileContentWidgets:
-    """Creates a .container attribute containing a ScrollableContainer with a TextArea
-    for recognized languages or a single Static widget with highlighting for others."""
+    """Creates a .widget attribute containing a TextArea for recognized languages or a
+    single Static widget with highlighting for others."""
 
     BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
     # Additional mappings for "similar" language files to show in TextArea
