@@ -1,7 +1,7 @@
 from asyncio import sleep
 from typing import TYPE_CHECKING
 
-from textual import work
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.screen import ModalScreen
@@ -38,16 +38,11 @@ class LoadingModal(ModalScreen[None]):
             yield Label(f"Running {self.pretty_cmd}", id="loading-label")
             yield LoadingIndicator(id="loading-indicator")
 
-    def on_progress_message(self, message: ProgressTextMsg) -> None:
+    @on(ProgressTextMsg)
+    def update_pretty_cmd_text(self, message: ProgressTextMsg) -> None:
+        message.stop()
         label = self.query_one("#loading-label", Label)
         label.update(message.text)
-
-        # Update LoadingIndicator based on message
-        indicator = self.query_one("#loading-indicator", LoadingIndicator)
-        if "Initializing" in message.text:
-            indicator.loading = True  # Start animation
-        else:
-            indicator.loading = False  # Stop animation
 
 
 class OperateMode(Vertical, AppType):
