@@ -122,32 +122,28 @@ class ChezmoiGUI(App[None]):
     CSS_PATH = "gui.tcss"
 
     def __init__(
-        self, *, chezmoi_found: bool, pretend_init_needed: bool, dev_mode: bool
+        self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
-        AppState.set_app(self)
 
-        self.paths: "PathDict | None" = None
-
-        self.cmd = ChezmoiCommand()
-        self.changes_enabled: bool = False
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
+
+        self.changes_enabled: bool = False
         self.init_needed: bool = False
 
-        # Manage state between screens
-        self.init_cmd_result: "CommandResult | None" = None
-        # Arbitrary max file size used by FilteredDirTree and ContentsView but
-        # should be reasonable truncate for files to be considered as dotfiles.
-        # TODO: make this configurable
-        self.max_file_size: int = 500 * 1024  # 500 KiB
+        AppState.set_app(self)
         self.git_auto_commit: bool = False
         self.git_auto_add: bool = False
         self.git_auto_push: bool = False
+
+        self.init_cmd_result: "CommandResult | None" = None
+        self.paths: "PathDict | None" = None
         self.pretty_template_data: "Pretty | None" = None
-        self.cmd_results: "CmdResults" = CmdResults()
+        self.cmd = ChezmoiCommand()
+        self.cmd_results = CmdResults()
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
         mro = obj.__class__.__mro__
@@ -177,15 +173,16 @@ class ChezmoiGUI(App[None]):
 
     @work
     async def run_splash_screen(self) -> None:
-        await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.chezmoi_found is False:
+            await self.push_screen(SplashScreen(), wait_for_dismiss=True)
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen(InstallHelpScreen())
-            return
-        if self.init_needed is True:
+        elif self.init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        self.push_screen(MainScreen())
+        else:
+            await self.push_screen(SplashScreen(), wait_for_dismiss=True)
+            self.push_screen(MainScreen())
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:
         if isinstance(self.screen, InitChezmoi):

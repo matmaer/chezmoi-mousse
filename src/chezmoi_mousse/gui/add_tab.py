@@ -184,8 +184,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def _file_of_interest(self, file_path: Path) -> bool:
         try:
-            # Check size first to avoid reading large files
-            if file_path.stat().st_size > self.app.max_file_size:
+            if file_path.stat().st_size > 500 * 1024:  # 500 KiB
                 return False
             # Now read only first 8 KiB
             with open(file_path, "rb") as f:

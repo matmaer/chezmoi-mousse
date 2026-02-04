@@ -17,15 +17,7 @@ from textual.strip import Strip
 from textual.widgets import Pretty, RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    ChezmoiCommand,
-    CmdResults,
-    CommandResult,
-    ReadCmd,
-    VerbArgs,
-)
+from chezmoi_mousse import IDS, AppType, CmdResults, ReadCmd
 
 from .widget_factory import PathDict
 
@@ -71,15 +63,6 @@ FADE_HEIGHT = len(SPLASH)
 FADE_WIDTH = len(max(SPLASH, key=len))
 LOG_PADDING_WIDTH = 37
 LOADED_SUFFIX = "loaded"
-
-
-cat_config: "CommandResult | None" = None
-doctor: "CommandResult | None" = None
-dump_config: "CommandResult | None" = None
-git_log: "CommandResult | None" = None
-ignored: "CommandResult | None" = None
-template_data: "CommandResult | None" = None
-verify: "CommandResult | None" = None
 
 
 class TemplateStr(StrEnum):
@@ -139,6 +122,7 @@ class SplashScreen(Screen[None], AppType):
     def __init__(self) -> None:
         super().__init__()
         self.splash_log: SplashLog  # set in on_mount
+        self.set_interval(interval=2, callback=self.all_workers_finished)
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method
@@ -154,9 +138,6 @@ class SplashScreen(Screen[None], AppType):
             yield Center(SplashLog())
 
     async def on_mount(self) -> None:
-        self.check_workers_timer = self.set_interval(
-            interval=2, callback=self.all_workers_finished
-        )
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
             self.splash_log.styles.height = 1
@@ -173,8 +154,9 @@ class SplashScreen(Screen[None], AppType):
         status_worker = self.run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
+            assert self.app.cmd_results.status_files is not None
             if (
-                globals()["status_files"].exit_code != 0
+                self.app.cmd_results.status_files.exit_code != 0
                 or self.app.force_init_needed is True
             ):
                 self.app.init_needed = True
@@ -190,28 +172,14 @@ class SplashScreen(Screen[None], AppType):
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        chezmoi_cmd = ChezmoiCommand()
-        cmd_result = chezmoi_cmd.read(splash_cmd)
-        cmd_text = cmd_result.filtered_cmd
-        globals()[splash_cmd.name] = cmd_result
-        if splash_cmd in (
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ):
-            cmd_text = cmd_result.filtered_cmd.replace(
-                VerbArgs.include_dirs.value, "dirs"
-            ).replace(VerbArgs.include_files.value, "files")
-        padding = LOG_PADDING_WIDTH - len(cmd_text)
-        log_text = f"{cmd_text} {'.' * padding} {LOADED_SUFFIX}"
+        cmd_result = self.app.cmd.read(splash_cmd)
+        setattr(self.app.cmd_results, splash_cmd.name, cmd_result)
+        padding = LOG_PADDING_WIDTH - len(cmd_result.filtered_cmd)
+        log_text = f"{cmd_result.filtered_cmd} {'.' * padding} {LOADED_SUFFIX}"
         if cmd_result.exit_code == 0:
             color = self.app.theme_variables["text-primary"]
         elif cmd_result.exit_code == 1:
-            if splash_cmd == ReadCmd.verify:
-                color = self.app.theme_variables["text-primary"]
-            else:
-                color = self.app.theme_variables["text-warning"]
+            color = self.app.theme_variables["text-warning"]
         else:
             color = self.app.theme_variables["text-error"]
         self.app.call_from_thread(
@@ -314,36 +282,28 @@ class SplashScreen(Screen[None], AppType):
     @work(name="update_app")
     async def update_app(self) -> None:
         if self.app.init_needed is True:
-            self.app.cmd_results = CmdResults(
-                doctor=globals()["doctor"], template_data=globals()["template_data"]
-            )
             return
-        cmd_results = CmdResults(
-            cat_config=globals()["cat_config"],
-            doctor=globals()["doctor"],
-            dump_config=globals()["dump_config"],
-            git_log=globals()["git_log"],
-            ignored=globals()["ignored"],
-            managed_dirs=globals()["managed_dirs"],
-            managed_files=globals()["managed_files"],
-            status_files=globals()["status_files"],
-            template_data=globals()["template_data"],
-            verify=globals()["verify"],
+        assert self.app.cmd_results.dump_config is not None
+        parsed_config = json.loads(
+            self.app.cmd_results.dump_config.completed_process.stdout
         )
-        self.app.cmd_results = cmd_results
-        parsed_config = json.loads(globals()["dump_config"].completed_process.stdout)
+        assert self.app.cmd_results.template_data is not None
         self.app.pretty_template_data = Pretty(
-            json.loads(globals()["template_data"].completed_process.stdout)
+            json.loads(self.app.cmd_results.template_data.completed_process.stdout)
         )
         self.app.git_auto_add = parsed_config["git"]["autoadd"]
         self.app.git_auto_commit = parsed_config["git"]["autocommit"]
         self.app.git_auto_push = parsed_config["git"]["autopush"]
+        assert self.app.cmd_results.managed_dirs is not None
+        assert self.app.cmd_results.managed_files is not None
+        assert self.app.cmd_results.status_dirs is not None
+        assert self.app.cmd_results.status_files is not None
         self.app.paths = PathDict(
             dest_dir=Path(parsed_config["destDir"]),
-            managed_dirs_result=globals()["managed_dirs"],
-            managed_files_result=globals()["managed_files"],
-            status_dirs_result=globals()["status_dirs"],
-            status_files_result=globals()["status_files"],
+            managed_dirs_result=self.app.cmd_results.managed_dirs,
+            managed_files_result=self.app.cmd_results.managed_files,
+            status_dirs_result=self.app.cmd_results.status_dirs,
+            status_files_result=self.app.cmd_results.status_files,
             cmd=self.app.cmd,
             theme_variables=self.app.theme_variables,
         )
