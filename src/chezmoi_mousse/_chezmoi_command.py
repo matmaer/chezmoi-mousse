@@ -21,7 +21,6 @@ __all__ = [
     "CommandResult",
     "ReadCmd",
     "ReadVerb",
-    "VerbArgs",
     "WriteCmd",
     "WriteVerb",
 ]

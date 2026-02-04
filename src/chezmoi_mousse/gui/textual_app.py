@@ -51,8 +51,6 @@ from .widget_factory import PathDict
 if TYPE_CHECKING:
     from typing import Any
 
-    from textual.widgets import Pretty
-
     from chezmoi_mousse import ChezmoiCommand, CommandResult
 
 __all__ = ["ChezmoiGUI"]
@@ -141,7 +139,6 @@ class ChezmoiGUI(App[None]):
 
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
-        self.pretty_template_data: "Pretty | None" = None
         self.cmd = ChezmoiCommand()
         self.cmd_results = CmdResults()
 

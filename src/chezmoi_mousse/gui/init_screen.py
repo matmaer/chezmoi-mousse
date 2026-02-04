@@ -420,11 +420,15 @@ class InitCollapsibles(VerticalGroup, AppType):
             )
         yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(
-            DoctorTable(ids=IDS.init, doctor_data=self.app.cmd_results.doctor),
+            DoctorTable(
+                ids=IDS.init,
+                doctor_stdout=self.app.cmd_results.doctor.completed_process.stdout,
+            ),
             title="Doctor Output",
         )
         yield Collapsible(
-            Pretty(self.app.cmd_results.template_data), title="Template Data Output"
+            Pretty(self.app.cmd_results.template_data.completed_process.stdout),
+            title="Template Data Output",
         )
 
 

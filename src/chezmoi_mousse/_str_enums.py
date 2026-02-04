@@ -221,7 +221,6 @@ class OperateString(StrEnum):
 
 class SectionLabel(StrEnum):
     cat_config_output = "Cat Config Output"
-    file_does_not_exist = "(the target does not exist)"
     doctor_output = "Doctor Output"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"

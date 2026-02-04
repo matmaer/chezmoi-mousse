@@ -7,7 +7,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import IDS, AppType, Chars, CommandResult, SectionLabel, Tcss
+from chezmoi_mousse import IDS, AppType, Chars, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -22,14 +22,14 @@ __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 class DoctorTable(DataTable[Text], AppType):
 
-    def __init__(self, ids: "AppIds", doctor_data: CommandResult) -> None:
+    def __init__(self, ids: "AppIds", doctor_stdout: str) -> None:
         super().__init__(
             id=ids.datatable.doctor, show_cursor=False, classes=Tcss.doctor_table
         )
-        self.doctor_data = doctor_data.completed_process.stdout.splitlines()
+        self.doctor_lines = doctor_stdout.splitlines()
 
     def on_mount(self) -> None:
-        if len(self.doctor_data) < 2:
+        if len(self.doctor_lines) < 2:
             self.app.notify("No doctor data to display", severity="error")
             return
         self.dr_style = {
@@ -40,9 +40,9 @@ class DoctorTable(DataTable[Text], AppType):
             "error": self.app.theme_variables["text-error"],
         }
         if not self.columns:
-            self.add_columns(*self.doctor_data[0].split())
+            self.add_columns(*self.doctor_lines[0].split())
 
-        for line in self.doctor_data[1:]:
+        for line in self.doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [
@@ -225,8 +225,8 @@ class PwMgrInfoView(Vertical):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
-    def populate_pw_mgr_info(self, doctor_results: "CommandResult") -> None:
-        doctor_lines = doctor_results.completed_process.stdout.splitlines()
+    def populate_pw_mgr_info(self, doctor_stdout: str) -> None:
+        doctor_lines = doctor_stdout.splitlines()
         pw_mgr_data_list: list[PwMgrData] = []
 
         for line in doctor_lines[1:]:  # Skip header line

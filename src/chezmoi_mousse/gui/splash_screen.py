@@ -14,7 +14,7 @@ from textual.containers import Center, Middle
 from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
-from textual.widgets import Pretty, RichLog, Static
+from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import IDS, AppType, CmdResults, ReadCmd
@@ -286,10 +286,6 @@ class SplashScreen(Screen[None], AppType):
         assert self.app.cmd_results.dump_config is not None
         parsed_config = json.loads(
             self.app.cmd_results.dump_config.completed_process.stdout
-        )
-        assert self.app.cmd_results.template_data is not None
-        self.app.pretty_template_data = Pretty(
-            json.loads(self.app.cmd_results.template_data.completed_process.stdout)
         )
         self.app.git_auto_add = parsed_config["git"]["autoadd"]
         self.app.git_auto_commit = parsed_config["git"]["autocommit"]

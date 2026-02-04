@@ -1,6 +1,5 @@
 from enum import StrEnum
 
-from textual import work
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
@@ -67,14 +66,18 @@ class MainScreen(Screen[None], AppType):
 
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.notify(LogString.dev_mode_enabled)
-        # Workers
+
         self.populate_apply_trees()
         self.populate_re_add_trees()
         self.log_splash_log_commands()
         self.populate_global_git_log()
+        self.set_config_screen_reactives()
 
-    @work
-    async def log_splash_log_commands(self) -> None:
+    def set_config_screen_reactives(self) -> None:
+        config_tab = self.screen.query_exactly_one(ConfigTab)
+        config_tab.new_command_results = self.app.cmd_results
+
+    def log_splash_log_commands(self) -> None:
         # Log SplashScreen and OperateScreen commands, if any.
         self.app_log.info("--- Commands executed in loading screen ---")
         commands_to_log = self.app.cmd_results.executed_commands
@@ -86,15 +89,13 @@ class MainScreen(Screen[None], AppType):
             self.cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
 
-    @work
-    async def populate_apply_trees(self) -> None:
+    def populate_apply_trees(self) -> None:
         self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_dest_dir()
         self.app_log.success("Apply tab managed tree populated.")
         self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Apply tab list tree populated.")
 
-    @work
-    async def populate_re_add_trees(self) -> None:
+    def populate_re_add_trees(self) -> None:
         self.screen.query_one(
             IDS.re_add.tree.managed_q, ManagedTree
         ).populate_dest_dir()
@@ -102,9 +103,9 @@ class MainScreen(Screen[None], AppType):
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Re-Add tab list tree populated.")
 
-    @work
-    async def populate_global_git_log(self) -> None:
-        if self.app.paths is None:
-            return
-        logs_tab = self.screen.query_exactly_one(LogsTab)
-        logs_tab.git_log_result = self.app.paths.global_git_log_table
+    def populate_global_git_log(self) -> None:
+        if self.app.paths is not None:
+            logs_tab = self.screen.query_exactly_one(LogsTab)
+            logs_tab.git_log_result = self.app.paths.git_log_tables[
+                self.app.paths.dest_dir
+            ]

@@ -47,7 +47,6 @@ class LogsTab(Vertical, AppType):
             self.switcher.current = IDS.logs.container.git_log
 
     def watch_git_log_result(self) -> None:
-        if self.git_log_result is None:
-            return
-        self.git_log.remove_children()
-        self.git_log.mount(self.git_log_result)
+        if self.git_log_result is not None:
+            self.git_log.remove_children()
+            self.git_log.mount(self.git_log_result)

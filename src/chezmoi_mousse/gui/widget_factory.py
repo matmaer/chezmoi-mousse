@@ -357,10 +357,6 @@ class PathDict:
                 self.cmd.read(ReadCmd.git_log, path_arg=path), self.theme_variables
             ).data_table
 
-    @property
-    def global_git_log_table(self) -> DataTable[str]:
-        return self.git_log_tables[self.dest_dir]
-
     def _update_diff_widgets(self):
         all_paths = self.managed_dirs + self.managed_files
         for path in all_paths:
