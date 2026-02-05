@@ -1,5 +1,7 @@
 import dataclasses
+import json
 from math import ceil
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.color import Color
@@ -179,7 +181,32 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         else:
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
+            await self.update_app().wait()
             self.push_screen(MainScreen())
+
+    @work(name="update_app")
+    async def update_app(self) -> None:
+        if self.init_needed is True:
+            return
+        assert self.cmd_results.dump_config is not None
+        parsed_config = json.loads(
+            self.cmd_results.dump_config.completed_process.stdout
+        )
+        self.git_auto_add = parsed_config["git"]["autoadd"]
+        self.git_auto_commit = parsed_config["git"]["autocommit"]
+        self.git_auto_push = parsed_config["git"]["autopush"]
+        assert self.cmd_results.managed_dirs is not None
+        assert self.cmd_results.managed_files is not None
+        assert self.cmd_results.status_dirs is not None
+        assert self.cmd_results.status_files is not None
+        self.paths = PathDict(
+            dest_dir=Path(parsed_config["destDir"]),
+            managed_dirs_result=self.cmd_results.managed_dirs,
+            managed_files_result=self.cmd_results.managed_files,
+            status_dirs_result=self.cmd_results.status_dirs,
+            status_files_result=self.cmd_results.status_files,
+            theme_variables=self.theme_variables,
+        )
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:
         if isinstance(self.screen, InitChezmoi):

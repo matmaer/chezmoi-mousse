@@ -264,7 +264,6 @@ type StatusPath = dict[Path, StatusCode]
 class PathDict:
     def __init__(
         self,
-        cmd: ChezmoiCommand,
         dest_dir: Path,
         theme_variables: dict[str, str],
         managed_dirs_result: CommandResult,
@@ -273,7 +272,7 @@ class PathDict:
         status_files_result: CommandResult,
     ) -> None:
         self.dest_dir = dest_dir
-        self.cmd = cmd
+        self.cmd = ChezmoiCommand()
         self.theme_variables = theme_variables
         self.node_colors: dict[str, str] = {
             StatusCode.Added: self.theme_variables["text-success"],

@@ -2,7 +2,6 @@ import json
 import urllib.request
 from collections import deque
 from enum import StrEnum
-from pathlib import Path
 from typing import TypedDict
 
 from rich.segment import Segment
@@ -18,8 +17,6 @@ from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
 from chezmoi_mousse import IDS, AppType, CmdResults, ReadCmd
-
-from .widget_factory import PathDict
 
 __all__ = ["SplashScreen"]
 
@@ -279,31 +276,6 @@ class SplashScreen(Screen[None], AppType):
         # return final nested dict
         return {child["text"]: collapse(child) for child in root_node["children"]}
 
-    @work(name="update_app")
-    async def update_app(self) -> None:
-        if self.app.init_needed is True:
-            return
-        assert self.app.cmd_results.dump_config is not None
-        parsed_config = json.loads(
-            self.app.cmd_results.dump_config.completed_process.stdout
-        )
-        self.app.git_auto_add = parsed_config["git"]["autoadd"]
-        self.app.git_auto_commit = parsed_config["git"]["autocommit"]
-        self.app.git_auto_push = parsed_config["git"]["autopush"]
-        assert self.app.cmd_results.managed_dirs is not None
-        assert self.app.cmd_results.managed_files is not None
-        assert self.app.cmd_results.status_dirs is not None
-        assert self.app.cmd_results.status_files is not None
-        self.app.paths = PathDict(
-            dest_dir=Path(parsed_config["destDir"]),
-            managed_dirs_result=self.app.cmd_results.managed_dirs,
-            managed_files_result=self.app.cmd_results.managed_files,
-            status_dirs_result=self.app.cmd_results.status_dirs,
-            status_files_result=self.app.cmd_results.status_files,
-            cmd=self.app.cmd,
-            theme_variables=self.app.theme_variables,
-        )
-
     def all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
             self.dismiss(None)
@@ -313,7 +285,5 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            update_app_worker = self.update_app()
-            if update_app_worker.state == WorkerState.SUCCESS:
-                if all(w for w in self.workers if w.is_finished):
-                    self.dismiss()
+            if all(w for w in self.workers if w.is_finished):
+                self.dismiss()
