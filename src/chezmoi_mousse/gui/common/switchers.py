@@ -22,10 +22,8 @@ __all__ = ["TreeSwitcher", "ViewSwitcher"]
 class TreeSwitcher(Vertical):
 
     def __init__(self, ids: "AppIds"):
+        super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
         self.ids = ids
-        super().__init__(
-            id=self.ids.container.left_side, classes=Tcss.tab_left_vertical
-        )
 
     def compose(self) -> ComposeResult:
         yield TabButtons(ids=self.ids, buttons=(SubTabLabel.tree, SubTabLabel.list))
@@ -41,8 +39,8 @@ class TreeSwitcher(Vertical):
 class ViewSwitcher(Vertical):
 
     def __init__(self, *, ids: "AppIds"):
+        super().__init__(id=ids.container.right_side)
         self.ids = ids
-        super().__init__(id=self.ids.container.right_side)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(

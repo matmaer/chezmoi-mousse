@@ -19,8 +19,7 @@ class ContentsView(Vertical, AppType):
     content_widgets: reactive["Static | TextArea | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.contents, classes=Tcss.border_title_top)
+        super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
         assert self.app.paths is not None
@@ -38,8 +37,7 @@ class DiffView(ScrollableContainer, AppType):
     diff_widgets: reactive["list[Static] | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.diff, classes=Tcss.border_title_top)
+        super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
         if self.app.paths is None:
@@ -58,8 +56,7 @@ class GitLog(ScrollableContainer, AppType):
     git_log_result: reactive["DataTable[str] | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.git_log, classes=Tcss.border_title_top)
+        super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
         if self.app.paths is None:
