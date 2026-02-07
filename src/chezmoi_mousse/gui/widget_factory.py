@@ -286,7 +286,6 @@ class PathDict:
             StatusCode.Run: self.theme_variables["error"],
             StatusCode.X: self.theme_variables["text-secondary"],
         }
-        self.managed_dirs: list[Path] = []
         self.managed_dirs: list[Path] = [self.dest_dir]
         self.managed_files: list[Path] = []
         self.status_dirs: list[Path] = []
