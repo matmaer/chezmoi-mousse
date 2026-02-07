@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
+from itertools import groupby
 from pathlib import Path
 
 from rich.highlighter import ReprHighlighter
@@ -41,8 +42,6 @@ SHEBANG_MAP = {
     "go": "go",
     "rustc": "rust",
 }
-
-
 STATIC_TCSS = {
     " ": Tcss.context,
     "+": Tcss.added,
@@ -168,16 +167,26 @@ class DiffWidgets:
 
     def __init__(self, diff_result: CommandResult) -> None:
         self.widgets: list[Static] = []
-        self.std_out_lines = diff_result.std_out.splitlines()
         if not diff_result.std_out:
             self.widgets = [Static(LogString.no_stdout)]
-        classes = STATIC_TCSS["unhandled"]
-        for line in self.std_out_lines:
-            for prefix, tcss in STATIC_TCSS.items():
-                if line.startswith(prefix):
-                    classes = tcss
-                    break
-            self.widgets.append(Static(line, classes=classes.value))
+            return
+
+        lines = diff_result.std_out.splitlines()
+
+        def get_prefix(line: str) -> str:
+            for p in STATIC_TCSS:
+                if line.startswith(p):
+                    return p
+            return "unhandled"
+
+        for prefix, group_lines in groupby(lines, key=get_prefix):
+            group_list = list(group_lines)
+            if prefix in ("+", "-"):
+                text = "\n".join(group_list)
+                self.widgets.append(Static(text, classes=STATIC_TCSS[prefix].value))
+            else:
+                for line in group_list:
+                    self.widgets.append(Static(line, classes=STATIC_TCSS[prefix].value))
 
 
 type DiffWidgetDict = dict[Path, list[Static]]
