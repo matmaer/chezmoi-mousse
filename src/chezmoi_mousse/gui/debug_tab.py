@@ -40,7 +40,7 @@ class Files(StrEnum):
 
     @classmethod
     def files_in_home(cls) -> list[Path]:
-        return [Path.home() / cls.TOML, Path.home() / cls.LARGE]
+        return [Path.home() / cls.TOML]
 
 
 class DebugTab(Horizontal, AppType):
@@ -220,10 +220,7 @@ class TestPathManager:
             Path(dir).mkdir(parents=True, exist_ok=True)
             created_paths.append(dir)
         # Home files
-        home_files: dict[Files, str] = {
-            Files.TOML: self.toml_file,
-            Files.LARGE: self.large_file,
-        }
+        home_files: dict[Files, str] = {Files.TOML: self.toml_file}
         for file_name, content in home_files.items():
             file_path = Path.home() / file_name
             with open(file_path, "w") as f:
