@@ -186,7 +186,7 @@ def _run_chezmoi_cmd(
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
-    write_cmd: bool
+    cmd_enum: ReadCmd | WriteCmd
     path_arg: Path | None = None
     std_out: str = ""
     std_err: str = ""
@@ -226,7 +226,9 @@ class CommandResult:
 
     @property
     def _dry_run_str(self) -> str:
-        dry_run = "--dry-run" in self.completed_process.args and self.write_cmd is True
+        dry_run = (
+            "--dry-run" in self.completed_process.args and self.cmd_enum in WriteCmd
+        )
         return "(dry run)" if dry_run else ""
 
     @property
@@ -244,8 +246,8 @@ class CommandResult:
 
     @property
     def log_entry(self) -> str:
-        success_color = "$text-success" if self.write_cmd else "$success"
-        warning_color = "$text-warning" if self.write_cmd else "$warning"
+        success_color = "$text-success" if self.cmd_enum in WriteCmd else "$success"
+        warning_color = "$text-warning" if self.cmd_enum in WriteCmd else "$warning"
         colored_command = (
             f"[{success_color}]{self.filtered_cmd}[/]"
             if self.completed_process.returncode == 0
@@ -312,7 +314,7 @@ class ChezmoiCommand:
             command += [path_str]
         result: CompletedProcess[str] = _run_chezmoi_cmd(command, read_cmd=read_cmd)
         command_result = CommandResult(
-            completed_process=result, path_arg=path_arg, write_cmd=False
+            completed_process=result, path_arg=path_arg, cmd_enum=read_cmd
         )
         self._log_chezmoi_command(command_result)
         return command_result
@@ -335,7 +337,7 @@ class ChezmoiCommand:
 
         result: CompletedProcess[str] = _run_chezmoi_cmd(command, write_cmd=write_cmd)
         command_result = CommandResult(
-            completed_process=result, path_arg=path_arg, write_cmd=True
+            completed_process=result, path_arg=path_arg, cmd_enum=write_cmd
         )
         self._log_chezmoi_command(command_result)
         if write_cmd in (
