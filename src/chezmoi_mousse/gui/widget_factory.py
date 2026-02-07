@@ -64,14 +64,14 @@ class ContentStr(StrEnum):
     truncated = "\n--- File content truncated to"
 
 
-class FileContentWidgets:
+class FileContents:
     """Creates a .widget attribute containing a TextArea for recognized languages or a
     single Static widget with highlighting for others."""
 
     def __init__(
         self, cat_result: CommandResult | None = None, file_path: Path | None = None
     ) -> None:
-        self.widget: Static | TextArea
+        self.widget: Static | TextArea = Static("Nothing to show.")
         if file_path is not None:
             self.path_arg = file_path
             self.to_show = self._read_file(file_path)
@@ -104,29 +104,34 @@ class FileContentWidgets:
         # If no shebang, check path suffix
         return LANGUAGE_MAP.get(self.path_arg.suffix.lower())
 
-    def _read_file(self, file_path: Path) -> str:
+    def _read_file(self, file_path: Path):
         try:
             truncate_size: int = 100 * 1024  # 100 KiB
             file_size = file_path.stat().st_size
             with open(file_path, "rt", encoding="utf-8") as f:
                 f_contents = f.read(truncate_size)
             if f_contents.strip() == "":
-                return ContentStr.empty_or_only_whitespace
-            if file_size > truncate_size:
-                return (
+                self.widget = Static(ContentStr.empty_or_only_whitespace)
+            elif file_size > truncate_size:
+                self.widget = Static(
                     f_contents
                     + f"\n--- {ContentStr.truncated} {truncate_size / 1024} KiB ---"
                 )
-            return "Nothing to read." if f_contents == "" else f_contents
+            else:
+                self.widget = (
+                    Static("Nothing to read.")
+                    if f_contents == ""
+                    else Static(f_contents)
+                )
         except PermissionError:
-            return f"{ContentStr.permission_denied} for {file_path}"
+            self.widget = Static(f"{ContentStr.permission_denied} for {file_path}")
         except UnicodeDecodeError:
-            return f"{ContentStr.cannot_decode} for {file_path}"
+            self.widget = Static(f"{ContentStr.cannot_decode} for {file_path}")
         except OSError:
-            return f"{ContentStr.read_error}"
+            self.widget = Static(f"{ContentStr.read_error}")
 
 
-class DirContentData:
+class DirContents:
 
     def __init__(
         self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
@@ -150,13 +155,7 @@ class DirContentData:
         self.container = ScrollableContainer(self.widget)
 
 
-class DirContentWidgets:
-
-    def __init__(self, dir_path: Path) -> None:
-        self.widget = Static(f"Directory {dir_path}")
-
-
-type ContentWidgetDict = dict[Path, FileContentWidgets | DirContentWidgets]
+type ContentWidgetDict = dict[Path, Static | TextArea | None]
 
 
 class DiffWidgets:
@@ -190,14 +189,12 @@ class GitLogTable(DataTable[str]):
         self, git_log_result: CommandResult, theme_variables: dict[str, str]
     ) -> None:
         super().__init__()
+        self.git_log_result = git_log_result
         self.row_color = {
             "ok": theme_variables["text-success"],
             "warning": theme_variables["text-warning"],
             "error": theme_variables["text-error"],
         }
-        if len(self.lines) == 0:
-            raise ValueError("Requested to construct a Git log table without data.")
-        self.lines = git_log_result.std_out.splitlines()
 
     def on_mount(self) -> None:
         self._populate_datatable()
@@ -208,7 +205,11 @@ class GitLogTable(DataTable[str]):
 
     def _populate_datatable(self) -> None:
         self.add_columns("COMMIT", "MESSAGE")
-        for line in self.lines:
+        lines = self.git_log_result.std_out.splitlines()
+        if len(lines) == 0:
+            self.add_row("No commits;No git log available for this path.")
+            return
+        for line in lines:
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
                 self._add_row_with_style(columns, self.row_color["ok"])
@@ -226,7 +227,7 @@ type GitLogTableDict = dict[Path, DataTable[str]]
 @dataclass(slots=True)
 class FileWidgets:
     label: str
-    contents: FileContentWidgets
+    contents: FileContents
 
 
 type FileWidgetDict = dict[Path, FileWidgets]
@@ -371,9 +372,14 @@ class PathDict:
 
     def _update_content_widgets(self):
         for path in self.managed_files:
-            self.content_widgets[path] = FileContentWidgets(file_path=path)
+            self.content_widgets[path] = FileContents(file_path=path).widget
         for path in self.managed_dirs:
-            self.content_widgets[path] = DirContentWidgets(dir_path=path)
+            self.content_widgets[path] = DirContents(
+                dest_dir=self.dest_dir,
+                has_status_paths=self.has_status_paths_in(path),
+                has_x_paths=self.has_x_paths_in(path),
+                dir_path=path,
+            ).widget
 
     def create_label(self, path: Path, tab_name: TabName) -> str:
         italic = " italic" if not path.exists() else ""
@@ -409,7 +415,7 @@ class PathDict:
 
     def create_managed_file_node_widgets(self):
         for file_path in self.managed_files:
-            contents = FileContentWidgets(file_path=file_path)
+            contents = FileContents(file_path=file_path)
             self.apply_file_widgets[file_path] = FileWidgets(
                 contents=contents, label=self.create_label(file_path, TabName.apply)
             )
@@ -421,7 +427,7 @@ class PathDict:
         for dir_path in self.managed_dirs:
             has_status_paths = self.has_status_paths_in(dir_path)
             has_x_paths = self.has_x_paths_in(dir_path)
-            dir_content_widgets = DirContentData(
+            dir_content_widgets = DirContents(
                 dir_path=dir_path,
                 has_status_paths=has_status_paths,
                 has_x_paths=has_x_paths,

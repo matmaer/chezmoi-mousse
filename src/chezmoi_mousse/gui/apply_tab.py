@@ -51,4 +51,4 @@ class ApplyTab(TabsBase, AppType):
         ]
         self.contents_view.content_widgets = self.app.paths.content_widgets[
             msg.node_data.path
-        ].widget
+        ]
