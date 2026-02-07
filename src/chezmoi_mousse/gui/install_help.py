@@ -71,12 +71,12 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def populate_tree(self) -> None:
         help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
-        if self.app.cmd_results.install_help_data is None:
+        if self.app.install_help_data is None:
             self.app.notify(
                 "InstallHelpScreen: No install help data found", severity="error"
             )
             return
-        install_help: ParsedJson = self.app.cmd_results.install_help_data
+        install_help: ParsedJson = self.app.install_help_data
         help_tree.show_root = False
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)
@@ -87,8 +87,7 @@ class InstallHelpScreen(Screen[None], AppType):
                     severity="error",
                 )
                 continue
-            install_commands: dict[str, str] = child.data
-            for key, value in install_commands.items():
+            for key, value in child.data.items():
                 new_child = child.add(label=key)
                 new_child.add_leaf(label=value)
 

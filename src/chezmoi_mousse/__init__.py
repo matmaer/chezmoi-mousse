@@ -26,7 +26,7 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
-from ._type_checking import AppType, CmdResults, InitCloneData, NodeData
+from ._type_checking import AppType, CmdResults, InitCloneData, NodeData, ParsedJson
 
 __all__ = [
     "__version__",
@@ -48,6 +48,7 @@ __all__ = [
     "OpBtnEnum",
     "OpBtnLabel",
     "OperateString",
+    "ParsedJson",
     "ReadCmd",
     "ReadVerb",
     "ScreenName",

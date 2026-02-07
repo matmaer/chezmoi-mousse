@@ -16,11 +16,9 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import IDS, AppType, CmdResults, ReadCmd
+from chezmoi_mousse import IDS, AppType, ParsedJson, ReadCmd
 
 __all__ = ["SplashScreen"]
-
-type Value = str | dict[str, "Value"]
 
 
 class Node(TypedDict):
@@ -143,9 +141,7 @@ class SplashScreen(Screen[None], AppType):
             self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
             install_help_worker = self.get_install_screen_data()
             await install_help_worker.wait()
-            self.app.cmd_results = CmdResults(
-                install_help_data=install_help_worker.result
-            )
+            self.app.install_help_data = install_help_worker.result
             return
 
         status_worker = self.run_io_worker(ReadCmd.status_files)
@@ -184,7 +180,7 @@ class SplashScreen(Screen[None], AppType):
         )
 
     @work
-    async def get_install_screen_data(self) -> dict[str, Value]:
+    async def get_install_screen_data(self) -> ParsedJson:
         with urllib.request.urlopen(TemplateStr.chezmoi_latest_release_url) as response:
             data = json.load(response)
             latest_version = data.get("tag_name")
@@ -263,7 +259,7 @@ class SplashScreen(Screen[None], AppType):
             stack.append(node)
 
         # collapse tree into nested dictionary
-        def collapse(node: Node) -> Value:
+        def collapse(node: Node) -> ParsedJson | str:
             # a node without children is the text of the command
             if not node["children"]:
                 return node["text"]

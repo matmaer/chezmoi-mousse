@@ -53,7 +53,7 @@ from .widget_factory import PathDict
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse import ChezmoiCommand, CommandResult
+    from chezmoi_mousse import ChezmoiCommand, CommandResult, ParsedJson
 
 __all__ = ["ChezmoiGUI"]
 
@@ -143,6 +143,7 @@ class ChezmoiGUI(App[None]):
         self.paths: "PathDict | None" = None
         self.cmd = ChezmoiCommand()
         self.cmd_results = CmdResults()
+        self.install_help_data: "ParsedJson | None" = None
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
         mro = obj.__class__.__mro__

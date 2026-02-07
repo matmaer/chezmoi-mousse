@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult, WriteCmd
     from .gui.textual_app import ChezmoiGUI
 
+type ParsedJson = dict[str, "Any"]
 
-type Value = str | dict[str, "Value"]  # recursive type alias
-
-__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData"]
+__all__ = ["AppType", "CmdResults", "InitCloneData", "NodeData", "ParsedJson"]
 
 
 class AppType:
@@ -31,7 +30,6 @@ class CmdResults:
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
     verify: CommandResult | None = None
-    install_help_data: dict[str, Value] | None = None
 
     @property
     def executed_commands(self) -> list[CommandResult]:
