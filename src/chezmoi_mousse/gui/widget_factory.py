@@ -21,6 +21,41 @@ from chezmoi_mousse import (
 __all__ = ["PathDict"]
 
 
+BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
+# Additional mappings for "similar" language files to choose TextArea
+LANGUAGE_MAP = BUILTIN_MAP | {
+    ".cfg": BUILTIN_MAP["toml"],
+    ".ini": BUILTIN_MAP["toml"],
+    ".sh": BUILTIN_MAP["bash"],
+    ".yml": BUILTIN_MAP["yaml"],
+    ".zsh": BUILTIN_MAP["bash"],
+}
+SHEBANG_MAP = {
+    "python": "python",
+    "python3": "python",
+    "bash": "bash",
+    "sh": "bash",
+    "zsh": "bash",
+    "node": "javascript",
+    "java": "java",
+    "go": "go",
+    "rustc": "rust",
+}
+
+
+STATIC_TCSS = {
+    " ": Tcss.context,
+    "+": Tcss.added,
+    "-": Tcss.removed,
+    "new": Tcss.added,
+    "old": Tcss.removed,
+    "index": Tcss.context,
+    "changed": Tcss.changed,
+    "deleted": Tcss.removed,
+    "unhandled": Tcss.unhandled,
+}
+
+
 class ContentStr(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
     empty_or_only_whitespace = "File is empty or contains only whitespace."
@@ -32,28 +67,6 @@ class ContentStr(StrEnum):
 class FileContentWidgets:
     """Creates a .widget attribute containing a TextArea for recognized languages or a
     single Static widget with highlighting for others."""
-
-    BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
-    # Additional mappings for "similar" language files to show in TextArea
-    LANGUAGE_MAP = BUILTIN_MAP | {
-        ".cfg": BUILTIN_MAP["toml"],
-        ".ini": BUILTIN_MAP["toml"],
-        ".sh": BUILTIN_MAP["bash"],
-        ".yml": BUILTIN_MAP["yaml"],
-        ".zsh": BUILTIN_MAP["bash"],
-    }
-    # Separate mapping for common shebang interpreters to languages
-    SHEBANG_MAP = {
-        "python": "python",
-        "python3": "python",
-        "bash": "bash",
-        "sh": "bash",
-        "zsh": "bash",
-        "node": "javascript",
-        "java": "java",
-        "go": "go",
-        "rustc": "rust",
-    }
 
     def __init__(
         self, cat_result: CommandResult | None = None, file_path: Path | None = None
@@ -86,10 +99,10 @@ class FileContentWidgets:
             parts = lines[0].split()
             if len(parts) > 1:
                 shebang = parts[-1]
-                if shebang in self.SHEBANG_MAP:
-                    return self.SHEBANG_MAP[shebang]
+                if shebang in SHEBANG_MAP:
+                    return SHEBANG_MAP[shebang]
         # If no shebang, check path suffix
-        return self.LANGUAGE_MAP.get(self.path_arg.suffix.lower())
+        return LANGUAGE_MAP.get(self.path_arg.suffix.lower())
 
     def _read_file(self, file_path: Path) -> str:
         try:
@@ -154,26 +167,14 @@ class DiffWidgets:
     that there is no diff available.
     """
 
-    STATIC_TCSS = {
-        " ": Tcss.context,
-        "+": Tcss.added,
-        "-": Tcss.removed,
-        "new": Tcss.added,
-        "old": Tcss.removed,
-        "index": Tcss.context,
-        "changed": Tcss.changed,
-        "deleted": Tcss.removed,
-        "unhandled": Tcss.unhandled,
-    }
-
     def __init__(self, diff_result: CommandResult) -> None:
         self.widgets: list[Static] = []
         self.std_out_lines = diff_result.std_out.splitlines()
         if not diff_result.std_out:
             self.widgets = [Static(LogString.no_stdout)]
-        classes = self.STATIC_TCSS["unhandled"]
+        classes = STATIC_TCSS["unhandled"]
         for line in self.std_out_lines:
-            for prefix, tcss in self.STATIC_TCSS.items():
+            for prefix, tcss in STATIC_TCSS.items():
                 if line.startswith(prefix):
                     classes = tcss
                     break
@@ -183,28 +184,30 @@ class DiffWidgets:
 type DiffWidgetDict = dict[Path, list[Static]]
 
 
-class GitLogTable:
+class GitLogTable(DataTable[str]):
 
     def __init__(
         self, git_log_result: CommandResult, theme_variables: dict[str, str]
     ) -> None:
+        super().__init__()
         self.row_color = {
             "ok": theme_variables["text-success"],
             "warning": theme_variables["text-warning"],
             "error": theme_variables["text-error"],
         }
-        self.lines = git_log_result.std_out.splitlines()
         if len(self.lines) == 0:
             raise ValueError("Requested to construct a Git log table without data.")
-        self.data_table: DataTable[str] = DataTable[str]()
+        self.lines = git_log_result.std_out.splitlines()
+
+    def on_mount(self) -> None:
         self._populate_datatable()
 
     def _add_row_with_style(self, columns: list[str], style: str) -> None:
         row: list[str] = [f"[{style}]{cell_text}[/{style}]" for cell_text in columns]
-        self.data_table.add_row(*row)
+        self.add_row(*row)
 
     def _populate_datatable(self) -> None:
-        self.data_table.add_columns("COMMIT", "MESSAGE")
+        self.add_columns("COMMIT", "MESSAGE")
         for line in self.lines:
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
@@ -214,7 +217,7 @@ class GitLogTable:
             elif columns[1].split(maxsplit=1)[0] == "Remove":
                 self._add_row_with_style(columns, self.row_color["error"])
             else:
-                self.data_table.add_row(*columns)
+                self.add_row(*columns)
 
 
 type GitLogTableDict = dict[Path, DataTable[str]]
@@ -348,13 +351,13 @@ class PathDict:
         all_paths = self.managed_dirs + self.managed_files
         self.git_log_tables[self.dest_dir] = GitLogTable(
             self.cmd.read(ReadCmd.git_log), self.theme_variables
-        ).data_table
+        )
         for path in all_paths:
             if path == self.dest_dir:
                 continue
             self.git_log_tables[path] = GitLogTable(
                 self.cmd.read(ReadCmd.git_log, path_arg=path), self.theme_variables
-            ).data_table
+            )
 
     def _update_diff_widgets(self):
         all_paths = self.managed_dirs + self.managed_files
