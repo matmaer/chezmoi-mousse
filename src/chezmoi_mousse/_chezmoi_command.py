@@ -217,14 +217,22 @@ class CommandResult:
         return "\n".join(lines[start:end])
 
     @property
-    def pretty_time(self) -> str:
-        # formats time with square brackets and green text like "[13:33:04]"
-        return f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
+    def _curated_std_out(self):
+        return self.std_out or f"{LogString.no_stdout} {self._dry_run_str}"
 
     @property
-    def dry_run_str(self) -> str:
+    def _curated_std_err(self):
+        return self.std_err or f"{LogString.no_stderr} {self._dry_run_str}"
+
+    @property
+    def _dry_run_str(self) -> str:
         dry_run = "--dry-run" in self.completed_process.args and self.write_cmd is True
         return "(dry run)" if dry_run else ""
+
+    @property
+    def _pretty_time(self) -> str:
+        # formats time with square brackets and green text like "[13:33:04]"
+        return f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
 
     @property
     def exit_code(self) -> int:
@@ -235,10 +243,6 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
-    def full_command(self) -> str:
-        return " ".join([a for a in self.completed_process.args])
-
-    @property
     def log_entry(self) -> str:
         success_color = "$text-success" if self.write_cmd else "$success"
         warning_color = "$text-warning" if self.write_cmd else "$warning"
@@ -247,15 +251,7 @@ class CommandResult:
             if self.completed_process.returncode == 0
             else f"[{warning_color}]{self.filtered_cmd}[/]"
         )
-        return f"{self.pretty_time} {colored_command}"
-
-    @property
-    def curated_std_out(self):
-        return self.std_out or f"{LogString.no_stdout} {self.dry_run_str}"
-
-    @property
-    def curated_std_err(self):
-        return self.std_err or f"{LogString.no_stderr} {self.dry_run_str}"
+        return f"{self._pretty_time} {colored_command}"
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
@@ -263,13 +259,13 @@ class CommandResult:
         collapsible_contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
-                Static(f"{self.curated_std_out}", markup=False),
+                Static(f"{self._curated_std_out}", markup=False),
             ]
         )
         collapsible_contents.extend(
             [
                 Label(SectionLabel.stderr_output, classes=Tcss.sub_section_label),
-                Static(f"{self.curated_std_err}", markup=False),
+                Static(f"{self._curated_std_err}", markup=False),
             ]
         )
         return VerticalGroup(
