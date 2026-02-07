@@ -49,6 +49,4 @@ class ReAddTab(TabsBase, AppType):
             msg.node_data.path
         ]
         self.operate_mode_container.path_arg = msg.node_data.path
-        self.contents_view.content_widgets = self.app.paths.content_widgets[
-            msg.node_data.path
-        ]
+        self.contents_view.path = msg.node_data.path

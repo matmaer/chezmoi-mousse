@@ -49,6 +49,4 @@ class ApplyTab(TabsBase, AppType):
         self.diff_view.diff_widgets = self.app.paths.apply_diff_widgets[
             msg.node_data.path
         ]
-        self.contents_view.content_widgets = self.app.paths.content_widgets[
-            msg.node_data.path
-        ]
+        self.contents_view.path = msg.node_data.path

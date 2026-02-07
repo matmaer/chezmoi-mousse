@@ -2,11 +2,13 @@ from typing import TYPE_CHECKING
 
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Label, Static, TextArea
+from textual.widgets import Label, Static
 
 from chezmoi_mousse import AppIds, AppType, Tcss
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from textual.widgets import DataTable
 
 __all__ = ["ContentsView", "DiffView", "GitLog"]
@@ -16,7 +18,7 @@ type DiffWidgets = list[Label | Static]
 
 class ContentsView(Vertical, AppType):
 
-    content_widgets: reactive["Static | TextArea | None"] = reactive(None, init=False)
+    path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
@@ -25,11 +27,13 @@ class ContentsView(Vertical, AppType):
         assert self.app.paths is not None
         self.border_title = f" {self.app.paths.dest_dir} "
 
-    def watch_content_widgets(self) -> None:
-        if self.content_widgets is None:
+    def watch_path(self) -> None:
+        if self.path is None:
             return
+        if self.app.paths is None:
+            raise ValueError("self.app.paths is None in ContentsView watch_path")
         self.remove_children()
-        self.mount(self.content_widgets)
+        self.mount(self.app.paths.contents_dict[self.path])
 
 
 class DiffView(ScrollableContainer, AppType):

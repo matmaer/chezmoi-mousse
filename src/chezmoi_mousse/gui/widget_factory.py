@@ -103,31 +103,28 @@ class FileContents:
         # If no shebang, check path suffix
         return LANGUAGE_MAP.get(self.path_arg.suffix.lower())
 
-    def _read_file(self, file_path: Path):
+    def _read_file(self, file_path: Path) -> str:
+
         try:
             truncate_size: int = 100 * 1024  # 100 KiB
             file_size = file_path.stat().st_size
             with open(file_path, "rt", encoding="utf-8") as f:
                 f_contents = f.read(truncate_size)
             if f_contents.strip() == "":
-                self.widget = Static(ContentStr.empty_or_only_whitespace)
+                return ContentStr.empty_or_only_whitespace
             elif file_size > truncate_size:
-                self.widget = Static(
+                return (
                     f_contents
                     + f"\n--- {ContentStr.truncated} {truncate_size / 1024} KiB ---"
                 )
             else:
-                self.widget = (
-                    Static("Nothing to read.")
-                    if f_contents == ""
-                    else Static(f_contents)
-                )
+                return "Nothing to read." if f_contents == "" else f_contents
         except PermissionError:
-            self.widget = Static(f"{ContentStr.permission_denied} for {file_path}")
+            return f"{ContentStr.permission_denied} for {file_path}"
         except UnicodeDecodeError:
-            self.widget = Static(f"{ContentStr.cannot_decode} for {file_path}")
+            return f"{ContentStr.cannot_decode} for {file_path}"
         except OSError:
-            self.widget = Static(f"{ContentStr.read_error}")
+            return f"{ContentStr.read_error}"
 
 
 class DirContents:
@@ -154,7 +151,9 @@ class DirContents:
         self.container = ScrollableContainer(self.widget)
 
 
-type ContentWidgetDict = dict[Path, Static | TextArea | None]
+type ContentWidgetDict = dict[Path, Static | TextArea]
+
+type ContentsDict = dict[Path, Static | TextArea]
 
 
 class DiffWidgets:
@@ -236,7 +235,6 @@ type GitLogTableDict = dict[Path, DataTable[str]]
 @dataclass(slots=True)
 class FileWidgets:
     label: str
-    contents: FileContents
 
 
 type FileWidgetDict = dict[Path, FileWidgets]
@@ -311,6 +309,8 @@ class PathDict:
             status_dirs_result,
             status_files_result,
         )
+        self.contents_dict: ContentWidgetDict = {}
+        self._update_contents_dict()
         self.git_log_tables: GitLogTableDict = {}
         self._update_git_log_tables()
         self.apply_diff_widgets: DiffWidgetDict = {}
@@ -355,6 +355,19 @@ class PathDict:
             self.managed_files.append(parsed_path)
             if parsed_path not in self.status_files:
                 self.x_files.append(parsed_path)
+
+    def _update_contents_dict(self):
+        for path in self.managed_files:
+            self.contents_dict[path] = FileContents(file_path=path).widget
+        for path in self.managed_dirs:
+            has_status_paths = self.has_status_paths_in(path)
+            has_x_paths = self.has_x_paths_in(path)
+            self.contents_dict[path] = DirContents(
+                dir_path=path,
+                has_status_paths=has_status_paths,
+                has_x_paths=has_x_paths,
+                dest_dir=self.dest_dir,
+            ).widget
 
     def _update_git_log_tables(self):
         all_paths = self.managed_dirs + self.managed_files
@@ -423,12 +436,11 @@ class PathDict:
 
     def create_managed_file_node_widgets(self):
         for file_path in self.managed_files:
-            contents = FileContents(file_path=file_path)
             self.apply_file_widgets[file_path] = FileWidgets(
-                contents=contents, label=self.create_label(file_path, TabName.apply)
+                label=self.create_label(file_path, TabName.apply)
             )
             self.re_add_file_widgets[file_path] = FileWidgets(
-                contents=contents, label=self.create_label(file_path, TabName.re_add)
+                label=self.create_label(file_path, TabName.re_add)
             )
 
     def create_managed_dir_node_widgets(self):

@@ -253,9 +253,9 @@ class AddTab(TabsBase, AppType):
             ),
             OperateButtons(IDS.add),
         )
-        contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
-        contents_view.add_class(Tcss.border_title_top)
-        contents_view.border_title = f" {self.app.paths.dest_dir} "
+        self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
+        self.contents_view.add_class(Tcss.border_title_top)
+        self.contents_view.border_title = f" {self.app.paths.dest_dir} "
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
@@ -266,11 +266,8 @@ class AddTab(TabsBase, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        # contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
-        # contents_view.border_title = f" {event.node.data.path} "
-
         self.current_node = NodeData(path=event.node.data.path)
-        # contents_view.node_data = self.current_node
+        self.contents_view.path = event.node.data.path
         self.operate_mode_container.path_arg = self.current_node.path
 
     @on(Switch.Changed)
