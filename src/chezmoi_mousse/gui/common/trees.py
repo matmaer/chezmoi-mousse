@@ -52,9 +52,19 @@ class ListTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
+        assert self.app.paths is not None
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files:
-                self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
+                # only add files as leaves, if they were not added already.
+                if not any(
+                    child.data and child.data.path == file_path
+                    for child in self.root.children
+                ):
+                    # show relative path from dest_dir as label
+                    relative_path = file_path.relative_to(self.app.paths.dest_dir)
+                    self.root.add_leaf(
+                        str(relative_path), data=NodeData(path=file_path)
+                    )
 
 
 class ManagedTree(TreeBase):
@@ -72,12 +82,12 @@ class ManagedTree(TreeBase):
             dir_node = self.dir_nodes[dir_path]
             if dir_path == self.app.paths.dest_dir:
                 # Add files directly under the root
-                for file_path in dir_node.status_files.keys() | dir_node.x_files.keys():
+                for file_path, _ in dir_node.status_files.items():
                     self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
             else:
                 parent_node: TreeNode[NodeData] = nodes[dir_path.parent]
                 new_node = parent_node.add(dir_path.name, data=NodeData(path=dir_path))
                 nodes[dir_path] = new_node
                 # Add files as leaves under this directory
-                for file_path in dir_node.status_files.keys() | dir_node.x_files.keys():
+                for file_path, _ in dir_node.status_files.items():
                     new_node.add_leaf(file_path.name, data=NodeData(path=file_path))

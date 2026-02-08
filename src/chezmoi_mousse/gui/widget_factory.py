@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from itertools import groupby
 from pathlib import Path
@@ -235,14 +235,6 @@ type GitLogTableDict = dict[Path, DataTable[str]]
 
 
 @dataclass(slots=True)
-class FileWidgets:
-    label: str
-
-
-type FileWidgetDict = dict[Path, FileWidgets]
-
-
-@dataclass(slots=True)
 class DirWidgets:
     contents: ScrollableContainer
 
@@ -254,12 +246,8 @@ type DirWidgetDict = dict[Path, DirWidgets]
 class DirNode:
     label: str
     widgets: DirWidgets
-    status_files: FileWidgetDict = field(
-        default_factory=dict[Path, FileWidgets]
-    )  # Files with a status other than X
-    x_files: FileWidgetDict = field(
-        default_factory=dict[Path, FileWidgets]
-    )  # Files with status X
+    status_files: dict[Path, StatusCode]
+    x_files: dict[Path, StatusCode]
     # True if the dir has status_files or if any subdir or file has a status other than
     # X, no matter how deeply nested
     has_status_paths: bool = False
@@ -323,9 +311,6 @@ class PathDict:
         self._update_diff_widgets()
         self.content_widgets: ContentWidgetDict = {}
         self._update_content_widgets()
-        self.apply_file_widgets: FileWidgetDict = {}
-        self.re_add_file_widgets: FileWidgetDict = {}
-        self.create_managed_file_node_widgets()
         self.apply_dir_widgets: DirWidgetDict = {}
         self.re_add_dir_widgets: DirWidgetDict = {}
         self.create_managed_dir_node_widgets()
@@ -411,15 +396,6 @@ class PathDict:
             path.is_relative_to(dir_path) for path in self.x_dirs
         )
 
-    def create_managed_file_node_widgets(self):
-        for file_path in self.managed_files:
-            self.apply_file_widgets[file_path] = FileWidgets(
-                label=self.create_label(file_path, TabName.apply)
-            )
-            self.re_add_file_widgets[file_path] = FileWidgets(
-                label=self.create_label(file_path, TabName.re_add)
-            )
-
     def create_managed_dir_node_widgets(self):
         for dir_path in self.managed_dirs:
             has_status_paths = self.has_status_paths_in(dir_path)
@@ -439,31 +415,35 @@ class PathDict:
 
     def create_dir_node_dict(self):
         for dir_path, dir_widgets in self.apply_dir_widgets.items():
-            status_files: FileWidgetDict = {}
-            x_files: FileWidgetDict = {}
-            for file_path, file_widgets in self.apply_file_widgets.items():
-                if file_path.parent == dir_path:  # Only direct children
-                    if file_path in self.status_files:
-                        status_files[file_path] = file_widgets
-                    elif file_path in self.managed_files:
-                        x_files[file_path] = file_widgets
+            status_files: dict[Path, StatusCode] = {
+                path: status
+                for path, status in self.apply_file_status.items()
+                if path.parent == dir_path
+            }
+            x_files: dict[Path, StatusCode] = {
+                path: status
+                for path, status in self.apply_file_status.items()
+                if path.parent == dir_path
+            }
             self.apply_dir_node_dict[dir_path] = DirNode(
                 label=self.create_label(dir_path, TabName.apply),
                 widgets=dir_widgets,
-                status_files=status_files,
+                status_files=self.apply_file_status,
                 x_files=x_files,
                 has_status_paths=self.has_status_paths_in(dir_path),
                 has_x_paths=self.has_x_paths_in(dir_path),
             )
         for dir_path, dir_widgets in self.re_add_dir_widgets.items():
-            status_files: FileWidgetDict = {}
-            x_files: FileWidgetDict = {}
-            for file_path, file_widgets in self.re_add_file_widgets.items():
-                if file_path.parent == dir_path:  # Only direct children
-                    if file_path in self.status_files:
-                        status_files[file_path] = file_widgets
-                    elif file_path in self.managed_files:
-                        x_files[file_path] = file_widgets
+            status_files: dict[Path, StatusCode] = {
+                path: status
+                for path, status in self.re_add_file_status.items()
+                if path.parent == dir_path
+            }
+            x_files: dict[Path, StatusCode] = {
+                path: status
+                for path, status in self.re_add_file_status.items()
+                if path.parent == dir_path
+            }
             self.re_add_dir_node_dict[dir_path] = DirNode(
                 label=self.create_label(dir_path, TabName.re_add),
                 widgets=dir_widgets,
