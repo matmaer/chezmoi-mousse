@@ -1,7 +1,5 @@
 import dataclasses
-import json
 from math import ceil
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.color import Color
@@ -135,9 +133,9 @@ class ChezmoiGUI(App[None]):
         self.init_needed: bool = False
 
         AppState.set_app(self)
-        self.git_auto_commit: bool = False
-        self.git_auto_add: bool = False
-        self.git_auto_push: bool = False
+        # self.git_auto_commit: bool = False
+        # self.git_auto_add: bool = False
+        # self.git_auto_push: bool = False
 
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
@@ -190,18 +188,14 @@ class ChezmoiGUI(App[None]):
         if self.init_needed is True:
             return
         assert self.cmd_results.dump_config_results is not None
-        parsed_config = json.loads(
-            self.cmd_results.dump_config_results.completed_process.stdout
-        )
-        self.git_auto_add = parsed_config["git"]["autoadd"]
-        self.git_auto_commit = parsed_config["git"]["autocommit"]
-        self.git_auto_push = parsed_config["git"]["autopush"]
-        assert self.cmd_results.managed_dirs_results is not None
-        assert self.cmd_results.managed_files_results is not None
-        assert self.cmd_results.status_dirs_results is not None
-        assert self.cmd_results.status_files_results is not None
+        # parsed_config = json.loads(
+        #     self.cmd_results.dump_config_results.completed_process.stdout
+        # )
+        # self.git_auto_add = parsed_config["git"]["autoadd"]
+        # self.git_auto_commit = parsed_config["git"]["autocommit"]
+        # self.git_auto_push = parsed_config["git"]["autopush"]
         self.paths = PathDict(
-            dest_dir=Path(parsed_config["destDir"]),
+            dest_dir=self.cmd_results.dest_dir,
             theme_variables=self.theme_variables,
             managed_dirs=self.cmd_results.managed_dirs,
             managed_files=self.cmd_results.managed_files,

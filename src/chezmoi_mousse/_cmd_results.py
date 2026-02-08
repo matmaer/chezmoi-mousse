@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+import json
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -9,7 +8,7 @@ from ._str_enums import StatusCode
 if TYPE_CHECKING:
     from ._chezmoi_command import CommandResult
 
-type ParsedJson = dict[str, "Any"]
+type ParsedJson = dict[str, Any]
 
 __all__ = ["CmdResults"]
 
@@ -34,19 +33,24 @@ class ReactiveDataclass:
 
 @dataclass(slots=True)
 class CmdResults(ReactiveDataclass):
-    cat_config_results: CommandResult | None = None
-    doctor_results: CommandResult | None = None
-    dump_config_results: CommandResult | None = None
-    git_log_results: CommandResult | None = None
-    ignored_results: CommandResult | None = None
-    managed_dirs_results: CommandResult | None = None
-    managed_files_results: CommandResult | None = None
-    status_dirs_results: CommandResult | None = None
-    status_files_results: CommandResult | None = None
-    template_data_results: CommandResult | None = None
-    verify_results: CommandResult | None = None
+    cat_config_results: "CommandResult | None" = None
+    doctor_results: "CommandResult | None" = None
+    dump_config_results: "CommandResult | None" = None
+    git_log_results: "CommandResult | None" = None
+    ignored_results: "CommandResult | None" = None
+    managed_dirs_results: "CommandResult | None" = None
+    managed_files_results: "CommandResult | None" = None
+    status_dirs_results: "CommandResult | None" = None
+    status_files_results: "CommandResult | None" = None
+    template_data_results: "CommandResult | None" = None
+    verify_results: "CommandResult | None" = None
 
     # fields updated when some_results is updated
+    parsed_config: "ParsedJson | None" = None
+    dest_dir: Path = field(default_factory=Path, init=False)
+    git_auto_add: bool = False
+    git_auto_commit: bool = False
+    git_auto_push: bool = False
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
     apply_status_dirs: dict[Path, StatusCode] = field(
@@ -63,7 +67,7 @@ class CmdResults(ReactiveDataclass):
     )
 
     @property
-    def executed_commands(self) -> list[CommandResult]:
+    def executed_commands(self) -> list["CommandResult"]:
         return [
             getattr(self, field.name)
             for field in fields(self)
@@ -93,12 +97,22 @@ class CmdResults(ReactiveDataclass):
             self.re_add_status_files = self._parse_status_output(
                 self.status_files_results, index=1
             )
+        if name == "dump_config_results" and self.dump_config_results is not None:
+            self._parse_config()
 
     def _parse_status_output(
-        self, status_results: CommandResult, index: int
+        self, status_results: "CommandResult", index: int
     ) -> dict[Path, StatusCode]:
         status_dict: dict[Path, StatusCode] = {}
         for line in status_results.std_out.splitlines():
             parsed_path = Path(line[3:])
-            status_dict[parsed_path] = StatusCode(line[0])
+            status_dict[parsed_path] = StatusCode(line[index])
         return status_dict
+
+    def _parse_config(self) -> None:
+        assert self.dump_config_results is not None
+        parsed_config = json.loads(self.dump_config_results.completed_process.stdout)
+        self.git_auto_add = parsed_config["git"]["autoadd"]
+        self.git_auto_commit = parsed_config["git"]["autocommit"]
+        self.git_auto_push = parsed_config["git"]["autopush"]
+        self.dest_dir = Path(parsed_config["destDir"])
