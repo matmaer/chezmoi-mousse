@@ -119,25 +119,25 @@ class ConfigTab(Horizontal, AppType):
             return
         new = self.new_command_results
         if (
-            new.cat_config is None
-            or new.doctor is None
-            or new.ignored is None
-            or new.template_data is None
+            new.cat_config_results is None
+            or new.doctor_results is None
+            or new.ignored_results is None
+            or new.template_data_results is None
         ):
             return
         switcher = self.query_exactly_one(ContentSwitcher)
         switcher.query_one(
             IDS.config.view.template_data_q, TemplateDataView
-        ).template_data_stdout = new.template_data.completed_process.stdout
+        ).template_data_stdout = new.template_data_results.completed_process.stdout
         switcher.query_one(IDS.config.view.ignored_q, IgnoredView).ignored_stdout = (
-            new.ignored.completed_process.stdout
+            new.ignored_results.completed_process.stdout
         )
         switcher.query_one(
             IDS.config.view.cat_config_q, CatConfigView
-        ).cat_config_stdout = new.cat_config.completed_process.stdout
+        ).cat_config_stdout = new.cat_config_results.completed_process.stdout
         switcher.query_one(
             IDS.config.container.doctor_q, DoctorTableView
-        ).doctor_stdout = new.doctor.completed_process.stdout
+        ).doctor_stdout = new.doctor_results.completed_process.stdout
         switcher.query_one(
             IDS.config.view.pw_mgr_info_q, PwMgrInfoView
-        ).populate_pw_mgr_info(new.doctor.completed_process.stdout)
+        ).populate_pw_mgr_info(new.doctor_results.completed_process.stdout)

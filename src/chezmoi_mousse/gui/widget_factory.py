@@ -277,10 +277,12 @@ class PathDict:
         self,
         dest_dir: Path,
         theme_variables: dict[str, str],
-        managed_dirs_result: CommandResult,
-        managed_files_result: CommandResult,
-        status_dirs_result: CommandResult,
-        status_files_result: CommandResult,
+        managed_dirs: list[Path],
+        managed_files: list[Path],
+        apply_dir_status: dict[Path, StatusCode],
+        apply_file_status: dict[Path, StatusCode],
+        re_add_dir_status: dict[Path, StatusCode],
+        re_add_file_status: dict[Path, StatusCode],
     ) -> None:
         self.dest_dir = dest_dir
         self.cmd = ChezmoiCommand()
@@ -293,22 +295,23 @@ class PathDict:
             StatusCode.Run: self.theme_variables["error"],
             StatusCode.X: self.theme_variables["text-secondary"],
         }
-        self.managed_dirs: list[Path] = [self.dest_dir]
-        self.managed_files: list[Path] = []
-        self.status_dirs: list[Path] = []
-        self.status_files: list[Path] = []
+        self.managed_dirs: list[Path] = [self.dest_dir] + managed_dirs
+        self.managed_files: list[Path] = managed_files
+        self.status_dirs: list[Path] = list(apply_dir_status.keys())
+        self.status_files: list[Path] = list(apply_file_status.keys())
         self.x_dirs: list[Path] = []
         self.x_files: list[Path] = []
-        self.apply_dir_status: StatusPath = {}
-        self.apply_file_status: StatusPath = {}
-        self.re_add_dir_status: StatusPath = {}
-        self.re_add_file_status: StatusPath = {}
-        self._update_managed_and_status_paths(
-            managed_dirs_result,
-            managed_files_result,
-            status_dirs_result,
-            status_files_result,
-        )
+        self.apply_dir_status: StatusPath = apply_dir_status
+        self.apply_file_status: StatusPath = apply_file_status
+        self.re_add_dir_status: StatusPath = re_add_dir_status
+        self.re_add_file_status: StatusPath = re_add_file_status
+        # Compute x_dirs and x_files
+        for path in self.managed_dirs:
+            if path not in self.status_dirs:
+                self.x_dirs.append(path)
+        for path in self.managed_files:
+            if path not in self.status_files:
+                self.x_files.append(path)
         self.contents_dict: ContentWidgetDict = {}
         self._update_contents_dict()
         self.git_log_tables: GitLogTableDict = {}
@@ -327,34 +330,6 @@ class PathDict:
         self.apply_dir_node_dict: DirNodeDict = {}
         self.re_add_dir_node_dict: DirNodeDict = {}
         self.create_dir_node_dict()
-
-    def _update_managed_and_status_paths(
-        self,
-        managed_dirs_result: CommandResult,
-        managed_files_result: CommandResult,
-        status_dirs_result: CommandResult,
-        status_files_result: CommandResult,
-    ) -> None:
-        for line in status_dirs_result.std_out.splitlines():
-            parsed_path = Path(line[3:])
-            self.status_dirs.append(parsed_path)
-            self.apply_dir_status[parsed_path] = StatusCode(line[0])
-            self.re_add_dir_status[parsed_path] = StatusCode(line[1])
-        for line in status_files_result.std_out.splitlines():
-            parsed_path = Path(line[3:])
-            self.status_files.append(parsed_path)
-            self.apply_file_status[parsed_path] = StatusCode(line[0])
-            self.re_add_file_status[parsed_path] = StatusCode(line[1])
-        for line in managed_dirs_result.std_out.splitlines():
-            parsed_path = Path(line)
-            self.managed_dirs.append(parsed_path)
-            if parsed_path not in self.status_dirs:
-                self.x_dirs.append(parsed_path)
-        for line in managed_files_result.std_out.splitlines():
-            parsed_path = Path(line)
-            self.managed_files.append(parsed_path)
-            if parsed_path not in self.status_files:
-                self.x_files.append(parsed_path)
 
     def _update_contents_dict(self):
         for path in self.managed_files:

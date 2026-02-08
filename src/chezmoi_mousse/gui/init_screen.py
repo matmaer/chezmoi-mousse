@@ -412,9 +412,9 @@ class InitCollapsibles(VerticalGroup, AppType):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        if self.app.cmd_results.doctor is None:
+        if self.app.cmd_results.doctor_results is None:
             raise ValueError("self.app.cmd_results is None in OperateScreen")
-        elif self.app.cmd_results.template_data is None:
+        elif self.app.cmd_results.template_data_results is None:
             raise ValueError(
                 "self.app.cmd_results.template_data is None in OperateScreen"
             )
@@ -422,12 +422,12 @@ class InitCollapsibles(VerticalGroup, AppType):
         yield Collapsible(
             DoctorTable(
                 ids=IDS.init,
-                doctor_stdout=self.app.cmd_results.doctor.completed_process.stdout,
+                doctor_stdout=self.app.cmd_results.doctor_results.completed_process.stdout,
             ),
             title="Doctor Output",
         )
         yield Collapsible(
-            Pretty(self.app.cmd_results.template_data.completed_process.stdout),
+            Pretty(self.app.cmd_results.template_data_results.completed_process.stdout),
             title="Template Data Output",
         )
 
