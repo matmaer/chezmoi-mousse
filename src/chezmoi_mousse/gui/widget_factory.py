@@ -43,14 +43,16 @@ SHEBANG_MAP = {
     "rustc": "rust",
 }
 STATIC_TCSS = {
+    "diff --git a/": Tcss.command,
     " ": Tcss.context,
-    "+": Tcss.added,
-    "-": Tcss.removed,
-    "new": Tcss.added,
-    "old": Tcss.removed,
+    "@@": Tcss.context,
     "index": Tcss.context,
-    "changed": Tcss.changed,
+    "-": Tcss.removed,
     "deleted": Tcss.removed,
+    "old": Tcss.removed,
+    "+": Tcss.added,
+    "new": Tcss.added,
+    "changed": Tcss.changed,
     "unhandled": Tcss.unhandled,
 }
 

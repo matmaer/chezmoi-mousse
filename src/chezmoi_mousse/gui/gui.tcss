@@ -350,6 +350,12 @@ Static {
     background: $surface-lighten-1;
     background-tint: $surface-lighten-1;
   }
+  &.command {
+    color: $text-primary;
+    background: $primary-muted;
+    background-tint: $primary-muted;
+    text-align: center;
+  }
   &.removed {
     color: $text-error;
     background: $error-muted;
