@@ -284,7 +284,6 @@ class CommandResult:
 class ChezmoiCommand:
 
     def __init__(self) -> None:
-        self.app = AppState.get_app()
         self.app_log: AppLog | None = None
         self.cmd_log: CmdLog | None = None
 
@@ -347,8 +346,6 @@ class ChezmoiCommand:
             WriteCmd.forget,
             WriteCmd.re_add,
         ):
-            if self.app is None:
-                raise ValueError("self.app is None")
-            if self.app.paths is None:
-                raise ValueError("self.app.paths is None")
+            # we need to update cached stuff here
+            pass
         return command_result
