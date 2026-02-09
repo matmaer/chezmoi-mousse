@@ -109,5 +109,5 @@ class MainScreen(Screen[None], AppType):
         if self.app.paths is not None:
             logs_tab = self.screen.query_exactly_one(LogsTab)
             logs_tab.git_log_result = self.app.paths.git_log_tables[
-                self.app.paths.dest_dir
+                self.app.cmd_results.dest_dir
             ]

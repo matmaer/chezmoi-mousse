@@ -61,7 +61,7 @@ class ListTree(TreeBase):
                     for child in self.root.children
                 ):
                     # show relative path from dest_dir as label
-                    relative_path = file_path.relative_to(self.app.paths.dest_dir)
+                    relative_path = file_path.relative_to(self.app.cmd_results.dest_dir)
                     self.root.add_leaf(
                         str(relative_path), data=NodeData(path=file_path)
                     )
@@ -74,13 +74,14 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        assert self.app.paths is not None
-        nodes: dict[Path, TreeNode[NodeData]] = {self.app.paths.dest_dir: self.root}
-        self.root.data = NodeData(path=self.app.paths.dest_dir)
+        nodes: dict[Path, TreeNode[NodeData]] = {
+            self.app.cmd_results.dest_dir: self.root
+        }
+        self.root.data = NodeData(path=self.app.cmd_results.dest_dir)
         # Sort directories by path depth to ensure parents are added before children
         for dir_path in sorted(self.dir_nodes.keys(), key=lambda p: len(p.parts)):
             dir_node = self.dir_nodes[dir_path]
-            if dir_path == self.app.paths.dest_dir:
+            if dir_path == self.app.cmd_results.dest_dir:
                 # Add files directly under the root
                 for file_path, _ in dir_node.status_files.items():
                     self.root.add_leaf(file_path.name, data=NodeData(path=file_path))

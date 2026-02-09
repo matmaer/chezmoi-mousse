@@ -24,8 +24,7 @@ class ContentsView(Vertical, AppType):
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
-        assert self.app.paths is not None
-        self.border_title = f" {self.app.paths.dest_dir} "
+        self.border_title = f" {self.app.cmd_results.dest_dir} "
 
     def watch_path(self) -> None:
         if self.path is None:
@@ -44,9 +43,7 @@ class DiffView(ScrollableContainer, AppType):
         super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
-        if self.app.paths is None:
-            raise ValueError("self.app.paths is None in DiffView on_mount")
-        self.border_title = f" {self.app.paths.dest_dir} "
+        self.border_title = f" {self.app.cmd_results.dest_dir} "
 
     def watch_diff_widgets(self) -> None:
         if self.diff_widgets is None:
@@ -63,9 +60,7 @@ class GitLog(ScrollableContainer, AppType):
         super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
 
     def on_mount(self) -> None:
-        if self.app.paths is None:
-            raise ValueError("self.app.paths is None in GitLog on_mount")
-        self.border_title = f" {self.app.paths.dest_dir} "
+        self.border_title = f" {self.app.cmd_results.dest_dir} "
 
     def watch_git_log_result(self) -> None:
         if self.git_log_result is None:

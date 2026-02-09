@@ -244,18 +244,18 @@ class AddTab(TabsBase, AppType):
         self.operate_mode_container = self.query_one(
             IDS.add.container.op_mode_q, OperateMode
         )
-        if self.app.paths is None:
-            raise ValueError("self.app.paths is None on AddTab mount")
         self.mount(
             Horizontal(
-                FilteredDirTree(self.app.paths.dest_dir, id=IDS.add.tree.dir_tree),
+                FilteredDirTree(
+                    self.app.cmd_results.dest_dir, id=IDS.add.tree.dir_tree
+                ),
                 ContentsView(ids=IDS.add),
             ),
             OperateButtons(IDS.add),
         )
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.border_title_top)
-        self.contents_view.border_title = f" {self.app.paths.dest_dir} "
+        self.contents_view.border_title = f" {self.app.cmd_results.dest_dir} "
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
