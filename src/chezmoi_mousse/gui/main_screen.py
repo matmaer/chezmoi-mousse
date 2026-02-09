@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+from textual import work
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
@@ -95,7 +96,8 @@ class MainScreen(Screen[None], AppType):
         self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_dest_dir()
         self.app_log.success("Apply tab list tree populated.")
 
-    def populate_re_add_trees(self) -> None:
+    @work
+    async def populate_re_add_trees(self) -> None:
         self.screen.query_one(
             IDS.re_add.tree.managed_q, ManagedTree
         ).populate_dest_dir()
