@@ -133,9 +133,6 @@ class ChezmoiGUI(App[None]):
         self.init_needed: bool = False
 
         AppState.set_app(self)
-        # self.git_auto_commit: bool = False
-        # self.git_auto_add: bool = False
-        # self.git_auto_push: bool = False
 
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
