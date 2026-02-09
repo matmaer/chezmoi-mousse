@@ -185,13 +185,6 @@ class ChezmoiGUI(App[None]):
     async def update_app(self) -> None:
         if self.init_needed is True:
             return
-        assert self.cmd_results.dump_config_results is not None
-        # parsed_config = json.loads(
-        #     self.cmd_results.dump_config_results.completed_process.stdout
-        # )
-        # self.git_auto_add = parsed_config["git"]["autoadd"]
-        # self.git_auto_commit = parsed_config["git"]["autocommit"]
-        # self.git_auto_push = parsed_config["git"]["autopush"]
         self.paths = PathDict(
             dest_dir=self.cmd_results.dest_dir,
             theme_variables=self.theme_variables,
