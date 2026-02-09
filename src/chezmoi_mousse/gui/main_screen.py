@@ -65,6 +65,7 @@ class MainScreen(Screen[None], AppType):
             from .common.loggers import DebugLog
 
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
+            self.app_log.success(LogString.dev_mode_enabled)
             self.notify(LogString.dev_mode_enabled)
 
         self.populate_apply_trees()
@@ -78,7 +79,6 @@ class MainScreen(Screen[None], AppType):
         config_tab.new_command_results = self.app.cmd_results
 
     def log_splash_log_commands(self) -> None:
-        # Log SplashScreen and OperateScreen commands, if any.
         self.app_log.info("--- Commands executed in loading screen ---")
         commands_to_log = self.app.cmd_results.executed_commands
         if self.app.init_cmd_result is not None:
