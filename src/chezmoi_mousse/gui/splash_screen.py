@@ -18,6 +18,8 @@ from textual.worker import WorkerState
 
 from chezmoi_mousse import IDS, AppType, ParsedJson, ReadCmd
 
+from .install_help import InstallHelpScreen
+
 __all__ = ["SplashScreen"]
 
 
@@ -141,7 +143,7 @@ class SplashScreen(Screen[None], AppType):
             self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
             install_help_worker = self.get_install_screen_data()
             await install_help_worker.wait()
-            self.app.install_help_data = install_help_worker.result
+            InstallHelpScreen.install_help_data = install_help_worker.result
             return
 
         status_worker = self.run_io_worker(ReadCmd.status_files)

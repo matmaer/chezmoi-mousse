@@ -38,6 +38,8 @@ class CommandsTree(Tree[ParsedJson]):
 
 class InstallHelpScreen(Screen[None], AppType):
 
+    install_help_data: "ParsedJson | None" = None
+
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.install_help)
         yield Label(InstallHelpStrings.top_label, classes=Tcss.main_section_label)
@@ -71,12 +73,12 @@ class InstallHelpScreen(Screen[None], AppType):
 
     def populate_tree(self) -> None:
         help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
-        if self.app.install_help_data is None:
+        if self.install_help_data is None:
             self.app.notify(
                 "InstallHelpScreen: No install help data found", severity="error"
             )
             return
-        install_help: ParsedJson = self.app.install_help_data
+        install_help: ParsedJson = self.install_help_data
         help_tree.show_root = False
         for k, v in install_help.items():
             help_tree.root.add(label=k, data=v)
