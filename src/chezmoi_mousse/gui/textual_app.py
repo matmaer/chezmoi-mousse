@@ -135,11 +135,11 @@ class ChezmoiGUI(App[None]):
         self.changes_enabled: bool = False
         self.init_needed: bool = False
 
-        AppState.set_app(self)
-
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
         self.cmd = ChezmoiCommand()
+
+        AppState.set_app(self)
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
         mro = obj.__class__.__mro__
