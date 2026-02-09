@@ -8,6 +8,7 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
+from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
@@ -87,6 +88,8 @@ chezmoi_mousse_light = Theme(
 
 class ChezmoiGUI(App[None]):
 
+    cmd_results: reactive[CmdResults] = reactive(CmdResults())
+
     BINDINGS = [
         Binding(
             "ctrl+q",
@@ -137,7 +140,6 @@ class ChezmoiGUI(App[None]):
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
         self.cmd = ChezmoiCommand()
-        self.cmd_results = CmdResults()
         self.install_help_data: "ParsedJson | None" = None
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
