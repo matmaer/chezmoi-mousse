@@ -24,6 +24,7 @@ from chezmoi_mousse import (
     CmdResults,
     OpBtnLabel,
     TabName,
+    WidgetCache,
 )
 
 from .add_tab import AddTab, FilteredDirTree
@@ -138,6 +139,7 @@ class ChezmoiGUI(App[None]):
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
         self.cmd = ChezmoiCommand()
+        self.cache = WidgetCache()
 
         AppState.set_app(self)
 
