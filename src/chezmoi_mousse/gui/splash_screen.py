@@ -134,18 +134,26 @@ class SplashScreen(Screen[None], AppType):
             yield Center(AnimatedFade())
             yield Center(SplashLog())
 
-    async def on_mount(self) -> None:
+    def on_mount(self) -> None:
         self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
         if self.app.chezmoi_found is False:
-            self.splash_log.styles.height = 1
-            cmd_text = "chezmoi command"
-            padding = LOG_PADDING_WIDTH - len(cmd_text)
-            self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
-            install_help_worker = self.get_install_screen_data()
-            await install_help_worker.wait()
-            InstallHelpScreen.install_help_data = install_help_worker.result
-            return
+            self.install_help_workers()
+        else:
+            self.chezmoi_found_workers()
 
+    @work
+    async def install_help_workers(self) -> None:
+        self.splash_log.styles.height = 1
+        cmd_text = "chezmoi command"
+        padding = LOG_PADDING_WIDTH - len(cmd_text)
+        self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
+        install_help_worker = self.get_install_screen_data()
+        await install_help_worker.wait()
+        InstallHelpScreen.install_help_data = install_help_worker.result
+        return
+
+    @work
+    async def chezmoi_found_workers(self) -> None:
         status_worker = self.run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
