@@ -47,7 +47,7 @@ class CmdResults(ReactiveDataclass):
 
     # fields updated when some_results is updated
     parsed_config: "ParsedJson | None" = None
-    dest_dir: Path = field(default_factory=Path, init=False)
+    dest_dir: Path = Path.home()
     git_auto_add: bool = False
     git_auto_commit: bool = False
     git_auto_push: bool = False
