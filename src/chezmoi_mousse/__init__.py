@@ -28,7 +28,6 @@ from ._str_enums import (
     SubTabLabel,
 )
 from ._type_checking import AppType, InitCloneData, NodeData, ParsedJson
-from ._widget_cache import WidgetCache
 
 __all__ = [
     "__version__",
@@ -61,7 +60,6 @@ __all__ = [
     "TabName",
     "Tcss",
     "TreeName",
-    "WidgetCache",
     "WriteCmd",
 ]
 
