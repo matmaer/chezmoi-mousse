@@ -5,13 +5,14 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, TabName
+from chezmoi_mousse import CMD, IDS, AppType, LogString, ReadCmd, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.loggers import AppLog, CmdLog
 from .common.screen_header import CustomHeader
 from .common.trees import ListTree, ManagedTree
+from .common.views import GitLogTable
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
@@ -108,6 +109,6 @@ class MainScreen(Screen[None], AppType):
     def populate_global_git_log(self) -> None:
         if self.app.paths is not None:
             logs_tab = self.screen.query_exactly_one(LogsTab)
-            logs_tab.git_log_result = self.app.paths.git_log_tables[
-                self.app.cmd_results.dest_dir
-            ]
+            logs_tab.git_log_result = GitLogTable(
+                CMD.read(ReadCmd.git_log, path_arg=None)
+            )

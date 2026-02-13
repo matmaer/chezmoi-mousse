@@ -1,23 +1,14 @@
 from dataclasses import dataclass
 from enum import StrEnum
-from itertools import groupby
 from pathlib import Path
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 from textual.containers import ScrollableContainer
-from textual.widgets import DataTable, Static, TextArea
+from textual.widgets import Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import (
-    CMD,
-    CommandResult,
-    LogString,
-    ReadCmd,
-    StatusCode,
-    TabName,
-    Tcss,
-)
+from chezmoi_mousse import CommandResult, StatusCode, TabName
 
 __all__ = ["PathDict"]
 
@@ -41,19 +32,6 @@ SHEBANG_MAP = {
     "java": "java",
     "go": "go",
     "rustc": "rust",
-}
-STATIC_TCSS = {
-    "diff --git a/": Tcss.command,
-    " ": Tcss.context,
-    "@@": Tcss.context,
-    "index": Tcss.context,
-    "-": Tcss.removed,
-    "deleted": Tcss.removed,
-    "old": Tcss.removed,
-    "+": Tcss.added,
-    "new": Tcss.added,
-    "changed": Tcss.changed,
-    "unhandled": Tcss.unhandled,
 }
 
 
@@ -155,84 +133,6 @@ class DirContents:
 
 type ContentWidgetDict = dict[Path, Static | TextArea]
 
-type ContentsDict = dict[Path, Static | TextArea]
-
-
-class DiffWidgets:
-    """Creates a list of Static in the .widgets attribute widgets for each diff line in
-    the CommandResult output.
-
-    If no diff is available, aka stdout is empty, it will contain one Static informing
-    that there is no diff available.
-    """
-
-    def __init__(self, diff_result: CommandResult) -> None:
-        self.widgets: list[Static] = []
-        if not diff_result.std_out:
-            self.widgets = [Static(LogString.no_stdout)]
-            return
-
-        lines = diff_result.std_out.splitlines()
-
-        def get_prefix(line: str) -> str:
-            for p in STATIC_TCSS:
-                if line.startswith(p):
-                    return p
-            return "unhandled"
-
-        for prefix, group_lines in groupby(lines, key=get_prefix):
-            group_list = list(group_lines)
-            if prefix in ("+", "-"):
-                text = "\n".join(group_list)
-                self.widgets.append(Static(text, classes=STATIC_TCSS[prefix].value))
-            else:
-                for line in group_list:
-                    self.widgets.append(Static(line, classes=STATIC_TCSS[prefix].value))
-
-
-type DiffWidgetDict = dict[Path, list[Static]]
-
-
-class GitLogTable(DataTable[str]):
-
-    def __init__(
-        self, git_log_result: CommandResult, theme_variables: dict[str, str]
-    ) -> None:
-        super().__init__()
-        self.git_log_result = git_log_result
-        self.row_color = {
-            "ok": theme_variables["text-success"],
-            "warning": theme_variables["text-warning"],
-            "error": theme_variables["text-error"],
-        }
-
-    def on_mount(self) -> None:
-        self._populate_datatable()
-
-    def _add_row_with_style(self, columns: list[str], style: str) -> None:
-        row: list[str] = [f"[{style}]{cell_text}[/{style}]" for cell_text in columns]
-        self.add_row(*row)
-
-    def _populate_datatable(self) -> None:
-        self.add_columns("COMMIT", "MESSAGE")
-        lines = self.git_log_result.std_out.splitlines()
-        if len(lines) == 0:
-            self.add_row("No commits;No git log available for this path.")
-            return
-        for line in lines:
-            columns = line.split(";", maxsplit=1)
-            if columns[1].split(maxsplit=1)[0] == "Add":
-                self._add_row_with_style(columns, self.row_color["ok"])
-            elif columns[1].split(maxsplit=1)[0] == "Update":
-                self._add_row_with_style(columns, self.row_color["warning"])
-            elif columns[1].split(maxsplit=1)[0] == "Remove":
-                self._add_row_with_style(columns, self.row_color["error"])
-            else:
-                self.add_row(*columns)
-
-
-type GitLogTableDict = dict[Path, DataTable[str]]
-
 
 @dataclass(slots=True)
 class DirWidgets:
@@ -303,11 +203,6 @@ class PathDict:
                 self.x_files.append(path)
         self.contents_dict: ContentWidgetDict = {}
         self._update_contents_dict()
-        self.git_log_tables: GitLogTableDict = {}
-        self._update_git_log_tables()
-        self.apply_diff_widgets: DiffWidgetDict = {}
-        self.re_add_diff_widgets: DiffWidgetDict = {}
-        self._update_diff_widgets()
         self.content_widgets: ContentWidgetDict = {}
         self._update_content_widgets()
         self.apply_dir_widgets: DirWidgetDict = {}
@@ -329,28 +224,6 @@ class PathDict:
                 has_x_paths=has_x_paths,
                 dest_dir=self.dest_dir,
             ).widget
-
-    def _update_git_log_tables(self):
-        all_paths = self.managed_dirs + self.managed_files
-        self.git_log_tables[self.dest_dir] = GitLogTable(
-            CMD.read(ReadCmd.git_log), self.theme_variables
-        )
-        for path in all_paths:
-            if path == self.dest_dir:
-                continue
-            self.git_log_tables[path] = GitLogTable(
-                CMD.read(ReadCmd.git_log, path_arg=path), self.theme_variables
-            )
-
-    def _update_diff_widgets(self):
-        all_paths = self.managed_dirs + self.managed_files
-        for path in all_paths:
-            self.apply_diff_widgets[path] = DiffWidgets(
-                CMD.read(ReadCmd.diff, path_arg=path)
-            ).widgets
-            self.re_add_diff_widgets[path] = DiffWidgets(
-                CMD.read(ReadCmd.diff_reverse, path_arg=path)
-            ).widgets
 
     def _update_content_widgets(self):
         for path in self.managed_files:

@@ -40,13 +40,9 @@ class ReAddTab(TabsBase, AppType):
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
         msg.stop()
+        self.git_log_view.show_path = msg.node_data.path
         if self.app.paths is None:
             return
-        self.git_log_view.git_log_result = self.app.paths.git_log_tables[
-            msg.node_data.path
-        ]
-        self.diff_view.diff_widgets = self.app.paths.re_add_diff_widgets[
-            msg.node_data.path
-        ]
+        self.diff_view.show_path = msg.node_data.path
         self.operate_mode_container.path_arg = msg.node_data.path
         self.contents_view.path = msg.node_data.path
