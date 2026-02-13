@@ -300,7 +300,7 @@ class PathDict:
             self.apply_dir_node_dict[dir_path] = DirNode(
                 label=self.create_label(dir_path, TabName.apply),
                 widgets=dir_widgets,
-                status_files=self.apply_file_status,
+                status_files=status_files,
                 x_files=x_files,
                 has_status_paths=self.has_status_paths_in(dir_path),
                 has_x_paths=self.has_x_paths_in(dir_path),
