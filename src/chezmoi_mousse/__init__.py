@@ -11,7 +11,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from ._app_ids import IDS, AppIds
 from ._app_state import AppState
-from ._chezmoi_command import ChezmoiCommand, CommandResult, ReadCmd, ReadVerb, WriteCmd
+from ._chezmoi_command import CMD, CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._cmd_results import CmdResults
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
@@ -31,13 +31,13 @@ from ._type_checking import AppType, InitCloneData, NodeData, ParsedJson
 
 __all__ = [
     "__version__",
+    "CMD",
     "AppIds",
     "AppState",
     "AppType",
     "BindingAction",
     "BindingDescription",
     "Chars",
-    "ChezmoiCommand",
     "CmdResults",
     "CommandResult",
     "FlatBtnLabel",

@@ -16,7 +16,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import IDS, AppType, ParsedJson, ReadCmd
+from chezmoi_mousse import CMD, IDS, AppType, ParsedJson, ReadCmd
 
 from .install_help import InstallHelpScreen
 
@@ -175,7 +175,7 @@ class SplashScreen(Screen[None], AppType):
 
     @work(thread=True, group="io_workers")
     def run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        cmd_result = self.app.cmd.read(splash_cmd)
+        cmd_result = CMD.read(splash_cmd)
         setattr(self.app.cmd_results, f"{splash_cmd.name}_results", cmd_result)
         padding = LOG_PADDING_WIDTH - len(cmd_result.filtered_cmd)
         log_text = f"{cmd_result.filtered_cmd} {'.' * padding} {LOADED_SUFFIX}"

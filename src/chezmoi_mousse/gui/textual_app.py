@@ -20,7 +20,6 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
-    ChezmoiCommand,
     CmdResults,
     OpBtnLabel,
     TabName,
@@ -52,7 +51,7 @@ from .widget_factory import PathDict
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse import ChezmoiCommand, CommandResult
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["ChezmoiGUI"]
 
@@ -137,7 +136,6 @@ class ChezmoiGUI(App[None]):
 
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
-        self.cmd = ChezmoiCommand()
 
         AppState.set_app(self)
 

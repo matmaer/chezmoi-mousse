@@ -16,14 +16,7 @@ if TYPE_CHECKING:
     from .gui.common.loggers import AppLog, CmdLog
 
 
-__all__ = [
-    "ChezmoiCommand",
-    "CommandResult",
-    "ReadCmd",
-    "ReadVerb",
-    "WriteCmd",
-    "WriteVerb",
-]
+__all__ = ["CMD", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd", "WriteVerb"]
 
 
 class LogUtils:
@@ -349,3 +342,6 @@ class ChezmoiCommand:
             # we need to update cached stuff here
             pass
         return command_result
+
+
+CMD = ChezmoiCommand()

@@ -8,6 +8,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import (
+    CMD,
     AppType,
     CommandResult,
     OpBtnEnum,
@@ -102,7 +103,7 @@ class OperateMode(Vertical, AppType):
 
     @work(thread=True)
     def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
-        return self.app.cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
+        return CMD.perform(btn_enum.write_cmd, path_arg=self.path_arg)
 
     @work(exit_on_error=False)
     async def run_command(self, btn_enum: "OpBtnEnum") -> None:

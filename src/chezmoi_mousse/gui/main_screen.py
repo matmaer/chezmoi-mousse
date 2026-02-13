@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import IDS, AppType, LogString, TabName
+from chezmoi_mousse import CMD, IDS, AppType, LogString, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -56,10 +56,10 @@ class MainScreen(Screen[None], AppType):
     def on_mount(self) -> None:
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
-        self.app.cmd.app_log = self.app_log
+        CMD.app_log = self.app_log
         # Initialize chezmoi commands logger
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
-        self.app.cmd.cmd_log = self.cmd_log
+        CMD.cmd_log = self.cmd_log
         self.app_log.success(LogString.cmd_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:

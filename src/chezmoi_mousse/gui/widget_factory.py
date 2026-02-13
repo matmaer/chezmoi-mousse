@@ -10,7 +10,7 @@ from textual.widgets import DataTable, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
 from chezmoi_mousse import (
-    ChezmoiCommand,
+    CMD,
     CommandResult,
     LogString,
     ReadCmd,
@@ -275,7 +275,6 @@ class PathDict:
         re_add_file_status: dict[Path, StatusCode],
     ) -> None:
         self.dest_dir = dest_dir
-        self.cmd = ChezmoiCommand()
         self.theme_variables = theme_variables
         self.node_colors: dict[str, str] = {
             StatusCode.Added: self.theme_variables["text-success"],
@@ -334,23 +333,23 @@ class PathDict:
     def _update_git_log_tables(self):
         all_paths = self.managed_dirs + self.managed_files
         self.git_log_tables[self.dest_dir] = GitLogTable(
-            self.cmd.read(ReadCmd.git_log), self.theme_variables
+            CMD.read(ReadCmd.git_log), self.theme_variables
         )
         for path in all_paths:
             if path == self.dest_dir:
                 continue
             self.git_log_tables[path] = GitLogTable(
-                self.cmd.read(ReadCmd.git_log, path_arg=path), self.theme_variables
+                CMD.read(ReadCmd.git_log, path_arg=path), self.theme_variables
             )
 
     def _update_diff_widgets(self):
         all_paths = self.managed_dirs + self.managed_files
         for path in all_paths:
             self.apply_diff_widgets[path] = DiffWidgets(
-                self.cmd.read(ReadCmd.diff, path_arg=path)
+                CMD.read(ReadCmd.diff, path_arg=path)
             ).widgets
             self.re_add_diff_widgets[path] = DiffWidgets(
-                self.cmd.read(ReadCmd.diff_reverse, path_arg=path)
+                CMD.read(ReadCmd.diff_reverse, path_arg=path)
             ).widgets
 
     def _update_content_widgets(self):

@@ -96,6 +96,7 @@ class CmdResults(ReactiveDataclass):
     re_add_status_files: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
+    git_difs: dict[Path, list[str]] = field(default_factory=dict[Path, list[str]])
 
     @property
     def executed_commands(self) -> list["CommandResult"]:
