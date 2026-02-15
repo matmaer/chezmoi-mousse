@@ -47,30 +47,6 @@ class ContentStr(StrEnum):
     truncated = "\n--- File content truncated to"
 
 
-class DirContents:
-
-    def __init__(
-        self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
-    ) -> None:
-        self.widget: Static
-        self.container: ScrollableContainer
-        if dir_path == dest_dir:
-            self.widget = Static("in dest dir")
-        elif has_status_paths and has_x_paths:
-            self.widget = Static(
-                f"a directory {dir_path} with status and managed paths"
-            )
-        elif has_status_paths:
-            self.widget = Static(f"a directory {dir_path} with status paths")
-        elif has_x_paths:
-            self.widget = Static(f"a directory {dir_path} with managed paths")
-        else:
-            self.widget = Static(
-                f"the directory {dir_path} has no managed or status paths"
-            )
-        self.container = ScrollableContainer(self.widget)
-
-
 class ContentsView(Vertical, AppType):
 
     show_path: reactive["Path | None"] = reactive(None, init=False)
@@ -131,6 +107,28 @@ class ContentsView(Vertical, AppType):
             result = Static(text_obj)
         return result
 
+    def create_dir_contents(
+        self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
+    ) -> ScrollableContainer:
+        self.widgets: list[Static | Label] = []
+        self.widgets.append(Label(f"Directory: {dir_path}"))
+        # self.container: ScrollableContainer
+        if dir_path == dest_dir:
+            self.widgets.append(Static("in dest dir"))
+        elif has_status_paths and has_x_paths:
+            self.widgets.append(
+                Static(f"a directory {dir_path} with status and managed paths")
+            )
+        elif has_status_paths:
+            self.widgets.append(Static(f"a directory {dir_path} with status paths"))
+        elif has_x_paths:
+            self.widgets.append(Static(f"a directory {dir_path} with managed paths"))
+        else:
+            self.widgets.append(
+                Static(f"the directory {dir_path} has no managed or status paths")
+            )
+        return ScrollableContainer(*self.widgets)
+
     def watch_show_path(self) -> None:
         if self.show_path is None:
             return
@@ -141,12 +139,12 @@ class ContentsView(Vertical, AppType):
                     file_path=self.show_path, managed=True
                 )
             elif self.show_path in self.app.cmd_results.managed_dirs:
-                self.cache[self.show_path] = DirContents(
+                self.cache[self.show_path] = self.create_dir_contents(
                     dir_path=self.show_path,
                     has_status_paths=self.show_path in self.app.cmd_results.status_dirs,
                     has_x_paths=self.show_path in self.app.cmd_results.managed_dirs,
                     dest_dir=self.app.cmd_results.dest_dir,
-                ).container
+                )
             # Conditions for AddTab
             elif self.show_path.is_file():
                 self.cache[self.show_path] = self.create_file_contents(
