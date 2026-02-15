@@ -50,35 +50,33 @@ class GitLogTable(DataTable[str], AppType):
 
 class GitLog(ScrollableContainer, AppType):
 
-    changed_managed_paths: reactive["list[Path] | None"] = reactive(None, init=False)
+    changed_paths: reactive["list[Path] | None"] = reactive(None, init=False)
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
-        self.git_log_tables: GitLogTableDict = {}
+        self.cache: GitLogTableDict = {}
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.cmd_results.dest_dir} "
+        self.border_title = " Global Chezmoi Git Log "
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
             return
         self.remove_children()
-        if self.show_path not in self.git_log_tables:
-            self.git_log_tables[self.show_path] = GitLogTable(
+        if self.show_path not in self.cache:
+            self.cache[self.show_path] = GitLogTable(
                 CMD.read(ReadCmd.git_log, path_arg=self.show_path)
             )
-        self.mount(self.git_log_tables[self.show_path])
+        self.mount(self.cache[self.show_path])
 
     @work
-    async def watch_changed_managed_paths(self) -> None:
-        if self.changed_managed_paths is None:
+    async def watch_changed_paths(self) -> None:
+        if self.changed_paths is None:
             return
-        for path in self.changed_managed_paths:
-            # remove paths no longer in managed_paths
-            if path not in self.git_log_tables:
-                self.git_log_tables.pop(path, None)
-            # add paths in managed_paths that are not in git_log_tables
-            self.git_log_tables[path] = GitLogTable(
-                CMD.read(ReadCmd.git_log, path_arg=path)
-            )
+        for path in self.changed_paths:
+            # remove paths no longer in changed_paths
+            if path not in self.cache:
+                self.cache.pop(path, None)
+            # add paths in changed_paths that are not in cache
+            self.cache[path] = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=path))
