@@ -5,7 +5,7 @@ from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, Chars, TabName, Tcss, TreeName
+from chezmoi_mousse import AppIds, AppType, Chars, StatusCode, TabName, Tcss, TreeName
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
@@ -33,28 +33,31 @@ class TreeBase(Tree[Path], AppType):
         self.show_root = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
-        # self.node_colors: dict[str, str] = {
-        #     StatusCode.Added: self.theme_variables["text-success"],
-        #     StatusCode.Deleted: self.theme_variables["text-error"],
-        #     StatusCode.Modified: self.theme_variables["text-warning"],
-        #     StatusCode.No_Change: self.theme_variables["warning-darken-2"],
-        #     StatusCode.Run: self.theme_variables["error"],
-        #     StatusCode.X: self.theme_variables["text-secondary"],
-        # }
+        self.update_node_colors()
+
+    def update_node_colors(self) -> None:
+        self.node_colors: dict[str, str] = {
+            StatusCode.Added: self.app.theme_variables["text-success"],
+            StatusCode.Deleted: self.app.theme_variables["text-error"],
+            StatusCode.Modified: self.app.theme_variables["text-warning"],
+            StatusCode.No_Change: self.app.theme_variables["warning-darken-2"],
+            StatusCode.Run: self.app.theme_variables["error"],
+            StatusCode.No_Status: self.app.theme_variables["text-secondary"],
+        }
 
     # def create_label(self, path: Path, tab_name: TabName) -> str:
     #     italic = " italic" if not path.exists() else ""
     #     apply_color = self.node_colors.get(
-    #         self.apply_file_status.get(path, StatusCode.X)
+    #         self.apply_file_status.get(path, StatusCode.No_Status)
     #     )
     #     if tab_name == TabName.apply:
     #         apply_color = self.node_colors.get(
-    #             self.apply_file_status.get(path, StatusCode.X)
+    #             self.apply_file_status.get(path, StatusCode.No_Status)
     #         )
     #         return f"[{apply_color}" f"{italic}]{path.name}[/]"
     #     elif tab_name == TabName.re_add:
     #         re_add_color = self.node_colors.get(
-    #             self.re_add_file_status.get(path, StatusCode.X)
+    #             self.re_add_file_status.get(path, StatusCode.No_Status)
     #         )
     #         return f"[{re_add_color}" f"{italic}]{path.name}[/]"
     #     else:

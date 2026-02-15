@@ -244,4 +244,5 @@ class StatusCode(StrEnum):
     Modified = "M"
     No_Change = " "
     Run = "R"  # not implemented TODO: disable operate buttons
-    X = "X"  # Fake X status: managed paths absent from chezmoi status output
+    # Fake X status: managed paths absent from chezmoi status output
+    No_Status = "X"
