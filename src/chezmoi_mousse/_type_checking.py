@@ -1,19 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
 
-if TYPE_CHECKING:
-    from ._chezmoi_command import WriteCmd
-    from .gui.textual_app import ChezmoiGUI
+from ._chezmoi_command import WriteCmd
 
-type ParsedJson = dict[str, "Any"]
-
-__all__ = ["AppType", "InitCloneData", "ParsedJson"]
-
-
-class AppType:
-    app: ChezmoiGUI
+__all__ = ["InitCloneData"]
 
 
 @dataclass(slots=True)
