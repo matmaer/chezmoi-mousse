@@ -135,6 +135,7 @@ class ContentsView(Vertical, AppType):
         if self.show_path is None:
             return
         if self.show_path not in self.cache:
+            # Conditions for ApplyTab and ReAddTab
             if self.show_path in self.app.cmd_results.managed_files:
                 self.cache[self.show_path] = self.create_file_contents(
                     file_path=self.show_path, managed=True
@@ -146,6 +147,14 @@ class ContentsView(Vertical, AppType):
                     has_x_paths=self.show_path in self.app.cmd_results.managed_dirs,
                     dest_dir=self.app.cmd_results.dest_dir,
                 ).container
-
+            # Conditions for AddTab
+            elif self.show_path.is_file():
+                self.cache[self.show_path] = self.create_file_contents(
+                    file_path=self.show_path, managed=False
+                )
+            elif self.show_path.is_dir():
+                self.cache[self.show_path] = Static(
+                    f"{self.show_path} is a directory not managed."
+                )
         self.remove_children()
         self.mount(self.cache[self.show_path])
