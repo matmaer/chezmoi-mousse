@@ -36,14 +36,23 @@ DIFF_TCSS = {
 }
 
 
-class DiffWidgets:
+class DiffView(ScrollableContainer, AppType):
 
-    def __init__(self, diff_result: CommandResult) -> None:
-        self.widgets: list[Static] = []
+    show_path: reactive["Path | None"] = reactive(None, init=False)
+
+    def __init__(self, *, ids: "AppIds") -> None:
+        super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
+        self.cache: DiffWidgetDict = {}
+        self.canvas_name = ids.canvas_name
+
+    def on_mount(self) -> None:
+        self.border_title = f" {self.app.cmd_results.dest_dir} "
+
+    def create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
         if not diff_result.std_out:
-            self.widgets = [Static(LogString.no_stdout)]
-            return
+            return [Static(LogString.no_stdout)]
 
+        widgets: list[Static] = []
         lines = diff_result.std_out.splitlines()
 
         def get_prefix(line: str) -> str:
@@ -56,41 +65,24 @@ class DiffWidgets:
             group_list = list(group_lines)
             if prefix in ("+", "-"):
                 text = "\n".join(group_list)
-                self.widgets.append(Static(text, classes=DIFF_TCSS[prefix].value))
+                widgets.append(Static(text, classes=DIFF_TCSS[prefix].value))
             else:
                 for line in group_list:
-                    self.widgets.append(Static(line, classes=DIFF_TCSS[prefix].value))
-
-
-class DiffView(ScrollableContainer, AppType):
-
-    show_path: reactive["Path | None"] = reactive(None, init=False)
-
-    def __init__(self, *, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
-        self.diff_widgets: DiffWidgetDict = {}
-        self.canvas_name = ids.canvas_name
-
-    def on_mount(self) -> None:
-        self.border_title = f" {self.app.cmd_results.dest_dir} "
+                    widgets.append(Static(line, classes=DIFF_TCSS[prefix].value))
+        return widgets
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
             return
-        if (
-            self.canvas_name == TabName.apply
-            and self.show_path not in self.diff_widgets
-        ):
-            self.diff_widgets[self.show_path] = DiffWidgets(
+        if self.canvas_name == TabName.apply and self.show_path not in self.cache:
+            self.cache[self.show_path] = self.create_diff_widgets(
                 CMD.read(ReadCmd.diff, path_arg=self.show_path)
-            ).widgets
-        elif (
-            self.canvas_name == TabName.re_add
-            and self.show_path not in self.diff_widgets
-        ):
-            self.diff_widgets[self.show_path] = DiffWidgets(
+            )
+
+        elif self.canvas_name == TabName.re_add and self.show_path not in self.cache:
+            self.cache[self.show_path] = self.create_diff_widgets(
                 CMD.read(ReadCmd.diff_reverse, path_arg=self.show_path)
-            ).widgets
+            )
 
         self.remove_children()
-        self.mount_all(self.diff_widgets[self.show_path])
+        self.mount_all(self.cache[self.show_path])
