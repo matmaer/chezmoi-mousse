@@ -107,8 +107,5 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success("Re-Add tab list tree populated.")
 
     def populate_global_git_log(self) -> None:
-        if self.app.paths is not None:
-            logs_tab = self.screen.query_exactly_one(LogsTab)
-            logs_tab.git_log_result = GitLogTable(
-                CMD.read(ReadCmd.git_log, path_arg=None)
-            )
+        logs_tab = self.screen.query_exactly_one(LogsTab)
+        logs_tab.git_log_result = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=None))

@@ -5,7 +5,7 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, InitCloneData, NodeData
+    from chezmoi_mousse import AppIds, InitCloneData
 
     from .actionables import CloseButton, OpButton
 
@@ -34,15 +34,15 @@ class CompletedOpMsg(Message):
 
 
 class CurrentApplyNodeMsg(Message):
-    def __init__(self, node_data: "NodeData") -> None:
-        self.node_data = node_data
+    def __init__(self, path: "Path") -> None:
+        self.path = path
         super().__init__()
 
 
 class CurrentReAddNodeMsg(Message):
     # used to keep track in main screen to push the operate screen
-    def __init__(self, node_data: "NodeData") -> None:
-        self.node_data = node_data
+    def __init__(self, path: "Path") -> None:
+        self.path = path
         super().__init__()
 
 

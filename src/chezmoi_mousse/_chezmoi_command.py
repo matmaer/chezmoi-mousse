@@ -16,7 +16,14 @@ if TYPE_CHECKING:
     from .gui.common.loggers import AppLog, CmdLog
 
 
-__all__ = ["CommandResult", "ReadCmd", "ReadVerb", "WriteCmd", "WriteVerb"]
+__all__ = [
+    "ChezmoiCommand",
+    "CommandResult",
+    "ReadCmd",
+    "ReadVerb",
+    "WriteCmd",
+    "WriteVerb",
+]
 
 
 class LogUtils:

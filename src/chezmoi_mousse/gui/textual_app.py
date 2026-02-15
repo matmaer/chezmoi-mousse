@@ -43,7 +43,6 @@ from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
-from .managed_paths import PathDict
 from .operate_mode import OperateMode
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
@@ -130,7 +129,6 @@ class ChezmoiGUI(App[None]):
         self.init_needed: bool = False
 
         self.init_cmd_result: "CommandResult | None" = None
-        self.paths: "PathDict | None" = None
         self.cmd_results = CmdResults()
 
         AppState.set_app(self)
@@ -172,23 +170,7 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         else:
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-            await self.update_app().wait()
             self.push_screen(MainScreen())
-
-    @work(name="update_app")
-    async def update_app(self) -> None:
-        if self.init_needed is True:
-            return
-        self.paths = PathDict(
-            dest_dir=self.cmd_results.dest_dir,
-            theme_variables=self.theme_variables,
-            managed_dirs=self.cmd_results.managed_dirs,
-            managed_files=self.cmd_results.managed_files,
-            apply_dir_status=self.cmd_results.apply_status_dirs,
-            apply_file_status=self.cmd_results.apply_status_files,
-            re_add_dir_status=self.cmd_results.re_add_status_dirs,
-            re_add_file_status=self.cmd_results.re_add_status_files,
-        )
 
     def toggle_operate_display(self, *, ids: AppIds) -> None:
         if isinstance(self.screen, InitChezmoi):

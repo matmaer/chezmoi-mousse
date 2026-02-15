@@ -8,7 +8,7 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Switch
 
-from chezmoi_mousse import IDS, AppType, Chars, NodeData, Tcss
+from chezmoi_mousse import IDS, AppType, Chars, Tcss
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -235,7 +235,7 @@ class AddTab(TabsBase, AppType):
 
     def __init__(self) -> None:
         super().__init__(ids=IDS.add)
-        self.current_node: "NodeData | None" = None
+        self.current_path: "Path | None" = None
 
     def compose(self) -> ComposeResult:
         yield OperateMode(ids=IDS.add)
@@ -267,9 +267,9 @@ class AddTab(TabsBase, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        self.current_node = NodeData(path=event.node.data.path)
+        self.current_path = event.node.data.path
         self.contents_view.show_path = event.node.data.path
-        self.operate_mode_container.path_arg = self.current_node.path
+        self.operate_mode_container.path_arg = self.current_path
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

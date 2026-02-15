@@ -14,7 +14,7 @@ from ._str_enum_names import (
 )
 from ._str_enums import FlatBtnLabel, LinkBtn, SubTabLabel
 
-__all__ = ["AppIds"]
+__all__ = ["AppIds", "CanvasIds"]
 
 
 class AppIds:

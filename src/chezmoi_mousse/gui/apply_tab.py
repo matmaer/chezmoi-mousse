@@ -42,9 +42,7 @@ class ApplyTab(TabsBase, AppType):
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
         msg.stop()
-        self.git_log_view.show_path = msg.node_data.path
-        if self.app.paths is None:
-            return
-        self.operate_mode_container.path_arg = msg.node_data.path
-        self.diff_view.show_path = msg.node_data.path
-        self.contents_view.show_path = msg.node_data.path
+        self.git_log_view.show_path = msg.path
+        self.operate_mode_container.path_arg = msg.path
+        self.diff_view.show_path = msg.path
+        self.contents_view.show_path = msg.path

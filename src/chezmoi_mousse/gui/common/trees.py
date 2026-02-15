@@ -5,14 +5,14 @@ from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, Chars, NodeData, TabName, Tcss, TreeName
+from chezmoi_mousse import AppIds, AppType, Chars, TabName, Tcss, TreeName
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 __all__ = ["ListTree", "ManagedTree"]
 
 
-class TreeBase(Tree[NodeData], AppType):
+class TreeBase(Tree[Path], AppType):
 
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded
@@ -24,19 +24,44 @@ class TreeBase(Tree[NodeData], AppType):
             label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
         self.ids = ids
-        assert self.app.paths is not None
         if self.ids.canvas_name == TabName.apply:
-            self.dir_nodes = self.app.paths.apply_dir_node_dict
+            self.dir_nodes = self.app.cmd_results.apply_dir_nodes
         else:
-            self.dir_nodes = self.app.paths.re_add_dir_node_dict
+            self.dir_nodes = self.app.cmd_results.re_add_dir_nodes
 
     def on_mount(self) -> None:
         self.show_root = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
+        # self.node_colors: dict[str, str] = {
+        #     StatusCode.Added: self.theme_variables["text-success"],
+        #     StatusCode.Deleted: self.theme_variables["text-error"],
+        #     StatusCode.Modified: self.theme_variables["text-warning"],
+        #     StatusCode.No_Change: self.theme_variables["warning-darken-2"],
+        #     StatusCode.Run: self.theme_variables["error"],
+        #     StatusCode.X: self.theme_variables["text-secondary"],
+        # }
+
+    # def create_label(self, path: Path, tab_name: TabName) -> str:
+    #     italic = " italic" if not path.exists() else ""
+    #     apply_color = self.node_colors.get(
+    #         self.apply_file_status.get(path, StatusCode.X)
+    #     )
+    #     if tab_name == TabName.apply:
+    #         apply_color = self.node_colors.get(
+    #             self.apply_file_status.get(path, StatusCode.X)
+    #         )
+    #         return f"[{apply_color}" f"{italic}]{path.name}[/]"
+    #     elif tab_name == TabName.re_add:
+    #         re_add_color = self.node_colors.get(
+    #             self.re_add_file_status.get(path, StatusCode.X)
+    #         )
+    #         return f"[{re_add_color}" f"{italic}]{path.name}[/]"
+    #     else:
+    #         raise ValueError(f"Unhandled tab name: {tab_name}")
 
     @on(Tree.NodeSelected)
-    def send_node_context_message(self, event: Tree.NodeSelected[NodeData]) -> None:
+    def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is None:
             raise ValueError("event.node.data is None in send_node_context")
         if self.ids.canvas_name == TabName.apply:
@@ -52,19 +77,16 @@ class ListTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        assert self.app.paths is not None
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files:
                 # only add files as leaves, if they were not added already.
                 if not any(
-                    child.data and child.data.path == file_path
+                    child.data and child.data == file_path
                     for child in self.root.children
                 ):
                     # show relative path from dest_dir as label
                     relative_path = file_path.relative_to(self.app.cmd_results.dest_dir)
-                    self.root.add_leaf(
-                        str(relative_path), data=NodeData(path=file_path)
-                    )
+                    self.root.add_leaf(str(relative_path), data=file_path)
 
 
 class ManagedTree(TreeBase):
@@ -74,21 +96,19 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        nodes: dict[Path, TreeNode[NodeData]] = {
-            self.app.cmd_results.dest_dir: self.root
-        }
-        self.root.data = NodeData(path=self.app.cmd_results.dest_dir)
+        nodes: dict[Path, TreeNode[Path]] = {self.app.cmd_results.dest_dir: self.root}
+        self.root.data = self.app.cmd_results.dest_dir
         # Sort directories by path depth to ensure parents are added before children
         for dir_path in sorted(self.dir_nodes.keys(), key=lambda p: len(p.parts)):
             dir_node = self.dir_nodes[dir_path]
             if dir_path == self.app.cmd_results.dest_dir:
                 # Add files directly under the root
                 for file_path, _ in dir_node.status_files.items():
-                    self.root.add_leaf(file_path.name, data=NodeData(path=file_path))
+                    self.root.add_leaf(file_path.name, data=file_path)
             else:
-                parent_node: TreeNode[NodeData] = nodes[dir_path.parent]
-                new_node = parent_node.add(dir_path.name, data=NodeData(path=dir_path))
+                parent_node: TreeNode[Path] = nodes[dir_path.parent]
+                new_node = parent_node.add(dir_path.name, data=dir_path)
                 nodes[dir_path] = new_node
                 # Add files as leaves under this directory
                 for file_path, _ in dir_node.status_files.items():
-                    new_node.add_leaf(file_path.name, data=NodeData(path=file_path))
+                    new_node.add_leaf(file_path.name, data=file_path)
