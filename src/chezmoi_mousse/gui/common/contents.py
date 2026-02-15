@@ -3,7 +3,7 @@ from pathlib import Path
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
@@ -12,9 +12,7 @@ from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, Tcss
 
 __all__ = ["ContentsView"]
 
-type FileContentsDict = dict[Path, Static | TextArea]
-type DirContentsDict = dict[Path, list[Static | Label]]
-type ContentsDict = dict[Path, Static | TextArea | ScrollableContainer]
+type ContentsCache = dict[Path, ScrollableContainer]
 
 
 BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
@@ -47,13 +45,14 @@ class ContentStr(StrEnum):
     truncated = "\n--- File content truncated to"
 
 
-class ContentsView(Vertical, AppType):
+class ContentsView(Container, AppType):
 
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
-        self.cache: ContentsDict = {}
+        self.cache: ContentsCache = {}
+        self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
         self.border_title = f" {self.app.cmd_results.dest_dir} "
@@ -110,49 +109,75 @@ class ContentsView(Vertical, AppType):
     def create_dir_contents(
         self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
     ) -> ScrollableContainer:
-        self.widgets: list[Static | Label] = []
-        self.widgets.append(Label(f"Directory: {dir_path}"))
-        # self.container: ScrollableContainer
+        widgets: list[Static | Label] = [Label(f"Directory: {dir_path}")]
+
         if dir_path == dest_dir:
-            self.widgets.append(Static("in dest dir"))
+            widgets.append(Static("in dest dir"))
         elif has_status_paths and has_x_paths:
-            self.widgets.append(
+            widgets.append(
                 Static(f"a directory {dir_path} with status and managed paths")
             )
         elif has_status_paths:
-            self.widgets.append(Static(f"a directory {dir_path} with status paths"))
+            widgets.append(Static(f"a directory {dir_path} with status paths"))
         elif has_x_paths:
-            self.widgets.append(Static(f"a directory {dir_path} with managed paths"))
+            widgets.append(Static(f"a directory {dir_path} with managed paths"))
         else:
-            self.widgets.append(
+            widgets.append(
                 Static(f"the directory {dir_path} has no managed or status paths")
             )
-        return ScrollableContainer(*self.widgets)
+        return ScrollableContainer(*widgets)
+
+    def _cache_container(
+        self, path: Path, *widgets: Static | TextArea | Label
+    ) -> ScrollableContainer:
+        """Helper to mount and cache a ScrollableContainer with widgets."""
+        container = ScrollableContainer()
+        self.mount(container)
+        if widgets:
+            container.mount_all(widgets)
+        self.cache[path] = container
+        return container
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
             return
+
         if self.show_path not in self.cache:
-            # Conditions for ApplyTab and ReAddTab
+            # Managed files (ApplyTab/ReAddTab)
             if self.show_path in self.app.cmd_results.managed_files:
-                self.cache[self.show_path] = self.create_file_contents(
+                widget = self.create_file_contents(
                     file_path=self.show_path, managed=True
                 )
+                self._cache_container(self.show_path, widget)
+
+            # Managed directories (ApplyTab/ReAddTab)
             elif self.show_path in self.app.cmd_results.managed_dirs:
-                self.cache[self.show_path] = self.create_dir_contents(
+                container = self.create_dir_contents(
                     dir_path=self.show_path,
                     has_status_paths=self.show_path in self.app.cmd_results.status_dirs,
                     has_x_paths=self.show_path in self.app.cmd_results.managed_dirs,
                     dest_dir=self.app.cmd_results.dest_dir,
                 )
-            # Conditions for AddTab
+                self.mount(container)
+                self.cache[self.show_path] = container
+
+            # Unmanaged files (AddTab)
             elif self.show_path.is_file():
-                self.cache[self.show_path] = self.create_file_contents(
+                widget = self.create_file_contents(
                     file_path=self.show_path, managed=False
                 )
+                self._cache_container(self.show_path, widget)
+
+            # Unmanaged directories (AddTab)
             elif self.show_path.is_dir():
-                self.cache[self.show_path] = Static(
-                    f"{self.show_path} is a directory not managed."
-                )
-        self.remove_children()
-        self.mount(self.cache[self.show_path])
+                widget = Static(f"{self.show_path} is a directory not managed.")
+                self._cache_container(self.show_path, widget)
+
+            else:
+                return
+
+        # Hide current container, show the selected one
+        if self.current_container is not None:
+            self.current_container.display = False
+        self.cache[self.show_path].display = True
+        self.current_container = self.cache[self.show_path]

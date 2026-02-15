@@ -1,7 +1,7 @@
 from itertools import groupby
 from pathlib import Path
 
-from textual.containers import ScrollableContainer
+from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
@@ -17,8 +17,6 @@ from chezmoi_mousse import (
 )
 
 __all__ = ["DiffView"]
-
-type DiffWidgetDict = dict[Path, list[Static]]
 
 
 DIFF_TCSS = {
@@ -36,14 +34,15 @@ DIFF_TCSS = {
 }
 
 
-class DiffView(ScrollableContainer, AppType):
+class DiffView(Container, AppType):
 
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
-        self.cache: DiffWidgetDict = {}
+        self.cache: dict[Path, ScrollableContainer] = {}
         self.canvas_name = ids.canvas_name
+        self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
         self.border_title = f" {self.app.cmd_results.dest_dir} "
@@ -71,18 +70,32 @@ class DiffView(ScrollableContainer, AppType):
                     widgets.append(Static(line, classes=DIFF_TCSS[prefix].value))
         return widgets
 
+    def _cache_container(self, path: Path, *widgets: Static) -> ScrollableContainer:
+        """Helper to mount and cache a ScrollableContainer with widgets."""
+        container = ScrollableContainer()
+        self.mount(container)
+        container.mount_all(widgets)
+        self.cache[path] = container
+        return container
+
     def watch_show_path(self) -> None:
         if self.show_path is None:
             return
-        if self.canvas_name == TabName.apply and self.show_path not in self.cache:
-            self.cache[self.show_path] = self.create_diff_widgets(
-                CMD.read(ReadCmd.diff, path_arg=self.show_path)
-            )
 
-        elif self.canvas_name == TabName.re_add and self.show_path not in self.cache:
-            self.cache[self.show_path] = self.create_diff_widgets(
-                CMD.read(ReadCmd.diff_reverse, path_arg=self.show_path)
-            )
+        if self.show_path not in self.cache:
+            # Determine which diff command to use
+            if self.canvas_name == TabName.apply:
+                diff_result = CMD.read(ReadCmd.diff, path_arg=self.show_path)
+            elif self.canvas_name == TabName.re_add:
+                diff_result = CMD.read(ReadCmd.diff_reverse, path_arg=self.show_path)
+            else:
+                return
 
-        self.remove_children()
-        self.mount_all(self.cache[self.show_path])
+            widgets = self.create_diff_widgets(diff_result)
+            self._cache_container(self.show_path, *widgets)
+
+        # Hide current container, show the selected one
+        if self.current_container is not None:
+            self.current_container.display = False
+        self.cache[self.show_path].display = True
+        self.current_container = self.cache[self.show_path]

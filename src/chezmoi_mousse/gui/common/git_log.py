@@ -1,15 +1,13 @@
 from pathlib import Path
 
 from textual import work
-from textual.containers import ScrollableContainer
+from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse import CMD, AppIds, AppType, CommandResult, ReadCmd, Tcss
 
 __all__ = ["GitLog", "GitLogTable"]
-
-type GitLogTableDict = dict[Path, DataTable[str]]
 
 
 class GitLogTable(DataTable[str], AppType):
@@ -48,35 +46,55 @@ class GitLogTable(DataTable[str], AppType):
                 self.add_row(*columns)
 
 
-class GitLog(ScrollableContainer, AppType):
+class GitLog(Container, AppType):
 
     changed_paths: reactive["list[Path] | None"] = reactive(None, init=False)
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
-        self.cache: GitLogTableDict = {}
+        self.cache: dict[Path, ScrollableContainer] = {}
+        self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
         self.border_title = " Global Chezmoi Git Log "
 
+    def _cache_container(
+        self, path: Path, table: DataTable[str]
+    ) -> ScrollableContainer:
+        """Helper to mount and cache a ScrollableContainer with DataTable."""
+        container = ScrollableContainer()
+        self.mount(container)
+        container.mount(table)
+        self.cache[path] = container
+        return container
+
     def watch_show_path(self) -> None:
         if self.show_path is None:
             return
-        self.remove_children()
+
         if self.show_path not in self.cache:
-            self.cache[self.show_path] = GitLogTable(
-                CMD.read(ReadCmd.git_log, path_arg=self.show_path)
-            )
-        self.mount(self.cache[self.show_path])
+            table = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=self.show_path))
+            self._cache_container(self.show_path, table)
+
+        # Hide current container, show the selected one
+        if self.current_container is not None:
+            self.current_container.display = False
+        self.cache[self.show_path].display = True
+        self.current_container = self.cache[self.show_path]
 
     @work
     async def watch_changed_paths(self) -> None:
         if self.changed_paths is None:
             return
+
+        # Remove cached paths no longer in changed_paths
+        paths_to_remove = [p for p in self.cache if p not in self.changed_paths]
+        for path in paths_to_remove:
+            self.cache.pop(path, None)
+
+        # Add new paths from changed_paths that aren't cached yet
         for path in self.changed_paths:
-            # remove paths no longer in changed_paths
             if path not in self.cache:
-                self.cache.pop(path, None)
-            # add paths in changed_paths that are not in cache
-            self.cache[path] = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=path))
+                table = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=path))
+                self._cache_container(path, table)
