@@ -10,8 +10,6 @@ from textual.widgets import Collapsible, DataTable, Label, Link, Static
 from chezmoi_mousse import IDS, AppType, Chars, SectionLabel, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
-
     DataTableText = DataTable[Text]
 else:
     DataTableText = DataTable
@@ -22,10 +20,8 @@ __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 class DoctorTable(DataTable[Text], AppType):
 
-    def __init__(self, ids: "AppIds", doctor_stdout: str) -> None:
-        super().__init__(
-            id=ids.datatable.doctor, show_cursor=False, classes=Tcss.doctor_table
-        )
+    def __init__(self, doctor_stdout: str) -> None:
+        super().__init__(show_cursor=False, classes=Tcss.doctor_table)
         self.doctor_lines = doctor_stdout.splitlines()
 
     def on_mount(self) -> None:

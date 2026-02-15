@@ -4,7 +4,6 @@ __all__ = [
     "BindingAction",
     "ContainerName",
     "ContentSwitcherName",
-    "DataTableName",
     "LabelName",
     "LogName",
     "ScreenName",
@@ -44,11 +43,6 @@ class ContentSwitcherName(StrEnum):
     apply_view_switcher = auto()
     re_add_tree_switcher = auto()
     re_add_view_switcher = auto()
-
-
-class DataTableName(StrEnum):
-    doctor_table = auto()
-    git_log_table = auto()
 
 
 class LabelName(StrEnum):

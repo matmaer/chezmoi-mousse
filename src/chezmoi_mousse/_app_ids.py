@@ -3,7 +3,6 @@ from ._enum_data import SwitchEnum
 from ._str_enum_names import (
     ContainerName,
     ContentSwitcherName,
-    DataTableName,
     LabelName,
     LogName,
     ScreenName,
@@ -23,7 +22,6 @@ class AppIds:
         "close_q",
         "close",
         "container",
-        "datatable",
         "filter",
         "footer",
         "header",
@@ -46,7 +44,6 @@ class AppIds:
         self.close_q = f"#{self.close}"
 
         self.container = ContainerIds(self)
-        self.datatable = DataTableIds(self)
         self.filter = FilterIds(self)
         self.label = LabelIds(self)
         self.logger = LoggerIds(self)
@@ -64,9 +61,6 @@ class AppIds:
     ) -> str:
         return f"{qid}{self.canvas_name.name}_{switcher.name}"
 
-    def datatable_id(self, qid: str = "", *, datatable_name: DataTableName) -> str:
-        return f"{qid}{self.canvas_name.name}_{datatable_name.name}_datatable"
-
     def flat_button_id(self, qid: str = "", *, btn: FlatBtnLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_flat_btn"
 
@@ -81,9 +75,6 @@ class AppIds:
 
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
         return f"{qid}{self.canvas_name.name}_{static.name}_static"
-
-    def switch_horizontal_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
-        return f"{qid}{self.canvas_name.name}_{switch.name}_switch_horizontal"
 
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
@@ -179,14 +170,6 @@ class ContentSwitcherIds:
     @property
     def trees_q(self) -> str:
         return f"#{self.trees}"
-
-
-class DataTableIds:
-    def __init__(self, ids: AppIds):
-        self.doctor = ids.datatable_id(datatable_name=DataTableName.doctor_table)
-        self.doctor_q = f"#{self.doctor}"
-        self.git_log = ids.datatable_id(datatable_name=DataTableName.git_log_table)
-        self.git_log_q = f"#{self.git_log}"
 
 
 class FilterIds:

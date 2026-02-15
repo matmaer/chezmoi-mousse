@@ -421,8 +421,7 @@ class InitCollapsibles(VerticalGroup, AppType):
         yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(
             DoctorTable(
-                IDS.init,
-                doctor_stdout=self.app.cmd_results.doctor_results.completed_process.stdout,
+                doctor_stdout=self.app.cmd_results.doctor_results.completed_process.stdout
             ),
             title="Doctor Output",
         )

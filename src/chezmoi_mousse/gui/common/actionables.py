@@ -147,8 +147,8 @@ class OperateButtons(HorizontalGroup):
 class SwitchWithLabel(HorizontalGroup):
 
     def __init__(self, ids: "AppIds", *, switch_enum: "SwitchEnum") -> None:
+        super().__init__()
         self.switch_enum = switch_enum
-        super().__init__(id=ids.switch_horizontal_id(switch=self.switch_enum))
         self.ids = ids
 
     def compose(self) -> ComposeResult:
