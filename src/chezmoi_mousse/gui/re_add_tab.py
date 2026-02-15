@@ -5,10 +5,11 @@ from textual.containers import Horizontal
 from chezmoi_mousse import IDS, AppType
 
 from .common.actionables import OperateButtons, SwitchSlider
+from .common.git_log import GitLog
 from .common.messages import CurrentReAddNodeMsg
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.tabs_base import TabsBase
-from .common.views import ContentsView, DiffView, GitLog
+from .common.views import ContentsView, DiffView
 from .operate_mode import OperateMode
 
 __all__ = ["ReAddTab"]

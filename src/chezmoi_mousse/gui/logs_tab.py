@@ -9,8 +9,8 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import IDS, AppType, SubTabLabel, Tcss
 
 from .common.actionables import TabButtons
+from .common.git_log import GitLog
 from .common.loggers import AppLog, CmdLog
-from .common.views import GitLog
 
 if TYPE_CHECKING:
     from textual.widgets import DataTable

@@ -9,10 +9,10 @@ from chezmoi_mousse import CMD, IDS, AppType, LogString, ReadCmd, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
+from .common.git_log import GitLogTable
 from .common.loggers import AppLog, CmdLog
 from .common.screen_header import CustomHeader
 from .common.trees import ListTree, ManagedTree
-from .common.views import GitLogTable
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab

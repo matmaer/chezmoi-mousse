@@ -10,8 +10,9 @@ from textual.widgets import Button, ContentSwitcher
 from chezmoi_mousse import SubTabLabel, Tcss
 
 from .actionables import TabButtons
+from .git_log import GitLog
 from .trees import ListTree, ManagedTree
-from .views import ContentsView, DiffView, GitLog
+from .views import ContentsView, DiffView
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
