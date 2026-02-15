@@ -55,11 +55,6 @@ if TYPE_CHECKING:
 
 __all__ = ["ChezmoiGUI"]
 
-# TODO: implement 'chezmoi verify', if exit 0, display message in Tree
-# widgets inform the user why the Tree widget is empty.
-# TODO: implement spinner for commands taking a bit longer like operations.
-
-
 chezmoi_mousse_dark = Theme(
     name="chezmoi-mousse-dark",
     dark=True,
