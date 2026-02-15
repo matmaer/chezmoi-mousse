@@ -49,7 +49,7 @@ class ContentsView(Container, AppType):
 
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
-    def __init__(self, *, ids: "AppIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
         self.cache: ContentsCache = {}
         self.current_container: ScrollableContainer | None = None

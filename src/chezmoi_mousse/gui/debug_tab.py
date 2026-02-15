@@ -47,7 +47,7 @@ class DebugTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
-            ids=IDS.debug,
+            IDS.debug,
             buttons=(
                 FlatBtnLabel.test_paths,
                 FlatBtnLabel.debug_log,
@@ -65,7 +65,7 @@ class DebugTab(Horizontal, AppType):
                 id=IDS.debug.view.test_paths,
                 classes=Tcss.border_title_top,
             )
-            yield DebugLog(ids=IDS.debug)
+            yield DebugLog(IDS.debug)
             yield RichLog(
                 id=IDS.debug.logger.dom_nodes,
                 auto_scroll=False,

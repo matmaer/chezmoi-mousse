@@ -173,7 +173,7 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
             self.push_screen(MainScreen())
 
-    def toggle_operate_display(self, *, ids: AppIds) -> None:
+    def toggle_operate_display(self, ids: AppIds) -> None:
         if isinstance(self.screen, InitChezmoi):
             init_left_side = self.screen.query_one(
                 ids.container.left_side_q, FlatButtonsVertical
@@ -288,7 +288,7 @@ class ChezmoiGUI(App[None]):
                 operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
                 msg.button.label = OpBtnLabel.re_add_run
 
-            self.toggle_operate_display(ids=msg.ids)
+            self.toggle_operate_display(msg.ids)
             operate_mode_container.update_review_info(msg.button.btn_enum)
             operate_mode_container.display = True
             operate_buttons.visible = True
@@ -310,7 +310,7 @@ class ChezmoiGUI(App[None]):
             msg.ids.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.visible = False
-        self.toggle_operate_display(ids=msg.ids)
+        self.toggle_operate_display(msg.ids)
         operate_buttons.refresh(recompose=True)
         msg.button.display = False
         operate_buttons.visible = True

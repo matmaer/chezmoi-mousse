@@ -39,7 +39,7 @@ __all__ = [
 
 
 class CloseButton(Button, AppType):
-    def __init__(self, *, ids: "AppIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(
             id=ids.close, classes=Tcss.operate_button, label=OpBtnLabel.cancel
         )
@@ -59,27 +59,24 @@ class CloseButton(Button, AppType):
         if event.button.label == OpBtnLabel.exit_app:
             self.app.exit()
             return
-        self.post_message(CloseButtonMsg(button=event.button, ids=self.ids))
+        self.post_message(CloseButtonMsg(self.ids, button=event.button))
 
 
 class FlatButton(Button):
-    def __init__(self, *, ids: "AppIds", btn_enum: FlatBtnLabel) -> None:
-        self.ids = ids
+    def __init__(self, ids: "AppIds", *, btn_enum: FlatBtnLabel) -> None:
         super().__init__(
             classes=Tcss.flat_button,
             flat=True,
-            id=self.ids.flat_button_id(btn=btn_enum),
+            id=ids.flat_button_id(btn=btn_enum),
             label=btn_enum,
             variant="primary",
         )
 
 
 class FlatLink(Link):
-    def __init__(self, *, ids: "AppIds", link_enum: LinkBtn) -> None:
-        self.ids = ids
-
+    def __init__(self, ids: "AppIds", *, link_enum: LinkBtn) -> None:
         super().__init__(
-            id=self.ids.link_button_id(btn=link_enum),
+            id=ids.link_button_id(btn=link_enum),
             text=link_enum.link_text,
             url=link_enum.link_url,
         )
@@ -92,16 +89,14 @@ class FlatLink(Link):
 
 class FlatButtonsVertical(Vertical):
 
-    def __init__(self, *, ids: "AppIds", buttons: tuple[FlatBtnLabel, ...]) -> None:
-        self.buttons: tuple[FlatBtnLabel, ...] = buttons
+    def __init__(self, ids: "AppIds", *, buttons: tuple[FlatBtnLabel, ...]) -> None:
+        super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
         self.ids = ids
-        super().__init__(
-            id=self.ids.container.left_side, classes=Tcss.tab_left_vertical
-        )
+        self.buttons: tuple[FlatBtnLabel, ...] = buttons
 
     def compose(self) -> ComposeResult:
         for btn_enum in self.buttons:
-            yield FlatButton(ids=self.ids, btn_enum=btn_enum)
+            yield FlatButton(self.ids, btn_enum=btn_enum)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
@@ -122,8 +117,8 @@ class OpButton(Button, AppType):
 
 class OperateButtons(HorizontalGroup):
     def __init__(self, ids: "AppIds"):
+        super().__init__(id=ids.container.operate_buttons)
         self.ids = ids
-        super().__init__(id=self.ids.container.operate_buttons)
 
     def compose(self) -> ComposeResult:
         if self.ids.canvas_name == TabName.add:
@@ -137,7 +132,7 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=self.ids.op_btn.destroy, btn_enum=OpBtnEnum.destroy)
         if self.ids.canvas_name == ScreenName.init:
             yield OpButton(btn_id=self.ids.op_btn.init, btn_enum=OpBtnEnum.init)
-        yield CloseButton(ids=self.ids)
+        yield CloseButton(self.ids)
 
     @on(OpButton.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: OpButton.Pressed) -> None:
@@ -146,15 +141,15 @@ class OperateButtons(HorizontalGroup):
             raise TypeError("event.button is not an OpButton")
         # Only send a message; visual state and label changes
         # are handled in the App's OperateButtonMsg handler.
-        self.post_message(OperateButtonMsg(button=event.button, ids=self.ids))
+        self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 
 class SwitchWithLabel(HorizontalGroup):
 
-    def __init__(self, *, ids: "AppIds", switch_enum: "SwitchEnum") -> None:
-        self.ids = ids
+    def __init__(self, ids: "AppIds", *, switch_enum: "SwitchEnum") -> None:
         self.switch_enum = switch_enum
-        super().__init__(id=self.ids.switch_horizontal_id(switch=self.switch_enum))
+        super().__init__(id=ids.switch_horizontal_id(switch=self.switch_enum))
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         yield Switch(id=self.ids.switch_id(switch=self.switch_enum))
@@ -164,24 +159,24 @@ class SwitchWithLabel(HorizontalGroup):
 
 
 class SwitchSlider(VerticalGroup):
-    def __init__(self, *, ids: "AppIds") -> None:
-        self.ids = ids
-        super().__init__(id=self.ids.container.switch_slider)
-        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.container.switch_slider)
+        if ids.canvas_name in (TabName.apply, TabName.re_add):
             self.switches = (SwitchEnum.unchanged, SwitchEnum.expand_all)
         else:  # for the AddTab
             self.switches = (SwitchEnum.unmanaged_dirs, SwitchEnum.unwanted)
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         for switch_enum in self.switches:
-            yield SwitchWithLabel(ids=self.ids, switch_enum=switch_enum)
+            yield SwitchWithLabel(self.ids, switch_enum=switch_enum)
 
     def on_mount(self) -> None:
         self.query(HorizontalGroup).last().styles.padding = 0
 
 
 class TabButtons(Horizontal):
-    def __init__(self, *, ids: "AppIds", buttons: tuple[SubTabLabel, ...]):
+    def __init__(self, ids: "AppIds", *, buttons: tuple[SubTabLabel, ...]):
         super().__init__()
         self.ids = ids
         self.buttons = buttons

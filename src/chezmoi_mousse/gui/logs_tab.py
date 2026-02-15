@@ -24,13 +24,13 @@ class LogsTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield TabButtons(
-            ids=IDS.logs,
+            IDS.logs,
             buttons=(SubTabLabel.app_log, SubTabLabel.cmd_log, SubTabLabel.git_log),
         )
         with ContentSwitcher(initial=IDS.logs.logger.app):
-            yield AppLog(ids=IDS.logs)
-            yield CmdLog(ids=IDS.logs)
-            yield GitLog(ids=IDS.logs)
+            yield AppLog(IDS.logs)
+            yield CmdLog(IDS.logs)
+            yield GitLog(IDS.logs)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)

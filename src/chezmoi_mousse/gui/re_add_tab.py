@@ -19,15 +19,15 @@ __all__ = ["ReAddTab"]
 class ReAddTab(TabsBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__(ids=IDS.re_add)
+        super().__init__(IDS.re_add)
 
     def compose(self) -> ComposeResult:
-        yield OperateMode(ids=IDS.re_add)
+        yield OperateMode(IDS.re_add)
         with Horizontal():
-            yield TreeSwitcher(ids=IDS.re_add)
-            yield ViewSwitcher(ids=IDS.re_add)
+            yield TreeSwitcher(IDS.re_add)
+            yield ViewSwitcher(IDS.re_add)
         yield OperateButtons(IDS.re_add)
-        yield SwitchSlider(ids=IDS.re_add)
+        yield SwitchSlider(IDS.re_add)
 
     def on_mount(self) -> None:
         self.operate_mode_container = self.query_one(

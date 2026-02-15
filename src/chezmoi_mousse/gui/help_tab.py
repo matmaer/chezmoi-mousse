@@ -67,9 +67,9 @@ class HelpStrings(StrEnum):
 class SharedBtnHelp(VerticalGroup):
 
     def compose(self) -> ComposeResult:
-        yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_forget)
+        yield FlatLink(IDS.help, link_enum=LinkBtn.chezmoi_forget)
         yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)
-        yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_destroy)
+        yield FlatLink(IDS.help, link_enum=LinkBtn.chezmoi_destroy)
         yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)
 
 
@@ -90,7 +90,7 @@ class ApplyTabHelp(Vertical):
         yield Label(HelpStrings.apply_tab_help, classes=Tcss.main_section_label)
         with ScrollableContainer():
             yield SharedFiltersHelp()
-            yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_apply)
+            yield FlatLink(IDS.help, link_enum=LinkBtn.chezmoi_apply)
             yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)
             yield Static(HelpStrings.apply_file_button)
             yield Static(HelpStrings.apply_dir_button)
@@ -106,7 +106,7 @@ class ReAddTabHelp(Vertical):
         yield Label(HelpStrings.re_add_tab_help, classes=Tcss.main_section_label)
         with ScrollableContainer():
             yield SharedFiltersHelp()
-            yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_re_add)
+            yield FlatLink(IDS.help, link_enum=LinkBtn.chezmoi_re_add)
             yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)
             yield Static(HelpStrings.re_add_file_button)
             yield Static(HelpStrings.re_add_dir_button)
@@ -129,7 +129,7 @@ class AddTabHelp(Vertical):
             yield Static(SwitchEnum.unmanaged_dirs.enabled_tooltip)
             yield Label(HelpStrings.unwanted_filter, classes=Tcss.sub_section_label)
             yield Static(SwitchEnum.unwanted.enabled_tooltip)
-            yield FlatLink(ids=IDS.help, link_enum=LinkBtn.chezmoi_add)
+            yield FlatLink(IDS.help, link_enum=LinkBtn.chezmoi_add)
             yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)
 
 
@@ -147,7 +147,7 @@ class HelpTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
-            ids=IDS.help,
+            IDS.help,
             buttons=(
                 FlatBtnLabel.apply_help,
                 FlatBtnLabel.re_add_help,

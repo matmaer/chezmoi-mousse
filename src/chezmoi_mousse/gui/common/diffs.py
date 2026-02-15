@@ -38,7 +38,7 @@ class DiffView(Container, AppType):
 
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
-    def __init__(self, *, ids: "AppIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
         self.cache: dict[Path, ScrollableContainer] = {}
         self.canvas_name = ids.canvas_name

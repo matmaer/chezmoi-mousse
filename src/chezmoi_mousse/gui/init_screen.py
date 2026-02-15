@@ -293,7 +293,7 @@ class InputGuessURL(HorizontalGroup):
             validators=GUESS_HTTPS(),
             classes=Tcss.input_field,
         )
-        yield FlatLink(ids=IDS.init, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(IDS.init, link_enum=LinkBtn.chezmoi_guess)
 
 
 class InputGuessSSH(HorizontalGroup):
@@ -304,7 +304,7 @@ class InputGuessSSH(HorizontalGroup):
             validators=GUESS_SSH(),
             classes=Tcss.input_field,
         )
-        yield FlatLink(ids=IDS.init, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(IDS.init, link_enum=LinkBtn.chezmoi_guess)
 
 
 class InputInitCloneRepo(HorizontalGroup, AppType):
@@ -421,7 +421,7 @@ class InitCollapsibles(VerticalGroup, AppType):
         yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(
             DoctorTable(
-                ids=IDS.init,
+                IDS.init,
                 doctor_stdout=self.app.cmd_results.doctor_results.completed_process.stdout,
             ),
             title="Doctor Output",
@@ -446,12 +446,12 @@ class InitChezmoi(Screen[None], AppType):
         yield CustomHeader(self.ids)
         yield HorizontalGroup(
             Label(SectionLabel.init_new_repo, classes=Tcss.main_section_label),
-            SwitchWithLabel(ids=self.ids, switch_enum=SwitchEnum.init_repo_switch),
+            SwitchWithLabel(self.ids, switch_enum=SwitchEnum.init_repo_switch),
         )
         yield InputInitCloneRepo()
         yield Static(id=self.ids.static.init_info)
         yield OperateButtons(self.ids)
-        yield OperateMode(ids=self.ids)
+        yield OperateMode(self.ids)
         yield Footer(id=self.ids.footer)
 
     def on_mount(self) -> None:

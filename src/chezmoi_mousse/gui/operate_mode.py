@@ -48,7 +48,7 @@ class LoadingModal(ModalScreen[None]):
 
 class OperateMode(Vertical, AppType):
 
-    def __init__(self, *, ids: "AppIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.op_mode)
         self.ids = ids
         self.btn_enum: OpBtnEnum | None = None

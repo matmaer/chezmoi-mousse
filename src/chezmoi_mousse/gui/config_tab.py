@@ -58,7 +58,7 @@ class DoctorTableView(Vertical, AppType):
     def watch_doctor_stdout(self) -> None:
         if self.doctor_stdout is not None:
             self.remove_children(DoctorTable)
-            self.mount(DoctorTable(ids=IDS.config, doctor_stdout=self.doctor_stdout))
+            self.mount(DoctorTable(IDS.config, doctor_stdout=self.doctor_stdout))
 
 
 class TemplateDataView(Vertical, AppType):
@@ -83,7 +83,7 @@ class ConfigTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
-            ids=IDS.config,
+            IDS.config,
             buttons=(
                 FlatBtnLabel.doctor,
                 FlatBtnLabel.pw_mgr_info,

@@ -28,31 +28,31 @@ class TreeSwitcher(Container):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(ids=self.ids, buttons=(SubTabLabel.tree, SubTabLabel.list))
+        yield TabButtons(self.ids, buttons=(SubTabLabel.tree, SubTabLabel.list))
         with ContentSwitcher(
             id=self.ids.switcher.trees,
             initial=self.ids.tree.managed,
             classes=Tcss.content_switcher_left,
         ):
-            yield ManagedTree(ids=self.ids)
-            yield ListTree(ids=self.ids)
+            yield ManagedTree(self.ids)
+            yield ListTree(self.ids)
 
 
 class ViewSwitcher(Container):
 
-    def __init__(self, *, ids: "AppIds"):
+    def __init__(self, ids: "AppIds"):
         super().__init__(id=ids.container.right_side)
         self.ids = ids
 
     def compose(self) -> ComposeResult:
         yield TabButtons(
-            ids=self.ids,
+            self.ids,
             buttons=(SubTabLabel.diff, SubTabLabel.contents, SubTabLabel.git_log),
         )
         with ContentSwitcher(initial=self.ids.container.diff):
-            yield DiffView(ids=self.ids)
-            yield ContentsView(ids=self.ids)
-            yield GitLog(ids=self.ids)
+            yield DiffView(self.ids)
+            yield ContentsView(self.ids)
+            yield GitLog(self.ids)
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def switch_view(self, event: Button.Pressed) -> None:

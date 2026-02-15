@@ -15,9 +15,8 @@ __all__ = ["TabsBase"]
 
 class TabsBase(Container):
 
-    def __init__(self, *, ids: "AppIds") -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.tab_id)
-
         self.ids = ids
         self.expand_all_state = False
 

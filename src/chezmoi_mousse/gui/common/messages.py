@@ -21,9 +21,9 @@ __all__ = [
 
 
 class CloseButtonMsg(Message):
-    def __init__(self, *, button: "CloseButton", ids: "AppIds") -> None:
-        self.button = button
+    def __init__(self, ids: "AppIds", *, button: "CloseButton") -> None:
         self.ids = ids
+        self.button = button
         super().__init__()
 
 
@@ -53,7 +53,7 @@ class InitCloneCmdMsg(Message):
 
 
 class OperateButtonMsg(Message):
-    def __init__(self, *, button: "OpButton", ids: "AppIds") -> None:
+    def __init__(self, ids: "AppIds", *, button: "OpButton") -> None:
         self.button = button
         self.ids = ids
         super().__init__()

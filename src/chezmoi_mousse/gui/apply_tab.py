@@ -19,14 +19,14 @@ __all__ = ["ApplyTab"]
 class ApplyTab(TabsBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__(ids=IDS.apply)
+        super().__init__(IDS.apply)
 
     def compose(self) -> ComposeResult:
-        yield OperateMode(ids=IDS.apply)
+        yield OperateMode(IDS.apply)
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
-            yield ViewSwitcher(ids=IDS.apply)
-        yield SwitchSlider(ids=IDS.apply)
+            yield ViewSwitcher(IDS.apply)
+        yield SwitchSlider(IDS.apply)
         yield OperateButtons(IDS.apply)
 
     def on_mount(self) -> None:

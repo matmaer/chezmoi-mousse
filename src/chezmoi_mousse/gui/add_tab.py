@@ -234,12 +234,12 @@ class FilteredDirTree(DirectoryTree, AppType):
 class AddTab(TabsBase, AppType):
 
     def __init__(self) -> None:
-        super().__init__(ids=IDS.add)
+        super().__init__(IDS.add)
         self.current_path: "Path | None" = None
 
     def compose(self) -> ComposeResult:
-        yield OperateMode(ids=IDS.add)
-        yield SwitchSlider(ids=IDS.add)
+        yield OperateMode(IDS.add)
+        yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:
         self.operate_mode_container = self.query_one(
@@ -250,7 +250,7 @@ class AddTab(TabsBase, AppType):
                 FilteredDirTree(
                     self.app.cmd_results.dest_dir, id=IDS.add.tree.dir_tree
                 ),
-                ContentsView(ids=IDS.add),
+                ContentsView(IDS.add),
             ),
             OperateButtons(IDS.add),
         )

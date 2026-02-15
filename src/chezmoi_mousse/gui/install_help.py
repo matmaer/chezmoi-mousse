@@ -53,8 +53,8 @@ class InstallHelpScreen(Screen[None], AppType):
         with Horizontal():
             yield CommandsTree()
             yield VerticalGroup(
-                FlatLink(ids=IDS.install_help, link_enum=LinkBtn.chezmoi_install),
-                FlatButton(ids=IDS.install_help, btn_enum=FlatBtnLabel.exit_app),
+                FlatLink(IDS.install_help, link_enum=LinkBtn.chezmoi_install),
+                FlatButton(IDS.install_help, btn_enum=FlatBtnLabel.exit_app),
             )
         yield Footer(id=IDS.install_help.footer)
 

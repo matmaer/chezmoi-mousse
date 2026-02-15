@@ -23,11 +23,11 @@ class TreeBase(Tree[Path], AppType):
         super().__init__(
             label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
-        self.ids = ids
-        if self.ids.canvas_name == TabName.apply:
+        if ids.canvas_name == TabName.apply:
             self.dir_nodes = self.app.cmd_results.apply_dir_nodes
         else:
             self.dir_nodes = self.app.cmd_results.re_add_dir_nodes
+        self.ids = ids
 
     def on_mount(self) -> None:
         self.show_root = False
