@@ -71,9 +71,6 @@ class CmdResults(ReactiveDataclass):
     template_data_results: CommandResult | None = None
     verify_results: CommandResult | None = None
     changed_paths: ChangedPaths = field(default_factory=ChangedPaths)
-    diffs: dict[Path, list[str]] = field(default_factory=dict[Path, list[str]])
-    reverse_diffs: dict[Path, list[str]] = field(default_factory=dict[Path, list[str]])
-    git_logs: dict[Path, list[str]] = field(default_factory=dict[Path, list[str]])
 
     # fields updated when some_results is updated
     dest_dir: Path = Path.home()
@@ -82,8 +79,6 @@ class CmdResults(ReactiveDataclass):
     git_auto_push: bool = False
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
-    x_dirs: list[Path] = field(default_factory=list[Path])
-    x_files: list[Path] = field(default_factory=list[Path])
     apply_status_dirs: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
@@ -96,7 +91,6 @@ class CmdResults(ReactiveDataclass):
     re_add_status_files: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
-    git_difs: dict[Path, list[str]] = field(default_factory=dict[Path, list[str]])
 
     @property
     def executed_commands(self) -> list["CommandResult"]:
@@ -119,7 +113,6 @@ class CmdResults(ReactiveDataclass):
                 d for d in old_dirs if d not in new_dirs
             ]
             self.managed_dirs = new_dirs
-            self._update_path_results()
         if name == "managed_files_results" and self.managed_files_results is not None:
             old_files = self.managed_files
             new_files = [
@@ -132,7 +125,6 @@ class CmdResults(ReactiveDataclass):
                 f for f in old_files if f not in new_files
             ]
             self.managed_files = new_files
-            self._update_path_results()
         if name == "status_dirs_results" and self.status_dirs_results is not None:
             old_apply = self.apply_status_dirs
             old_re_add = self.re_add_status_dirs
@@ -152,7 +144,6 @@ class CmdResults(ReactiveDataclass):
             self.changed_paths.changed_re_add_status_dirs = changed_re_add
             self.apply_status_dirs = new_apply
             self.re_add_status_dirs = new_re_add
-            self._update_path_results()
         if name == "status_files_results" and self.status_files_results is not None:
             old_apply = self.apply_status_files
             old_re_add = self.re_add_status_files
@@ -172,9 +163,14 @@ class CmdResults(ReactiveDataclass):
             self.changed_re_add_status_files = changed_re_add
             self.apply_status_files = new_apply
             self.re_add_status_files = new_re_add
-            self._update_path_results()
         if name == "dump_config_results" and self.dump_config_results is not None:
-            self._parse_config()
+            parsed_config = json.loads(
+                self.dump_config_results.completed_process.stdout
+            )
+            self.git_auto_add = parsed_config["git"]["autoadd"]
+            self.git_auto_commit = parsed_config["git"]["autocommit"]
+            self.git_auto_push = parsed_config["git"]["autopush"]
+            self.dest_dir = Path(parsed_config["destDir"])
 
     def _parse_status_output(
         self, status_results: "CommandResult", index: int
@@ -184,24 +180,3 @@ class CmdResults(ReactiveDataclass):
             parsed_path = Path(line[3:])
             status_dict[parsed_path] = StatusCode(line[index])
         return status_dict
-
-    def _parse_config(self) -> None:
-        assert self.dump_config_results is not None
-        parsed_config = json.loads(self.dump_config_results.completed_process.stdout)
-        self.git_auto_add = parsed_config["git"]["autoadd"]
-        self.git_auto_commit = parsed_config["git"]["autocommit"]
-        self.git_auto_push = parsed_config["git"]["autopush"]
-        self.dest_dir = Path(parsed_config["destDir"])
-
-    def _update_path_results(self) -> None:
-        for path in (
-            self.changed_paths.removed_managed_dirs
-            + self.changed_paths.removed_managed_files
-        ):
-            # Update self.path_results
-            if path in self.diffs:
-                del self.diffs[path]
-            if path in self.reverse_diffs:
-                del self.reverse_diffs[path]
-            if path in self.git_logs:
-                del self.git_logs[path]

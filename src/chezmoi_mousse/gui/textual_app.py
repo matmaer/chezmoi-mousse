@@ -136,6 +136,7 @@ class ChezmoiGUI(App[None]):
 
         self.init_cmd_result: "CommandResult | None" = None
         self.paths: "PathDict | None" = None
+        self.cmd_results = CmdResults()
 
         AppState.set_app(self)
 
