@@ -130,6 +130,7 @@ class ChezmoiGUI(App[None]):
 
         self.init_cmd_result: "CommandResult | None" = None
         self.cmd_results = CmdResults()
+        self.parsed = CmdResults().parsed
 
         AppState.set_app(self)
 

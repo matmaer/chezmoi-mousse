@@ -73,6 +73,55 @@ class ChangedPaths:
 
 
 @dataclass(slots=True)
+class ParsedCmdResults:
+    """Class acting as a singleton, initialized in self.app.parsed."""
+
+    # fields to keep track of changes after issuing operations, or at app startup
+    added_managed_dirs: list[Path] = field(default_factory=list[Path])
+    removed_managed_dirs: list[Path] = field(default_factory=list[Path])
+    added_managed_files: list[Path] = field(default_factory=list[Path])
+    changed_apply_status_dirs: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    changed_re_add_status_dirs: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    changed_apply_status_files: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    changed_re_add_status_files: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    removed_managed_files: list[Path] = field(default_factory=list[Path])
+    # fields containing parsed command results for cat config, updated by reactive
+    # logic in CmdResults
+    dest_dir: Path = Path.home()
+    git_auto_add: bool = False
+    git_auto_commit: bool = False
+    git_auto_push: bool = False
+    # fields containing parsed command results for managed paths, updated by reactive
+    # logic in CmdResults
+    added_status_dirs: list[Path] = field(default_factory=list[Path])
+    removed_status_dirs: list[Path] = field(default_factory=list[Path])
+    added_status_files: list[Path] = field(default_factory=list[Path])
+    removed_status_files: list[Path] = field(default_factory=list[Path])
+    managed_dirs: list[Path] = field(default_factory=list[Path])
+    managed_files: list[Path] = field(default_factory=list[Path])
+    apply_status_dirs: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    apply_status_files: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    re_add_status_dirs: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    re_add_status_files: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+
+
+@dataclass(slots=True)
 class CmdResults(ReactiveDataclass):
     cat_config_results: CommandResult | None = None
     doctor_results: CommandResult | None = None
@@ -86,6 +135,7 @@ class CmdResults(ReactiveDataclass):
     template_data_results: CommandResult | None = None
     verify_results: CommandResult | None = None
     changed_paths: ChangedPaths = field(default_factory=ChangedPaths)
+    parsed: ParsedCmdResults = field(default_factory=ParsedCmdResults)
 
     # fields updated when some_results is updated
     dest_dir: Path = Path.home()
@@ -208,6 +258,7 @@ class CmdResults(ReactiveDataclass):
             self.git_auto_commit = parsed_config["git"]["autocommit"]
             self.git_auto_push = parsed_config["git"]["autopush"]
             self.dest_dir = Path(parsed_config["destDir"])
+            self.parsed.dest_dir = Path(parsed_config["destDir"])
         if name == "managed_dirs_results" and self.managed_dirs_results is not None:
             old_dirs = self.managed_dirs
             new_dirs = [
