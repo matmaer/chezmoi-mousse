@@ -11,8 +11,8 @@ from textual.widgets import DirectoryTree, Switch
 from chezmoi_mousse import IDS, AppType, Chars, NodeData, Tcss
 
 from .common.actionables import OperateButtons, SwitchSlider
+from .common.contents import ContentsView
 from .common.tabs_base import TabsBase
-from .common.views import ContentsView
 from .operate_mode import OperateMode
 
 __all__ = ["AddTab", "FilteredDirTree"]
