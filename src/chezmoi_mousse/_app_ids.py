@@ -1,9 +1,3 @@
-"""Contains the IDS singleton and  classes to enable setting widget id's without
-hardcoded strings.
-
-Provides easy access, autocomplete, type checking or to generate the id dynamically.
-"""
-
 from ._chezmoi_command import WriteVerb
 from ._enum_data import SwitchEnum
 from ._str_enum_names import (
@@ -20,7 +14,7 @@ from ._str_enum_names import (
 )
 from ._str_enums import FlatBtnLabel, LinkBtn, SubTabLabel
 
-__all__ = ["AppIds", "IDS"]
+__all__ = ["AppIds"]
 
 
 class AppIds:
@@ -323,6 +317,3 @@ class ViewIds:
         self.template_data_q = f"#{self.template_data}"
         self.test_paths = ids.view_id(view=ViewName.debug_test_paths_view)
         self.test_paths_q = f"#{self.test_paths}"
-
-
-IDS = CanvasIds()
