@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Container
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import SubTabLabel, Tcss
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 
 
-class TreeSwitcher(Vertical):
+class TreeSwitcher(Container):
 
     def __init__(self, ids: "AppIds"):
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
@@ -38,7 +38,7 @@ class TreeSwitcher(Vertical):
             yield ListTree(ids=self.ids)
 
 
-class ViewSwitcher(Vertical):
+class ViewSwitcher(Container):
 
     def __init__(self, *, ids: "AppIds"):
         super().__init__(id=ids.container.right_side)
