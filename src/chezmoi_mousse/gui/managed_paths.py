@@ -5,7 +5,7 @@ from textual.containers import ScrollableContainer
 
 from chezmoi_mousse import StatusCode, TabName
 
-from .common.contents import ContentWidgetDict, DirContents, FileContents
+from .common.contents import DirContents
 
 __all__ = ["PathDict"]
 
@@ -77,40 +77,12 @@ class PathDict:
         for path in self.managed_files:
             if path not in self.status_files:
                 self.x_files.append(path)
-        self.contents_dict: ContentWidgetDict = {}
-        self._update_contents_dict()
-        self.content_widgets: ContentWidgetDict = {}
-        self._update_content_widgets()
         self.apply_dir_widgets: DirWidgetDict = {}
         self.re_add_dir_widgets: DirWidgetDict = {}
         self.create_managed_dir_node_widgets()
         self.apply_dir_node_dict: DirNodeDict = {}
         self.re_add_dir_node_dict: DirNodeDict = {}
         self.create_dir_node_dict()
-
-    def _update_contents_dict(self):
-        for path in self.managed_files:
-            self.contents_dict[path] = FileContents(file_path=path).widget
-        for path in self.managed_dirs:
-            has_status_paths = self.has_status_paths_in(path)
-            has_x_paths = self.has_x_paths_in(path)
-            self.contents_dict[path] = DirContents(
-                dir_path=path,
-                has_status_paths=has_status_paths,
-                has_x_paths=has_x_paths,
-                dest_dir=self.dest_dir,
-            ).widget
-
-    def _update_content_widgets(self):
-        for path in self.managed_files:
-            self.content_widgets[path] = FileContents(file_path=path).widget
-        for path in self.managed_dirs:
-            self.content_widgets[path] = DirContents(
-                dest_dir=self.dest_dir,
-                has_status_paths=self.has_status_paths_in(path),
-                has_x_paths=self.has_x_paths_in(path),
-                dir_path=path,
-            ).widget
 
     def create_label(self, path: Path, tab_name: TabName) -> str:
         italic = " italic" if not path.exists() else ""

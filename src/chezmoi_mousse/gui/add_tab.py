@@ -268,7 +268,7 @@ class AddTab(TabsBase, AppType):
             self.app.notify("Select a new node to operate on.")
             return
         self.current_node = NodeData(path=event.node.data.path)
-        self.contents_view.path = event.node.data.path
+        self.contents_view.show_path = event.node.data.path
         self.operate_mode_container.path_arg = self.current_node.path
 
     @on(Switch.Changed)

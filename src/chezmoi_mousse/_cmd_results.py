@@ -100,6 +100,10 @@ class CmdResults(ReactiveDataclass):
             if field.name.endswith("_results")
         ]
 
+    @property
+    def status_dirs(self) -> set[Path]:
+        return set(self.apply_status_dirs.keys()) | set(self.re_add_status_dirs.keys())
+
     def _on_field_change(self, name: str) -> None:
         if name == "managed_dirs_results" and self.managed_dirs_results is not None:
             old_dirs = self.managed_dirs
