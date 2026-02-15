@@ -1,7 +1,7 @@
 """Contains subclassed textual classes shared between the ApplyTab and ReAddTab."""
 
 from textual import on
-from textual.containers import Vertical
+from textual.containers import Container
 from textual.widgets import Button, ContentSwitcher, Switch
 
 from chezmoi_mousse import AppIds, SubTabLabel, SwitchEnum, Tcss
@@ -13,7 +13,7 @@ from chezmoi_mousse import AppIds, SubTabLabel, SwitchEnum, Tcss
 __all__ = ["TabsBase"]
 
 
-class TabsBase(Vertical):
+class TabsBase(Container):
 
     def __init__(self, *, ids: "AppIds") -> None:
         super().__init__(id=ids.tab_id)
