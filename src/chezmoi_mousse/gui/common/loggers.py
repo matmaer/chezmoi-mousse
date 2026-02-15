@@ -58,6 +58,7 @@ class AppLog(LoggersBase, AppType):
         )
 
     def on_mount(self) -> None:
+        self.border_title = LogString.app_log_title
         self.ready_to_run(LogString.app_log_initialized)
         if self.app.chezmoi_found:
             self.success(LogString.chezmoi_found, with_time=False)
@@ -129,6 +130,7 @@ class DebugLog(LoggersBase, AppType):
         )
 
     def on_mount(self) -> None:
+        self.border_title = LogString.debug_log_title
         self.ready_to_run(LogString.debug_log_initialized)
 
     def mro(self, mro: Mro) -> None:
@@ -213,6 +215,9 @@ class CmdLog(ScrollableContainer, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.logger.cmd, classes=Tcss.border_title_top)
         self.ids = ids
+
+    def on_mount(self) -> None:
+        self.border_title = LogString.cmd_log_title
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
         self.mount(command_result.pretty_collapsible)

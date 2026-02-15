@@ -83,9 +83,6 @@ class DebugTab(Horizontal, AppType):
             IDS.debug.view.test_paths_q, Vertical
         )
         self.debug_test_path_view.border_title = " Test Paths "
-        self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
-        self.debug_log.add_class(Tcss.border_title_top)
-        self.debug_log.border_title = " Debug Log "
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.dom_node_logger.border_title = " DOM Nodes "
         self.app.call_later(self.log_dom_nodes)

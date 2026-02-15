@@ -91,10 +91,13 @@ class Chars(StrEnum):
 
 class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
+    app_log_title = " Application Log "
     chezmoi_found = "Found chezmoi command"
     chezmoi_not_found = "chezmoi command not found"
     cmd_log_initialized = "Chezmoi commands log initialized"
+    cmd_log_title = " Chezmoi Commands Log "
     debug_log_initialized = "Debug log initialized"
+    debug_log_title = " Debug Log "
     dev_mode_enabled = "Dev mode enabled"
     doctor_errors_found = "One or more errors found"
     doctor_fails_found = "One or more tests failed"
