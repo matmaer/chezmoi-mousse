@@ -123,7 +123,21 @@ class ContentsView(Container, AppType):
         if managed is False:
             to_show = _read_file(file_path)
         else:
-            to_show = CMD.read(ReadCmd.cat, path_arg=file_path).std_out
+            try:
+                to_show = CMD.read(ReadCmd.cat, path_arg=file_path).std_out
+            except PermissionError:
+                return Static(
+                    f"{ContentStr.permission_denied} for {file_path}",
+                    classes=Tcss.removed,
+                )
+            except UnicodeDecodeError:
+                return Static(
+                    f"{ContentStr.cannot_decode} for {file_path}", classes=Tcss.removed
+                )
+            except OSError:
+                return Static(
+                    f"{ContentStr.read_error} for {file_path}", classes=Tcss.removed
+                )
         if not to_show:
             return Static("Nothing to show.")
         language = _detect_language(to_show.splitlines())
