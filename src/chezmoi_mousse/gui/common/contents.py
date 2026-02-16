@@ -8,11 +8,19 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, Tcss
+from chezmoi_mousse import (
+    CMD,
+    AppIds,
+    AppType,
+    DirNode,
+    DirNodeDict,
+    ReadCmd,
+    StatusCode,
+    TabName,
+    Tcss,
+)
 
 __all__ = ["ContentsView"]
-
-type ContentsCache = dict[Path, ScrollableContainer]
 
 
 BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
@@ -47,17 +55,38 @@ class ContentStr(StrEnum):
 
 class ContentsView(Container, AppType):
 
-    show_path: reactive["Path | None"] = reactive(None, init=False)
+    show_path: reactive["Path | None"] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
-        self.cache: ContentsCache = {}
+        self.canvas_name = ids.canvas_name
+        self.cache: dict[Path, ScrollableContainer] = {}
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
         self.border_title = f" {self.app.parsed.dest_dir} "
 
-    def create_file_contents(self, file_path: Path, managed: bool) -> Static | TextArea:
+    @property
+    def dir_nodes(self) -> DirNodeDict:
+        if self.canvas_name == TabName.apply:
+            return self.app.parsed.apply_dir_nodes
+        else:
+            return self.app.parsed.re_add_dir_nodes
+
+    @property
+    def node_colors(self) -> dict[str, str]:
+        return {
+            StatusCode.Added: self.app.theme_variables["text-success"],
+            StatusCode.Deleted: self.app.theme_variables["text-error"],
+            StatusCode.Modified: self.app.theme_variables["text-warning"],
+            StatusCode.No_Change: self.app.theme_variables["warning-darken-2"],
+            StatusCode.Run: self.app.theme_variables["error"],
+            StatusCode.No_Status: self.app.theme_variables["text-secondary"],
+        }
+
+    def _create_file_contents(
+        self, file_path: Path, managed: bool
+    ) -> Static | TextArea:
         def _detect_language(lines: list[str]) -> str | None:
             # Check shebang first
             if lines and lines[0].startswith("#!"):
@@ -106,23 +135,36 @@ class ContentsView(Container, AppType):
             result = Static(text_obj)
         return result
 
-    def create_dir_contents(
-        self, dir_path: Path, dest_dir: Path
-    ) -> ScrollableContainer:
-        widgets: list[Static | Label] = [Label(f"Directory: {dir_path}")]
-
-        if dir_path == dest_dir:
-            widgets.append(Static("in dest dir"))
-        else:
+    def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
+        widgets: list[Static | Label] = []
+        dir_node: DirNode = self.dir_nodes[dir_path]
+        if dir_node.status_dirs_in:
             widgets.append(
-                Static(f"the directory {dir_path} has no managed or status paths")
+                Label(
+                    "Contains directoiries with a status",
+                    classes=Tcss.sub_section_label,
+                )
             )
-        return ScrollableContainer(*widgets)
+            for path, status in dir_node.status_dirs_in.items():
+                widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
+        if dir_node.status_files_in:
+            widgets.append(
+                Label("Contains files with a status", classes=Tcss.sub_section_label)
+            )
+            for path, status in dir_node.status_files_in.items():
+                widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
+        if not dir_node.status_dirs_in and not dir_node.status_files_in:
+            widgets.append(
+                Label(
+                    f"{dir_path} contains no status paths",
+                    classes=Tcss.sub_section_label,
+                )
+            )
+        return widgets
 
     def _cache_container(
         self, path: Path, *widgets: Static | TextArea | Label
     ) -> ScrollableContainer:
-        """Helper to mount and cache a ScrollableContainer with widgets."""
         container = ScrollableContainer()
         self.mount(container)
         if widgets:
@@ -132,36 +174,34 @@ class ContentsView(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            return
+            self.show_path = self.app.parsed.dest_dir
+            widgets = self._create_dir_contents(self.show_path)
+            self._cache_container(self.show_path, *widgets)
 
-        if self.show_path not in self.cache:
+        elif self.show_path not in self.cache:
             # Managed files (ApplyTab/ReAddTab)
+            self.border_title = f" {self.show_path} "
             if self.show_path in self.app.parsed.managed_files:
-                widget = self.create_file_contents(
+                widget = self._create_file_contents(
                     file_path=self.show_path, managed=True
                 )
                 self._cache_container(self.show_path, widget)
-
             # Managed directories (ApplyTab/ReAddTab)
             elif self.show_path in self.app.parsed.managed_dirs:
-                container = self.create_dir_contents(
-                    dir_path=self.show_path, dest_dir=self.app.parsed.dest_dir
-                )
+                widgets = self._create_dir_contents(dir_path=self.show_path)
+                container = self._cache_container(self.show_path, *widgets)
                 self.mount(container)
                 self.cache[self.show_path] = container
-
             # Unmanaged files (AddTab)
             elif self.show_path.is_file():
-                widget = self.create_file_contents(
+                widget = self._create_file_contents(
                     file_path=self.show_path, managed=False
                 )
                 self._cache_container(self.show_path, widget)
-
             # Unmanaged directories (AddTab)
             elif self.show_path.is_dir():
                 widget = Static(f"{self.show_path} is a directory not managed.")
                 self._cache_container(self.show_path, widget)
-
             else:
                 return
 

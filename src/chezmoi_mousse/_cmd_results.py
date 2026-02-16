@@ -12,15 +12,15 @@ if TYPE_CHECKING:
 
 type ParsedJson = dict[str, Any]
 
-__all__ = ["CmdResults", "DirNodeDict"]
+__all__ = ["CmdResults", "DirNodeDict", "DirNode"]
 
 
 @dataclass(slots=True)
 class DirNode:
     status_files: dict[Path, StatusCode]
     x_files: dict[Path, StatusCode]
-    status_dirs_in: list[Path]
-    status_files_in: list[Path]
+    status_dirs_in: dict[Path, StatusCode]
+    status_files_in: dict[Path, StatusCode]
     x_dirs_in: list[Path]
     x_files_in: list[Path]
 
@@ -231,18 +231,23 @@ class CmdResults(ReactiveDataclass):
             if path not in self.parsed.apply_status_files
         ]
 
-    def _status_paths_in(self, dir_path: Path) -> list[Path]:
+    def _status_dirs_in(self, dir_path: Path) -> dict[Path, StatusCode]:
         if not self.parsed.apply_status_files and not self.parsed.apply_status_dirs:
-            return []
-        return [
-            path
-            for path in self.parsed.apply_status_files.keys()
+            return {}
+        return {
+            path: status
+            for path, status in self.parsed.apply_status_dirs.items()
             if path.is_relative_to(dir_path)
-        ] + [
-            path
-            for path in self.parsed.apply_status_dirs.keys()
+        }
+
+    def _status_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+        if not self.parsed.apply_status_files and not self.parsed.apply_status_dirs:
+            return {}
+        return {
+            path: status
+            for path, status in self.parsed.apply_status_files.items()
             if path.is_relative_to(dir_path)
-        ]
+        }
 
     def _x_paths_in(self, dir_path: Path) -> list[Path]:
         if not self.parsed.x_files and not self.parsed.x_dirs:
@@ -267,8 +272,8 @@ class CmdResults(ReactiveDataclass):
             result[dir_path] = DirNode(
                 status_files=status_file_children,
                 x_files=x_files_children,
-                status_dirs_in=self._status_paths_in(dir_path),
-                status_files_in=self._status_paths_in(dir_path),
+                status_dirs_in=self._status_dirs_in(dir_path),
+                status_files_in=self._status_files_in(dir_path),
                 x_dirs_in=self._x_paths_in(dir_path),
                 x_files_in=self._x_paths_in(dir_path),
             )
@@ -290,8 +295,8 @@ class CmdResults(ReactiveDataclass):
             result[dir_path] = DirNode(
                 status_files=status_file_children,
                 x_files=x_files_children,
-                status_dirs_in=self._status_paths_in(dir_path),
-                status_files_in=self._status_paths_in(dir_path),
+                status_dirs_in=self._status_dirs_in(dir_path),
+                status_files_in=self._status_files_in(dir_path),
                 x_dirs_in=self._x_paths_in(dir_path),
                 x_files_in=self._x_paths_in(dir_path),
             )
