@@ -207,7 +207,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and p not in self.app.parsed.managed_files
                 ):
                     return True
-            return True
+            return False
         except (PermissionError, OSError):
             return False
 
