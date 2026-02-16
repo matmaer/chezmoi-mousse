@@ -117,20 +117,17 @@ class ManagedTree(TreeBase):
         nodes: dict[Path, TreeNode[Path]] = {self.app.parsed.dest_dir: self.root}
         self.root.data = self.app.parsed.dest_dir
         # Sort directories by path depth to ensure parents are added before children
-        for dir_path in sorted(self.dir_nodes.keys(), key=lambda p: len(p.parts)):
-            dir_node = self.dir_nodes[dir_path]
-            if dir_path == self.app.parsed.dest_dir:
+        for path, dir_node in self.dir_nodes.items():
+            if path == self.app.parsed.dest_dir:
                 # Add files directly under the root
                 for file_path, _ in dir_node.status_files.items():
                     self.root.add_leaf(
                         self.create_colored_label(file_path), data=file_path
                     )
-            else:
-                parent_node: TreeNode[Path] = nodes[dir_path.parent]
-                new_node = parent_node.add(
-                    self.create_colored_label(dir_path), data=dir_path
-                )
-                nodes[dir_path] = new_node
+            elif dir_node.has_status_paths:
+                parent_node: TreeNode[Path] = nodes[path.parent]
+                new_node = parent_node.add(self.create_colored_label(path), data=path)
+                nodes[path] = new_node
                 # Add files as leaves under this directory
                 for file_path, _ in dir_node.status_files.items():
                     new_node.add_leaf(

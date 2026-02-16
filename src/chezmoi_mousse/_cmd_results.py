@@ -25,6 +25,10 @@ class DirNode:
     x_dirs_in: list[Path]
     x_files_in: list[Path]
 
+    @property
+    def has_status_paths(self) -> bool:
+        return True if self.status_files_in or self.status_dirs_in else False
+
 
 type DirNodeDict = dict[Path, DirNode]
 
@@ -250,12 +254,15 @@ class CmdResults(ReactiveDataclass):
             if path.is_relative_to(dir_path)
         }
 
-    def _x_paths_in(self, dir_path: Path) -> list[Path]:
+    def _x_dirs_in(self, dir_path: Path) -> list[Path]:
         if not self.parsed.x_files and not self.parsed.x_dirs:
             return []
-        return [
-            path for path in self.parsed.x_files if path.is_relative_to(dir_path)
-        ] + [path for path in self.parsed.x_dirs if path.is_relative_to(dir_path)]
+        return [path for path in self.parsed.x_dirs if path.is_relative_to(dir_path)]
+
+    def _x_files_in(self, dir_path: Path) -> list[Path]:
+        if not self.parsed.x_files and not self.parsed.x_dirs:
+            return []
+        return [path for path in self.parsed.x_files if path.is_relative_to(dir_path)]
 
     def _update_apply_dir_nodes(self) -> None:
         result: DirNodeDict = {}
@@ -269,9 +276,10 @@ class CmdResults(ReactiveDataclass):
                 if path.parent == dir_path
             }
             x_files_children = {
-                path: status
-                for path, status in self.parsed.apply_status_files.items()
+                path: StatusCode.No_Status
+                for path in self.parsed.managed_files
                 if path.parent == dir_path
+                and path not in self.parsed.apply_status_files
             }
             result[dir_path] = DirNode(
                 dir_status=dir_status,
@@ -279,8 +287,8 @@ class CmdResults(ReactiveDataclass):
                 x_files=x_files_children,
                 status_dirs_in=self._status_dirs_in(dir_path),
                 status_files_in=self._status_files_in(dir_path),
-                x_dirs_in=self._x_paths_in(dir_path),
-                x_files_in=self._x_paths_in(dir_path),
+                x_dirs_in=self._x_dirs_in(dir_path),
+                x_files_in=self._x_files_in(dir_path),
             )
         self.parsed.apply_dir_nodes = result
 
@@ -306,8 +314,8 @@ class CmdResults(ReactiveDataclass):
                 x_files=x_files_children,
                 status_dirs_in=self._status_dirs_in(dir_path),
                 status_files_in=self._status_files_in(dir_path),
-                x_dirs_in=self._x_paths_in(dir_path),
-                x_files_in=self._x_paths_in(dir_path),
+                x_dirs_in=self._x_dirs_in(dir_path),
+                x_files_in=self._x_files_in(dir_path),
             )
         self.parsed.re_add_dir_nodes = result
 
