@@ -36,7 +36,7 @@ DIFF_TCSS = {
 
 class DiffView(Container, AppType):
 
-    show_path: reactive["Path | None"] = reactive(None, init=False)
+    show_path: reactive["Path | None"] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
@@ -47,7 +47,7 @@ class DiffView(Container, AppType):
     def on_mount(self) -> None:
         self.border_title = f" {self.app.parsed.dest_dir} "
 
-    def create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
+    def _create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
         if not diff_result.std_out:
             return [Static(LogString.no_stdout)]
 
@@ -71,7 +71,6 @@ class DiffView(Container, AppType):
         return widgets
 
     def _cache_container(self, path: Path, *widgets: Static) -> ScrollableContainer:
-        """Helper to mount and cache a ScrollableContainer with widgets."""
         container = ScrollableContainer()
         self.mount(container)
         container.mount_all(widgets)
@@ -80,18 +79,31 @@ class DiffView(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            return
+            self.show_path = self.app.parsed.dest_dir
+            widgets: list[Static] = []
+            widgets.append(
+                Static(
+                    "This is the destination directory, it has no diff output.",
+                    classes=Tcss.added,
+                )
+            )
+            widgets.append(
+                Static(
+                    "<- Select a file or directoryin the tree to view its diff.",
+                    classes=Tcss.added,
+                )
+            )
+            self._cache_container(Path(self.app.parsed.dest_dir), *widgets)
 
-        if self.show_path not in self.cache:
-            # Determine which diff command to use
+        elif self.show_path not in self.cache:
             if self.canvas_name == TabName.apply:
                 diff_result = CMD.read(ReadCmd.diff, path_arg=self.show_path)
             elif self.canvas_name == TabName.re_add:
                 diff_result = CMD.read(ReadCmd.diff_reverse, path_arg=self.show_path)
             else:
-                return
+                raise ValueError(f"Unexpected canvas name: {self.canvas_name}")
 
-            widgets = self.create_diff_widgets(diff_result)
+            widgets = self._create_diff_widgets(diff_result)
             self._cache_container(self.show_path, *widgets)
 
         # Hide current container, show the selected one
