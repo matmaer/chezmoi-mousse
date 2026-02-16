@@ -33,6 +33,7 @@ class TreeBase(Tree[Path], AppType):
             label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
         self.ids = ids
+        self.tree_name = tree_name
 
     def on_mount(self) -> None:
         self.show_root = False
@@ -57,23 +58,26 @@ class TreeBase(Tree[Path], AppType):
             StatusCode.No_Status: self.app.theme_variables["text-secondary"],
         }
 
-    # def create_label(self, path: Path, tab_name: TabName) -> str:
-    #     italic = " italic" if not path.exists() else ""
-    #     apply_color = self.node_colors.get(
-    #         self.apply_file_status.get(path, StatusCode.No_Status)
-    #     )
-    #     if tab_name == TabName.apply:
-    #         apply_color = self.node_colors.get(
-    #             self.apply_file_status.get(path, StatusCode.No_Status)
-    #         )
-    #         return f"[{apply_color}" f"{italic}]{path.name}[/]"
-    #     elif tab_name == TabName.re_add:
-    #         re_add_color = self.node_colors.get(
-    #             self.re_add_file_status.get(path, StatusCode.No_Status)
-    #         )
-    #         return f"[{re_add_color}" f"{italic}]{path.name}[/]"
-    #     else:
-    #         raise ValueError(f"Unhandled tab name: {tab_name}")
+    def create_colored_label(self, path: Path) -> str:
+        label_text = (
+            str(path.relative_to(self.app.parsed.dest_dir))
+            if self.tree_name == TreeName.list_tree
+            else path.name
+        )
+
+        # Get status code for the path
+        status = StatusCode.No_Status
+        for dir_node in self.dir_nodes.values():
+            if path in dir_node.status_files:
+                status = dir_node.status_files[path]
+                break
+        else:
+            status = self.dir_nodes[path].dir_status
+
+        # Get color and create styled label
+        color = self.node_colors.get(status, self.node_colors[StatusCode.No_Status])
+        italic = " italic" if not path.exists() else ""
+        return f"[{color}{italic}]{label_text}[/]"
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
@@ -99,9 +103,8 @@ class ListTree(TreeBase):
                     child.data and child.data == file_path
                     for child in self.root.children
                 ):
-                    # show relative path from dest_dir as label
-                    relative_path = file_path.relative_to(self.app.parsed.dest_dir)
-                    self.root.add_leaf(str(relative_path), data=file_path)
+                    colored_label = self.create_colored_label(file_path)
+                    self.root.add_leaf(colored_label, data=file_path)
 
 
 class ManagedTree(TreeBase):
@@ -119,11 +122,17 @@ class ManagedTree(TreeBase):
             if dir_path == self.app.parsed.dest_dir:
                 # Add files directly under the root
                 for file_path, _ in dir_node.status_files.items():
-                    self.root.add_leaf(file_path.name, data=file_path)
+                    self.root.add_leaf(
+                        self.create_colored_label(file_path), data=file_path
+                    )
             else:
                 parent_node: TreeNode[Path] = nodes[dir_path.parent]
-                new_node = parent_node.add(dir_path.name, data=dir_path)
+                new_node = parent_node.add(
+                    self.create_colored_label(dir_path), data=dir_path
+                )
                 nodes[dir_path] = new_node
                 # Add files as leaves under this directory
                 for file_path, _ in dir_node.status_files.items():
-                    new_node.add_leaf(file_path.name, data=file_path)
+                    new_node.add_leaf(
+                        self.create_colored_label(file_path), data=file_path
+                    )

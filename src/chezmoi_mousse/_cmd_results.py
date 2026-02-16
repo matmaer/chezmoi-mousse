@@ -17,6 +17,7 @@ __all__ = ["CmdResults", "DirNodeDict", "DirNode"]
 
 @dataclass(slots=True)
 class DirNode:
+    dir_status: StatusCode
     status_files: dict[Path, StatusCode]
     x_files: dict[Path, StatusCode]
     status_dirs_in: dict[Path, StatusCode]
@@ -259,6 +260,9 @@ class CmdResults(ReactiveDataclass):
     def _update_apply_dir_nodes(self) -> None:
         result: DirNodeDict = {}
         for dir_path in self.parsed.managed_dirs:
+            dir_status = self.parsed.apply_status_dirs.get(
+                dir_path, StatusCode.No_Status
+            )
             status_file_children = {
                 path: status
                 for path, status in self.parsed.apply_status_files.items()
@@ -270,6 +274,7 @@ class CmdResults(ReactiveDataclass):
                 if path.parent == dir_path
             }
             result[dir_path] = DirNode(
+                dir_status=dir_status,
                 status_files=status_file_children,
                 x_files=x_files_children,
                 status_dirs_in=self._status_dirs_in(dir_path),
@@ -292,7 +297,11 @@ class CmdResults(ReactiveDataclass):
                 for path, status in self.parsed.re_add_status_files.items()
                 if path.parent == dir_path
             }
+            dir_status = self.parsed.re_add_status_dirs.get(
+                dir_path, StatusCode.No_Status
+            )
             result[dir_path] = DirNode(
+                dir_status=dir_status,
                 status_files=status_file_children,
                 x_files=x_files_children,
                 status_dirs_in=self._status_dirs_in(dir_path),
