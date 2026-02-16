@@ -180,7 +180,6 @@ class ContentsView(Container, AppType):
 
         elif self.show_path not in self.cache:
             # Managed files (ApplyTab/ReAddTab)
-            self.border_title = f" {self.show_path} "
             if self.show_path in self.app.parsed.managed_files:
                 widget = self._create_file_contents(
                     file_path=self.show_path, managed=True
@@ -205,6 +204,8 @@ class ContentsView(Container, AppType):
             else:
                 return
 
+        if self.show_path != self.app.parsed.dest_dir:
+            self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:
             self.current_container.display = False

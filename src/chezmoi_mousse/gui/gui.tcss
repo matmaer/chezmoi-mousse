@@ -354,7 +354,6 @@ Static {
     color: $text-primary;
     background: $primary-muted;
     background-tint: $primary-muted;
-    text-align: center;
   }
   &.removed {
     color: $text-error;

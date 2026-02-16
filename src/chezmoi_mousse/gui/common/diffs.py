@@ -89,7 +89,7 @@ class DiffView(Container, AppType):
             )
             widgets.append(
                 Static(
-                    "<- Select a file or directoryin the tree to view its diff.",
+                    "<- Select a file or directory in the tree to view its diff.",
                     classes=Tcss.added,
                 )
             )
@@ -105,7 +105,8 @@ class DiffView(Container, AppType):
 
             widgets = self._create_diff_widgets(diff_result)
             self._cache_container(self.show_path, *widgets)
-
+        if self.show_path != self.app.parsed.dest_dir:
+            self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:
             self.current_container.display = False
