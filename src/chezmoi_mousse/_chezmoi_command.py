@@ -302,13 +302,11 @@ class ChezmoiCommand:
         command = base_cmd + read_cmd.value
         if path_arg is not None:
             path_str = str(path_arg)
-            source_path_str = _run_chezmoi_cmd(
-                base_cmd + ReadCmd.source_path.value + [path_str],
-                read_cmd=ReadCmd.source_path,
-            ).stdout.strip()
-            if read_cmd == ReadCmd.cat and not path_arg.exists():
-                path_str = source_path_str
-            elif read_cmd == ReadCmd.git_log:
+            if read_cmd == ReadCmd.git_log:
+                source_path_str = _run_chezmoi_cmd(
+                    base_cmd + ReadCmd.source_path.value + [path_str],
+                    read_cmd=ReadCmd.source_path,
+                ).stdout.strip()
                 path_str = source_path_str
             command += [path_str]
         result: CompletedProcess[str] = _run_chezmoi_cmd(command, read_cmd=read_cmd)
