@@ -202,7 +202,7 @@ class CommandResult:
         if not _line_has_text(output):
             return ""
         lines = output.splitlines()
-        if len(lines) == 0:
+        if len(lines) == 1:
             return "" if not _line_has_text(lines[0]) else lines[0]
         # Remove leading lines with no text
         start = 0
