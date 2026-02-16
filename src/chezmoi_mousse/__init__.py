@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from ._app_ids import AppIds
 from ._app_state import AppState
 from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._cmd_results import CmdResults
+from ._cmd_results import CmdResults, DirNodeDict
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._singletons import CMD, IDS
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
@@ -49,6 +49,7 @@ __all__ = [
     "Chars",
     "CmdResults",
     "CommandResult",
+    "DirNodeDict",
     "FlatBtnLabel",
     "IDS",
     "InitCloneData",

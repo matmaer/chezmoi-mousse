@@ -55,7 +55,7 @@ class ContentsView(Container, AppType):
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.cmd_results.dest_dir} "
+        self.border_title = f" {self.app.parsed.dest_dir} "
 
     def create_file_contents(self, file_path: Path, managed: bool) -> Static | TextArea:
         def _detect_language(lines: list[str]) -> str | None:
@@ -107,20 +107,12 @@ class ContentsView(Container, AppType):
         return result
 
     def create_dir_contents(
-        self, dir_path: Path, has_status_paths: bool, has_x_paths: bool, dest_dir: Path
+        self, dir_path: Path, dest_dir: Path
     ) -> ScrollableContainer:
         widgets: list[Static | Label] = [Label(f"Directory: {dir_path}")]
 
         if dir_path == dest_dir:
             widgets.append(Static("in dest dir"))
-        elif has_status_paths and has_x_paths:
-            widgets.append(
-                Static(f"a directory {dir_path} with status and managed paths")
-            )
-        elif has_status_paths:
-            widgets.append(Static(f"a directory {dir_path} with status paths"))
-        elif has_x_paths:
-            widgets.append(Static(f"a directory {dir_path} with managed paths"))
         else:
             widgets.append(
                 Static(f"the directory {dir_path} has no managed or status paths")
@@ -144,19 +136,16 @@ class ContentsView(Container, AppType):
 
         if self.show_path not in self.cache:
             # Managed files (ApplyTab/ReAddTab)
-            if self.show_path in self.app.cmd_results.managed_files:
+            if self.show_path in self.app.parsed.managed_files:
                 widget = self.create_file_contents(
                     file_path=self.show_path, managed=True
                 )
                 self._cache_container(self.show_path, widget)
 
             # Managed directories (ApplyTab/ReAddTab)
-            elif self.show_path in self.app.cmd_results.managed_dirs:
+            elif self.show_path in self.app.parsed.managed_dirs:
                 container = self.create_dir_contents(
-                    dir_path=self.show_path,
-                    has_status_paths=self.show_path in self.app.cmd_results.status_dirs,
-                    has_x_paths=self.show_path in self.app.cmd_results.managed_dirs,
-                    dest_dir=self.app.cmd_results.dest_dir,
+                    dir_path=self.show_path, dest_dir=self.app.parsed.dest_dir
                 )
                 self.mount(container)
                 self.cache[self.show_path] = container

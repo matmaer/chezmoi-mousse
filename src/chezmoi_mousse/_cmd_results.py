@@ -12,19 +12,17 @@ if TYPE_CHECKING:
 
 type ParsedJson = dict[str, Any]
 
-__all__ = ["CmdResults"]
+__all__ = ["CmdResults", "DirNodeDict"]
 
 
 @dataclass(slots=True)
 class DirNode:
     status_files: dict[Path, StatusCode]
     x_files: dict[Path, StatusCode]
-    # True if the dir has status_files or if any subdir or file has a status other than
-    # X, no matter how deeply nested
-    has_status_paths: bool = False
-    # True if the dir has x_files or if any subdir or file has a status with status X,
-    # no matter how deeply nested
-    has_x_paths: bool = False
+    status_dirs_in: list[Path]
+    status_files_in: list[Path]
+    x_dirs_in: list[Path]
+    x_files_in: list[Path]
 
 
 type DirNodeDict = dict[Path, DirNode]
@@ -76,23 +74,6 @@ class ChangedPaths:
 class ParsedCmdResults:
     """Class acting as a singleton, initialized in self.app.parsed."""
 
-    # fields to keep track of changes after issuing operations, or at app startup
-    added_managed_dirs: list[Path] = field(default_factory=list[Path])
-    removed_managed_dirs: list[Path] = field(default_factory=list[Path])
-    added_managed_files: list[Path] = field(default_factory=list[Path])
-    changed_apply_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    changed_re_add_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    changed_apply_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    changed_re_add_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    removed_managed_files: list[Path] = field(default_factory=list[Path])
     # fields containing parsed command results for cat config, updated by reactive
     # logic in CmdResults
     dest_dir: Path = Path.home()
@@ -119,6 +100,10 @@ class ParsedCmdResults:
     re_add_status_files: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
+    x_dirs: list[Path] = field(default_factory=list[Path])
+    x_files: list[Path] = field(default_factory=list[Path])
+    apply_dir_nodes: DirNodeDict = field(default_factory=dict[Path, DirNode])
+    re_add_dir_nodes: DirNodeDict = field(default_factory=dict[Path, DirNode])
 
 
 @dataclass(slots=True)
@@ -137,26 +122,6 @@ class CmdResults(ReactiveDataclass):
     changed_paths: ChangedPaths = field(default_factory=ChangedPaths)
     parsed: ParsedCmdResults = field(default_factory=ParsedCmdResults)
 
-    # fields updated when some_results is updated
-    dest_dir: Path = Path.home()
-    git_auto_add: bool = False
-    git_auto_commit: bool = False
-    git_auto_push: bool = False
-    managed_dirs: list[Path] = field(default_factory=list[Path])
-    managed_files: list[Path] = field(default_factory=list[Path])
-    apply_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    apply_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    re_add_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    re_add_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-
     @property
     def executed_commands(self) -> list["CommandResult"]:
         return [
@@ -165,103 +130,18 @@ class CmdResults(ReactiveDataclass):
             if field.name.endswith("_results")
         ]
 
-    @property
-    def status_dirs(self) -> set[Path]:
-        return set(self.apply_status_dirs.keys()) | set(self.re_add_status_dirs.keys())
-
-    @property
-    def managed_dirs_with_dest(self) -> list[Path]:
-        """Returns managed_dirs with dest_dir prepended."""
-        return [self.dest_dir] + self.managed_dirs
-
-    def _has_status_paths_in(self, dir_path: Path) -> bool:
-        """Return True if any path with a status other than X is a descendant of
-        dir_path."""
-        return any(
-            path.is_relative_to(dir_path) for path in self.apply_status_files
-        ) or any(path.is_relative_to(dir_path) for path in self.apply_status_dirs)
-
-    def _has_x_paths_in(
-        self, dir_path: Path, x_dirs: list[Path], x_files: list[Path]
-    ) -> bool:
-        """Return True if any managed path with status X is a descendant of dir_path."""
-        return any(path.is_relative_to(dir_path) for path in x_files) or any(
-            path.is_relative_to(dir_path) for path in x_dirs
-        )
-
-    def _compute_x_dirs_files(self) -> tuple[list[Path], list[Path]]:
-        """Compute lists of directories and files with no status (X)."""
-        x_dirs = [
-            path
-            for path in self.managed_dirs_with_dest
-            if path not in self.apply_status_dirs
-        ]
-        x_files = [
-            path for path in self.managed_files if path not in self.apply_status_files
-        ]
-        return x_dirs, x_files
-
-    @property
-    def apply_dir_nodes(self) -> DirNodeDict:
-        """Compute directory nodes for apply tab."""
-        x_dirs, x_files = self._compute_x_dirs_files()
-        result: DirNodeDict = {}
-        for dir_path in self.managed_dirs_with_dest:
-            status_files = {
-                path: status
-                for path, status in self.apply_status_files.items()
-                if path.parent == dir_path
-            }
-            x_files_in_dir = {
-                path: status
-                for path, status in self.apply_status_files.items()
-                if path.parent == dir_path
-            }
-            result[dir_path] = DirNode(
-                status_files=status_files,
-                x_files=x_files_in_dir,
-                has_status_paths=self._has_status_paths_in(dir_path),
-                has_x_paths=self._has_x_paths_in(dir_path, x_dirs, x_files),
-            )
-        return result
-
-    @property
-    def re_add_dir_nodes(self) -> DirNodeDict:
-        """Compute directory nodes for re-add tab."""
-        x_dirs, x_files = self._compute_x_dirs_files()
-        result: DirNodeDict = {}
-        for dir_path in self.managed_dirs_with_dest:
-            status_files = {
-                path: status
-                for path, status in self.re_add_status_files.items()
-                if path.parent == dir_path
-            }
-            x_files_in_dir = {
-                path: status
-                for path, status in self.re_add_status_files.items()
-                if path.parent == dir_path
-            }
-            result[dir_path] = DirNode(
-                status_files=status_files,
-                x_files=x_files_in_dir,
-                has_status_paths=self._has_status_paths_in(dir_path),
-                has_x_paths=self._has_x_paths_in(dir_path, x_dirs, x_files),
-            )
-        return result
-
     def _on_field_change(self, name: str) -> None:
         if name == "dump_config_results" and self.dump_config_results is not None:
             parsed_config = json.loads(
                 self.dump_config_results.completed_process.stdout
             )
-            self.git_auto_add = parsed_config["git"]["autoadd"]
-            self.git_auto_commit = parsed_config["git"]["autocommit"]
-            self.git_auto_push = parsed_config["git"]["autopush"]
-            self.dest_dir = Path(parsed_config["destDir"])
+            self.parsed.git_auto_add = parsed_config["git"]["autoadd"]
+            self.parsed.git_auto_commit = parsed_config["git"]["autocommit"]
+            self.parsed.git_auto_push = parsed_config["git"]["autopush"]
             self.parsed.dest_dir = Path(parsed_config["destDir"])
         if name == "managed_dirs_results" and self.managed_dirs_results is not None:
-            old_dirs = self.managed_dirs
-            new_dirs = [
+            old_dirs = self.parsed.managed_dirs
+            new_dirs = [self.parsed.dest_dir] + [
                 Path(line) for line in self.managed_dirs_results.std_out.splitlines()
             ]
             self.changed_paths.added_managed_dirs = [
@@ -270,9 +150,13 @@ class CmdResults(ReactiveDataclass):
             self.changed_paths.removed_managed_dirs = [
                 d for d in old_dirs if d not in new_dirs
             ]
-            self.managed_dirs = new_dirs
+            self.parsed.managed_dirs = new_dirs
+            self._update_x_dirs()
+            self._update_apply_dir_nodes()
+            self._update_re_add_dir_nodes()
+
         if name == "managed_files_results" and self.managed_files_results is not None:
-            old_files = self.managed_files
+            old_files = self.parsed.managed_files
             new_files = [
                 Path(line) for line in self.managed_files_results.std_out.splitlines()
             ]
@@ -282,10 +166,14 @@ class CmdResults(ReactiveDataclass):
             self.changed_paths.removed_managed_files = [
                 f for f in old_files if f not in new_files
             ]
-            self.managed_files = new_files
+            self.parsed.managed_files = new_files
+            self._update_x_files()
+            self._update_apply_dir_nodes()
+            self._update_re_add_dir_nodes()
+
         if name == "status_dirs_results" and self.status_dirs_results is not None:
-            old_apply = self.apply_status_dirs
-            old_re_add = self.re_add_status_dirs
+            old_apply = self.parsed.apply_status_dirs
+            old_re_add = self.parsed.re_add_status_dirs
             new_apply = self._parse_status_output(self.status_dirs_results, index=0)
             new_re_add = self._parse_status_output(self.status_dirs_results, index=1)
             changed_apply = {
@@ -300,11 +188,15 @@ class CmdResults(ReactiveDataclass):
             }
             self.changed_paths.changed_apply_status_dirs = changed_apply
             self.changed_paths.changed_re_add_status_dirs = changed_re_add
-            self.apply_status_dirs = new_apply
-            self.re_add_status_dirs = new_re_add
+            self.parsed.apply_status_dirs = new_apply
+            self.parsed.re_add_status_dirs = new_re_add
+            self._update_x_dirs()
+            self._update_apply_dir_nodes()
+            self._update_re_add_dir_nodes()
+
         if name == "status_files_results" and self.status_files_results is not None:
-            old_apply = self.apply_status_files
-            old_re_add = self.re_add_status_files
+            old_apply = self.parsed.apply_status_files
+            old_re_add = self.parsed.re_add_status_files
             new_apply = self._parse_status_output(self.status_files_results, index=0)
             new_re_add = self._parse_status_output(self.status_files_results, index=1)
             changed_apply = {
@@ -318,9 +210,92 @@ class CmdResults(ReactiveDataclass):
                 if k not in old_re_add or old_re_add.get(k) != v
             }
             self.changed_paths.changed_apply_status_files = changed_apply
-            self.changed_re_add_status_files = changed_re_add
-            self.apply_status_files = new_apply
-            self.re_add_status_files = new_re_add
+            self.changed_paths.changed_re_add_status_files = changed_re_add
+            self.parsed.apply_status_files = new_apply
+            self.parsed.re_add_status_files = new_re_add
+            self._update_x_files()
+            self._update_apply_dir_nodes()
+            self._update_re_add_dir_nodes()
+
+    def _update_x_dirs(self) -> None:
+        self.parsed.x_dirs = [
+            path
+            for path in self.parsed.managed_dirs
+            if path not in self.parsed.apply_status_dirs
+        ]
+
+    def _update_x_files(self) -> None:
+        self.parsed.x_files = [
+            path
+            for path in self.parsed.managed_files
+            if path not in self.parsed.apply_status_files
+        ]
+
+    def _status_paths_in(self, dir_path: Path) -> list[Path]:
+        if not self.parsed.apply_status_files and not self.parsed.apply_status_dirs:
+            return []
+        return [
+            path
+            for path in self.parsed.apply_status_files.keys()
+            if path.is_relative_to(dir_path)
+        ] + [
+            path
+            for path in self.parsed.apply_status_dirs.keys()
+            if path.is_relative_to(dir_path)
+        ]
+
+    def _x_paths_in(self, dir_path: Path) -> list[Path]:
+        if not self.parsed.x_files and not self.parsed.x_dirs:
+            return []
+        return [
+            path for path in self.parsed.x_files if path.is_relative_to(dir_path)
+        ] + [path for path in self.parsed.x_dirs if path.is_relative_to(dir_path)]
+
+    def _update_apply_dir_nodes(self) -> None:
+        result: DirNodeDict = {}
+        for dir_path in self.parsed.managed_dirs:
+            status_file_children = {
+                path: status
+                for path, status in self.parsed.apply_status_files.items()
+                if path.parent == dir_path
+            }
+            x_files_children = {
+                path: status
+                for path, status in self.parsed.apply_status_files.items()
+                if path.parent == dir_path
+            }
+            result[dir_path] = DirNode(
+                status_files=status_file_children,
+                x_files=x_files_children,
+                status_dirs_in=self._status_paths_in(dir_path),
+                status_files_in=self._status_paths_in(dir_path),
+                x_dirs_in=self._x_paths_in(dir_path),
+                x_files_in=self._x_paths_in(dir_path),
+            )
+        self.parsed.apply_dir_nodes = result
+
+    def _update_re_add_dir_nodes(self) -> None:
+        result: DirNodeDict = {}
+        for dir_path in self.parsed.managed_dirs:
+            status_file_children = {
+                path: status
+                for path, status in self.parsed.re_add_status_files.items()
+                if path.parent == dir_path
+            }
+            x_files_children = {
+                path: status
+                for path, status in self.parsed.re_add_status_files.items()
+                if path.parent == dir_path
+            }
+            result[dir_path] = DirNode(
+                status_files=status_file_children,
+                x_files=x_files_children,
+                status_dirs_in=self._status_paths_in(dir_path),
+                status_files_in=self._status_paths_in(dir_path),
+                x_dirs_in=self._x_paths_in(dir_path),
+                x_files_in=self._x_paths_in(dir_path),
+            )
+        self.parsed.re_add_dir_nodes = result
 
     def _parse_status_output(
         self, status_results: "CommandResult", index: int

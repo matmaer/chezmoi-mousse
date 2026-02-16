@@ -116,17 +116,17 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (
                     p.is_dir(follow_symlinks=False)
                     and not self._is_unwanted_dir(p)
-                    and p in self.app.cmd_results.managed_dirs
+                    and p in self.app.parsed.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.cmd_results.managed_dirs
+                        p.parent in self.app.parsed.managed_dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.cmd_results.managed_files
+                    and p not in self.app.parsed.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -144,10 +144,10 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file(follow_symlinks=False)
                     and not self._is_unwanted_file(p)
                     and (
-                        p.parent in self.app.cmd_results.managed_dirs
+                        p.parent in self.app.parsed.managed_dirs
                         or p.parent == self.path
                     )
-                    and p not in self.app.cmd_results.managed_files
+                    and p not in self.app.parsed.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -158,14 +158,14 @@ class FilteredDirTree(DirectoryTree, AppType):
                 for p in paths
                 if (
                     p.is_dir(follow_symlinks=False)
-                    and p in self.app.cmd_results.managed_dirs
+                    and p in self.app.parsed.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.cmd_results.managed_files
+                    and p not in self.app.parsed.managed_files
                     and (
-                        p.parent in self.app.cmd_results.managed_dirs
+                        p.parent in self.app.parsed.managed_dirs
                         or p.parent == self.path
                     )
                     and self._file_of_interest(p)
@@ -179,7 +179,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if (p.is_dir(follow_symlinks=False) and self._has_unmanaged_paths_in(p))
                 or (
                     p.is_file(follow_symlinks=False)
-                    and p not in self.app.cmd_results.managed_files
+                    and p not in self.app.parsed.managed_files
                     and self._file_of_interest(p)
                 )
             )
@@ -203,8 +203,8 @@ class FilteredDirTree(DirectoryTree, AppType):
                 if idx > max_entries:
                     return False
                 elif (
-                    p not in self.app.cmd_results.managed_dirs
-                    and p not in self.app.cmd_results.managed_files
+                    p not in self.app.parsed.managed_dirs
+                    and p not in self.app.parsed.managed_files
                 ):
                     return True
             return True
@@ -247,16 +247,14 @@ class AddTab(TabsBase, AppType):
         )
         self.mount(
             Horizontal(
-                FilteredDirTree(
-                    self.app.cmd_results.dest_dir, id=IDS.add.tree.dir_tree
-                ),
+                FilteredDirTree(self.app.parsed.dest_dir, id=IDS.add.tree.dir_tree),
                 ContentsView(IDS.add),
             ),
             OperateButtons(IDS.add),
         )
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.border_title_top)
-        self.contents_view.border_title = f" {self.app.cmd_results.dest_dir} "
+        self.contents_view.border_title = f" {self.app.parsed.dest_dir} "
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)

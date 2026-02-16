@@ -5,7 +5,16 @@ from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, Chars, StatusCode, TabName, Tcss, TreeName
+from chezmoi_mousse import (
+    AppIds,
+    AppType,
+    Chars,
+    DirNodeDict,
+    StatusCode,
+    TabName,
+    Tcss,
+    TreeName,
+)
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
@@ -23,10 +32,6 @@ class TreeBase(Tree[Path], AppType):
         super().__init__(
             label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
-        if ids.canvas_name == TabName.apply:
-            self.dir_nodes = self.app.cmd_results.apply_dir_nodes
-        else:
-            self.dir_nodes = self.app.cmd_results.re_add_dir_nodes
         self.ids = ids
 
     def on_mount(self) -> None:
@@ -34,6 +39,13 @@ class TreeBase(Tree[Path], AppType):
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
         self.update_node_colors()
+
+    @property
+    def dir_nodes(self) -> DirNodeDict:
+        if self.ids.canvas_name == TabName.apply:
+            return self.app.parsed.apply_dir_nodes
+        else:
+            return self.app.parsed.re_add_dir_nodes
 
     def update_node_colors(self) -> None:
         self.node_colors: dict[str, str] = {
@@ -88,7 +100,7 @@ class ListTree(TreeBase):
                     for child in self.root.children
                 ):
                     # show relative path from dest_dir as label
-                    relative_path = file_path.relative_to(self.app.cmd_results.dest_dir)
+                    relative_path = file_path.relative_to(self.app.parsed.dest_dir)
                     self.root.add_leaf(str(relative_path), data=file_path)
 
 
@@ -99,12 +111,12 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        nodes: dict[Path, TreeNode[Path]] = {self.app.cmd_results.dest_dir: self.root}
-        self.root.data = self.app.cmd_results.dest_dir
+        nodes: dict[Path, TreeNode[Path]] = {self.app.parsed.dest_dir: self.root}
+        self.root.data = self.app.parsed.dest_dir
         # Sort directories by path depth to ensure parents are added before children
         for dir_path in sorted(self.dir_nodes.keys(), key=lambda p: len(p.parts)):
             dir_node = self.dir_nodes[dir_path]
-            if dir_path == self.app.cmd_results.dest_dir:
+            if dir_path == self.app.parsed.dest_dir:
                 # Add files directly under the root
                 for file_path, _ in dir_node.status_files.items():
                     self.root.add_leaf(file_path.name, data=file_path)

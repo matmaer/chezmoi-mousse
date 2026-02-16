@@ -130,9 +130,12 @@ class ChezmoiGUI(App[None]):
 
         self.init_cmd_result: "CommandResult | None" = None
         self.cmd_results = CmdResults()
-        self.parsed = CmdResults().parsed
 
         AppState.set_app(self)
+
+    @property
+    def parsed(self):
+        return self.cmd_results.parsed
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
         mro = obj.__class__.__mro__

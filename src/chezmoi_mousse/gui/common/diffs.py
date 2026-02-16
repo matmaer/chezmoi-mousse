@@ -45,7 +45,7 @@ class DiffView(Container, AppType):
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.cmd_results.dest_dir} "
+        self.border_title = f" {self.app.parsed.dest_dir} "
 
     def create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
         if not diff_result.std_out:
