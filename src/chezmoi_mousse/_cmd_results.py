@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ._str_enums import StatusCode
-from ._type_checking import DirNode
+from ._type_hinting import DirNode
 
 if TYPE_CHECKING:
     from typing import Any

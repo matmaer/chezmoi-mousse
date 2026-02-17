@@ -10,11 +10,16 @@ from ._str_enums import StatusCode
 if TYPE_CHECKING:
     from typing import Any
 
+    from .gui.textual_app import ChezmoiGUI
 
-__all__ = ["DirNode", "InitCloneData", "ParsedJson"]
+__all__ = ["AppType", "DirNode", "InitCloneData", "ParsedJson"]
 
 
 type ParsedJson = dict[str, Any]
+
+
+class AppType:
+    app: ChezmoiGUI
 
 
 @dataclass(slots=True)
@@ -30,6 +35,10 @@ class DirNode:
     @property
     def has_status_paths(self) -> bool:
         return True if self.status_files_in or self.status_dirs_in else False
+
+    @property
+    def has_x_paths(self) -> bool:
+        return True if self.x_files_in or self.x_dirs_in else False
 
 
 @dataclass(slots=True)

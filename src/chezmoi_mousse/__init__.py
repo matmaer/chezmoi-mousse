@@ -8,7 +8,6 @@
 # See THIRD_PARTY_LICENSES.md for the chezmoi and textual license information.
 
 from importlib.metadata import PackageNotFoundError, version
-from typing import TYPE_CHECKING
 
 from ._app_ids import AppIds
 from ._app_state import AppState
@@ -29,11 +28,7 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
-from ._type_checking import DirNode, InitCloneData, ParsedJson
-
-if TYPE_CHECKING:
-    from .gui.textual_app import ChezmoiGUI
-
+from ._type_hinting import AppType, DirNode, InitCloneData, ParsedJson
 
 __all__ = [
     "__version__",
@@ -73,7 +68,3 @@ try:
     __version__ = version("chezmoi-mousse")
 except PackageNotFoundError:
     __version__ = "dev"
-
-
-class AppType:
-    app: "ChezmoiGUI"
