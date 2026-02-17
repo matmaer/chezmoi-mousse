@@ -29,24 +29,21 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
-from ._type_checking import DirNode, InitCloneData
+from ._type_checking import DirNode, InitCloneData, ParsedJson
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from .gui.textual_app import ChezmoiGUI
 
-type ParsedJson = dict[str, "Any"]
 
 __all__ = [
     "__version__",
-    "CMD",
     "AppIds",
     "AppState",
     "AppType",
     "BindingAction",
     "BindingDescription",
     "Chars",
+    "CMD",
     "CmdResults",
     "CommandResult",
     "DirNode",

@@ -2,11 +2,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from ._chezmoi_command import WriteCmd
 from ._str_enums import StatusCode
 
-__all__ = ["InitCloneData"]
+if TYPE_CHECKING:
+    from typing import Any
+
+
+__all__ = ["DirNode", "InitCloneData", "ParsedJson"]
+
+
+type ParsedJson = dict[str, Any]
 
 
 @dataclass(slots=True)
