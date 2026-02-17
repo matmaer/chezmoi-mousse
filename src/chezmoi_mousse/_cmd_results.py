@@ -68,6 +68,8 @@ class CmdResults(ReactiveDataclass):
     git_auto_push: bool = False
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
+    status_paths: set[Path] = field(default_factory=set[Path])
+    x_paths: set[Path] = field(default_factory=set[Path])
     apply_status_dirs: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
@@ -80,8 +82,6 @@ class CmdResults(ReactiveDataclass):
     re_add_status_files: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
-    x_dirs: list[Path] = field(default_factory=list[Path])
-    x_files: list[Path] = field(default_factory=list[Path])
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
 
@@ -165,96 +165,87 @@ class CmdResults(ReactiveDataclass):
             self.apply_status_files = new_apply
             self.re_add_status_files = new_re_add
 
+            # the set of status_paths and x_paths is the same for apply and re_add contexts,
+            # so we only need to check for the apply paths
+            self.status_paths = set(self.apply_status_dirs.keys()) | set(
+                self.apply_status_files.keys()
+            )
+            managed_paths = set(self.managed_dirs) | set(self.managed_files)
+            self.x_paths = managed_paths - self.status_paths
+
+            # Now update dir nodes as they depend on most of the above
             self._update_apply_dir_nodes()
             self._update_re_add_dir_nodes()
-            self._update_x_dirs()
-            self._update_x_files()
 
-    def _update_x_dirs(self) -> None:
-        self.x_dirs = [
-            path for path in self.managed_dirs if path not in self.apply_status_dirs
-        ]
+    def _has_status_paths_recursive(self, dir_path: Path) -> bool:
+        return any(path.is_relative_to(dir_path) for path in self.status_paths)
 
-    def _update_x_files(self) -> None:
-        self.x_files = [
-            path for path in self.managed_files if path not in self.apply_status_files
-        ]
+    def _has_x_paths_recursive(self, dir_path: Path) -> bool:
+        return any(path.is_relative_to(dir_path) for path in self.x_paths)
 
-    def _status_dirs_in(self, dir_path: Path) -> dict[Path, StatusCode]:
-        if not self.apply_status_files and not self.apply_status_dirs:
-            return {}
+    def _get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+        # x files are the same for apply and re_add contexts
         return {
-            path: status
-            for path, status in self.apply_status_dirs.items()
-            if path.is_relative_to(dir_path)
+            path: StatusCode.No_Status
+            for path in self.managed_files
+            if path.parent == dir_path and path not in self.status_paths
         }
 
-    def _status_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
-        if not self.apply_status_files and not self.apply_status_dirs:
-            return {}
+    def _get_x_dirs_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+        # x dirs are the same for apply and re_add contexts
         return {
-            path: status
-            for path, status in self.apply_status_files.items()
-            if path.is_relative_to(dir_path)
+            path: StatusCode.No_Status
+            for path in self.managed_dirs
+            if path.parent == dir_path and path not in self.status_paths
         }
-
-    def _x_dirs_in(self, dir_path: Path) -> list[Path]:
-        if not self.x_files and not self.x_dirs:
-            return []
-        return [path for path in self.x_dirs if path.is_relative_to(dir_path)]
-
-    def _x_files_in(self, dir_path: Path) -> list[Path]:
-        if not self.x_files and not self.x_dirs:
-            return []
-        return [path for path in self.x_files if path.is_relative_to(dir_path)]
 
     def _update_apply_dir_nodes(self) -> None:
         result: dict[Path, DirNode] = {}
         for dir_path in self.managed_dirs:
             dir_status = self.apply_status_dirs.get(dir_path, StatusCode.No_Status)
-            status_file_children = {
+            status_files_in = {
                 path: status
                 for path, status in self.apply_status_files.items()
                 if path.parent == dir_path
             }
-            x_files_children = {
-                path: StatusCode.No_Status
-                for path in self.managed_files
-                if path.parent == dir_path and path not in self.apply_status_files
+            status_dirs_in = {
+                path: status
+                for path, status in self.apply_status_dirs.items()
+                if path.parent == dir_path
             }
             result[dir_path] = DirNode(
                 dir_status=dir_status,
-                status_files=status_file_children,
-                x_files=x_files_children,
-                status_dirs_in=self._status_dirs_in(dir_path),
-                status_files_in=self._status_files_in(dir_path),
-                x_dirs_in=self._x_dirs_in(dir_path),
-                x_files_in=self._x_files_in(dir_path),
+                has_status_paths=self._has_status_paths_recursive(dir_path),
+                has_x_paths=self._has_x_paths_recursive(dir_path),
+                status_dirs_in=status_dirs_in,
+                status_files_in=status_files_in,
+                x_dirs_in=self._get_x_dirs_in(dir_path),
+                x_files_in=self._get_x_files_in(dir_path),
             )
         self.apply_dir_nodes = result
 
     def _update_re_add_dir_nodes(self) -> None:
         result: dict[Path, DirNode] = {}
         for dir_path in self.managed_dirs:
-            status_file_children = {
+            status_files_in = {
                 path: status
                 for path, status in self.re_add_status_files.items()
                 if path.parent == dir_path
             }
-            x_files_children = {
+            status_dirs_in = {
                 path: status
-                for path, status in self.re_add_status_files.items()
+                for path, status in self.re_add_status_dirs.items()
                 if path.parent == dir_path
             }
             dir_status = self.re_add_status_dirs.get(dir_path, StatusCode.No_Status)
             result[dir_path] = DirNode(
                 dir_status=dir_status,
-                status_files=status_file_children,
-                x_files=x_files_children,
-                status_dirs_in=self._status_dirs_in(dir_path),
-                status_files_in=self._status_files_in(dir_path),
-                x_dirs_in=self._x_dirs_in(dir_path),
-                x_files_in=self._x_files_in(dir_path),
+                has_status_paths=self._has_status_paths_recursive(dir_path),
+                has_x_paths=self._has_x_paths_recursive(dir_path),
+                status_dirs_in=status_dirs_in,
+                status_files_in=status_files_in,
+                x_dirs_in=self._get_x_dirs_in(dir_path),
+                x_files_in=self._get_x_files_in(dir_path),
             )
         self.re_add_dir_nodes = result
 

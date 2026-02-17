@@ -25,20 +25,12 @@ class AppType:
 @dataclass(slots=True)
 class DirNode:
     dir_status: StatusCode
-    status_files: dict[Path, StatusCode]
-    x_files: dict[Path, StatusCode]
+    has_status_paths: bool
+    has_x_paths: bool
     status_dirs_in: dict[Path, StatusCode]
     status_files_in: dict[Path, StatusCode]
-    x_dirs_in: list[Path]
-    x_files_in: list[Path]
-
-    @property
-    def has_status_paths(self) -> bool:
-        return True if self.status_files_in or self.status_dirs_in else False
-
-    @property
-    def has_x_paths(self) -> bool:
-        return True if self.x_files_in or self.x_dirs_in else False
+    x_dirs_in: dict[Path, StatusCode]
+    x_files_in: dict[Path, StatusCode]
 
 
 @dataclass(slots=True)

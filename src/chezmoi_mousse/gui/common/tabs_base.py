@@ -65,7 +65,7 @@ class TabsBase(Container, AppType):
             for _, tree_node in managed_tree_expanded.items():
                 if tree_node.data is None:
                     continue
-                for x_file in dir_nodes[tree_node.data].x_files:
+                for x_file in dir_nodes[tree_node.data].x_files_in:
                     tree_node.add_leaf(x_file.name, x_file)
         elif (
             event.switch.id == self.ids.switch_id(switch=SwitchEnum.unchanged)
@@ -78,7 +78,7 @@ class TabsBase(Container, AppType):
                 children_to_remove = [
                     child
                     for child in tree_node.children
-                    if child.data in dir_nodes[tree_node.data].x_files
+                    if child.data in dir_nodes[tree_node.data].x_files_in
                 ]
                 for child in children_to_remove:
                     child.remove()

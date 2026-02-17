@@ -68,8 +68,8 @@ class TreeBase(Tree[Path], AppType):
         # Get status code for the path
         status = StatusCode.No_Status
         for dir_node in self.dir_nodes.values():
-            if path in dir_node.status_files:
-                status = dir_node.status_files[path]
+            if path in dir_node.status_files_in:
+                status = dir_node.status_files_in[path]
                 break
         else:
             status = self.dir_nodes[path].dir_status
@@ -97,7 +97,7 @@ class ListTree(TreeBase):
     def populate_dest_dir(self) -> None:
         self.clear()
         for dir_node in self.dir_nodes.values():
-            for file_path in dir_node.status_files:
+            for file_path in dir_node.status_files_in:
                 # only add files as leaves, if they were not added already.
                 if not any(
                     child.data and child.data == file_path
@@ -120,7 +120,7 @@ class ManagedTree(TreeBase):
         for path, dir_node in self.dir_nodes.items():
             if path == self.app.cmd_results.dest_dir:
                 # Add files directly under the root
-                for file_path, _ in dir_node.status_files.items():
+                for file_path, _ in dir_node.status_files_in.items():
                     self.root.add_leaf(
                         self.create_colored_label(file_path), data=file_path
                     )
@@ -129,7 +129,7 @@ class ManagedTree(TreeBase):
                 new_node = parent_node.add(self.create_colored_label(path), data=path)
                 nodes[path] = new_node
                 # Add files as leaves under this directory
-                for file_path, _ in dir_node.status_files.items():
+                for file_path, _ in dir_node.status_files_in.items():
                     new_node.add_leaf(
                         self.create_colored_label(file_path), data=file_path
                     )
