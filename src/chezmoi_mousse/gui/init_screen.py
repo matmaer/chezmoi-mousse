@@ -19,6 +19,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import (
+    CMD_RESULTS,
     IDS,
     AppType,
     BindingAction,
@@ -412,26 +413,22 @@ class InitCollapsibles(VerticalGroup, AppType):
 
     doctor_stdout: reactive[str | None] = reactive(None)
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def compose(self) -> ComposeResult:
-        if self.app.cmd_results.doctor_results is None:
-            raise ValueError("self.app.cmd_results is None in OperateScreen")
-        elif self.app.cmd_results.template_data_results is None:
-            raise ValueError(
-                "self.app.cmd_results.template_data is None in OperateScreen"
-            )
+        if CMD_RESULTS.doctor is None:
+            raise ValueError("CMD_RESULTS is None in OperateScreen")
+        elif CMD_RESULTS.template_data is None:
+            raise ValueError("CMD_RESULTS.template_data is None in OperateScreen")
         yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(DoctorTable(), title="Doctor Output")
         yield Collapsible(
-            Pretty(self.app.cmd_results.template_data_results.completed_process.stdout),
+            Pretty(CMD_RESULTS.template_data.completed_process.stdout),
             title="Template Data Output",
         )
 
     def watch_doctor_stdout(self) -> None:
         if self.doctor_stdout is not None:
-            self.query_exactly_one(DoctorTable).doctor_std_out = self.doctor_stdout
+            doctor_table = self.query_exactly_one(DoctorTable)
+            doctor_table.doctor_std_out = self.doctor_stdout
 
 
 class InitChezmoi(Screen[None], AppType):

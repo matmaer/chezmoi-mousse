@@ -14,7 +14,7 @@ from ._app_state import AppState
 from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._cmd_results import CmdResults
 from ._enum_data import OpBtnEnum, SwitchEnum
-from ._singletons import CMD, IDS
+from ._singletons import CMD, CMD_RESULTS, IDS, CommandResults
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     BindingDescription,
@@ -32,6 +32,10 @@ from ._type_hinting import AppType, DirNode, InitCloneData, ParsedJson
 
 __all__ = [
     "__version__",
+    "CMD",
+    "CMD_RESULTS",
+    "CommandResults",
+    "IDS",
     "AppIds",
     "AppState",
     "AppType",
@@ -43,7 +47,6 @@ __all__ = [
     "CommandResult",
     "DirNode",
     "FlatBtnLabel",
-    "IDS",
     "InitCloneData",
     "LinkBtn",
     "LogString",

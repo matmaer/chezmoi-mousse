@@ -88,9 +88,9 @@ class OperateMode(Vertical, AppType):
         )
         info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
-            if self.app.parsed.git_auto_commit is True:
+            if self.app.cmd_results.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
-            if self.app.parsed.git_auto_push is True:
+            if self.app.cmd_results.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
         self.review_info.update("\n".join(info_lines))
         self.op_review_container.border_title = self.btn_enum.info_title

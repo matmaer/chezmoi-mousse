@@ -77,7 +77,7 @@ class GitLog(Container, AppType):
             table = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=self.show_path))
             self._cache_container(self.show_path, table)
 
-        if self.show_path != self.app.parsed.dest_dir:
+        if self.show_path != self.app.cmd_results.dest_dir:
             self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:

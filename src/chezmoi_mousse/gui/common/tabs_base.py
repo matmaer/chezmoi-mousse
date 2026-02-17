@@ -53,9 +53,9 @@ class TabsBase(Container, AppType):
     def handle_show_unchanged_switch(self, event: Switch.Changed) -> None:
         event.stop()
         dir_nodes = (
-            self.app.parsed.apply_dir_nodes
+            self.app.cmd_results.apply_dir_nodes
             if self.ids.canvas_name == TabName.apply
-            else self.app.parsed.re_add_dir_nodes
+            else self.app.cmd_results.re_add_dir_nodes
         )
         if (
             event.switch.id == self.ids.switch_id(switch=SwitchEnum.unchanged)

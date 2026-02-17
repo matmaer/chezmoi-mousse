@@ -8,7 +8,6 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
-from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
@@ -81,8 +80,6 @@ chezmoi_mousse_light = Theme(
 
 class ChezmoiGUI(App[None]):
 
-    cmd_results: reactive[CmdResults] = reactive(CmdResults())
-
     BINDINGS = [
         Binding(
             "ctrl+q",
@@ -126,16 +123,12 @@ class ChezmoiGUI(App[None]):
         self.force_init_needed: bool = pretend_init_needed
 
         self.changes_enabled: bool = False
-        self.init_needed: bool = False
+        self.init_needed: bool = True if self.force_init_needed else False
 
         self.init_cmd_result: "CommandResult | None" = None
         self.cmd_results = CmdResults()
 
         AppState.set_app(self)
-
-    @property
-    def parsed(self):
-        return self.cmd_results.parsed
 
     def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
         mro = obj.__class__.__mro__
@@ -174,7 +167,7 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         else:
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-            self.push_screen(MainScreen())
+        self.push_screen(MainScreen())
 
     def toggle_operate_display(self, ids: AppIds) -> None:
         if isinstance(self.screen, InitChezmoi):

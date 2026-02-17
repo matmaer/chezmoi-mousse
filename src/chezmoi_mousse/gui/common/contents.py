@@ -63,14 +63,14 @@ class ContentsView(Container, AppType):
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.parsed.dest_dir} "
+        self.border_title = f" {self.app.cmd_results.dest_dir} "
 
     @property
     def dir_nodes(self) -> dict[Path, DirNode]:
         if self.canvas_name == TabName.apply:
-            return self.app.parsed.apply_dir_nodes
+            return self.app.cmd_results.apply_dir_nodes
         else:
-            return self.app.parsed.re_add_dir_nodes
+            return self.app.cmd_results.re_add_dir_nodes
 
     @property
     def node_colors(self) -> dict[str, str]:
@@ -187,19 +187,19 @@ class ContentsView(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            self.show_path = self.app.parsed.dest_dir
+            self.show_path = self.app.cmd_results.dest_dir
             widgets = self._create_dir_contents(self.show_path)
             self._cache_container(self.show_path, *widgets)
 
         elif self.show_path not in self.cache:
             # Managed files (ApplyTab/ReAddTab)
-            if self.show_path in self.app.parsed.managed_files:
+            if self.show_path in self.app.cmd_results.managed_files:
                 widget = self._create_file_contents(
                     file_path=self.show_path, managed=True
                 )
                 self._cache_container(self.show_path, widget)
             # Managed directories (ApplyTab/ReAddTab)
-            elif self.show_path in self.app.parsed.managed_dirs:
+            elif self.show_path in self.app.cmd_results.managed_dirs:
                 widgets = self._create_dir_contents(dir_path=self.show_path)
                 container = self._cache_container(self.show_path, *widgets)
                 self.mount(container)
@@ -217,7 +217,7 @@ class ContentsView(Container, AppType):
             else:
                 return
 
-        if self.show_path != self.app.parsed.dest_dir:
+        if self.show_path != self.app.cmd_results.dest_dir:
             self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:

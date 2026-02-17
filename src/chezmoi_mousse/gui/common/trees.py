@@ -44,9 +44,9 @@ class TreeBase(Tree[Path], AppType):
     @property
     def dir_nodes(self) -> dict[Path, DirNode]:
         if self.ids.canvas_name == TabName.apply:
-            return self.app.parsed.apply_dir_nodes
+            return self.app.cmd_results.apply_dir_nodes
         else:
-            return self.app.parsed.re_add_dir_nodes
+            return self.app.cmd_results.re_add_dir_nodes
 
     def update_node_colors(self) -> None:
         self.node_colors: dict[str, str] = {
@@ -60,7 +60,7 @@ class TreeBase(Tree[Path], AppType):
 
     def create_colored_label(self, path: Path) -> str:
         label_text = (
-            str(path.relative_to(self.app.parsed.dest_dir))
+            str(path.relative_to(self.app.cmd_results.dest_dir))
             if self.tree_name == TreeName.list_tree
             else path.name
         )
@@ -114,11 +114,11 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.clear()
-        nodes: dict[Path, TreeNode[Path]] = {self.app.parsed.dest_dir: self.root}
-        self.root.data = self.app.parsed.dest_dir
+        nodes: dict[Path, TreeNode[Path]] = {self.app.cmd_results.dest_dir: self.root}
+        self.root.data = self.app.cmd_results.dest_dir
         # Sort directories by path depth to ensure parents are added before children
         for path, dir_node in self.dir_nodes.items():
-            if path == self.app.parsed.dest_dir:
+            if path == self.app.cmd_results.dest_dir:
                 # Add files directly under the root
                 for file_path, _ in dir_node.status_files.items():
                     self.root.add_leaf(

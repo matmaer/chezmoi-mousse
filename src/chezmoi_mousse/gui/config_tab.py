@@ -6,7 +6,14 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import IDS, AppType, CmdResults, FlatBtnLabel, SectionLabel, Tcss
+from chezmoi_mousse import (
+    IDS,
+    AppType,
+    CommandResults,
+    FlatBtnLabel,
+    SectionLabel,
+    Tcss,
+)
 
 from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
@@ -82,7 +89,7 @@ class TemplateDataView(Vertical, AppType):
 
 class ConfigTab(Horizontal, AppType):
 
-    new_command_results: reactive[CmdResults | None] = reactive(None)
+    command_results: reactive[CommandResults | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
@@ -117,30 +124,30 @@ class ConfigTab(Horizontal, AppType):
         elif event.button.label == FlatBtnLabel.template_data:
             switcher.current = IDS.config.view.template_data
 
-    def watch_new_command_results(self) -> None:
-        if self.new_command_results is None:
+    def watch_command_results(self) -> None:
+        if self.command_results is None:
             return
-        new = self.new_command_results
+        new = self.command_results
         if (
-            new.cat_config_results is None
-            or new.doctor_results is None
-            or new.ignored_results is None
-            or new.template_data_results is None
+            new.cat_config is None
+            or new.doctor is None
+            or new.ignored is None
+            or new.template_data is None
         ):
             return
         switcher = self.query_exactly_one(ContentSwitcher)
         switcher.query_one(
             IDS.config.view.template_data_q, TemplateDataView
-        ).template_data_stdout = new.template_data_results.completed_process.stdout
+        ).template_data_stdout = new.template_data.completed_process.stdout
         switcher.query_one(IDS.config.view.ignored_q, IgnoredView).ignored_stdout = (
-            new.ignored_results.completed_process.stdout
+            new.ignored.completed_process.stdout
         )
         switcher.query_one(
             IDS.config.view.cat_config_q, CatConfigView
-        ).cat_config_stdout = new.cat_config_results.completed_process.stdout
+        ).cat_config_stdout = new.cat_config.completed_process.stdout
         switcher.query_one(
             IDS.config.container.doctor_q, DoctorTableView
-        ).doctor_stdout = new.doctor_results.completed_process.stdout
+        ).doctor_stdout = new.doctor.completed_process.stdout
         switcher.query_one(
             IDS.config.view.pw_mgr_info_q, PwMgrInfoView
-        ).populate_pw_mgr_info(new.doctor_results.completed_process.stdout)
+        ).populate_pw_mgr_info(new.doctor.completed_process.stdout)
