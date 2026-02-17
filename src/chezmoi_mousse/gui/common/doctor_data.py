@@ -76,8 +76,7 @@ class PwMgrData:
     description: str
     doctor_check: str
     link: str
-    doctor_status: str = "unknown"
-    info: str = ""
+    info: str
 
 
 class PwMgrInfo(Enum):
