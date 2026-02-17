@@ -3,34 +3,17 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field, fields
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from ._str_enums import StatusCode
+from ._type_checking import DirNode
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from ._chezmoi_command import CommandResult
 
-type ParsedJson = dict[str, Any]
-
-__all__ = ["CmdResults", "DirNodeDict", "DirNode"]
-
-
-@dataclass(slots=True)
-class DirNode:
-    dir_status: StatusCode
-    status_files: dict[Path, StatusCode]
-    x_files: dict[Path, StatusCode]
-    status_dirs_in: dict[Path, StatusCode]
-    status_files_in: dict[Path, StatusCode]
-    x_dirs_in: list[Path]
-    x_files_in: list[Path]
-
-    @property
-    def has_status_paths(self) -> bool:
-        return True if self.status_files_in or self.status_dirs_in else False
-
-
-type DirNodeDict = dict[Path, DirNode]
+__all__ = ["CmdResults"]
 
 
 class ReactiveDataclass:
@@ -107,8 +90,8 @@ class ParsedCmdResults:
     )
     x_dirs: list[Path] = field(default_factory=list[Path])
     x_files: list[Path] = field(default_factory=list[Path])
-    apply_dir_nodes: DirNodeDict = field(default_factory=dict[Path, DirNode])
-    re_add_dir_nodes: DirNodeDict = field(default_factory=dict[Path, DirNode])
+    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
 
 
 @dataclass(slots=True)
@@ -265,7 +248,7 @@ class CmdResults(ReactiveDataclass):
         return [path for path in self.parsed.x_files if path.is_relative_to(dir_path)]
 
     def _update_apply_dir_nodes(self) -> None:
-        result: DirNodeDict = {}
+        result: dict[Path, DirNode] = {}
         for dir_path in self.parsed.managed_dirs:
             dir_status = self.parsed.apply_status_dirs.get(
                 dir_path, StatusCode.No_Status
@@ -293,7 +276,7 @@ class CmdResults(ReactiveDataclass):
         self.parsed.apply_dir_nodes = result
 
     def _update_re_add_dir_nodes(self) -> None:
-        result: DirNodeDict = {}
+        result: dict[Path, DirNode] = {}
         for dir_path in self.parsed.managed_dirs:
             status_file_children = {
                 path: status

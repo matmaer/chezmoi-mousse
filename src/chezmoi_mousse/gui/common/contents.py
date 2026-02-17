@@ -13,7 +13,6 @@ from chezmoi_mousse import (
     AppIds,
     AppType,
     DirNode,
-    DirNodeDict,
     ReadCmd,
     StatusCode,
     TabName,
@@ -67,7 +66,7 @@ class ContentsView(Container, AppType):
         self.border_title = f" {self.app.parsed.dest_dir} "
 
     @property
-    def dir_nodes(self) -> DirNodeDict:
+    def dir_nodes(self) -> dict[Path, DirNode]:
         if self.canvas_name == TabName.apply:
             return self.app.parsed.apply_dir_nodes
         else:

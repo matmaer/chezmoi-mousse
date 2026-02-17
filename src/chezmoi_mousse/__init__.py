@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from ._app_ids import AppIds
 from ._app_state import AppState
 from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._cmd_results import CmdResults, DirNode, DirNodeDict
+from ._cmd_results import CmdResults
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._singletons import CMD, IDS
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
@@ -29,7 +29,7 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
-from ._type_checking import InitCloneData
+from ._type_checking import DirNode, InitCloneData
 
 if TYPE_CHECKING:
     from typing import Any
@@ -50,7 +50,6 @@ __all__ = [
     "CmdResults",
     "CommandResult",
     "DirNode",
-    "DirNodeDict",
     "FlatBtnLabel",
     "IDS",
     "InitCloneData",

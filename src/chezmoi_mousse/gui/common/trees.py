@@ -9,7 +9,7 @@ from chezmoi_mousse import (
     AppIds,
     AppType,
     Chars,
-    DirNodeDict,
+    DirNode,
     StatusCode,
     TabName,
     Tcss,
@@ -42,7 +42,7 @@ class TreeBase(Tree[Path], AppType):
         self.update_node_colors()
 
     @property
-    def dir_nodes(self) -> DirNodeDict:
+    def dir_nodes(self) -> dict[Path, DirNode]:
         if self.ids.canvas_name == TabName.apply:
             return self.app.parsed.apply_dir_nodes
         else:
