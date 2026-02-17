@@ -1,44 +1,46 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
+from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
 from chezmoi_mousse import IDS, AppType, Chars, SectionLabel, Tcss
-
-if TYPE_CHECKING:
-    DataTableText = DataTable[Text]
-else:
-    DataTableText = DataTable
-
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 
 class DoctorTable(DataTable[Text], AppType):
 
-    def __init__(self, doctor_stdout: str) -> None:
-        super().__init__(show_cursor=False, classes=Tcss.doctor_table)
-        self.doctor_lines = doctor_stdout.splitlines()
+    doctor_std_out: reactive[str | None] = reactive(None)
 
-    def on_mount(self) -> None:
-        if len(self.doctor_lines) < 2:
-            self.app.notify("No doctor data to display", severity="error")
-            return
-        self.dr_style = {
+    def __init__(self) -> None:
+        super().__init__(show_cursor=False, classes=Tcss.doctor_table)
+
+    @property
+    def dr_style(self) -> dict[str, str]:
+        return {
             "ok": self.app.theme_variables["text-success"],
             "info": self.app.theme_variables["foreground-darken-1"],
             "warning": self.app.theme_variables["text-warning"],
             "failed": self.app.theme_variables["text-error"],
             "error": self.app.theme_variables["text-error"],
         }
-        if not self.columns:
-            self.add_columns(*self.doctor_lines[0].split())
 
-        for line in self.doctor_lines[1:]:
+    def watch_doctor_std_out(self) -> None:
+        self.clear(columns=True)
+        if self.doctor_std_out is None:
+            return
+        doctor_lines = self.doctor_std_out.splitlines()
+        if len(doctor_lines) < 2:
+            self.app.notify("No doctor data to display", severity="error")
+            return
+        if not self.columns:
+            self.add_columns(*doctor_lines[0].split())
+
+        for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [

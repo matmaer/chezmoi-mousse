@@ -3,6 +3,7 @@ import re
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
+from textual.reactive import reactive
 from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
 from textual.widgets import (
@@ -408,6 +409,9 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
 
 
 class InitCollapsibles(VerticalGroup, AppType):
+
+    doctor_stdout: reactive[str | None] = reactive(None)
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -419,16 +423,15 @@ class InitCollapsibles(VerticalGroup, AppType):
                 "self.app.cmd_results.template_data is None in OperateScreen"
             )
         yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
-        yield Collapsible(
-            DoctorTable(
-                doctor_stdout=self.app.cmd_results.doctor_results.completed_process.stdout
-            ),
-            title="Doctor Output",
-        )
+        yield Collapsible(DoctorTable(), title="Doctor Output")
         yield Collapsible(
             Pretty(self.app.cmd_results.template_data_results.completed_process.stdout),
             title="Template Data Output",
         )
+
+    def watch_doctor_stdout(self) -> None:
+        if self.doctor_stdout is not None:
+            self.query_exactly_one(DoctorTable).doctor_std_out = self.doctor_stdout
 
 
 class InitChezmoi(Screen[None], AppType):

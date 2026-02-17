@@ -25,7 +25,6 @@ class CatConfigView(Vertical, AppType):
 
     def watch_cat_config_stdout(self) -> None:
         if self.cat_config_stdout is not None:
-            # self.remove_children(Static)
             self.mount(Static(self.cat_config_stdout))
 
 
@@ -38,11 +37,12 @@ class IgnoredView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
+        yield ScrollableContainer(Pretty(()))
 
     def watch_ignored_stdout(self) -> None:
         if self.ignored_stdout is not None:
-            self.remove_children(ScrollableContainer)
-            self.mount(ScrollableContainer(Pretty(self.ignored_stdout.splitlines())))
+            pretty = self.query_exactly_one(Pretty)
+            pretty.update(self.ignored_stdout.splitlines())
 
 
 class DoctorTableView(Vertical, AppType):
@@ -54,11 +54,12 @@ class DoctorTableView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
+        yield DoctorTable()
 
     def watch_doctor_stdout(self) -> None:
         if self.doctor_stdout is not None:
-            self.remove_children(DoctorTable)
-            self.mount(DoctorTable(doctor_stdout=self.doctor_stdout))
+            doctor_table = self.query_exactly_one(DoctorTable)
+            doctor_table.doctor_std_out = self.doctor_stdout
 
 
 class TemplateDataView(Vertical, AppType):
@@ -70,11 +71,13 @@ class TemplateDataView(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
+        yield Pretty("No template data output yet.")
 
     def watch_template_data_stdout(self) -> None:
         if self.template_data_stdout is not None:
-            self.remove_children(Pretty)
-            self.mount(Pretty(json.loads(self.template_data_stdout)))
+            parsed = json.loads(self.template_data_stdout)
+            pretty = self.query_exactly_one(Pretty)
+            pretty.update(parsed)
 
 
 class ConfigTab(Horizontal, AppType):
