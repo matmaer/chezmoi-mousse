@@ -70,10 +70,6 @@ class ParsedCmdResults:
     git_auto_push: bool = False
     # fields containing parsed command results for managed paths, updated by reactive
     # logic in CmdResults
-    added_status_dirs: list[Path] = field(default_factory=list[Path])
-    removed_status_dirs: list[Path] = field(default_factory=list[Path])
-    added_status_files: list[Path] = field(default_factory=list[Path])
-    removed_status_files: list[Path] = field(default_factory=list[Path])
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
     apply_status_dirs: dict[Path, StatusCode] = field(
