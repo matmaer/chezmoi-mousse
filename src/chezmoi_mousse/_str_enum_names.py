@@ -127,7 +127,6 @@ class Tcss(StrEnum):
 
 class TreeName(StrEnum):
     dir_tree = auto()
-    expanded_tree = auto()
     list_tree = auto()
     managed_tree = auto()
 

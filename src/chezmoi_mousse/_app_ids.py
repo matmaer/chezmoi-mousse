@@ -258,8 +258,6 @@ class TreeIds:
     def __init__(self, ids: AppIds):
         self.dir_tree = ids.tree_id(tree=TreeName.dir_tree)
         self.dir_tree_q = f"#{self.dir_tree}"
-        self.expanded = ids.tree_id(tree=TreeName.expanded_tree)
-        self.expanded_q = f"#{self.expanded}"
         self.list = ids.tree_id(tree=TreeName.list_tree)
         self.list_q = f"#{self.list}"
         self.managed = ids.tree_id(tree=TreeName.managed_tree)

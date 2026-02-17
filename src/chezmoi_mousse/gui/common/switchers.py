@@ -37,6 +37,14 @@ class TreeSwitcher(Container):
             yield ManagedTree(self.ids)
             yield ListTree(self.ids)
 
+    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
+    def switch_view(self, event: Button.Pressed) -> None:
+        view_switcher = self.query_exactly_one(ContentSwitcher)
+        if event.button.label == SubTabLabel.tree:
+            view_switcher.current = self.ids.tree.managed
+        elif event.button.label == SubTabLabel.list:
+            view_switcher.current = self.ids.tree.list
+
 
 class ViewSwitcher(Container):
 
