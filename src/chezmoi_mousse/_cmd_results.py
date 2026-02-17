@@ -38,25 +38,24 @@ class ReactiveDataclass:
 @dataclass(slots=True)
 class ChangedPaths:
     added_managed_dirs: list[Path] = field(default_factory=list[Path])
-    removed_managed_dirs: list[Path] = field(default_factory=list[Path])
     added_managed_files: list[Path] = field(default_factory=list[Path])
+    removed_managed_dirs: list[Path] = field(default_factory=list[Path])
     removed_managed_files: list[Path] = field(default_factory=list[Path])
-    added_status_dirs: list[Path] = field(default_factory=list[Path])
+
+    added_apply_status_dirs: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    added_apply_status_files: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    added_re_add_status_dirs: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
+    added_re_add_status_files: dict[Path, StatusCode] = field(
+        default_factory=dict[Path, StatusCode]
+    )
     removed_status_dirs: list[Path] = field(default_factory=list[Path])
-    added_status_files: list[Path] = field(default_factory=list[Path])
     removed_status_files: list[Path] = field(default_factory=list[Path])
-    changed_apply_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    changed_re_add_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    changed_apply_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    changed_re_add_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
 
 
 @dataclass(slots=True)
@@ -133,18 +132,15 @@ class CmdResults(ReactiveDataclass):
             new_re_add = self._parse_status_output(
                 self.new_results.status_dirs, index=1
             )
-            changed_apply = {
-                k: v
-                for k, v in new_apply.items()
-                if k not in old_apply or old_apply.get(k) != v
+            self.changed_paths.removed_status_dirs = [
+                k for k in old_apply if k not in new_apply
+            ]
+            self.changed_paths.added_apply_status_dirs = {
+                k: v for k, v in new_apply.items() if k not in old_apply
             }
-            changed_re_add = {
-                k: v
-                for k, v in new_re_add.items()
-                if k not in old_re_add or old_re_add.get(k) != v
+            self.changed_paths.added_re_add_status_dirs = {
+                k: v for k, v in new_re_add.items() if k not in old_re_add
             }
-            self.changed_paths.changed_apply_status_dirs = changed_apply
-            self.changed_paths.changed_re_add_status_dirs = changed_re_add
             self.apply_status_dirs = new_apply
             self.re_add_status_dirs = new_re_add
 
@@ -157,24 +153,22 @@ class CmdResults(ReactiveDataclass):
             new_re_add = self._parse_status_output(
                 self.new_results.status_files, index=1
             )
-            changed_apply = {
-                k: v
-                for k, v in new_apply.items()
-                if k not in old_apply or old_apply.get(k) != v
+            self.changed_paths.removed_status_files = [
+                k for k in old_apply if k not in new_apply
+            ]
+            self.changed_paths.added_apply_status_files = {
+                k: v for k, v in new_apply.items() if k not in old_apply
             }
-            changed_re_add = {
-                k: v
-                for k, v in new_re_add.items()
-                if k not in old_re_add or old_re_add.get(k) != v
+            self.changed_paths.added_re_add_status_files = {
+                k: v for k, v in new_re_add.items() if k not in old_re_add
             }
-            self.changed_paths.changed_apply_status_files = changed_apply
-            self.changed_paths.changed_re_add_status_files = changed_re_add
             self.apply_status_files = new_apply
             self.re_add_status_files = new_re_add
 
-            self._update_x_files()
             self._update_apply_dir_nodes()
             self._update_re_add_dir_nodes()
+            self._update_x_dirs()
+            self._update_x_files()
 
     def _update_x_dirs(self) -> None:
         self.x_dirs = [
