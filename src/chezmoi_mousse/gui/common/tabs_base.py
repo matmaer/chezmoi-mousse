@@ -5,7 +5,7 @@ from textual.containers import Container
 from textual.widgets import Switch
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, SwitchEnum, TabName
+from chezmoi_mousse import AppIds, AppType, DirNode, SwitchEnum, TabName
 
 from .trees import ManagedTree
 
@@ -24,6 +24,13 @@ class TabsBase(Container, AppType):
         managed_tree = self.query_one(self.ids.tree.managed_q, ManagedTree)
         return managed_tree.expanded_nodes
 
+    @property
+    def dir_nodes(self) -> dict[Path, DirNode]:
+        if self.ids.canvas_name == TabName.apply:
+            return self.app.cmd_results.apply_dir_nodes
+        else:
+            return self.app.cmd_results.re_add_dir_nodes
+
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
@@ -41,31 +48,23 @@ class TabsBase(Container, AppType):
             self.notify("Switch off: expand all")
 
     def handle_unchanged_switch(self, event: Switch.Changed) -> None:
-        dir_nodes = (
-            self.app.cmd_results.apply_dir_nodes
-            if self.ids.canvas_name == TabName.apply
-            else self.app.cmd_results.re_add_dir_nodes
-        )
         if event.value is True:
             self.show_unchanged_state = True
-            managed_tree_expanded = self._get_expanded_nodes()
-            for _, tree_node in managed_tree_expanded.items():
+            for _, tree_node in self._get_expanded_nodes().items():
                 if tree_node.data is None:
-                    continue
-                for x_dir in dir_nodes[tree_node.data].x_dirs_in:
-                    tree_node.add(x_dir.name, x_dir)
-                for x_file in dir_nodes[tree_node.data].x_files_in:
+                    return
+                for x_file in self.dir_nodes[tree_node.data].x_files_in:
                     tree_node.add_leaf(x_file.name, x_file)
         elif event.value is False:
             self.show_unchanged_state = False
-            managed_tree_expanded = self._get_expanded_nodes()
-            for _, tree_node in managed_tree_expanded.items():
+            for _, tree_node in self._get_expanded_nodes().items():
                 if tree_node.data is None:
-                    continue
-                children_to_remove = [
-                    child
-                    for child in tree_node.children
-                    if child.data in dir_nodes[tree_node.data].x_files_in
-                ]
-                for child in children_to_remove:
-                    child.remove()
+                    return
+                # retrieve the TreeNode objects of the unchanged files and remove them
+                # from the tree.
+                unchanged_files = self.dir_nodes[tree_node.data].x_files_in
+                for unchanged_file in unchanged_files:
+                    for child in tree_node.children:
+                        if child.data == unchanged_file:
+                            child.remove()
+                            break
