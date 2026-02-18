@@ -52,6 +52,8 @@ class TabsBase(Container, AppType):
             for _, tree_node in managed_tree_expanded.items():
                 if tree_node.data is None:
                     continue
+                for x_dir in dir_nodes[tree_node.data].x_dirs_in:
+                    tree_node.add(x_dir.name, x_dir)
                 for x_file in dir_nodes[tree_node.data].x_files_in:
                     tree_node.add_leaf(x_file.name, x_file)
         elif event.value is False:
