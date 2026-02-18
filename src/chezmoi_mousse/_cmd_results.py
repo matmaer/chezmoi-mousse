@@ -180,9 +180,6 @@ class CmdResults(ReactiveDataclass):
     def _has_status_paths_recursive(self, dir_path: Path) -> bool:
         return any(path.is_relative_to(dir_path) for path in self.status_paths)
 
-    def _has_x_paths_recursive(self, dir_path: Path) -> bool:
-        return any(path.is_relative_to(dir_path) for path in self.x_paths)
-
     def _get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
         # x files are the same for apply and re_add contexts
         return {
@@ -198,6 +195,23 @@ class CmdResults(ReactiveDataclass):
             for path in self.managed_dirs
             if path.parent == dir_path and path not in self.status_paths
         }
+
+    def _get_dirs_with_status_paths_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+        sub_dir_paths = [p for p in self.managed_dirs if p.parent == dir_path]
+        return {
+            path: StatusCode.No_Status
+            for path in sub_dir_paths
+            if self._has_status_paths_recursive(dir_path)
+        }
+
+    def _parse_status_output(
+        self, status_results: "CommandResult", index: int
+    ) -> dict[Path, StatusCode]:
+        status_dict: dict[Path, StatusCode] = {}
+        for line in status_results.std_out.splitlines():
+            parsed_path = Path(line[3:])
+            status_dict[parsed_path] = StatusCode(line[index])
+        return status_dict
 
     def _update_apply_dir_nodes(self) -> None:
         result: dict[Path, DirNode] = {}
@@ -216,11 +230,11 @@ class CmdResults(ReactiveDataclass):
             result[dir_path] = DirNode(
                 dir_status=dir_status,
                 has_status_paths=self._has_status_paths_recursive(dir_path),
-                has_x_paths=self._has_x_paths_recursive(dir_path),
                 status_dirs_in=status_dirs_in,
                 status_files_in=status_files_in,
                 x_dirs_in=self._get_x_dirs_in(dir_path),
                 x_files_in=self._get_x_files_in(dir_path),
+                dirs_with_status_paths_in=self._get_dirs_with_status_paths_in(dir_path),
             )
         self.apply_dir_nodes = result
 
@@ -241,19 +255,10 @@ class CmdResults(ReactiveDataclass):
             result[dir_path] = DirNode(
                 dir_status=dir_status,
                 has_status_paths=self._has_status_paths_recursive(dir_path),
-                has_x_paths=self._has_x_paths_recursive(dir_path),
                 status_dirs_in=status_dirs_in,
                 status_files_in=status_files_in,
                 x_dirs_in=self._get_x_dirs_in(dir_path),
                 x_files_in=self._get_x_files_in(dir_path),
+                dirs_with_status_paths_in=self._get_dirs_with_status_paths_in(dir_path),
             )
         self.re_add_dir_nodes = result
-
-    def _parse_status_output(
-        self, status_results: "CommandResult", index: int
-    ) -> dict[Path, StatusCode]:
-        status_dict: dict[Path, StatusCode] = {}
-        for line in status_results.std_out.splitlines():
-            parsed_path = Path(line[3:])
-            status_dict[parsed_path] = StatusCode(line[index])
-        return status_dict

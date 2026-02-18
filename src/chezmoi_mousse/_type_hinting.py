@@ -26,11 +26,11 @@ class AppType:
 class DirNode:
     dir_status: StatusCode
     has_status_paths: bool
-    has_x_paths: bool
     status_dirs_in: dict[Path, StatusCode]
     status_files_in: dict[Path, StatusCode]
     x_dirs_in: dict[Path, StatusCode]
     x_files_in: dict[Path, StatusCode]
+    dirs_with_status_paths_in: dict[Path, StatusCode]
 
 
 @dataclass(slots=True)
