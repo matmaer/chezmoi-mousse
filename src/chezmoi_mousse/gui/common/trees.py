@@ -111,29 +111,20 @@ class ManagedTree(TreeBase):
         self.expanded_nodes: dict[int, TreeNode[Path]] = {}
 
     def populate_dest_dir(self) -> None:
-        self.clear()
-        nodes: dict[Path, TreeNode[Path]] = {self.app.cmd_results.dest_dir: self.root}
         self.expanded_nodes[0] = self.root
         self.root.data = self.app.cmd_results.dest_dir
-        for path, dir_node in self.dir_nodes.items():
-            if path == self.app.cmd_results.dest_dir:
-                # Add files directly under the root
-                for file_path, _ in dir_node.status_files_in.items():
-                    self.root.add_leaf(
-                        self.create_colored_label(file_path), data=file_path
-                    )
-            elif dir_node.has_status_paths:
-                parent_node: TreeNode[Path] = nodes[path.parent]
-                new_node = parent_node.add(self.create_colored_label(path), data=path)
-                nodes[path] = new_node
+        dir_node = self.dir_nodes[self.app.cmd_results.dest_dir]
+        for dir_path, _ in dir_node.dirs_in_for_tree.items():
+            self.root.add(self.create_colored_label(dir_path), data=dir_path)
+        for file_path, _ in dir_node.status_files_in.items():
+            self.root.add_leaf(self.create_colored_label(file_path), data=file_path)
 
     @on(Tree.NodeExpanded)
     def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
         self.expanded_nodes[event.node.id] = event.node
-        self.notify(f"Node expanded: {event.node.data}")
+        self.notify(f"Node collapsed: {event.node.data}")
 
     @on(Tree.NodeCollapsed)
     def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
         if event.node.id in self.expanded_nodes:
             del self.expanded_nodes[event.node.id]
-        self.notify(f"Node collapsed: {event.node.data}")

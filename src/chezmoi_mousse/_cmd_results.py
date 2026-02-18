@@ -177,9 +177,6 @@ class CmdResults(ReactiveDataclass):
             self._update_apply_dir_nodes()
             self._update_re_add_dir_nodes()
 
-    def _has_status_paths_recursive(self, dir_path: Path) -> bool:
-        return any(path.is_relative_to(dir_path) for path in self.status_paths)
-
     def _get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
         # x files are the same for apply and re_add contexts
         return {
@@ -196,13 +193,19 @@ class CmdResults(ReactiveDataclass):
             if path.parent == dir_path and path not in self.status_paths
         }
 
-    def _get_dirs_with_status_paths_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+    def _get_dirs_in_for_tree(self, dir_path: Path) -> dict[Path, StatusCode]:
         sub_dir_paths = [p for p in self.managed_dirs if p.parent == dir_path]
-        return {
+        dirs_with_status_paths = {
             path: StatusCode.No_Status
             for path in sub_dir_paths
-            if self._has_status_paths_recursive(dir_path)
+            if any(path.is_relative_to(dir_path) for path in self.status_paths)
         }
+        status_dirs_in = {
+            path: status
+            for path, status in self.apply_status_dirs.items()
+            if path.parent == dir_path
+        }
+        return dict(sorted((dirs_with_status_paths | status_dirs_in).items()))
 
     def _parse_status_output(
         self, status_results: "CommandResult", index: int
@@ -229,12 +232,11 @@ class CmdResults(ReactiveDataclass):
             }
             result[dir_path] = DirNode(
                 dir_status=dir_status,
-                has_status_paths=self._has_status_paths_recursive(dir_path),
                 status_dirs_in=status_dirs_in,
                 status_files_in=status_files_in,
                 x_dirs_in=self._get_x_dirs_in(dir_path),
                 x_files_in=self._get_x_files_in(dir_path),
-                dirs_with_status_paths_in=self._get_dirs_with_status_paths_in(dir_path),
+                dirs_in_for_tree=self._get_dirs_in_for_tree(dir_path),
             )
         self.apply_dir_nodes = result
 
@@ -254,11 +256,10 @@ class CmdResults(ReactiveDataclass):
             dir_status = self.re_add_status_dirs.get(dir_path, StatusCode.No_Status)
             result[dir_path] = DirNode(
                 dir_status=dir_status,
-                has_status_paths=self._has_status_paths_recursive(dir_path),
                 status_dirs_in=status_dirs_in,
                 status_files_in=status_files_in,
                 x_dirs_in=self._get_x_dirs_in(dir_path),
                 x_files_in=self._get_x_files_in(dir_path),
-                dirs_with_status_paths_in=self._get_dirs_with_status_paths_in(dir_path),
+                dirs_in_for_tree=self._get_dirs_in_for_tree(dir_path),
             )
         self.re_add_dir_nodes = result
