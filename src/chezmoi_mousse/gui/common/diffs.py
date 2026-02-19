@@ -45,7 +45,7 @@ class DiffView(Container, AppType):
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.cmd_results.dest_dir} "
+        self.border_title = f" {self.app.dest_dir} "
 
     def _create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
         if not diff_result.std_out:
@@ -79,7 +79,7 @@ class DiffView(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            self.show_path = self.app.cmd_results.dest_dir
+            self.show_path = self.app.dest_dir
             widgets: list[Static] = []
             widgets.append(
                 Static(
@@ -93,7 +93,7 @@ class DiffView(Container, AppType):
                     classes=Tcss.added,
                 )
             )
-            self._cache_container(Path(self.app.cmd_results.dest_dir), *widgets)
+            self._cache_container(Path(self.app.dest_dir), *widgets)
 
         elif self.show_path not in self.cache:
             if self.canvas_name == TabName.apply:
@@ -105,7 +105,7 @@ class DiffView(Container, AppType):
 
             widgets = self._create_diff_widgets(diff_result)
             self._cache_container(self.show_path, *widgets)
-        if self.show_path != self.app.cmd_results.dest_dir:
+        if self.show_path != self.app.dest_dir:
             self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:

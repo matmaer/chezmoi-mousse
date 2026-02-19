@@ -27,9 +27,9 @@ class TabsBase(Container, AppType):
     @property
     def dir_nodes(self) -> dict[Path, DirNode]:
         if self.ids.canvas_name == TabName.apply:
-            return self.app.cmd_results.apply_dir_nodes
+            return self.app.apply_dir_nodes
         else:
-            return self.app.cmd_results.re_add_dir_nodes
+            return self.app.re_add_dir_nodes
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:

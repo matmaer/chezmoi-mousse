@@ -41,9 +41,9 @@ class TreeBase(Tree[Path], AppType):
     @property
     def dir_nodes(self) -> dict[Path, DirNode]:
         if self.ids.canvas_name == TabName.apply:
-            return self.app.cmd_results.apply_dir_nodes
+            return self.app.apply_dir_nodes
         else:
-            return self.app.cmd_results.re_add_dir_nodes
+            return self.app.re_add_dir_nodes
 
     def get_all_nodes(self) -> list[TreeNode[Path]]:
         # BFS approach
@@ -67,7 +67,7 @@ class TreeBase(Tree[Path], AppType):
 
     def create_colored_label(self, path: Path) -> str:
         label_text = (
-            str(path.relative_to(self.app.cmd_results.dest_dir))
+            str(path.relative_to(self.app.dest_dir))
             if self.tree_name == TreeName.list_tree
             else path.name
         )
@@ -122,8 +122,8 @@ class ManagedTree(TreeBase):
 
     def populate_dest_dir(self) -> None:
         self.expanded_nodes[0] = self.root
-        self.root.data = self.app.cmd_results.dest_dir
-        dir_node = self.dir_nodes[self.app.cmd_results.dest_dir]
+        self.root.data = self.app.dest_dir
+        dir_node = self.dir_nodes[self.app.dest_dir]
         for dir_path, _ in dir_node.dirs_in_for_tree.items():
             self.root.add(self.create_colored_label(dir_path), data=dir_path)
         for file_path, _ in dir_node.status_files_in.items():
@@ -132,7 +132,7 @@ class ManagedTree(TreeBase):
     @on(Tree.NodeExpanded)
     def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
         self.expanded_nodes[event.node.id] = event.node
-        self.notify(f"Node collapsed: {event.node.data}")
+        self.notify(f"Node expanded: {event.node.data}")
 
     @on(Tree.NodeCollapsed)
     def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:

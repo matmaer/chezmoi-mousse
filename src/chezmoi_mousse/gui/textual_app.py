@@ -1,5 +1,6 @@
 import dataclasses
 from math import ceil
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.color import Color
@@ -20,6 +21,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     CmdResults,
+    DirNode,
     OpBtnLabel,
     TabName,
 )
@@ -130,26 +132,6 @@ class ChezmoiGUI(App[None]):
 
         AppState.set_app(self)
 
-    def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
-        mro = obj.__class__.__mro__
-        method_name = method.__name__
-        exclude_prefixes = ["_"]
-        exclude_names = ["object", "AppType", "MessagePump", "DOMNode", "Widget"]
-        self.notify(
-            f"Not implemented in {ids.canvas_name}: {method_name}\n"
-            + ".".join(
-                [
-                    f"{cls.__name__}"
-                    for cls in reversed(mro)
-                    if not (
-                        any(cls.__name__.startswith(p) for p in exclude_prefixes)
-                        or cls.__name__ in exclude_names
-                    )
-                ]
-            ),
-            timeout=10,
-        )
-
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
@@ -169,36 +151,47 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
 
-    def toggle_operate_display(self, ids: AppIds) -> None:
-        if isinstance(self.screen, InitChezmoi):
-            init_left_side = self.screen.query_one(
-                ids.container.left_side_q, FlatButtonsVertical
-            )
-            init_left_side.display = not init_left_side.display
-            switch_slider = self.screen.query_one(
-                ids.container.switch_slider_q, SwitchSlider
-            )
-            switch_slider.display = not switch_slider.display
-        elif isinstance(self.screen, MainScreen):
-            main_tabs = self.screen.query_exactly_one(Tabs)
-            main_tabs.display = not main_tabs.display
-            if ids.canvas_name in (TabName.apply, TabName.re_add):
-                left_side = self.screen.query_one(
-                    ids.container.left_side_q, TreeSwitcher
-                )
-                left_side.display = not left_side.display
-                active_tab_widget = self.get_tab_widget()
-                view_switcher_buttons = active_tab_widget.query(TabButtons).last()
-                view_switcher_buttons.display = not view_switcher_buttons.display
-            elif ids.canvas_name == TabName.add:
-                left_side = self.screen.query_exactly_one(FilteredDirTree)
-                left_side.display = not left_side.display
-            switch_slider = self.screen.query_one(
-                ids.container.switch_slider_q, SwitchSlider
-            )
-            switch_slider.display = not switch_slider.display
+    ##########################################################
+    # Properties for convenient access to cmd_results fields #
+    ##########################################################
 
-    def get_tab_widget(
+    @property
+    def dest_dir(self) -> Path:
+        return self.cmd_results.parsed_config.dest_dir
+
+    @property
+    def git_auto_add(self) -> bool:
+        return self.cmd_results.parsed_config.git_auto_add
+
+    @property
+    def git_auto_commit(self) -> bool:
+        return self.cmd_results.parsed_config.git_auto_commit
+
+    @property
+    def git_auto_push(self) -> bool:
+        return self.cmd_results.parsed_config.git_auto_push
+
+    @property
+    def managed_dirs(self) -> list[Path]:
+        return self.cmd_results.parsed_paths.managed_dirs
+
+    @property
+    def managed_files(self) -> list[Path]:
+        return self.cmd_results.parsed_paths.managed_files
+
+    @property
+    def apply_dir_nodes(self) -> dict[Path, DirNode]:
+        return self.cmd_results.apply_dir_nodes
+
+    @property
+    def re_add_dir_nodes(self) -> dict[Path, DirNode]:
+        return self.cmd_results.re_add_dir_nodes
+
+    ######################################################################
+    # Helper methods for message handling and toggling widget visibility #
+    ######################################################################
+
+    def _get_tab_widget(
         self,
     ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab:
         if not isinstance(self.screen, MainScreen):
@@ -219,7 +212,7 @@ class ChezmoiGUI(App[None]):
         else:
             raise ValueError(f"Unknown active_tab on MainScreen: {active_tab}")
 
-    def get_switch_slider_widget(self) -> SwitchSlider:
+    def _get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_switch_slider_widget called outside of MainScreen")
         active_tab = self.screen.query_exactly_one(TabbedContent).active
@@ -236,9 +229,42 @@ class ChezmoiGUI(App[None]):
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
 
-    ###################
-    # Message Methods #
-    ###################
+    #######################
+    # Operate mode method #
+    #######################
+
+    def toggle_operate_display(self, ids: AppIds) -> None:
+        if isinstance(self.screen, InitChezmoi):
+            init_left_side = self.screen.query_one(
+                ids.container.left_side_q, FlatButtonsVertical
+            )
+            init_left_side.display = not init_left_side.display
+            switch_slider = self.screen.query_one(
+                ids.container.switch_slider_q, SwitchSlider
+            )
+            switch_slider.display = not switch_slider.display
+        elif isinstance(self.screen, MainScreen):
+            main_tabs = self.screen.query_exactly_one(Tabs)
+            main_tabs.display = not main_tabs.display
+            if ids.canvas_name in (TabName.apply, TabName.re_add):
+                left_side = self.screen.query_one(
+                    ids.container.left_side_q, TreeSwitcher
+                )
+                left_side.display = not left_side.display
+                active_tab_widget = self._get_tab_widget()
+                view_switcher_buttons = active_tab_widget.query(TabButtons).last()
+                view_switcher_buttons.display = not view_switcher_buttons.display
+            elif ids.canvas_name == TabName.add:
+                left_side = self.screen.query_exactly_one(FilteredDirTree)
+                left_side.display = not left_side.display
+            switch_slider = self.screen.query_one(
+                ids.container.switch_slider_q, SwitchSlider
+            )
+            switch_slider.display = not switch_slider.display
+
+    ############################
+    # Message handling methods #
+    ############################
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
@@ -323,7 +349,7 @@ class ChezmoiGUI(App[None]):
         self, event: TabbedContent.TabActivated
     ) -> None:
         if event.tabbed_content.active in (TabName.apply, TabName.re_add, TabName.add):
-            slider: SwitchSlider = self.get_switch_slider_widget()
+            slider: SwitchSlider = self._get_switch_slider_widget()
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters
@@ -366,7 +392,7 @@ class ChezmoiGUI(App[None]):
     def action_toggle_switch_slider_visibility(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        slider: SwitchSlider = self.get_switch_slider_widget()
+        slider: SwitchSlider = self._get_switch_slider_widget()
         slider.toggle_class("-visible")
         slider_visible = slider.has_class("-visible")
         new_description = (
@@ -394,7 +420,7 @@ class ChezmoiGUI(App[None]):
         main_tabs.display = not main_tabs.display
 
         if active_tab in (TabName.apply, TabName.re_add):
-            active_tab_widget = self.get_tab_widget()
+            active_tab_widget = self._get_tab_widget()
             view_switcher_buttons = active_tab_widget.query(TabButtons).last()
 
         if active_tab == TabName.apply:
@@ -465,7 +491,7 @@ class ChezmoiGUI(App[None]):
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
-                switch_slider = self.get_switch_slider_widget()
+                switch_slider = self._get_switch_slider_widget()
                 if header.display is False or switch_slider.display is False:
                     return False
                 active_tab = self.screen.query_exactly_one(TabbedContent).active
@@ -494,10 +520,37 @@ class ChezmoiGUI(App[None]):
                 return False
         return True
 
+    #######################################################
+    # Method for debugging and highlighting unimplemented #
+    #######################################################
+
+    def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
+        mro = obj.__class__.__mro__
+        method_name = method.__name__
+        exclude_prefixes = ["_"]
+        exclude_names = ["object", "AppType", "MessagePump", "DOMNode", "Widget"]
+        self.notify(
+            f"Not implemented in {ids.canvas_name}: {method_name}\n"
+            + ".".join(
+                [
+                    f"{cls.__name__}"
+                    for cls in reversed(mro)
+                    if not (
+                        any(cls.__name__.startswith(p) for p in exclude_prefixes)
+                        or cls.__name__ in exclude_names
+                    )
+                ]
+            ),
+            timeout=10,
+        )
+
+
+####################################################################################
+# For monkey patching the textual ScrollBar.renderer method in ChezmoiGUI __init__ #
+####################################################################################
+
 
 class CustomScrollBarRender(ScrollBarRender):
-    # Used to monkey patch the textual ScrollBar.renderer method in ChezmoiGUI
-    # __init__
 
     @classmethod
     def render_bar(
