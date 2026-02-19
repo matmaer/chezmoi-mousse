@@ -91,14 +91,8 @@ class CmdResults(ReactiveDataclass):
     parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
-
-    @property
-    def _status_paths(self) -> set[Path]:
-        # the set of status_paths the same for apply and re_add contexts, so we can
-        # just take the keys of one of them to get the set of status paths.
-        return set(self.parsed_paths.apply_status_dirs.keys()) | set(
-            self.parsed_paths.apply_status_files.keys()
-        )
+    _status_paths: set[Path] = field(default_factory=lambda: set())
+    _dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
 
     def _on_field_change(self, name: str) -> None:
         if name != "new_results":
@@ -120,6 +114,16 @@ class CmdResults(ReactiveDataclass):
         self._update_managed_files(self.new_results.managed_files)
         self._update_status_dirs(self.new_results.status_dirs)
         self._update_status_files(self.new_results.status_files)
+        # Update caches
+        self._status_paths = set(self.parsed_paths.apply_status_dirs.keys()) | set(
+            self.parsed_paths.apply_status_files.keys()
+        )
+        self._dirs_with_status_children = set()
+        for path in self._status_paths:
+            current = path.parent
+            while current != current.parent:
+                self._dirs_with_status_children.add(current)
+                current = current.parent
         # Now update dir nodes as they depend the above
         self._update_apply_dir_nodes()
         self._update_re_add_dir_nodes()
@@ -222,21 +226,19 @@ class CmdResults(ReactiveDataclass):
             if path.parent == dir_path and path not in self._status_paths
         }
 
-    def _get_dirs_for_tree(self, dir_path: Path) -> dict[Path, StatusCode]:
+    def _get_dirs_for_tree(
+        self, dir_path: Path, status_dirs: dict[Path, StatusCode]
+    ) -> dict[Path, StatusCode]:
         sub_dir_paths = [
             p for p in self.parsed_paths.managed_dirs if p.parent == dir_path
         ]
-        dirs_with_status_paths = {
-            path: StatusCode.No_Status
-            for path in sub_dir_paths
-            if any(path.is_relative_to(dir_path) for path in self._status_paths)
-        }
-        status_dirs_in = {
-            path: status
-            for path, status in self.parsed_paths.apply_status_dirs.items()
-            if path.parent == dir_path
-        }
-        return dict(sorted((dirs_with_status_paths | status_dirs_in).items()))
+        result: dict[Path, StatusCode] = {}
+        for sub_dir in sub_dir_paths:
+            if sub_dir in status_dirs:
+                result[sub_dir] = status_dirs[sub_dir]
+            elif sub_dir in self._dirs_with_status_children:
+                result[sub_dir] = StatusCode.No_Status
+        return dict(sorted(result.items()))
 
     def _update_apply_dir_nodes(self) -> None:
         for dir_path in self.parsed_paths.managed_dirs:
@@ -259,7 +261,9 @@ class CmdResults(ReactiveDataclass):
                 status_files_in=status_files_in,
                 x_dirs_in=self._get_x_dirs_in(dir_path),
                 x_files_in=self._get_x_files_in(dir_path),
-                dirs_in_for_tree=self._get_dirs_for_tree(dir_path),
+                dirs_in_for_tree=self._get_dirs_for_tree(
+                    dir_path, self.parsed_paths.apply_status_dirs
+                ),
             )
 
     def _update_re_add_dir_nodes(self) -> None:
@@ -283,5 +287,7 @@ class CmdResults(ReactiveDataclass):
                 status_files_in=status_files_in,
                 x_dirs_in=self._get_x_dirs_in(dir_path),
                 x_files_in=self._get_x_files_in(dir_path),
-                dirs_in_for_tree=self._get_dirs_for_tree(dir_path),
+                dirs_in_for_tree=self._get_dirs_for_tree(
+                    dir_path, self.parsed_paths.re_add_status_dirs
+                ),
             )
