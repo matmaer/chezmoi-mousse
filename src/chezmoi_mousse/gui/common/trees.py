@@ -86,6 +86,14 @@ class TreeBase(Tree[Path], AppType):
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{label_text}[/]"
 
+    def populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
+        dir_node = self.dir_nodes[dir_path]
+        for sub_dir, _ in dir_node.dirs_in_for_tree.items():
+            child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
+            self.populate_node(child_node, sub_dir)
+        for file_path, _ in dir_node.status_files_in.items():
+            tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
+
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is None:
@@ -102,7 +110,6 @@ class ListTree(TreeBase):
         super().__init__(ids, tree_name=TreeName.list_tree)
 
     def populate_dest_dir(self) -> None:
-        self.clear()
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files_in:
                 # only add files as leaves, if they were not added already.
@@ -121,13 +128,8 @@ class ManagedTree(TreeBase):
         self.expanded_nodes: dict[int, TreeNode[Path]] = {}
 
     def populate_dest_dir(self) -> None:
-        self.expanded_nodes[0] = self.root
         self.root.data = self.app.dest_dir
-        dir_node = self.dir_nodes[self.app.dest_dir]
-        for dir_path, _ in dir_node.dirs_in_for_tree.items():
-            self.root.add(self.create_colored_label(dir_path), data=dir_path)
-        for file_path, _ in dir_node.status_files_in.items():
-            self.root.add_leaf(self.create_colored_label(file_path), data=file_path)
+        self.populate_node(self.root, self.app.dest_dir)
 
     @on(Tree.NodeExpanded)
     def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
