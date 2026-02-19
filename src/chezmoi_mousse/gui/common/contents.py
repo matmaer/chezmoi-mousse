@@ -151,14 +151,14 @@ class ContentsView(Container, AppType):
     def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
         widgets: list[Static | Label] = []
         dir_node: DirNode = self.dir_nodes[dir_path]
-        if dir_node.status_dirs_in:
+        if dir_node.real_status_dirs_in:
             widgets.append(
                 Label(
                     "Contains directoiries with a status",
                     classes=Tcss.sub_section_label,
                 )
             )
-            for path, status in dir_node.status_dirs_in.items():
+            for path, status in dir_node.real_status_dirs_in.items():
                 widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
         if dir_node.status_files_in:
             widgets.append(
@@ -166,7 +166,36 @@ class ContentsView(Container, AppType):
             )
             for path, status in dir_node.status_files_in.items():
                 widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
-        if not dir_node.status_dirs_in and not dir_node.status_files_in:
+        if dir_path in self.app.x_dirs_with_status_children:
+            nested_status_paths = [
+                p
+                for p in self.app.status_paths
+                if p.is_relative_to(dir_path)
+                and p not in dir_node.real_status_dirs_in
+                and p not in dir_node.tree_status_dirs_in
+                and p not in dir_node.status_files_in
+                and p != dir_path
+            ]
+            # only show if nested_status_paths is not empty
+            if nested_status_paths:
+                widgets.append(
+                    Label(
+                        "Contains nested paths with a status",
+                        classes=Tcss.sub_section_label,
+                    )
+                )
+                for path in sorted(nested_status_paths):
+                    widgets.append(Static(f"[dim]{path}[/]"))
+
+        if not dir_node.tree_status_dirs_in and not dir_node.status_files_in:
+            if dir_node.tree_status_dirs_in:
+                widgets.append(
+                    Label(
+                        "Contains nested paths with a status",
+                        classes=Tcss.sub_section_label,
+                    )
+                )
+                return widgets
             widgets.append(
                 Label(
                     f"{dir_path} contains no status paths",

@@ -187,6 +187,22 @@ class ChezmoiGUI(App[None]):
     def re_add_dir_nodes(self) -> dict[Path, DirNode]:
         return self.cmd_results.re_add_dir_nodes
 
+    @property
+    def tree_x_dirs(self) -> list[Path]:
+        return self.cmd_results.parsed_paths.tree_x_dirs
+
+    @property
+    def x_files(self) -> list[Path]:
+        return self.cmd_results.parsed_paths.real_x_files
+
+    @property
+    def x_dirs_with_status_children(self) -> set[Path]:
+        return self.cmd_results.parsed_paths.x_dirs_with_status_children
+
+    @property
+    def status_paths(self) -> set[Path]:
+        return self.cmd_results.parsed_paths.status_paths
+
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################

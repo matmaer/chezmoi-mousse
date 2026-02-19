@@ -150,7 +150,7 @@ class BindingDescription(StrEnum):
 class SwitchLabel(StrEnum):
     init_repo = "Init existing repo"
     expand_all = "Expand all dirs"
-    unchanged = "Show unchanged files"
+    unchanged = "Show unchanged paths"
     unmanaged_dirs = "Show unmanaged dirs"
     unwanted = "Show unwanted paths"
 

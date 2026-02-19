@@ -88,7 +88,7 @@ class TreeBase(Tree[Path], AppType):
 
     def populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         dir_node = self.dir_nodes[dir_path]
-        for sub_dir, _ in dir_node.dirs_in_for_tree.items():
+        for sub_dir, _ in dir_node.tree_status_dirs_in.items():
             child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
             self.populate_node(child_node, sub_dir)
         for file_path, _ in dir_node.status_files_in.items():
@@ -120,23 +120,25 @@ class ListTree(TreeBase):
                     colored_label = self.create_colored_label(file_path)
                     self.root.add_leaf(colored_label, data=file_path)
 
+    def get_all_nodes(self) -> list[TreeNode[Path]]:
+        return [child for child in self.root.children if child.data is not None]
+
 
 class ManagedTree(TreeBase):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.managed_tree)
-        self.expanded_nodes: dict[int, TreeNode[Path]] = {}
 
     def populate_dest_dir(self) -> None:
         self.root.data = self.app.dest_dir
         self.populate_node(self.root, self.app.dest_dir)
 
-    @on(Tree.NodeExpanded)
-    def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
-        self.expanded_nodes[event.node.id] = event.node
-        self.notify(f"Node expanded: {event.node.data}")
-
-    @on(Tree.NodeCollapsed)
-    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
-        if event.node.id in self.expanded_nodes:
-            del self.expanded_nodes[event.node.id]
+    def get_all_nodes(self) -> list[TreeNode[Path]]:
+        # BFS approach
+        all_nodes: list[TreeNode[Path]] = []
+        to_visit = [self.root]  # Start with root in the queue
+        while to_visit:
+            node = to_visit.pop(0)  # Dequeue the next node
+            all_nodes.append(node)  # Add to results
+            to_visit.extend(node.children)  # Enqueue children
+        return all_nodes

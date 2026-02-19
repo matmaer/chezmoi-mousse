@@ -111,7 +111,7 @@ class SwitchEnum(Enum):
     )
     unchanged = SwitchData(
         label=SwitchLabel.unchanged,
-        enabled_tooltip="Include files unchanged files which are not found in the 'chezmoi status' output.",
+        enabled_tooltip="Include unchanged paths which are not found in the 'chezmoi status' output.",
         disabled_tooltip=None,
     )
     unmanaged_dirs = SwitchData(

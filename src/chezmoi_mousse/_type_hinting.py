@@ -25,11 +25,12 @@ class AppType:
 @dataclass(slots=True)
 class DirNode:
     dir_status: StatusCode
-    status_dirs_in: dict[Path, StatusCode]
-    status_files_in: dict[Path, StatusCode]
-    x_dirs_in: dict[Path, StatusCode]
     x_files_in: dict[Path, StatusCode]
-    dirs_in_for_tree: dict[Path, StatusCode]
+    status_files_in: dict[Path, StatusCode]
+    real_status_dirs_in: dict[Path, StatusCode]
+    tree_status_dirs_in: dict[Path, StatusCode]
+    tree_x_dirs_in: dict[Path, StatusCode]
+    real_x_dirs_in: dict[Path, StatusCode]
 
 
 @dataclass(slots=True)
