@@ -47,7 +47,6 @@ class ParsedConfig:
 class ParsedPaths:
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
-    status_paths: set[Path] = field(default_factory=lambda: set())
     x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
     tree_x_dirs: list[Path] = field(default_factory=lambda: [])
     real_x_dirs: list[Path] = field(default_factory=lambda: [])
@@ -73,6 +72,7 @@ class CmdResults(ReactiveDataclass):
     parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    _status_paths: set[Path] = field(default_factory=lambda: set())
 
     def _on_field_change(self, name: str) -> None:
         if name != "new_results":
@@ -114,6 +114,12 @@ class CmdResults(ReactiveDataclass):
         ]
 
     def _update_apply_and_re_add_status_dirs_and_files_and_status_paths(self) -> None:
+        def get_all_status_paths(status_lines: list[str]) -> set[Path]:
+            all_status_paths: set[Path] = set()
+            for line in status_lines:
+                all_status_paths.add(Path(line[3:]))
+            return all_status_paths
+
         def parse_status_output(
             status_results: "CommandResult", index: int
         ) -> dict[Path, StatusCode]:
@@ -130,6 +136,13 @@ class CmdResults(ReactiveDataclass):
             raise ValueError(
                 "One of the required CommandResults is None. Cannot update."
             )
+
+        # Update status paths
+        self._status_paths = get_all_status_paths(
+            self.new_results.status_dirs.std_out.splitlines()
+            + self.new_results.status_files.std_out.splitlines()
+        )
+
         # Update apply status dirs and files
         self.parsed_paths.apply_status_dirs = parse_status_output(
             self.new_results.status_dirs, index=0
@@ -144,27 +157,23 @@ class CmdResults(ReactiveDataclass):
         self.parsed_paths.re_add_status_files = parse_status_output(
             self.new_results.status_files, index=1
         )
-        # Update status paths
-        self.parsed_paths.status_paths = set(
-            self.parsed_paths.apply_status_dirs.keys()
-        ) | set(self.parsed_paths.apply_status_files.keys())
 
     def _update_real_x_dirs_and_files(self) -> None:
         self.parsed_paths.real_x_dirs = [
             path
             for path in self.parsed_paths.managed_dirs
-            if path not in self.parsed_paths.status_paths
+            if path not in self._status_paths
         ]
         self.parsed_paths.real_x_files = [
             path
             for path in self.parsed_paths.managed_files
-            if path not in self.parsed_paths.status_paths
+            if path not in self._status_paths
         ]
 
     def _update_dirs_with_and_dirs_without_status_children(self) -> None:
         # Update dirs with status children for tree population logic
         self.parsed_paths.x_dirs_with_status_children = set()
-        for path in self.parsed_paths.status_paths:
+        for path in self._status_paths:
             current = path.parent
             while current != current.parent:
                 self.parsed_paths.x_dirs_with_status_children.add(current)
@@ -182,8 +191,7 @@ class CmdResults(ReactiveDataclass):
             return {
                 path: StatusCode.No_Status
                 for path in self.parsed_paths.managed_files
-                if path.parent == dir_path
-                and path not in self.parsed_paths.status_paths
+                if path.parent == dir_path and path not in self._status_paths
             }
 
         def get_real_x_dirs_in(dir_path: Path) -> dict[Path, StatusCode]:
@@ -191,8 +199,7 @@ class CmdResults(ReactiveDataclass):
             return {
                 path: StatusCode.No_Status
                 for path in self.parsed_paths.managed_dirs
-                if path.parent == dir_path
-                and path not in self.parsed_paths.status_paths
+                if path.parent == dir_path and path not in self._status_paths
             }
 
         def get_tree_x_dirs_in(dir_path: Path) -> dict[Path, StatusCode]:
@@ -200,7 +207,7 @@ class CmdResults(ReactiveDataclass):
                 path: StatusCode.No_Status
                 for path in self.parsed_paths.managed_dirs
                 if path.parent == dir_path
-                and path not in self.parsed_paths.status_paths
+                and path not in self._status_paths
                 and path not in self.parsed_paths.x_dirs_with_status_children
             }
 
