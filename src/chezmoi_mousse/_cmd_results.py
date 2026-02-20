@@ -215,6 +215,26 @@ class CmdResults(ReactiveDataclass):
                     result[sub_dir] = StatusCode.No_Status
             return dict(sorted(result.items()))
 
+        def get_nested_status_dirs_in(
+            dir_path: Path, status_dirs: dict[Path, StatusCode]
+        ) -> dict[Path, StatusCode]:
+            return {
+                path: status
+                for path, status in status_dirs.items()
+                if path.is_relative_to(dir_path)
+                and len(path.relative_to(dir_path).parts) > 1
+            }
+
+        def get_nested_status_files_in(
+            dir_path: Path, status_files: dict[Path, StatusCode]
+        ) -> dict[Path, StatusCode]:
+            return {
+                path: status
+                for path, status in status_files.items()
+                if path.is_relative_to(dir_path)
+                and len(path.relative_to(dir_path).parts) > 1
+            }
+
         for dir_path in self.parsed_paths.managed_dirs:
             sub_dir_paths = [
                 p for p in self.parsed_paths.managed_dirs if p.parent == dir_path
@@ -243,6 +263,12 @@ class CmdResults(ReactiveDataclass):
                 ),
                 tree_x_dirs_in=get_tree_x_dirs_in(dir_path),
                 real_x_dirs_in=get_real_x_dirs_in(dir_path),
+                nested_status_dirs=get_nested_status_dirs_in(
+                    dir_path, self.parsed_paths.apply_status_dirs
+                ),
+                nested_status_files=get_nested_status_files_in(
+                    dir_path, self.parsed_paths.apply_status_files
+                ),
             )
 
             # Update re-add nodes
@@ -269,4 +295,10 @@ class CmdResults(ReactiveDataclass):
                 ),
                 tree_x_dirs_in=get_tree_x_dirs_in(dir_path),
                 real_x_dirs_in=get_real_x_dirs_in(dir_path),
+                nested_status_dirs=get_nested_status_dirs_in(
+                    dir_path, self.parsed_paths.re_add_status_dirs
+                ),
+                nested_status_files=get_nested_status_files_in(
+                    dir_path, self.parsed_paths.re_add_status_files
+                ),
             )

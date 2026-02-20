@@ -31,6 +31,8 @@ class DirNode:
     tree_status_dirs_in: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
     real_x_dirs_in: dict[Path, StatusCode]
+    nested_status_dirs: dict[Path, StatusCode]
+    nested_status_files: dict[Path, StatusCode]
 
 
 @dataclass(slots=True)
