@@ -146,9 +146,10 @@ class ChezmoiGUI(App[None]):
         elif self.init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
+            self.push_screen(MainScreen())
         else:
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        self.push_screen(MainScreen())
+            self.push_screen(MainScreen())
 
     ##########################################################
     # Properties for convenient access to cmd_results fields #
