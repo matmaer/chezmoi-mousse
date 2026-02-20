@@ -1,5 +1,6 @@
 from enum import StrEnum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
@@ -8,16 +9,10 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import (
-    CMD,
-    AppIds,
-    AppType,
-    DirNode,
-    ReadCmd,
-    StatusCode,
-    TabName,
-    Tcss,
-)
+from chezmoi_mousse import CMD, AppType, ReadCmd, StatusCode, TabName, Tcss
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds, DirNode
 
 __all__ = ["ContentsView"]
 
@@ -66,7 +61,7 @@ class ContentsView(Container, AppType):
         self.border_title = f" {self.app.dest_dir} "
 
     @property
-    def dir_nodes(self) -> dict[Path, DirNode]:
+    def dir_nodes(self) -> dict[Path, "DirNode"]:
         if self.canvas_name == TabName.apply:
             return self.app.apply_dir_nodes
         else:
@@ -150,7 +145,7 @@ class ContentsView(Container, AppType):
 
     def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
         widgets: list[Static | Label] = []
-        dir_node: DirNode = self.dir_nodes[dir_path]
+        dir_node: "DirNode" = self.dir_nodes[dir_path]
         if dir_node.real_status_dirs_in:
             widgets.append(
                 Label(

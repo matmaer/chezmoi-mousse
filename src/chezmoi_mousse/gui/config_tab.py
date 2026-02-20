@@ -1,4 +1,5 @@
 import json
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
@@ -6,17 +7,13 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import (
-    IDS,
-    AppType,
-    CommandResults,
-    FlatBtnLabel,
-    SectionLabel,
-    Tcss,
-)
+from chezmoi_mousse import IDS, AppType, FlatBtnLabel, SectionLabel, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CommandResults
 
 __all__ = ["ConfigTab"]
 
@@ -89,7 +86,7 @@ class TemplateDataView(Vertical, AppType):
 
 class ConfigTab(Horizontal, AppType):
 
-    command_results: reactive[CommandResults | None] = reactive(None)
+    command_results: reactive["CommandResults | None"] = reactive(None)
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(

@@ -21,7 +21,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     CmdResults,
-    DirNode,
     OpBtnLabel,
     TabName,
 )
@@ -51,7 +50,7 @@ from .splash_screen import SplashScreen
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import CommandResult, DirNode
 
 __all__ = ["ChezmoiGUI"]
 
@@ -180,11 +179,11 @@ class ChezmoiGUI(App[None]):
         return self.cmd_results.parsed_paths.managed_files
 
     @property
-    def apply_dir_nodes(self) -> dict[Path, DirNode]:
+    def apply_dir_nodes(self) -> dict[Path, "DirNode"]:
         return self.cmd_results.apply_dir_nodes
 
     @property
-    def re_add_dir_nodes(self) -> dict[Path, DirNode]:
+    def re_add_dir_nodes(self) -> dict[Path, "DirNode"]:
         return self.cmd_results.re_add_dir_nodes
 
     @property

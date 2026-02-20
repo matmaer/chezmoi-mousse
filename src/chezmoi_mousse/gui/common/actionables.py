@@ -22,7 +22,7 @@ from chezmoi_mousse import (
 from .messages import CloseButtonMsg, OperateButtonMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, SwitchEnum
+    from chezmoi_mousse import AppIds
 
 
 __all__ = [

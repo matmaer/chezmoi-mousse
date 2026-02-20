@@ -1,18 +1,22 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual import work
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppIds, AppType, CommandResult, ReadCmd, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds, CommandResult
 
 __all__ = ["GitLog", "GitLogTable"]
 
 
 class GitLogTable(DataTable[str], AppType):
 
-    def __init__(self, git_log_result: CommandResult) -> None:
+    def __init__(self, git_log_result: "CommandResult") -> None:
         super().__init__()
         self.git_log_result = git_log_result
 

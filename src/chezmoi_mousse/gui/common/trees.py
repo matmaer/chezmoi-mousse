@@ -1,19 +1,14 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import (
-    AppIds,
-    AppType,
-    Chars,
-    DirNode,
-    StatusCode,
-    TabName,
-    Tcss,
-    TreeName,
-)
+from chezmoi_mousse import AppType, Chars, StatusCode, TabName, Tcss, TreeName
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds, DirNode
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
@@ -39,7 +34,7 @@ class TreeBase(Tree[Path], AppType):
         self.make_node_colors_dict()
 
     @property
-    def dir_nodes(self) -> dict[Path, DirNode]:
+    def dir_nodes(self) -> dict[Path, "DirNode"]:
         if self.ids.canvas_name == TabName.apply:
             return self.app.apply_dir_nodes
         else:

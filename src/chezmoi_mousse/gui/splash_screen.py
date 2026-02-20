@@ -2,7 +2,7 @@ import json
 import urllib.request
 from collections import deque
 from enum import StrEnum
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
 from rich.segment import Segment
 from rich.style import Style
@@ -16,9 +16,12 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CMD, CMD_RESULTS, IDS, AppType, ParsedJson, ReadCmd
+from chezmoi_mousse import CMD, CMD_RESULTS, IDS, AppType, ReadCmd
 
 from .install_help import InstallHelpScreen
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import ParsedJson
 
 __all__ = ["SplashScreen"]
 
@@ -190,7 +193,7 @@ class SplashScreen(Screen[None], AppType):
         )
 
     @work
-    async def get_install_screen_data(self) -> ParsedJson:
+    async def get_install_screen_data(self) -> "ParsedJson":
         with urllib.request.urlopen(TemplateStr.chezmoi_latest_release_url) as response:
             data = json.load(response)
             latest_version = data.get("tag_name")
@@ -269,7 +272,7 @@ class SplashScreen(Screen[None], AppType):
             stack.append(node)
 
         # collapse tree into nested dictionary
-        def collapse(node: Node) -> ParsedJson | str:
+        def collapse(node: Node) -> "ParsedJson | str":
             # a node without children is the text of the command
             if not node["children"]:
                 return node["text"]

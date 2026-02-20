@@ -1,11 +1,15 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual import on
 from textual.containers import Container
 from textual.widgets import Switch
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppIds, AppType, DirNode, SwitchEnum, TabName
+from chezmoi_mousse import AppType, DirNode, SwitchEnum, TabName
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
 
 from .trees import ListTree, ManagedTree
 

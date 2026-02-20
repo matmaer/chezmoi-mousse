@@ -17,6 +17,7 @@ dev = [
     "black",
     "docformatter",
     "faker",
+    "flake8",
     "graphviz",
     "ipython",
     "isort",

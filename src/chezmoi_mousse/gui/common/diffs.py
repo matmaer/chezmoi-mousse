@@ -1,23 +1,17 @@
 from itertools import groupby
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import (
-    CMD,
-    AppIds,
-    AppType,
-    CommandResult,
-    LogString,
-    ReadCmd,
-    TabName,
-    Tcss,
-)
+from chezmoi_mousse import CMD, AppIds, AppType, LogString, ReadCmd, TabName, Tcss
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["DiffView"]
-
 
 DIFF_TCSS = {
     "diff --git a/": Tcss.command,
@@ -47,7 +41,7 @@ class DiffView(Container, AppType):
     def on_mount(self) -> None:
         self.border_title = f" {self.app.dest_dir} "
 
-    def _create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
+    def _create_diff_widgets(self, diff_result: "CommandResult") -> list[Static]:
         if not diff_result.std_out:
             return [Static(LogString.no_stdout)]
 

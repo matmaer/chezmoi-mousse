@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 200
+extend-ignore = E203, W503, E501
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.egg-info,
+    .venv,
+    venv,
+    static_tests,
+    ignored
+per-file-ignores =
+    src/chezmoi_mousse/__init__.py:F401
