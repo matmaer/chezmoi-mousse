@@ -194,23 +194,6 @@ class CmdResults(ReactiveDataclass):
                 if path.parent == dir_path and path not in self._status_paths
             }
 
-        def get_real_x_dirs_in(dir_path: Path) -> dict[Path, StatusCode]:
-            # x dirs are the same for apply and re_add contexts
-            return {
-                path: StatusCode.No_Status
-                for path in self.parsed_paths.managed_dirs
-                if path.parent == dir_path and path not in self._status_paths
-            }
-
-        def get_tree_x_dirs_in(dir_path: Path) -> dict[Path, StatusCode]:
-            return {
-                path: StatusCode.No_Status
-                for path in self.parsed_paths.managed_dirs
-                if path.parent == dir_path
-                and path not in self._status_paths
-                and path not in self.parsed_paths.x_dirs_with_status_children
-            }
-
         def get_tree_status_dirs_in(
             sub_dir_paths: list[Path], status_dirs: dict[Path, StatusCode]
         ) -> dict[Path, StatusCode]:
@@ -268,8 +251,6 @@ class CmdResults(ReactiveDataclass):
                 tree_status_dirs_in=get_tree_status_dirs_in(
                     sub_dir_paths, apply_status_dirs_in
                 ),
-                tree_x_dirs_in=get_tree_x_dirs_in(dir_path),
-                real_x_dirs_in=get_real_x_dirs_in(dir_path),
                 nested_status_dirs=get_nested_status_dirs_in(
                     dir_path, self.parsed_paths.apply_status_dirs
                 ),
@@ -300,8 +281,6 @@ class CmdResults(ReactiveDataclass):
                 tree_status_dirs_in=get_tree_status_dirs_in(
                     sub_dir_paths, re_add_status_dirs_in
                 ),
-                tree_x_dirs_in=get_tree_x_dirs_in(dir_path),
-                real_x_dirs_in=get_real_x_dirs_in(dir_path),
                 nested_status_dirs=get_nested_status_dirs_in(
                     dir_path, self.parsed_paths.re_add_status_dirs
                 ),
