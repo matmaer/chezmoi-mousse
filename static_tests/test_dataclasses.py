@@ -83,7 +83,7 @@ for cd in all_dataclass_classes:
     all_dataclass_classes,
     ids=lambda x: f"{x.class_name} ({x.module_path}:{x.class_lineno})",
 )
-def test_dataclass_fields_in_use(class_data: ClassData) -> None:
+def test_fields_in_use(class_data: ClassData) -> None:
     # Use the pre-collected fields
     dataclass_field_names = class_data.fields
 
@@ -91,18 +91,16 @@ def test_dataclass_fields_in_use(class_data: ClassData) -> None:
     for field_name in dataclass_field_names:
         if field_name.startswith("_"):
             continue
-        found = False
+        in_use = False
         for module_data in module_data_list:
-            if found:
+            if in_use:
                 break
             for node in module_data.module_nodes:
-                if node in all_dataclass_nodes:
-                    continue  # skip usage inside any dataclass
                 if isinstance(node, ast.Attribute):
-                    if node.attr == field_name:
-                        found = True
+                    if node.attr == field_name and isinstance(node.ctx, ast.Load):
+                        in_use = True
                         break
-        if not found:
+        if not in_use:
             results.append(field_name)
 
     if results:
