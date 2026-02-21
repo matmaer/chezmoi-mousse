@@ -65,7 +65,11 @@ class TabsBase(Container, AppType):
                     node.collapse()
 
     def handle_unchanged_switch(self, event: Switch.Changed) -> None:
-        def add_managed_tree_nodes() -> None:
+        managed_tree = self.query_one(self.ids.tree.managed_q, ManagedTree)
+        managed_tree_nodes = managed_tree.get_all_nodes()
+        list_tree = self.query_one(self.ids.tree.list_q, ListTree)
+        list_tree_nodes = list_tree.get_all_nodes()
+        if event.value is True:
             for x_dir in self.app.tree_x_dirs:
                 parent_tree_node = next(
                     (node for node in managed_tree_nodes if node.data == x_dir.parent),
@@ -81,18 +85,11 @@ class TabsBase(Container, AppType):
                         new_x_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
                     parent_tree_node.expand()
 
-        def add_list_tree_nodes() -> None:
             for x_file in self.app.x_files:
+                if x_file in [node.data for node in list_tree_nodes]:
+                    continue
                 rel_path = str(x_file.relative_to(self.app.dest_dir))
                 list_tree.root.add_leaf(f"[dim]{rel_path}[/]", x_file)
-
-        list_tree = self.query_one(self.ids.tree.list_q, ListTree)
-        list_tree_nodes = list_tree.get_all_nodes()
-        managed_tree = self.query_one(self.ids.tree.managed_q, ManagedTree)
-        managed_tree_nodes = managed_tree.get_all_nodes()
-        if event.value is True:
-            add_managed_tree_nodes()
-            add_list_tree_nodes()
         elif event.value is False:
             # remove x_files and x_dirs from managed tree
             for tree_node in managed_tree_nodes:

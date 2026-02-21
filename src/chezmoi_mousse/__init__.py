@@ -28,6 +28,7 @@ from ._str_enums import (
     StatusCode,
     SubTabLabel,
 )
+from ._test_paths import TestPaths
 from ._type_hinting import AppType, DirNode, InitCloneData, ParsedJson
 
 __all__ = [
@@ -63,6 +64,7 @@ __all__ = [
     "SwitchEnum",
     "TabName",
     "Tcss",
+    "TestPaths",
     "TreeName",
     "WriteCmd",
 ]
