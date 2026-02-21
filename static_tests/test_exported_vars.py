@@ -9,9 +9,53 @@ from _test_utils import (
     get_modules_importing_class,
 )
 
+INIT_PATH = Path("src", "chezmoi_mousse", "__init__.py")
+GUI_DIR = Path("src", "chezmoi_mousse", "gui")
+PACKAGE_NAME = "chezmoi_mousse"
 
-def get_exported_names(module_path: Path) -> set[str] | None:
-    # Extract __all__ exports from a module.
+
+def get_gui_imports_from_package() -> set[str]:
+    # Collect all names imported via 'from chezmoi_mousse import ...' in the gui folder.
+    names: set[str] = set()
+    for py_file in GUI_DIR.glob("**/*.py"):
+        tree = ast.parse(py_file.read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module == PACKAGE_NAME:
+                for alias in node.names:
+                    names.add(alias.name)
+    return names
+
+
+def test_init_exports() -> None:
+    # __all__ in __init__.py should match exactly what gui files import from chezmoi_mousse.
+    gui_imports = get_gui_imports_from_package()
+    exported, _ = get_exported_names(INIT_PATH)
+
+    if exported is None:
+        pytest.fail("__init__.py has no __all__")
+        return
+
+    exported_names = exported - {"__version__"}
+    errors: list[str] = []
+
+    never_used = exported_names - gui_imports
+    if never_used:
+        errors.append(
+            f"Exported in __all__ but never imported in gui: {sorted(never_used)}"
+        )
+
+    not_exported = gui_imports - exported
+    if not_exported:
+        errors.append(
+            f"Imported from chezmoi_mousse in gui but missing from __all__: {sorted(not_exported)}"
+        )
+
+    if errors:
+        pytest.fail("\n".join(errors))
+
+
+def get_exported_names(module_path: Path) -> tuple[set[str] | None, int | None]:
+    # Extract __all__ exports from a module and its line number.
     tree = get_module_ast_tree(module_path)
 
     for node in ast.walk(tree):
@@ -20,14 +64,15 @@ def get_exported_names(module_path: Path) -> set[str] | None:
         ):
             if isinstance(node.value, ast.List):
                 try:
-                    return {
+                    exported = {
                         e.value
                         for e in node.value.elts
                         if isinstance(e, ast.Constant) and isinstance(e.value, str)
                     }
+                    return exported, node.lineno
                 except AttributeError:
-                    return None
-    return None
+                    return None, None
+    return None, None
 
 
 def get_modules_to_test() -> list[Path]:
@@ -48,27 +93,14 @@ def get_modules_to_test() -> list[Path]:
     return modules_to_test
 
 
-def get_modules_to_test_merged() -> list[Path]:
-    # Get modules that either have classes imported elsewhere or have __all__
-    modules_to_test = set(get_modules_to_test())
-    modules_with_all = set(
-        module_path
-        for module_path in get_module_paths() + [Path("src/chezmoi_mousse/__init__.py")]
-        if get_exported_names(module_path) is not None
-    )
-    return list(modules_to_test | modules_with_all)
-
-
 @pytest.mark.parametrize(
-    "module_path",
-    get_modules_to_test_merged(),
-    ids=lambda module_path: module_path.stem,
+    "module_path", get_modules_to_test(), ids=lambda module_path: module_path.stem
 )
 def test_module_exports(module_path: Path):
     # Test that a module exports all classes that are imported elsewhere,
     # and that exported classes are imported elsewhere
     class_defs = get_module_ast_class_defs(module_path)
-    defined_classes = {cls.name for cls in class_defs}
+    defined_classes = {cls.name: cls.lineno for cls in class_defs}
 
     # Find which of these classes are actually imported elsewhere
     imported_classes = {
@@ -76,19 +108,22 @@ def test_module_exports(module_path: Path):
         for cls_name in defined_classes
         if get_modules_importing_class(cls_name)
     }
-    exported = get_exported_names(module_path)
+    exported, all_lineno = get_exported_names(module_path)
+
+    errors: list[str] = []
 
     # Check if imported classes are exported
     if imported_classes:
         if exported is None:
-            pytest.fail(
+            errors.append(
                 f"Module {module_path.stem} has no __all__ but exports classes: {sorted(imported_classes)}"
             )
         else:
             missing = imported_classes - exported
             if missing:
-                pytest.fail(
-                    f"Module {module_path.stem} missing from __all__: {sorted(missing)}"
+                line_info = f":{all_lineno}" if all_lineno else ""
+                errors.append(
+                    f"Module {module_path.stem}{line_info} missing from __all__: {sorted(missing)}"
                 )
 
     # Check if exported classes are imported elsewhere
@@ -101,6 +136,15 @@ def test_module_exports(module_path: Path):
             cls for cls in classes_exported if not get_modules_importing_class(cls)
         ]
         if never_imported:
-            pytest.fail(
-                f"Module {module_path.stem} exports classes never imported: {sorted(never_imported)}"
-            )
+            for cls in never_imported:
+                line_info = (
+                    f":{defined_classes.get(cls, 'unknown')}"
+                    if cls in defined_classes
+                    else ""
+                )
+                errors.append(
+                    f"Module {module_path.stem} exports class {cls}{line_info} never imported"
+                )
+
+    if errors:
+        pytest.fail("\n".join(errors))

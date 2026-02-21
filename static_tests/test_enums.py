@@ -2,7 +2,12 @@ import ast
 from typing import NamedTuple
 
 import pytest
-from _test_utils import get_module_ast_class_defs, get_module_ast_tree, get_module_paths
+from _test_utils import (
+    ModuleData,
+    get_all_module_data,
+    get_module_ast_class_defs,
+    get_module_paths,
+)
 
 type AstClassDefs = list[ast.ClassDef]
 
@@ -24,31 +29,23 @@ def is_enum_class(class_def: ast.ClassDef) -> bool:
     return False
 
 
-class ModuleData(NamedTuple):
-    module_path: str  # the module path for error reporting
-    module_nodes: list[ast.AST]  # all ast nodes in the module (materialized)
-
-
 class ClassData(NamedTuple):
     module_path: str  # the module path for error reporting
     class_name: str  # the ast.ClassDef.name
+    class_lineno: int  # line number where the class is defined
     class_nodes: list[ast.AST]  # the ast nodes within the class (materialized)
 
 
-all_enum_classes: list[ClassData] = []
-module_data_list: list[ModuleData] = []
+module_data_list: list[ModuleData] = get_all_module_data()
 
+all_enum_classes: list[ClassData] = []
 for file_path in MODULE_PATHS:
-    # Store module-level nodes
-    module_tree = get_module_ast_tree(file_path)
-    module_data_list.append(
-        ModuleData(module_path=str(file_path), module_nodes=list(ast.walk(module_tree)))
-    )
     class_defs: AstClassDefs = get_module_ast_class_defs(file_path)
     for class_def in class_defs:
         to_append = ClassData(
             module_path=str(file_path),
             class_name=class_def.name,
+            class_lineno=class_def.lineno,
             class_nodes=list(ast.walk(class_def)),
         )
         if is_enum_class(class_def):
@@ -90,7 +87,9 @@ def test_unique_enum_class_names() -> None:
 
 
 @pytest.mark.parametrize(
-    "class_data", all_enum_classes, ids=lambda x: f"{x.class_name} ({x.module_path})"
+    "class_data",
+    all_enum_classes,
+    ids=lambda x: f"{x.class_name} ({x.module_path}:{x.class_lineno})",
 )
 def test_enum_members_in_use(class_data: ClassData) -> None:
     results: list[str] = []
@@ -157,7 +156,7 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
                                 break
         if found is False:
             results.append(
-                f"{class_data.class_name}.{member_name} (in {class_data.module_path})"
+                f"{class_data.class_name}.{member_name} (in {class_data.module_path}:{class_data.class_lineno})"
             )
     if results:
         pytest.fail("\n" + "\n".join(results))

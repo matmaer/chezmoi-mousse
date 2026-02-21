@@ -2,7 +2,12 @@ import ast
 from typing import NamedTuple
 
 import pytest
-from _test_utils import get_module_ast_class_defs, get_module_ast_tree, get_module_paths
+from _test_utils import (
+    ModuleData,
+    get_all_module_data,
+    get_module_ast_class_defs,
+    get_module_paths,
+)
 
 MODULE_PATHS = get_module_paths()
 
@@ -25,11 +30,6 @@ def is_dataclass_class(class_def: ast.ClassDef) -> bool:
     return False
 
 
-class ModuleData(NamedTuple):
-    module_path: str  # the module path for error reporting
-    module_nodes: list[ast.AST]  # all ast nodes in the module (materialized)
-
-
 class ClassData(NamedTuple):
     module_path: str  # the module path for error reporting
     class_name: str  # the ast.ClassDef.name
@@ -38,15 +38,10 @@ class ClassData(NamedTuple):
     fields: list[str]  # the field names of the dataclass
 
 
-all_dataclass_classes: list[ClassData] = []
-module_data_list: list[ModuleData] = []
+module_data_list: list[ModuleData] = get_all_module_data()
 
+all_dataclass_classes: list[ClassData] = []
 for file_path in MODULE_PATHS:
-    # Store module-level nodes
-    module_tree = get_module_ast_tree(file_path)
-    module_data_list.append(
-        ModuleData(module_path=str(file_path), module_nodes=list(ast.walk(module_tree)))
-    )
     class_defs: AstClassDefs = get_module_ast_class_defs(file_path)
     for class_def in class_defs:
         fields: list[str] = []

@@ -10,10 +10,10 @@ MODULE_PATHS = get_module_paths()
 
 
 class ClassData(NamedTuple):
-    # tuple to avoid a flat with possible duplicate nodes
-    module_path: str  # the module path for error reporting
-    class_name: str  # the ast.ClassDef.name
-    query_one_nodes: list[ast.Call]  # the ast.Call nodes calling query_one
+    module_path: str
+    class_name: str
+    class_lineno: int
+    query_one_nodes: list[ast.Call]
 
 
 CLASSES_WITH_THEIR_QUERY_ONE_NODES: list[ClassData] = []
@@ -34,8 +34,9 @@ for file_path in MODULE_PATHS:
         if query_one_nodes:
             CLASSES_WITH_THEIR_QUERY_ONE_NODES.append(
                 ClassData(
-                    module_path=str(file_path.name),
+                    module_path=str(file_path),
                     class_name=class_def.name,
+                    class_lineno=class_def.lineno,
                     query_one_nodes=query_one_nodes,
                 )
             )
@@ -44,10 +45,10 @@ for file_path in MODULE_PATHS:
 @pytest.mark.parametrize(
     "class_data",
     CLASSES_WITH_THEIR_QUERY_ONE_NODES,
-    ids=lambda x: f"{x.class_name} in {x.module_path}",
+    ids=lambda x: f"{x.class_name} ({x.module_path}:{x.class_lineno})",
 )
 def test_query_one_calls(class_data: ClassData) -> None:
-    results: list[str] = []
+    issues: list[str] = []
     for call_node in class_data.query_one_nodes:
         # Check if first argument of the call ends with '_q'
         first_arg = call_node.args[0]
@@ -58,21 +59,23 @@ def test_query_one_calls(class_data: ClassData) -> None:
                 first_arg_str = first_arg.value
             else:
                 first_arg_str = str(first_arg.value)
-        if isinstance(first_arg, ast.Name):
+        elif isinstance(first_arg, ast.Name):
             # Variable/class name like my_var
             first_arg_str = first_arg.id
         elif isinstance(first_arg, ast.Attribute):
             # Attribute like ids.container.pre_operate
             first_arg_str = first_arg.attr
         else:
-            pytest.skip(
-                f"Cannot determine first argument type in "
-                f"{class_data.module_path}, class '{class_data.class_name}'."
+            issues.append(
+                f"Cannot determine first argument type at line {call_node.lineno}."
             )
+            continue
         if not first_arg_str.endswith("_q"):
-            results.append(
-                f"class '{class_data.class_name}' in {class_data.module_path}: "
-                f"'{first_arg_str}' not ending with '_q'."
+            issues.append(
+                f"'{first_arg_str}' not ending with '_q' at line {call_node.lineno}."
             )
-    if results:
-        pytest.fail("\n".join(results))
+    if issues:
+        pytest.fail(
+            f"Class {class_data.class_name} in {class_data.module_path}:{class_data.class_lineno} has query_one calls with issues:\n"
+            + "\n".join(issues)
+        )

@@ -67,7 +67,7 @@ class ImportChecker(ast.NodeVisitor):
         for alias in node.names:
             if alias.name != "*" and alias.name not in exported_names:
                 self.errors.append(
-                    f"Relative import in {self.filepath.name}: "
+                    f"Relative import in {self.filepath.name} at line {node.lineno}: "
                     f"'{alias.name}' imported from {node.module} "
                     f"but not exported by {target_module_path.name}"
                 )
@@ -75,13 +75,9 @@ class ImportChecker(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def test_indirect_imports():
-    all_errors: list[str] = []
-
-    for py_file in GUI_MODULE_PATHS:
-        checker = ImportChecker(py_file)
-        checker.visit(get_module_ast_tree(py_file))
-        all_errors.extend(checker.errors)
-
-    if all_errors:
-        pytest.fail("\n".join(all_errors))
+@pytest.mark.parametrize("module_path", GUI_MODULE_PATHS, ids=lambda p: p.stem)
+def test_indirect_imports(module_path: Path):
+    checker = ImportChecker(module_path)
+    checker.visit(get_module_ast_tree(module_path))
+    if checker.errors:
+        pytest.fail("\n".join(checker.errors))
