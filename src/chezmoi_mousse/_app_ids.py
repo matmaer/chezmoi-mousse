@@ -194,6 +194,8 @@ class LabelIds:
         self.contents_info_q = f"#{self.contents_info}"
         self.file_read_output = ids.label_id(label=LabelName.file_read_output)
         self.file_read_output_q = f"#{self.file_read_output}"
+        self.loading = ids.label_id(label=LabelName.loading)
+        self.loading_q = f"#{self.loading}"
 
 
 class LoggerIds:

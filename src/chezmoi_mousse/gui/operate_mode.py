@@ -30,19 +30,20 @@ __all__ = ["OperateMode"]
 
 class LoadingModal(ModalScreen[None]):
 
-    def __init__(self, pretty_cmd: str) -> None:
+    def __init__(self, ids: "AppIds", *, pretty_cmd: str) -> None:
         super().__init__()
+        self.ids = ids
         self.pretty_cmd = pretty_cmd
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Label(f"Running {self.pretty_cmd}", id="loading-label")
-            yield LoadingIndicator(id="loading-indicator")
+            yield Label(f"Running {self.pretty_cmd}", id=self.ids.label.loading)
+            yield LoadingIndicator()
 
     @on(ProgressTextMsg)
     def update_pretty_cmd_text(self, message: ProgressTextMsg) -> None:
         message.stop()
-        label = self.query_one("#loading-label", Label)
+        label = self.query_one(self.ids.label.loading_q, Label)
         label.update(message.text)
 
 
@@ -112,7 +113,7 @@ class OperateMode(Vertical, AppType):
             pretty_cmd += f"[$text-success bold] {self.path_arg}[/]"
         elif self.init_arg is not None:
             pretty_cmd += f"[$text-success bold] {self.init_arg}[/]"
-        loading_modal = LoadingModal(pretty_cmd)
+        loading_modal = LoadingModal(self.ids, pretty_cmd=pretty_cmd)
         await self.app.push_screen(loading_modal)
         worker = self.run_perform_command(btn_enum)
         await worker.wait()

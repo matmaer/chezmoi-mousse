@@ -49,6 +49,7 @@ class LabelName(StrEnum):
     cat_config_output = auto()
     contents_info = auto()
     file_read_output = auto()
+    loading = auto()
 
 
 class LogName(StrEnum):
