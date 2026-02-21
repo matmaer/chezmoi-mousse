@@ -49,7 +49,6 @@ class ParsedPaths:
     managed_files: list[Path] = field(default_factory=list[Path])
     x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
     tree_x_dirs: list[Path] = field(default_factory=lambda: [])
-    real_x_dirs: list[Path] = field(default_factory=lambda: [])
     real_x_files: list[Path] = field(default_factory=lambda: [])
     apply_status_dirs: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
@@ -83,8 +82,8 @@ class CmdResults(ReactiveDataclass):
         self._update_no_status_paths()
         self._update_managed_dirs_and_files()
         self._update_apply_and_re_add_status_dirs_and_files_and_status_paths()
-        # Now update x dirs, x files as they depend status paths and managed dirs/files
-        self._update_real_x_dirs_and_files()
+        # Now update x files as they depend status paths and managed dirs/files
+        self._update_real_x_files()
         # Now update dirs with and without status children as they also depend on
         # status paths and managed dirs/files
         self._update_dirs_with_and_dirs_without_status_children()
@@ -167,12 +166,7 @@ class CmdResults(ReactiveDataclass):
             self.new_results.status_files, index=1
         )
 
-    def _update_real_x_dirs_and_files(self) -> None:
-        self.parsed_paths.real_x_dirs = [
-            path
-            for path in self.parsed_paths.managed_dirs
-            if path not in self._status_paths
-        ]
+    def _update_real_x_files(self) -> None:
         self.parsed_paths.real_x_files = [
             path
             for path in self.parsed_paths.managed_files
