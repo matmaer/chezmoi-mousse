@@ -72,6 +72,7 @@ class CmdResults(ReactiveDataclass):
     parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    no_status_paths: bool = True
     _status_paths: set[Path] = field(default_factory=lambda: set())
 
     def _on_field_change(self, name: str) -> None:
@@ -79,6 +80,7 @@ class CmdResults(ReactiveDataclass):
             return
         if self.new_results.dump_config is not None:
             self._update_dump_config(self.new_results.dump_config)
+        self._update_no_status_paths()
         self._update_managed_dirs_and_files()
         self._update_apply_and_re_add_status_dirs_and_files_and_status_paths()
         # Now update x dirs, x files as they depend status paths and managed dirs/files
@@ -97,6 +99,13 @@ class CmdResults(ReactiveDataclass):
             git_auto_commit=parsed_config["git"]["autocommit"],
             git_auto_push=parsed_config["git"]["autopush"],
         )
+
+    def _update_no_status_paths(self) -> None:
+        if (
+            self.new_results.verify is not None
+            and self.new_results.verify.exit_code == 0
+        ):
+            self.no_status_paths = True
 
     def _update_managed_dirs_and_files(self) -> None:
         if (

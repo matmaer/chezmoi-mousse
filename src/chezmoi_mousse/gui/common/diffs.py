@@ -6,7 +6,18 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, LogString, ReadCmd, TabName, Tcss
+from chezmoi_mousse import (
+    CMD,
+    AppIds,
+    AppType,
+    LogString,
+    ReadCmd,
+    SwitchEnum,
+    TabName,
+    Tcss,
+)
+
+from .messages import ToggleSwitch
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -75,18 +86,31 @@ class DiffView(Container, AppType):
         if self.show_path is None:
             self.show_path = self.app.dest_dir
             widgets: list[Static] = []
-            widgets.append(
-                Static(
-                    "This is the destination directory, it has no diff output.",
-                    classes=Tcss.added,
+            if not self.app.managed_dirs and not self.app.managed_files:
+                widgets.append(
+                    Static(
+                        "No managed paths or paths with a status are in the chezmoi repository.",
+                        classes=Tcss.added,
+                    )
                 )
-            )
-            widgets.append(
-                Static(
-                    "<- Select a file or directory in the tree to view its diff.",
-                    classes=Tcss.added,
+                widgets.append(
+                    Static("Switch to the Add tab to add paths.", classes=Tcss.added)
                 )
-            )
+                return
+            if self.app.no_status_paths is True:
+                text = (
+                    "No diffs are available because no paths are present in the chezmoi"
+                    "status output.\n<- Select an unchanged path to view its contents."
+                    "in the Contents tab or the git log in the Git-Log tab."
+                )
+                widgets.append(Static(text, classes=Tcss.added))
+                self.post_message(ToggleSwitch(SwitchEnum.unchanged))
+            else:
+                text = (
+                    "This is the destination directory, it has no diff output.\n"
+                    "<- Select a file or directory in the tree to view its diff."
+                )
+                widgets.append(Static(text, classes=Tcss.added))
             self._cache_container(Path(self.app.dest_dir), *widgets)
 
         elif self.show_path not in self.cache:

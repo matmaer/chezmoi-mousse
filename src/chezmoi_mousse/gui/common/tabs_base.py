@@ -8,10 +8,11 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import AppType, DirNode, SwitchEnum, TabName
 
+from .messages import ToggleSwitch
+from .trees import ListTree, ManagedTree
+
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
-
-from .trees import ListTree, ManagedTree
 
 __all__ = ["TabsBase"]
 
@@ -30,6 +31,13 @@ class TabsBase(Container, AppType):
             return self.app.apply_dir_nodes
         else:
             return self.app.re_add_dir_nodes
+
+    @on(ToggleSwitch)
+    def handle_toggle_switch(self, message: ToggleSwitch) -> None:
+        message.stop()
+        if message.switch_enum == SwitchEnum.unchanged:
+            switch = self.query_one(self.ids.filter.unchanged_q, Switch)
+            self.app.call_later(switch.action_toggle_switch)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
@@ -94,7 +102,7 @@ class TabsBase(Container, AppType):
                 ):
                     try:
                         tree_node.remove()
-                    except ValueError:
+                    except Exception:
                         pass
             # remove x_files from list tree
             for tree_node in list_tree_nodes:

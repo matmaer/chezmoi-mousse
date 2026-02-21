@@ -195,6 +195,10 @@ class ChezmoiGUI(App[None]):
     def x_files(self) -> list[Path]:
         return self.cmd_results.parsed_paths.real_x_files
 
+    @property
+    def no_status_paths(self) -> bool:
+        return self.cmd_results.no_status_paths
+
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
