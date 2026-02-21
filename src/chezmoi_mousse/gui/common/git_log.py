@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import work
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
@@ -52,8 +51,7 @@ class GitLogTable(DataTable[str], AppType):
 
 class GitLog(Container, AppType):
 
-    changed_paths: reactive["list[Path] | None"] = reactive(None, init=False)
-    show_path: reactive["Path | None"] = reactive(None, init=False)
+    show_path: reactive["Path | None"] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
@@ -75,9 +73,11 @@ class GitLog(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            return
+            self.show_path = self.app.dest_dir
+            table = GitLogTable(CMD.read(ReadCmd.git_log))
+            self._cache_container(self.app.dest_dir, table)
 
-        if self.show_path not in self.cache:
+        elif self.show_path not in self.cache:
             table = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=self.show_path))
             self._cache_container(self.show_path, table)
 
@@ -88,19 +88,3 @@ class GitLog(Container, AppType):
             self.current_container.display = False
         self.cache[self.show_path].display = True
         self.current_container = self.cache[self.show_path]
-
-    @work
-    async def watch_changed_paths(self) -> None:
-        if self.changed_paths is None:
-            return
-
-        # Remove cached paths no longer in changed_paths
-        paths_to_remove = [p for p in self.cache if p not in self.changed_paths]
-        for path in paths_to_remove:
-            self.cache.pop(path, None)
-
-        # Add new paths from changed_paths that aren't cached yet
-        for path in self.changed_paths:
-            if path not in self.cache:
-                table = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=path))
-                self._cache_container(path, table)
