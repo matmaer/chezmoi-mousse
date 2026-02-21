@@ -365,7 +365,7 @@ class ChezmoiGUI(App[None]):
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters
-                if slider_visible is False
+                if slider_visible is True
                 else BindingDescription.show_filters
             )
             self.update_binding_description(
@@ -405,7 +405,6 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, MainScreen):
             return
         slider: SwitchSlider = self._get_switch_slider_widget()
-        slider.toggle_class("-visible")
         slider_visible = slider.has_class("-visible")
         new_description = (
             BindingDescription.hide_filters
@@ -416,6 +415,7 @@ class ChezmoiGUI(App[None]):
             binding_action=BindingAction.toggle_switch_slider_visibility,
             new_description=new_description,
         )
+        slider.toggle_class("-visible")
 
     def action_toggle_maximized(self) -> None:
         if not isinstance(self.screen, MainScreen):

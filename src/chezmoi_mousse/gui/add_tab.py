@@ -226,20 +226,19 @@ class AddTab(TabsBase, AppType):
         self.current_path: "Path | None" = None
 
     def compose(self) -> ComposeResult:
-        yield OperateMode(IDS.add)
+        yield Horizontal(
+            FilteredDirTree(self.app.dest_dir, id=IDS.add.tree.dir_tree),
+            ContentsView(IDS.add),
+        )
         yield SwitchSlider(IDS.add)
+        yield OperateButtons(IDS.add)
+        yield OperateMode(IDS.add)
 
     def on_mount(self) -> None:
         self.operate_mode_container = self.query_one(
             IDS.add.container.op_mode_q, OperateMode
         )
-        self.mount(
-            Horizontal(
-                FilteredDirTree(self.app.dest_dir, id=IDS.add.tree.dir_tree),
-                ContentsView(IDS.add),
-            ),
-            OperateButtons(IDS.add),
-        )
+        self.query_exactly_one(FilteredDirTree).path = self.app.dest_dir
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.border_title_top)
         self.contents_view.border_title = f" {self.app.dest_dir} "

@@ -373,25 +373,29 @@ Static {
   }
 }
 
+TabbedContent {
+  layers: below above;
+}
+
 SwitchSlider {
   background-tint: $surface;
   background: $surface;
   border: round $primary;
-  border-left: none;
+  border-right: none;
   color: $foreground-darken-1;
-  dock: bottom;
-  layer: switches;
-  margin-bottom: 3;
-  offset-x: 0%;
-  padding-left: 2;
+  dock: right;
+  layer: above;
+  offset-x: 100%;
+  margin-top: 7;
+  padding: 0 1 0 2;
   transition: offset 380ms;
   width: auto;
+  &.-visible {
+    offset-x: 0%;
+  }
   & HorizontalGroup {
     padding-bottom: 1;
     width: auto;
-  }
-  &.-visible {
-    offset-x: -100%;
   }
 }
 
