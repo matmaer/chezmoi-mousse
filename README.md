@@ -6,7 +6,8 @@
 
 > [!WARNING]
 > It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
-> There are quite a bit of bugs recently introduced and discovered which will be solved soon.
+> Write operations need to be re-implemented after the most recent app overhaul.
+> There are quite a bit of todo's and bugs left in the current state which will be solved soon, this project is work in progress.
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
 
@@ -19,7 +20,7 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 - Can be safely used to visualize your chezmoi repository, as no write operations are enabled by default.
 - To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer. This will enable commands changing your config files or the chezmoi state. Test first in a VM or container, see the [Test][test-section] section.
-- Run the app with your own user. Running the app with `sudo` or elevated permissions is **not needed**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
+- Run the app with your own user. Running the app with `sudo` or elevated permissions is **not needed** and **should be avoided**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
 - The current implementation has only been used or tested with `autocommit` enabled, feedback is welcome on the issues page.
 
 ## Start
@@ -98,22 +99,22 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 > Note: see `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
 
 - [ ] `chezmoi add` directory
-- [x] `chezmoi add` file
+- [ ] `chezmoi add` file
 - [ ] `chezmoi archive`
 - [ ] `chezmoi apply` directory
-- [x] `chezmoi apply` file
+- [ ] `chezmoi apply` file
 - [ ] `chezmoi destroy` directory
-- [x] `chezmoi destroy` file
+- [ ] `chezmoi destroy` file
 - [ ] `chezmoi edit`
 - [ ] `chezmoi forget` directory
-- [x] `chezmoi forget` file
+- [ ] `chezmoi forget` file
 - [ ] `chezmoi generate`
 - [ ] `chezmoi import`
-- [x] `chezmoi init` new repository
+- [ ] `chezmoi init` new repository
 - [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
 - [ ] `chezmoi re-add` directory
-- [x] `chezmoi re-add` file
+- [ ] `chezmoi re-add` file
 
 ### Read Operations
 
@@ -129,7 +130,7 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 - [x] `chezmoi source-dir`
 - [x] `chezmoi status`
 - [x] `chezmoi unmanaged`
-- [ ] `chezmoi verify`
+- [x] `chezmoi verify`
 
 ### Implemented configuration options
 
