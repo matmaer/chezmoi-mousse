@@ -71,7 +71,7 @@ class CmdResults(ReactiveDataclass):
     parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
-    no_status_paths: bool = True
+    no_status_paths: bool = False
     _status_paths: set[Path] = field(default_factory=lambda: set())
 
     def _on_field_change(self, name: str) -> None:
