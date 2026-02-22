@@ -40,7 +40,7 @@ class MainScreen(Screen[None], AppType):
         self.debug_log: "DebugLog"
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(IDS.main_tabs)
+        yield CustomHeader()
         with TabbedContent():
             yield TabPane(TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply)
             yield TabPane(TabPanes.re_add_tab_label, ReAddTab(), id=TabName.re_add)
@@ -53,7 +53,7 @@ class MainScreen(Screen[None], AppType):
 
                 yield TabPane(TabPanes.debug_tab_label, DebugTab(), id=TabName.debug)
 
-        yield Footer(id=IDS.main_tabs.footer)
+        yield Footer()
 
     def on_mount(self) -> None:
         # Initialize App logger

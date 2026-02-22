@@ -3,7 +3,6 @@ from enum import StrEnum, auto
 __all__ = [
     "BindingAction",
     "ContainerName",
-    "ContentSwitcherName",
     "LabelName",
     "LogName",
     "ScreenName",
@@ -38,34 +37,22 @@ class ContainerName(StrEnum):
     switch_slider = auto()
 
 
-class ContentSwitcherName(StrEnum):
-    apply_tree_switcher = auto()
-    apply_view_switcher = auto()
-    re_add_tree_switcher = auto()
-    re_add_view_switcher = auto()
-
-
 class LabelName(StrEnum):
     cat_config_output = auto()
-    contents_info = auto()
-    file_read_output = auto()
     loading = auto()
 
 
 class LogName(StrEnum):
     app_logger = auto()
     cmd_logger = auto()
-    contents_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
-    diff_logger = auto()
-    splash_logger = auto()
 
 
 class ScreenName(StrEnum):
+    init = auto()
     install_help = auto()
     main_tabs = auto()
-    init = auto()
     splash = auto()
 
 

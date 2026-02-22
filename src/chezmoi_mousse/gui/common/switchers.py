@@ -37,9 +37,7 @@ class TreeSwitcher(Container, AppType):
     def compose(self) -> ComposeResult:
         yield TabButtons(self.ids, buttons=(SubTabLabel.tree, SubTabLabel.list))
         with ContentSwitcher(
-            id=self.ids.switcher.trees,
-            initial=self.ids.tree.managed,
-            classes=Tcss.content_switcher_left,
+            initial=self.ids.tree.managed, classes=Tcss.content_switcher_left
         ):
             yield ManagedTree(self.ids)
             yield ListTree(self.ids)

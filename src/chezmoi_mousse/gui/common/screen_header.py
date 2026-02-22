@@ -1,13 +1,9 @@
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 from textual.reactive import reactive
 from textual.widgets import Header, Static
 
 from chezmoi_mousse import AppType, Chars, Tcss
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
 
 __all__ = ["CustomHeader", "HeaderTitle"]
 
@@ -23,9 +19,6 @@ class CustomHeader(Header, AppType):
 
     read_mode: reactive[bool] = reactive(True)
     changes_enabled: reactive[bool] = reactive(False)
-
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.header)
 
     def on_mount(self) -> None:
         self.icon = Chars.burger

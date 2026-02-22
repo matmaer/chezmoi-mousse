@@ -295,7 +295,7 @@ class InputGuessURL(HorizontalGroup):
             validators=GUESS_HTTPS(),
             classes=Tcss.input_field,
         )
-        yield FlatLink(IDS.init, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(LinkBtn.chezmoi_guess)
 
 
 class InputGuessSSH(HorizontalGroup):
@@ -306,7 +306,7 @@ class InputGuessSSH(HorizontalGroup):
             validators=GUESS_SSH(),
             classes=Tcss.input_field,
         )
-        yield FlatLink(IDS.init, link_enum=LinkBtn.chezmoi_guess)
+        yield FlatLink(LinkBtn.chezmoi_guess)
 
 
 class InputInitCloneRepo(HorizontalGroup, AppType):
@@ -442,7 +442,7 @@ class InitChezmoi(Screen[None], AppType):
         self.init_cmd = WriteCmd.init_new
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(self.ids)
+        yield CustomHeader()
         yield HorizontalGroup(
             Label(SectionLabel.init_new_repo, classes=Tcss.main_section_label),
             SwitchWithLabel(self.ids, switch_enum=SwitchEnum.init_repo_switch),
@@ -451,7 +451,7 @@ class InitChezmoi(Screen[None], AppType):
         yield Static(id=self.ids.static.init_info)
         yield OperateButtons(self.ids)
         yield OperateMode(self.ids)
-        yield Footer(id=self.ids.footer)
+        yield Footer()
 
     def on_mount(self) -> None:
         self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)

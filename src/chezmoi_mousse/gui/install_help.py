@@ -41,7 +41,7 @@ class InstallHelpScreen(Screen[None], AppType):
     install_help_data: "ParsedJson | None" = None
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader(IDS.install_help)
+        yield CustomHeader()
         yield Label(InstallHelpStrings.top_label, classes=Tcss.main_section_label)
         yield Collapsible(
             Pretty(InstallHelpStrings.no_path_var),
@@ -53,10 +53,10 @@ class InstallHelpScreen(Screen[None], AppType):
         with Horizontal():
             yield CommandsTree()
             yield VerticalGroup(
-                FlatLink(IDS.install_help, link_enum=LinkBtn.chezmoi_install),
+                FlatLink(LinkBtn.chezmoi_install),
                 FlatButton(IDS.install_help, btn_enum=FlatBtnLabel.exit_app),
             )
-        yield Footer(id=IDS.install_help.footer)
+        yield Footer()
 
     async def on_mount(self) -> None:
         self.screen.title = HeaderTitle.install_help

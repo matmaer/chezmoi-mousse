@@ -2,7 +2,6 @@ from ._chezmoi_command import WriteVerb
 from ._enum_data import SwitchEnum
 from ._str_enum_names import (
     ContainerName,
-    ContentSwitcherName,
     LabelName,
     LogName,
     ScreenName,
@@ -11,7 +10,7 @@ from ._str_enum_names import (
     TreeName,
     ViewName,
 )
-from ._str_enums import FlatBtnLabel, LinkBtn, SubTabLabel
+from ._str_enums import FlatBtnLabel, SubTabLabel
 
 __all__ = ["AppIds", "CanvasIds"]
 
@@ -22,22 +21,17 @@ class AppIds:
         "close_q",
         "close",
         "container",
-        "footer",
-        "header",
         "label",
         "logger",
         "op_btn",
         "static",
         "switch",
-        "switcher",
         "tree",
         "view",
     )
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
         self.canvas_name = canvas_name
-        self.footer = f"{self.canvas_name.name}_footer"
-        self.header = f"{self.canvas_name.name}_header"
         self.close = f"{self.canvas_name.name}_close_btn"
         self.close_q = f"#{self.close}"
 
@@ -47,26 +41,17 @@ class AppIds:
         self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
         self.switch = SwitchIds(self)
-        self.switcher = ContentSwitcherIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name.name}_{name.name}"
 
-    def content_switcher_id(
-        self, qid: str = "", *, switcher: ContentSwitcherName
-    ) -> str:
-        return f"{qid}{self.canvas_name.name}_{switcher.name}"
-
     def flat_button_id(self, qid: str = "", *, btn: FlatBtnLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_flat_btn"
 
     def label_id(self, qid: str = "", *, label: LabelName) -> str:
         return f"{qid}{self.canvas_name.name}_{label.name}_label"
-
-    def link_button_id(self, qid: str = "", *, btn: LinkBtn) -> str:
-        return f"{qid}{self.canvas_name.name}_{btn.name}_link_btn"
 
     def operate_button_id(self, qid: str = "", *, write_verb: WriteVerb) -> str:
         return f"{qid}{self.canvas_name.name}_{write_verb.name}_op_btn"
@@ -134,52 +119,12 @@ class ContainerIds:
         self.switch_slider_q = f"#{self.switch_slider}"
 
 
-class ContentSwitcherIds:
-    def __init__(self, ids: AppIds):
-        self.ids = ids
-        self.apply_trees = ids.content_switcher_id(
-            switcher=ContentSwitcherName.apply_tree_switcher
-        )
-        self.apply_trees_q = f"#{self.apply_trees}"
-        self.apply_views = ids.content_switcher_id(
-            switcher=ContentSwitcherName.apply_view_switcher
-        )
-        self.apply_views_q = f"#{self.apply_views}"
-        self.re_add_trees = ids.content_switcher_id(
-            switcher=ContentSwitcherName.re_add_tree_switcher
-        )
-        self.re_add_trees_q = f"#{self.re_add_trees}"
-        self.re_add_views = ids.content_switcher_id(
-            switcher=ContentSwitcherName.re_add_view_switcher
-        )
-        self.re_add_views_q = f"#{self.re_add_views}"
-
-    @property
-    def trees(self) -> str:
-        if self.ids.canvas_name == TabName.apply:
-            return self.apply_trees
-        elif self.ids.canvas_name == TabName.re_add:
-            return self.re_add_trees
-        else:
-            raise ValueError(
-                "ContentSwitcherIds.trees accessed when not in Apply or ReAdd tab"
-            )
-
-    @property
-    def trees_q(self) -> str:
-        return f"#{self.trees}"
-
-
 class LabelIds:
     """Label widgets their id's to target for show/hide or update the text."""
 
     def __init__(self, ids: AppIds):
         self.cat_config_output = ids.label_id(label=LabelName.cat_config_output)
         self.cat_config_output_q = f"#{self.cat_config_output}"
-        self.contents_info = ids.label_id(label=LabelName.contents_info)
-        self.contents_info_q = f"#{self.contents_info}"
-        self.file_read_output = ids.label_id(label=LabelName.file_read_output)
-        self.file_read_output_q = f"#{self.file_read_output}"
         self.loading = ids.label_id(label=LabelName.loading)
         self.loading_q = f"#{self.loading}"
 
@@ -192,16 +137,10 @@ class LoggerIds:
         self.app_q = f"#{self.app}"
         self.cmd = ids.view_id(view=LogName.cmd_logger)
         self.cmd_q = f"#{self.cmd}"
-        self.contents = ids.view_id(view=LogName.contents_logger)
-        self.contents_q = f"#{self.contents}"
         self.debug = ids.view_id(view=LogName.debug_logger)
         self.debug_q = f"#{self.debug}"
-        self.diff = ids.view_id(view=LogName.diff_logger)
-        self.diff_q = f"#{self.diff}"
         self.dom_nodes = ids.view_id(view=LogName.dom_node_logger)
         self.dom_nodes_q = f"#{self.dom_nodes}"
-        self.splash = ids.view_id(view=LogName.splash_logger)
-        self.splash_q = f"#{self.splash}"
 
 
 class OperateButtonIds:

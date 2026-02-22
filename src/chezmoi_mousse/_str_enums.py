@@ -83,11 +83,11 @@ class Chars(StrEnum):
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
-    warning_sign = "\u26a0"  # WARNING SIGN
-    x_mark = "\u2716"  # HEAVY MULTIPLICATION X
     # Used for Tree widgets
     tree_collapsed = f"{right_triangle} "
     tree_expanded = f"{down_triangle} "
+    warning_sign = "\u26a0"  # WARNING SIGN
+    x_mark = "\u2716"  # HEAVY MULTIPLICATION X
 
 
 class LogString(StrEnum):
@@ -138,19 +138,19 @@ class OpBtnLabel(StrEnum):
 class BindingDescription(StrEnum):
     # Screen bindings
     cancel = OpBtnLabel.cancel
-    reload = OpBtnLabel.reload
     # Tab bindings
     hide_filters = "Hide filters"
-    show_filters = "Show filters"
     # Shared bindings
-    toggle_dry_run = "Toggle --dry-run"
     maximize = "Maximize"
     minimize = "Minimize"
+    reload = OpBtnLabel.reload
+    show_filters = "Show filters"
+    toggle_dry_run = "Toggle --dry-run"
 
 
 class SwitchLabel(StrEnum):
-    init_repo = "Init existing repo"
     expand_all = "Expand all dirs"
+    init_repo = "Init existing repo"
     unchanged = "Show unchanged paths"
     unmanaged_dirs = "Show unmanaged dirs"
     unwanted = "Show unwanted paths"
@@ -162,13 +162,13 @@ class OperateString(StrEnum):
         " will be recursed in.[/]"
     )
     add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
-    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     apply_path_info = (
         "[dim]Chezmoi will ensure that the path is in the target state. "
         "The command will run without prompting. "
         "For targets modified since chezmoi last wrote it. If adding a "
         "directory, it will be recursed in.[/]"
     )
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_commit = (
         f"[$text-warning]{Chars.warning_sign} Git auto commit is enabled: "
         "files will also be committed."
@@ -244,6 +244,6 @@ class StatusCode(StrEnum):
     Deleted = "D"
     Modified = "M"
     No_Change = " "
+    No_Status = "X"
     Run = "R"  # not implemented TODO: disable operate buttons
     # Fake X status: managed paths absent from chezmoi status output
-    No_Status = "X"

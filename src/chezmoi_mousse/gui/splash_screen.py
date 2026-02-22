@@ -16,7 +16,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CMD, CMD_RESULTS, IDS, AppType, ReadCmd
+from chezmoi_mousse import CMD, CMD_RESULTS, AppType, ReadCmd
 
 from .install_help import InstallHelpScreen
 
@@ -109,7 +109,7 @@ class AnimatedFade(Static):
 
 class SplashLog(RichLog):
     def __init__(self) -> None:
-        super().__init__(id=IDS.splash.logger.splash, markup=True)
+        super().__init__(markup=True)
 
     def on_mount(self) -> None:
         self.styles.height = len(SPLASH_COMMANDS)
@@ -138,7 +138,7 @@ class SplashScreen(Screen[None], AppType):
             yield Center(SplashLog())
 
     def on_mount(self) -> None:
-        self.splash_log = self.query_one(IDS.splash.logger.splash_q, SplashLog)
+        self.splash_log = self.query_exactly_one(SplashLog)
         if self.app.chezmoi_found is False:
             self.install_help_workers()
         else:
