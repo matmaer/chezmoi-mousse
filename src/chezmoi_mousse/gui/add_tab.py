@@ -47,7 +47,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file()
                     and not self._is_unwanted_file(p)
-                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
+                    and p.parent in self.app.managed_dirs
                     and p not in self.app.managed_files
                     and self._file_of_interest(p)
                 )
@@ -62,7 +62,10 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file()
                     and not self._is_unwanted_file(p)
-                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
+                    and (
+                        p.parent in self.app.managed_dirs
+                        or self._has_unmanaged_paths_in(p.parent)
+                    )
                     and p not in self.app.managed_files
                     and self._file_of_interest(p)
                 )
@@ -77,7 +80,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file()
                     and p not in self.app.managed_files
-                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
+                    and p.parent in self.app.managed_dirs
                     and self._file_of_interest(p)
                 )
             ),
