@@ -101,27 +101,45 @@ class SwitchEnum(Enum):
 
     init_repo_switch = SwitchData(
         label=SwitchLabel.init_repo,
-        enabled_tooltip="Initialize a new chezmoi repository, or clone an existing remote chezmoi repository.",
+        enabled_tooltip=(
+            "Initialize a new chezmoi repository, or clone an existing remote "
+            "chezmoi repository."
+        ),
         disabled_tooltip=None,
     )
     expand_all = SwitchData(
         label=SwitchLabel.expand_all,
-        enabled_tooltip='Expand all managed directories. Showing unchanged depending on the "show unchanged files" switch.',
+        enabled_tooltip=(
+            "Expand all managed directories. Showing unchanged depending on the "
+            '"show unchanged files" switch.'
+        ),
         disabled_tooltip="Switch to Tree to enable this switch.",
     )
     unchanged = SwitchData(
         label=SwitchLabel.unchanged,
-        enabled_tooltip="Include unchanged paths which are not found in the 'chezmoi status' output.",
+        enabled_tooltip=(
+            "Include unchanged paths which are not found in the "
+            "'chezmoi status' output."
+        ),
         disabled_tooltip=None,
     )
     unmanaged_dirs = SwitchData(
         label=SwitchLabel.unmanaged_dirs,
-        enabled_tooltip="The default (disabled), only shows directories which already contain managed files. This allows spotting new unmanaged files in already managed directories. Enable to show all directories which contain unmanaged files.",
+        enabled_tooltip=(
+            "The default (disabled), only shows directories which already "
+            "contain managed files. This allows spotting new unmanaged files in "
+            "already managed directories. Enable to show all directories which contain "
+            "unmanaged files."
+        ),
         disabled_tooltip=None,
     )
     unwanted = SwitchData(
         label=SwitchLabel.unwanted,
-        enabled_tooltip="Include files and directories considered as 'unwanted' for a dotfile manager. These include cache, temporary, trash (recycle bin) and other similar files or directories. For example enable this to add files to your repository which are in a directory named '.cache'.",
+        enabled_tooltip=(
+            "Include files and directories considered as 'unwanted' for a dotfile "
+            "manager. These include cache, temporary, trash (recycle bin) and other "
+            "similar files or directories."
+        ),
         disabled_tooltip=None,
     )
 
