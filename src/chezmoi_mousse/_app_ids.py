@@ -30,7 +30,6 @@ class AppIds:
         "op_btn",
         "static",
         "switcher",
-        "tab_id",
         "tree",
         "view",
     )
@@ -39,7 +38,6 @@ class AppIds:
         self.canvas_name = canvas_name
         self.footer = f"{self.canvas_name.name}_footer"
         self.header = f"{self.canvas_name.name}_header"
-        self.tab_id = f"{self.canvas_name.name}_tab_container"
         self.close = f"{self.canvas_name.name}_close_btn"
         self.close_q = f"#{self.close}"
 
@@ -258,8 +256,6 @@ class TreeIds:
     """Tree widget their id's."""
 
     def __init__(self, ids: AppIds):
-        self.dir_tree = ids.tree_id(tree=TreeName.dir_tree)
-        self.dir_tree_q = f"#{self.dir_tree}"
         self.list = ids.tree_id(tree=TreeName.list_tree)
         self.list_q = f"#{self.list}"
         self.managed = ids.tree_id(tree=TreeName.managed_tree)

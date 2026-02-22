@@ -96,6 +96,8 @@ class ListTree(TreeBase):
 
     def populate_tree(self) -> None:
         self.clear()
+        self.root.data = self.app.dest_dir
+        self.root.expand()
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files_in:
                 # only add files as leaves, if they were not added already.
@@ -124,6 +126,7 @@ class ManagedTree(TreeBase):
         }
         self.clear()
         self.root.data = self.app.dest_dir
+        self.root.expand()
         self.populate_node(self.root, self.app.dest_dir)
         for node in self.get_all_nodes():
             if node.data in expanded_paths:

@@ -6,18 +6,7 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import (
-    CMD,
-    AppIds,
-    AppType,
-    LogString,
-    ReadCmd,
-    SwitchEnum,
-    TabName,
-    Tcss,
-)
-
-from .messages import ToggleSwitch
+from chezmoi_mousse import CMD, AppIds, AppType, LogString, ReadCmd, TabName, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -104,7 +93,6 @@ class DiffView(Container, AppType):
                     "in the Contents tab or the git log in the Git-Log tab."
                 )
                 widgets.append(Static(text, classes=Tcss.added))
-                self.post_message(ToggleSwitch(SwitchEnum.unchanged))
             else:
                 text = (
                     "This is the destination directory, it has no diff output.\n"

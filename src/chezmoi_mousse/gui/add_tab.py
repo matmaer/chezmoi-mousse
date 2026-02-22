@@ -12,10 +12,9 @@ from chezmoi_mousse import IDS, AppType, Chars, FlatBtnLabel, Tcss
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
-from .common.tabs_base import TabsBase
 from .operate_mode import OperateMode
 
-__all__ = ["AddTab", "FilteredDirTree"]
+__all__ = ["AddTab"]
 
 
 class FilteredDirTree(DirectoryTree, AppType):
@@ -161,22 +160,20 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
 
-class AddTab(TabsBase, AppType):
-
-    def __init__(self) -> None:
-        super().__init__(IDS.add)
-        self.current_path: "Path | None" = None
+class AddTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield Vertical(
-                FilteredDirTree(self.app.dest_dir, id=IDS.add.tree.dir_tree),
-                Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button),
-                classes=Tcss.tab_left_vertical,
-            )
-            yield Vertical(ContentsView(IDS.add), OperateButtons(IDS.add))
+        yield Vertical(
+            FilteredDirTree(self.app.dest_dir),
+            Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button),
+            id=IDS.add.container.left_side,
+            classes=Tcss.tab_left_vertical,
+        )
+        with Vertical():
+            yield OperateMode(IDS.add)
+            yield ContentsView(IDS.add)
+            yield OperateButtons(IDS.add)
         yield SwitchSlider(IDS.add)
-        yield OperateMode(IDS.add)
 
     def on_mount(self) -> None:
         self.operate_mode_container = self.query_one(
@@ -190,7 +187,7 @@ class AddTab(TabsBase, AppType):
     @on(Button.Pressed, Tcss.refresh_button.dot_prefix)
     def refresh_dir_tree(self, event: Button.Pressed) -> None:
         event.stop()
-        dir_tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
+        dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
         dir_tree.refresh()
 
@@ -203,14 +200,13 @@ class AddTab(TabsBase, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        self.current_path = event.node.data.path
         self.contents_view.show_path = event.node.data.path
-        self.operate_mode_container.path_arg = self.current_path
+        self.operate_mode_container.path_arg = event.node.data.path
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        dir_tree = self.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
+        dir_tree = self.query_exactly_one(FilteredDirTree)
         if event.switch.id == IDS.add.filter.unmanaged_dirs:
             dir_tree.unmanaged_dirs = event.value
         elif event.switch.id == IDS.add.filter.unwanted:

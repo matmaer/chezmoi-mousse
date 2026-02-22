@@ -57,26 +57,13 @@ class OperateMode(Vertical, AppType):
         self.path_arg: "Path | None" = None
 
     def compose(self) -> ComposeResult:
-        yield Vertical(
-            Static(id=self.ids.static.op_review_info),
-            id=self.ids.container.op_review,
-            classes=Tcss.operate_info,
-        )
-        yield Vertical(
-            Static(id=self.ids.static.op_result_info),
-            id=self.ids.container.op_result,
-            classes=Tcss.operate_info,
-        )
+        yield Static(id=self.ids.static.op_review_info, classes=Tcss.operate_info)
+        yield Static(id=self.ids.static.op_result_info, classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
         self.display = False
-        self.op_result_container = self.query_one(
-            self.ids.container.op_result_q, Vertical
-        )
-        self.op_result_container.display = False
-        self.op_review_container = self.query_one(
-            self.ids.container.op_review_q, Vertical
-        )
+        self.result_info = self.query_one(self.ids.static.op_result_info_q, Static)
+        self.result_info.display = False
         self.review_info = self.query_one(self.ids.static.op_review_info_q, Static)
 
     def update_review_info(self, btn_enum: "OpBtnEnum") -> None:
@@ -94,8 +81,8 @@ class OperateMode(Vertical, AppType):
             if self.app.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
         self.review_info.update("\n".join(info_lines))
-        self.op_review_container.border_title = self.btn_enum.info_title
-        self.op_review_container.border_subtitle = self.btn_enum.info_sub_title
+        self.review_info.border_title = self.btn_enum.info_title
+        self.review_info.border_subtitle = self.btn_enum.info_sub_title
 
     def refresh_review_info(self) -> None:
         if self.btn_enum is not None:
@@ -121,7 +108,7 @@ class OperateMode(Vertical, AppType):
         if cmd_result is None:
             self.notify("Command result is None", severity="error")
             return
-        self.op_review_container.display = False
+        self.review_info.display = False
         result_info = self.query_one(self.ids.static.op_result_info_q, Static)
         result_info.update(
             (f"Command completed with exit code {cmd_result.exit_code}, results:\n")
@@ -131,7 +118,7 @@ class OperateMode(Vertical, AppType):
         )
         self.app.post_message(CompletedOpMsg(path_arg=self.path_arg))
         await sleep(1)
-        self.op_result_container.display = True
+        self.result_info.display = True
         loading_modal.dismiss()
 
 

@@ -2,8 +2,6 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
-from chezmoi_mousse import SwitchEnum
-
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -19,7 +17,6 @@ __all__ = [
     "InitCloneCmdMsg",
     "OperateButtonMsg",
     "ProgressTextMsg",
-    "ToggleSwitch",
 ]
 
 
@@ -65,10 +62,4 @@ class OperateButtonMsg(Message):
 class ProgressTextMsg(Message):
     def __init__(self, text: str) -> None:
         self.text = text
-        super().__init__()
-
-
-class ToggleSwitch(Message):
-    def __init__(self, switch_enum: SwitchEnum) -> None:
-        self.switch_enum = switch_enum
         super().__init__()

@@ -9,6 +9,7 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
+from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
@@ -25,7 +26,7 @@ from chezmoi_mousse import (
     TabName,
 )
 
-from .add_tab import AddTab, FilteredDirTree
+from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import (
     CloseButton,
@@ -267,7 +268,7 @@ class ChezmoiGUI(App[None]):
                 view_switcher_buttons = active_tab_widget.query(TabButtons).last()
                 view_switcher_buttons.display = not view_switcher_buttons.display
             elif ids.canvas_name == TabName.add:
-                left_side = self.screen.query_exactly_one(FilteredDirTree)
+                left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
                 left_side.display = not left_side.display
             switch_slider = self.screen.query_one(
                 ids.container.switch_slider_q, SwitchSlider
@@ -456,7 +457,7 @@ class ChezmoiGUI(App[None]):
                 IDS.re_add.container.switch_slider_q, SwitchSlider
             )
         elif active_tab == TabName.add:
-            left_side = self.screen.query_one(IDS.add.tree.dir_tree_q, FilteredDirTree)
+            left_side = self.screen.query_one(IDS.add.container.left_side_q, Vertical)
             operation_buttons = self.screen.query_one(
                 IDS.add.container.operate_buttons_q
             )
