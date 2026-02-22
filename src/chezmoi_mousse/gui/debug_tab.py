@@ -1,11 +1,11 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, HorizontalGroup, ScrollableContainer
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
 from chezmoi_mousse import IDS, AppType, FlatBtnLabel, OpBtnLabel, Tcss, TestPaths
 
-from .common.actionables import FlatButtonsVertical
+from .common.actionables import FlatButtonsVertical, OperateButtons
 from .common.loggers import DebugLog
 
 __all__ = ["DebugTab"]
@@ -22,27 +22,24 @@ class DebugTab(Horizontal, AppType):
                 FlatBtnLabel.dom_nodes,
             ),
         )
-        with ContentSwitcher(initial=IDS.debug.view.test_paths):
-            yield ScrollableContainer(
-                Static(
-                    "[$text-primary]No test paths exist.[/]",
-                    id=IDS.debug.static.debug_test_paths,
-                ),
-                HorizontalGroup(
-                    Button(classes=Tcss.operate_button, label=OpBtnLabel.create_paths),
-                    Button(classes=Tcss.operate_button, label=OpBtnLabel.remove_paths),
-                    Button(classes=Tcss.operate_button, label=OpBtnLabel.toggle_diffs),
-                ),
-                id=IDS.debug.view.test_paths,
-                classes=Tcss.border_title_top,
-            )
-            yield DebugLog(IDS.debug)
-            yield RichLog(
-                id=IDS.debug.logger.dom_nodes,
-                auto_scroll=False,
-                highlight=True,
-                classes=Tcss.border_title_top,
-            )
+        with Vertical():
+            with ContentSwitcher(initial=IDS.debug.view.test_paths):
+                yield ScrollableContainer(
+                    Static(
+                        "[$text-primary]No test paths exist.[/]",
+                        id=IDS.debug.static.debug_test_paths,
+                    ),
+                    id=IDS.debug.view.test_paths,
+                    classes=Tcss.border_title_top,
+                )
+                yield DebugLog(IDS.debug)
+                yield RichLog(
+                    id=IDS.debug.logger.dom_nodes,
+                    auto_scroll=False,
+                    highlight=True,
+                    classes=Tcss.border_title_top,
+                )
+            yield OperateButtons(IDS.debug)
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()

@@ -248,7 +248,7 @@ class TestPaths:
 
         # Modify TOML files
         for file in self.file_paths:
-            if file.exists() and file.name.endswith(".toml"):
+            if file.exists() and file.name not in self.unchanged_file_names:
                 modified_content = (
                     file.read_text(encoding="utf-8")
                     .replace("title", "new_title")

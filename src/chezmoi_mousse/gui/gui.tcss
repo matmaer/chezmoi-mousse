@@ -122,6 +122,12 @@ CustomHeader {
   }
 }
 
+DebugTab {
+  & OperateButtons {
+      dock: bottom;
+  }
+}
+
 DiffLines > ScrollableContainer {
   margin-top: 1;
 }

@@ -130,18 +130,21 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
             yield OpButton(btn_id=self.ids.op_btn.forget, btn_enum=OpBtnEnum.forget)
             yield OpButton(btn_id=self.ids.op_btn.destroy, btn_enum=OpBtnEnum.destroy)
+        if self.ids.canvas_name == TabName.debug:
+            yield Button(classes=Tcss.operate_button, label=OpBtnLabel.create_paths)
+            yield Button(classes=Tcss.operate_button, label=OpBtnLabel.remove_paths)
+            yield Button(classes=Tcss.operate_button, label=OpBtnLabel.toggle_diffs)
         if self.ids.canvas_name == ScreenName.init:
             yield OpButton(btn_id=self.ids.op_btn.init, btn_enum=OpBtnEnum.init)
         yield CloseButton(self.ids)
 
     @on(OpButton.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: OpButton.Pressed) -> None:
-        event.stop()  # We post our own message.
-        if not isinstance(event.button, OpButton):
-            raise TypeError("event.button is not an OpButton")
-        # Only send a message; visual state and label changes
-        # are handled in the App's OperateButtonMsg handler.
-        self.post_message(OperateButtonMsg(self.ids, button=event.button))
+        if isinstance(event.button, OpButton):
+            event.stop()
+            # Only send a message; visual state and label changes
+            # are handled in the App's OperateButtonMsg handler.
+            self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 
 class SwitchWithLabel(HorizontalGroup):
