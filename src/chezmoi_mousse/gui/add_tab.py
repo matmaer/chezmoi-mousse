@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from enum import StrEnum
 from pathlib import Path
 
@@ -34,73 +34,67 @@ class FilteredDirTree(DirectoryTree, AppType):
         self.border_title = " destDir "
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        # Define condition lambdas for each switch combo
+        conditions: dict[tuple[bool, bool], Callable[[Path], bool]] = {
+            # SwitchEnum: Red - Red (default)
+            (False, False): lambda p: (
+                (
+                    p.is_dir()
+                    and not self._is_unwanted_dir(p)
+                    and p in self.app.managed_dirs
+                    and self._has_unmanaged_paths_in(p)
+                )
+                or (
+                    p.is_file()
+                    and not self._is_unwanted_file(p)
+                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
+                    and p not in self.app.managed_files
+                    and self._file_of_interest(p)
+                )
+            ),
+            # SwitchEnum: Green - Red
+            (True, False): lambda p: (
+                (
+                    p.is_dir()
+                    and not self._is_unwanted_dir(p)
+                    and self._has_unmanaged_paths_in(p)
+                )
+                or (
+                    p.is_file()
+                    and not self._is_unwanted_file(p)
+                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
+                    and p not in self.app.managed_files
+                    and self._file_of_interest(p)
+                )
+            ),
+            # SwitchEnum: Red - Green
+            (False, True): lambda p: (
+                (
+                    p.is_dir()
+                    and p in self.app.managed_dirs
+                    and self._has_unmanaged_paths_in(p)
+                )
+                or (
+                    p.is_file()
+                    and p not in self.app.managed_files
+                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
+                    and self._file_of_interest(p)
+                )
+            ),
+            # SwitchEnum: Green - Green, include all unmanaged paths
+            (True, True): lambda p: (
+                (p.is_dir() and self._has_unmanaged_paths_in(p))
+                or (
+                    p.is_file()
+                    and p not in self.app.managed_files
+                    and self._file_of_interest(p)
+                )
+            ),
+        }
 
-        # SwitchEnum: Red - Red (default)
-        if self.unmanaged_dirs is False and self.unwanted is False:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_dir(follow_symlinks=False)
-                    and not self._is_unwanted_dir(p)
-                    and p in self.app.managed_dirs
-                    and self._has_unmanaged_paths_in(p)
-                )
-                or (
-                    p.is_file(follow_symlinks=False)
-                    and not self._is_unwanted_file(p)
-                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
-                    and p not in self.app.managed_files
-                    and self._file_of_interest(p)
-                )
-            )
-        # SwitchEnum: Green - Red
-        elif self.unmanaged_dirs is True and self.unwanted is False:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_dir(follow_symlinks=False)
-                    and not self._is_unwanted_dir(p)
-                    and self._has_unmanaged_paths_in(p)
-                )
-                or (
-                    p.is_file(follow_symlinks=False)
-                    and not self._is_unwanted_file(p)
-                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
-                    and p not in self.app.managed_files
-                    and self._file_of_interest(p)
-                )
-            )
-        # SwitchEnum: Red - Green
-        elif self.unmanaged_dirs is False and self.unwanted is True:
-            return (
-                p
-                for p in paths
-                if (
-                    p.is_dir(follow_symlinks=False)
-                    and p in self.app.managed_dirs
-                    and self._has_unmanaged_paths_in(p)
-                )
-                or (
-                    p.is_file(follow_symlinks=False)
-                    and p not in self.app.managed_files
-                    and (p.parent in self.app.managed_dirs or p.parent == self.path)
-                    and self._file_of_interest(p)
-                )
-            )
-        # SwitchEnum: Green - Green, include all unmanaged paths
-        else:
-            return (
-                p
-                for p in paths
-                if (p.is_dir(follow_symlinks=False) and self._has_unmanaged_paths_in(p))
-                or (
-                    p.is_file(follow_symlinks=False)
-                    and p not in self.app.managed_files
-                    and self._file_of_interest(p)
-                )
-            )
+        # Select the condition based on switches and filter
+        key = (self.unmanaged_dirs, self.unwanted)
+        return (p for p in paths if conditions[key](p))
 
     def _file_of_interest(self, file_path: Path) -> bool:
         try:
