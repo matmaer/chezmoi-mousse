@@ -47,7 +47,7 @@
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;
   border-top: wide $primary-darken-3;
-  border-bottom: wide $surface;
+  border-bottom: none;
   color: $primary-lighten-3;
   margin: 0 1;
   text-style: none;
@@ -56,6 +56,23 @@
     text-style: none;
     color: $accent;
     border-top: wide $accent-darken-3;
+  }
+  &:focus {
+    text-style: none;
+  }
+}
+
+.refresh_button {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border-top: wide $surface-lighten-1;
+  border-bottom: none;
+  color: $primary-lighten-3;
+  text-style: none;
+  width: 100%;
+  &:hover {
+    text-style: none;
+    color: $accent-lighten-1;
   }
   &:focus {
     text-style: none;
@@ -467,6 +484,9 @@ DataTable {
 }
 
 DirectoryTree {
+  min-width: 16;
+  max-width: 100%;
+  width: 100%;
   &>.directory-tree--folder {
     color: $primary-lighten-3;
     text-style: none;
@@ -484,6 +504,8 @@ DirectoryTree {
 }
 
 Footer {
+  height: 2;
+  border-top: wide $surface;
   background-tint: $surface;
   background: $surface;
 }

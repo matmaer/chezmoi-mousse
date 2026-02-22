@@ -111,6 +111,7 @@ class Tcss(StrEnum):
     operate_button = auto()
     operate_info = auto()
     pw_mgr_group = auto()
+    refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()
     single_switch = auto()
