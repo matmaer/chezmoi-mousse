@@ -206,9 +206,9 @@ class AddTab(Horizontal, AppType):
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == IDS.add.filter.unmanaged_dirs:
+        if event.switch.id == IDS.add.switch.unmanaged_dirs:
             self.dir_tree.unmanaged_dirs = event.value
-        elif event.switch.id == IDS.add.filter.unwanted:
+        elif event.switch.id == IDS.add.switch.unwanted:
             self.dir_tree.unwanted = event.value
         self.dir_tree.reload()
 

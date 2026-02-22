@@ -22,13 +22,13 @@ class AppIds:
         "close_q",
         "close",
         "container",
-        "filter",
         "footer",
         "header",
         "label",
         "logger",
         "op_btn",
         "static",
+        "switch",
         "switcher",
         "tree",
         "view",
@@ -42,11 +42,11 @@ class AppIds:
         self.close_q = f"#{self.close}"
 
         self.container = ContainerIds(self)
-        self.filter = FilterIds(self)
         self.label = LabelIds(self)
         self.logger = LoggerIds(self)
         self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
+        self.switch = SwitchIds(self)
         self.switcher = ContentSwitcherIds(self)
         self.tree = TreeIds(self)
         self.view = ViewIds(self)
@@ -170,18 +170,6 @@ class ContentSwitcherIds:
         return f"#{self.trees}"
 
 
-class FilterIds:
-    def __init__(self, ids: AppIds):
-        self.expand_all = ids.switch_id(switch=SwitchEnum.expand_all)
-        self.expand_all_q = f"#{self.expand_all}"
-        self.unchanged = ids.switch_id(switch=SwitchEnum.unchanged)
-        self.unchanged_q = f"#{self.unchanged}"
-        self.unmanaged_dirs = ids.switch_id(switch=SwitchEnum.unmanaged_dirs)
-        self.unmanaged_dirs_q = f"#{self.unmanaged_dirs}"
-        self.unwanted = ids.switch_id(switch=SwitchEnum.unwanted)
-        self.unwanted_q = f"#{self.unwanted}"
-
-
 class LabelIds:
     """Label widgets their id's to target for show/hide or update the text."""
 
@@ -260,6 +248,18 @@ class TreeIds:
         self.list_q = f"#{self.list}"
         self.managed = ids.tree_id(tree=TreeName.managed_tree)
         self.managed_q = f"#{self.managed}"
+
+
+class SwitchIds:
+    def __init__(self, ids: AppIds):
+        self.expand_all = ids.switch_id(switch=SwitchEnum.expand_all)
+        self.expand_all_q = f"#{self.expand_all}"
+        self.unchanged = ids.switch_id(switch=SwitchEnum.unchanged)
+        self.unchanged_q = f"#{self.unchanged}"
+        self.unmanaged_dirs = ids.switch_id(switch=SwitchEnum.unmanaged_dirs)
+        self.unmanaged_dirs_q = f"#{self.unmanaged_dirs}"
+        self.unwanted = ids.switch_id(switch=SwitchEnum.unwanted)
+        self.unwanted_q = f"#{self.unwanted}"
 
 
 class ViewIds:
