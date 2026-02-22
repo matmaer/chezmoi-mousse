@@ -10,7 +10,7 @@ from chezmoi_mousse import CMD, CMD_RESULTS, IDS, AppType, LogString, ReadCmd, T
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.git_log import GitLogTable
-from .common.loggers import AppLog, CmdLog
+from .common.loggers import AppLog, CmdLog, DebugLog
 from .common.screen_header import CustomHeader
 from .common.trees import ListTree, ManagedTree
 from .config_tab import ConfigTab
@@ -37,6 +37,7 @@ class MainScreen(Screen[None], AppType):
         super().__init__()
         self.app_log: "AppLog"
         self.cmd_log: "CmdLog"
+        self.debug_log: "DebugLog"
 
     def compose(self) -> ComposeResult:
         yield CustomHeader(IDS.main_tabs)
@@ -64,8 +65,6 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success(LogString.cmd_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:
-            from .common.loggers import DebugLog
-
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.app_log.success(LogString.dev_mode_enabled)
             self.notify(LogString.dev_mode_enabled)

@@ -134,6 +134,8 @@ class DebugLog(LoggersBase, AppType):
         self.ready_to_run(LogString.debug_log_initialized)
 
     def mro(self, mro: Mro) -> None:
+        """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
+
         color = self.app.theme_variables["accent-darken-2"]
         self.write(f"{self.log_time()} [{color}]Method Resolution Order:[/]")
 
