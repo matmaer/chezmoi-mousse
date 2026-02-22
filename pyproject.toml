@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "textual[syntax]>=7.0.1",
-    "watchdog",
 ]
 
 [project.urls]
