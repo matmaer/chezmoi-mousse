@@ -34,6 +34,14 @@ class ApplyTab(Container, AppType):
         )
         self.git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLog)
         self.diff_view = self.query_one(IDS.apply.container.diff_q, DiffView)
+        if self.app.no_status_paths:
+            self.app.call_later(self.toggle_unchanged)
+
+    def toggle_unchanged(self) -> None:
+        unchanged_switch = self.query_one(IDS.apply.switch.unchanged_q, Switch)
+        unchanged_switch.toggle()
+        managed_tree = self.query_one(IDS.apply.tree.managed_q)
+        managed_tree.refresh()
 
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:

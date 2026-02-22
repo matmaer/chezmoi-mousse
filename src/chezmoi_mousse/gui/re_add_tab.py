@@ -34,6 +34,14 @@ class ReAddTab(Container, AppType):
             IDS.re_add.container.contents_q, ContentsView
         )
         self.diff_view = self.query_one(IDS.re_add.container.diff_q, DiffView)
+        if self.app.no_status_paths:
+            self.app.call_later(self.toggle_unchanged)
+
+    def toggle_unchanged(self) -> None:
+        unchanged_switch = self.query_one(IDS.re_add.switch.unchanged_q, Switch)
+        unchanged_switch.toggle()
+        managed_tree = self.query_one(IDS.re_add.tree.managed_q)
+        managed_tree.refresh()
 
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
