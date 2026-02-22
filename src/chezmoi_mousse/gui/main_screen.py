@@ -91,18 +91,16 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("--- End of loading screen commands ---")
 
     def populate_apply_trees(self) -> None:
-        self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_dest_dir()
+        self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_tree()
         self.app_log.success("Apply tab managed tree populated.")
-        self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_dest_dir()
+        self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Apply tab list tree populated.")
 
     @work
     async def populate_re_add_trees(self) -> None:
-        self.screen.query_one(
-            IDS.re_add.tree.managed_q, ManagedTree
-        ).populate_dest_dir()
+        self.screen.query_one(IDS.re_add.tree.managed_q, ManagedTree).populate_tree()
         self.app_log.success("Re-Add tab managed tree populated.")
-        self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_dest_dir()
+        self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Re-Add tab list tree populated.")
 
     def populate_global_git_log(self) -> None:

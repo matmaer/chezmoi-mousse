@@ -68,6 +68,7 @@
   border-top: wide $surface-lighten-1;
   border-bottom: none;
   color: $primary-lighten-3;
+  dock: bottom;
   text-style: none;
   width: 100%;
   &:hover {

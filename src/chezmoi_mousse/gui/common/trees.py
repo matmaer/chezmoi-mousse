@@ -104,7 +104,8 @@ class ListTree(TreeBase):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.list_tree)
 
-    def populate_dest_dir(self) -> None:
+    def populate_tree(self) -> None:
+        self.clear()
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files_in:
                 # only add files as leaves, if they were not added already.
@@ -124,9 +125,19 @@ class ManagedTree(TreeBase):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.managed_tree)
 
-    def populate_dest_dir(self) -> None:
+    def populate_tree(self) -> None:
+        current_nodes = self.get_all_nodes()
+        expanded_paths = {
+            node.data
+            for node in current_nodes
+            if node.is_expanded and node.data is not None
+        }
+        self.clear()
         self.root.data = self.app.dest_dir
         self.populate_node(self.root, self.app.dest_dir)
+        for node in self.get_all_nodes():
+            if node.data in expanded_paths:
+                node.expand()
 
     def get_all_nodes(self) -> list[TreeNode[Path]]:
         # BFS approach

@@ -1,6 +1,6 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical
 
 from chezmoi_mousse import IDS, AppType
 
@@ -25,9 +25,8 @@ class ApplyTab(TabsBase, AppType):
         yield OperateMode(IDS.apply)
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
-            yield ViewSwitcher(IDS.apply)
+            yield Vertical(ViewSwitcher(IDS.apply), OperateButtons(IDS.apply))
         yield SwitchSlider(IDS.apply)
-        yield OperateButtons(IDS.apply)
 
     def on_mount(self) -> None:
         self.operate_mode_container = self.query_one(
