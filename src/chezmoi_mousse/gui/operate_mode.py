@@ -109,12 +109,11 @@ class OperateMode(Vertical, AppType):
             self.notify("Command result is None", severity="error")
             return
         self.review_info.display = False
-        result_info = self.query_one(self.ids.static.op_result_info_q, Static)
-        result_info.update(
+        self.result_info.update(
             (f"Command completed with exit code {cmd_result.exit_code}, results:\n")
         )
         self.mount(
-            ScrollableContainer(cmd_result.pretty_collapsible), after=result_info
+            ScrollableContainer(cmd_result.pretty_collapsible), after=self.result_info
         )
         self.app.post_message(CompletedOpMsg(path_arg=self.path_arg))
         await sleep(1)

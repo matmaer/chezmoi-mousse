@@ -176,6 +176,7 @@ class AddTab(Horizontal, AppType):
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:
+        self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.operate_mode_container = self.query_one(
             IDS.add.container.op_mode_q, OperateMode
         )
@@ -187,9 +188,8 @@ class AddTab(Horizontal, AppType):
     @on(Button.Pressed, Tcss.refresh_button.dot_prefix)
     def refresh_dir_tree(self, event: Button.Pressed) -> None:
         event.stop()
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.reload()
-        dir_tree.refresh()
+        self.dir_tree.reload()
+        self.dir_tree.refresh()
 
     @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
@@ -206,12 +206,11 @@ class AddTab(Horizontal, AppType):
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        dir_tree = self.query_exactly_one(FilteredDirTree)
         if event.switch.id == IDS.add.filter.unmanaged_dirs:
-            dir_tree.unmanaged_dirs = event.value
+            self.dir_tree.unmanaged_dirs = event.value
         elif event.switch.id == IDS.add.filter.unwanted:
-            dir_tree.unwanted = event.value
-        dir_tree.reload()
+            self.dir_tree.unwanted = event.value
+        self.dir_tree.reload()
 
 
 class UnwantedDirs(StrEnum):

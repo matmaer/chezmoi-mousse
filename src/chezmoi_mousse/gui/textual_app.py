@@ -209,35 +209,35 @@ class ChezmoiGUI(App[None]):
     ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_tab_widget called outside of MainScreen")
-        active_tab = self.screen.query_exactly_one(TabbedContent).active
-        if active_tab == TabName.apply:
+        tab_to_query = self.screen.query_exactly_one(TabbedContent).active
+        if tab_to_query == TabName.apply:
             return self.screen.query_exactly_one(ApplyTab)
-        elif active_tab == TabName.re_add:
+        elif tab_to_query == TabName.re_add:
             return self.screen.query_exactly_one(ReAddTab)
-        elif active_tab == TabName.add:
+        elif tab_to_query == TabName.add:
             return self.screen.query_exactly_one(AddTab)
-        elif active_tab == TabName.config:
+        elif tab_to_query == TabName.config:
             return self.screen.query_exactly_one(ConfigTab)
-        elif active_tab == TabName.help:
+        elif tab_to_query == TabName.help:
             return self.screen.query_exactly_one(HelpTab)
-        elif active_tab == TabName.logs:
+        elif tab_to_query == TabName.logs:
             return self.screen.query_exactly_one(LogsTab)
         else:
-            raise ValueError(f"Unknown active_tab on MainScreen: {active_tab}")
+            raise ValueError(f"Unknown active_tab on MainScreen: {tab_to_query}")
 
     def _get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_switch_slider_widget called outside of MainScreen")
-        active_tab = self.screen.query_exactly_one(TabbedContent).active
-        if active_tab == TabName.apply:
+        tab_to_determine_id = self.screen.query_exactly_one(TabbedContent).active
+        if tab_to_determine_id == TabName.apply:
             return self.screen.query_one(
                 IDS.apply.container.switch_slider_q, SwitchSlider
             )
-        elif active_tab == TabName.re_add:
+        elif tab_to_determine_id == TabName.re_add:
             return self.screen.query_one(
                 IDS.re_add.container.switch_slider_q, SwitchSlider
             )
-        else:  # active_tab == TabName.add
+        else:  # tab_to_determine_id == TabName.add
             return self.screen.query_one(
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
@@ -337,18 +337,18 @@ class ChezmoiGUI(App[None]):
 
     @on(CloseButtonMsg)
     def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
-        operate_mode_container = self.screen.query_one(
+        container_to_hide = self.screen.query_one(
             msg.ids.container.op_mode_q, OperateMode
         )
-        operate_mode_container.display = False
-        operate_buttons = self.screen.query_one(
+        container_to_hide.display = False
+        op_buttons_to_recompose = self.screen.query_one(
             msg.ids.container.operate_buttons_q, OperateButtons
         )
-        operate_buttons.visible = False
+        op_buttons_to_recompose.visible = False
         self.toggle_operate_display(msg.ids)
-        operate_buttons.refresh(recompose=True)
+        op_buttons_to_recompose.refresh(recompose=True)
         msg.button.display = False
-        operate_buttons.visible = True
+        op_buttons_to_recompose.visible = True
         if msg.button.label == OpBtnLabel.reload:
             self.notify("Reloading to be implemented.", severity="error")
         self.screen.query_exactly_one(CustomHeader).read_mode = True

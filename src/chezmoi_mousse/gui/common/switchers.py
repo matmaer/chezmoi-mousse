@@ -69,29 +69,35 @@ class TreeSwitcher(Container, AppType):
             list_tree = self.query_exactly_one(ListTree)
             list_tree.populate_tree()
 
-    def watch_expand_all(self, expand_all: bool) -> None:
+    def get_managed_tree_nodes(self) -> list[TreeNode[Path]]:
         managed_tree = self.query_exactly_one(ManagedTree)
-        managed_tree_nodes = managed_tree.get_all_nodes()
+        return managed_tree.get_all_nodes()
+
+    def watch_expand_all(self, expand_all: bool) -> None:
+        nodes_before_expand_all_toggle = self.get_managed_tree_nodes()
         if expand_all is True:
             self.old_expanded_nodes = [
-                node for node in managed_tree_nodes if node.is_expanded
+                node for node in nodes_before_expand_all_toggle if node.is_expanded
             ]
-            for node in managed_tree_nodes:
+            for node in nodes_before_expand_all_toggle:
                 node.expand()
         else:
-            for node in managed_tree_nodes:
+            for node in nodes_before_expand_all_toggle:
                 if node not in self.old_expanded_nodes:
                     node.collapse()
 
     def watch_unchanged(self, unchanged: bool) -> None:
-        managed_tree = self.query_exactly_one(ManagedTree)
-        managed_tree_nodes = managed_tree.get_all_nodes()
+        nodes_before_unchanged_toggle = self.get_managed_tree_nodes()
         list_tree = self.query_exactly_one(ListTree)
         list_tree_nodes = list_tree.get_all_nodes()
         if unchanged is True:
             for x_dir in self.app.tree_x_dirs:
                 parent_tree_node = next(
-                    (node for node in managed_tree_nodes if node.data == x_dir.parent),
+                    (
+                        node
+                        for node in nodes_before_unchanged_toggle
+                        if node.data == x_dir.parent
+                    ),
                     None,
                 )
                 if parent_tree_node is not None:
@@ -111,7 +117,7 @@ class TreeSwitcher(Container, AppType):
                 list_tree.root.add_leaf(f"[dim]{rel_path}[/]", x_file)
         elif unchanged is False:
             # remove x_files and x_dirs from managed tree
-            for tree_node in managed_tree_nodes:
+            for tree_node in nodes_before_unchanged_toggle:
                 if (
                     tree_node.data in self.app.x_files
                     or tree_node.data in self.app.tree_x_dirs

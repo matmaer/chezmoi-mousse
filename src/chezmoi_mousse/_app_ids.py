@@ -294,5 +294,3 @@ class ViewIds:
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.template_data = ids.view_id(view=ViewName.template_data_view)
         self.template_data_q = f"#{self.template_data}"
-        self.test_paths = ids.view_id(view=ViewName.debug_test_paths_view)
-        self.test_paths_q = f"#{self.test_paths}"
