@@ -40,16 +40,6 @@ class TreeBase(Tree[Path], AppType):
         else:
             return self.app.re_add_dir_nodes
 
-    def get_all_nodes(self) -> list[TreeNode[Path]]:
-        # BFS approach
-        all_nodes: list[TreeNode[Path]] = []
-        to_visit = [self.root]  # Start with root in the queue
-        while to_visit:
-            node = to_visit.pop(0)  # Dequeue the next node
-            all_nodes.append(node)  # Add to results
-            to_visit.extend(node.children)  # Enqueue children
-        return all_nodes
-
     def make_node_colors_dict(self) -> None:
         self.node_colors: dict[str, str] = {
             StatusCode.Added: self.app.theme_variables["text-success"],
