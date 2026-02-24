@@ -137,10 +137,10 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse_light)
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
-        self.run_splash_screen()
+        self._run_splash_screen()
 
     @work
-    async def run_splash_screen(self) -> None:
+    async def _run_splash_screen(self) -> None:
         if self.chezmoi_found is False:
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
             # Chezmoi command not found, SplashScreen will return None
@@ -243,7 +243,7 @@ class ChezmoiGUI(App[None]):
     # Operate mode method #
     #######################
 
-    def toggle_operate_display(self, ids: AppIds) -> None:
+    def _toggle_operate_display(self, ids: AppIds) -> None:
         if isinstance(self.screen, InitChezmoi):
             init_left_side = self.screen.query_one(
                 ids.container.left_side_q, FlatButtonsVertical
@@ -320,7 +320,7 @@ class ChezmoiGUI(App[None]):
                 operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
                 msg.button.label = OpBtnLabel.re_add_run
 
-            self.toggle_operate_display(msg.ids)
+            self._toggle_operate_display(msg.ids)
             if not isinstance(msg.button.btn_enum, OpBtnEnum):
                 raise ValueError(
                     f"btn_enum is not of type OpBtnEnum for button {msg.button.label}"
@@ -346,7 +346,7 @@ class ChezmoiGUI(App[None]):
             msg.ids.container.operate_buttons_q, OperateButtons
         )
         op_buttons_to_recompose.visible = False
-        self.toggle_operate_display(msg.ids)
+        self._toggle_operate_display(msg.ids)
         op_buttons_to_recompose.refresh(recompose=True)
         msg.button.display = False
         op_buttons_to_recompose.visible = True

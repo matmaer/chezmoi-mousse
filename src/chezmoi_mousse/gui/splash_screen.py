@@ -122,7 +122,7 @@ class SplashScreen(Screen[None], AppType):
     def __init__(self) -> None:
         super().__init__()
         self.splash_log: SplashLog  # set in on_mount
-        self.set_interval(interval=2, callback=self.all_workers_finished)
+        self.set_interval(interval=2, callback=self._all_workers_finished)
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method
@@ -140,24 +140,24 @@ class SplashScreen(Screen[None], AppType):
     def on_mount(self) -> None:
         self.splash_log = self.query_exactly_one(SplashLog)
         if self.app.chezmoi_found is False:
-            self.install_help_workers()
+            self._install_help_workers()
         else:
-            self.chezmoi_found_workers()
+            self._chezmoi_found_workers()
 
     @work
-    async def install_help_workers(self) -> None:
+    async def _install_help_workers(self) -> None:
         self.splash_log.styles.height = 1
         cmd_text = "chezmoi command"
         padding = LOG_PADDING_WIDTH - len(cmd_text)
         self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
-        install_help_worker = self.get_install_screen_data()
+        install_help_worker = self._get_install_screen_data()
         await install_help_worker.wait()
         InstallHelpScreen.install_help_data = install_help_worker.result
         return
 
     @work
-    async def chezmoi_found_workers(self) -> None:
-        status_worker = self.run_io_worker(ReadCmd.status_files)
+    async def _chezmoi_found_workers(self) -> None:
+        status_worker = self._run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
             assert CMD_RESULTS.status_files is not None
@@ -168,16 +168,16 @@ class SplashScreen(Screen[None], AppType):
                 self.app.init_needed = True
                 self.app.force_init_needed = False
                 # Run io workers for OperateScreen init commands
-                self.run_io_worker(ReadCmd.doctor)
-                self.run_io_worker(ReadCmd.template_data)
+                self._run_io_worker(ReadCmd.doctor)
+                self._run_io_worker(ReadCmd.template_data)
             else:
                 for splash_cmd in SPLASH_COMMANDS:
                     if splash_cmd == ReadCmd.status_files:
                         continue
-                    self.run_io_worker(splash_cmd)
+                    self._run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
-    def run_io_worker(self, splash_cmd: ReadCmd) -> None:
+    def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         cmd_result = CMD.read(splash_cmd)
         setattr(CMD_RESULTS, f"{splash_cmd.name}", cmd_result)
         padding = LOG_PADDING_WIDTH - len(cmd_result.filtered_cmd)
@@ -193,7 +193,7 @@ class SplashScreen(Screen[None], AppType):
         )
 
     @work
-    async def get_install_screen_data(self) -> "ParsedJson":
+    async def _get_install_screen_data(self) -> "ParsedJson":
         with urllib.request.urlopen(TemplateStr.chezmoi_latest_release_url) as response:
             data = json.load(response)
             latest_version = data.get("tag_name")
@@ -285,7 +285,7 @@ class SplashScreen(Screen[None], AppType):
         # return final nested dict
         return {child["text"]: collapse(child) for child in root_node["children"]}
 
-    def all_workers_finished(self) -> None:
+    def _all_workers_finished(self) -> None:
         if self.app.chezmoi_found is False:
             self.dismiss(None)
             return

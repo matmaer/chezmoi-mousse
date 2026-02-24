@@ -69,17 +69,17 @@ class MainScreen(Screen[None], AppType):
             self.app_log.success(LogString.dev_mode_enabled)
             self.notify(LogString.dev_mode_enabled)
 
-        self.populate_apply_trees()
-        self.populate_re_add_trees()
-        self.log_splash_log_commands()
-        self.populate_global_git_log()
-        self.set_config_screen_reactives()
+        self._populate_apply_trees()
+        self._populate_re_add_trees()
+        self._log_splash_log_commands()
+        self._populate_global_git_log()
+        self._set_config_screen_reactives()
 
-    def set_config_screen_reactives(self) -> None:
+    def _set_config_screen_reactives(self) -> None:
         config_tab = self.screen.query_exactly_one(ConfigTab)
         config_tab.command_results = CMD_RESULTS
 
-    def log_splash_log_commands(self) -> None:
+    def _log_splash_log_commands(self) -> None:
         self.app_log.info("--- Commands executed in loading screen ---")
         commands_to_log = CMD_RESULTS.executed_commands
         if self.app.init_cmd_result is not None:
@@ -90,19 +90,19 @@ class MainScreen(Screen[None], AppType):
             self.cmd_log.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
 
-    def populate_apply_trees(self) -> None:
+    def _populate_apply_trees(self) -> None:
         self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_tree()
         self.app_log.success("Apply tab managed tree populated.")
         self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Apply tab list tree populated.")
 
     @work
-    async def populate_re_add_trees(self) -> None:
+    async def _populate_re_add_trees(self) -> None:
         self.screen.query_one(IDS.re_add.tree.managed_q, ManagedTree).populate_tree()
         self.app_log.success("Re-Add tab managed tree populated.")
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Re-Add tab list tree populated.")
 
-    def populate_global_git_log(self) -> None:
+    def _populate_global_git_log(self) -> None:
         logs_tab = self.screen.query_exactly_one(LogsTab)
         logs_tab.git_log_result = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=None))

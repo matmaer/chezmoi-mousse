@@ -102,32 +102,6 @@ class TestPaths:
         paths = sorted(self.dir_paths | self.file_paths)
         return [p for p in paths if p.exists()]
 
-    def remove_all_paths_on_disk(self) -> None:
-        for file in self.file_paths:
-            if file.exists():
-                file.unlink()
-        for dir in self.dir_paths:
-            if dir.exists():
-                dir.rmdir()
-
-    def populate_test_paths(self) -> None:
-        for dir in self._test_dir_paths:
-            self.dir_paths.add(dir)
-        self.file_paths.add(self.binary_file_path)
-        self.file_paths.add(self.large_file_path)
-        self.file_paths.add(self.tricky_utf8_file_path)
-        for file in self._unchanged_file_names:
-            for dir in self.dir_paths:
-                if (
-                    dir.name in (self.dir_names.HOME, self.dir_names.UNCHANGED)
-                    or dir == self.test_dir / self.dir_names.WITH_STATUS_CHILDREN
-                ):
-                    self.file_paths.add(dir / file)
-        for file in self._changed_file_names:
-            for dir in self.dir_paths:
-                if dir == self.status_children_dir or dir == self.home_dir:
-                    self.file_paths.add(dir / file)
-
     def create_paths_on_disk(self) -> list[str]:
         created_paths: list[str] = []
         for dir in self.dir_paths:
@@ -264,4 +238,20 @@ class TestPaths:
         return "[$text-primary]Modified paths:[/]\n" + "\n".join(modified)
 
     def __post_init__(self):
-        self.populate_test_paths()
+        # populate test paths
+        for dir in self._test_dir_paths:
+            self.dir_paths.add(dir)
+        self.file_paths.add(self.binary_file_path)
+        self.file_paths.add(self.large_file_path)
+        self.file_paths.add(self.tricky_utf8_file_path)
+        for file in self._unchanged_file_names:
+            for dir in self.dir_paths:
+                if (
+                    dir.name in (self.dir_names.HOME, self.dir_names.UNCHANGED)
+                    or dir == self.test_dir / self.dir_names.WITH_STATUS_CHILDREN
+                ):
+                    self.file_paths.add(dir / file)
+        for file in self._changed_file_names:
+            for dir in self.dir_paths:
+                if dir == self.status_children_dir or dir == self.home_dir:
+                    self.file_paths.add(dir / file)

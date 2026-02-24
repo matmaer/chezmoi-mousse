@@ -31,7 +31,7 @@ class TreeBase(Tree[Path], AppType):
         self.show_root = False
         self.border_title = " destDir "
         self.add_class(Tcss.border_title_top)
-        self.make_node_colors_dict()
+        self._make_node_colors_dict()
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
@@ -40,7 +40,7 @@ class TreeBase(Tree[Path], AppType):
         else:
             return self.app.re_add_dir_nodes
 
-    def make_node_colors_dict(self) -> None:
+    def _make_node_colors_dict(self) -> None:
         self.node_colors: dict[str, str] = {
             StatusCode.Added: self.app.theme_variables["text-success"],
             StatusCode.Deleted: self.app.theme_variables["text-error"],
@@ -119,16 +119,16 @@ class ManagedTree(TreeBase):
         self.clear()
         self.root.data = self.app.dest_dir
         self.root.expand()
-        self.populate_node(self.root, self.app.dest_dir)
+        self._populate_node(self.root, self.app.dest_dir)
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()
 
-    def populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
+    def _populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         dir_node = self.dir_nodes[dir_path]
         for sub_dir, _ in dir_node.tree_status_dirs_in.items():
             child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
-            self.populate_node(child_node, sub_dir)
+            self._populate_node(child_node, sub_dir)
         for file_path, _ in dir_node.status_files_in.items():
             tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
 

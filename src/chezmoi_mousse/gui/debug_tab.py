@@ -60,9 +60,9 @@ class DebugTab(Horizontal, AppType):
         self.debug_test_path_view.border_title = " Test Paths "
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.dom_node_logger.border_title = " DOM Nodes "
-        self.app.call_later(self.log_dom_nodes)
+        self.app.call_later(self._log_dom_nodes)
 
-    def log_dom_nodes(self) -> None:
+    def _log_dom_nodes(self) -> None:
         dom_items = [
             item for item in self.app.walk_children(with_self=True, method="depth")
         ]

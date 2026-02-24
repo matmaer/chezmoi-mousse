@@ -29,7 +29,7 @@ from ._str_enums import (
     SubTabLabel,
 )
 from ._test_paths import TestPaths
-from ._type_hinting import AppType, DirNode, InitCloneData, ParsedJson
+from ._type_hinting import AppType, DirNode, ParsedJson
 
 __all__ = [
     "__version__",
@@ -48,7 +48,6 @@ __all__ = [
     "CommandResult",
     "DirNode",
     "FlatBtnLabel",
-    "InitCloneData",
     "LinkBtn",
     "LogString",
     "OpBtnEnum",

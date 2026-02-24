@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._chezmoi_command import WriteCmd
 from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
@@ -12,7 +11,7 @@ if TYPE_CHECKING:
 
     from .gui.textual_app import ChezmoiGUI
 
-__all__ = ["AppType", "DirNode", "InitCloneData", "ParsedJson"]
+__all__ = ["AppType", "DirNode", "ParsedJson"]
 
 
 type ParsedJson = dict[str, Any]
@@ -31,10 +30,3 @@ class DirNode:
     tree_status_dirs_in: dict[Path, StatusCode]
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
-
-
-@dataclass(slots=True)
-class InitCloneData:
-    init_cmd: WriteCmd
-    init_arg: str
-    valid_arg: bool

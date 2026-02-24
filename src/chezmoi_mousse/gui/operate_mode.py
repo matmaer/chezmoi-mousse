@@ -90,7 +90,7 @@ class OperateMode(Vertical, AppType):
                 self.update_review_info(self.btn_enum)
 
     @work
-    async def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
+    async def _run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
         return CMD.perform(btn_enum.write_cmd, path_arg=self.path_arg)
 
     @work(exit_on_error=False)
@@ -102,7 +102,7 @@ class OperateMode(Vertical, AppType):
             pretty_cmd += f"[$text-success bold] {self.init_arg}[/]"
         loading_modal = LoadingModal(self.ids, pretty_cmd=pretty_cmd)
         await self.app.push_screen(loading_modal)
-        worker_result = self.run_perform_command(btn_enum)
+        worker_result = self._run_perform_command(btn_enum)
         await worker_result.wait()
         cmd_result = worker_result.result
         self.review_info.display = False

@@ -60,10 +60,10 @@ class InstallHelpScreen(Screen[None], AppType):
 
     async def on_mount(self) -> None:
         self.screen.title = HeaderTitle.install_help
-        self.update_path_widget()
+        self._update_path_widget()
         self.populate_tree()
 
-    def update_path_widget(self) -> None:
+    def _update_path_widget(self) -> None:
         self.path_env = os.environ.get("PATH")
         entry_sep = ";" if os.name == "nt" else ":"
         if self.path_env is not None:

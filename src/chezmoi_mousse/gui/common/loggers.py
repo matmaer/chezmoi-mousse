@@ -65,11 +65,11 @@ class AppLog(LoggersBase, AppType):
         else:
             self.error(LogString.chezmoi_not_found, with_time=False)
         if self.app.dev_mode is True:
-            self.warning(
+            self._warning(
                 f"{Chars.warning_sign} {LogString.dev_mode_enabled}", with_time=False
             )
 
-    def log_command(self, command_result: "CommandResult") -> str:
+    def _log_command(self, command_result: "CommandResult") -> str:
         time = self.log_time()
         color = self.app.theme_variables["primary-lighten-3"]
         return f"{time} [{color}]{command_result.filtered_cmd}[/]"
@@ -79,7 +79,7 @@ class AppLog(LoggersBase, AppType):
         time = f"{self.log_time()} " if with_time else ""
         self.write(f"{time}[{color}]{Chars.check_mark} {message}[/]")
 
-    def warning(self, message: str, with_time: bool = True) -> None:
+    def _warning(self, message: str, with_time: bool = True) -> None:
         lines = message.splitlines()
         color = self.app.theme_variables["text-warning"]
         for line in [line for line in lines if line.strip() != ""]:
@@ -87,7 +87,7 @@ class AppLog(LoggersBase, AppType):
             self.write(f"{time}[{color}]{line}[/]")
 
     def log_cmd_results(self, command_result: "CommandResult") -> None:
-        self.write(self.log_command(command_result))
+        self.write(self._log_command(command_result))
         if ReadVerb.verify.value in command_result.completed_process.args:
             if command_result.exit_code == 0:
                 self.success(LogString.verify_exit_zero, with_time=False)
@@ -101,7 +101,7 @@ class AppLog(LoggersBase, AppType):
             elif "failed" in output_lower:
                 self.error(LogString.doctor_fails_found, with_time=False)
             elif "warning" in output_lower:
-                self.warning(LogString.doctor_warnings_found, with_time=False)
+                self._warning(LogString.doctor_warnings_found, with_time=False)
             else:
                 self.success(LogString.doctor_no_issue_found, with_time=False)
             self.dimmed(LogString.see_config_tab)

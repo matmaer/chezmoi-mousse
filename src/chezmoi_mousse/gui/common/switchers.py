@@ -64,12 +64,12 @@ class TreeSwitcher(Container, AppType):
             list_tree = self.query_exactly_one(ListTree)
             list_tree.populate_tree()
 
-    def get_managed_tree_nodes(self) -> list[TreeNode[Path]]:
+    def _get_managed_tree_nodes(self) -> list[TreeNode[Path]]:
         managed_tree = self.query_exactly_one(ManagedTree)
         return managed_tree.get_all_nodes()
 
     def watch_expand_all(self, expand_all: bool) -> None:
-        nodes_before_expand_all_toggle = self.get_managed_tree_nodes()
+        nodes_before_expand_all_toggle = self._get_managed_tree_nodes()
         if expand_all is True:
             self.old_expanded_nodes = [
                 node for node in nodes_before_expand_all_toggle if node.is_expanded
@@ -82,7 +82,7 @@ class TreeSwitcher(Container, AppType):
                     node.collapse()
 
     def watch_unchanged(self, unchanged: bool) -> None:
-        nodes_before_unchanged_toggle = self.get_managed_tree_nodes()
+        nodes_before_unchanged_toggle = self._get_managed_tree_nodes()
         list_tree = self.query_exactly_one(ListTree)
         list_tree_nodes = list_tree.get_all_nodes()
         if unchanged is True:

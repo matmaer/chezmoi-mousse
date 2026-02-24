@@ -7,7 +7,7 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, InitCloneData
+    from chezmoi_mousse import AppIds
 
     from .actionables import CloseButton, OpButton
 
@@ -16,7 +16,6 @@ __all__ = [
     "CompletedOpMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    "InitCloneCmdMsg",
     "OperateButtonMsg",
     "ProgressTextMsg",
 ]
@@ -44,12 +43,6 @@ class CurrentApplyNodeMsg(Message):
 class CurrentReAddNodeMsg(Message):
     def __init__(self, path: Path) -> None:
         self.path = path
-        super().__init__()
-
-
-class InitCloneCmdMsg(Message):
-    def __init__(self, init_clone_data: InitCloneData) -> None:
-        self.init_clone_data = init_clone_data
         super().__init__()
 
 
