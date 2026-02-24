@@ -104,44 +104,36 @@ class OperateButtons(HorizontalGroup):
     def on_mount(self) -> None:
         if self.ids.canvas_name == TabName.debug:
             return
-        self._close_button = self.query_one(self.ids.op_btn.close_q, OpButton)
-        self._close_button.display = False
-        self._btn_children = self.query_children(OpButton)
-        self._real_op_buttons = [
-            b for b in self._btn_children if b != self._close_button
+        self.close_btn = self.query_one(self.ids.op_btn.close_q, OpButton)
+        self.close_btn.display = False
+        all_buttons: list[OpButton] = [
+            b for b in self.query_children().results() if isinstance(b, OpButton)
         ]
+        self.all_cmd_buttons = [b for b in all_buttons if b != self.close_btn]
+        self.all_btn_ids: list[str]
 
-    def _get_other_real_op_buttons(self, btn_id: str) -> list[OpButton]:
-        return [b for b in self._real_op_buttons if btn_id != b.id]
-
-    def _update_close_button_label_and_display(self, btn_label: str) -> None:
-        if "Review" in btn_label:
-            self._close_button.label = OpBtnLabel.cancel
-            self._close_button.display = True
-        elif "Run" in btn_label:
-            self._close_button.label = OpBtnLabel.reload
-            self._close_button.display = True
-        elif "Reload" in btn_label:
-            self._close_button.label = OpBtnLabel.cancel
-            self._close_button.display = False
-        elif "Cancel" in btn_label:
-            self._close_button.display = False
+    def _get_other_op_cmd_buttons(self, btn_id: str) -> list[OpButton]:
+        return [b for b in self.all_cmd_buttons if btn_id != b.id and b.id is not None]
 
     @on(Button.Pressed)
-    def update_labels_and_display(self, event: Button.Pressed) -> None:
-        if event.button.id is None:
-            return
-        self.visible = False
+    def update_button_display(self, event: Button.Pressed) -> None:
         # we never toggle display or change labels in the debug tab
         if self.ids.canvas_name == TabName.debug:
             return
-        self._update_close_button_label_and_display(str(event.button.label))
-        other_real_op_buttons = self._get_other_real_op_buttons(event.button.id)
-        for btn in other_real_op_buttons:
-            btn.display = False
-        button = next((b for b in self._btn_children if b.id == event.button.id))
-        self.post_message(OperateButtonMsg(self.ids, button=button))
-        self.visible = True
+        if event.button.id == self.ids.op_btn.close:
+            self.close_btn.display = False
+        elif event.button not in self.all_cmd_buttons:
+            self.close_btn.display = True
+            for btn in self.all_cmd_buttons:
+                btn.display = True
+        if event.button in self.all_cmd_buttons and "Review" in str(event.button.label):
+            for btn in [b for b in self.all_cmd_buttons if event.button.id != b.id]:
+                btn.display = False
+            self.close_btn.display = True
+        elif event.button in self.all_cmd_buttons and "Run" in str(event.button.label):
+            event.button.disabled = True
+        if isinstance(event.button, OpButton):
+            self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 
 class SwitchWithLabel(HorizontalGroup):
