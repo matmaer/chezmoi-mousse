@@ -449,7 +449,7 @@ class InitChezmoi(Screen[None], AppType):
         )
         yield InputInitCloneRepo()
         yield Static(id=self.ids.static.init_info)
-        yield OperateButtons(self.ids)
+        yield OperateButtons(self.ids, btn_dict={self.ids.op_btn.init: OpBtnEnum.init})
         yield OperateMode(self.ids)
         yield Footer()
 

@@ -22,6 +22,7 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     CmdResults,
+    OpBtnEnum,
     OpBtnLabel,
     TabName,
 )
@@ -324,6 +325,10 @@ class ChezmoiGUI(App[None]):
                 msg.button.label = OpBtnLabel.re_add_run
 
             self.toggle_operate_display(msg.ids)
+            if not isinstance(msg.button.btn_enum, OpBtnEnum):
+                raise ValueError(
+                    f"btn_enum is not of type OpBtnEnum for button {msg.button.label}"
+                )
             operate_mode_container.update_review_info(msg.button.btn_enum)
             operate_mode_container.display = True
             operate_buttons.visible = True

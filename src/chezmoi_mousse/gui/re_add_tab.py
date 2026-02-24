@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Switch
 
-from chezmoi_mousse import IDS, AppType, SwitchEnum
+from chezmoi_mousse import IDS, AppType, OpBtnEnum, SwitchEnum
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -22,7 +22,12 @@ class ReAddTab(Container, AppType):
         yield OperateMode(IDS.re_add)
         with Horizontal():
             yield TreeSwitcher(IDS.re_add)
-            yield Vertical(ViewSwitcher(IDS.re_add), OperateButtons(IDS.re_add))
+            yield Vertical(
+                ViewSwitcher(IDS.re_add),
+                OperateButtons(
+                    IDS.re_add, btn_dict=OpBtnEnum.initial_op_btn_enum_dict(IDS.re_add)
+                ),
+            )
         yield SwitchSlider(IDS.re_add)
 
     def on_mount(self) -> None:

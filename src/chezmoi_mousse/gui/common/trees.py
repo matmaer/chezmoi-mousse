@@ -71,14 +71,6 @@ class TreeBase(Tree[Path], AppType):
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{label_text}[/]"
 
-    def populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
-        dir_node = self.dir_nodes[dir_path]
-        for sub_dir, _ in dir_node.tree_status_dirs_in.items():
-            child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
-            self.populate_node(child_node, sub_dir)
-        for file_path, _ in dir_node.status_files_in.items():
-            tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
-
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is None:
@@ -131,6 +123,14 @@ class ManagedTree(TreeBase):
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()
+
+    def populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
+        dir_node = self.dir_nodes[dir_path]
+        for sub_dir, _ in dir_node.tree_status_dirs_in.items():
+            child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
+            self.populate_node(child_node, sub_dir)
+        for file_path, _ in dir_node.status_files_in.items():
+            tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
 
     def get_all_nodes(self) -> list[TreeNode[Path]]:
         # BFS approach

@@ -13,15 +13,20 @@ __all__ = ["DebugTab"]
 
 class DebugTab(Horizontal, AppType):
 
+    OP_BTN_DICT: dict[str, OpBtnLabel] = {
+        IDS.debug.op_btn.create_paths: OpBtnLabel.create_paths,
+        IDS.debug.op_btn.remove_paths: OpBtnLabel.remove_paths,
+        IDS.debug.op_btn.toggle_diffs: OpBtnLabel.toggle_diffs,
+    }
+
+    FLAT_BTN_TUPLE: tuple[FlatBtnLabel, ...] = (
+        FlatBtnLabel.test_paths,
+        FlatBtnLabel.debug_log,
+        FlatBtnLabel.dom_nodes,
+    )
+
     def compose(self) -> ComposeResult:
-        yield FlatButtonsVertical(
-            IDS.debug,
-            buttons=(
-                FlatBtnLabel.test_paths,
-                FlatBtnLabel.debug_log,
-                FlatBtnLabel.dom_nodes,
-            ),
-        )
+        yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
         with Vertical():
             with ContentSwitcher(initial=IDS.debug.view.test_paths):
                 yield ScrollableContainer(
@@ -39,7 +44,7 @@ class DebugTab(Horizontal, AppType):
                     highlight=True,
                     classes=Tcss.border_title_top,
                 )
-            yield OperateButtons(IDS.debug)
+            yield OperateButtons(IDS.debug, btn_dict=self.OP_BTN_DICT)
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()

@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -12,7 +13,6 @@ from chezmoi_mousse import (
     LinkBtn,
     OpBtnEnum,
     OpBtnLabel,
-    ScreenName,
     SubTabLabel,
     SwitchEnum,
     TabName,
@@ -106,40 +106,32 @@ class FlatButtonsVertical(Vertical):
 
 class OpButton(Button, AppType):
 
-    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum) -> None:
-        super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
-        self.btn_enum = btn_enum
+    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum | OpBtnLabel) -> None:
+        if isinstance(btn_enum, OpBtnEnum):
+            label = btn_enum.label
+        else:
+            label = btn_enum.value
+        super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
+        self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
 
 
 class OperateButtons(HorizontalGroup):
-    def __init__(self, ids: "AppIds"):
+    def __init__(
+        self, ids: "AppIds", *, btn_dict: Mapping[str, OpBtnEnum | OpBtnLabel]
+    ) -> None:
         super().__init__(id=ids.container.operate_buttons)
         self.ids = ids
+        self.btn_dict = btn_dict
 
     def compose(self) -> ComposeResult:
-        if self.ids.canvas_name == TabName.add:
-            yield OpButton(btn_id=self.ids.op_btn.add, btn_enum=OpBtnEnum.add)
-        if self.ids.canvas_name == TabName.apply:
-            yield OpButton(btn_id=self.ids.op_btn.apply, btn_enum=OpBtnEnum.apply)
-        if self.ids.canvas_name == TabName.re_add:
-            yield OpButton(btn_id=self.ids.op_btn.re_add, btn_enum=OpBtnEnum.re_add)
-        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
-            yield OpButton(btn_id=self.ids.op_btn.forget, btn_enum=OpBtnEnum.forget)
-            yield OpButton(btn_id=self.ids.op_btn.destroy, btn_enum=OpBtnEnum.destroy)
-        if self.ids.canvas_name == TabName.debug:
-            yield Button(classes=Tcss.operate_button, label=OpBtnLabel.create_paths)
-            yield Button(classes=Tcss.operate_button, label=OpBtnLabel.remove_paths)
-            yield Button(classes=Tcss.operate_button, label=OpBtnLabel.toggle_diffs)
-        if self.ids.canvas_name == ScreenName.init:
-            yield OpButton(btn_id=self.ids.op_btn.init, btn_enum=OpBtnEnum.init)
+        for btn_id, btn_enum in self.btn_dict.items():
+            yield OpButton(btn_id=btn_id, btn_enum=btn_enum)
         yield CloseButton(self.ids)
 
     @on(OpButton.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_button_pressed(self, event: OpButton.Pressed) -> None:
         if isinstance(event.button, OpButton):
             event.stop()
-            # Only send a message; visual state and label changes
-            # are handled in the App's OperateButtonMsg handler.
             self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 

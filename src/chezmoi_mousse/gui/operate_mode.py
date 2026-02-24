@@ -89,8 +89,8 @@ class OperateMode(Vertical, AppType):
             if self.ids.canvas_name in (TabName.add, TabName.apply, TabName.re_add):
                 self.update_review_info(self.btn_enum)
 
-    @work(thread=True)
-    def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
+    @work
+    async def run_perform_command(self, btn_enum: "OpBtnEnum") -> CommandResult:
         return CMD.perform(btn_enum.write_cmd, path_arg=self.path_arg)
 
     @work(exit_on_error=False)
@@ -102,19 +102,18 @@ class OperateMode(Vertical, AppType):
             pretty_cmd += f"[$text-success bold] {self.init_arg}[/]"
         loading_modal = LoadingModal(self.ids, pretty_cmd=pretty_cmd)
         await self.app.push_screen(loading_modal)
-        worker = self.run_perform_command(btn_enum)
-        await worker.wait()
-        cmd_result = worker.result
-        if cmd_result is None:
-            self.notify("Command result is None", severity="error")
-            return
+        worker_result = self.run_perform_command(btn_enum)
+        await worker_result.wait()
+        cmd_result = worker_result.result
         self.review_info.display = False
-        self.result_info.update(
-            (f"Command completed with exit code {cmd_result.exit_code}, results:\n")
-        )
-        self.mount(
-            ScrollableContainer(cmd_result.pretty_collapsible), after=self.result_info
-        )
+        if cmd_result is not None:
+            self.result_info.update(
+                (f"Command completed with exit code {cmd_result.exit_code}, results:\n")
+            )
+            self.mount(
+                ScrollableContainer(cmd_result.pretty_collapsible),
+                after=self.result_info,
+            )
         self.app.post_message(CompletedOpMsg(path_arg=self.path_arg))
         await sleep(1)
         self.result_info.display = True

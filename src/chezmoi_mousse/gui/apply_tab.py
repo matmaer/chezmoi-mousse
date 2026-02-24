@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Switch
 
-from chezmoi_mousse import IDS, AppType, SwitchEnum
+from chezmoi_mousse import IDS, AppType, OpBtnEnum, SwitchEnum
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -22,7 +22,12 @@ class ApplyTab(Container, AppType):
         yield OperateMode(IDS.apply)
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
-            yield Vertical(ViewSwitcher(IDS.apply), OperateButtons(IDS.apply))
+            yield Vertical(
+                ViewSwitcher(IDS.apply),
+                OperateButtons(
+                    IDS.apply, btn_dict=OpBtnEnum.initial_op_btn_enum_dict(IDS.apply)
+                ),
+            )
         yield SwitchSlider(IDS.apply)
 
     def on_mount(self) -> None:

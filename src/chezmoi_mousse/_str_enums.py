@@ -1,5 +1,3 @@
-"""Contains StrEnum classes without other dependencies."""
-
 from enum import StrEnum
 
 __all__ = [

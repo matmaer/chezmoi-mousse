@@ -10,7 +10,7 @@ from ._str_enum_names import (
     TreeName,
     ViewName,
 )
-from ._str_enums import FlatBtnLabel, SubTabLabel
+from ._str_enums import FlatBtnLabel, OpBtnLabel, SubTabLabel
 
 __all__ = ["AppIds", "CanvasIds"]
 
@@ -53,8 +53,10 @@ class AppIds:
     def label_id(self, qid: str = "", *, label: LabelName) -> str:
         return f"{qid}{self.canvas_name.name}_{label.name}_label"
 
-    def operate_button_id(self, qid: str = "", *, write_verb: WriteVerb) -> str:
-        return f"{qid}{self.canvas_name.name}_{write_verb.name}_op_btn"
+    def operate_button_id(
+        self, qid: str = "", *, operation: WriteVerb | OpBtnLabel
+    ) -> str:
+        return f"{qid}{self.canvas_name.name}_{operation.name}_op_btn"
 
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
         return f"{qid}{self.canvas_name.name}_{static.name}_static"
@@ -145,18 +147,26 @@ class LoggerIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds):
-        self.add = ids.operate_button_id(write_verb=WriteVerb.add)
+        self.add = ids.operate_button_id(operation=WriteVerb.add)
         self.add_q = f"#{self.add}"
-        self.apply = ids.operate_button_id(write_verb=WriteVerb.apply)
+        self.apply = ids.operate_button_id(operation=WriteVerb.apply)
         self.apply_q = f"#{self.apply}"
-        self.destroy = ids.operate_button_id(write_verb=WriteVerb.destroy)
+        self.destroy = ids.operate_button_id(operation=WriteVerb.destroy)
         self.destroy_q = f"#{self.destroy}"
-        self.forget = ids.operate_button_id(write_verb=WriteVerb.forget)
+        self.forget = ids.operate_button_id(operation=WriteVerb.forget)
         self.forget_q = f"#{self.forget}"
-        self.init = ids.operate_button_id(write_verb=WriteVerb.init)
+        self.init = ids.operate_button_id(operation=WriteVerb.init)
         self.init_q = f"#{self.init}"
-        self.re_add = ids.operate_button_id(write_verb=WriteVerb.re_add)
+        self.re_add = ids.operate_button_id(operation=WriteVerb.re_add)
         self.re_add_q = f"#{self.re_add}"
+
+        # for test_paths only
+        self.create_paths = ids.operate_button_id(operation=OpBtnLabel.create_paths)
+        self.create_paths_q = f"#{self.create_paths}"
+        self.remove_paths = ids.operate_button_id(operation=OpBtnLabel.remove_paths)
+        self.remove_paths_q = f"#{self.remove_paths}"
+        self.toggle_diffs = ids.operate_button_id(operation=OpBtnLabel.toggle_diffs)
+        self.toggle_diffs_q = f"#{self.toggle_diffs}"
 
 
 class StaticIds:
