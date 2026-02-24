@@ -17,9 +17,9 @@ __all__ = ["OpBtnEnum", "SwitchEnum"]
 class OpBtnData:
     label: str
     write_cmd: WriteCmd
-    info_strings: list[str] | None = None
-    info_sub_title: str | None = None
-    info_title: str | None = None
+    info_strings: list[str] | None
+    info_sub_title: str | None
+    info_title: str | None
 
 
 class OpBtnEnum(Enum):
@@ -93,18 +93,23 @@ class OpBtnEnum(Enum):
 
     @classmethod
     @cache
-    def initial_op_btn_enum_dict(cls, ids: "AppIds") -> dict[str, "OpBtnEnum"]:
-        if ids.canvas_name == TabName.add:
-            return {ids.op_btn.add: cls._add}
-        _btn_dict = {ids.op_btn.forget: cls._forget, ids.op_btn.destroy: cls._destroy}
-        if ids.canvas_name == TabName.apply:
-            return {ids.op_btn.apply: cls._apply, **_btn_dict}
-        if ids.canvas_name == TabName.re_add:
-            return {ids.op_btn.re_add: cls._re_add, **_btn_dict}
+    def initial_op_btn_enum_dict(
+        cls, ids: "AppIds"
+    ) -> dict[str, "OpBtnEnum | OpBtnLabel"]:
         if ids.canvas_name == ScreenName.init:
-            return {ids.op_btn.init: cls.init, ids.op_btn.init: cls.init}
-        else:
-            raise ValueError(f"Unexpected canvas name: {ids.canvas_name}")
+            return {ids.op_btn.init: cls.init, ids.op_btn.close: OpBtnLabel.exit_app}
+        if ids.canvas_name != TabName.add:
+            _btn_dict = {
+                ids.op_btn.forget: cls._forget,
+                ids.op_btn.destroy: cls._destroy,
+            }
+            if ids.canvas_name == TabName.apply:
+                _btn_dict = {ids.op_btn.apply: cls._apply, **_btn_dict}
+            if ids.canvas_name == TabName.re_add:
+                _btn_dict = {ids.op_btn.re_add: cls._re_add, **_btn_dict}
+        else:  # Add tab
+            _btn_dict = {ids.op_btn.add: cls._add}
+        return {**_btn_dict, ids.op_btn.close: OpBtnLabel.cancel}
 
 
 @dataclass(frozen=True, slots=True)

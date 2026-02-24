@@ -26,7 +26,6 @@ from chezmoi_mousse import (
     BindingDescription,
     LinkBtn,
     OpBtnEnum,
-    OpBtnLabel,
     OperateString,
     SectionLabel,
     SwitchEnum,
@@ -36,7 +35,6 @@ from chezmoi_mousse import (
 
 from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
 from .common.doctor_data import DoctorTable
-from .common.messages import OperateButtonMsg
 from .common.screen_header import CustomHeader
 from .operate_mode import OperateMode
 
@@ -554,12 +552,12 @@ class InitChezmoi(Screen[None], AppType):
             self.repo_input.display = False
         self._update_init_info()
 
-    @on(OperateButtonMsg)
-    def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
-        msg.stop()
-        if msg.button.btn_enum == OpBtnEnum.init:
-            self.init_cmd = WriteCmd.init_new
-            self.init_arg = None
-            # self.run_operate_command()
-        elif msg.button.label == OpBtnLabel.reload:
-            self.dismiss()
+    # @on(OperateButtonMsg)
+    # def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
+    #     msg.stop()
+    #     if msg.button.btn_enum == OpBtnEnum.init:
+    #         self.init_cmd = WriteCmd.init_new
+    #         self.init_arg = None
+    #         # self.run_operate_command()
+    #     elif msg.button.label == OpBtnLabel.reload:
+    #         self.dismiss()

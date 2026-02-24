@@ -18,8 +18,6 @@ __all__ = ["AppIds", "CanvasIds"]
 class AppIds:
     __slots__ = (
         "canvas_name",
-        "close_q",
-        "close",
         "container",
         "label",
         "logger",
@@ -32,9 +30,6 @@ class AppIds:
 
     def __init__(self, canvas_name: TabName | ScreenName) -> None:
         self.canvas_name = canvas_name
-        self.close = f"{self.canvas_name.name}_close_btn"
-        self.close_q = f"#{self.close}"
-
         self.container = ContainerIds(self)
         self.label = LabelIds(self)
         self.logger = LoggerIds(self)
@@ -159,6 +154,10 @@ class OperateButtonIds:
         self.init_q = f"#{self.init}"
         self.re_add = ids.operate_button_id(operation=WriteVerb.re_add)
         self.re_add_q = f"#{self.re_add}"
+
+        # Close button, can be either cancel, exit app or reload
+        self.close = ids.operate_button_id(operation=OpBtnLabel.cancel)
+        self.close_q = f"#{self.close}"
 
         # for test_paths only
         self.create_paths = ids.operate_button_id(operation=OpBtnLabel.create_paths)

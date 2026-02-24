@@ -7,7 +7,6 @@ from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGr
 from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
-    IDS,
     AppType,
     FlatBtnLabel,
     LinkBtn,
@@ -19,14 +18,13 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from .messages import CloseButtonMsg, OperateButtonMsg
+from .messages import OperateButtonMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 
 __all__ = [
-    "CloseButton",
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",
@@ -36,26 +34,6 @@ __all__ = [
     "SwitchWithLabel",
     "SwitchSlider",
 ]
-
-
-class CloseButton(Button, AppType):
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(
-            id=ids.close, classes=Tcss.operate_button, label=OpBtnLabel.cancel
-        )
-        self.ids = ids
-
-    def on_mount(self) -> None:
-        self.display = False
-        if self.ids.close == IDS.init.close:
-            self.label = OpBtnLabel.exit_app
-            self.display = True
-
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_pressed(self, event: Button.Pressed) -> None:
-        if not isinstance(event.button, CloseButton):
-            raise TypeError("event.button is not a CloseButton")
-        self.post_message(CloseButtonMsg(self.ids, button=event.button))
 
 
 class FlatButton(Button):
@@ -122,13 +100,48 @@ class OperateButtons(HorizontalGroup):
     def compose(self) -> ComposeResult:
         for btn_id, btn_enum in self.btn_dict.items():
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum)
-        yield CloseButton(self.ids)
 
-    @on(OpButton.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_operate_button_pressed(self, event: OpButton.Pressed) -> None:
-        if isinstance(event.button, OpButton):
-            event.stop()
-            self.post_message(OperateButtonMsg(self.ids, button=event.button))
+    def on_mount(self) -> None:
+        if self.ids.canvas_name == TabName.debug:
+            return
+        self._close_button = self.query_one(self.ids.op_btn.close_q, OpButton)
+        self._close_button.display = False
+        self._btn_children = self.query_children(OpButton)
+        self._real_op_buttons = [
+            b for b in self._btn_children if b != self._close_button
+        ]
+
+    def _get_other_real_op_buttons(self, btn_id: str) -> list[OpButton]:
+        return [b for b in self._real_op_buttons if btn_id != b.id]
+
+    def _update_close_button_label_and_display(self, btn_label: str) -> None:
+        if "Review" in btn_label:
+            self._close_button.label = OpBtnLabel.cancel
+            self._close_button.display = True
+        elif "Run" in btn_label:
+            self._close_button.label = OpBtnLabel.reload
+            self._close_button.display = True
+        elif "Reload" in btn_label:
+            self._close_button.label = OpBtnLabel.cancel
+            self._close_button.display = False
+        elif "Cancel" in btn_label:
+            self._close_button.display = False
+
+    @on(Button.Pressed)
+    def update_labels_and_display(self, event: Button.Pressed) -> None:
+        if event.button.id is None:
+            return
+        self.visible = False
+        # we never toggle display or change labels in the debug tab
+        if self.ids.canvas_name == TabName.debug:
+            return
+        self._update_close_button_label_and_display(str(event.button.label))
+        other_real_op_buttons = self._get_other_real_op_buttons(event.button.id)
+        for btn in other_real_op_buttons:
+            btn.display = False
+        button = next((b for b in self._btn_children if b.id == event.button.id))
+        self.post_message(OperateButtonMsg(self.ids, button=button))
+        self.visible = True
 
 
 class SwitchWithLabel(HorizontalGroup):
@@ -159,7 +172,7 @@ class SwitchSlider(VerticalGroup):
             yield SwitchWithLabel(self.ids, switch_enum=switch_enum)
 
     def on_mount(self) -> None:
-        self.query(HorizontalGroup).last().styles.padding = 0
+        self.query_children(HorizontalGroup).last().styles.padding = 0
 
 
 class TabButtons(Horizontal):

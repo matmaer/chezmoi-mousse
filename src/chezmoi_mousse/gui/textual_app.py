@@ -29,14 +29,8 @@ from chezmoi_mousse import (
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.actionables import (
-    CloseButton,
-    FlatButtonsVertical,
-    OperateButtons,
-    SwitchSlider,
-    TabButtons,
-)
-from .common.messages import CloseButtonMsg, OperateButtonMsg
+from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .common.messages import OperateButtonMsg
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
@@ -278,48 +272,10 @@ class ChezmoiGUI(App[None]):
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
-        close_btn = self.screen.query_one(msg.ids.close_q, CloseButton)
-        close_btn.display = True
         operate_mode_container = self.screen.query_one(
             msg.ids.container.op_mode_q, OperateMode
         )
-        operate_buttons = self.screen.query_one(
-            msg.ids.container.operate_buttons_q, OperateButtons
-        )
         if "Review" in str(msg.button.label):
-            operate_buttons.visible = False
-            if msg.button.label == OpBtnLabel.init_review:
-                msg.button.label = OpBtnLabel.init_run
-
-            elif msg.button.label == OpBtnLabel.add_review:
-                msg.button.label = OpBtnLabel.add_run
-
-            elif msg.button.label == OpBtnLabel.apply_review:
-                operate_buttons.query_one(msg.ids.op_btn.forget_q).display = False
-                operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
-                msg.button.label = OpBtnLabel.apply_run
-
-            elif msg.button.label == OpBtnLabel.destroy_review:
-                operate_buttons.query_one(msg.ids.op_btn.forget_q).display = False
-                if msg.ids.canvas_name == TabName.apply:
-                    operate_buttons.query_one(msg.ids.op_btn.apply_q).display = False
-                elif msg.ids.canvas_name == TabName.re_add:
-                    operate_buttons.query_one(msg.ids.op_btn.re_add_q).display = False
-                msg.button.label = OpBtnLabel.destroy_run
-
-            elif msg.button.label == OpBtnLabel.forget_review:
-                operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
-                if msg.ids.canvas_name == TabName.apply:
-                    operate_buttons.query_one(msg.ids.op_btn.apply_q).display = False
-                elif msg.ids.canvas_name == TabName.re_add:
-                    operate_buttons.query_one(msg.ids.op_btn.re_add_q).display = False
-                msg.button.label = OpBtnLabel.forget_run
-
-            elif msg.button.label == OpBtnLabel.re_add_review:
-                operate_buttons.query_one(msg.ids.op_btn.forget_q).display = False
-                operate_buttons.query_one(msg.ids.op_btn.destroy_q).display = False
-                msg.button.label = OpBtnLabel.re_add_run
-
             self._toggle_operate_display(msg.ids)
             if not isinstance(msg.button.btn_enum, OpBtnEnum):
                 raise ValueError(
@@ -327,32 +283,10 @@ class ChezmoiGUI(App[None]):
                 )
             operate_mode_container.update_review_info(msg.button.btn_enum)
             operate_mode_container.display = True
-            operate_buttons.visible = True
-            self.screen.query_exactly_one(CustomHeader).read_mode = False
             self.refresh_bindings()
         # Second click: "*Run" variants – execute the command.
         elif "Run" in str(msg.button.label):
-            close_btn.label = OpBtnLabel.reload
             operate_mode_container.run_command(msg.button.btn_enum)
-            operate_buttons.visible = True
-
-    @on(CloseButtonMsg)
-    def handle_close_button_msg(self, msg: CloseButtonMsg) -> None:
-        container_to_hide = self.screen.query_one(
-            msg.ids.container.op_mode_q, OperateMode
-        )
-        container_to_hide.display = False
-        op_buttons_to_recompose = self.screen.query_one(
-            msg.ids.container.operate_buttons_q, OperateButtons
-        )
-        op_buttons_to_recompose.visible = False
-        self._toggle_operate_display(msg.ids)
-        op_buttons_to_recompose.refresh(recompose=True)
-        msg.button.display = False
-        op_buttons_to_recompose.visible = True
-        if msg.button.label == OpBtnLabel.reload:
-            self.notify("Reloading to be implemented.", severity="error")
-        self.screen.query_exactly_one(CustomHeader).read_mode = True
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:

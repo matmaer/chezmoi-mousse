@@ -9,23 +9,15 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds
 
-    from .actionables import CloseButton, OpButton
+    from .actionables import OpButton
 
 __all__ = [
-    "CloseButtonMsg",
     "CompletedOpMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "OperateButtonMsg",
     "ProgressTextMsg",
 ]
-
-
-class CloseButtonMsg(Message):
-    def __init__(self, ids: AppIds, *, button: CloseButton) -> None:
-        self.ids = ids
-        self.button = button
-        super().__init__()
 
 
 class CompletedOpMsg(Message):
