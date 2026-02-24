@@ -38,7 +38,6 @@ class ReactiveDataclass:
 @dataclass(slots=True)
 class ParsedConfig:
     dest_dir: Path = Path.home()
-    git_auto_add: bool = False
     git_auto_commit: bool = False
     git_auto_push: bool = False
 
@@ -94,7 +93,6 @@ class CmdResults(ReactiveDataclass):
         parsed_config = json.loads(dump_config_result.completed_process.stdout)
         self.parsed_config = ParsedConfig(
             dest_dir=Path(parsed_config["destDir"]),
-            git_auto_add=parsed_config["git"]["autoadd"],
             git_auto_commit=parsed_config["git"]["autocommit"],
             git_auto_push=parsed_config["git"]["autopush"],
         )

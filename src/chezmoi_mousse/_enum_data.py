@@ -4,7 +4,7 @@ from functools import cache
 from typing import TYPE_CHECKING
 
 from ._chezmoi_command import WriteCmd
-from ._str_enum_names import TabName
+from ._str_enum_names import ScreenName, TabName
 from ._str_enums import OpBtnLabel, OperateString, SwitchLabel
 
 if TYPE_CHECKING:
@@ -58,7 +58,7 @@ class OpBtnEnum(Enum):
         info_sub_title=OperateString.re_add_subtitle,
         info_title=OpBtnLabel.re_add_run,
     )
-    _init = OpBtnData(
+    init = OpBtnData(
         label=OpBtnLabel.init_review,
         write_cmd=WriteCmd.init_new,
         info_strings=[OperateString.init_new_info],
@@ -96,11 +96,13 @@ class OpBtnEnum(Enum):
     def initial_op_btn_enum_dict(cls, ids: "AppIds") -> dict[str, "OpBtnEnum"]:
         if ids.canvas_name == TabName.add:
             return {ids.op_btn.add: cls._add}
-        btn_dict = {ids.op_btn.forget: cls._forget, ids.op_btn.destroy: cls._destroy}
+        _btn_dict = {ids.op_btn.forget: cls._forget, ids.op_btn.destroy: cls._destroy}
         if ids.canvas_name == TabName.apply:
-            return {ids.op_btn.apply: cls._apply, **btn_dict}
+            return {ids.op_btn.apply: cls._apply, **_btn_dict}
         if ids.canvas_name == TabName.re_add:
-            return {ids.op_btn.re_add: cls._re_add, **btn_dict}
+            return {ids.op_btn.re_add: cls._re_add, **_btn_dict}
+        if ids.canvas_name == ScreenName.init:
+            return {ids.op_btn.init: cls.init, ids.op_btn.init: cls.init}
         else:
             raise ValueError(f"Unexpected canvas name: {ids.canvas_name}")
 

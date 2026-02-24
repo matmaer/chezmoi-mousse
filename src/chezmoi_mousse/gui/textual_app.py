@@ -162,10 +162,6 @@ class ChezmoiGUI(App[None]):
         return self.cmd_results.parsed_config.dest_dir
 
     @property
-    def git_auto_add(self) -> bool:
-        return self.cmd_results.parsed_config.git_auto_add
-
-    @property
     def git_auto_commit(self) -> bool:
         return self.cmd_results.parsed_config.git_auto_commit
 

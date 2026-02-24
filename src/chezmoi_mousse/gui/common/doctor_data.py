@@ -20,7 +20,7 @@ class DoctorTable(DataTable[Text], AppType):
         super().__init__(show_cursor=False, classes=Tcss.doctor_table)
 
     @property
-    def dr_style(self) -> dict[str, str]:
+    def _dr_style(self) -> dict[str, str]:
         return {
             "ok": self.app.theme_variables["text-success"],
             "info": self.app.theme_variables["foreground-darken-1"],
@@ -44,18 +44,19 @@ class DoctorTable(DataTable[Text], AppType):
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [
-                    Text(cell_text, style=self.dr_style["info"]) for cell_text in row
+                    Text(cell_text, style=self._dr_style["info"]) for cell_text in row
                 ]
                 self.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
                 new_row = [
-                    Text(cell_text, style=f"{self.dr_style[row[0]]}")
+                    Text(cell_text, style=f"{self._dr_style[row[0]]}")
                     for cell_text in row
                 ]
                 self.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
-                    Text(cell_text, style=self.dr_style["warning"]) for cell_text in row
+                    Text(cell_text, style=self._dr_style["warning"])
+                    for cell_text in row
                 ]
                 self.add_row(*new_row)
             else:

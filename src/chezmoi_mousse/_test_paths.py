@@ -66,7 +66,7 @@ class TestPaths:
     file_paths: set[Path] = field(default_factory=lambda: set())
 
     @property
-    def changed_file_names(self) -> list[str]:
+    def _changed_file_names(self) -> list[str]:
         return [
             self.files.TOML_APPLY_A,
             self.files.TOML_APPLY_D,
@@ -79,11 +79,11 @@ class TestPaths:
         ]
 
     @property
-    def unchanged_file_names(self) -> list[str]:
+    def _unchanged_file_names(self) -> list[str]:
         return [self.files.UNCHANGED_1, self.files.UNCHANGED_2, self.files.UNCHANGED_3]
 
     @property
-    def test_dir_paths(self) -> list[Path]:
+    def _test_dir_paths(self) -> list[Path]:
         return [
             self.home_dir,
             self.home_dir / self.dir_names.UNCHANGED,
@@ -98,7 +98,7 @@ class TestPaths:
         ]
 
     @property
-    def all_existing_paths(self) -> list[Path]:
+    def _all_existing_paths(self) -> list[Path]:
         paths = sorted(self.dir_paths | self.file_paths)
         return [p for p in paths if p.exists()]
 
@@ -111,19 +111,19 @@ class TestPaths:
                 dir.rmdir()
 
     def populate_test_paths(self) -> None:
-        for dir in self.test_dir_paths:
+        for dir in self._test_dir_paths:
             self.dir_paths.add(dir)
         self.file_paths.add(self.binary_file_path)
         self.file_paths.add(self.large_file_path)
         self.file_paths.add(self.tricky_utf8_file_path)
-        for file in self.unchanged_file_names:
+        for file in self._unchanged_file_names:
             for dir in self.dir_paths:
                 if (
                     dir.name in (self.dir_names.HOME, self.dir_names.UNCHANGED)
                     or dir == self.test_dir / self.dir_names.WITH_STATUS_CHILDREN
                 ):
                     self.file_paths.add(dir / file)
-        for file in self.changed_file_names:
+        for file in self._changed_file_names:
             for dir in self.dir_paths:
                 if dir == self.status_children_dir or dir == self.home_dir:
                     self.file_paths.add(dir / file)
@@ -207,7 +207,7 @@ class TestPaths:
         return str(self.tricky_utf8_file_path)
 
     def list_existing_test_paths(self) -> str | None:
-        existing_paths = [str(p) for p in self.all_existing_paths if p.exists()]
+        existing_paths = [str(p) for p in self._all_existing_paths if p.exists()]
         if not existing_paths:
             return None
         return "[$text-success]Existing paths:[/]\n" + "\n".join(existing_paths)
@@ -215,7 +215,7 @@ class TestPaths:
     def remove_test_paths(self) -> str:
         removed_paths: list[str] = []
         # Remove files first
-        for path in self.all_existing_paths:
+        for path in self._all_existing_paths:
             if path.exists() and path.is_file():
                 path.unlink()
                 removed_paths.append(str(path))
@@ -250,7 +250,7 @@ class TestPaths:
         for file in self.file_paths:
             if (
                 file.exists()
-                and file.name not in self.unchanged_file_names
+                and file.name not in self._unchanged_file_names
                 and file.suffix == ".toml"
             ):
                 modified_content = (

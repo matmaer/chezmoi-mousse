@@ -15,7 +15,7 @@ from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._cmd_results import CmdResults
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._singletons import CMD, CMD_RESULTS, IDS, CommandResults
-from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
+from ._str_enum_names import BindingAction, TabName, Tcss, TreeName
 from ._str_enums import (
     BindingDescription,
     Chars,
@@ -57,7 +57,6 @@ __all__ = [
     "ParsedJson",
     "ReadCmd",
     "ReadVerb",
-    "ScreenName",
     "SectionLabel",
     "StatusCode",
     "SubTabLabel",

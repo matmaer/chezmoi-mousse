@@ -225,7 +225,7 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
-    def log_entry(self) -> str:
+    def _log_entry(self) -> str:
         pretty_time = f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
         success_color = "$text-success" if self.cmd_enum in WriteCmd else "$success"
         warning_color = "$text-warning" if self.cmd_enum in WriteCmd else "$warning"
@@ -261,7 +261,7 @@ class CommandResult:
         return VerticalGroup(
             Collapsible(
                 *collapsible_contents,
-                title=self.log_entry,
+                title=self._log_entry,
                 collapsed_symbol=Chars.right_triangle,
                 expanded_symbol=Chars.down_triangle,
                 collapsed=collapsed,
