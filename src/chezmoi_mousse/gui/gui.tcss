@@ -532,7 +532,7 @@ Switch {
   }
   &:disabled {
     &>.switch--slider {
-      color: $panel;
+      color: $panel-lighten-3;
     }
   }
 }

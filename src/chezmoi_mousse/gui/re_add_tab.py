@@ -1,9 +1,9 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Switch
+from textual.widgets import Button, Switch
 
-from chezmoi_mousse import IDS, AppType, OpBtnEnum, SwitchEnum
+from chezmoi_mousse import IDS, AppType, OpBtnEnum, SubTabLabel, SwitchEnum
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -64,3 +64,13 @@ class ReAddTab(Container, AppType):
             tree_switcher.unchanged = event.value
         elif event.switch.id == IDS.re_add.switch_id(switch=SwitchEnum.expand_all):
             tree_switcher.expand_all = event.value
+
+    @on(Button.Pressed)
+    def switch_view(self, event: Button.Pressed) -> None:
+        expand_all_switch = self.query_one(IDS.apply.switch.expand_all_q, Switch)
+        if event.button.label == SubTabLabel.tree:
+            expand_all_switch.disabled = False
+            expand_all_switch.tooltip = SwitchEnum.expand_all.enabled_tooltip
+        elif event.button.label == SubTabLabel.list:
+            expand_all_switch.disabled = True
+            expand_all_switch.tooltip = SwitchEnum.expand_all.disabled_tooltip

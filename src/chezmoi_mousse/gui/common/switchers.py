@@ -51,7 +51,6 @@ class TreeSwitcher(Container, AppType):
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
         if event.button.has_class(Tcss.tab_button):
-            event.stop()
             view_switcher = self.query_exactly_one(ContentSwitcher)
             if event.button.label == SubTabLabel.tree:
                 view_switcher.current = self.ids.tree.managed
