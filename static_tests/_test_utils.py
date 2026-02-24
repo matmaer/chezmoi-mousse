@@ -1,5 +1,5 @@
 import ast
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 from typing import NamedTuple
 
@@ -11,18 +11,19 @@ class ModuleData(NamedTuple):
     module_nodes: list[ast.AST]  # all ast nodes in the module (materialized)
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_module_paths() -> list[Path]:
     py_files = [f for f in BASE_DIR.glob("**/*.py")]
     py_files = [f for f in py_files if f.name not in ("__init__.py", "__main__.py")]
     return py_files
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_module_ast_tree(module_path: Path) -> ast.AST:
     return ast.parse(module_path.read_text())
 
 
+@cache
 def get_module_ast_class_defs(module_path: Path) -> list[ast.ClassDef]:
     class_defs: list[ast.ClassDef] = []
     for node in ast.walk(get_module_ast_tree(module_path)):
@@ -31,6 +32,7 @@ def get_module_ast_class_defs(module_path: Path) -> list[ast.ClassDef]:
     return class_defs
 
 
+@cache
 def get_all_module_data() -> list[ModuleData]:
     result: list[ModuleData] = []
     for file_path in get_module_paths():
@@ -43,7 +45,7 @@ def get_all_module_data() -> list[ModuleData]:
     return result
 
 
-@lru_cache(maxsize=None)
+@cache
 def get_modules_importing_class(class_name: str) -> list[Path]:
     modules: list[Path] = []
     for module_path in get_module_paths():
