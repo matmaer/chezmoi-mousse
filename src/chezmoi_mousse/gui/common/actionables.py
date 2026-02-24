@@ -55,10 +55,6 @@ class CloseButton(Button, AppType):
     def handle_pressed(self, event: Button.Pressed) -> None:
         if not isinstance(event.button, CloseButton):
             raise TypeError("event.button is not a CloseButton")
-        event.stop()  # We post our own message.
-        if event.button.label == OpBtnLabel.exit_app:
-            self.app.exit()
-            return
         self.post_message(CloseButtonMsg(self.ids, button=event.button))
 
 

@@ -12,7 +12,7 @@ from textual.binding import Binding
 from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import TabbedContent, Tabs
+from textual.widgets import Button, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     IDS,
@@ -353,6 +353,12 @@ class ChezmoiGUI(App[None]):
         if msg.button.label == OpBtnLabel.reload:
             self.notify("Reloading to be implemented.", severity="error")
         self.screen.query_exactly_one(CustomHeader).read_mode = True
+
+    @on(Button.Pressed)
+    def handle_exit_app_button(self, event: Button.Pressed) -> None:
+        if event.button.label == OpBtnLabel.exit_app:
+            self.exit()
+            return
 
     ##################
     # Action Methods #

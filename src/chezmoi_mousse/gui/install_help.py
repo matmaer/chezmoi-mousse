@@ -2,7 +2,6 @@ import os
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
@@ -92,7 +91,3 @@ class InstallHelpScreen(Screen[None], AppType):
             for key, value in child.data.items():
                 new_child = child.add(label=key)
                 new_child.add_leaf(label=value)
-
-    @on(FlatButton.Pressed)
-    def exit_application(self) -> None:
-        self.app.exit()
