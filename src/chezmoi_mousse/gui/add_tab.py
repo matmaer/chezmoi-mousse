@@ -12,7 +12,7 @@ from chezmoi_mousse import IDS, AppType, Chars, FlatBtnLabel, OpBtnEnum, Tcss
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
-from .operate_mode import OperateMode
+from .common.operate_mode import OperateMode
 
 __all__ = ["AddTab"]
 
@@ -172,9 +172,7 @@ class AddTab(Horizontal, AppType):
         with Vertical():
             yield OperateMode(IDS.add)
             yield ContentsView(IDS.add)
-            yield OperateButtons(
-                IDS.add, btn_dict=OpBtnEnum.initial_op_btn_enum_dict(IDS.add)
-            )
+            yield OperateButtons(IDS.add, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.add))
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:

@@ -97,7 +97,7 @@
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
-  max-width: 50%;
+  max-width: 40%;
   min-width: 16;
   &>.content_switcher_left {
     min-width: 16;
@@ -348,7 +348,6 @@ OperateMode {
   &>.operate_info {
     padding: 0 1;
     height: auto;
-    border: round;
     border: round $foreground;
     border-subtitle-align: center;
     border-title-align: center;

@@ -35,8 +35,8 @@ from chezmoi_mousse import (
 
 from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
 from .common.doctor_data import DoctorTable
+from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
-from .operate_mode import OperateMode
 
 __all__ = ["InitChezmoi"]
 
@@ -438,9 +438,7 @@ class InitChezmoi(Screen[None], AppType):
         )
         yield InputInitCloneRepo()
         yield Static(id=self.ids.static.init_info)
-        yield OperateButtons(
-            self.ids, btn_dict=OpBtnEnum.initial_op_btn_enum_dict(self.ids)
-        )
+        yield OperateButtons(self.ids, btn_dict=OpBtnEnum.op_btn_enum_dict(self.ids))
         yield OperateMode(self.ids)
         yield Footer()
 

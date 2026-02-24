@@ -1,4 +1,3 @@
-from ._chezmoi_command import WriteVerb
 from ._enum_data import SwitchEnum
 from ._str_enum_names import (
     ContainerName,
@@ -48,10 +47,8 @@ class AppIds:
     def label_id(self, qid: str = "", *, label: LabelName) -> str:
         return f"{qid}{self.canvas_name.name}_{label.name}_label"
 
-    def operate_button_id(
-        self, qid: str = "", *, operation: WriteVerb | OpBtnLabel
-    ) -> str:
-        return f"{qid}{self.canvas_name.name}_{operation.name}_op_btn"
+    def operate_button_id(self, qid: str = "", *, operation: OpBtnLabel) -> str:
+        return f"{qid}{self.canvas_name.name}_{operation.normalized_label}_op_btn"
 
     def static_id(self, qid: str = "", *, static: StaticName) -> str:
         return f"{qid}{self.canvas_name.name}_{static.name}_static"
@@ -104,10 +101,6 @@ class ContainerIds:
         self.operate_buttons_q = f"#{self.operate_buttons}"
         self.op_mode = ids.container_id(name=ContainerName.op_mode)
         self.op_mode_q = f"#{self.op_mode}"
-        self.op_result = ids.container_id(name=ContainerName.op_result)
-        self.op_result_q = f"#{self.op_result}"
-        self.op_review = ids.container_id(name=ContainerName.op_review)
-        self.op_review_q = f"#{self.op_review}"
         self.repo_input = ids.container_id(name=ContainerName.repo_input)
         self.repo_input_q = f"#{self.repo_input}"
         self.right_side = ids.container_id(name=ContainerName.right_side)
@@ -142,22 +135,41 @@ class LoggerIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds):
-        self.add = ids.operate_button_id(operation=WriteVerb.add)
-        self.add_q = f"#{self.add}"
-        self.apply = ids.operate_button_id(operation=WriteVerb.apply)
-        self.apply_q = f"#{self.apply}"
-        self.destroy = ids.operate_button_id(operation=WriteVerb.destroy)
-        self.destroy_q = f"#{self.destroy}"
-        self.forget = ids.operate_button_id(operation=WriteVerb.forget)
-        self.forget_q = f"#{self.forget}"
-        self.init = ids.operate_button_id(operation=WriteVerb.init)
+        self.add_review = ids.operate_button_id(operation=OpBtnLabel.add_review)
+        self.add_review_q = f"#{self.add_review}"
+        self.add_run = ids.operate_button_id(operation=OpBtnLabel.add_run)
+        self.add_run_q = f"#{self.add_run}"
+
+        self.apply_review = ids.operate_button_id(operation=OpBtnLabel.apply_review)
+        self.apply_review_q = f"#{self.apply_review}"
+        self.apply_run = ids.operate_button_id(operation=OpBtnLabel.apply_run)
+        self.apply_run_q = f"#{self.apply_run}"
+
+        self.destroy_review = ids.operate_button_id(operation=OpBtnLabel.destroy_review)
+        self.destroy_review_q = f"#{self.destroy_review}"
+        self.destroy_run = ids.operate_button_id(operation=OpBtnLabel.destroy_run)
+        self.destroy_run_q = f"#{self.destroy_run}"
+
+        self.forget_review = ids.operate_button_id(operation=OpBtnLabel.forget_review)
+        self.forget_review_q = f"#{self.forget_review}"
+        self.forget_run = ids.operate_button_id(operation=OpBtnLabel.forget_run)
+        self.forget_run_q = f"#{self.forget_run}"
+
+        self.init = ids.operate_button_id(operation=OpBtnLabel.init_review)
         self.init_q = f"#{self.init}"
-        self.re_add = ids.operate_button_id(operation=WriteVerb.re_add)
-        self.re_add_q = f"#{self.re_add}"
+
+        self.re_add_review = ids.operate_button_id(operation=OpBtnLabel.re_add_review)
+        self.re_add_review_q = f"#{self.re_add_review}"
+        self.re_add_run = ids.operate_button_id(operation=OpBtnLabel.re_add_run)
+        self.re_add_run_q = f"#{self.re_add_run}"
 
         # Close button, can be either cancel, exit app or reload
-        self.close = ids.operate_button_id(operation=OpBtnLabel.cancel)
-        self.close_q = f"#{self.close}"
+        self.cancel = ids.operate_button_id(operation=OpBtnLabel.cancel)
+        self.cancel_q = f"#{self.cancel}"
+        self.reload = ids.operate_button_id(operation=OpBtnLabel.reload)
+        self.reload_q = f"#{self.reload}"
+        self.exit_app = ids.operate_button_id(operation=OpBtnLabel.exit_app)
+        self.exit_app_q = f"#{self.exit_app}"
 
         # for test_paths only
         self.create_paths = ids.operate_button_id(operation=OpBtnLabel.create_paths)
@@ -182,10 +194,8 @@ class StaticIds:
         self.git_log_info_q = f"#{self.git_log_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)
         self.init_info_q = f"#{self.init_info}"
-        self.op_review_info = ids.static_id(static=StaticName.op_review_info)
-        self.op_review_info_q = f"#{self.op_review_info}"
-        self.op_result_info = ids.static_id(static=StaticName.op_result_info)
-        self.op_result_info_q = f"#{self.op_result_info}"
+        self.operate_info = ids.static_id(static=StaticName.operate_info)
+        self.operate_info_q = f"#{self.operate_info}"
 
 
 class TreeIds:

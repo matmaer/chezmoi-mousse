@@ -12,18 +12,11 @@ if TYPE_CHECKING:
     from .actionables import OpButton
 
 __all__ = [
-    "CompletedOpMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
     "OperateButtonMsg",
     "ProgressTextMsg",
 ]
-
-
-class CompletedOpMsg(Message):
-    def __init__(self, *, path_arg: Path | None) -> None:
-        self.path_arg = path_arg
-        super().__init__()
 
 
 class CurrentApplyNodeMsg(Message):

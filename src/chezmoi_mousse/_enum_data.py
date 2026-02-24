@@ -17,53 +17,82 @@ __all__ = ["OpBtnEnum", "SwitchEnum"]
 class OpBtnData:
     label: str
     write_cmd: WriteCmd
-    info_strings: list[str] | None
-    info_sub_title: str | None
-    info_title: str | None
+    info_strings: list[str] | None = None
+    info_sub_title: str | None = None
+    info_title: str | None = None
 
 
 class OpBtnEnum(Enum):
-    _add = OpBtnData(
-        label=OpBtnLabel.add_review,
+    _add_review = OpBtnData(label=OpBtnLabel.add_review, write_cmd=WriteCmd.add)
+    _add_run = OpBtnData(
+        label=OpBtnLabel.add_run,
         write_cmd=WriteCmd.add,
         info_strings=[OperateString.add_path_info],
         info_sub_title=OperateString.add_subtitle,
-        info_title=OpBtnLabel.add_run,
+        info_title=OperateString.run_completed_dry,
     )
-    _apply = OpBtnData(
+    _apply_review = OpBtnData(
         label=OpBtnLabel.apply_review,
         write_cmd=WriteCmd.apply,
         info_strings=[OperateString.apply_path_info],
         info_sub_title=OperateString.apply_subtitle,
-        info_title=OpBtnLabel.apply_run,
+        info_title=OperateString.ready_to_run,
     )
-    _destroy = OpBtnData(
+    _apply_run = OpBtnData(
+        label=OpBtnLabel.apply_run,
+        write_cmd=WriteCmd.apply,
+        info_strings=[OperateString.apply_path_info],
+        info_sub_title=OperateString.apply_subtitle,
+        info_title=OperateString.run_completed_dry,
+    )
+    _destroy_review = OpBtnData(
         label=OpBtnLabel.destroy_review,
         write_cmd=WriteCmd.destroy,
         info_strings=[OperateString.destroy_path_info],
         info_sub_title=OperateString.destroy_subtitle,
-        info_title=OpBtnLabel.destroy_run,
+        info_title=OperateString.ready_to_run,
     )
-    _forget = OpBtnData(
+    _destroy_run = OpBtnData(
+        label=OpBtnLabel.destroy_run,
+        write_cmd=WriteCmd.destroy,
+        info_strings=[OperateString.destroy_path_info],
+        info_sub_title=OperateString.destroy_subtitle,
+        info_title=OperateString.run_completed_dry,
+    )
+    _forget_review = OpBtnData(
         label=OpBtnLabel.forget_review,
         write_cmd=WriteCmd.forget,
         info_strings=[OperateString.forget_path_info],
         info_sub_title=OperateString.forget_subtitle,
-        info_title=OpBtnLabel.forget_run,
+        info_title=OperateString.ready_to_run,
     )
-    _re_add = OpBtnData(
+    _forget_run = OpBtnData(
+        label=OpBtnLabel.forget_run,
+        write_cmd=WriteCmd.forget,
+        info_strings=[OperateString.forget_path_info],
+        info_sub_title=OperateString.forget_subtitle,
+        info_title=OperateString.run_completed_dry,
+    )
+    _re_add_review = OpBtnData(
         label=OpBtnLabel.re_add_review,
         write_cmd=WriteCmd.re_add,
         info_strings=[OperateString.re_add_path_info],
         info_sub_title=OperateString.re_add_subtitle,
-        info_title=OpBtnLabel.re_add_run,
+        info_title=OperateString.ready_to_run,
+    )
+    _re_add_run = OpBtnData(
+        label=OpBtnLabel.re_add_run,
+        write_cmd=WriteCmd.re_add,
+        info_strings=[OperateString.re_add_path_info],
+        info_sub_title=OperateString.re_add_subtitle,
+        info_title=OperateString.run_completed_dry,
     )
     init = OpBtnData(
         label=OpBtnLabel.init_review,
         write_cmd=WriteCmd.init_new,
         info_strings=[OperateString.init_new_info],
         info_sub_title=OperateString.init_subtitle,
-        info_title=OpBtnLabel.init_run,
+        info_title=OperateString.ready_to_run,
     )
 
     # Allow access to dataclass attributes directly from the Enum member,
@@ -93,23 +122,72 @@ class OpBtnEnum(Enum):
 
     @classmethod
     @cache
-    def initial_op_btn_enum_dict(
-        cls, ids: "AppIds"
-    ) -> dict[str, "OpBtnEnum | OpBtnLabel"]:
+    def op_btn_enum_dict(cls, ids: "AppIds") -> dict[str, "OpBtnEnum | OpBtnLabel"]:
         if ids.canvas_name == ScreenName.init:
-            return {ids.op_btn.init: cls.init, ids.op_btn.close: OpBtnLabel.exit_app}
+            return {ids.op_btn.init: cls.init, ids.op_btn.exit_app: OpBtnLabel.exit_app}
         if ids.canvas_name != TabName.add:
             _btn_dict = {
-                ids.op_btn.forget: cls._forget,
-                ids.op_btn.destroy: cls._destroy,
+                ids.op_btn.forget_review: cls._forget_review,
+                ids.op_btn.forget_run: cls._forget_run,
+                ids.op_btn.destroy_review: cls._destroy_review,
+                ids.op_btn.destroy_run: cls._destroy_run,
             }
             if ids.canvas_name == TabName.apply:
-                _btn_dict = {ids.op_btn.apply: cls._apply, **_btn_dict}
+                _btn_dict = {
+                    ids.op_btn.apply_review: cls._apply_review,
+                    ids.op_btn.apply_run: cls._apply_run,
+                    **_btn_dict,
+                }
             if ids.canvas_name == TabName.re_add:
-                _btn_dict = {ids.op_btn.re_add: cls._re_add, **_btn_dict}
+                _btn_dict = {
+                    ids.op_btn.re_add_review: cls._re_add_review,
+                    ids.op_btn.re_add_run: cls._re_add_run,
+                    **_btn_dict,
+                }
         else:  # Add tab
-            _btn_dict = {ids.op_btn.add: cls._add}
-        return {**_btn_dict, ids.op_btn.close: OpBtnLabel.cancel}
+            _btn_dict = {
+                ids.op_btn.add_review: cls._add_review,
+                ids.op_btn.add_run: cls._add_run,
+            }
+        return {
+            **_btn_dict,
+            ids.op_btn.cancel: OpBtnLabel.cancel,
+            ids.op_btn.reload: OpBtnLabel.reload,
+        }
+
+    @classmethod
+    @cache
+    def review_to_run(cls, btn_label: OpBtnLabel) -> "OpBtnEnum":
+        mapping = {
+            OpBtnLabel.add_review: cls._add_run,
+            OpBtnLabel.apply_review: cls._apply_run,
+            OpBtnLabel.destroy_review: cls._destroy_run,
+            OpBtnLabel.forget_review: cls._forget_run,
+            OpBtnLabel.re_add_review: cls._re_add_run,
+        }
+        return mapping[btn_label]
+
+    @classmethod
+    @cache
+    def review_btn_enums(cls) -> set["OpBtnEnum"]:
+        return {
+            cls._add_review,
+            cls._apply_review,
+            cls._destroy_review,
+            cls._forget_review,
+            cls._re_add_review,
+        }
+
+    @classmethod
+    @cache
+    def run_btn_enums(cls) -> set["OpBtnEnum"]:
+        return {
+            cls._add_run,
+            cls._apply_run,
+            cls._destroy_run,
+            cls._forget_run,
+            cls._re_add_run,
+        }
 
 
 @dataclass(frozen=True, slots=True)

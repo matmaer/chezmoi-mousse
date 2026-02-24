@@ -28,9 +28,8 @@ class ContainerName(StrEnum):
     doctor = auto()
     git_log = auto()
     left_side = auto()
+    op_cmd_results = auto()
     op_mode = auto()
-    op_result = auto()
-    op_review = auto()
     operate_buttons = auto()
     repo_input = auto()
     right_side = auto()
@@ -63,8 +62,7 @@ class StaticName(StrEnum):
     diff_lines = auto()
     git_log_info = auto()
     init_info = auto()
-    op_result_info = auto()
-    op_review_info = auto()
+    operate_info = auto()
 
 
 class TabName(StrEnum):

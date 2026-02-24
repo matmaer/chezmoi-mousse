@@ -10,8 +10,8 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.git_log import GitLog
 from .common.messages import CurrentApplyNodeMsg
+from .common.operate_mode import OperateMode
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .operate_mode import OperateMode
 
 __all__ = ["ApplyTab"]
 
@@ -25,7 +25,7 @@ class ApplyTab(Container, AppType):
             yield Vertical(
                 ViewSwitcher(IDS.apply),
                 OperateButtons(
-                    IDS.apply, btn_dict=OpBtnEnum.initial_op_btn_enum_dict(IDS.apply)
+                    IDS.apply, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.apply)
                 ),
             )
         yield SwitchSlider(IDS.apply)

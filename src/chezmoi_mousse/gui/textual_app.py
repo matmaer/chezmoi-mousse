@@ -31,6 +31,7 @@ from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.messages import OperateButtonMsg
+from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
@@ -39,7 +40,6 @@ from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
-from .operate_mode import OperateMode
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
@@ -275,17 +275,15 @@ class ChezmoiGUI(App[None]):
         operate_mode_container = self.screen.query_one(
             msg.ids.container.op_mode_q, OperateMode
         )
-        if "Review" in str(msg.button.label):
+        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
+            operate_mode_container.display = False
             self._toggle_operate_display(msg.ids)
-            if not isinstance(msg.button.btn_enum, OpBtnEnum):
-                raise ValueError(
-                    f"btn_enum is not of type OpBtnEnum for button {msg.button.label}"
-                )
-            operate_mode_container.update_review_info(msg.button.btn_enum)
+        elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
+            operate_mode_container.btn_enum = msg.button.btn_enum
             operate_mode_container.display = True
-            self.refresh_bindings()
-        # Second click: "*Run" variants – execute the command.
-        elif "Run" in str(msg.button.label):
+            self._toggle_operate_display(msg.ids)
+
+        elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
             operate_mode_container.run_command(msg.button.btn_enum)
 
     @on(Button.Pressed)
@@ -341,7 +339,7 @@ class ChezmoiGUI(App[None]):
         operate_mode_widgets = self.screen.query(OperateMode)
         for widget in operate_mode_widgets:
             if widget.display is True:
-                widget.refresh_review_info()
+                widget.update_review_info()
 
     def action_toggle_switch_slider_visibility(self) -> None:
         if not isinstance(self.screen, MainScreen):

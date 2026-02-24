@@ -10,20 +10,13 @@ from textual.widgets import Collapsible, Label, Static
 
 from ._app_state import AppState
 from ._str_enum_names import Tcss
-from ._str_enums import Chars, LogString, SectionLabel
+from ._str_enums import Chars, LogString, OperateString, SectionLabel
 
 if TYPE_CHECKING:
     from .gui.common.loggers import AppLog, CmdLog
 
 
-__all__ = [
-    "ChezmoiCommand",
-    "CommandResult",
-    "ReadCmd",
-    "ReadVerb",
-    "WriteCmd",
-    "WriteVerb",
-]
+__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
 class LogUtils:
@@ -160,9 +153,9 @@ class WriteCmd(Enum):
     re_add = [WriteVerb.re_add.value]
 
     @property
-    def bold_review_cmd(self) -> str:
+    def pretty_cmd(self) -> str:
         return (
-            f"[$text-success bold]"
+            f"[$text-primary bold]"
             f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
         )
 
@@ -225,16 +218,29 @@ class CommandResult:
         return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
 
     @property
-    def _log_entry(self) -> str:
-        pretty_time = f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
+    def pretty_cmd(self) -> str:
         success_color = "$text-success" if self.cmd_enum in WriteCmd else "$success"
         warning_color = "$text-warning" if self.cmd_enum in WriteCmd else "$warning"
-        colored_command = (
+        return (
             f"[{success_color}]{self.filtered_cmd}[/]"
             if self.completed_process.returncode == 0
             else f"[{warning_color}]{self.filtered_cmd}[/]"
         )
-        return f"{pretty_time} {colored_command}"
+
+    @property
+    def _is_dry_run(self) -> bool:
+        return "--dry-run" in self.completed_process.args and self.cmd_enum in WriteCmd
+
+    @property
+    def operate_info_title(self) -> str:
+        if self._is_dry_run:
+            return OperateString.run_completed_dry
+        return OperateString.run_completed_live
+
+    @property
+    def _log_entry(self) -> str:
+        pretty_time = f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
+        return f"{pretty_time} {self.pretty_cmd}"
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:

@@ -10,8 +10,8 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.git_log import GitLog
 from .common.messages import CurrentReAddNodeMsg
+from .common.operate_mode import OperateMode
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .operate_mode import OperateMode
 
 __all__ = ["ReAddTab"]
 
@@ -25,7 +25,7 @@ class ReAddTab(Container, AppType):
             yield Vertical(
                 ViewSwitcher(IDS.re_add),
                 OperateButtons(
-                    IDS.re_add, btn_dict=OpBtnEnum.initial_op_btn_enum_dict(IDS.re_add)
+                    IDS.re_add, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.re_add)
                 ),
             )
         yield SwitchSlider(IDS.re_add)
@@ -67,7 +67,7 @@ class ReAddTab(Container, AppType):
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
-        expand_all_switch = self.query_one(IDS.apply.switch.expand_all_q, Switch)
+        expand_all_switch = self.query_one(IDS.re_add.switch.expand_all_q, Switch)
         if event.button.label == SubTabLabel.tree:
             expand_all_switch.disabled = False
             expand_all_switch.tooltip = SwitchEnum.expand_all.enabled_tooltip

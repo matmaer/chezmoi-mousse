@@ -125,12 +125,18 @@ class OpBtnLabel(StrEnum):
     forget_review = "Review Forget Path"
     forget_run = "Run Chezmoi Forget"
     init_review = "Review Init Chezmoi"
-    init_run = "Run Chezmoi Init"
+    # init_run = "Run Chezmoi Init"
     re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
     reload = "Reload"
     remove_paths = "Remove Test Paths"
     toggle_diffs = "Toggle Diffs"
+
+    @property
+    def normalized_label(self) -> str:
+        return self.value.translate(
+            str.maketrans({" ": "_", "-": "_", "(": "", ")": ""})
+        ).lower()
 
 
 class BindingDescription(StrEnum):
@@ -187,8 +193,9 @@ class OperateString(StrEnum):
     )
     forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
     forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
-    # read_file = "[$success]Path.read()[/]"
     ready_to_run = "[$text]Ready to run[/]"
+    run_completed_dry = "[$text]Command completed in dry-run mode[/]"
+    run_completed_live = "[$text]Command completed in live mode[/]"
     re_add_path_info = (
         "[dim]Re-add modified files in the target state, preserving "
         "any encrypted_ attributes. chezmoi will not overwrite templates, and "
