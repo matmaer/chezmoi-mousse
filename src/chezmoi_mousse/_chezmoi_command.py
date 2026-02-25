@@ -130,6 +130,13 @@ class ReadCmd(Enum):
     # unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
     verify = [ReadVerb.verify.value]
 
+    @property
+    def pretty_cmd(self) -> str:
+        return (
+            f"[$text-primary bold]"
+            f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
+        )
+
 
 class WriteVerb(Enum):
     add = "add"

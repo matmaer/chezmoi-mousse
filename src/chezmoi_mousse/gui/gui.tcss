@@ -258,11 +258,17 @@ Label{
 
 LoadingModal {
   align: center middle;
-  & Vertical {
-    padding: 1 2;
-    border: $panel;
-    height: auto;
+  &>VerticalGroup {
+    border: $warning-darken-3;
+    max-width: 90%;
     width: auto;
+    &>Label {
+      width: 1fr;
+    }
+    &>LoadingIndicator {
+      height: auto;
+      margin-top: 1;
+    }
   }
 }
 
