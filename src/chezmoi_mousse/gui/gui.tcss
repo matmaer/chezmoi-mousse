@@ -64,7 +64,7 @@
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
-  max-width: 40%;
+  max-width: 35%;
   min-width: 16;
   &>.content_switcher_left {
     min-width: 16;
