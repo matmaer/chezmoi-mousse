@@ -5,7 +5,6 @@ from pathlib import Path
 from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING
 
-from textual.containers import VerticalGroup
 from textual.widgets import Collapsible, Label, Static
 
 from ._app_state import AppState
@@ -243,7 +242,7 @@ class CommandResult:
         return f"{pretty_time} {self.pretty_cmd}"
 
     @property
-    def pretty_collapsible(self, collapsed: bool = True) -> VerticalGroup:
+    def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
         dry_run_str = (
             "(dry run)"
             if "--dry-run" in self.completed_process.args and self.cmd_enum in WriteCmd
@@ -264,14 +263,12 @@ class CommandResult:
                 Static(f"{curated_std_err}", markup=False),
             ]
         )
-        return VerticalGroup(
-            Collapsible(
-                *collapsible_contents,
-                title=self._log_entry,
-                collapsed_symbol=Chars.right_triangle,
-                expanded_symbol=Chars.down_triangle,
-                collapsed=collapsed,
-            )
+        return Collapsible(
+            *collapsible_contents,
+            title=self._log_entry,
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+            collapsed=collapsed,
         )
 
 
