@@ -87,7 +87,7 @@ class OpBtnEnum(Enum):
         info_sub_title=OperateString.re_add_subtitle,
         info_title=OperateString.run_completed_dry,
     )
-    init = OpBtnData(
+    _init = OpBtnData(
         label=OpBtnLabel.init_review,
         write_cmd=WriteCmd.init_new,
         info_strings=[OperateString.init_new_info],
@@ -124,7 +124,10 @@ class OpBtnEnum(Enum):
     @cache
     def op_btn_enum_dict(cls, ids: "AppIds") -> dict[str, "OpBtnEnum | OpBtnLabel"]:
         if ids.canvas_name == ScreenName.init:
-            return {ids.op_btn.init: cls.init, ids.op_btn.exit_app: OpBtnLabel.exit_app}
+            return {
+                ids.op_btn.init: cls._init,
+                ids.op_btn.exit_app: OpBtnLabel.exit_app,
+            }
         if ids.canvas_name != TabName.add:
             _btn_dict = {
                 ids.op_btn.forget_review: cls._forget_review,
@@ -158,14 +161,14 @@ class OpBtnEnum(Enum):
     @classmethod
     @cache
     def review_to_run(cls, btn_label: OpBtnLabel) -> "OpBtnEnum":
-        mapping = {
+        _mapping = {
             OpBtnLabel.add_review: cls._add_run,
             OpBtnLabel.apply_review: cls._apply_run,
             OpBtnLabel.destroy_review: cls._destroy_run,
             OpBtnLabel.forget_review: cls._forget_run,
             OpBtnLabel.re_add_review: cls._re_add_run,
         }
-        return mapping[btn_label]
+        return _mapping[btn_label]
 
     @classmethod
     @cache

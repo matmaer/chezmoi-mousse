@@ -119,7 +119,10 @@ class OperateMode(Vertical, AppType):
             raise RuntimeError(f"CommandResult is None for {btn_enum.write_cmd.name}")
         self._update_operate_info(cmd_result)
         self.mount(
-            ScrollableContainer(cmd_result.pretty_collapsible), after=self.operate_info
+            ScrollableContainer(
+                cmd_result.pretty_collapsible, id=self.ids.container.op_cmd_results
+            ),
+            after=self.operate_info,
         )
         await sleep(1)
         self.operate_info.display = True

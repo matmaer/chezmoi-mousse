@@ -101,6 +101,8 @@ class ContainerIds:
         self.operate_buttons_q = f"#{self.operate_buttons}"
         self.op_mode = ids.container_id(name=ContainerName.op_mode)
         self.op_mode_q = f"#{self.op_mode}"
+        self.op_cmd_results = ids.container_id(name=ContainerName.op_cmd_results)
+        self.op_cmd_results_q = f"#{self.op_cmd_results}"
         self.repo_input = ids.container_id(name=ContainerName.repo_input)
         self.repo_input_q = f"#{self.repo_input}"
         self.right_side = ids.container_id(name=ContainerName.right_side)
