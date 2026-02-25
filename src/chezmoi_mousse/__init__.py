@@ -7,12 +7,15 @@
 #
 # See THIRD_PARTY_LICENSES.md for the chezmoi and textual license information.
 
+from __future__ import annotations
+
 from importlib.metadata import PackageNotFoundError, version
+from typing import TYPE_CHECKING
 
 from ._app_ids import AppIds
 from ._app_state import AppState
 from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._cmd_results import CmdResults
+from ._cmd_results import CmdResults, DirNode
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._singletons import CMD, CMD_RESULTS, IDS, CommandResults
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
@@ -29,7 +32,18 @@ from ._str_enums import (
     SubTabLabel,
 )
 from ._test_paths import TestPaths
-from ._type_hinting import AppType, DirNode, ParsedJson
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    from .gui.textual_app import ChezmoiGUI
+
+type ParsedJson = dict[str, Any]
+
+
+class AppType:
+    app: ChezmoiGUI
+
 
 __all__ = [
     "__version__",

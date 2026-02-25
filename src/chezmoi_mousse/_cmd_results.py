@@ -7,14 +7,24 @@ from typing import TYPE_CHECKING
 
 from ._singletons import CommandResults
 from ._str_enums import StatusCode
-from ._type_hinting import DirNode
 
 if TYPE_CHECKING:
     from typing import Any
 
     from ._chezmoi_command import CommandResult
 
-__all__ = ["CmdResults"]
+__all__ = ["CmdResults", "DirNode"]
+
+
+@dataclass(slots=True)
+class DirNode:
+    dir_status: StatusCode
+    x_files_in: dict[Path, StatusCode]
+    status_files_in: dict[Path, StatusCode]
+    real_status_dirs_in: dict[Path, StatusCode]
+    tree_status_dirs_in: dict[Path, StatusCode]
+    nested_status_dirs: dict[Path, StatusCode]
+    nested_status_files: dict[Path, StatusCode]
 
 
 class ReactiveDataclass:
