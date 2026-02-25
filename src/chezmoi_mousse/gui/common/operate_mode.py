@@ -60,10 +60,14 @@ class OperateMode(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
         yield Static(id=self.ids.static.operate_info, classes=Tcss.operate_info)
+        yield ScrollableContainer(id=self.ids.container.op_cmd_results)
 
     def on_mount(self) -> None:
         self.display = False
         self.operate_info = self.query_one(self.ids.static.operate_info_q, Static)
+        self.op_results_container = self.query_one(
+            self.ids.container.op_cmd_results_q, ScrollableContainer
+        )
 
     def update_review_info(self) -> None:
         if self.btn_enum is None:
@@ -83,7 +87,7 @@ class OperateMode(Vertical, AppType):
         self.operate_info.border_title = self.btn_enum.info_title
         self.operate_info.border_subtitle = self.btn_enum.info_sub_title
 
-    def _update_operate_info(self, cmd_result: CommandResult) -> None:
+    def _update_post_run_info(self, cmd_result: CommandResult) -> None:
         self.operate_info.update(
             (
                 f"{cmd_result.pretty_cmd}\n"
@@ -117,13 +121,8 @@ class OperateMode(Vertical, AppType):
         cmd_result = worker_result.result
         if cmd_result is None:
             raise RuntimeError(f"CommandResult is None for {btn_enum.write_cmd.name}")
-        self._update_operate_info(cmd_result)
-        self.mount(
-            ScrollableContainer(
-                cmd_result.pretty_collapsible, id=self.ids.container.op_cmd_results
-            ),
-            after=self.operate_info,
-        )
+        self._update_post_run_info(cmd_result)
+        self.op_results_container.mount(cmd_result.pretty_collapsible)
         await sleep(1)
         self.operate_info.display = True
         loading_modal.dismiss()
