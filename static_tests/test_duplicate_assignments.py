@@ -30,6 +30,10 @@ def find_duplicate_assignments_in_class(
                         attr_name = target.id
 
                     if attr_name:
+                        if any(
+                            isinstance(node, ast.Call) for node in ast.walk(item.value)
+                        ):
+                            continue
                         value_str = ast.unparse(item.value)
                         key = (attr_name, value_str)
                         assignments.setdefault(key, []).append(item.lineno)
