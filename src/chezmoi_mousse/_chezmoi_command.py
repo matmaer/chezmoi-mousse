@@ -328,13 +328,4 @@ class ChezmoiCommand:
             completed_process=result, path_arg=path_arg, cmd_enum=write_cmd
         )
         self._log_chezmoi_command(command_result)
-        if write_cmd in (
-            WriteCmd.add,
-            WriteCmd.apply,
-            WriteCmd.destroy,
-            WriteCmd.forget,
-            WriteCmd.re_add,
-        ):
-            # we need to update cached stuff here
-            pass
         return command_result
