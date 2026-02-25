@@ -1,3 +1,4 @@
+import time
 from asyncio import sleep
 from typing import TYPE_CHECKING
 
@@ -116,6 +117,7 @@ class OperateMode(Vertical, AppType):
             pretty_cmd += f"[$text-primary bold] {self.init_arg}[/]"
         loading_modal = LoadingModal(self.ids, pretty_cmd=pretty_cmd)
         await self.app.push_screen(loading_modal)
+        start_time = time.monotonic()
         worker_result = self._run_perform_command(btn_enum)
         await worker_result.wait()
         cmd_result = worker_result.result
@@ -123,6 +125,8 @@ class OperateMode(Vertical, AppType):
             raise RuntimeError(f"CommandResult is None for {btn_enum.write_cmd.name}")
         self._update_post_run_info(cmd_result)
         self.op_results_container.mount(cmd_result.pretty_collapsible)
-        await sleep(1)
+        elapsed = time.monotonic() - start_time
+        if elapsed < 1.0:
+            await sleep(1.0 - elapsed)
         self.operate_info.display = True
         loading_modal.dismiss()
