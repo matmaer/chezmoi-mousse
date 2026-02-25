@@ -14,7 +14,7 @@ __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 class DoctorTable(DataTable[Text], AppType):
 
-    doctor_std_out: reactive[str | None] = reactive(None)
+    doctor_std_out: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
         super().__init__(show_cursor=False, classes=Tcss.doctor_table)
@@ -29,11 +29,9 @@ class DoctorTable(DataTable[Text], AppType):
             "error": self.app.theme_variables["text-error"],
         }
 
-    def watch_doctor_std_out(self) -> None:
+    def watch_doctor_std_out(self, doctor_std_out: str) -> None:
         self.clear(columns=True)
-        if self.doctor_std_out is None:
-            return
-        doctor_lines = self.doctor_std_out.splitlines()
+        doctor_lines = doctor_std_out.splitlines()
         if len(doctor_lines) < 2:
             self.app.notify("No doctor data to display", severity="error")
             return

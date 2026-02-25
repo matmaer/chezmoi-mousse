@@ -19,7 +19,8 @@ __all__ = ["ConfigTab"]
 
 
 class CatConfigView(Vertical, AppType):
-    cat_config_stdout: reactive[str | None] = reactive(None)
+
+    cat_config_stdout: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self):
         super().__init__(id=IDS.config.view.cat_config)
@@ -27,14 +28,13 @@ class CatConfigView(Vertical, AppType):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
 
-    def watch_cat_config_stdout(self) -> None:
-        if self.cat_config_stdout is not None:
-            self.mount(Static(self.cat_config_stdout))
+    def watch_cat_config_stdout(self, cat_config_stdout: str) -> None:
+        self.mount(Static(cat_config_stdout))
 
 
 class IgnoredView(Vertical):
 
-    ignored_stdout: reactive[str | None] = reactive(None)
+    ignored_stdout: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self):
         super().__init__(id=IDS.config.view.ignored)
@@ -43,15 +43,14 @@ class IgnoredView(Vertical):
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
         yield ScrollableContainer(Pretty(()))
 
-    def watch_ignored_stdout(self) -> None:
-        if self.ignored_stdout is not None:
-            pretty = self.query_exactly_one(Pretty)
-            pretty.update(self.ignored_stdout.splitlines())
+    def watch_ignored_stdout(self, ignored_stdout: str) -> None:
+        pretty = self.query_exactly_one(Pretty)
+        pretty.update(ignored_stdout.splitlines())
 
 
 class DoctorTableView(Vertical, AppType):
 
-    doctor_stdout: reactive[str | None] = reactive(None)
+    doctor_stdout: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
         super().__init__(id=IDS.config.container.doctor)
@@ -60,15 +59,14 @@ class DoctorTableView(Vertical, AppType):
         yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
         yield DoctorTable()
 
-    def watch_doctor_stdout(self) -> None:
-        if self.doctor_stdout is not None:
-            doctor_table = self.query_exactly_one(DoctorTable)
-            doctor_table.doctor_std_out = self.doctor_stdout
+    def watch_doctor_stdout(self, doctor_stdout: str) -> None:
+        doctor_table = self.query_exactly_one(DoctorTable)
+        doctor_table.doctor_std_out = doctor_stdout
 
 
 class TemplateDataView(Vertical, AppType):
 
-    template_data_stdout: reactive[str | None] = reactive(None)
+    template_data_stdout: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self):
         super().__init__(id=IDS.config.view.template_data)
@@ -77,16 +75,14 @@ class TemplateDataView(Vertical, AppType):
         yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
         yield Pretty("No template data output yet.")
 
-    def watch_template_data_stdout(self) -> None:
-        if self.template_data_stdout is not None:
-            parsed = json.loads(self.template_data_stdout)
-            pretty = self.query_exactly_one(Pretty)
-            pretty.update(parsed)
+    def watch_template_data_stdout(self, template_data_stdout: str) -> None:
+        pretty = self.query_exactly_one(Pretty)
+        pretty.update(json.loads(template_data_stdout))
 
 
 class ConfigTab(Horizontal, AppType):
 
-    command_results: reactive["CommandResults | None"] = reactive(None)
+    command_results: reactive["CommandResults | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
@@ -111,7 +107,6 @@ class ConfigTab(Horizontal, AppType):
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
-
         event.stop()
         if event.button.label == FlatBtnLabel.doctor:
             self.switcher.current = IDS.config.container.doctor
@@ -124,29 +119,26 @@ class ConfigTab(Horizontal, AppType):
         elif event.button.label == FlatBtnLabel.template_data:
             self.switcher.current = IDS.config.view.template_data
 
-    def watch_command_results(self) -> None:
-        if self.command_results is None:
-            return
-        new = self.command_results
+    def watch_command_results(self, command_results: "CommandResults") -> None:
         if (
-            new.cat_config is None
-            or new.doctor is None
-            or new.ignored is None
-            or new.template_data is None
+            command_results.cat_config is None
+            or command_results.doctor is None
+            or command_results.ignored is None
+            or command_results.template_data is None
         ):
             return
         self.switcher.query_one(
             IDS.config.view.template_data_q, TemplateDataView
-        ).template_data_stdout = new.template_data.completed_process.stdout
+        ).template_data_stdout = command_results.template_data.completed_process.stdout
         self.switcher.query_one(
             IDS.config.view.ignored_q, IgnoredView
-        ).ignored_stdout = new.ignored.completed_process.stdout
+        ).ignored_stdout = command_results.ignored.completed_process.stdout
         self.switcher.query_one(
             IDS.config.view.cat_config_q, CatConfigView
-        ).cat_config_stdout = new.cat_config.completed_process.stdout
+        ).cat_config_stdout = command_results.cat_config.completed_process.stdout
         self.switcher.query_one(
             IDS.config.container.doctor_q, DoctorTableView
-        ).doctor_stdout = new.doctor.completed_process.stdout
+        ).doctor_stdout = command_results.doctor.completed_process.stdout
         self.switcher.query_one(
             IDS.config.view.pw_mgr_info_q, PwMgrInfoView
-        ).populate_pw_mgr_info(new.doctor.completed_process.stdout)
+        ).populate_pw_mgr_info(command_results.doctor.completed_process.stdout)

@@ -46,7 +46,6 @@ class LogsTab(Vertical, AppType):
         elif event.button.label == SubTabLabel.git_log:
             self.switcher.current = IDS.logs.container.git_log
 
-    def watch_git_log_result(self) -> None:
-        if self.git_log_result is not None:
-            self.git_log.remove_children()
-            self.git_log.mount(self.git_log_result)
+    def watch_git_log_result(self, git_log_result: "DataTable[str]") -> None:
+        self.git_log.remove_children()
+        self.git_log.mount(git_log_result)
