@@ -43,25 +43,6 @@
   min-width: 78;
 }
 
-.operate_button {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border-top: wide $primary-darken-3;
-  border-bottom: none;
-  color: $primary-lighten-3;
-  margin: 0 1;
-  text-style: none;
-  width: 1fr;
-  &:hover {
-    text-style: none;
-    color: $accent;
-    border-top: wide $accent-darken-3;
-  }
-  &:focus {
-    text-style: none;
-  }
-}
-
 .refresh_button {
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;
@@ -77,20 +58,6 @@
   }
   &:focus {
     text-style: none;
-  }
-}
-
-.single_switch {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border: inner $surface-lighten-1;
-  color: $foreground-darken-1;
-  padding-left: 0;
-  height: 3;
-  width: auto;
-  & Switch {
-    background: $surface-lighten-1;
-    background-tint: $surface-lighten-1;
   }
 }
 
@@ -116,16 +83,6 @@
 /* Type Selector tcss */
 /**********************/
 
-LoadingModal {
-  align: center middle;
-  & Vertical {
-    padding: 1 2;
-    border: $panel;
-    height: auto;
-    width: auto;
-  }
-}
-
 ContentsView, ContentsInfo, DiffInfo, LoggersBase {
   margin-bottom: 1;
 }
@@ -138,16 +95,6 @@ CustomHeader {
   &>.changes_enabled_color {
     color: $warning;
   }
-}
-
-DebugTab {
-  & OperateButtons {
-      dock: bottom;
-  }
-}
-
-DiffLines > ScrollableContainer {
-  margin-top: 1;
 }
 
 DoctorTable {
@@ -309,6 +256,76 @@ Label{
   }
 }
 
+LoadingModal {
+  align: center middle;
+  & Vertical {
+    padding: 1 2;
+    border: $panel;
+    height: auto;
+    width: auto;
+  }
+}
+
+OperateButtons {
+  dock: bottom;
+  &>.operate_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-top: wide $primary-darken-3;
+    border-bottom: none;
+    color: $primary-lighten-3;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+    &:hover {
+      text-style: none;
+      color: $accent;
+      border-top: wide $accent-darken-3;
+    }
+    &:focus {
+      text-style: none;
+    }
+  }
+}
+
+OperateMode {
+  background-tint: $surface;
+  background: $surface;
+  height: auto;
+  &>.operate_info {
+    padding: 0 1;
+    height: auto;
+    border: round $foreground;
+    border-subtitle-align: center;
+    border-title-align: center;
+    &>ScrollableContainer {
+      height: auto;
+    }
+  }
+}
+
+SwitchSlider {
+  background-tint: $surface;
+  background: $surface;
+  border: round $primary;
+  border-right: none;
+  color: $foreground-darken-1;
+  dock: right;
+  layer: above;
+  offset-x: 100%;
+  margin-top: 7;
+  padding: 0 1 0 2;
+  transition: offset 380ms;
+  width: auto;
+  &.-visible {
+    offset-x: 0%;
+  }
+  & HorizontalGroup {
+    padding-bottom: 1;
+    width: auto;
+  }
+}
+
 TabButtons {
   height: 1;
   width: 100%;
@@ -338,87 +355,6 @@ TabButtons {
         color: $text-accent 80%;
       }
     }
-  }
-}
-
-OperateMode {
-  background-tint: $surface;
-  background: $surface;
-  height: auto;
-  &>.operate_info {
-    padding: 0 1;
-    height: auto;
-    border: round $foreground;
-    border-subtitle-align: center;
-    border-title-align: center;
-    &>ScrollableContainer {
-      height: auto;
-    }
-  }
-}
-
-Static {
-  &.added {
-    color: $text-success;
-    background: $success-muted;
-    background-tint: $success-muted;
-  }
-  &.changed {
-    color: $text-warning;
-    background: $warning-muted;
-    background-tint: $warning-muted;
-  }
-  &.context{
-    color: $text-disabled;
-    background: $surface-lighten-1;
-    background-tint: $surface-lighten-1;
-  }
-  &.command {
-    color: $text-primary;
-    background: $primary-muted;
-    background-tint: $primary-muted;
-  }
-  &.removed {
-    color: $text-error;
-    background: $error-muted;
-    background-tint: $error-muted;
-  }
-  &.unchanged {
-    color: $text-primary;
-    background: $primary-muted;
-    background-tint: $primary-muted;
-  }
-  &.unhandled {
-    /* only used for debugging by visualizing unhandled formatting conditions */
-    color: $foreground;
-    background: $error-darken-3;
-    background-tint: $error-darken-3;
-  }
-}
-
-TabbedContent {
-  layers: below above;
-}
-
-SwitchSlider {
-  background-tint: $surface;
-  background: $surface;
-  border: round $primary;
-  border-right: none;
-  color: $foreground-darken-1;
-  dock: right;
-  layer: above;
-  offset-x: 100%;
-  margin-top: 7;
-  padding: 0 1 0 2;
-  transition: offset 380ms;
-  width: auto;
-  &.-visible {
-    offset-x: 0%;
-  }
-  & HorizontalGroup {
-    padding-bottom: 1;
-    width: auto;
   }
 }
 
@@ -510,6 +446,45 @@ Footer {
   background: $surface;
 }
 
+Static {
+  &.added {
+    color: $text-success;
+    background: $success-muted;
+    background-tint: $success-muted;
+  }
+  &.changed {
+    color: $text-warning;
+    background: $warning-muted;
+    background-tint: $warning-muted;
+  }
+  &.context{
+    color: $text-disabled;
+    background: $surface-lighten-1;
+    background-tint: $surface-lighten-1;
+  }
+  &.command {
+    color: $text-primary;
+    background: $primary-muted;
+    background-tint: $primary-muted;
+  }
+  &.removed {
+    color: $text-error;
+    background: $error-muted;
+    background-tint: $error-muted;
+  }
+  &.unchanged {
+    color: $text-primary;
+    background: $primary-muted;
+    background-tint: $primary-muted;
+  }
+  &.unhandled {
+    /* only used for debugging by visualizing unhandled formatting conditions */
+    color: $foreground;
+    background: $error-darken-3;
+    background-tint: $error-darken-3;
+  }
+}
+
 Switch {
   background: $surface;
   background-tint: $surface;
@@ -538,6 +513,7 @@ Switch {
 
 TabbedContent {
   /* center the tab buttons on top */
+  layers: below above;
   & #tabs-list {
     align: center top;
   }

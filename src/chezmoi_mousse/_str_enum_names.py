@@ -99,7 +99,6 @@ class Tcss(StrEnum):
     refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()
-    single_switch = auto()
     sub_section_label = auto()
     tab_button = auto()
     tab_left_vertical = auto()

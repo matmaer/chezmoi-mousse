@@ -443,7 +443,6 @@ class InitChezmoi(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.operate_buttons = self.query_one(
             self.ids.container.operate_buttons_q, OperateButtons
         )
