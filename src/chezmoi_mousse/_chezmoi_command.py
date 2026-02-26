@@ -285,13 +285,12 @@ class ChezmoiCommand:
         return " ".join([part for part in command if part and part not in exclude])
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
-        base_cmd = GlobalCmd.live_run.value  # read commands always run live
-        command = base_cmd + read_cmd.value
+        command = self.global_cmd + read_cmd.value
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
                 source_path_str = _run_chezmoi_cmd(
-                    base_cmd + ReadCmd.source_path.value + [path_str],
+                    self.global_cmd + ReadCmd.source_path.value + [path_str],
                     read_cmd=ReadCmd.source_path,
                 ).stdout.strip()
                 path_str = source_path_str
@@ -310,11 +309,7 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        if self.changes_enabled is False:
-            base_cmd = GlobalCmd.dry_run.value
-        else:
-            base_cmd = GlobalCmd.live_run.value
-        command: list[str] = base_cmd + write_cmd.value
+        command: list[str] = self.global_cmd + write_cmd.value
 
         if init_arg is not None:
             if write_cmd != WriteCmd.init_new:

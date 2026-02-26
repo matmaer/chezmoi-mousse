@@ -138,6 +138,7 @@ class SplashScreen(Screen[None], AppType):
             yield Center(SplashLog())
 
     def on_mount(self) -> None:
+        CMD.changes_enabled = True
         self.splash_log = self.query_exactly_one(SplashLog)
         if self.app.chezmoi_found is False:
             self._install_help_workers()
@@ -286,6 +287,7 @@ class SplashScreen(Screen[None], AppType):
         return {child["text"]: collapse(child) for child in root_node["children"]}
 
     def _all_workers_finished(self) -> None:
+        CMD.changes_enabled = False
         if self.app.chezmoi_found is False:
             self.dismiss(None)
             return
