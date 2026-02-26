@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._singletons import CommandResults
 from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
@@ -13,7 +12,33 @@ if TYPE_CHECKING:
 
     from ._chezmoi_command import CommandResult
 
-__all__ = ["CmdResults", "DirNode"]
+__all__ = ["CMD_RESULTS", "CmdResults", "DirNode"]
+
+
+@dataclass(slots=True)
+class CommandResults:
+    cat_config: CommandResult | None = None
+    doctor: CommandResult | None = None
+    dump_config: CommandResult | None = None
+    git_log: CommandResult | None = None
+    ignored: CommandResult | None = None
+    managed_dirs: CommandResult | None = None
+    managed_files: CommandResult | None = None
+    status_dirs: CommandResult | None = None
+    status_files: CommandResult | None = None
+    template_data: CommandResult | None = None
+    verify: CommandResult | None = None
+
+    @property
+    def executed_commands(self) -> list["CommandResult"]:
+        return [
+            getattr(self, field.name)
+            for field in fields(self)
+            if getattr(self, field.name) is not None
+        ]
+
+
+CMD_RESULTS = CommandResults()
 
 
 @dataclass(slots=True)

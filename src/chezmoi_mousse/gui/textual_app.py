@@ -15,9 +15,9 @@ from textual.theme import Theme
 from textual.widgets import Button, TabbedContent, Tabs
 
 from chezmoi_mousse import (
+    CMD,
     IDS,
     AppIds,
-    AppState,
     BindingAction,
     BindingDescription,
     Chars,
@@ -44,8 +44,6 @@ from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from chezmoi_mousse import CommandResult, DirNode
 
 __all__ = ["ChezmoiGUI"]
@@ -115,17 +113,14 @@ class ChezmoiGUI(App[None]):
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
+        self.changes_enabled = False
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
-
-        self.changes_enabled: bool = False
         self.init_needed: bool = True if self.force_init_needed else False
 
         self.init_cmd_result: "CommandResult | None" = None
         self.cmd_results = CmdResults()
-
-        AppState.set_app(self)
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
@@ -284,7 +279,7 @@ class ChezmoiGUI(App[None]):
             self._toggle_operate_display(msg.ids)
 
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
-            operate_mode_container.run_command(msg.button.btn_enum)
+            operate_mode_container.run_write_command(msg.button.btn_enum)
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:
@@ -332,10 +327,12 @@ class ChezmoiGUI(App[None]):
         self.refresh_bindings()
 
     def action_toggle_dry_run(self) -> None:
-        AppState.set_changes_enabled(not self.changes_enabled)
+        self.changes_enabled = not self.changes_enabled
         self.screen.query_exactly_one(CustomHeader).changes_enabled = (
             self.changes_enabled
         )
+        # do this before updating calling .update_review_info()
+        CMD.changes_enabled = self.changes_enabled
         operate_mode_widgets = self.screen.query(OperateMode)
         for widget in operate_mode_widgets:
             if widget.display is True:
@@ -471,30 +468,6 @@ class ChezmoiGUI(App[None]):
             if isinstance(self.screen, (InstallHelpScreen, MainScreen)):
                 return False
         return True
-
-    #######################################################
-    # Method for debugging and highlighting unimplemented #
-    #######################################################
-
-    def notify_not_implemented(self, ids: "AppIds", obj: "Any", method: "Any") -> None:
-        mro = obj.__class__.__mro__
-        method_name = method.__name__
-        exclude_prefixes = ["_"]
-        exclude_names = ["object", "AppType", "MessagePump", "DOMNode", "Widget"]
-        self.notify(
-            f"Not implemented in {ids.canvas_name}: {method_name}\n"
-            + ".".join(
-                [
-                    f"{cls.__name__}"
-                    for cls in reversed(mro)
-                    if not (
-                        any(cls.__name__.startswith(p) for p in exclude_prefixes)
-                        or cls.__name__ in exclude_names
-                    )
-                ]
-            ),
-            timeout=10,
-        )
 
 
 ####################################################################################

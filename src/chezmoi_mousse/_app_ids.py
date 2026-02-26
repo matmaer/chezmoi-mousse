@@ -11,7 +11,7 @@ from ._str_enum_names import (
 )
 from ._str_enums import FlatBtnLabel, OpBtnLabel, SubTabLabel
 
-__all__ = ["AppIds", "CanvasIds"]
+__all__ = ["IDS", "AppIds", "CanvasIds"]
 
 
 class AppIds:
@@ -64,23 +64,6 @@ class AppIds:
 
     def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
         return f"{qid}{self.canvas_name.name}_{view.name}"
-
-
-class CanvasIds:
-    def __init__(self) -> None:
-        # Screens
-        self.install_help = AppIds(ScreenName.install_help)
-        self.splash = AppIds(ScreenName.splash)
-        self.main_tabs = AppIds(ScreenName.main_tabs)
-        self.init = AppIds(ScreenName.init)
-        # TabPanes
-        self.add = AppIds(TabName.add)
-        self.apply = AppIds(TabName.apply)
-        self.config = AppIds(TabName.config)
-        self.debug = AppIds(TabName.debug)
-        self.help = AppIds(TabName.help)
-        self.logs = AppIds(TabName.logs)
-        self.re_add = AppIds(TabName.re_add)
 
 
 class ContainerIds:
@@ -254,3 +237,23 @@ class ViewIds:
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
         self.template_data = ids.view_id(view=ViewName.template_data_view)
         self.template_data_q = f"#{self.template_data}"
+
+
+class CanvasIds:
+    def __init__(self) -> None:
+        # Screens
+        self.install_help = AppIds(ScreenName.install_help)
+        self.splash = AppIds(ScreenName.splash)
+        self.main_tabs = AppIds(ScreenName.main_tabs)
+        self.init = AppIds(ScreenName.init)
+        # TabPanes
+        self.add = AppIds(TabName.add)
+        self.apply = AppIds(TabName.apply)
+        self.config = AppIds(TabName.config)
+        self.debug = AppIds(TabName.debug)
+        self.help = AppIds(TabName.help)
+        self.logs = AppIds(TabName.logs)
+        self.re_add = AppIds(TabName.re_add)
+
+
+IDS = CanvasIds()

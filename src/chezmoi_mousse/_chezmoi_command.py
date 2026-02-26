@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from textual.widgets import Collapsible, Label, Static
 
-from ._app_state import AppState
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, OperateString, SectionLabel
 
@@ -15,20 +14,15 @@ if TYPE_CHECKING:
     from .gui.common.loggers import AppLog, CmdLog
 
 
-__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
-
-
-class LogUtils:
-
-    @staticmethod
-    def filtered_args_str(command: list[str]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[3:]
-        exclude = set(
-            GlobalCmd.default_args.value
-            + filter_git_log_args
-            + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
-        )
-        return " ".join([part for part in command if part and part not in exclude])
+__all__ = [
+    "CMD",
+    "ChezmoiCommand",
+    "CommandResult",
+    "GlobalCmd",
+    "ReadCmd",
+    "ReadVerb",
+    "WriteCmd",
+]
 
 
 class GlobalCmd(Enum):
@@ -46,20 +40,10 @@ class GlobalCmd(Enum):
         "--use-builtin-diff=true",
     ]
     live_run = ["chezmoi"] + default_args
-    _dry_run = live_run + ["--dry-run"]
-    # version = live_run + ["--version"] TODO
-
-    @classmethod
-    def base_cmd(cls) -> list[str]:
-        if AppState.changes_enabled() is True:
-            return cls.live_run.value
-        else:
-            return cls._dry_run.value
+    dry_run = live_run + ["--dry-run"]
 
 
 class VerbArgs(Enum):
-    # encrypt = "--encrypt"
-    # debug = "--debug"
     format_json = "--format=json"
     git_log = [
         "--",
@@ -92,7 +76,6 @@ class ReadVerb(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
-    # unmanaged = "unmanaged"
     verify = "verify"
 
 
@@ -127,15 +110,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     ]
     template_data = [ReadVerb.data.value]
-    # unmanaged = [ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value]
     verify = [ReadVerb.verify.value]
-
-    @property
-    def pretty_cmd(self) -> str:
-        return (
-            f"[$text-primary bold]"
-            f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
-        )
 
 
 class WriteVerb(Enum):
@@ -157,13 +132,6 @@ class WriteCmd(Enum):
     init_new = [WriteVerb.init.value]
     init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
     re_add = [WriteVerb.re_add.value]
-
-    @property
-    def pretty_cmd(self) -> str:
-        return (
-            f"[$text-primary bold]"
-            f"{LogUtils.filtered_args_str(GlobalCmd.base_cmd() + self.value)}[/]"
-        )
 
 
 def _run_chezmoi_cmd(
@@ -194,6 +162,10 @@ class CommandResult:
         self.std_out = self._get_text(self.completed_process.stdout)
         self.std_err = self._get_text(self.completed_process.stderr)
 
+    @property
+    def filtered_cmd(self) -> str:
+        return CMD.filtered_cmd_str(self.completed_process.args)
+
     def _get_text(self, output: str) -> str:
         def _line_has_text(line: str) -> bool:
             return line != "" and not line.isspace()
@@ -219,9 +191,9 @@ class CommandResult:
     def exit_code(self) -> int:
         return self.completed_process.returncode
 
-    @property
-    def filtered_cmd(self) -> str:
-        return f"{LogUtils.filtered_args_str(self.completed_process.args)}"
+    # @property
+    # def filtered_cmd(self) -> str:
+    #     return f"{filtered_cmd_str(self.completed_process.args)}"
 
     @property
     def pretty_cmd(self) -> str:
@@ -284,6 +256,14 @@ class ChezmoiCommand:
     def __init__(self) -> None:
         self.app_log: AppLog | None = None
         self.cmd_log: CmdLog | None = None
+        self.changes_enabled: bool = False
+
+    @property
+    def global_cmd(self) -> list[str]:
+        if self.changes_enabled is True:
+            return GlobalCmd.live_run.value
+        else:
+            return GlobalCmd.dry_run.value
 
     #################################
     # Command execution and logging #
@@ -294,6 +274,15 @@ class ChezmoiCommand:
             return
         self.cmd_log.log_cmd_results(result)
         self.app_log.log_cmd_results(result)
+
+    def filtered_cmd_str(self, command: list[str]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[3:]
+        exclude = set(
+            GlobalCmd.default_args.value
+            + filter_git_log_args
+            + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
+        )
+        return " ".join([part for part in command if part and part not in exclude])
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
         base_cmd = GlobalCmd.live_run.value  # read commands always run live
@@ -321,7 +310,11 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        command: list[str] = GlobalCmd.base_cmd() + write_cmd.value
+        if self.changes_enabled is False:
+            base_cmd = GlobalCmd.dry_run.value
+        else:
+            base_cmd = GlobalCmd.live_run.value
+        command: list[str] = base_cmd + write_cmd.value
 
         if init_arg is not None:
             if write_cmd != WriteCmd.init_new:
@@ -336,3 +329,6 @@ class ChezmoiCommand:
         )
         self._log_chezmoi_command(command_result)
         return command_result
+
+
+CMD = ChezmoiCommand()

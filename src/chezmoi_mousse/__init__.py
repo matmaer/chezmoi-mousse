@@ -12,12 +12,10 @@ from __future__ import annotations
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
-from ._app_ids import AppIds
-from ._app_state import AppState
-from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._cmd_results import CmdResults, DirNode
+from ._app_ids import IDS, AppIds
+from ._chezmoi_command import CMD, CommandResult, ReadCmd, ReadVerb, WriteCmd
+from ._cmd_results import CMD_RESULTS, CmdResults, CommandResults, DirNode
 from ._enum_data import OpBtnEnum, SwitchEnum
-from ._singletons import CMD, CMD_RESULTS, IDS, CommandResults
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     BindingDescription,
@@ -51,7 +49,6 @@ __all__ = [
     "CMD_RESULTS",
     "IDS",
     "AppIds",
-    "AppState",
     "AppType",
     "BindingAction",
     "BindingDescription",

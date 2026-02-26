@@ -57,11 +57,11 @@ class LoadingModal(ModalScreen[None]):
 class OperateMode(Vertical, AppType):
 
     btn_enum: reactive[OpBtnEnum | None] = reactive(None, init=False)
+    changes_enabled: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.op_mode)
         self.ids = ids
-        self.init_arg: str | None = None
         self.path_arg: Path | None = None
 
     def compose(self) -> ComposeResult:
@@ -88,12 +88,15 @@ class OperateMode(Vertical, AppType):
             self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
 
     def update_review_info(self) -> None:
-        if self.btn_enum is None:
+        if self.btn_enum is None or self.path_arg is None:
             return
         info_lines: list[str] = []
+        pretty_cmd = CMD.filtered_cmd_str(
+            CMD.global_cmd + self.btn_enum.write_cmd.value
+        )
         cmd_text = (
-            f"{OperateString.ready_to_run} {self.btn_enum.write_cmd.pretty_cmd} "
-            f"[$text-primary bold]{self.path_arg}[/]"
+            f"{OperateString.ready_to_run} [$text-primary bold]{pretty_cmd} "
+            f"{self.path_arg.relative_to(self.app.dest_dir)}[/]"
         )
         info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
@@ -157,7 +160,7 @@ class OperateMode(Vertical, AppType):
             ReadCmd.status_files,
         ):
             start_time = time.monotonic()
-            pretty_cmd = read_cmd.pretty_cmd
+            pretty_cmd = CMD.filtered_cmd_str(read_cmd.value)
             self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
             cmd_result = CMD.read(read_cmd)
             setattr(CMD_RESULTS, f"{read_cmd.name}", cmd_result)
@@ -167,13 +170,14 @@ class OperateMode(Vertical, AppType):
         self.app.cmd_results.new_results = CMD_RESULTS
 
     @work(exit_on_error=False)
-    async def run_command(self, btn_enum: OpBtnEnum) -> None:
+    async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
         self.loading_modal = LoadingModal(self.ids)
-        pretty_cmd = btn_enum.write_cmd.pretty_cmd
+        pretty_cmd = CMD.filtered_cmd_str(CMD.global_cmd + btn_enum.write_cmd.value)
+        rel_path_arg = (
+            self.path_arg.relative_to(self.app.dest_dir) if self.path_arg else ""
+        )
         if self.path_arg is not None:
-            pretty_cmd += f"[$text-primary bold] {self.path_arg}[/]"
-        elif self.init_arg is not None:
-            pretty_cmd += f"[$text-primary bold] {self.init_arg}[/]"
+            pretty_cmd += f"[$text-primary bold] {rel_path_arg}[/]"
         await self.app.push_screen(self.loading_modal)
         try:
             run_worker = self._run_perform_command(btn_enum, pretty_cmd)

@@ -180,6 +180,7 @@ class AddTab(Horizontal, AppType):
         self.operate_mode_container = self.query_one(
             IDS.add.container.op_mode_q, OperateMode
         )
+        self.operate_mode_container.path_arg = self.app.dest_dir
         self.query_exactly_one(FilteredDirTree).path = self.app.dest_dir
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.border_title_top)
