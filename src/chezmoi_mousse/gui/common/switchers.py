@@ -57,8 +57,13 @@ class TreeSwitcher(Container, AppType):
             elif event.button.label == SubTabLabel.list:
                 view_switcher.current = self.ids.tree.list
             return
+
+    @on(Button.Pressed)
+    async def refresh_tree(self, event: Button.Pressed) -> None:
         if event.button.has_class(Tcss.refresh_button):
             event.stop()
+            worker = self.app.refresh_cmd_results()
+            await worker.wait()
             managed_tree = self.query_exactly_one(ManagedTree)
             managed_tree.populate_tree()
             list_tree = self.query_exactly_one(ListTree)

@@ -59,10 +59,8 @@ class ReactiveDataclass:
 
     def __setattr__(self, name: str, value: Any) -> None:
         if hasattr(self, name):
-            old_value = getattr(self, name)
             super().__setattr__(name, value)
-            if old_value != value:
-                self._on_field_change(name)
+            self._on_field_change(name)
         else:
             super().__setattr__(name, value)
 

@@ -16,6 +16,7 @@ from textual.widgets import Button, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     CMD,
+    CMD_RESULTS,
     IDS,
     AppIds,
     BindingAction,
@@ -24,6 +25,7 @@ from chezmoi_mousse import (
     CmdResults,
     OpBtnEnum,
     OpBtnLabel,
+    ReadCmd,
     TabName,
 )
 
@@ -127,6 +129,18 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
+
+    @work
+    async def refresh_cmd_results(self) -> None:
+        for read_cmd in (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ):
+            cmd_result = CMD.read(read_cmd)
+            setattr(CMD_RESULTS, f"{read_cmd.name}", cmd_result)
+        self.cmd_results.new_results = CMD_RESULTS
 
     @work
     async def _run_splash_screen(self) -> None:
