@@ -68,6 +68,17 @@ class TreeSwitcher(Container, AppType):
         managed_tree = self.query_exactly_one(ManagedTree)
         return managed_tree.get_all_nodes()
 
+    def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
+        dir_node = self.dir_nodes[dir_path]
+        for x_file in dir_node.x_files_in:
+            tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
+
+        for x_sub_dir in dir_node.tree_x_dirs_in:
+            new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
+            if self.expand_all:
+                new_x_node.expand()
+            self._populate_x_node(new_x_node, x_sub_dir)
+
     def watch_expand_all(self, expand_all: bool) -> None:
         nodes_before_expand_all_toggle = self._get_managed_tree_nodes()
         if expand_all is True:
@@ -86,24 +97,16 @@ class TreeSwitcher(Container, AppType):
         list_tree = self.query_exactly_one(ListTree)
         list_tree_nodes = list_tree.get_all_nodes()
         if unchanged is True:
-            for x_dir in self.app.tree_x_dirs:
-                parent_tree_node = next(
-                    (
-                        node
-                        for node in nodes_before_unchanged_toggle
-                        if node.data == x_dir.parent
-                    ),
-                    None,
-                )
-                if parent_tree_node is not None:
-                    new_x_node = parent_tree_node.add(
-                        f"[dim]{x_dir.name}[/]", data=x_dir
-                    )
-                    if self.expand_all:
-                        new_x_node.expand()
-                    for x_file in self.dir_nodes[x_dir].x_files_in:
-                        new_x_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
-                    parent_tree_node.expand()
+            for node in nodes_before_unchanged_toggle:
+                # Add unchanged children to nodes already in the tree (the changed ones)
+                if node.data in self.dir_nodes:
+                    dir_node = self.dir_nodes[node.data]
+                    # Only populate if there are actual unchanged paths in this directory
+                    if dir_node.x_files_in or dir_node.tree_x_dirs_in:
+                        self._populate_x_node(node, node.data)
+                        # Only expand if expand_all is enabled
+                        if self.expand_all:
+                            node.expand()
 
             for x_file in self.app.x_files:
                 if x_file in [node.data for node in list_tree_nodes]:

@@ -50,6 +50,7 @@ class DirNode:
     tree_status_dirs_in: dict[Path, StatusCode]
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
+    tree_x_dirs_in: dict[Path, StatusCode]
 
 
 class ReactiveDataclass:
@@ -241,6 +242,18 @@ class CmdResults(ReactiveDataclass):
                     result[sub_dir] = StatusCode.No_Status
             return dict(sorted(result.items()))
 
+        def get_tree_x_dirs_in(
+            sub_dir_paths: list[Path], status_dirs: dict[Path, StatusCode]
+        ) -> dict[Path, StatusCode]:
+            result: dict[Path, StatusCode] = {}
+            for sub_dir in sub_dir_paths:
+                if (
+                    sub_dir not in status_dirs
+                    and sub_dir not in self.parsed_paths.x_dirs_with_status_children
+                ):
+                    result[sub_dir] = StatusCode.No_Status
+            return dict(sorted(result.items()))
+
         def get_nested_status_dirs_in(
             dir_path: Path, status_dirs: dict[Path, StatusCode]
         ) -> dict[Path, StatusCode]:
@@ -293,6 +306,7 @@ class CmdResults(ReactiveDataclass):
                 nested_status_files=get_nested_status_files_in(
                     dir_path, self.parsed_paths.apply_status_files
                 ),
+                tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, apply_status_dirs_in),
             )
 
             # Update re-add nodes
@@ -323,4 +337,5 @@ class CmdResults(ReactiveDataclass):
                 nested_status_files=get_nested_status_files_in(
                     dir_path, self.parsed_paths.re_add_status_files
                 ),
+                tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, re_add_status_dirs_in),
             )
