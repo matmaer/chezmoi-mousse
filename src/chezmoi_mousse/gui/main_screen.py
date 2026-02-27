@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import CMD, IDS, PARSED, AppType, LogString, ReadCmd, TabName
+from chezmoi_mousse import CMD, IDS, AppType, LogString, ReadCmd, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -67,11 +67,11 @@ class MainScreen(Screen[None], AppType):
 
     def _set_config_screen_reactives(self) -> None:
         config_tab = self.screen.query_exactly_one(ConfigTab)
-        config_tab.command_results = PARSED.cmd_results
+        config_tab.command_results = CMD.cmd_results
 
     def _log_splash_log_commands(self) -> None:
         self.app_log.info("--- Commands executed in loading screen ---")
-        commands_to_log = PARSED.cmd_results.executed_commands
+        commands_to_log = CMD.cmd_results.executed_commands
         for cmd in commands_to_log:
             self.app.log_cmd_result(cmd)
         self.app_log.info("--- End of loading screen commands ---")
@@ -91,4 +91,6 @@ class MainScreen(Screen[None], AppType):
 
     def _populate_global_git_log(self) -> None:
         logs_tab = self.screen.query_exactly_one(LogsTab)
-        logs_tab.git_log_result = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=None))
+        logs_tab.git_log_result = GitLogTable(
+            CMD.run_cmd.read(ReadCmd.git_log, path_arg=None)
+        )

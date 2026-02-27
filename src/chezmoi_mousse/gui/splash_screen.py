@@ -16,7 +16,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CMD, PARSED, AppType, ReadCmd
+from chezmoi_mousse import CMD, AppType, ReadCmd
 
 from .install_help import InstallHelpScreen
 
@@ -138,7 +138,7 @@ class SplashScreen(Screen[None], AppType):
             yield Center(SplashLog())
 
     def on_mount(self) -> None:
-        CMD.changes_enabled = True
+        CMD.run_cmd.changes_enabled = True
         self.splash_log = self.query_exactly_one(SplashLog)
         if self.app.chezmoi_found is False:
             self._install_help_workers()
@@ -161,9 +161,9 @@ class SplashScreen(Screen[None], AppType):
         status_worker = self._run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
-            assert PARSED.cmd_results.status_files is not None
+            assert CMD.cmd_results.status_files is not None
             if (
-                PARSED.cmd_results.status_files.exit_code != 0
+                CMD.cmd_results.status_files.exit_code != 0
                 or self.app.force_init_needed is True
             ):
                 self.app.init_needed = True
@@ -179,8 +179,8 @@ class SplashScreen(Screen[None], AppType):
 
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        cmd_result = CMD.read(splash_cmd)
-        setattr(PARSED.cmd_results, f"{splash_cmd.name}", cmd_result)
+        cmd_result = CMD.run_cmd.read(splash_cmd)
+        setattr(CMD.cmd_results, f"{splash_cmd.name}", cmd_result)
         padding = LOG_PADDING_WIDTH - len(cmd_result.filtered_cmd)
         log_text = f"{cmd_result.filtered_cmd} {'.' * padding} {LOADED_SUFFIX}"
         if cmd_result.exit_code == 0:
@@ -287,7 +287,7 @@ class SplashScreen(Screen[None], AppType):
         return {child["text"]: collapse(child) for child in root_node["children"]}
 
     def _all_workers_finished(self) -> None:
-        CMD.changes_enabled = False
+        CMD.run_cmd.changes_enabled = False
         if self.app.chezmoi_found is False:
             self.dismiss(None)
             return
@@ -296,6 +296,6 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            PARSED.update_parsed_data()
+            CMD.update_parsed_data()
             if all(w for w in self.workers if w.is_finished):
                 self.dismiss()

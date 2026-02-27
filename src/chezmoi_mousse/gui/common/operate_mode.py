@@ -11,7 +11,6 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import (
     CMD,
-    PARSED,
     AppType,
     CommandResult,
     OpBtnEnum,
@@ -95,19 +94,17 @@ class OperateMode(Vertical, AppType):
         if self.btn_enum is None or self.path_arg is None:
             return
         info_lines: list[str] = []
-        pretty_cmd = CMD.filtered_cmd_str(
-            CMD.global_cmd + self.btn_enum.write_cmd.value
-        )
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=self.btn_enum.write_cmd.value)
         cmd_text = (
             f"{OperateString.ready_to_run} [$text-primary bold]{pretty_cmd} "
-            f"{self.path_arg.relative_to(PARSED.dest_dir)}[/]"
+            f"{self.path_arg.relative_to(CMD.dest_dir)}[/]"
         )
         info_lines.append(cmd_text)
         info_lines.append(self.btn_enum.info_string)
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
-            if PARSED.git_auto_commit is True:
+            if CMD.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
-            if PARSED.git_auto_push is True:
+            if CMD.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
         self.operate_info.update("\n".join(info_lines))
         self.operate_info.border_title = self.btn_enum.info_title
@@ -150,17 +147,15 @@ class OperateMode(Vertical, AppType):
 
     @work(thread=True)
     async def _run_perform_command(self, btn_enum: OpBtnEnum):
-        pretty_cmd = CMD.filtered_cmd_str(CMD.global_cmd + btn_enum.write_cmd.value)
-        rel_path_arg = (
-            self.path_arg.relative_to(PARSED.dest_dir) if self.path_arg else ""
-        )
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=btn_enum.write_cmd.value)
+        rel_path_arg = self.path_arg.relative_to(CMD.dest_dir) if self.path_arg else ""
         if self.path_arg is not None:
             pretty_cmd += f"[$text-primary bold] {rel_path_arg}[/]"
         start_time = time.monotonic()
         self.loading_modal.post_message(
             ProgressTextMsg(f"Running [$text-primary bold]{pretty_cmd}[/]")
         )
-        cmd_result = CMD.perform(btn_enum.write_cmd, path_arg=self.path_arg)
+        cmd_result = CMD.run_cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
@@ -176,15 +171,15 @@ class OperateMode(Vertical, AppType):
             ReadCmd.status_files,
         ):
             start_time = time.monotonic()
-            pretty_cmd = CMD.filtered_cmd_str(read_cmd.value)
+            pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
             self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
-            cmd_result = CMD.read(read_cmd)
-            setattr(PARSED.cmd_results, f"{read_cmd.name}", cmd_result)
+            cmd_result = CMD.run_cmd.read(read_cmd)
+            setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
             self.cmd_results.append(cmd_result)
             elapsed = time.monotonic() - start_time
             if elapsed < MIN_WAIT_TIME:
                 await sleep(MIN_WAIT_TIME - elapsed)
-        PARSED.update_parsed_data()
+        CMD.update_parsed_data()
 
     @work
     async def _log_all_cmd_results(self) -> None:

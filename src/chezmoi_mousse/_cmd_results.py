@@ -5,6 +5,7 @@ from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ._chezmoi_command import ChezmoiCommand
 from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 
     from ._chezmoi_command import CommandResult
 
-__all__ = ["PARSED", "CommandResults", "DirNode", "ParsedJson"]
+__all__ = ["CMD", "CommandResults", "DirNode", "ParsedJson"]
 
 
 type ParsedJson = dict[str, Any]
@@ -82,47 +83,49 @@ class ParsedPaths:
 
 
 @dataclass(slots=True)
-class ParsedCmdResults:
-    cmd_results: CommandResults = field(default_factory=CommandResults)
-    parsed_config: ParsedConfig = field(default_factory=ParsedConfig)
-    parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
-    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
-    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
-    no_status_paths: bool = False
+class Commands:
+    _parsed_config: ParsedConfig = field(default_factory=ParsedConfig)
+    _parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     _status_paths: set[Path] = field(default_factory=lambda: set())
+    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    cmd_results: CommandResults = field(default_factory=CommandResults)
+    no_status_paths: bool = False
+    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
+    run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
 
     def __post_init__(self) -> None:
         self.cmd_results = CommandResults()
+        self.run_cmd = ChezmoiCommand()
 
     # Properties for easy access to fields
 
     @property
     def dest_dir(self) -> Path:
-        return self.parsed_config.dest_dir
+        return self._parsed_config.dest_dir
 
     @property
     def git_auto_commit(self) -> bool:
-        return self.parsed_config.git_auto_commit
+        return self._parsed_config.git_auto_commit
 
     @property
     def git_auto_push(self) -> bool:
-        return self.parsed_config.git_auto_push
+        return self._parsed_config.git_auto_push
 
     @property
     def managed_dirs(self) -> list[Path]:
-        return self.parsed_paths.managed_dirs
+        return self._parsed_paths.managed_dirs
 
     @property
     def managed_files(self) -> list[Path]:
-        return self.parsed_paths.managed_files
+        return self._parsed_paths.managed_files
 
     @property
     def tree_x_dirs(self) -> list[Path]:
-        return self.parsed_paths.tree_x_dirs
+        return self._parsed_paths.tree_x_dirs
 
     @property
     def x_files(self) -> list[Path]:
-        return self.parsed_paths.real_x_files
+        return self._parsed_paths.real_x_files
 
     def update_parsed_data(self) -> None:
         self._update_dump_config()
@@ -143,7 +146,7 @@ class ParsedCmdResults:
         parsed_config = json.loads(
             self.cmd_results.dump_config.completed_process.stdout
         )
-        self.parsed_config = ParsedConfig(
+        self._parsed_config = ParsedConfig(
             dest_dir=Path(parsed_config["destDir"]),
             git_auto_commit=parsed_config["git"]["autocommit"],
             git_auto_push=parsed_config["git"]["autopush"],
@@ -164,10 +167,10 @@ class ParsedCmdResults:
             raise ValueError(
                 "One of the required CommandResults is None. Cannot update."
             )
-        self.parsed_paths.managed_dirs = [self.parsed_config.dest_dir] + [
+        self._parsed_paths.managed_dirs = [self._parsed_config.dest_dir] + [
             Path(line) for line in self.cmd_results.managed_dirs.std_out.splitlines()
         ]
-        self.parsed_paths.managed_files = [
+        self._parsed_paths.managed_files = [
             Path(line) for line in self.cmd_results.managed_files.std_out.splitlines()
         ]
 
@@ -202,40 +205,40 @@ class ParsedCmdResults:
         )
 
         # Update apply status dirs and files
-        self.parsed_paths.apply_status_dirs = parse_status_output(
+        self._parsed_paths.apply_status_dirs = parse_status_output(
             self.cmd_results.status_dirs, index=0
         )
-        self.parsed_paths.apply_status_files = parse_status_output(
+        self._parsed_paths.apply_status_files = parse_status_output(
             self.cmd_results.status_files, index=0
         )
         # Update re-add status dirs and files
-        self.parsed_paths.re_add_status_dirs = parse_status_output(
+        self._parsed_paths.re_add_status_dirs = parse_status_output(
             self.cmd_results.status_dirs, index=1
         )
-        self.parsed_paths.re_add_status_files = parse_status_output(
+        self._parsed_paths.re_add_status_files = parse_status_output(
             self.cmd_results.status_files, index=1
         )
 
     def _update_real_x_files(self) -> None:
-        self.parsed_paths.real_x_files = [
+        self._parsed_paths.real_x_files = [
             path
-            for path in self.parsed_paths.managed_files
+            for path in self._parsed_paths.managed_files
             if path not in self._status_paths
         ]
 
     def _update_dirs_with_and_dirs_without_status_children(self) -> None:
         # Update dirs with status children for tree population logic
-        self.parsed_paths.x_dirs_with_status_children = set()
+        self._parsed_paths.x_dirs_with_status_children = set()
         for path in self._status_paths:
             current = path.parent
             while current != current.parent:
-                self.parsed_paths.x_dirs_with_status_children.add(current)
+                self._parsed_paths.x_dirs_with_status_children.add(current)
                 current = current.parent
         # Update dirs without status children for tree population logic
-        self.parsed_paths.tree_x_dirs = [
+        self._parsed_paths.tree_x_dirs = [
             d
-            for d in self.parsed_paths.managed_dirs
-            if d not in self.parsed_paths.x_dirs_with_status_children
+            for d in self._parsed_paths.managed_dirs
+            if d not in self._parsed_paths.x_dirs_with_status_children
         ]
 
     def _update_apply_and_re_add_dir_nodes(self) -> None:
@@ -243,7 +246,7 @@ class ParsedCmdResults:
             # x files are the same for apply and re_add contexts
             return {
                 path: StatusCode.No_Status
-                for path in self.parsed_paths.managed_files
+                for path in self._parsed_paths.managed_files
                 if path.parent == dir_path and path not in self._status_paths
             }
 
@@ -254,7 +257,7 @@ class ParsedCmdResults:
             for sub_dir in sub_dir_paths:
                 if sub_dir in status_dirs:
                     result[sub_dir] = status_dirs[sub_dir]
-                elif sub_dir in self.parsed_paths.x_dirs_with_status_children:
+                elif sub_dir in self._parsed_paths.x_dirs_with_status_children:
                     result[sub_dir] = StatusCode.No_Status
             return dict(sorted(result.items()))
 
@@ -265,7 +268,7 @@ class ParsedCmdResults:
             for sub_dir in sub_dir_paths:
                 if (
                     sub_dir not in status_dirs
-                    and sub_dir not in self.parsed_paths.x_dirs_with_status_children
+                    and sub_dir not in self._parsed_paths.x_dirs_with_status_children
                 ):
                     result[sub_dir] = StatusCode.No_Status
             return dict(sorted(result.items()))
@@ -290,22 +293,22 @@ class ParsedCmdResults:
                 and len(path.relative_to(dir_path).parts) > 1
             }
 
-        for dir_path in self.parsed_paths.managed_dirs:
+        for dir_path in self._parsed_paths.managed_dirs:
             sub_dir_paths = [
-                p for p in self.parsed_paths.managed_dirs if p.parent == dir_path
+                p for p in self._parsed_paths.managed_dirs if p.parent == dir_path
             ]
             # Update apply nodes
-            apply_dir_status = self.parsed_paths.apply_status_dirs.get(
+            apply_dir_status = self._parsed_paths.apply_status_dirs.get(
                 dir_path, StatusCode.No_Status
             )
             apply_status_files_in = {
                 path: status
-                for path, status in self.parsed_paths.apply_status_files.items()
+                for path, status in self._parsed_paths.apply_status_files.items()
                 if path.parent == dir_path
             }
             apply_status_dirs_in = {
                 path: status
-                for path, status in self.parsed_paths.apply_status_dirs.items()
+                for path, status in self._parsed_paths.apply_status_dirs.items()
                 if path.parent == dir_path
             }
             self.apply_dir_nodes[dir_path] = DirNode(
@@ -317,26 +320,26 @@ class ParsedCmdResults:
                     sub_dir_paths, apply_status_dirs_in
                 ),
                 nested_status_dirs=get_nested_status_dirs_in(
-                    dir_path, self.parsed_paths.apply_status_dirs
+                    dir_path, self._parsed_paths.apply_status_dirs
                 ),
                 nested_status_files=get_nested_status_files_in(
-                    dir_path, self.parsed_paths.apply_status_files
+                    dir_path, self._parsed_paths.apply_status_files
                 ),
                 tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, apply_status_dirs_in),
             )
 
             # Update re-add nodes
-            re_add_dir_status = self.parsed_paths.re_add_status_dirs.get(
+            re_add_dir_status = self._parsed_paths.re_add_status_dirs.get(
                 dir_path, StatusCode.No_Status
             )
             re_add_status_files_in = {
                 path: status
-                for path, status in self.parsed_paths.re_add_status_files.items()
+                for path, status in self._parsed_paths.re_add_status_files.items()
                 if path.parent == dir_path
             }
             re_add_status_dirs_in = {
                 path: status
-                for path, status in self.parsed_paths.re_add_status_dirs.items()
+                for path, status in self._parsed_paths.re_add_status_dirs.items()
                 if path.parent == dir_path
             }
             self.re_add_dir_nodes[dir_path] = DirNode(
@@ -348,13 +351,13 @@ class ParsedCmdResults:
                     sub_dir_paths, re_add_status_dirs_in
                 ),
                 nested_status_dirs=get_nested_status_dirs_in(
-                    dir_path, self.parsed_paths.re_add_status_dirs
+                    dir_path, self._parsed_paths.re_add_status_dirs
                 ),
                 nested_status_files=get_nested_status_files_in(
-                    dir_path, self.parsed_paths.re_add_status_files
+                    dir_path, self._parsed_paths.re_add_status_files
                 ),
                 tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, re_add_status_dirs_in),
             )
 
 
-PARSED = ParsedCmdResults()
+CMD = Commands()

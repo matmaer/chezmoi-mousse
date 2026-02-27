@@ -16,7 +16,6 @@ from textual.widgets import Button, TabbedContent, Tabs
 from chezmoi_mousse import (
     CMD,
     IDS,
-    PARSED,
     AppIds,
     BindingAction,
     BindingDescription,
@@ -141,11 +140,11 @@ class ChezmoiGUI(App[None]):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ):
-            cmd_result = CMD.read(read_cmd)
-            setattr(PARSED.cmd_results, f"{read_cmd.name}", cmd_result)
+            cmd_result = CMD.run_cmd.read(read_cmd)
+            setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
             cmd_logger = self.log_cmd_result(cmd_result)
             await cmd_logger.wait()
-        PARSED.update_parsed_data()
+        CMD.update_parsed_data()
 
     @work
     async def _run_splash_screen(self) -> None:
@@ -307,7 +306,7 @@ class ChezmoiGUI(App[None]):
             self.changes_enabled
         )
         # do this before updating calling .update_review_info()
-        CMD.changes_enabled = self.changes_enabled
+        CMD.run_cmd.changes_enabled = self.changes_enabled
         operate_mode_widgets = self.screen.query(OperateMode)
         for widget in operate_mode_widgets:
             if widget.display is True:

@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Button, Switch
 
-from chezmoi_mousse import IDS, PARSED, AppType, OpBtnEnum, SubTabLabel, SwitchEnum
+from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, SubTabLabel, SwitchEnum
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -39,7 +39,7 @@ class ReAddTab(Container, AppType):
             IDS.re_add.container.contents_q, ContentsView
         )
         self.diff_view = self.query_one(IDS.re_add.container.diff_q, DiffView)
-        if PARSED.no_status_paths:
+        if CMD.no_status_paths:
             self.app.call_later(self.toggle_unchanged)
 
     def toggle_unchanged(self) -> None:

@@ -3,13 +3,14 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import NamedTuple
 
 from textual.widgets import Collapsible, Label, Static
 
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, OperateString, SectionLabel
 
-__all__ = ["CMD", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
+__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
 class GlobalCmd(Enum):
@@ -121,11 +122,16 @@ class WriteCmd(Enum):
     re_add = [WriteVerb.re_add.value]
 
 
+class RunCmdResult(NamedTuple):
+    completed_process: CompletedProcess[str]
+    filtered_cmd: str
+
+
 def _run_chezmoi_cmd(
     command: list[str],
     read_cmd: ReadCmd | None = None,
     write_cmd: WriteCmd | None = None,
-) -> CompletedProcess[str]:
+) -> RunCmdResult:
     if read_cmd == ReadCmd.doctor:
         time_out = 4
     elif read_cmd is not None:
@@ -134,12 +140,27 @@ def _run_chezmoi_cmd(
         time_out = 7
     else:
         raise ValueError("Both read_cmd and write_cmd are None")
-    return run(command, capture_output=True, shell=False, text=True, timeout=time_out)
+
+    filter_git_log_args = VerbArgs.git_log.value[3:]
+    exclude = set(
+        GlobalCmd.default_args.value
+        + filter_git_log_args
+        + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
+    )
+    return RunCmdResult(
+        completed_process=run(
+            command, capture_output=True, shell=False, text=True, timeout=time_out
+        ),
+        filtered_cmd=" ".join(
+            [part for part in command if part and part not in exclude]
+        ),
+    )
 
 
 @dataclass(slots=True)
 class CommandResult:
     completed_process: CompletedProcess[str]
+    filtered_cmd: str
     cmd_enum: ReadCmd | WriteCmd
     path_arg: Path | None = None
     std_out: str = ""
@@ -148,10 +169,6 @@ class CommandResult:
     def __post_init__(self) -> None:
         self.std_out = self._get_text(self.completed_process.stdout)
         self.std_err = self._get_text(self.completed_process.stderr)
-
-    @property
-    def filtered_cmd(self) -> str:
-        return CMD.filtered_cmd_str(self.completed_process.args)
 
     def _get_text(self, output: str) -> str:
         def _line_has_text(line: str) -> bool:
@@ -240,35 +257,40 @@ class ChezmoiCommand:
         self.changes_enabled: bool = False
 
     @property
-    def global_cmd(self) -> list[str]:
+    def _global_cmd(self) -> list[str]:
         if self.changes_enabled is True:
             return GlobalCmd.live_run.value
         else:
             return GlobalCmd.dry_run.value
 
-    def filtered_cmd_str(self, command: list[str]) -> str:
+    def review_cmd(self, *, global_args: list[str]) -> str:
+        command = self._global_cmd + global_args
         filter_git_log_args = VerbArgs.git_log.value[3:]
         exclude = set(
             GlobalCmd.default_args.value
             + filter_git_log_args
             + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
         )
-        return " ".join([part for part in command if part and part not in exclude])
+        cmd_str = " ".join([part for part in command if part and part not in exclude])
+        return f"[$text-primary bold]{cmd_str}[/]"
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
-        command = self.global_cmd + read_cmd.value
+        command = self._global_cmd + read_cmd.value
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
                 source_path_str = _run_chezmoi_cmd(
-                    self.global_cmd + ReadCmd.source_path.value + [path_str],
+                    self._global_cmd + ReadCmd.source_path.value + [path_str],
                     read_cmd=ReadCmd.source_path,
-                ).stdout.strip()
+                ).completed_process.stdout.strip()
                 path_str = source_path_str
             command += [path_str]
-        result: CompletedProcess[str] = _run_chezmoi_cmd(command, read_cmd=read_cmd)
+        result: RunCmdResult = _run_chezmoi_cmd(command, read_cmd=read_cmd)
         command_result = CommandResult(
-            completed_process=result, path_arg=path_arg, cmd_enum=read_cmd
+            cmd_enum=read_cmd,
+            completed_process=result.completed_process,
+            filtered_cmd=result.filtered_cmd,
+            path_arg=path_arg,
         )
         return command_result
 
@@ -279,7 +301,7 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        command: list[str] = self.global_cmd + write_cmd.value
+        command: list[str] = self._global_cmd + write_cmd.value
 
         if init_arg is not None:
             if write_cmd != WriteCmd.init_new:
@@ -288,11 +310,11 @@ class ChezmoiCommand:
         elif path_arg is not None:
             command.append(str(path_arg))
 
-        result: CompletedProcess[str] = _run_chezmoi_cmd(command, write_cmd=write_cmd)
+        result: RunCmdResult = _run_chezmoi_cmd(command, write_cmd=write_cmd)
         command_result = CommandResult(
-            completed_process=result, path_arg=path_arg, cmd_enum=write_cmd
+            cmd_enum=write_cmd,
+            completed_process=result.completed_process,
+            filtered_cmd=result.filtered_cmd,
+            path_arg=path_arg,
         )
         return command_result
-
-
-CMD = ChezmoiCommand()

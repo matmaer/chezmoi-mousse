@@ -18,8 +18,8 @@ from textual.widgets import (  # Button,
 )
 
 from chezmoi_mousse import (
+    CMD,
     IDS,
-    PARSED,
     AppType,
     BindingAction,
     BindingDescription,
@@ -403,16 +403,14 @@ class InitCollapsibles(VerticalGroup, AppType):
     doctor_stdout: reactive[str | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
-        if PARSED.cmd_results.doctor is None:
-            raise ValueError("PARSED.cmd_results.doctor is None in OperateScreen")
-        elif PARSED.cmd_results.template_data is None:
-            raise ValueError(
-                "PARSED.cmd_results.template_data is None in OperateScreen"
-            )
+        if CMD.cmd_results.doctor is None:
+            raise ValueError("CMD.cmd_results.doctor is None in OperateScreen")
+        elif CMD.cmd_results.template_data is None:
+            raise ValueError("CMD.cmd_results.template_data is None in OperateScreen")
         yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
         yield Collapsible(DoctorTable(), title="Doctor Output")
         yield Collapsible(
-            Pretty(PARSED.cmd_results.template_data.completed_process.stdout),
+            Pretty(CMD.cmd_results.template_data.completed_process.stdout),
             title="Template Data Output",
         )
 

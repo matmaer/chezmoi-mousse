@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, PARSED, AppType, ReadCmd, StatusCode, TabName, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, StatusCode, TabName, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirNode
@@ -58,14 +58,14 @@ class ContentsView(Container, AppType):
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
-        self.border_title = f" {PARSED.dest_dir} "
+        self.border_title = f" {CMD.dest_dir} "
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
         if self.canvas_name == TabName.apply:
-            return PARSED.apply_dir_nodes
+            return CMD.apply_dir_nodes
         else:
-            return PARSED.re_add_dir_nodes
+            return CMD.re_add_dir_nodes
 
     @property
     def node_colors(self) -> dict[str, str]:
@@ -118,7 +118,7 @@ class ContentsView(Container, AppType):
             to_show = _read_file(file_path)
         else:
             try:
-                to_show = CMD.read(ReadCmd.cat, path_arg=file_path).std_out
+                to_show = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path).std_out
             except PermissionError:
                 return Static(
                     f"{ContentStr.permission_denied} for {file_path}",
@@ -206,19 +206,19 @@ class ContentsView(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            self.show_path = PARSED.dest_dir
+            self.show_path = CMD.dest_dir
             widgets = self._create_dir_contents(self.show_path)
             self._cache_container(self.show_path, *widgets)
 
         elif self.show_path not in self.cache:
             # Managed files (ApplyTab/ReAddTab)
-            if self.show_path in PARSED.managed_files:
+            if self.show_path in CMD.managed_files:
                 widget = self._create_file_contents(
                     file_path=self.show_path, managed=True
                 )
                 self._cache_container(self.show_path, widget)
             # Managed directories (ApplyTab/ReAddTab)
-            elif self.show_path in PARSED.managed_dirs:
+            elif self.show_path in CMD.managed_dirs:
                 widgets = self._create_dir_contents(dir_path=self.show_path)
                 container = self._cache_container(self.show_path, *widgets)
                 self.mount(container)
@@ -236,7 +236,7 @@ class ContentsView(Container, AppType):
             else:
                 return
 
-        if self.show_path != PARSED.dest_dir:
+        if self.show_path != CMD.dest_dir:
             self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:
