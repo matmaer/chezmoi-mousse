@@ -64,6 +64,8 @@ class OperateMode(Vertical, AppType):
         super().__init__(id=ids.container.op_mode)
         self.ids = ids
         self.path_arg: Path | None = None
+        self.run_cmd_result: CommandResult | None = None
+        self.cmd_results: list[CommandResult] = []
 
     def compose(self) -> ComposeResult:
         yield Static(
@@ -113,38 +115,48 @@ class OperateMode(Vertical, AppType):
         self.operate_info.border_subtitle = self.btn_enum.info_sub_title
 
     @work
-    async def _update_operate_info_post_run(self, cmd_result: CommandResult) -> None:
+    async def _update_operate_info_post_run(self) -> None:
         start_time = time.monotonic()
         self.loading_modal.post_message(
             ProgressTextMsg(f"[$text-darken-2]Update {self.operate_info.name}[/]")
         )
+        if self.run_cmd_result is None:
+            self.operate_info.update("No command result available")
+            return
         self.operate_info.update(
             (
-                f"{cmd_result.pretty_cmd}\n"
-                f"Command completed with exit code {cmd_result.exit_code}"
+                f"{self.run_cmd_result.pretty_cmd}\n"
+                f"Command completed with exit code {self.run_cmd_result.exit_code}"
             )
         )
-        self.operate_info.border_title = cmd_result.operate_info_title
+        self.operate_info.border_title = self.run_cmd_result.operate_info_title
         self.operate_info.border_subtitle = None
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
 
     @work
-    async def _update_command_output(self, cmd_result: CommandResult) -> None:
+    async def _update_command_output(self) -> None:
         start_time = time.monotonic()
         self.loading_modal.post_message(
             ProgressTextMsg(f"[$text-darken-2]Update {self.op_results.name}[/]")
         )
-        self.op_results.mount(cmd_result.pretty_collapsible)
+        if self.run_cmd_result is None:
+            self.op_results.mount(Label("No command result available"))
+            return
+        self.op_results.mount(self.run_cmd_result.pretty_collapsible)
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
 
     @work(thread=True)
-    async def _run_perform_command(
-        self, btn_enum: OpBtnEnum, pretty_cmd: str
-    ) -> CommandResult:
+    async def _run_perform_command(self, btn_enum: OpBtnEnum):
+        pretty_cmd = CMD.filtered_cmd_str(CMD.global_cmd + btn_enum.write_cmd.value)
+        rel_path_arg = (
+            self.path_arg.relative_to(PARSED.dest_dir) if self.path_arg else ""
+        )
+        if self.path_arg is not None:
+            pretty_cmd += f"[$text-primary bold] {rel_path_arg}[/]"
         start_time = time.monotonic()
         self.loading_modal.post_message(
             ProgressTextMsg(f"Running [$text-primary bold]{pretty_cmd}[/]")
@@ -153,11 +165,11 @@ class OperateMode(Vertical, AppType):
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
-        return cmd_result
+        self.run_cmd_result = cmd_result
+        self.cmd_results.append(cmd_result)
 
     @work(thread=True)
-    async def _run_read_commands(self) -> list[CommandResult]:
-        cmd_results: list[CommandResult] = []
+    async def _run_read_commands(self) -> None:
         for read_cmd in (
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
@@ -169,19 +181,18 @@ class OperateMode(Vertical, AppType):
             self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
             cmd_result = CMD.read(read_cmd)
             setattr(PARSED.cmd_results, f"{read_cmd.name}", cmd_result)
-            cmd_results.append(cmd_result)
+            self.cmd_results.append(cmd_result)
             elapsed = time.monotonic() - start_time
             if elapsed < MIN_WAIT_TIME:
                 await sleep(MIN_WAIT_TIME - elapsed)
         PARSED.update_parsed_data()
-        return cmd_results
 
     @work
-    async def _log_all_cmd_results(self, cmd_results: list[CommandResult]) -> None:
+    async def _log_all_cmd_results(self) -> None:
         start_time = time.monotonic()
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
         self.app_log.info("--- Commands executed in OperateMode ---")
-        for cmd_result in cmd_results:
+        for cmd_result in self.cmd_results:
             self.app_log.log_cmd_result(cmd_result)
             self.cmd_log.log_cmd_result(cmd_result)
         self.app_log.info("--- End of OperateMode commands ---")
@@ -192,30 +203,13 @@ class OperateMode(Vertical, AppType):
     @work(exit_on_error=False)
     async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
         self.loading_modal = LoadingModal(self.ids)
-        pretty_cmd = CMD.filtered_cmd_str(CMD.global_cmd + btn_enum.write_cmd.value)
-        rel_path_arg = (
-            self.path_arg.relative_to(PARSED.dest_dir) if self.path_arg else ""
-        )
-        cmd_results: list[CommandResult] = []
-        if self.path_arg is not None:
-            pretty_cmd += f"[$text-primary bold] {rel_path_arg}[/]"
+
         await self.app.push_screen(self.loading_modal)
-        run_worker = self._run_perform_command(btn_enum, pretty_cmd)
-        await run_worker.wait()
-        if run_worker.result is None:
-            self.notify(f"CommandResult is None for {btn_enum.write_cmd.name}")
-            return
-        cmd_results.append(run_worker.result)
-        read_worker = self._run_read_commands()
-        await read_worker.wait()
-        if read_worker.result is None:
-            self.notify("Read CommandResults is None after running write command")
-            return
-        for cmd_result in read_worker.result:
-            cmd_results.append(cmd_result)
-        await self._update_operate_info_post_run(run_worker.result).wait()
-        await self._update_command_output(run_worker.result).wait()
-        await self._log_all_cmd_results(cmd_results).wait()
+        await self._run_perform_command(btn_enum).wait()
+        await self._run_read_commands().wait()
+        await self._update_operate_info_post_run().wait()
+        await self._update_command_output().wait()
+        await self._log_all_cmd_results().wait()
         self.operate_info.display = True
         self.loading_modal.dismiss()
-        await self.op_results.remove_children()
+        self.op_results.remove_children()
