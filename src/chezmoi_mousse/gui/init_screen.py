@@ -6,8 +6,7 @@ from textual.containers import HorizontalGroup, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
-from textual.widgets import (
-    Button,
+from textual.widgets import (  # Button,
     Collapsible,
     Footer,
     Input,
@@ -453,7 +452,7 @@ class InitChezmoi(Screen[None], AppType):
         )
         self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         self._update_init_info()
-        self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
+        # self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
@@ -546,7 +545,7 @@ class InitChezmoi(Screen[None], AppType):
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
             self.repo_input.display = True
-            self.init_chezmoi_btn.disabled = True
+            # self.init_chezmoi_btn.disabled = True
         elif event.value is False:
             self.repo_input.display = False
         self._update_init_info()
