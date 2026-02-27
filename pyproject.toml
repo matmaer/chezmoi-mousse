@@ -68,12 +68,8 @@ select = [
     "C4",   # flake8-comprehensions
     "UP",   # pyupgrade
 ]
-ignore = [
-    "E203", # whitespace before ':' (not PEP8 compliant, handled by black)
-]
 
 [tool.ruff.lint.per-file-ignores]
-"src/chezmoi_mousse/__init__.py" = ["F401"]
 
 [tool.codespell]
 check-filenames = true
