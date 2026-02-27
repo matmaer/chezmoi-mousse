@@ -17,82 +17,95 @@ __all__ = ["OpBtnEnum", "SwitchEnum"]
 class OpBtnData:
     label: str
     write_cmd: WriteCmd
-    info_strings: list[str] | None = None
-    info_sub_title: str | None = None
-    info_title: str | None = None
+    info_string: str
+    info_sub_title: str
+    info_title: str
 
 
 class OpBtnEnum(Enum):
-    _add_review = OpBtnData(label=OpBtnLabel.add_review, write_cmd=WriteCmd.add)
+    _add_review = OpBtnData(
+        label=OpBtnLabel.add_review,
+        write_cmd=WriteCmd.add,
+        info_string=OperateString.add_path_info,
+        info_sub_title=OperateString.add_subtitle,
+        info_title=OperateString.ready_to_run,
+    )
     _add_run = OpBtnData(
         label=OpBtnLabel.add_run,
         write_cmd=WriteCmd.add,
-        info_strings=[OperateString.add_path_info],
+        info_string=OperateString.add_path_info,
         info_sub_title=OperateString.add_subtitle,
         info_title=OperateString.run_completed_dry,
     )
     _apply_review = OpBtnData(
         label=OpBtnLabel.apply_review,
         write_cmd=WriteCmd.apply,
-        info_strings=[OperateString.apply_path_info],
+        info_string=OperateString.apply_path_info,
         info_sub_title=OperateString.apply_subtitle,
         info_title=OperateString.ready_to_run,
     )
     _apply_run = OpBtnData(
         label=OpBtnLabel.apply_run,
         write_cmd=WriteCmd.apply,
-        info_strings=[OperateString.apply_path_info],
+        info_string=OperateString.apply_path_info,
         info_sub_title=OperateString.apply_subtitle,
         info_title=OperateString.run_completed_dry,
     )
     _destroy_review = OpBtnData(
         label=OpBtnLabel.destroy_review,
         write_cmd=WriteCmd.destroy,
-        info_strings=[OperateString.destroy_path_info],
+        info_string=OperateString.destroy_path_info,
         info_sub_title=OperateString.destroy_subtitle,
         info_title=OperateString.ready_to_run,
     )
     _destroy_run = OpBtnData(
         label=OpBtnLabel.destroy_run,
         write_cmd=WriteCmd.destroy,
-        info_strings=[OperateString.destroy_path_info],
+        info_string=OperateString.destroy_path_info,
         info_sub_title=OperateString.destroy_subtitle,
         info_title=OperateString.run_completed_dry,
     )
     _forget_review = OpBtnData(
         label=OpBtnLabel.forget_review,
         write_cmd=WriteCmd.forget,
-        info_strings=[OperateString.forget_path_info],
+        info_string=OperateString.forget_path_info,
         info_sub_title=OperateString.forget_subtitle,
         info_title=OperateString.ready_to_run,
     )
     _forget_run = OpBtnData(
         label=OpBtnLabel.forget_run,
         write_cmd=WriteCmd.forget,
-        info_strings=[OperateString.forget_path_info],
+        info_string=OperateString.forget_path_info,
         info_sub_title=OperateString.forget_subtitle,
         info_title=OperateString.run_completed_dry,
     )
     _re_add_review = OpBtnData(
         label=OpBtnLabel.re_add_review,
         write_cmd=WriteCmd.re_add,
-        info_strings=[OperateString.re_add_path_info],
+        info_string=OperateString.re_add_path_info,
         info_sub_title=OperateString.re_add_subtitle,
         info_title=OperateString.ready_to_run,
     )
     _re_add_run = OpBtnData(
         label=OpBtnLabel.re_add_run,
         write_cmd=WriteCmd.re_add,
-        info_strings=[OperateString.re_add_path_info],
+        info_string=OperateString.re_add_path_info,
         info_sub_title=OperateString.re_add_subtitle,
         info_title=OperateString.run_completed_dry,
     )
-    _init = OpBtnData(
+    _init_review = OpBtnData(
         label=OpBtnLabel.init_review,
         write_cmd=WriteCmd.init_new,
-        info_strings=[OperateString.init_new_info],
+        info_string=OperateString.init_new_info,
         info_sub_title=OperateString.init_subtitle,
         info_title=OperateString.ready_to_run,
+    )
+    _init_run = OpBtnData(
+        label=OpBtnLabel.init_run,
+        write_cmd=WriteCmd.init_new,
+        info_string=OperateString.init_new_info,
+        info_sub_title=OperateString.init_subtitle,
+        info_title=OperateString.run_completed_dry,
     )
 
     # Allow access to dataclass attributes directly from the Enum member,
@@ -107,10 +120,8 @@ class OpBtnEnum(Enum):
         return self.value.write_cmd
 
     @property
-    def info_strings(self) -> str:
-        if self.value.info_strings is None:
-            return ""
-        return "\n".join(self.value.info_strings)
+    def info_string(self) -> str:
+        return self.value.info_string
 
     @property
     def info_sub_title(self) -> str | None:
@@ -125,9 +136,11 @@ class OpBtnEnum(Enum):
     def op_btn_enum_dict(cls, ids: "AppIds") -> dict[str, "OpBtnEnum | OpBtnLabel"]:
         if ids.canvas_name == ScreenName.init:
             return {
-                ids.op_btn.init: cls._init,
+                ids.op_btn.init_review: cls._init_review,
+                ids.op_btn.init_run: cls._init_run,
                 ids.op_btn.exit_app: OpBtnLabel.exit_app,
             }
+
         if ids.canvas_name != TabName.add:
             _btn_dict = {
                 ids.op_btn.forget_review: cls._forget_review,

@@ -140,8 +140,10 @@ class OperateButtonIds:
         self.forget_run = ids.operate_button_id(operation=OpBtnLabel.forget_run)
         self.forget_run_q = f"#{self.forget_run}"
 
-        self.init = ids.operate_button_id(operation=OpBtnLabel.init_review)
-        self.init_q = f"#{self.init}"
+        self.init_review = ids.operate_button_id(operation=OpBtnLabel.init_review)
+        self.init_review_q = f"#{self.init_review}"
+        self.init_run = ids.operate_button_id(operation=OpBtnLabel.init_run)
+        self.init_run_q = f"#{self.init_run}"
 
         self.re_add_review = ids.operate_button_id(operation=OpBtnLabel.re_add_review)
         self.re_add_review_q = f"#{self.re_add_review}"

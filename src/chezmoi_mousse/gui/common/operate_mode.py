@@ -56,7 +56,9 @@ class LoadingModal(ModalScreen[None]):
 
 class OperateMode(Vertical, AppType):
 
-    btn_enum: reactive[OpBtnEnum | None] = reactive(None, init=False)
+    btn_enum: reactive[OpBtnEnum | None] = reactive(
+        None, init=False, always_update=True
+    )
     changes_enabled: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
@@ -98,7 +100,8 @@ class OperateMode(Vertical, AppType):
             f"{OperateString.ready_to_run} [$text-primary bold]{pretty_cmd} "
             f"{self.path_arg.relative_to(PARSED.dest_dir)}[/]"
         )
-        info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
+        info_lines.append(cmd_text)
+        info_lines.append(self.btn_enum.info_string)
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
             if PARSED.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
