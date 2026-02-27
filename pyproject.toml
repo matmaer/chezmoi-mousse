@@ -18,7 +18,6 @@ dev = [
     "faker",
     "graphviz",
     "ipython",
-    "isort",
     "memray",
     "mypy",
     "pre-commit",

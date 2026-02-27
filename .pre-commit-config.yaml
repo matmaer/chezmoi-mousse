@@ -13,13 +13,6 @@ repos:
         args: [--in-place, --recursive, --wrap-summaries=88, --wrap-descriptions=88]
         files: ^src/
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 8.0.0
-    hooks:
-      - id: isort
-        name: isort (python)
-        args: ["--profile", "black"]
-
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
