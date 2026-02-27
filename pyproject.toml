@@ -16,7 +16,6 @@ dev = [
     "black",
     "docformatter",
     "faker",
-    "flake8",
     "graphviz",
     "ipython",
     "isort",
@@ -75,3 +74,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "src/chezmoi_mousse/__init__.py" = ["F401"]
+
+[tool.codespell]
+check-filenames = true
+ignore-words-list = "ReAdd,re-add"
