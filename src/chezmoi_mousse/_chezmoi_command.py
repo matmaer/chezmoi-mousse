@@ -3,16 +3,11 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
-from typing import TYPE_CHECKING
 
 from textual.widgets import Collapsible, Label, Static
 
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, OperateString, SectionLabel
-
-if TYPE_CHECKING:
-    from .gui.common.loggers import AppLog, CmdLog
-
 
 __all__ = [
     "CMD",
@@ -191,10 +186,6 @@ class CommandResult:
     def exit_code(self) -> int:
         return self.completed_process.returncode
 
-    # @property
-    # def filtered_cmd(self) -> str:
-    #     return f"{filtered_cmd_str(self.completed_process.args)}"
-
     @property
     def pretty_cmd(self) -> str:
         success_color = "$text-success" if self.cmd_enum in WriteCmd else "$success"
@@ -254,8 +245,6 @@ class CommandResult:
 class ChezmoiCommand:
 
     def __init__(self) -> None:
-        self.app_log: AppLog | None = None
-        self.cmd_log: CmdLog | None = None
         self.changes_enabled: bool = False
 
     @property
@@ -264,16 +253,6 @@ class ChezmoiCommand:
             return GlobalCmd.live_run.value
         else:
             return GlobalCmd.dry_run.value
-
-    #################################
-    # Command execution and logging #
-    #################################
-
-    def _log_chezmoi_command(self, result: CommandResult):
-        if self.app_log is None or self.cmd_log is None:
-            return
-        self.cmd_log.log_cmd_results(result)
-        self.app_log.log_cmd_results(result)
 
     def filtered_cmd_str(self, command: list[str]) -> str:
         filter_git_log_args = VerbArgs.git_log.value[3:]
@@ -299,7 +278,6 @@ class ChezmoiCommand:
         command_result = CommandResult(
             completed_process=result, path_arg=path_arg, cmd_enum=read_cmd
         )
-        self._log_chezmoi_command(command_result)
         return command_result
 
     def perform(
@@ -322,7 +300,6 @@ class ChezmoiCommand:
         command_result = CommandResult(
             completed_process=result, path_arg=path_arg, cmd_enum=write_cmd
         )
-        self._log_chezmoi_command(command_result)
         return command_result
 
 

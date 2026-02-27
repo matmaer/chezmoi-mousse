@@ -10,7 +10,7 @@ from chezmoi_mousse import CMD, CMD_RESULTS, IDS, AppType, LogString, ReadCmd, T
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.git_log import GitLogTable
-from .common.loggers import AppLog, CmdLog, DebugLog
+from .common.loggers import AppLog, DebugLog
 from .common.screen_header import CustomHeader
 from .common.trees import ListTree, ManagedTree
 from .config_tab import ConfigTab
@@ -33,12 +33,6 @@ class TabPanes(StrEnum):
 
 class MainScreen(Screen[None], AppType):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.app_log: "AppLog"
-        self.cmd_log: "CmdLog"
-        self.debug_log: "DebugLog"
-
     def compose(self) -> ComposeResult:
         yield CustomHeader()
         with TabbedContent():
@@ -58,10 +52,6 @@ class MainScreen(Screen[None], AppType):
     def on_mount(self) -> None:
         # Initialize App logger
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
-        CMD.app_log = self.app_log
-        # Initialize chezmoi commands logger
-        self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
-        CMD.cmd_log = self.cmd_log
         self.app_log.success(LogString.cmd_log_initialized)
         # Initialize Debug logger if in dev mode
         if self.app.dev_mode is True:
@@ -71,9 +61,9 @@ class MainScreen(Screen[None], AppType):
 
         self._populate_apply_trees()
         self._populate_re_add_trees()
-        self._log_splash_log_commands()
         self._populate_global_git_log()
         self._set_config_screen_reactives()
+        self.app.call_later(self._log_splash_log_commands)
 
     def _set_config_screen_reactives(self) -> None:
         config_tab = self.screen.query_exactly_one(ConfigTab)
@@ -82,12 +72,8 @@ class MainScreen(Screen[None], AppType):
     def _log_splash_log_commands(self) -> None:
         self.app_log.info("--- Commands executed in loading screen ---")
         commands_to_log = CMD_RESULTS.executed_commands
-        if self.app.init_cmd_result is not None:
-            self.cmd_log.log_cmd_results(self.app.init_cmd_result)
-            commands_to_log += [self.app.init_cmd_result]
         for cmd in commands_to_log:
-            self.app_log.log_cmd_results(cmd)
-            self.cmd_log.log_cmd_results(cmd)
+            self.app.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")
 
     def _populate_apply_trees(self) -> None:

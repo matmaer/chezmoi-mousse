@@ -32,6 +32,7 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .common.loggers import AppLog, CmdLog
 from .common.messages import OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
@@ -131,6 +132,12 @@ class ChezmoiGUI(App[None]):
         self._run_splash_screen()
 
     @work
+    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+        # self.screen contains the currently active screen
+        self.screen.query_exactly_one(AppLog).log_cmd_results(command_result)
+        self.screen.query_exactly_one(CmdLog).log_cmd_results(command_result)
+
+    @work
     async def refresh_cmd_results(self) -> None:
         for read_cmd in (
             ReadCmd.managed_dirs,
@@ -140,6 +147,8 @@ class ChezmoiGUI(App[None]):
         ):
             cmd_result = CMD.read(read_cmd)
             setattr(CMD_RESULTS, f"{read_cmd.name}", cmd_result)
+            cmd_logger = self.log_cmd_results(cmd_result)
+            await cmd_logger.wait()
         self.cmd_results.new_results = CMD_RESULTS
 
     @work
