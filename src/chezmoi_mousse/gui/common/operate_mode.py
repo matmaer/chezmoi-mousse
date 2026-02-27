@@ -58,7 +58,6 @@ class OperateMode(Vertical, AppType):
     btn_enum: reactive[OpBtnEnum | None] = reactive(
         None, init=False, always_update=True
     )
-    changes_enabled: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.op_mode)
