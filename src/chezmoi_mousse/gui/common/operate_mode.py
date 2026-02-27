@@ -120,10 +120,8 @@ class OperateMode(Vertical, AppType):
             self.operate_info.update("No command result available")
             return
         self.operate_info.update(
-            (
-                f"{self.run_cmd_result.pretty_cmd}\n"
-                f"Command completed with exit code {self.run_cmd_result.exit_code}"
-            )
+            f"{self.run_cmd_result.pretty_cmd}\n"
+            f"Command completed with exit code {self.run_cmd_result.exit_code}"
         )
         self.operate_info.border_title = self.run_cmd_result.operate_info_title
         self.operate_info.border_subtitle = None

@@ -96,7 +96,7 @@ class ContentsView(Container, AppType):
             try:
                 truncate_size: int = 100 * 1024  # 100 KiB
                 file_size = file_path.stat().st_size
-                with open(file_path, "rt", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     f_contents = f.read(truncate_size)
                 if f_contents.strip() == "":
                     return ContentStr.empty_or_only_whitespace
@@ -145,7 +145,7 @@ class ContentsView(Container, AppType):
 
     def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
         widgets: list[Static | Label] = []
-        dir_node: "DirNode" = self.dir_nodes[dir_path]
+        dir_node: DirNode = self.dir_nodes[dir_path]
         if dir_node.real_status_dirs_in:
             widgets.append(
                 Label(

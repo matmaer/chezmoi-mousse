@@ -118,7 +118,7 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = True if self.force_init_needed else False
-        self.init_cmd_result: "CommandResult | None" = None
+        self.init_cmd_result: CommandResult | None = None
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
@@ -460,9 +460,14 @@ class CustomScrollBarRender(ScrollBarRender):
         position: float = 0,
         thickness: int = 1,
         vertical: bool = True,
-        back_color: Color = Color.parse("#555555"),
-        bar_color: Color = Color.parse("bright_magenta"),
+        back_color: Color | None = None,
+        bar_color: Color | None = None,
     ) -> Segments:
+        if back_color is None:
+            back_color = Color.parse("#555555")
+        if bar_color is None:
+            bar_color = Color.parse("bright_magenta")
+
         if vertical:
             bars = cls.VERTICAL_BARS
         else:

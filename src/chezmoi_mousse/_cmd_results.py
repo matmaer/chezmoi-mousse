@@ -34,7 +34,7 @@ class CommandResults:
     verify: CommandResult | None = None
 
     @property
-    def executed_commands(self) -> list["CommandResult"]:
+    def executed_commands(self) -> list[CommandResult]:
         return [
             getattr(self, field.name)
             for field in fields(self)
@@ -182,7 +182,7 @@ class Commands:
             return all_status_paths
 
         def parse_status_output(
-            status_results: "CommandResult", index: int
+            status_results: CommandResult, index: int
         ) -> dict[Path, StatusCode]:
             status_dict: dict[Path, StatusCode] = {}
             for line in status_results.std_out.splitlines():
