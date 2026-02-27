@@ -158,7 +158,8 @@ class OperateButtons(HorizontalGroup):
             for btn in self.review_buttons:
                 btn.display = False
             run_btn_enum = OpBtnEnum.review_to_run(str(event.button.label))
-            # now lookup the button widget in self.run_buttons with the corresponding enum
+            # now lookup the button widget in self.run_buttons with the
+            # corresponding enum
             btn_widget: OpButton | None = next(
                 (b for b in self.run_buttons if b.btn_enum == run_btn_enum), None
             )

@@ -63,9 +63,7 @@ class DebugTab(Horizontal, AppType):
         self.app.call_later(self._log_dom_nodes)
 
     def _log_dom_nodes(self) -> None:
-        dom_items = [
-            item for item in self.app.walk_children(with_self=True, method="depth")
-        ]
+        dom_items = list(self.app.walk_children(with_self=True, method="depth"))
         self.dom_node_logger.write(f"DOMNode count: {len(dom_items)}\n")
         nodes_with_id = [item for item in dom_items if item.id is not None]
         nodes_without_id = [item for item in dom_items if item.id is None]

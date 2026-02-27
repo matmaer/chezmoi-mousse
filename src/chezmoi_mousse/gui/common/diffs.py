@@ -82,7 +82,8 @@ class DiffView(Container, AppType):
             if not CMD.managed_dirs and not CMD.managed_files:
                 widgets.append(
                     Static(
-                        "No managed paths or paths with a status are in the chezmoi repository.",
+                        "No managed paths or paths with a status are in the chezmoi "
+                        "repository.",
                         classes=Tcss.added,
                         markup=False,
                     )

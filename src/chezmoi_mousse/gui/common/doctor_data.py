@@ -64,12 +64,30 @@ class DoctorTable(DataTable[Text], AppType):
 
 class InfoStrings(StrEnum):
     additional_info_label = "Additional Info"
-    confusing = "Check your package manager which implementation is used as there are confusingly similar named packages."
-    fully_open_source = "Fully open source and auditable worldwide. No third party trust required. But beware of your supply chain: package manager, certificate authority, maintainers reputation, etc."
-    info_warning = f"[$text-warning]{Chars.warning_sign} The additional info is provided but may not be up-to-date or correct. Please contribute to improve it.{Chars.warning_sign}[/]"
+    confusing = (
+        "Check your package manager which implementation is used as there are"
+        " confusingly similar named packages."
+    )
+    fully_open_source = (
+        "Fully open source and auditable worldwide. No third party trust"
+        " required. But beware of your supply chain: package manager, certificate"
+        " authority, maintainers reputation, etc."
+    )
+    info_warning = (
+        f"[$text-warning]{Chars.warning_sign} The additional info is provided but"
+        " may not be up-to-date or correct. Please contribute to improve"
+        " it.{Chars.warning_sign}[/]"
+    )
     not_documented = "Not yet documented in chezmoi mousse."
-    not_open_source = "Not open source, cannot be audited but it's ok if you trust this third party to handle your secrets securely and cannot access them."
-    source_available = "The code is publicly available. No third party trust required. But beware of your supply chain: package manager, certificate authority, maintainers reputation and so on."
+    not_open_source = (
+        "Not open source, cannot be audited but it's ok if you trust this third"
+        " party to handle your secrets securely and cannot access them."
+    )
+    source_available = (
+        "The code is publicly available. No third party trust required. But"
+        " beware of your supply chain: package manager, certificate authority,"
+        " maintainers reputation and so on."
+    )
 
 
 @dataclass(slots=True)
@@ -101,19 +119,27 @@ class PwMgrInfo(Enum):
     )
     dashlane_command = PwMgrData(
         doctor_check="dashlane-command",
-        description="Simple and secure access to all your online accounts. At work, home, and everywhere in between.",
+        description=(
+            "Simple and secure access to all your online accounts. At work,"
+            " home, and everywhere in between."
+        ),
         link="https://github.com/dashlane",
         info=InfoStrings.not_open_source,
     )
     doppler_command = PwMgrData(
         doctor_check="doppler-command",
-        description="Doppler is the multi-cloud SecretOps Platform developers and security teams trust to provide secrets management at enterprise scale.",
+        description=(
+            "Doppler is the multi-cloud SecretOps Platform developers and"
+            " security teams trust to provide secrets management at enterprise scale."
+        ),
         link="https://github.com/dopplerhq",
         info=InfoStrings.not_open_source,
     )
     gopass_command = PwMgrData(
         doctor_check="gopass-command",
-        description="The slightly more awesome standard unix password manager for teams.",
+        description=(
+            "The slightly more awesome standard unix password manager for teams."
+        ),
         link="https://github.com/gopasspw/gopass",
         info=InfoStrings.fully_open_source,
     )
@@ -125,7 +151,9 @@ class PwMgrInfo(Enum):
     )
     keepassxc_command = PwMgrData(
         doctor_check="keepassxc-command",
-        description="Cross-platform community-driven port of Keepass password manager.",
+        description=(
+            "Cross-platform community-driven port of Keepass password manager."
+        ),
         link="https://keepassxc.org/",
         info=InfoStrings.fully_open_source,
     )
@@ -143,7 +171,9 @@ class PwMgrInfo(Enum):
     )
     pass_command = PwMgrData(
         doctor_check="pass-command",
-        description="Stores, retrieves, generates, and synchronizes passwords securely.",
+        description=(
+            "Stores, retrieves, generates, and synchronizes passwords securely."
+        ),
         link="https://www.passwordstore.org/",
         info=InfoStrings.confusing,
     )
@@ -155,7 +185,10 @@ class PwMgrInfo(Enum):
     )
     pinentry_command = PwMgrData(
         doctor_check="pinentry-command",
-        description="Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol.",
+        description=(
+            "Collection of simple PIN or passphrase entry dialogs which utilize"
+            " the Assuan protocol."
+        ),
         link="https://gnupg.org/related_software/pinentry/",
         info=InfoStrings.fully_open_source,
     )

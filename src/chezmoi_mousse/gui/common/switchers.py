@@ -114,7 +114,8 @@ class TreeSwitcher(Container, AppType):
                 # Add unchanged children to nodes already in the tree (the changed ones)
                 if node.data in self.dir_nodes:
                     dir_node = self.dir_nodes[node.data]
-                    # Only populate if there are actual unchanged paths in this directory
+                    # Only populate if there are actual unchanged paths in this
+                    # directory
                     if dir_node.x_files_in or dir_node.tree_x_dirs_in:
                         self._populate_x_node(node, node.data)
                         # Only expand if expand_all is enabled

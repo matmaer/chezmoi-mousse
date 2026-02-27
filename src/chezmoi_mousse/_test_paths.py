@@ -194,7 +194,7 @@ class TestPaths:
                 path.unlink()
                 removed_paths.append(str(path))
         # Then remove directories
-        for dir in reversed(sorted(self.dir_paths)):
+        for dir in sorted(self.dir_paths, reverse=True):
             dir_path = Path(dir)
             if dir_path.exists():
                 dir_path.rmdir()
