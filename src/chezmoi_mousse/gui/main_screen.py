@@ -73,7 +73,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.info("--- Commands executed in loading screen ---")
         commands_to_log = PARSED.cmd_results.executed_commands
         for cmd in commands_to_log:
-            self.app.log_cmd_results(cmd)
+            self.app.log_cmd_result(cmd)
         self.app_log.info("--- End of loading screen commands ---")
 
     def _populate_apply_trees(self) -> None:

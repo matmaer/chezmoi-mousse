@@ -86,7 +86,7 @@ class AppLog(LoggersBase, AppType):
             time = f"{self.log_time()} " if with_time else ""
             self.write(f"{time}[{color}]{line}[/]")
 
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
+    def log_cmd_result(self, command_result: "CommandResult") -> None:
         self.write(self._log_command(command_result))
         if ReadVerb.verify.value in command_result.completed_process.args:
             if command_result.exit_code == 0:
@@ -221,5 +221,5 @@ class CmdLog(ScrollableContainer, AppType):
     def on_mount(self) -> None:
         self.border_title = LogString.cmd_log_title
 
-    def log_cmd_results(self, command_result: "CommandResult") -> None:
+    def log_cmd_result(self, command_result: "CommandResult") -> None:
         self.mount(command_result.pretty_collapsible)

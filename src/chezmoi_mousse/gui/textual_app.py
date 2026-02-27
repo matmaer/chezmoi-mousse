@@ -128,10 +128,10 @@ class ChezmoiGUI(App[None]):
         self._run_splash_screen()
 
     @work
-    async def log_cmd_results(self, command_result: "CommandResult") -> None:
+    async def log_cmd_result(self, command_result: "CommandResult") -> None:
         # self.screen contains the currently active screen
-        self.screen.query_exactly_one(AppLog).log_cmd_results(command_result)
-        self.screen.query_exactly_one(CmdLog).log_cmd_results(command_result)
+        self.screen.query_exactly_one(AppLog).log_cmd_result(command_result)
+        self.screen.query_exactly_one(CmdLog).log_cmd_result(command_result)
 
     @work
     async def refresh_cmd_results(self) -> None:
@@ -143,7 +143,7 @@ class ChezmoiGUI(App[None]):
         ):
             cmd_result = CMD.read(read_cmd)
             setattr(PARSED.cmd_results, f"{read_cmd.name}", cmd_result)
-            cmd_logger = self.log_cmd_results(cmd_result)
+            cmd_logger = self.log_cmd_result(cmd_result)
             await cmd_logger.wait()
         PARSED.update_parsed_data()
 
