@@ -5,7 +5,7 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
+from chezmoi_mousse import CMD, PARSED, AppType, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, CommandResult
@@ -73,15 +73,15 @@ class GitLog(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            self.show_path = self.app.dest_dir
+            self.show_path = PARSED.dest_dir
             table = GitLogTable(CMD.read(ReadCmd.git_log))
-            self._cache_container(self.app.dest_dir, table)
+            self._cache_container(PARSED.dest_dir, table)
 
         elif self.show_path not in self.cache:
             table = GitLogTable(CMD.read(ReadCmd.git_log, path_arg=self.show_path))
             self._cache_container(self.show_path, table)
 
-        if self.show_path != self.app.dest_dir:
+        if self.show_path != PARSED.dest_dir:
             self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:

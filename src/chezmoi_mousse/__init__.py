@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
 from ._chezmoi_command import CMD, CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._cmd_results import CMD_RESULTS, CmdResults, CommandResults, DirNode
+from ._cmd_results import PARSED, CommandResults, DirNode, ParsedJson
 from ._enum_data import OpBtnEnum, SwitchEnum
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
@@ -32,11 +32,8 @@ from ._str_enums import (
 from ._test_paths import TestPaths
 
 if TYPE_CHECKING:
-    from typing import Any
 
     from .gui.textual_app import ChezmoiGUI
-
-type ParsedJson = dict[str, Any]
 
 
 class AppType:
@@ -46,14 +43,13 @@ class AppType:
 __all__ = [
     "__version__",
     "CMD",
-    "CMD_RESULTS",
+    "PARSED",
     "IDS",
     "AppIds",
     "AppType",
     "BindingAction",
     "BindingDescription",
     "Chars",
-    "CmdResults",
     "CommandResult",
     "CommandResults",
     "DirNode",

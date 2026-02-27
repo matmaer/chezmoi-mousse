@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import CMD, CMD_RESULTS, IDS, AppType, LogString, ReadCmd, TabName
+from chezmoi_mousse import CMD, IDS, PARSED, AppType, LogString, ReadCmd, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -67,11 +67,11 @@ class MainScreen(Screen[None], AppType):
 
     def _set_config_screen_reactives(self) -> None:
         config_tab = self.screen.query_exactly_one(ConfigTab)
-        config_tab.command_results = CMD_RESULTS
+        config_tab.command_results = PARSED.cmd_results
 
     def _log_splash_log_commands(self) -> None:
         self.app_log.info("--- Commands executed in loading screen ---")
-        commands_to_log = CMD_RESULTS.executed_commands
+        commands_to_log = PARSED.cmd_results.executed_commands
         for cmd in commands_to_log:
             self.app.log_cmd_results(cmd)
         self.app_log.info("--- End of loading screen commands ---")

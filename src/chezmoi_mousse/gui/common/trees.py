@@ -5,7 +5,7 @@ from textual import on
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppType, Chars, StatusCode, TabName, Tcss, TreeName
+from chezmoi_mousse import PARSED, AppType, Chars, StatusCode, TabName, Tcss, TreeName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirNode
@@ -36,9 +36,9 @@ class TreeBase(Tree[Path], AppType):
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
         if self.ids.canvas_name == TabName.apply:
-            return self.app.apply_dir_nodes
+            return PARSED.apply_dir_nodes
         else:
-            return self.app.re_add_dir_nodes
+            return PARSED.re_add_dir_nodes
 
     def _make_node_colors_dict(self) -> None:
         self.node_colors: dict[str, str] = {
@@ -52,7 +52,7 @@ class TreeBase(Tree[Path], AppType):
 
     def create_colored_label(self, path: Path) -> str:
         label_text = (
-            str(path.relative_to(self.app.dest_dir))
+            str(path.relative_to(PARSED.dest_dir))
             if self.tree_name == TreeName.list_tree
             else path.name
         )
@@ -88,7 +88,7 @@ class ListTree(TreeBase):
 
     def populate_tree(self) -> None:
         self.clear()
-        self.root.data = self.app.dest_dir
+        self.root.data = PARSED.dest_dir
         self.root.expand()
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files_in:
@@ -117,9 +117,9 @@ class ManagedTree(TreeBase):
             if node.is_expanded and node.data is not None
         }
         self.clear()
-        self.root.data = self.app.dest_dir
+        self.root.data = PARSED.dest_dir
         self.root.expand()
-        self._populate_node(self.root, self.app.dest_dir)
+        self._populate_node(self.root, PARSED.dest_dir)
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()

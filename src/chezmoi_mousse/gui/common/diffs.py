@@ -6,7 +6,16 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, LogString, ReadCmd, TabName, Tcss
+from chezmoi_mousse import (
+    CMD,
+    PARSED,
+    AppIds,
+    AppType,
+    LogString,
+    ReadCmd,
+    TabName,
+    Tcss,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -39,7 +48,7 @@ class DiffView(Container, AppType):
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
-        self.border_title = f" {self.app.dest_dir} "
+        self.border_title = f" {PARSED.dest_dir} "
 
     def _create_diff_widgets(self, diff_result: "CommandResult") -> list[Static]:
         if not diff_result.std_out:
@@ -77,9 +86,9 @@ class DiffView(Container, AppType):
 
     def watch_show_path(self) -> None:
         if self.show_path is None:
-            self.show_path = self.app.dest_dir
+            self.show_path = PARSED.dest_dir
             widgets: list[Static] = []
-            if not self.app.managed_dirs and not self.app.managed_files:
+            if not PARSED.managed_dirs and not PARSED.managed_files:
                 widgets.append(
                     Static(
                         "No managed paths or paths with a status are in the chezmoi repository.",
@@ -95,7 +104,7 @@ class DiffView(Container, AppType):
                     )
                 )
                 return
-            if self.app.no_status_paths is True:
+            if PARSED.no_status_paths is True:
                 text = (
                     "No diffs are available because no paths are present in the chezmoi"
                     "status output.\n<- Select an unchanged path to view its contents."
@@ -108,7 +117,7 @@ class DiffView(Container, AppType):
                     "<- Select a file or directory in the tree to view its diff."
                 )
                 widgets.append(Static(text, classes=Tcss.added, markup=False))
-            self._cache_container(Path(self.app.dest_dir), *widgets)
+            self._cache_container(Path(PARSED.dest_dir), *widgets)
 
         elif self.show_path not in self.cache:
             if self.canvas_name == TabName.apply:
@@ -120,7 +129,7 @@ class DiffView(Container, AppType):
 
             widgets = self._create_diff_widgets(diff_result)
             self._cache_container(self.show_path, *widgets)
-        if self.show_path != self.app.dest_dir:
+        if self.show_path != PARSED.dest_dir:
             self.border_title = f" {self.show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:

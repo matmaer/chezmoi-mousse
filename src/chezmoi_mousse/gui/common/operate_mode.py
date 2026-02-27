@@ -11,7 +11,7 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import (
     CMD,
-    CMD_RESULTS,
+    PARSED,
     AppType,
     CommandResult,
     OpBtnEnum,
@@ -96,13 +96,13 @@ class OperateMode(Vertical, AppType):
         )
         cmd_text = (
             f"{OperateString.ready_to_run} [$text-primary bold]{pretty_cmd} "
-            f"{self.path_arg.relative_to(self.app.dest_dir)}[/]"
+            f"{self.path_arg.relative_to(PARSED.dest_dir)}[/]"
         )
         info_lines.append("\n".join([cmd_text, self.btn_enum.info_strings]))
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
-            if self.app.git_auto_commit is True:
+            if PARSED.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
-            if self.app.git_auto_push is True:
+            if PARSED.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
         self.operate_info.update("\n".join(info_lines))
         self.operate_info.border_title = self.btn_enum.info_title
@@ -163,18 +163,18 @@ class OperateMode(Vertical, AppType):
             pretty_cmd = CMD.filtered_cmd_str(read_cmd.value)
             self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
             cmd_result = CMD.read(read_cmd)
-            setattr(CMD_RESULTS, f"{read_cmd.name}", cmd_result)
+            setattr(PARSED.cmd_results, f"{read_cmd.name}", cmd_result)
             elapsed = time.monotonic() - start_time
             if elapsed < READ_CMD_WAIT_TIME:
                 await sleep(READ_CMD_WAIT_TIME - elapsed)
-        self.app.cmd_results.new_results = CMD_RESULTS
+        PARSED.update_parsed_data()
 
     @work(exit_on_error=False)
     async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
         self.loading_modal = LoadingModal(self.ids)
         pretty_cmd = CMD.filtered_cmd_str(CMD.global_cmd + btn_enum.write_cmd.value)
         rel_path_arg = (
-            self.path_arg.relative_to(self.app.dest_dir) if self.path_arg else ""
+            self.path_arg.relative_to(PARSED.dest_dir) if self.path_arg else ""
         )
         if self.path_arg is not None:
             pretty_cmd += f"[$text-primary bold] {rel_path_arg}[/]"

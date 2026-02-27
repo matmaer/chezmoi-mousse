@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Button, Switch
 
-from chezmoi_mousse import IDS, AppType, OpBtnEnum, SubTabLabel, SwitchEnum
+from chezmoi_mousse import IDS, PARSED, AppType, OpBtnEnum, SubTabLabel, SwitchEnum
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -39,7 +39,7 @@ class ApplyTab(Container, AppType):
         )
         self.git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLog)
         self.diff_view = self.query_one(IDS.apply.container.diff_q, DiffView)
-        if self.app.no_status_paths:
+        if PARSED.no_status_paths:
             self.app.call_later(self.toggle_unchanged)
 
     def toggle_unchanged(self) -> None:

@@ -16,7 +16,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CMD, CMD_RESULTS, AppType, ReadCmd
+from chezmoi_mousse import CMD, PARSED, AppType, ReadCmd
 
 from .install_help import InstallHelpScreen
 
@@ -161,9 +161,9 @@ class SplashScreen(Screen[None], AppType):
         status_worker = self._run_io_worker(ReadCmd.status_files)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
-            assert CMD_RESULTS.status_files is not None
+            assert PARSED.cmd_results.status_files is not None
             if (
-                CMD_RESULTS.status_files.exit_code != 0
+                PARSED.cmd_results.status_files.exit_code != 0
                 or self.app.force_init_needed is True
             ):
                 self.app.init_needed = True
@@ -180,7 +180,7 @@ class SplashScreen(Screen[None], AppType):
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         cmd_result = CMD.read(splash_cmd)
-        setattr(CMD_RESULTS, f"{splash_cmd.name}", cmd_result)
+        setattr(PARSED.cmd_results, f"{splash_cmd.name}", cmd_result)
         padding = LOG_PADDING_WIDTH - len(cmd_result.filtered_cmd)
         log_text = f"{cmd_result.filtered_cmd} {'.' * padding} {LOADED_SUFFIX}"
         if cmd_result.exit_code == 0:
@@ -296,6 +296,6 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            self.app.cmd_results.new_results = CMD_RESULTS
+            PARSED.update_parsed_data()
             if all(w for w in self.workers if w.is_finished):
                 self.dismiss()

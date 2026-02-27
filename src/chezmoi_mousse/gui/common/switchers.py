@@ -8,7 +8,15 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import AppType, DirNode, FlatBtnLabel, SubTabLabel, TabName, Tcss
+from chezmoi_mousse import (
+    PARSED,
+    AppType,
+    DirNode,
+    FlatBtnLabel,
+    SubTabLabel,
+    TabName,
+    Tcss,
+)
 
 from .actionables import TabButtons
 from .contents import ContentsView
@@ -44,9 +52,9 @@ class TreeSwitcher(Container, AppType):
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
         if self.ids.canvas_name == TabName.apply:
-            return self.app.apply_dir_nodes
+            return PARSED.apply_dir_nodes
         else:
-            return self.app.re_add_dir_nodes
+            return PARSED.re_add_dir_nodes
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
@@ -113,17 +121,17 @@ class TreeSwitcher(Container, AppType):
                         if self.expand_all:
                             node.expand()
 
-            for x_file in self.app.x_files:
+            for x_file in PARSED.x_files:
                 if x_file in [node.data for node in list_tree_nodes]:
                     continue
-                rel_path = str(x_file.relative_to(self.app.dest_dir))
+                rel_path = str(x_file.relative_to(PARSED.dest_dir))
                 list_tree.root.add_leaf(f"[dim]{rel_path}[/]", x_file)
         elif unchanged is False:
             # remove x_files and x_dirs from managed tree
             for tree_node in nodes_before_unchanged_toggle:
                 if (
-                    tree_node.data in self.app.x_files
-                    or tree_node.data in self.app.tree_x_dirs
+                    tree_node.data in PARSED.x_files
+                    or tree_node.data in PARSED.tree_x_dirs
                 ):
                     try:
                         tree_node.remove()
@@ -131,7 +139,7 @@ class TreeSwitcher(Container, AppType):
                         pass
             # remove x_files from list tree
             for tree_node in list_tree_nodes:
-                if tree_node.data in self.app.x_files:
+                if tree_node.data in PARSED.x_files:
                     tree_node.remove()
 
 

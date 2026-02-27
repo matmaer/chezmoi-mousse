@@ -12,7 +12,10 @@ if TYPE_CHECKING:
 
     from ._chezmoi_command import CommandResult
 
-__all__ = ["CMD_RESULTS", "CmdResults", "DirNode"]
+__all__ = ["PARSED", "CommandResults", "DirNode", "ParsedJson"]
+
+
+type ParsedJson = dict[str, Any]
 
 
 @dataclass(slots=True)
@@ -38,9 +41,6 @@ class CommandResults:
         ]
 
 
-CMD_RESULTS = CommandResults()
-
-
 @dataclass(slots=True)
 class DirNode:
     dir_status: StatusCode
@@ -51,22 +51,6 @@ class DirNode:
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
-
-
-class ReactiveDataclass:
-    # Base class for dataclasses to trigger logic on field updates.
-    # The calls to super().__setattr__() ensure that Python internals work correctly.
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        if hasattr(self, name):
-            super().__setattr__(name, value)
-            self._on_field_change(name)
-        else:
-            super().__setattr__(name, value)
-
-    def _on_field_change(self, name: str) -> None:
-        # Override in subclasses to define update logic
-        pass
 
 
 @dataclass(slots=True)
@@ -98,8 +82,8 @@ class ParsedPaths:
 
 
 @dataclass(slots=True)
-class CmdResults(ReactiveDataclass):
-    new_results: CommandResults = field(default_factory=CommandResults)
+class ParsedCmdResults:
+    cmd_results: CommandResults = field(default_factory=CommandResults)
     parsed_config: ParsedConfig = field(default_factory=ParsedConfig)
     parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
@@ -107,11 +91,41 @@ class CmdResults(ReactiveDataclass):
     no_status_paths: bool = False
     _status_paths: set[Path] = field(default_factory=lambda: set())
 
-    def _on_field_change(self, name: str) -> None:
-        if name != "new_results":
-            return
-        if self.new_results.dump_config is not None:
-            self._update_dump_config(self.new_results.dump_config)
+    def __post_init__(self) -> None:
+        self.cmd_results = CommandResults()
+
+    # Properties for easy access to fields
+
+    @property
+    def dest_dir(self) -> Path:
+        return self.parsed_config.dest_dir
+
+    @property
+    def git_auto_commit(self) -> bool:
+        return self.parsed_config.git_auto_commit
+
+    @property
+    def git_auto_push(self) -> bool:
+        return self.parsed_config.git_auto_push
+
+    @property
+    def managed_dirs(self) -> list[Path]:
+        return self.parsed_paths.managed_dirs
+
+    @property
+    def managed_files(self) -> list[Path]:
+        return self.parsed_paths.managed_files
+
+    @property
+    def tree_x_dirs(self) -> list[Path]:
+        return self.parsed_paths.tree_x_dirs
+
+    @property
+    def x_files(self) -> list[Path]:
+        return self.parsed_paths.real_x_files
+
+    def update_parsed_data(self) -> None:
+        self._update_dump_config()
         self._update_no_status_paths()
         self._update_managed_dirs_and_files()
         self._update_apply_and_re_add_status_dirs_and_files_and_status_paths()
@@ -123,8 +137,12 @@ class CmdResults(ReactiveDataclass):
         # Now update dir nodes as they depend on all of the above
         self._update_apply_and_re_add_dir_nodes()
 
-    def _update_dump_config(self, dump_config_result: CommandResult) -> None:
-        parsed_config = json.loads(dump_config_result.completed_process.stdout)
+    def _update_dump_config(self) -> None:
+        if self.cmd_results.dump_config is None:
+            return
+        parsed_config = json.loads(
+            self.cmd_results.dump_config.completed_process.stdout
+        )
         self.parsed_config = ParsedConfig(
             dest_dir=Path(parsed_config["destDir"]),
             git_auto_commit=parsed_config["git"]["autocommit"],
@@ -133,24 +151,24 @@ class CmdResults(ReactiveDataclass):
 
     def _update_no_status_paths(self) -> None:
         if (
-            self.new_results.verify is not None
-            and self.new_results.verify.exit_code == 0
+            self.cmd_results.verify is not None
+            and self.cmd_results.verify.exit_code == 0
         ):
             self.no_status_paths = True
 
     def _update_managed_dirs_and_files(self) -> None:
         if (
-            self.new_results.managed_dirs is None
-            or self.new_results.managed_files is None
+            self.cmd_results.managed_dirs is None
+            or self.cmd_results.managed_files is None
         ):
             raise ValueError(
                 "One of the required CommandResults is None. Cannot update."
             )
         self.parsed_paths.managed_dirs = [self.parsed_config.dest_dir] + [
-            Path(line) for line in self.new_results.managed_dirs.std_out.splitlines()
+            Path(line) for line in self.cmd_results.managed_dirs.std_out.splitlines()
         ]
         self.parsed_paths.managed_files = [
-            Path(line) for line in self.new_results.managed_files.std_out.splitlines()
+            Path(line) for line in self.cmd_results.managed_files.std_out.splitlines()
         ]
 
     def _update_apply_and_re_add_status_dirs_and_files_and_status_paths(self) -> None:
@@ -170,8 +188,8 @@ class CmdResults(ReactiveDataclass):
             return status_dict
 
         if (
-            self.new_results.status_dirs is None
-            or self.new_results.status_files is None
+            self.cmd_results.status_dirs is None
+            or self.cmd_results.status_files is None
         ):
             raise ValueError(
                 "One of the required CommandResults is None. Cannot update."
@@ -179,23 +197,23 @@ class CmdResults(ReactiveDataclass):
 
         # Update status paths
         self._status_paths = get_all_status_paths(
-            self.new_results.status_dirs.std_out.splitlines()
-            + self.new_results.status_files.std_out.splitlines()
+            self.cmd_results.status_dirs.std_out.splitlines()
+            + self.cmd_results.status_files.std_out.splitlines()
         )
 
         # Update apply status dirs and files
         self.parsed_paths.apply_status_dirs = parse_status_output(
-            self.new_results.status_dirs, index=0
+            self.cmd_results.status_dirs, index=0
         )
         self.parsed_paths.apply_status_files = parse_status_output(
-            self.new_results.status_files, index=0
+            self.cmd_results.status_files, index=0
         )
         # Update re-add status dirs and files
         self.parsed_paths.re_add_status_dirs = parse_status_output(
-            self.new_results.status_dirs, index=1
+            self.cmd_results.status_dirs, index=1
         )
         self.parsed_paths.re_add_status_files = parse_status_output(
-            self.new_results.status_files, index=1
+            self.cmd_results.status_files, index=1
         )
 
     def _update_real_x_files(self) -> None:
@@ -337,3 +355,6 @@ class CmdResults(ReactiveDataclass):
                 ),
                 tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, re_add_status_dirs_in),
             )
+
+
+PARSED = ParsedCmdResults()

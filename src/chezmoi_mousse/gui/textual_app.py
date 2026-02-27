@@ -1,6 +1,5 @@
 import dataclasses
 from math import ceil
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.color import Color
@@ -16,13 +15,12 @@ from textual.widgets import Button, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     CMD,
-    CMD_RESULTS,
     IDS,
+    PARSED,
     AppIds,
     BindingAction,
     BindingDescription,
     Chars,
-    CmdResults,
     OpBtnEnum,
     OpBtnLabel,
     ReadCmd,
@@ -47,7 +45,7 @@ from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult, DirNode
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["ChezmoiGUI"]
 
@@ -121,9 +119,7 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = True if self.force_init_needed else False
-
         self.init_cmd_result: "CommandResult | None" = None
-        self.cmd_results = CmdResults()
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
@@ -146,10 +142,10 @@ class ChezmoiGUI(App[None]):
             ReadCmd.status_files,
         ):
             cmd_result = CMD.read(read_cmd)
-            setattr(CMD_RESULTS, f"{read_cmd.name}", cmd_result)
+            setattr(PARSED.cmd_results, f"{read_cmd.name}", cmd_result)
             cmd_logger = self.log_cmd_results(cmd_result)
             await cmd_logger.wait()
-        self.cmd_results.new_results = CMD_RESULTS
+        PARSED.update_parsed_data()
 
     @work
     async def _run_splash_screen(self) -> None:
@@ -164,50 +160,6 @@ class ChezmoiGUI(App[None]):
         else:
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
             self.push_screen(MainScreen())
-
-    ##########################################################
-    # Properties for convenient access to cmd_results fields #
-    ##########################################################
-
-    @property
-    def dest_dir(self) -> Path:
-        return self.cmd_results.parsed_config.dest_dir
-
-    @property
-    def git_auto_commit(self) -> bool:
-        return self.cmd_results.parsed_config.git_auto_commit
-
-    @property
-    def git_auto_push(self) -> bool:
-        return self.cmd_results.parsed_config.git_auto_push
-
-    @property
-    def managed_dirs(self) -> list[Path]:
-        return self.cmd_results.parsed_paths.managed_dirs
-
-    @property
-    def managed_files(self) -> list[Path]:
-        return self.cmd_results.parsed_paths.managed_files
-
-    @property
-    def apply_dir_nodes(self) -> dict[Path, "DirNode"]:
-        return self.cmd_results.apply_dir_nodes
-
-    @property
-    def re_add_dir_nodes(self) -> dict[Path, "DirNode"]:
-        return self.cmd_results.re_add_dir_nodes
-
-    @property
-    def tree_x_dirs(self) -> list[Path]:
-        return self.cmd_results.parsed_paths.tree_x_dirs
-
-    @property
-    def x_files(self) -> list[Path]:
-        return self.cmd_results.parsed_paths.real_x_files
-
-    @property
-    def no_status_paths(self) -> bool:
-        return self.cmd_results.no_status_paths
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
