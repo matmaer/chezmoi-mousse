@@ -137,7 +137,7 @@ class OperateMode(Vertical, AppType):
         if elapsed < UPDATE_UI_WAIT_TIME:
             await sleep(UPDATE_UI_WAIT_TIME - elapsed)
 
-    @work
+    @work(thread=True)
     async def _run_perform_command(
         self, btn_enum: OpBtnEnum, pretty_cmd: str
     ) -> CommandResult:
@@ -151,7 +151,7 @@ class OperateMode(Vertical, AppType):
             await sleep(RUN_CMD_WAIT_TIME - elapsed)
         return cmd_result
 
-    @work
+    @work(thread=True)
     async def _run_read_commands(self) -> None:
         for read_cmd in (
             ReadCmd.managed_dirs,
