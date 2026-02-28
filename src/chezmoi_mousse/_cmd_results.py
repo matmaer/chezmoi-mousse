@@ -175,20 +175,10 @@ class Commands:
         ]
 
     def _update_apply_and_re_add_status_dirs_and_files_and_status_paths(self) -> None:
-        def get_all_status_paths(status_lines: list[str]) -> set[Path]:
-            all_status_paths: set[Path] = set()
-            for line in status_lines:
-                all_status_paths.add(Path(line[3:]))
-            return all_status_paths
-
         def parse_status_output(
-            status_results: CommandResult, index: int
+            status_lines: list[str], index: int
         ) -> dict[Path, StatusCode]:
-            status_dict: dict[Path, StatusCode] = {}
-            for line in status_results.std_out.splitlines():
-                parsed_path = Path(line[3:])
-                status_dict[parsed_path] = StatusCode(line[index])
-            return status_dict
+            return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
 
         if (
             self.cmd_results.status_dirs is None
@@ -198,25 +188,24 @@ class Commands:
                 "One of the required CommandResults is None. Cannot update."
             )
 
+        status_dir_lines = self.cmd_results.status_dirs.std_out.splitlines()
+        status_file_lines = self.cmd_results.status_files.std_out.splitlines()
+
         # Update status paths
-        self._status_paths = get_all_status_paths(
-            self.cmd_results.status_dirs.std_out.splitlines()
-            + self.cmd_results.status_files.std_out.splitlines()
-        )
+        self._status_paths = {
+            Path(line[3:]) for line in status_dir_lines + status_file_lines
+        }
 
         # Update apply status dirs and files
-        self._parsed_paths.apply_status_dirs = parse_status_output(
-            self.cmd_results.status_dirs, index=0
-        )
+        self._parsed_paths.apply_status_dirs = parse_status_output(status_dir_lines, 0)
         self._parsed_paths.apply_status_files = parse_status_output(
-            self.cmd_results.status_files, index=0
+            status_file_lines, 0
         )
+
         # Update re-add status dirs and files
-        self._parsed_paths.re_add_status_dirs = parse_status_output(
-            self.cmd_results.status_dirs, index=1
-        )
+        self._parsed_paths.re_add_status_dirs = parse_status_output(status_dir_lines, 1)
         self._parsed_paths.re_add_status_files = parse_status_output(
-            self.cmd_results.status_files, index=1
+            status_file_lines, 1
         )
 
     def _update_real_x_files(self) -> None:
@@ -242,119 +231,69 @@ class Commands:
         ]
 
     def _update_apply_and_re_add_dir_nodes(self) -> None:
-        def get_x_files_in(dir_path: Path) -> dict[Path, StatusCode]:
+        def get_dir_node(
+            dir_path: Path,
+            sub_dir_paths: list[Path],
+            status_files: dict[Path, StatusCode],
+            status_dirs: dict[Path, StatusCode],
+        ) -> DirNode:
             # x files are the same for apply and re_add contexts
-            return {
+            x_files_in = {
                 path: StatusCode.No_Status
                 for path in self._parsed_paths.managed_files
                 if path.parent == dir_path and path not in self._status_paths
             }
 
-        def get_tree_status_dirs_in(
-            sub_dir_paths: list[Path], status_dirs: dict[Path, StatusCode]
-        ) -> dict[Path, StatusCode]:
-            result: dict[Path, StatusCode] = {}
+            tree_status_dirs_in: dict[Path, StatusCode] = {}
+            tree_x_dirs_in: dict[Path, StatusCode] = {}
             for sub_dir in sub_dir_paths:
                 if sub_dir in status_dirs:
-                    result[sub_dir] = status_dirs[sub_dir]
+                    tree_status_dirs_in[sub_dir] = status_dirs[sub_dir]
                 elif sub_dir in self._parsed_paths.x_dirs_with_status_children:
-                    result[sub_dir] = StatusCode.No_Status
-            return dict(sorted(result.items()))
+                    tree_status_dirs_in[sub_dir] = StatusCode.No_Status
+                else:
+                    tree_x_dirs_in[sub_dir] = StatusCode.No_Status
 
-        def get_tree_x_dirs_in(
-            sub_dir_paths: list[Path], status_dirs: dict[Path, StatusCode]
-        ) -> dict[Path, StatusCode]:
-            result: dict[Path, StatusCode] = {}
-            for sub_dir in sub_dir_paths:
-                if (
-                    sub_dir not in status_dirs
-                    and sub_dir not in self._parsed_paths.x_dirs_with_status_children
-                ):
-                    result[sub_dir] = StatusCode.No_Status
-            return dict(sorted(result.items()))
-
-        def get_nested_status_dirs_in(
-            dir_path: Path, status_dirs: dict[Path, StatusCode]
-        ) -> dict[Path, StatusCode]:
-            return {
-                path: status
-                for path, status in status_dirs.items()
-                if path.is_relative_to(dir_path)
-                and len(path.relative_to(dir_path).parts) > 1
-            }
-
-        def get_nested_status_files_in(
-            dir_path: Path, status_files: dict[Path, StatusCode]
-        ) -> dict[Path, StatusCode]:
-            return {
-                path: status
-                for path, status in status_files.items()
-                if path.is_relative_to(dir_path)
-                and len(path.relative_to(dir_path).parts) > 1
-            }
+            return DirNode(
+                dir_status=status_dirs.get(dir_path, StatusCode.No_Status),
+                status_files_in={
+                    p: s for p, s in status_files.items() if p.parent == dir_path
+                },
+                x_files_in=x_files_in,
+                real_status_dirs_in={
+                    p: s for p, s in status_dirs.items() if p.parent == dir_path
+                },
+                tree_status_dirs_in=dict(sorted(tree_status_dirs_in.items())),
+                tree_x_dirs_in=dict(sorted(tree_x_dirs_in.items())),
+                nested_status_dirs={
+                    p: s
+                    for p, s in status_dirs.items()
+                    if p.is_relative_to(dir_path)
+                    and len(p.relative_to(dir_path).parts) > 1
+                },
+                nested_status_files={
+                    p: s
+                    for p, s in status_files.items()
+                    if p.is_relative_to(dir_path)
+                    and len(p.relative_to(dir_path).parts) > 1
+                },
+            )
 
         for dir_path in self._parsed_paths.managed_dirs:
             sub_dir_paths = [
                 p for p in self._parsed_paths.managed_dirs if p.parent == dir_path
             ]
-            # Update apply nodes
-            apply_status_files_in = {
-                path: status
-                for path, status in self._parsed_paths.apply_status_files.items()
-                if path.parent == dir_path
-            }
-            apply_status_dirs_in = {
-                path: status
-                for path, status in self._parsed_paths.apply_status_dirs.items()
-                if path.parent == dir_path
-            }
-            self.apply_dir_nodes[dir_path] = DirNode(
-                dir_status=self._parsed_paths.apply_status_dirs.get(
-                    dir_path, StatusCode.No_Status
-                ),
-                status_files_in=apply_status_files_in,
-                x_files_in=get_x_files_in(dir_path),
-                real_status_dirs_in=apply_status_dirs_in,
-                tree_status_dirs_in=get_tree_status_dirs_in(
-                    sub_dir_paths, apply_status_dirs_in
-                ),
-                nested_status_dirs=get_nested_status_dirs_in(
-                    dir_path, self._parsed_paths.apply_status_dirs
-                ),
-                nested_status_files=get_nested_status_files_in(
-                    dir_path, self._parsed_paths.apply_status_files
-                ),
-                tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, apply_status_dirs_in),
+            self.apply_dir_nodes[dir_path] = get_dir_node(
+                dir_path,
+                sub_dir_paths,
+                self._parsed_paths.apply_status_files,
+                self._parsed_paths.apply_status_dirs,
             )
-
-            # Update re-add nodes
-            re_add_status_files_in = {
-                path: status
-                for path, status in self._parsed_paths.re_add_status_files.items()
-                if path.parent == dir_path
-            }
-            re_add_status_dirs_in = {
-                path: status
-                for path, status in self._parsed_paths.re_add_status_dirs.items()
-                if path.parent == dir_path
-            }
-            self.re_add_dir_nodes[dir_path] = DirNode(
-                dir_status=self._parsed_paths.re_add_status_dirs.get(
-                    dir_path, StatusCode.No_Status
-                ),
-                status_files_in=re_add_status_files_in,
-                x_files_in=get_x_files_in(dir_path),
-                real_status_dirs_in=re_add_status_dirs_in,
-                tree_status_dirs_in=get_tree_status_dirs_in(
-                    sub_dir_paths, re_add_status_dirs_in
-                ),
-                nested_status_dirs=get_nested_status_dirs_in(
-                    dir_path, self._parsed_paths.re_add_status_dirs
-                ),
-                nested_status_files=get_nested_status_files_in(
-                    dir_path, self._parsed_paths.re_add_status_files
-                ),
-                tree_x_dirs_in=get_tree_x_dirs_in(sub_dir_paths, re_add_status_dirs_in),
+            self.re_add_dir_nodes[dir_path] = get_dir_node(
+                dir_path,
+                sub_dir_paths,
+                self._parsed_paths.re_add_status_files,
+                self._parsed_paths.re_add_status_dirs,
             )
 
 
