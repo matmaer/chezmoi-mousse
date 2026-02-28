@@ -289,7 +289,7 @@ dev = [
     { name = "snakeviz" },
     { name = "textual" },
     { name = "textual-dev" },
-    { name = "tomlkit", specifier = ">=0.14.0" },
+    { name = "tomlkit"},
     { name = "twine" },
 ]
 
