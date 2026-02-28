@@ -4,9 +4,9 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, DirectoryTree, Switch
+from textual.widgets import Button, DirectoryTree, Label, Static, Switch
 
 from chezmoi_mousse import CMD, IDS, AppType, Chars, FlatBtnLabel, OpBtnEnum, Tcss
 
@@ -15,6 +15,38 @@ from .common.contents import ContentsView
 from .common.operate_mode import OperateMode
 
 __all__ = ["AddTab"]
+
+
+class AddContentsView(ContentsView):
+
+    show_dir_path: reactive["Path | None"] = reactive(None)
+
+    def __init__(self) -> None:
+        super().__init__(ids=IDS.add)
+
+    def watch_show_dir_path(self, show_dir_path: Path) -> None:
+        if self.show_path is None:
+            show_dir_path = CMD.dest_dir
+        widgets = self._create_dir_contents(show_dir_path)
+        container = ScrollableContainer()
+        self.mount(container)
+        container.mount_all(widgets)
+
+    def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
+        widgets: list[Static | Label] = []
+        unmanaged: list[str] = [
+            str(p)
+            for p in list(dir_path.iterdir())
+            if p not in CMD.managed_dirs and p not in CMD.managed_files
+        ]
+        if not unmanaged:
+            widgets.append(Static("No unmanaged paths in this directory."))
+            return widgets
+        widgets.append(
+            Label("Contains unmanaged paths", classes=Tcss.sub_section_label)
+        )
+        widgets.append(Static("\n".join(unmanaged)))
+        return widgets
 
 
 class FilteredDirTree(DirectoryTree, AppType):
@@ -39,36 +71,38 @@ class FilteredDirTree(DirectoryTree, AppType):
             (False, False): lambda p: (
                 (
                     p.is_dir()
-                    and not self._is_unwanted_dir(p)
+                    and not UnwantedDirs.is_unwanted(p.name)
                     and p in CMD.managed_dirs
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file()
-                    and not self._is_unwanted_file(p)
+                    and not UnwantedFileExtensions.is_unwanted(p.suffix)
+                    and not UnwantedFileNames.is_unwanted(p.name)
                     and p.parent in CMD.managed_dirs
                     and p not in CMD.managed_files
                     and self._file_of_interest(p)
-                    and not self._is_private_key_name(p.name)
+                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
             # SwitchEnum: Green - Red
             (True, False): lambda p: (
                 (
                     p.is_dir()
-                    and not self._is_unwanted_dir(p)
+                    and not UnwantedDirs.is_unwanted(p.name)
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file()
-                    and not self._is_unwanted_file(p)
+                    and not UnwantedFileExtensions.is_unwanted(p.suffix)
+                    and not UnwantedFileNames.is_unwanted(p.name)
                     and (
                         p.parent in CMD.managed_dirs
                         or self._has_unmanaged_paths_in(p.parent)
                     )
                     and p not in CMD.managed_files
                     and self._file_of_interest(p)
-                    and not self._is_private_key_name(p.name)
+                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
             # SwitchEnum: Red - Green
@@ -82,7 +116,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file()
                     and p not in CMD.managed_files
                     and p.parent in CMD.managed_dirs
-                    and not self._is_private_key_name(p.name)
+                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
             # SwitchEnum: Green - Green, include all unmanaged paths
@@ -91,7 +125,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file()
                     and p not in CMD.managed_files
-                    and not self._is_private_key_name(p.name)
+                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
         }
@@ -128,33 +162,6 @@ class FilteredDirTree(DirectoryTree, AppType):
         except (PermissionError, OSError):
             return False
 
-    def _is_unwanted_dir(self, dir_path: Path) -> bool:
-        try:
-            UnwantedDirs(dir_path.name)
-            return True
-        except ValueError:
-            if "cache" in dir_path.name.lower():
-                return True
-            return False
-
-    def _is_unwanted_file(self, file_path: Path) -> bool:
-        extension = file_path.suffix
-        try:
-            UnwantedFileExtensions(extension)
-            UnwantedFileNames(file_path.name)
-            return True
-        except ValueError:
-            if "cache" in file_path.name.lower():
-                return True
-            return False
-
-    def _is_private_key_name(self, file_name: str) -> bool:
-        try:
-            UnwantedFileNames(file_name)
-            return True
-        except ValueError:
-            return False
-
 
 class AddTab(Horizontal, AppType):
 
@@ -167,7 +174,7 @@ class AddTab(Horizontal, AppType):
         )
         with Vertical():
             yield OperateMode(IDS.add)
-            yield ContentsView(IDS.add)
+            yield AddContentsView()
             yield OperateButtons(IDS.add, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.add))
         yield SwitchSlider(IDS.add)
 
@@ -178,9 +185,9 @@ class AddTab(Horizontal, AppType):
         )
         self.operate_mode_container.path_arg = CMD.dest_dir
         self.query_exactly_one(FilteredDirTree).path = CMD.dest_dir
-        self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
-        self.contents_view.add_class(Tcss.border_title_top)
-        self.contents_view.border_title = f" {CMD.dest_dir} "
+        self.contents_view = self.query_one(
+            IDS.add.container.contents_q, AddContentsView
+        )
 
     @on(Button.Pressed, Tcss.refresh_button.dot_prefix)
     def refresh_dir_tree(self, event: Button.Pressed) -> None:
@@ -188,16 +195,23 @@ class AddTab(Horizontal, AppType):
         self.dir_tree.reload()
         self.dir_tree.refresh()
 
-    @on(DirectoryTree.DirectorySelected)
     @on(DirectoryTree.FileSelected)
-    def update_contents_view(
-        self, event: DirectoryTree.DirectorySelected | DirectoryTree.FileSelected
-    ) -> None:
+    def update_file_contents_view(self, event: DirectoryTree.FileSelected) -> None:
         event.stop()
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
         self.contents_view.show_path = event.node.data.path
+        self.operate_mode_container.path_arg = event.node.data.path
+
+    @on(DirectoryTree.DirectorySelected)
+    def update_contents_view(self, event: DirectoryTree.DirectorySelected) -> None:
+        event.stop()
+        if event.node.data is None:
+            self.app.notify("Select a new node to operate on.")
+            return
+        self.contents_view.remove_children()
+        self.contents_view.show_dir_path = event.node.data.path
         self.operate_mode_container.path_arg = event.node.data.path
 
     @on(Switch.Changed)
@@ -246,6 +260,14 @@ class UnwantedDirs(StrEnum):
     Trash = "Trash"
     Videos = "Videos"
 
+    @classmethod
+    def is_unwanted(cls, name: str) -> bool:
+        try:
+            cls(name)
+            return True
+        except ValueError:
+            return "cache" in name.lower()
+
 
 class UnwantedFileExtensions(StrEnum):
     AppImage = ".AppImage"
@@ -281,6 +303,14 @@ class UnwantedFileExtensions(StrEnum):
     xls = ".xls"
     xlsx = ".xlsx"
     zip = ".zip"
+
+    @classmethod
+    def is_unwanted(cls, extension: str) -> bool:
+        try:
+            cls(extension)
+            return True
+        except ValueError:
+            return "cache" in extension.lower()
 
 
 class UnwantedFileNames(StrEnum):
@@ -328,3 +358,15 @@ class UnwantedFileNames(StrEnum):
     # Wireguard
     wg0_conf = "wg0.conf"  # contains PrivateKey
     privatekey_wg = "privatekey"
+
+    @classmethod
+    def is_unwanted(cls, name: str) -> bool:
+        try:
+            cls(name)
+            return True
+        except ValueError:
+            return "cache" in name.lower()
+
+    @classmethod
+    def is_private_key_name(cls, value: str) -> bool:
+        return cls.is_unwanted(value)

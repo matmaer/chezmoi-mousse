@@ -49,7 +49,7 @@ class ContentStr(StrEnum):
 
 class ContentsView(Container, AppType):
 
-    show_path: reactive["Path | None"] = reactive(None)
+    show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
@@ -204,13 +204,8 @@ class ContentsView(Container, AppType):
         self.cache[path] = container
         return container
 
-    def watch_show_path(self) -> None:
-        if self.show_path is None:
-            self.show_path = CMD.dest_dir
-            widgets = self._create_dir_contents(self.show_path)
-            self._cache_container(self.show_path, *widgets)
-
-        elif self.show_path not in self.cache:
+    def watch_show_path(self, show_path: Path) -> None:
+        if self.show_path not in self.cache:
             # Managed files (ApplyTab/ReAddTab)
             if self.show_path in CMD.managed_files:
                 widget = self._create_file_contents(
@@ -224,22 +219,15 @@ class ContentsView(Container, AppType):
                 self.mount(container)
                 self.cache[self.show_path] = container
             # Unmanaged files (AddTab)
-            elif self.show_path.is_file():
-                widget = self._create_file_contents(
-                    file_path=self.show_path, managed=False
-                )
-                self._cache_container(self.show_path, widget)
-            # Unmanaged directories (AddTab)
-            elif self.show_path.is_dir():
-                widget = Static(f"{self.show_path} is a directory not managed.")
-                self._cache_container(self.show_path, widget)
-            else:
-                return
+            elif show_path.is_file():
+                self.remove_children()
+                widget = self._create_file_contents(file_path=show_path, managed=False)
+                self._cache_container(show_path, widget)
 
         if self.show_path != CMD.dest_dir:
-            self.border_title = f" {self.show_path.name} "
+            self.border_title = f" {show_path.name} "
         # Hide current container, show the selected one
         if self.current_container is not None:
             self.current_container.display = False
-        self.cache[self.show_path].display = True
-        self.current_container = self.cache[self.show_path]
+        self.cache[show_path].display = True
+        self.current_container = self.cache[show_path]
