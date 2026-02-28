@@ -160,15 +160,6 @@ class ContentsView(Container, AppType):
             )
             for path, status in dir_node.status_files_in.items():
                 widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
-        if dir_node.nested_status_dirs:
-            widgets.append(
-                Label(
-                    "Contains nested directories with a status",
-                    classes=Tcss.sub_section_label,
-                )
-            )
-            for path, status in sorted(dir_node.nested_status_dirs.items()):
-                widgets.append(Static(f"[dim {self.node_colors[status]}]{path}[/]"))
         if dir_node.nested_status_files:
             widgets.append(
                 Label(
@@ -182,7 +173,6 @@ class ContentsView(Container, AppType):
             [
                 dir_node.real_status_dirs_in,
                 dir_node.status_files_in,
-                dir_node.nested_status_dirs,
                 dir_node.nested_status_files,
             ]
         ):
