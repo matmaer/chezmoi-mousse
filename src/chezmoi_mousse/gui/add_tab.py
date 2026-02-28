@@ -82,7 +82,6 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file()
                     and p not in CMD.managed_files
                     and p.parent in CMD.managed_dirs
-                    and self._file_of_interest(p)
                     and not self._is_private_key_name(p.name)
                 )
             ),
@@ -92,7 +91,6 @@ class FilteredDirTree(DirectoryTree, AppType):
                 or (
                     p.is_file()
                     and p not in CMD.managed_files
-                    and self._file_of_interest(p)
                     and not self._is_private_key_name(p.name)
                 )
             ),
@@ -104,7 +102,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def _file_of_interest(self, file_path: Path) -> bool:
         try:
-            if file_path.stat().st_size > 500 * 1024:  # 500 KiB
+            if file_path.stat().st_size > 1000 * 1024:  # 1 MiB
                 return False
             # Now read only first 8 KiB
             with open(file_path, "rb") as f:
