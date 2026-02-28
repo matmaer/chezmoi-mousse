@@ -63,7 +63,7 @@ class OperateMode(Vertical, AppType):
         self.ids = ids
         self.path_arg: Path | None = None
         self.run_cmd_result: CommandResult | None = None
-        self.cmd_results: list[CommandResult] = []
+        self.all_cmd_results: list[CommandResult] = []
 
     def compose(self) -> ComposeResult:
         yield Static(
@@ -77,10 +77,6 @@ class OperateMode(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.display = False
-        self.operate_info = self.query_one(self.ids.static.operate_info_q, Static)
-        self.op_results = self.query_one(
-            self.ids.container.op_cmd_results_q, ScrollableContainer
-        )
         self.app_log = self.screen.query_exactly_one(AppLog)
         self.cmd_log = self.screen.query_exactly_one(CmdLog)
 
@@ -93,6 +89,10 @@ class OperateMode(Vertical, AppType):
     def update_review_info(self) -> None:
         if self.btn_enum is None or self.path_arg is None:
             return
+        op_cmd_results = self.query_one(
+            self.ids.container.op_cmd_results_q, ScrollableContainer
+        )
+        op_cmd_results.remove_children()
         info_lines: list[str] = []
         pretty_cmd = CMD.run_cmd.review_cmd(global_args=self.btn_enum.write_cmd.value)
         cmd_text = (
@@ -106,39 +106,43 @@ class OperateMode(Vertical, AppType):
                 info_lines.append(OperateString.auto_commit)
             if CMD.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
-        self.operate_info.update("\n".join(info_lines))
-        self.operate_info.border_title = self.btn_enum.info_title
-        self.operate_info.border_subtitle = self.btn_enum.info_sub_title
+        operate_info = self.query_one(self.ids.static.operate_info_q, Static)
+        operate_info.update("\n".join(info_lines))
+        operate_info.border_title = self.btn_enum.info_title
+        operate_info.border_subtitle = self.btn_enum.info_sub_title
 
     @work
     async def _update_operate_info_post_run(self) -> None:
+        operate_info = self.query_one(self.ids.static.operate_info_q, Static)
         start_time = time.monotonic()
         self.loading_modal.post_message(
-            ProgressTextMsg(f"[$text-darken-2]Update {self.operate_info.name}[/]")
+            ProgressTextMsg(f"[$text-darken-2]Update {operate_info.name}[/]")
         )
         if self.run_cmd_result is None:
-            self.operate_info.update("No command result available")
+            operate_info.update("No command result available")
             return
-        self.operate_info.update(
+        operate_info.update(
             f"{self.run_cmd_result.pretty_cmd}\n"
             f"Command completed with exit code {self.run_cmd_result.exit_code}"
         )
-        self.operate_info.border_title = self.run_cmd_result.operate_info_title
-        self.operate_info.border_subtitle = None
+        operate_info.border_title = self.run_cmd_result.operate_info_title
+        operate_info.border_subtitle = None
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
 
     @work
     async def _update_command_output(self) -> None:
+        op_cmd_results = self.query_one(
+            self.ids.container.op_cmd_results_q, ScrollableContainer
+        )
+        op_cmd_results.remove_children()
         start_time = time.monotonic()
         self.loading_modal.post_message(
-            ProgressTextMsg(f"[$text-darken-2]Update {self.op_results.name}[/]")
+            ProgressTextMsg(f"[$text-darken-2]Update {op_cmd_results.name}[/]")
         )
-        if self.run_cmd_result is None:
-            self.op_results.mount(Label("No command result available"))
-            return
-        self.op_results.mount(self.run_cmd_result.pretty_collapsible)
+        for cmd_result in self.all_cmd_results:
+            op_cmd_results.mount(cmd_result.pretty_collapsible)
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
@@ -158,7 +162,7 @@ class OperateMode(Vertical, AppType):
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)
         self.run_cmd_result = cmd_result
-        self.cmd_results.append(cmd_result)
+        self.all_cmd_results.append(cmd_result)
 
     @work(thread=True)
     async def _run_read_commands(self) -> None:
@@ -173,7 +177,7 @@ class OperateMode(Vertical, AppType):
             self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
             cmd_result = CMD.run_cmd.read(read_cmd)
             setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
-            self.cmd_results.append(cmd_result)
+            self.all_cmd_results.append(cmd_result)
             elapsed = time.monotonic() - start_time
             if elapsed < MIN_WAIT_TIME:
                 await sleep(MIN_WAIT_TIME - elapsed)
@@ -184,7 +188,7 @@ class OperateMode(Vertical, AppType):
         start_time = time.monotonic()
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
         self.app_log.info("--- Commands executed in OperateMode ---")
-        for cmd_result in self.cmd_results:
+        for cmd_result in self.all_cmd_results:
             self.app_log.log_cmd_result(cmd_result)
             self.cmd_log.log_cmd_result(cmd_result)
         self.app_log.info("--- End of OperateMode commands ---")
@@ -194,14 +198,12 @@ class OperateMode(Vertical, AppType):
 
     @work(exit_on_error=False)
     async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
+        self.all_cmd_results = []
         self.loading_modal = LoadingModal(self.ids)
-
         await self.app.push_screen(self.loading_modal)
         await self._run_perform_command(btn_enum).wait()
         await self._run_read_commands().wait()
         await self._update_operate_info_post_run().wait()
         await self._update_command_output().wait()
         await self._log_all_cmd_results().wait()
-        self.operate_info.display = True
         self.loading_modal.dismiss()
-        self.op_results.remove_children()
