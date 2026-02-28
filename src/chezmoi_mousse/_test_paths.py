@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+import tomlkit
 from faker import Faker
-from tomlkit import document, dumps, table  # type: ignore[import-untyped]
 
 __all__ = ["TestPaths"]
 
@@ -114,25 +114,25 @@ class TestPaths:
             if file.exists() or file.parent.name == self.dir_names.EMPTY:
                 continue
             if file.name.endswith(".toml"):
-                content = self._get_fake_toml_document()
+                doc = self._get_fake_toml_document()
                 with open(file, "w", encoding="utf-8") as f:
-                    f.write(content)
+                    f.write(doc.as_string())
                 created_paths.append(str(file))
         return created_paths
 
-    def _get_fake_toml_document(self):
-        doc = document()
+    def _get_fake_toml_document(self) -> tomlkit.TOMLDocument:
+        doc = tomlkit.document()
         doc["title"] = FAKER.sentence(nb_words=6)
         doc["version"] = FAKER.pyfloat(left_digits=1, right_digits=2, positive=True)
         doc["debug"] = FAKER.boolean()
         doc["hosts"] = [FAKER.hostname() for _ in range(10)]
         doc["ports"] = [FAKER.port_number() for _ in range(10)]
-        some_table = table()
+        some_table = tomlkit.table()
         some_table["id"] = FAKER.uuid4()
         some_table["date"] = FAKER.date_time().isoformat()
         some_table["text"] = FAKER.paragraph(nb_sentences=12)
         doc["some_table"] = some_table
-        return dumps(doc)
+        return doc
 
     def _create_binary_file(self) -> str:
         file = self.binary_file_path

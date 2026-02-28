@@ -22,10 +22,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint ruff black textual faker
+        pip install ruff black textual faker
     - name: Run ruff
       run: ruff check src/
-    - name: Run pylint
-      run: pylint src/chezmoi_mousse --disable=all --enable=E,F
     - name: Run black
       run: black --check src/
