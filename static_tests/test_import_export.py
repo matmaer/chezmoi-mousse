@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 from _test_utils import (
+    get_exported_names,
+    get_gui_module_paths,
     get_module_ast_class_defs,
     get_module_ast_tree,
     get_module_paths,
@@ -10,15 +12,14 @@ from _test_utils import (
 )
 
 INIT_PATH = Path("src", "chezmoi_mousse", "__init__.py")
-GUI_DIR = Path("src", "chezmoi_mousse", "gui")
 PACKAGE_NAME = "chezmoi_mousse"
 
 
 def get_gui_imports_from_package() -> set[str]:
-    # Collect all names imported via 'from chezmoi_mousse import ...' in the gui folder.
+    # Collect all names imported via 'from chezmoi_mousse import ...' in the gui folder
     names: set[str] = set()
-    for py_file in GUI_DIR.glob("**/*.py"):
-        tree = ast.parse(py_file.read_text())
+    for py_file in get_gui_module_paths():
+        tree = get_module_ast_tree(py_file)
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module == PACKAGE_NAME:
                 for alias in node.names:
@@ -27,13 +28,9 @@ def get_gui_imports_from_package() -> set[str]:
 
 
 def test_init_exports() -> None:
-    # __all__ in __init__.py should match exactly what gui files import from chezmoi_mousse.
+    # __all__ in __init__.py should match what gui files import from chezmoi_mousse
     gui_imports = get_gui_imports_from_package()
-    exported, _ = get_exported_names(INIT_PATH)
-
-    if exported is None:
-        pytest.fail("__init__.py has no __all__")
-        return
+    exported = get_exported_names(INIT_PATH)
 
     exported_names = exported - {"__version__"}
     errors: list[str] = []
@@ -47,32 +44,12 @@ def test_init_exports() -> None:
     not_exported = gui_imports - exported
     if not_exported:
         errors.append(
-            f"Imported from chezmoi_mousse in gui but missing from __all__: {sorted(not_exported)}"
+            f"Imported in gui but missing from chezmoi_mousse.__all__: "
+            f"{sorted(not_exported)}"
         )
 
     if errors:
         pytest.fail("\n".join(errors))
-
-
-def get_exported_names(module_path: Path) -> tuple[set[str] | None, int | None]:
-    # Extract __all__ exports from a module and its line number.
-    tree = get_module_ast_tree(module_path)
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assign) and any(
-            isinstance(t, ast.Name) and t.id == "__all__" for t in node.targets
-        ):
-            if isinstance(node.value, ast.List):
-                try:
-                    exported = {
-                        e.value
-                        for e in node.value.elts
-                        if isinstance(e, ast.Constant) and isinstance(e.value, str)
-                    }
-                    return exported, node.lineno
-                except AttributeError:
-                    return None, None
-    return None, None
 
 
 def get_modules_to_test() -> list[Path]:
@@ -94,7 +71,7 @@ def get_modules_to_test() -> list[Path]:
 
 
 @pytest.mark.parametrize(
-    "module_path", get_modules_to_test(), ids=lambda module_path: module_path.stem
+    "module_path", get_modules_to_test(), ids=lambda module_path: module_path.name
 )
 def test_module_exports(module_path: Path):
     # Test that a module exports all classes that are imported elsewhere,
@@ -108,26 +85,26 @@ def test_module_exports(module_path: Path):
         for cls_name in defined_classes
         if get_modules_importing_class(cls_name)
     }
-    exported, all_lineno = get_exported_names(module_path)
+    exported = get_exported_names(module_path)
 
     errors: list[str] = []
 
     # Check if imported classes are exported
     if imported_classes:
-        if exported is None:
+        if not exported:
             errors.append(
-                f"Module {module_path.stem} has no __all__ but exports classes: {sorted(imported_classes)}"
+                f"{module_path.name}: no __all__ but has classes imported in gui: "
+                f"{sorted(imported_classes)}"
             )
         else:
             missing = imported_classes - exported
             if missing:
-                line_info = f":{all_lineno}" if all_lineno else ""
                 errors.append(
-                    f"Module {module_path.stem}{line_info} missing from __all__: {sorted(missing)}"
+                    f"{module_path.name} missing from __all__: {sorted(missing)}"
                 )
 
     # Check if exported classes are imported elsewhere
-    if exported is not None:
+    if exported:
         # Assume all exported names except __version__ are classes
         classes_exported = (
             exported - {"__version__"} if "__version__" in exported else exported
@@ -143,8 +120,61 @@ def test_module_exports(module_path: Path):
                     else ""
                 )
                 errors.append(
-                    f"Module {module_path.stem} exports class {cls}{line_info} never imported"
+                    f"{module_path.name} exports {cls}{line_info} but never imported"
                 )
 
     if errors:
         pytest.fail("\n".join(errors))
+
+
+########################################
+# Test Indirect Imports in GUI Modules #
+########################################
+
+
+@pytest.mark.parametrize("module_path", get_gui_module_paths(), ids=lambda p: p.name)
+def test_indirect_imports(module_path: Path):
+    checker = ImportChecker(module_path)
+    checker.visit(get_module_ast_tree(module_path))
+    if checker.errors:
+        pytest.fail("\n".join(checker.errors))
+
+
+class ImportChecker(ast.NodeVisitor):
+    def __init__(self, filepath: Path):
+        self.filepath = filepath
+        self.errors: list[str] = []
+
+    def visit_ImportFrom(self, node: ast.ImportFrom):
+
+        def resolve_relative_import(
+            from_module_path: Path, import_module: str, level: int
+        ) -> Path:
+            # Go up the directory tree based on the level
+            target_dir = from_module_path.parents[level - 1]
+
+            # Convert module path to file path
+            module_parts = import_module.split(".")
+            return target_dir.joinpath(*module_parts).with_suffix(".py")
+
+        # Check for relative imports where names are not exported by the target module
+        if not (node.module and node.level > 0):  # Only check relative imports
+            return self.generic_visit(node)
+
+        exported_names = get_exported_names(
+            resolve_relative_import(self.filepath, node.module, node.level)
+        )
+
+        if not exported_names:
+            # If the module exists but has no __all__, we can't validate the import
+            return self.generic_visit(node)
+
+        # Check each imported name
+        for alias in node.names:
+            if alias.name not in exported_names:
+                self.errors.append(
+                    f"{self.filepath.name} imports {alias.name} "
+                    f"but not exported by {node.module}"
+                )
+
+        self.generic_visit(node)

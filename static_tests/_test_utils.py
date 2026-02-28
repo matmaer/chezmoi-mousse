@@ -19,8 +19,32 @@ def get_module_paths() -> list[Path]:
 
 
 @cache
+def get_gui_module_paths() -> list[Path]:
+    return [Path.cwd() / p for p in get_module_paths() if "gui" in p.parts]
+
+
+@cache
 def get_module_ast_tree(module_path: Path) -> ast.AST:
     return ast.parse(module_path.read_text())
+
+
+@cache
+def get_exported_names(module_path: Path) -> set[str]:
+
+    tree = get_module_ast_tree(module_path)
+
+    for node in tree.body if isinstance(tree, ast.Module) else []:
+        if (
+            isinstance(node, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "__all__" for t in node.targets)
+            and isinstance(node.value, (ast.List, ast.Tuple))
+        ):
+            return {
+                e.value
+                for e in node.value.elts
+                if isinstance(e, ast.Constant) and isinstance(e.value, str)
+            }
+    return set()
 
 
 @cache
@@ -46,12 +70,12 @@ def get_all_module_data() -> list[ModuleData]:
 
 
 @cache
-def get_modules_importing_class(class_name: str) -> list[Path]:
-    modules: list[Path] = []
+def get_modules_importing_class(class_name: str) -> set[Path]:
+    modules: set[Path] = set()
     for module_path in get_module_paths():
         for node in ast.walk(get_module_ast_tree(module_path)):
             if isinstance(node, ast.ImportFrom):
                 if class_name in (alias.name for alias in node.names):
-                    modules.append(module_path)
+                    modules.add(module_path)
                     break
     return modules
