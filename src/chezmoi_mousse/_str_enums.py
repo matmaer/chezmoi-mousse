@@ -191,6 +191,10 @@ class OperateString(StrEnum):
         f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
         f"[$text-error]{Chars.x_mark}[/]"
     )
+    dir_no_diff = (
+        "The directory has no chezmoi status and contains no nested paths with a status"
+    )
+    file_no_diff = "The file has no chezmoi status"
     forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
     forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     ready_to_run = "[$text]Ready to run[/]"

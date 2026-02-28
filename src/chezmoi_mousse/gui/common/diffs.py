@@ -6,7 +6,7 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, LogString, ReadCmd, TabName, Tcss
+from chezmoi_mousse import CMD, AppIds, AppType, OperateString, ReadCmd, TabName, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -42,9 +42,6 @@ class DiffView(Container, AppType):
         self.border_title = f" {CMD.dest_dir} "
 
     def _create_diff_widgets(self, diff_result: "CommandResult") -> list[Static]:
-        if not diff_result.std_out:
-            return [Static(LogString.no_stdout)]
-
         widgets: list[Static] = []
         lines = diff_result.std_out.splitlines()
 
@@ -120,8 +117,12 @@ class DiffView(Container, AppType):
                 )
             else:
                 raise ValueError(f"Unexpected canvas name: {self.canvas_name}")
-
-            widgets = self._create_diff_widgets(diff_result)
+            if not diff_result.std_out and self.show_path in CMD.managed_files:
+                widgets = [Static(OperateString.file_no_diff)]
+            elif not diff_result.std_out and self.show_path in CMD.managed_dirs:
+                widgets = [Static(OperateString.dir_no_diff)]
+            else:
+                widgets = self._create_diff_widgets(diff_result)
             self._cache_container(self.show_path, *widgets)
         if self.show_path != CMD.dest_dir:
             self.border_title = f" {self.show_path.name} "
