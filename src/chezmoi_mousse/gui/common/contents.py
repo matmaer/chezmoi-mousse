@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, StatusCode, TabName, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, TabName, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirNode
@@ -66,17 +66,6 @@ class ContentsView(Container, AppType):
             return CMD.apply_dir_nodes
         else:
             return CMD.re_add_dir_nodes
-
-    @property
-    def node_colors(self) -> dict[str, str]:
-        return {
-            StatusCode.Added: self.app.theme_variables["text-success"],
-            StatusCode.Deleted: self.app.theme_variables["text-error"],
-            StatusCode.Modified: self.app.theme_variables["text-warning"],
-            StatusCode.No_Change: self.app.theme_variables["warning-darken-2"],
-            StatusCode.Run: self.app.theme_variables["error"],
-            StatusCode.No_Status: self.app.theme_variables["text-secondary"],
-        }
 
     def _create_file_contents(
         self, file_path: Path, managed: bool
@@ -143,47 +132,6 @@ class ContentsView(Container, AppType):
             result = Static(text_obj)
         return result
 
-    def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
-        widgets: list[Static | Label] = []
-        dir_node: DirNode = self.dir_nodes[dir_path]
-        if dir_node.real_status_dirs_in:
-            widgets.append(
-                Label(
-                    "Contains directories with a status", classes=Tcss.sub_section_label
-                )
-            )
-            for path, status in dir_node.real_status_dirs_in.items():
-                widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
-        if dir_node.status_files_in:
-            widgets.append(
-                Label("Contains files with a status", classes=Tcss.sub_section_label)
-            )
-            for path, status in dir_node.status_files_in.items():
-                widgets.append(Static(f"[{self.node_colors[status]}]{path}[/]"))
-        if dir_node.nested_status_files:
-            widgets.append(
-                Label(
-                    "Contains nested files with a status",
-                    classes=Tcss.sub_section_label,
-                )
-            )
-            for path, status in sorted(dir_node.nested_status_files.items()):
-                widgets.append(Static(f"[dim {self.node_colors[status]}]{path}[/]"))
-        if not any(
-            [
-                dir_node.real_status_dirs_in,
-                dir_node.status_files_in,
-                dir_node.nested_status_files,
-            ]
-        ):
-            widgets.append(
-                Label(
-                    f"{dir_path} contains no status paths",
-                    classes=Tcss.sub_section_label,
-                )
-            )
-        return widgets
-
     def _cache_container(
         self, path: Path, *widgets: Static | TextArea | Label
     ) -> ScrollableContainer:
@@ -204,7 +152,7 @@ class ContentsView(Container, AppType):
                 self._cache_container(self.show_path, widget)
             # Managed directories (ApplyTab/ReAddTab)
             elif self.show_path in CMD.managed_dirs:
-                widgets = self._create_dir_contents(dir_path=self.show_path)
+                widgets = self.dir_nodes[self.show_path].dir_widgets
                 container = self._cache_container(self.show_path, *widgets)
                 self.mount(container)
                 self.cache[self.show_path] = container

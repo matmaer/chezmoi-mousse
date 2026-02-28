@@ -5,7 +5,10 @@ from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from textual.widgets import Label, Static
+
 from ._chezmoi_command import ChezmoiCommand
+from ._str_enum_names import Tcss
 from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
@@ -52,6 +55,45 @@ class DirNode:
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
+    dir_widgets: list[Static | Label] = field(default_factory=list[Static | Label])
+
+    @property
+    def node_colors(self) -> dict[str, str]:
+        return {
+            StatusCode.Added: "[$text-success]",
+            StatusCode.Deleted: "[$text-error]",
+            StatusCode.Modified: "[$text-warning]",
+            StatusCode.No_Change: "[$warning-darken-2]",
+            StatusCode.Run: "[$error]",
+            StatusCode.No_Status: "[$text-secondary]",
+        }
+
+    def __post_init__(self) -> None:
+        widgets: list[Static | Label] = []
+        if self.real_status_dirs_in:
+            widgets.append(
+                Label(
+                    "Contains directories with a status", classes=Tcss.sub_section_label
+                )
+            )
+            for path, status in self.real_status_dirs_in.items():
+                widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
+        if self.status_files_in:
+            widgets.append(
+                Label("Contains files with a status", classes=Tcss.sub_section_label)
+            )
+            for path, status in self.status_files_in.items():
+                widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
+        if self.nested_status_files:
+            widgets.append(
+                Label(
+                    "Contains nested files with a status",
+                    classes=Tcss.sub_section_label,
+                )
+            )
+            for path, status in sorted(self.nested_status_files.items()):
+                widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
+        self.dir_widgets = widgets
 
 
 @dataclass(slots=True)
@@ -231,6 +273,7 @@ class Commands:
         ]
 
     def _update_apply_and_re_add_dir_nodes(self) -> None:
+
         def get_dir_node(
             dir_path: Path,
             sub_dir_paths: list[Path],
@@ -277,6 +320,7 @@ class Commands:
                     if p.is_relative_to(dir_path)
                     and len(p.relative_to(dir_path).parts) > 1
                 },
+                dir_widgets=[],
             )
 
         for dir_path in self._parsed_paths.managed_dirs:

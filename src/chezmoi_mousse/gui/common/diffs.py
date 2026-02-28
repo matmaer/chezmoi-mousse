@@ -6,7 +6,16 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, OperateString, ReadCmd, TabName, Tcss
+from chezmoi_mousse import (
+    CMD,
+    AppIds,
+    AppType,
+    DirNode,
+    OperateString,
+    ReadCmd,
+    TabName,
+    Tcss,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -40,6 +49,13 @@ class DiffView(Container, AppType):
 
     def on_mount(self) -> None:
         self.border_title = f" {CMD.dest_dir} "
+
+    @property
+    def dir_nodes(self) -> dict[Path, "DirNode"]:
+        if self.canvas_name == TabName.apply:
+            return CMD.apply_dir_nodes
+        else:
+            return CMD.re_add_dir_nodes
 
     def _create_diff_widgets(self, diff_result: "CommandResult") -> list[Static]:
         widgets: list[Static] = []
@@ -75,7 +91,13 @@ class DiffView(Container, AppType):
     def watch_show_path(self) -> None:
         if self.show_path is None:
             self.show_path = CMD.dest_dir
-            widgets: list[Static] = []
+            widgets: list[Static] = self.dir_nodes[self.show_path].dir_widgets
+            if widgets:
+                container = self._cache_container(self.show_path, *widgets)
+                self.mount(container)
+                self.cache[self.show_path] = container
+                return
+
             if not CMD.managed_dirs and not CMD.managed_files:
                 widgets.append(
                     Static(
@@ -92,8 +114,7 @@ class DiffView(Container, AppType):
                         markup=False,
                     )
                 )
-                return
-            if CMD.no_status_paths is True:
+            elif CMD.no_status_paths is True:
                 text = (
                     "No diffs are available because no paths are present in the chezmoi"
                     "status output.\n<- Select an unchanged path to view its contents."
@@ -120,7 +141,10 @@ class DiffView(Container, AppType):
             if not diff_result.std_out and self.show_path in CMD.managed_files:
                 widgets = [Static(OperateString.file_no_diff)]
             elif not diff_result.std_out and self.show_path in CMD.managed_dirs:
-                widgets = [Static(OperateString.dir_no_diff)]
+                widgets = self.dir_nodes[self.show_path].dir_widgets
+                container = self._cache_container(self.show_path, *widgets)
+                self.mount(container)
+                self.cache[self.show_path] = container
             else:
                 widgets = self._create_diff_widgets(diff_result)
             self._cache_container(self.show_path, *widgets)
