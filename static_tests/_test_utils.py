@@ -1,3 +1,6 @@
+"""Utility functions for static tests, with caching to speed up repeated access to
+module data across the different test_ modules."""
+
 import ast
 from functools import cache
 from pathlib import Path
