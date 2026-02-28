@@ -298,9 +298,6 @@ class Commands:
                 p for p in self._parsed_paths.managed_dirs if p.parent == dir_path
             ]
             # Update apply nodes
-            apply_dir_status = self._parsed_paths.apply_status_dirs.get(
-                dir_path, StatusCode.No_Status
-            )
             apply_status_files_in = {
                 path: status
                 for path, status in self._parsed_paths.apply_status_files.items()
@@ -312,7 +309,9 @@ class Commands:
                 if path.parent == dir_path
             }
             self.apply_dir_nodes[dir_path] = DirNode(
-                dir_status=apply_dir_status,
+                dir_status=self._parsed_paths.apply_status_dirs.get(
+                    dir_path, StatusCode.No_Status
+                ),
                 status_files_in=apply_status_files_in,
                 x_files_in=get_x_files_in(dir_path),
                 real_status_dirs_in=apply_status_dirs_in,
@@ -329,9 +328,6 @@ class Commands:
             )
 
             # Update re-add nodes
-            re_add_dir_status = self._parsed_paths.re_add_status_dirs.get(
-                dir_path, StatusCode.No_Status
-            )
             re_add_status_files_in = {
                 path: status
                 for path, status in self._parsed_paths.re_add_status_files.items()
@@ -343,7 +339,9 @@ class Commands:
                 if path.parent == dir_path
             }
             self.re_add_dir_nodes[dir_path] = DirNode(
-                dir_status=re_add_dir_status,
+                dir_status=self._parsed_paths.re_add_status_dirs.get(
+                    dir_path, StatusCode.No_Status
+                ),
                 status_files_in=re_add_status_files_in,
                 x_files_in=get_x_files_in(dir_path),
                 real_status_dirs_in=re_add_status_dirs_in,
