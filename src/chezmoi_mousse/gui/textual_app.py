@@ -422,12 +422,7 @@ class ChezmoiGUI(App[None]):
             else:
                 return False
         elif action == BindingAction.toggle_dry_run:
-            if isinstance(self.screen, MainScreen):
-                tabs = self.screen.query_exactly_one(Tabs)
-                header = self.screen.query_exactly_one(CustomHeader)
-                if tabs.display is True or header.display is False:
-                    return False
-            elif isinstance(self.screen, (InitChezmoi)):
+            if isinstance(self.screen, (MainScreen, InitChezmoi)):
                 return True
             else:
                 return False
