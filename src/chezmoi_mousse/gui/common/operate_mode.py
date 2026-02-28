@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 __all__ = ["OperateMode"]
 
 # not needed for anything else than making log messages readable for humans
-MIN_WAIT_TIME = 3
+MIN_WAIT_TIME = 2
 
 
 class LoadingModal(ModalScreen[None]):
