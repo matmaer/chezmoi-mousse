@@ -450,73 +450,12 @@ class InitChezmoi(Screen[None], AppType):
         )
         self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         self._update_init_info()
-        # self.init_chezmoi_btn = self.query_one(self.ids.op_btn.init_q, Button)
         self.repo_input = self.query_one(
             self.ids.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
 
-    # def update_operate_info(self) -> None:
-    #     lines_to_write: list[str] = []
-    #     if self.init_clone_data is None:
-    #         lines_to_write.append("[$text-error]No init clone input provided yet.")
-    #     if (
-    #         self.init_clone_data is not None
-    #         and self.init_clone_data.init_cmd == WriteCmd.init_no_guess
-    #     ):
-    #         if self.init_clone_data.valid_arg is True:
-    #             lines_to_write.append(
-    #                 (
-    #                     f"{OperateString.ready_to_run} "
-    #                     f"{WriteCmd.init_no_guess.bold_review_cmd} "
-    #                     f'{self.init_clone_data.init_arg}"[/]'
-    #                 )
-    #             )
-    #         elif self.init_clone_data.valid_arg is False:
-    #             lines_to_write.append(
-    #                 f"[$text-error]{WriteCmd.init_no_guess.bold_review_cmd} "
-    #                 ": invalid URL or SSH SCP-style address."
-    #             )
-    #     elif (
-    #         self.init_clone_data is not None
-    #         and self.init_clone_data.init_cmd == WriteCmd.init_guess_https
-    #     ):
-    #         if self.init_clone_data.valid_arg is True:
-    #             lines_to_write.append(
-    #                 (
-    #                     f"{OperateString.ready_to_run} "
-    #                     f"{self.init_clone_data.init_cmd.bold_review_cmd} "
-    #                     f"{self.init_clone_data.init_arg}[/]"
-    #                 )
-    #             )
-    #         elif self.init_clone_data.valid_arg is False:
-    #             lines_to_write.append(
-    #                 f"{self.init_clone_data.init_cmd.bold_review_cmd} [$text-error]"
-    #                 ": invalid guess https input.[/]"
-    #             )
-    #     elif (
-    #         self.init_clone_data is not None
-    #         and self.init_clone_data.init_cmd == WriteCmd.init_guess_ssh
-    #     ):
-    #         if self.init_clone_data.valid_arg is True:
-    #             lines_to_write.append(
-    #                 (
-    #                     f"{OperateString.ready_to_run} "
-    #                     f"{self.init_clone_data.init_cmd.bold_review_cmd} "
-    #                     f"{self.init_clone_data.init_arg}[/]"
-    #                 )
-    #             )
-    #         elif self.init_clone_data.valid_arg is False:
-    #             lines_to_write.append(
-    #                 f"{self.init_clone_data.init_cmd.bold_review_cmd} [$text-error]"
-    #                 ": invalid guess ssh input.[/]"
-    #             )
-    #     # self.operate_info.update("\n".join(lines_to_write))
-
     def _update_init_info(self) -> None:
-        if self.query_exactly_one(Switch).value is False:
-            self.init_info.update(OperateString.init_new_info)
-            return
         current_select = self.repo_input.query_exactly_one(Select[str]).value
         if current_select == "https":
             self.init_info.update(OperateString.https_url)
@@ -527,33 +466,10 @@ class InitChezmoi(Screen[None], AppType):
         elif current_select == "guess ssh":
             self.init_info.update(OperateString.guess_ssh)
 
-    # @work(exit_on_error=False)
-    # async def run_operate_command(self) -> None:
-    #     self.close_btn = self.query_one(IDS.init.close_q, Button)
-    #     if (
-    #         self.app.changes_enabled
-    #         is True
-    #         # and self.app.init_cmd_result.exit_code == 0
-    #     ):
-    #         self.app.init_needed = False
-    #         self.init_chezmoi_btn.disabled = True
-    #         self.close_btn.label = OpBtnLabel.reload
-
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
         if event.value is True:
             self.repo_input.display = True
-            # self.init_chezmoi_btn.disabled = True
         elif event.value is False:
             self.repo_input.display = False
         self._update_init_info()
-
-    # @on(OperateButtonMsg)
-    # def handle_operate_button_pressed(self, msg: OperateButtonMsg) -> None:
-    #     msg.stop()
-    #     if msg.button.btn_enum == OpBtnEnum.init:
-    #         self.init_cmd = WriteCmd.init_new
-    #         self.init_arg = None
-    #         # self.run_operate_command()
-    #     elif msg.button.label == OpBtnLabel.reload:
-    #         self.dismiss()
