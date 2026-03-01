@@ -161,18 +161,6 @@ class SwitchLabel(StrEnum):
 
 
 class OperateString(StrEnum):
-    add_path_info = (
-        "[dim]Add new targets to the source state. If adding a directory, it"
-        " will be recursed in.[/]"
-    )
-    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
-    apply_path_info = (
-        "[dim]Chezmoi will ensure that the path is in the target state. "
-        "The command will run without prompting. "
-        "For targets modified since chezmoi last wrote it. If adding a "
-        "directory, it will be recursed in.[/]"
-    )
-    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_commit = (
         f"[$text-warning]{Chars.warning_sign} Git auto commit is enabled: "
         "files will also be committed."
@@ -183,35 +171,9 @@ class OperateString(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    destroy_path_info = (
-        "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
-        "SURE YOU HAVE A BACKUP![/]"
-    )
-    destroy_subtitle = (
-        f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
-        f"[$text-error]{Chars.x_mark}[/]"
-    )
-    forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
-    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
-    ready_to_run = "[$text]Ready to run[/]"
-    run_completed_dry = "[$text]Command completed in dry-run mode[/]"
-    run_completed_live = "[$text]Command completed in live mode[/]"
-    re_add_path_info = (
-        "[dim]Re-add modified files in the target state, preserving "
-        "any encrypted_ attributes. chezmoi will not overwrite templates, and "
-        "all entries that are not files are ignored. If adding a directory, it"
-        " will be recursed in.[/]"
-    )
-    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
     # Init screen info strings
     guess_https = "Let chezmoi guess the best URL to clone from."
     guess_ssh = "Let chezmoi guess the best ssh scp-style address to clone from."
-    init_new_info = (
-        "Ready to initialize a new chezmoi repository. Toggle the "
-        "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{SwitchLabel.init_repo} [/]"
-        "switch to initialize by cloning an existing Github repository."
-    )
     https_url = (
         "Enter a complete URL, e.g., "
         "[$text-primary]https://github.com/user/repo.git[/]. "
@@ -225,7 +187,6 @@ class OperateString(StrEnum):
         "private, make sure you have your SSH key pair set up before using "
         "this option."
     )
-    init_subtitle = "initialize chezmoi repository"
 
 
 class SectionLabel(StrEnum):

@@ -96,7 +96,7 @@ class OperateMode(Vertical, AppType):
         info_lines: list[str] = []
         pretty_cmd = CMD.run_cmd.review_cmd(global_args=self.btn_enum.write_cmd.value)
         cmd_text = (
-            f"{OperateString.ready_to_run} [$text-primary bold]{pretty_cmd} "
+            f"[$text-primary bold]{pretty_cmd} "
             f"{self.path_arg.relative_to(CMD.dest_dir)}[/]"
         )
         info_lines.append(cmd_text)

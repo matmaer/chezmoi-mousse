@@ -1,16 +1,58 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from functools import cache
 from typing import TYPE_CHECKING
 
-from ._chezmoi_command import WriteCmd
+from ._chezmoi_command import Chars, WriteCmd
 from ._str_enum_names import ScreenName, TabName
-from ._str_enums import OpBtnLabel, OperateString, SwitchLabel
+from ._str_enums import OpBtnLabel, SwitchLabel
 
 if TYPE_CHECKING:
     from ._app_ids import AppIds
 
 __all__ = ["OpBtnEnum", "SwitchEnum"]
+
+
+class OpInfoString(StrEnum):
+    add_path_info = (
+        "[dim]Add new targets to the source state. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
+    apply_path_info = (
+        "[dim]Chezmoi will ensure that the path is in the target state. "
+        "The command will run without prompting. "
+        "For targets modified since chezmoi last wrote it. If adding a "
+        "directory, it will be recursed in.[/]"
+    )
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    destroy_path_info = (
+        "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
+        "SURE YOU HAVE A BACKUP![/]"
+    )
+    destroy_subtitle = (
+        f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[$text-error]{Chars.x_mark}[/]"
+    )
+    forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
+    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
+    ready_to_run = "[$text]Ready to run[/]"
+    run_completed_dry = "[$text]Command completed in dry-run mode[/]"
+    run_completed_live = "[$text]Command completed in live mode[/]"
+    re_add_path_info = (
+        "[dim]Re-add modified files in the target state, preserving "
+        "any encrypted_ attributes. chezmoi will not overwrite templates, and "
+        "all entries that are not files are ignored. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
+    init_new_info = (
+        "Ready to initialize a new chezmoi repository. Toggle the "
+        "[$foreground-darken-1 on $surface-lighten-1] "
+        f"{SwitchLabel.init_repo} [/]"
+        "switch to initialize by cloning an existing Github repository."
+    )
+    init_subtitle = "initialize chezmoi repository"
 
 
 @dataclass(slots=True)
@@ -26,86 +68,86 @@ class OpBtnEnum(Enum):
     _add_review = OpBtnData(
         label=OpBtnLabel.add_review,
         write_cmd=WriteCmd.add,
-        info_string=OperateString.add_path_info,
-        info_sub_title=OperateString.add_subtitle,
-        info_title=OperateString.ready_to_run,
+        info_string=OpInfoString.add_path_info,
+        info_sub_title=OpInfoString.add_subtitle,
+        info_title=OpInfoString.ready_to_run,
     )
     _add_run = OpBtnData(
         label=OpBtnLabel.add_run,
         write_cmd=WriteCmd.add,
-        info_string=OperateString.add_path_info,
-        info_sub_title=OperateString.add_subtitle,
-        info_title=OperateString.run_completed_dry,
+        info_string=OpInfoString.add_path_info,
+        info_sub_title=OpInfoString.add_subtitle,
+        info_title=OpInfoString.run_completed_dry,
     )
     _apply_review = OpBtnData(
         label=OpBtnLabel.apply_review,
         write_cmd=WriteCmd.apply,
-        info_string=OperateString.apply_path_info,
-        info_sub_title=OperateString.apply_subtitle,
-        info_title=OperateString.ready_to_run,
+        info_string=OpInfoString.apply_path_info,
+        info_sub_title=OpInfoString.apply_subtitle,
+        info_title=OpInfoString.ready_to_run,
     )
     _apply_run = OpBtnData(
         label=OpBtnLabel.apply_run,
         write_cmd=WriteCmd.apply,
-        info_string=OperateString.apply_path_info,
-        info_sub_title=OperateString.apply_subtitle,
-        info_title=OperateString.run_completed_dry,
+        info_string=OpInfoString.apply_path_info,
+        info_sub_title=OpInfoString.apply_subtitle,
+        info_title=OpInfoString.run_completed_dry,
     )
     _destroy_review = OpBtnData(
         label=OpBtnLabel.destroy_review,
         write_cmd=WriteCmd.destroy,
-        info_string=OperateString.destroy_path_info,
-        info_sub_title=OperateString.destroy_subtitle,
-        info_title=OperateString.ready_to_run,
+        info_string=OpInfoString.destroy_path_info,
+        info_sub_title=OpInfoString.destroy_subtitle,
+        info_title=OpInfoString.ready_to_run,
     )
     _destroy_run = OpBtnData(
         label=OpBtnLabel.destroy_run,
         write_cmd=WriteCmd.destroy,
-        info_string=OperateString.destroy_path_info,
-        info_sub_title=OperateString.destroy_subtitle,
-        info_title=OperateString.run_completed_dry,
+        info_string=OpInfoString.destroy_path_info,
+        info_sub_title=OpInfoString.destroy_subtitle,
+        info_title=OpInfoString.run_completed_dry,
     )
     _forget_review = OpBtnData(
         label=OpBtnLabel.forget_review,
         write_cmd=WriteCmd.forget,
-        info_string=OperateString.forget_path_info,
-        info_sub_title=OperateString.forget_subtitle,
-        info_title=OperateString.ready_to_run,
+        info_string=OpInfoString.forget_path_info,
+        info_sub_title=OpInfoString.forget_subtitle,
+        info_title=OpInfoString.ready_to_run,
     )
     _forget_run = OpBtnData(
         label=OpBtnLabel.forget_run,
         write_cmd=WriteCmd.forget,
-        info_string=OperateString.forget_path_info,
-        info_sub_title=OperateString.forget_subtitle,
-        info_title=OperateString.run_completed_dry,
+        info_string=OpInfoString.forget_path_info,
+        info_sub_title=OpInfoString.forget_subtitle,
+        info_title=OpInfoString.run_completed_dry,
     )
     _re_add_review = OpBtnData(
         label=OpBtnLabel.re_add_review,
         write_cmd=WriteCmd.re_add,
-        info_string=OperateString.re_add_path_info,
-        info_sub_title=OperateString.re_add_subtitle,
-        info_title=OperateString.ready_to_run,
+        info_string=OpInfoString.re_add_path_info,
+        info_sub_title=OpInfoString.re_add_subtitle,
+        info_title=OpInfoString.ready_to_run,
     )
     _re_add_run = OpBtnData(
         label=OpBtnLabel.re_add_run,
         write_cmd=WriteCmd.re_add,
-        info_string=OperateString.re_add_path_info,
-        info_sub_title=OperateString.re_add_subtitle,
-        info_title=OperateString.run_completed_dry,
+        info_string=OpInfoString.re_add_path_info,
+        info_sub_title=OpInfoString.re_add_subtitle,
+        info_title=OpInfoString.run_completed_dry,
     )
     _init_review = OpBtnData(
         label=OpBtnLabel.init_review,
         write_cmd=WriteCmd.init_new,
-        info_string=OperateString.init_new_info,
-        info_sub_title=OperateString.init_subtitle,
-        info_title=OperateString.ready_to_run,
+        info_string=OpInfoString.init_new_info,
+        info_sub_title=OpInfoString.init_subtitle,
+        info_title=OpInfoString.ready_to_run,
     )
     _init_run = OpBtnData(
         label=OpBtnLabel.init_run,
         write_cmd=WriteCmd.init_new,
-        info_string=OperateString.init_new_info,
-        info_sub_title=OperateString.init_subtitle,
-        info_title=OperateString.run_completed_dry,
+        info_string=OpInfoString.init_new_info,
+        info_sub_title=OpInfoString.init_subtitle,
+        info_title=OpInfoString.run_completed_dry,
     )
 
     # Allow access to dataclass attributes directly from the Enum member,
