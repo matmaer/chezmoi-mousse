@@ -171,7 +171,7 @@ class OperateButtons(HorizontalGroup):
             self.cancel_btn.display = True
             for btn in self.review_buttons:
                 btn.display = False
-            run_btn_enum = OpBtnEnum.review_to_run(str(event.button.label))
+            run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(event.button.label)))
             # now lookup the button widget in self.run_buttons with the
             # corresponding enum
             btn_widget: OpButton | None = next(
