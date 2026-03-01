@@ -105,13 +105,12 @@ class DirNode:
                     "Switch to the Git-Log tab to view the git log output for the "
                     "selected path."
                 )
-                widgets.append(Static(text, classes=Tcss.info, markup=False))
+                widgets.append(Static(text, classes=Tcss.info))
             else:
-                text = (
-                    "This is the destination directory, it has no diff output.\n"
-                    "<- Select a file or directory in the tree to view its diff."
-                )
-                widgets.append(Static(text, classes=Tcss.info, markup=False))
+                text = "<- Select a file or directory in the tree to view its diff."
+                widgets.append(Static(text, classes=Tcss.added))
+                text = "This is the destination directory, it has no diff output."
+                widgets.append(Static(text, classes=Tcss.info))
         if self.real_status_dirs_in:
             widgets.append(
                 Label(
