@@ -25,3 +25,7 @@ jobs:
       run: uv run ruff check src/
     - name: Run black
       run: uv run black --check src/
+    - name: Verify app can be imported
+      run: uv run python -c "import chezmoi_mousse; print('Import successful')"
+      env:
+        PYTHONPATH: src
