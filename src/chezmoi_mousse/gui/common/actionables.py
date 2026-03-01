@@ -127,6 +127,10 @@ class OperateButtons(HorizontalGroup):
         self.cancel_btn.display = False
         self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
         self.reload_btn.display = False
+        # disable forget and destroy buttons at app startup as we're in the destDir
+        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
+            self.query_one(self.ids.op_btn.destroy_review_q, OpButton).disabled = True
+            self.query_one(self.ids.op_btn.forget_review_q, OpButton).disabled = True
         all_buttons: list[OpButton] = [
             b for b in self.query_children().results() if isinstance(b, OpButton)
         ]
