@@ -63,14 +63,14 @@ class ReAddTab(Container, AppType):
             True if msg.path == CMD.dest_dir else False
         )
         # disable/enable re_add review button
-        self.query_one(IDS.re_add.op_btn.apply_review_q, Button).disabled = (
+        self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = (
             True
             if msg.path in CMD.managed_files and msg.path not in CMD.status_paths
             else False
         )
         if msg.path in CMD.managed_dirs and msg.path not in CMD.status_paths:
             dir_node = CMD.re_add_dir_nodes[msg.path]
-            self.query_one(IDS.re_add.op_btn.apply_review_q, Button).disabled = (
+            self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = (
                 False if dir_node.has_status_paths else True
             )
 
