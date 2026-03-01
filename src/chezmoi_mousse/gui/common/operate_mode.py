@@ -84,7 +84,7 @@ class OperateMode(Vertical, AppType):
         if btn_enum in OpBtnEnum.review_btn_enums():
             self.update_review_info()
         elif btn_enum in OpBtnEnum.run_btn_enums():
-            self.run_write_command(btn_enum)
+            self._run_write_command(btn_enum)
         else:
             self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
 
@@ -201,7 +201,7 @@ class OperateMode(Vertical, AppType):
             await sleep(MIN_WAIT_TIME - elapsed)
 
     @work(exit_on_error=False)
-    async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
+    async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
         self.all_cmd_results = []
         self.loading_modal = LoadingModal(self.ids)
         await self.app.push_screen(self.loading_modal)
