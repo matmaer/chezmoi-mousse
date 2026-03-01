@@ -67,6 +67,7 @@ select = [
     "C4",   # flake8-comprehensions
     "UP",   # pyupgrade
     "PLE",  # pylint errors
+    "RUF012", # flake8-class-attributes
 ]
 
 [tool.codespell]
