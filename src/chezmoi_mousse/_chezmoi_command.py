@@ -14,7 +14,7 @@ __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
 class GlobalCmd(Enum):
-    default_args = [
+    default_args = (
         "--color=off",
         "--force",
         "--interactive=false",
@@ -26,14 +26,14 @@ class GlobalCmd(Enum):
         "--verbose=true",
         "--use-builtin-git=true",
         "--use-builtin-diff=true",
-    ]
-    live_run = ["chezmoi"] + default_args
-    dry_run = live_run + ["--dry-run"]
+    )
+    live_run = ("chezmoi",) + default_args
+    dry_run = live_run + ("--dry-run",)
 
 
 class VerbArgs(Enum):
     format_json = "--format=json"
-    git_log = [
+    git_log = (
         "--",
         "log",
         "--date-order",
@@ -42,12 +42,12 @@ class VerbArgs(Enum):
         "--no-color",
         "--no-decorate",
         "--no-expand-tabs",
-    ]
+    )
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     init_do_not_guess = "--guess-repo-url=false"
     init_guess_https = "--guess-repo-url=true"
-    init_guess_ssh = ["--guess-repo-url=true", "--ssh"]
+    init_guess_ssh = ("--guess-repo-url=true", "--ssh")
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
 
@@ -68,37 +68,37 @@ class ReadVerb(Enum):
 
 
 class ReadCmd(Enum):
-    cat = [ReadVerb.cat.value]
-    cat_config = [ReadVerb.cat_config.value]
-    diff = [ReadVerb.diff.value]
-    diff_reverse = [ReadVerb.diff.value, VerbArgs.reverse.value]
-    doctor = [ReadVerb.doctor.value]
-    dump_config = [VerbArgs.format_json.value, ReadVerb.dump_config.value]
-    git_log = [ReadVerb.git.value] + VerbArgs.git_log.value
-    ignored = [ReadVerb.ignored.value]
-    managed_dirs = [
+    cat = (ReadVerb.cat.value,)
+    cat_config = (ReadVerb.cat_config.value,)
+    diff = (ReadVerb.diff.value,)
+    diff_reverse = (ReadVerb.diff.value, VerbArgs.reverse.value)
+    doctor = (ReadVerb.doctor.value,)
+    dump_config = (VerbArgs.format_json.value, ReadVerb.dump_config.value)
+    git_log = (ReadVerb.git.value,) + VerbArgs.git_log.value
+    ignored = (ReadVerb.ignored.value,)
+    managed_dirs = (
         ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
-    ]
-    managed_files = [
+    )
+    managed_files = (
         ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
-    ]
-    source_path = [ReadVerb.source_path.value]
-    status_dirs = [
+    )
+    source_path = (ReadVerb.source_path.value,)
+    status_dirs = (
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_dirs.value,
-    ]
-    status_files = [
+    )
+    status_files = (
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
         VerbArgs.include_files.value,
-    ]
-    template_data = [ReadVerb.data.value]
-    verify = [ReadVerb.verify.value]
+    )
+    template_data = (ReadVerb.data.value,)
+    verify = (ReadVerb.verify.value,)
 
 
 class WriteVerb(Enum):
@@ -111,15 +111,15 @@ class WriteVerb(Enum):
 
 
 class WriteCmd(Enum):
-    add = [WriteVerb.add.value]
-    apply = [WriteVerb.apply.value]
-    destroy = [WriteVerb.destroy.value]
-    forget = [WriteVerb.forget.value]
-    init_guess_https = [WriteVerb.init.value, VerbArgs.init_guess_https.value]
-    init_guess_ssh = [WriteVerb.init.value] + VerbArgs.init_guess_ssh.value
-    init_new = [WriteVerb.init.value]
-    init_no_guess = [WriteVerb.init.value, VerbArgs.init_do_not_guess.value]
-    re_add = [WriteVerb.re_add.value]
+    add = (WriteVerb.add.value,)
+    apply = (WriteVerb.apply.value,)
+    destroy = (WriteVerb.destroy.value,)
+    forget = (WriteVerb.forget.value,)
+    init_guess_https = (WriteVerb.init.value, VerbArgs.init_guess_https.value)
+    init_guess_ssh = (WriteVerb.init.value,) + VerbArgs.init_guess_ssh.value
+    init_new = (WriteVerb.init.value,)
+    init_no_guess = (WriteVerb.init.value, VerbArgs.init_do_not_guess.value)
+    re_add = (WriteVerb.re_add.value,)
 
 
 class RunCmdResult(NamedTuple):
@@ -128,7 +128,7 @@ class RunCmdResult(NamedTuple):
 
 
 def _run_chezmoi_cmd(
-    command: list[str],
+    command: tuple[str, ...],
     read_cmd: ReadCmd | None = None,
     write_cmd: WriteCmd | None = None,
 ) -> RunCmdResult:
@@ -145,7 +145,7 @@ def _run_chezmoi_cmd(
     exclude = set(
         GlobalCmd.default_args.value
         + filter_git_log_args
-        + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
+        + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
     )
     return RunCmdResult(
         completed_process=run(
@@ -243,19 +243,19 @@ class ChezmoiCommand:
         self.changes_enabled: bool = False
 
     @property
-    def _global_cmd(self) -> list[str]:
+    def _global_cmd(self) -> tuple[str, ...]:
         if self.changes_enabled is True:
             return GlobalCmd.live_run.value
         else:
             return GlobalCmd.dry_run.value
 
-    def review_cmd(self, *, global_args: list[str]) -> str:
+    def review_cmd(self, *, global_args: tuple[str, ...]) -> str:
         command = self._global_cmd + global_args
         filter_git_log_args = VerbArgs.git_log.value[3:]
         exclude = set(
             GlobalCmd.default_args.value
             + filter_git_log_args
-            + [VerbArgs.format_json.value, VerbArgs.path_style_absolute.value]
+            + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
         )
         cmd_str = " ".join([part for part in command if part and part not in exclude])
         return f"[$text-primary bold]{cmd_str}[/]"
@@ -266,11 +266,11 @@ class ChezmoiCommand:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
                 source_path_str = _run_chezmoi_cmd(
-                    self._global_cmd + ReadCmd.source_path.value + [path_str],
+                    self._global_cmd + ReadCmd.source_path.value + (path_str,),
                     read_cmd=ReadCmd.source_path,
                 ).completed_process.stdout.strip()
                 path_str = source_path_str
-            command += [path_str]
+            command += (path_str,)
         result: RunCmdResult = _run_chezmoi_cmd(command, read_cmd=read_cmd)
         command_result = CommandResult(
             cmd_enum=read_cmd,
@@ -287,14 +287,14 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        command: list[str] = self._global_cmd + write_cmd.value
+        command: tuple[str, ...] = self._global_cmd + write_cmd.value
 
         if init_arg is not None:
             if write_cmd != WriteCmd.init_new:
                 raise ValueError("init_arg only valid with WriteCmd.init_new")
-            command.append(init_arg)
+            command += (init_arg,)
         elif path_arg is not None:
-            command.append(str(path_arg))
+            command += (str(path_arg),)
 
         result: RunCmdResult = _run_chezmoi_cmd(command, write_cmd=write_cmd)
         command_result = CommandResult(

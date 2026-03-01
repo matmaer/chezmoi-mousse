@@ -13,17 +13,19 @@ __all__ = ["DebugTab"]
 
 class DebugTab(Horizontal, AppType):
 
-    OP_BTN_DICT: dict[str, OpBtnLabel] = {
-        IDS.debug.op_btn.create_paths: OpBtnLabel.create_paths,
-        IDS.debug.op_btn.remove_paths: OpBtnLabel.remove_paths,
-        IDS.debug.op_btn.toggle_diffs: OpBtnLabel.toggle_diffs,
-    }
-
     FLAT_BTN_TUPLE: tuple[FlatBtnLabel, ...] = (
         FlatBtnLabel.test_paths,
         FlatBtnLabel.debug_log,
         FlatBtnLabel.dom_nodes,
     )
+
+    def __init__(self) -> None:
+        self.op_btn_dict: dict[str, OpBtnLabel] = {
+            IDS.debug.op_btn.create_paths: OpBtnLabel.create_paths,
+            IDS.debug.op_btn.remove_paths: OpBtnLabel.remove_paths,
+            IDS.debug.op_btn.toggle_diffs: OpBtnLabel.toggle_diffs,
+        }
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
@@ -44,7 +46,7 @@ class DebugTab(Horizontal, AppType):
                     highlight=True,
                     classes=Tcss.border_title_top,
                 )
-            yield OperateButtons(IDS.debug, btn_dict=self.OP_BTN_DICT)
+            yield OperateButtons(IDS.debug, btn_dict=self.op_btn_dict)
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()

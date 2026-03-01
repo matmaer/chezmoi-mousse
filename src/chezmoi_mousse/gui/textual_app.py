@@ -1,6 +1,6 @@
 import dataclasses
 from math import ceil
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
 from rich.segment import Segment, Segments
@@ -75,7 +75,7 @@ chezmoi_mousse_light = Theme(
 
 class ChezmoiGUI(App[None]):
 
-    BINDINGS = [
+    BINDINGS: ClassVar = [
         Binding(
             "ctrl+q",
             action="quit",
