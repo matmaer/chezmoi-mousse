@@ -7,6 +7,7 @@ from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGr
 from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
+    CMD,
     AppType,
     FlatBtnLabel,
     LinkBtn,
@@ -131,6 +132,15 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name in (TabName.apply, TabName.re_add):
             self.query_one(self.ids.op_btn.destroy_review_q, OpButton).disabled = True
             self.query_one(self.ids.op_btn.forget_review_q, OpButton).disabled = True
+        # disable apply review button if no_status_paths is true
+        if self.ids.canvas_name == TabName.apply:
+            self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = (
+                True if CMD.no_status_paths else False
+            )
+        elif self.ids.canvas_name == TabName.re_add:
+            self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = (
+                True if CMD.no_status_paths else False
+            )
         all_buttons: list[OpButton] = [
             b for b in self.query_children().results() if isinstance(b, OpButton)
         ]
