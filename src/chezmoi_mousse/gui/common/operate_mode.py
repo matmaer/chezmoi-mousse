@@ -83,6 +83,8 @@ class OperateMode(Vertical, AppType):
     def watch_btn_enum(self, btn_enum: OpBtnEnum) -> None:
         if btn_enum in OpBtnEnum.review_btn_enums():
             self.update_review_info()
+        elif btn_enum in OpBtnEnum.run_btn_enums():
+            self.run_write_command(btn_enum)
         else:
             self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
 
@@ -125,8 +127,10 @@ class OperateMode(Vertical, AppType):
             f"{self.run_cmd_result.pretty_cmd}\n"
             f"Command completed with exit code {self.run_cmd_result.exit_code}"
         )
-        operate_info.border_title = self.run_cmd_result.operate_info_title
-        operate_info.border_subtitle = None
+        operate_info.border_title = self.btn_enum.info_title if self.btn_enum else None
+        operate_info.border_subtitle = (
+            self.btn_enum.info_sub_title if self.btn_enum else None
+        )
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
             await sleep(MIN_WAIT_TIME - elapsed)

@@ -8,7 +8,7 @@ from typing import NamedTuple
 from textual.widgets import Collapsible, Label, Static
 
 from ._str_enum_names import Tcss
-from ._str_enums import Chars, LogString, OperateString, SectionLabel
+from ._str_enums import Chars, LogString, SectionLabel
 
 __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
@@ -206,27 +206,13 @@ class CommandResult:
         )
 
     @property
-    def _is_dry_run(self) -> bool:
-        return "--dry-run" in self.completed_process.args and self.cmd_enum in WriteCmd
-
-    @property
-    def operate_info_title(self) -> str:
-        if self._is_dry_run:
-            return OperateString.run_completed_dry
-        return OperateString.run_completed_live
-
-    @property
     def _log_entry(self) -> str:
         pretty_time = f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
         return f"{pretty_time} {self.pretty_cmd}"
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
-        dry_run_str = (
-            "(dry run)"
-            if "--dry-run" in self.completed_process.args and self.cmd_enum in WriteCmd
-            else ""
-        )
+        dry_run_str = "(dry run)" if "--dry-run" in self.completed_process.args else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self.std_err or f"{LogString.no_stderr} {dry_run_str}"
         collapsible_contents: list[Label | Static] = []

@@ -251,9 +251,8 @@ class ChezmoiGUI(App[None]):
             operate_mode_container.btn_enum = msg.button.btn_enum
             operate_mode_container.display = True
             self._toggle_operate_display(msg.ids)
-
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
-            operate_mode_container.run_write_command(msg.button.btn_enum)
+            operate_mode_container.btn_enum = msg.button.btn_enum
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:

@@ -37,8 +37,7 @@ class OpInfoString(StrEnum):
     forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
     forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     ready_to_run = "[$text]Ready to run[/]"
-    run_completed_dry = "[$text]Command completed in dry-run mode[/]"
-    run_completed_live = "[$text]Command completed in live mode[/]"
+    run_completed = "[$text]Command completed[/]"
     re_add_path_info = (
         "[dim]Re-add modified files in the target state, preserving "
         "any encrypted_ attributes. chezmoi will not overwrite templates, and "
@@ -60,8 +59,8 @@ class OpBtnData:
     label: str
     write_cmd: WriteCmd
     info_string: str
-    info_sub_title: str
     info_title: str
+    info_sub_title: str | None = None
 
 
 class OpBtnEnum(Enum):
@@ -76,8 +75,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabel.add_run,
         write_cmd=WriteCmd.add,
         info_string=OpInfoString.add_path_info,
-        info_sub_title=OpInfoString.add_subtitle,
-        info_title=OpInfoString.run_completed_dry,
+        info_title=OpInfoString.run_completed,
     )
     _apply_review = OpBtnData(
         label=OpBtnLabel.apply_review,
@@ -90,8 +88,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabel.apply_run,
         write_cmd=WriteCmd.apply,
         info_string=OpInfoString.apply_path_info,
-        info_sub_title=OpInfoString.apply_subtitle,
-        info_title=OpInfoString.run_completed_dry,
+        info_title=OpInfoString.run_completed,
     )
     _destroy_review = OpBtnData(
         label=OpBtnLabel.destroy_review,
@@ -104,8 +101,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabel.destroy_run,
         write_cmd=WriteCmd.destroy,
         info_string=OpInfoString.destroy_path_info,
-        info_sub_title=OpInfoString.destroy_subtitle,
-        info_title=OpInfoString.run_completed_dry,
+        info_title=OpInfoString.run_completed,
     )
     _forget_review = OpBtnData(
         label=OpBtnLabel.forget_review,
@@ -118,8 +114,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabel.forget_run,
         write_cmd=WriteCmd.forget,
         info_string=OpInfoString.forget_path_info,
-        info_sub_title=OpInfoString.forget_subtitle,
-        info_title=OpInfoString.run_completed_dry,
+        info_title=OpInfoString.run_completed,
     )
     _re_add_review = OpBtnData(
         label=OpBtnLabel.re_add_review,
@@ -132,8 +127,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabel.re_add_run,
         write_cmd=WriteCmd.re_add,
         info_string=OpInfoString.re_add_path_info,
-        info_sub_title=OpInfoString.re_add_subtitle,
-        info_title=OpInfoString.run_completed_dry,
+        info_title=OpInfoString.run_completed,
     )
     _init_review = OpBtnData(
         label=OpBtnLabel.init_review,
@@ -146,8 +140,7 @@ class OpBtnEnum(Enum):
         label=OpBtnLabel.init_run,
         write_cmd=WriteCmd.init_new,
         info_string=OpInfoString.init_new_info,
-        info_sub_title=OpInfoString.init_subtitle,
-        info_title=OpInfoString.run_completed_dry,
+        info_title=OpInfoString.run_completed,
     )
 
     # Allow access to dataclass attributes directly from the Enum member,
