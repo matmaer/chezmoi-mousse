@@ -207,7 +207,6 @@ class OpBtnEnum(Enum):
         }
 
     @classmethod
-    @cache
     def review_to_run(cls, btn_label: OpBtnLabel) -> "OpBtnEnum":
         _mapping = {
             OpBtnLabel.add_review: cls._add_run,
@@ -219,7 +218,6 @@ class OpBtnEnum(Enum):
         return _mapping[btn_label]
 
     @classmethod
-    @cache
     def review_btn_enums(cls) -> set["OpBtnEnum"]:
         return {
             cls._add_review,
@@ -230,7 +228,6 @@ class OpBtnEnum(Enum):
         }
 
     @classmethod
-    @cache
     def run_btn_enums(cls) -> set["OpBtnEnum"]:
         return {
             cls._add_run,
