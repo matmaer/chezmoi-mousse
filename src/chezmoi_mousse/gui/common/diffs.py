@@ -1,11 +1,17 @@
 from itertools import groupby
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, DirNode, ReadCmd, TabName, Tcss
+from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, TabName, Tcss
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from chezmoi_mousse import DirNode
+
 
 __all__ = ["DiffView"]
 
@@ -25,43 +31,29 @@ DIFF_TCSS = {
 
 class DiffView(Container, AppType):
 
-    show_path: reactive["Path | None"] = reactive(None)
+    show_path: reactive["Path"] = reactive(CMD.dest_dir)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
         self.ids = ids
         self.cache: dict[Path, ScrollableContainer] = {}
-        self.current_container: ScrollableContainer | None = None
-
-    def on_mount(self) -> None:
-        self.border_title = f" {CMD.dest_dir} "
+        self.current_container: ScrollableContainer = ScrollableContainer()
 
     @property
-    def dir_nodes(self) -> dict[Path, "DirNode"]:
+    def dir_nodes(self) -> dict["Path", "DirNode"]:
         if self.ids.canvas_name == TabName.apply:
             return CMD.apply_dir_nodes
         else:
             return CMD.re_add_dir_nodes
 
+    def _set_border_title(self) -> None:
+        if self.show_path == CMD.dest_dir:
+            self.border_title = f" {CMD.dest_dir} "
+        else:
+            self.border_title = f" {self.show_path.name} "
+
     def _create_diff_widgets(self) -> list[Label | Static]:
         widgets: list[Label | Static] = []
-        if self.show_path not in CMD.status_paths:
-            if self.show_path in CMD.managed_dirs:
-                return [
-                    Label("Managed directory", classes=Tcss.main_section_label),
-                    Label(str(self.show_path), classes=Tcss.sub_section_label),
-                    Static(
-                        "The directory has no chezmoi status and contains no nested "
-                        "paths with a status.",
-                        classes=Tcss.info,
-                    ),
-                ]
-            elif self.show_path in CMD.managed_files:
-                return [
-                    Label("Managed file", classes=Tcss.main_section_label),
-                    Label(str(self.show_path), classes=Tcss.sub_section_label),
-                    Static("The file has no chezmoi status.", classes=Tcss.info),
-                ]
         if self.ids.canvas_name == TabName.apply:
             diff_result = CMD.run_cmd.read(ReadCmd.diff, path_arg=self.show_path)
         else:  # re-add tab
@@ -94,34 +86,33 @@ class DiffView(Container, AppType):
                     )
         return widgets
 
-    def _mount_new_container(self, path: Path, *widgets: Static) -> None:
-        if self.current_container is not None:
-            self.current_container.display = False
+    def _mount_and_cache_container(
+        self, path: "Path", widgets: list[Label | Static]
+    ) -> None:
+        self.current_container.display = False
         container = ScrollableContainer()
         self.mount(container)
         container.mount_all(widgets)
         self.cache[path] = container
         self.current_container = container
 
-    def _toggle_display_cached_container(self, path: Path) -> None:
-        # Hide current container, show the selected one
-        if self.current_container is not None:
+    def watch_show_path(self, show_path: "Path") -> None:
+        if show_path in self.cache:
             self.current_container.display = False
-        self.cache[path].display = True
-        self.current_container = self.cache[path]
-        if self.show_path == CMD.dest_dir:
-            self.border_title = f" {CMD.dest_dir} "
+            self.cache[show_path].display = True
+            self.current_container = self.cache[show_path]
+            self._set_border_title()
+            return
+        widgets: list[Label | Static] = []
+        if show_path in CMD.status_paths:
+            widgets = self._create_diff_widgets()
+        elif show_path in CMD.managed_dirs:
+            widgets = self.dir_nodes[show_path].dir_widgets
+        elif show_path in CMD.managed_files:
+            widgets.append(Label("Managed file", classes=Tcss.main_section_label))
+            widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
+            widgets.append(Static("This file has no status.", classes=Tcss.context))
         else:
-            self.border_title = f" {path.name} "
-
-    def watch_show_path(self) -> None:
-        if self.show_path is None:
-            widgets = self.dir_nodes[CMD.dest_dir].dir_widgets
-            self._mount_new_container(CMD.dest_dir, *widgets)
-            return
-        elif self.show_path in self.cache:
-            self._toggle_display_cached_container(self.show_path)
-            return
-        widgets = self._create_diff_widgets()
-        self._mount_new_container(self.show_path, *widgets)
-        self.border_title = f" {self.show_path.name} "
+            widgets.append(Static("Nothing to show."))
+        self._mount_and_cache_container(show_path, widgets)
+        self._set_border_title()
