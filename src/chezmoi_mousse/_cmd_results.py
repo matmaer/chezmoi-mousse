@@ -47,6 +47,7 @@ class CommandResults:
 
 @dataclass(slots=True)
 class DirNode:
+    dir_path: Path
     dir_status: StatusCode
     x_files_in: dict[Path, StatusCode]
     status_files_in: dict[Path, StatusCode]
@@ -69,7 +70,38 @@ class DirNode:
         }
 
     def __post_init__(self) -> None:
+        # Populate dir_widgets for the destDir
         widgets: list[Static | Label] = []
+        if self.dir_path == CMD.dest_dir:
+            widgets.append(
+                Label("Destination directory", classes=Tcss.main_section_label)
+            )
+            if not CMD.managed_dirs and not CMD.managed_files:
+                widgets.append(
+                    Static(
+                        "No managed paths or paths with a status are in the chezmoi "
+                        "repository. Switch to the Add tab to add paths.",
+                        classes=Tcss.added,
+                    )
+                )
+            elif CMD.no_status_paths is True:
+                text = "No diffs are available because no paths have a status."
+                widgets.append(Static(text, classes=Tcss.info))
+                text = "<- Select an unchanged path."
+                widgets.append(Static(text, classes=Tcss.added))
+                text = (
+                    "Switch to the Contents tab to view the contents of the selected "
+                    "path.\n"
+                    "Switch to the Git-Log tab to view the git log output for the "
+                    "selected path."
+                )
+                widgets.append(Static(text, classes=Tcss.info, markup=False))
+            else:
+                text = (
+                    "This is the destination directory, it has no diff output.\n"
+                    "<- Select a file or directory in the tree to view its diff."
+                )
+                widgets.append(Static(text, classes=Tcss.info, markup=False))
         if self.real_status_dirs_in:
             widgets.append(
                 Label(
@@ -160,6 +192,10 @@ class Commands:
     @property
     def managed_files(self) -> list[Path]:
         return self._parsed_paths.managed_files
+
+    @property
+    def status_paths(self) -> set[Path]:
+        return self._status_paths
 
     @property
     def tree_x_dirs(self) -> list[Path]:
@@ -298,6 +334,7 @@ class Commands:
                     tree_x_dirs_in[sub_dir] = StatusCode.No_Status
 
             return DirNode(
+                dir_path=dir_path,
                 dir_status=status_dirs.get(dir_path, StatusCode.No_Status),
                 status_files_in={
                     p: s for p, s in status_files.items() if p.parent == dir_path

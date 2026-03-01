@@ -234,7 +234,7 @@ Label{
     background-tint: $primary-muted;
     background: $primary-muted;
     border-bottom: wide $primary-muted;
-    border-top: inner $primary-muted;
+    border-top: wide $primary-muted;
     color: $primary-lighten-3;
     width: 100%;
   }
@@ -242,7 +242,7 @@ Label{
     background-tint: $panel;
     background: $panel;
     border-bottom: wide $panel;
-    border-top: inner $panel;
+    border-top: wide $panel;
     color: $text-success;
     width: 100%;
   }
@@ -465,23 +465,18 @@ Static {
   }
   &.context{
     color: $text-disabled;
-    background: $surface-lighten-1;
-    background-tint: $surface-lighten-1;
+    background: $surface;
+    background-tint: $surface;
   }
-  &.command {
-    color: $text-primary;
-    background: $primary-muted;
-    background-tint: $primary-muted;
+  &.info {
+    color: $text-muted;
+    background: $surface;
+    background-tint: $surface;
   }
   &.removed {
     color: $text-error;
     background: $error-muted;
     background-tint: $error-muted;
-  }
-  &.unchanged {
-    color: $text-primary;
-    background: $primary-muted;
-    background-tint: $primary-muted;
   }
   &.unhandled {
     /* only used for debugging by visualizing unhandled formatting conditions */

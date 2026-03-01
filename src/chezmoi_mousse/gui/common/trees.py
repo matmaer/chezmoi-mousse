@@ -22,14 +22,19 @@ class TreeBase(Tree[Path], AppType):
 
     def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
         super().__init__(
-            label="root", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
+            label=f" {CMD.dest_dir} ",
+            id=ids.tree_id(tree=tree_name),
+            classes=Tcss.tree_widget,
         )
         self.ids = ids
         self.tree_name = tree_name
 
     def on_mount(self) -> None:
-        self.show_root = False
-        self.border_title = " destDir "
+        if self.tree_name == TreeName.list_tree:
+            self.border_title = " destDir files "
+        elif self.tree_name == TreeName.managed_tree:
+            self.border_title = " destDir "
+        self.guide_depth: int = 3
         self.add_class(Tcss.border_title_top)
         self._make_node_colors_dict()
 
