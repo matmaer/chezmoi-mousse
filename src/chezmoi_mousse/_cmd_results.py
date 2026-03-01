@@ -58,6 +58,16 @@ class DirNode:
     tree_x_dirs_in: dict[Path, StatusCode]
     dir_widgets: list[Static | Label] = field(default_factory=list[Static | Label])
 
+    # property to return if the dir has any nested paths with a status
+    @property
+    def has_status_paths(self) -> bool:
+        return bool(
+            self.status_files_in
+            or self.real_status_dirs_in
+            or self.nested_status_dirs
+            or self.nested_status_files
+        )
+
     @property
     def node_colors(self) -> dict[str, str]:
         return {
