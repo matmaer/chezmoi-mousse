@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING
-
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 
 from chezmoi_mousse import IDS, AppType, SubTabLabel, Tcss
@@ -12,15 +9,10 @@ from .common.actionables import TabButtons
 from .common.git_log import GitLog
 from .common.loggers import AppLog, CmdLog
 
-if TYPE_CHECKING:
-    from textual.widgets import DataTable
-
 __all__ = ["LogsTab"]
 
 
 class LogsTab(Vertical, AppType):
-
-    git_log_result: reactive["DataTable[str] | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield TabButtons(
@@ -45,7 +37,3 @@ class LogsTab(Vertical, AppType):
             self.switcher.current = IDS.logs.logger.cmd
         elif event.button.label == SubTabLabel.git_log:
             self.switcher.current = IDS.logs.container.git_log
-
-    def watch_git_log_result(self, git_log_result: "DataTable[str]") -> None:
-        self.git_log.remove_children()
-        self.git_log.mount(git_log_result)

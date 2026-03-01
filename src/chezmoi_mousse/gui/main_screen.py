@@ -5,11 +5,10 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, ReadCmd, TabName
+from chezmoi_mousse import CMD, IDS, AppType, LogString, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.git_log import GitLogTable
 from .common.loggers import AppLog, DebugLog
 from .common.screen_header import CustomHeader
 from .common.trees import ListTree, ManagedTree
@@ -61,7 +60,6 @@ class MainScreen(Screen[None], AppType):
 
         self._populate_apply_trees()
         self._populate_re_add_trees()
-        self._populate_global_git_log()
         self._set_config_screen_reactives()
         self.app.call_later(self._log_splash_log_commands)
 
@@ -88,9 +86,3 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success("Re-Add tab managed tree populated.")
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Re-Add tab list tree populated.")
-
-    def _populate_global_git_log(self) -> None:
-        logs_tab = self.screen.query_exactly_one(LogsTab)
-        logs_tab.git_log_result = GitLogTable(
-            CMD.run_cmd.read(ReadCmd.git_log, path_arg=None)
-        )

@@ -196,6 +196,12 @@ class Commands:
         return self._parsed_config.git_auto_push
 
     @property
+    def global_git_log_lines(self) -> list[str]:
+        if self.cmd_results.git_log is None or not self.cmd_results.git_log.std_out:
+            return ["No commits;No git log entries available yet."]
+        return self.cmd_results.git_log.std_out.splitlines()
+
+    @property
     def managed_dirs(self) -> list[Path]:
         return self._parsed_paths.managed_dirs
 

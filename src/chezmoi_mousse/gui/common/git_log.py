@@ -1,92 +1,76 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual.containers import Container, ScrollableContainer
+from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import AppIds
 
-__all__ = ["GitLog", "GitLogTable"]
+__all__ = ["GitLog"]
 
 
-class GitLogTable(DataTable[str], AppType):
+class GitLog(ScrollableContainer, AppType):
 
-    def __init__(self, git_log_result: "CommandResult") -> None:
-        super().__init__()
-        self.git_log_result = git_log_result
+    show_path: reactive[Path] = reactive(CMD.dest_dir)
 
-    def on_mount(self) -> None:
-        self._populate_datatable()
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
+        self.data_table_cache: dict[Path, DataTable[str]] = {}
+        self.current_data_table: DataTable[str] = DataTable[str]()
 
-    def _add_row_with_style(self, columns: list[str], style: str) -> None:
-        row: list[str] = [f"[{style}]{cell_text}[/{style}]" for cell_text in columns]
-        self.add_row(*row)
+    def _set_border_title(self) -> None:
+        if self.show_path == CMD.dest_dir:
+            self.border_title = " Global Chezmoi Git Log "
+        else:
+            self.border_title = f" {self.show_path.name} "
 
-    def _populate_datatable(self) -> None:
+    def _mount_and_cache_data_table(self, path: Path, table: DataTable[str]):
+        self.current_data_table.display = False
+        self.mount(table)
+        self.data_table_cache[path] = table
+        self.current_data_table = self.data_table_cache[self.show_path]
+
+    def watch_show_path(self, show_path: Path) -> None:
+        if show_path in self.data_table_cache:
+            self.current_data_table.display = False
+            self.data_table_cache[self.show_path].display = True
+            self._set_border_title()
+            return
+        if show_path == CMD.dest_dir:
+            table = self._create_datatable(CMD.global_git_log_lines)
+        else:
+            cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=self.show_path)
+            table = self._create_datatable(cmd_result.std_out.splitlines())
+        self._set_border_title()
+        self._mount_and_cache_data_table(self.show_path, table)
+
+    def _create_datatable(self, git_log_lines: list[str]) -> DataTable[str]:
+        data_table = DataTable[str]()
+
+        def add_row_with_style(columns: list[str], style: str) -> None:
+            row: list[str] = [
+                f"[{style}]{cell_text}[/{style}]" for cell_text in columns
+            ]
+            data_table.add_row(*row)
+
         row_color = {
             "ok": self.app.theme_variables["text-success"],
             "warning": self.app.theme_variables["text-warning"],
             "error": self.app.theme_variables["text-error"],
         }
-        self.add_columns("COMMIT", "MESSAGE")
-        lines = self.git_log_result.std_out.splitlines()
-        if len(lines) == 0:
-            self.add_row("No commits;No git log available for this path.")
-            return
-        for line in lines:
+        data_table.add_columns("COMMIT", "MESSAGE")
+        for line in git_log_lines:
             columns = line.split(";", maxsplit=1)
             if columns[1].split(maxsplit=1)[0] == "Add":
-                self._add_row_with_style(columns, row_color["ok"])
+                add_row_with_style(columns, row_color["ok"])
             elif columns[1].split(maxsplit=1)[0] == "Update":
-                self._add_row_with_style(columns, row_color["warning"])
+                add_row_with_style(columns, row_color["warning"])
             elif columns[1].split(maxsplit=1)[0] == "Remove":
-                self._add_row_with_style(columns, row_color["error"])
+                add_row_with_style(columns, row_color["error"])
             else:
-                self.add_row(*columns)
-
-
-class GitLog(Container, AppType):
-
-    show_path: reactive["Path | None"] = reactive(None)
-
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
-        self.cache: dict[Path, ScrollableContainer] = {}
-        self.current_container: ScrollableContainer | None = None
-
-    def on_mount(self) -> None:
-        self.border_title = " Global Chezmoi Git Log "
-
-    def _cache_container(
-        self, path: Path, table: DataTable[str]
-    ) -> ScrollableContainer:
-        """Helper to mount and cache a ScrollableContainer with DataTable."""
-        container = ScrollableContainer()
-        self.mount(container)
-        container.mount(table)
-        self.cache[path] = container
-        return container
-
-    def watch_show_path(self) -> None:
-        if self.show_path is None:
-            self.show_path = CMD.dest_dir
-            table = GitLogTable(CMD.run_cmd.read(ReadCmd.git_log))
-            self._cache_container(CMD.dest_dir, table)
-
-        elif self.show_path not in self.cache:
-            table = GitLogTable(
-                CMD.run_cmd.read(ReadCmd.git_log, path_arg=self.show_path)
-            )
-            self._cache_container(self.show_path, table)
-
-        if self.show_path != CMD.dest_dir:
-            self.border_title = f" {self.show_path.name} "
-        # Hide current container, show the selected one
-        if self.current_container is not None:
-            self.current_container.display = False
-        self.cache[self.show_path].display = True
-        self.current_container = self.cache[self.show_path]
+                data_table.add_row(*columns)
+        return data_table
