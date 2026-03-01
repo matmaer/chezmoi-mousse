@@ -1,5 +1,6 @@
 """Test all classes to ensure that all methods are being accessed at least once,
-either inside the class if it starts with an underscore, outside the class if it does not.
+either inside the class if it starts with an underscore, outside the class if it does
+not.
 """
 
 import ast
@@ -39,26 +40,27 @@ class ClassData(NamedTuple):
     methods: list[MethodData]  # all methods defined on class (excluding dunders)
 
 
+def _get_decorator_name(decorator: ast.expr) -> str | None:
+    if isinstance(decorator, ast.Name):
+        return decorator.id
+    if isinstance(decorator, ast.Attribute):
+        return decorator.attr
+    if isinstance(decorator, ast.Call):
+        return _get_decorator_name(decorator.func)
+    return None
+
+
+def _is_property(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    return any(
+        _get_decorator_name(decorator) == "property"
+        for decorator in node.decorator_list
+    )
+
+
 def _has_on_decorator(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    """Check if a function has an @on decorator."""
-    for decorator in node.decorator_list:
-        # Handle @on (simple Name)
-        if isinstance(decorator, ast.Name) and decorator.id == "on":
-            return True
-        # Handle @on() (Call with Name func)
-        if isinstance(decorator, ast.Call):
-            if isinstance(decorator.func, ast.Name) and decorator.func.id == "on":
-                return True
-            # Handle @module.on or @module.on()
-            if (
-                isinstance(decorator.func, ast.Attribute)
-                and decorator.func.attr == "on"
-            ):
-                return True
-        # Handle @module.on (Attribute)
-        if isinstance(decorator, ast.Attribute) and decorator.attr == "on":
-            return True
-    return False
+    return any(
+        _get_decorator_name(decorator) == "on" for decorator in node.decorator_list
+    )
 
 
 module_data_list: list[ModuleData] = get_all_module_data()
@@ -72,7 +74,7 @@ for file_path in MODULE_PATHS:
         methods: list[MethodData] = []
         for item in class_def.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                if _has_on_decorator(item):
+                if _has_on_decorator(item) or _is_property(item):
                     continue
                 # dunders to exclude
                 if item.name in ("__init__", "__post_init__"):
@@ -111,7 +113,7 @@ for file_path in MODULE_PATHS:
     all_class_data,
     ids=lambda x: f"{x.class_name} ({x.module_path}:{x.class_lineno})",
 )
-def test_properties_in_use(class_data: ClassData) -> None:
+def test_methods_in_use(class_data: ClassData) -> None:
     results: list[TestResults] = []
     class_node_set = set(class_data.class_nodes)
 
@@ -172,8 +174,15 @@ def test_properties_in_use(class_data: ClassData) -> None:
         pytest.fail(
             "\n"
             + "\n".join(
-                f"{result.class_name}.{result.method_name} (in {result.module_path}:{result.method_lineno})"
-                + (" (should be private)" if result.should_be_private else "")
+                (
+                    (
+                        f"{result.class_name}.{result.method_name} in "
+                        f"{result.module_path}:{result.method_lineno}"
+                    )
+                    + " (should be private)"
+                    if result.should_be_private
+                    else ""
+                )
                 for result in results
             )
         )
