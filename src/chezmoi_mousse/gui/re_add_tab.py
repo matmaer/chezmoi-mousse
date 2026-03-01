@@ -55,6 +55,24 @@ class ReAddTab(Container, AppType):
         self.diff_view.show_path = msg.path
         self.operate_mode_container.path_arg = msg.path
         self.contents_view.show_path = msg.path
+        # disable forget and destroy buttons when in the dest_dir
+        self.query_one(IDS.re_add.op_btn.forget_review_q, Button).disabled = (
+            True if msg.path == CMD.dest_dir else False
+        )
+        self.query_one(IDS.re_add.op_btn.destroy_review_q, Button).disabled = (
+            True if msg.path == CMD.dest_dir else False
+        )
+        # disable/enable re_add review button
+        self.query_one(IDS.re_add.op_btn.apply_review_q, Button).disabled = (
+            True
+            if msg.path in CMD.managed_files and msg.path not in CMD.status_paths
+            else False
+        )
+        if msg.path in CMD.managed_dirs and msg.path not in CMD.status_paths:
+            dir_node = CMD.re_add_dir_nodes[msg.path]
+            self.query_one(IDS.re_add.op_btn.apply_review_q, Button).disabled = (
+                False if dir_node.has_status_paths else True
+            )
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
