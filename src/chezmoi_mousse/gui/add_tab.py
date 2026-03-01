@@ -8,7 +8,16 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, Chars, FlatBtnLabel, OpBtnEnum, Tcss
+from chezmoi_mousse import (
+    CMD,
+    IDS,
+    AppType,
+    Chars,
+    FlatBtnLabel,
+    OpBtnEnum,
+    OpBtnLabel,
+    Tcss,
+)
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -32,11 +41,19 @@ class AddContentsView(ContentsView):
         self.mount(container)
         container.mount_all(widgets)
 
-    def _create_dir_contents(self, dir_path: Path) -> list[Static | Label]:
+    def _create_dir_contents(self, show_dir_path: Path) -> list[Static | Label]:
         widgets: list[Static | Label] = []
+        if show_dir_path == CMD.dest_dir:
+            widgets.append(
+                Label("Destination directory", classes=Tcss.main_section_label)
+            )
+            widgets.append(
+                Static("<- Click a path to see its contents.", classes=Tcss.added)
+            )
+            return widgets
         unmanaged: list[str] = [
             str(p)
-            for p in list(dir_path.iterdir())
+            for p in list(show_dir_path.iterdir())
             if p not in CMD.managed_dirs and p not in CMD.managed_files
         ]
         if not unmanaged:
@@ -189,11 +206,12 @@ class AddTab(Horizontal, AppType):
             IDS.add.container.contents_q, AddContentsView
         )
 
-    @on(Button.Pressed, Tcss.refresh_button.dot_prefix)
+    @on(Button.Pressed)
     def refresh_dir_tree(self, event: Button.Pressed) -> None:
         event.stop()
-        self.dir_tree.reload()
-        self.dir_tree.refresh()
+        if event.button.label in (FlatBtnLabel.refresh_tree, OpBtnLabel.reload):
+            self.dir_tree.reload()
+            self.dir_tree.refresh()
 
     @on(DirectoryTree.FileSelected)
     def update_file_contents_view(self, event: DirectoryTree.FileSelected) -> None:
