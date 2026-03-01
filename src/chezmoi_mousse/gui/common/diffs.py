@@ -29,8 +29,8 @@ class DiffView(Container, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
+        self.ids = ids
         self.cache: dict[Path, ScrollableContainer] = {}
-        self.canvas_name = ids.canvas_name
         self.current_container: ScrollableContainer | None = None
 
     def on_mount(self) -> None:
@@ -38,7 +38,7 @@ class DiffView(Container, AppType):
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
-        if self.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabName.apply:
             return CMD.apply_dir_nodes
         else:
             return CMD.re_add_dir_nodes
@@ -62,14 +62,12 @@ class DiffView(Container, AppType):
                     Label(str(self.show_path), classes=Tcss.sub_section_label),
                     Static("The file has no chezmoi status.", classes=Tcss.info),
                 ]
-        if self.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabName.apply:
             diff_result = CMD.run_cmd.read(ReadCmd.diff, path_arg=self.show_path)
-        elif self.canvas_name == TabName.re_add:
+        else:  # re-add tab
             diff_result = CMD.run_cmd.read(
                 ReadCmd.diff_reverse, path_arg=self.show_path
             )
-        else:
-            raise ValueError(f"Unexpected canvas name: {self.canvas_name}")
         diff_lines = diff_result.std_out.splitlines()
         if not diff_lines:
             return [Static("No diff output available.", classes=Tcss.info)]
