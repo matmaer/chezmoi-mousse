@@ -118,12 +118,6 @@ class OperateButtons(HorizontalGroup):
             for btn_id, btn_enum in self.btn_dict.items()
             if isinstance(btn_enum, OpBtnEnum) and "Review" in btn_enum.label
         }
-        self.exit_btn_ids: set[str] = {
-            btn_id
-            for btn_id, btn_enum in self.btn_dict.items()
-            if isinstance(btn_enum, OpBtnLabel)
-            and btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload, OpBtnLabel.exit_app)
-        }
         self.cancel_btn = self.query_one(self.ids.op_btn.cancel_q, OpButton)
         self.cancel_btn.display = False
         self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
@@ -149,47 +143,42 @@ class OperateButtons(HorizontalGroup):
             btn.display = False
         self.review_buttons = [b for b in all_buttons if b.id in self.review_btn_ids]
 
-    @on(Button.Pressed)
-    def update_button_display(self, event: Button.Pressed) -> None:
+    @on(OpButton.Pressed)
+    def update_operate_button_display(self, event: OpButton.Pressed) -> None:
         if self.ids.canvas_name in (TabName.debug, ScreenName.init):
-            # we don't need any display toggling in those contexts
+            # we don't need any display toggling in those contexts for now
+            return
+        if not isinstance(event.button, OpButton):
             return
 
-        if str(event.button.id) in self.exit_btn_ids:
+        if event.button.label in (OpBtnLabel.cancel, OpBtnLabel.reload):
             self.cancel_btn.display = False
             self.reload_btn.display = False
             for btn in self.run_buttons:
-                btn.disabled = False
                 btn.display = False
             for btn in self.review_buttons:
                 btn.display = True
-            assert isinstance(event.button, OpButton)
             self.post_message(OperateButtonMsg(self.ids, button=event.button))
-            return
 
-        if event.button.id in self.review_btn_ids:
+        elif event.button.id in self.review_btn_ids:
             self.cancel_btn.display = True
             for btn in self.review_buttons:
                 btn.display = False
+            for btn in self.run_buttons:
+                btn.disabled = False
             run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(event.button.label)))
             # now lookup the button widget in self.run_buttons with the
             # corresponding enum
-            btn_widget: OpButton | None = next(
-                (b for b in self.run_buttons if b.btn_enum == run_btn_enum), None
+            btn_widget: OpButton = next(
+                b for b in self.run_buttons if b.btn_enum == run_btn_enum
             )
-            if btn_widget is not None:
-                btn_widget.display = True
-                btn_widget.disabled = False
-            else:
-                self.notify(f"Error: Could not find button widget for {run_btn_enum}")
-            assert isinstance(event.button, OpButton)
+            btn_widget.display = True
             self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
-        if event.button in self.run_buttons:
+        elif event.button in self.run_buttons:
             self.cancel_btn.display = False
             self.reload_btn.display = True
             event.button.disabled = True
-            assert isinstance(event.button, OpButton)
             self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 
