@@ -15,15 +15,13 @@ jobs:
         python-version: ["3.13", "3.14"]
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install ruff black textual faker
+        enable-cache: true
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
     - name: Run ruff
-      run: ruff check src/
+      run: uv run ruff check src/
     - name: Run black
-      run: black --check src/
+      run: uv run black --check src/
