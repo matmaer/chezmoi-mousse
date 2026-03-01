@@ -157,8 +157,14 @@ class ViewSwitcher(Container):
             yield ContentsView(self.ids)
             yield GitLog(self.ids)
 
-    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
+    @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
+        if event.button.label not in (
+            SubTabLabel.diff,
+            SubTabLabel.contents,
+            SubTabLabel.git_log,
+        ):
+            return
         view_switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.label == SubTabLabel.contents:
             view_switcher.current = self.ids.container.contents
