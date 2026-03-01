@@ -266,7 +266,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "textual", extras = ["syntax"], specifier = ">=7.0.1" }]
+requires-dist = [{ name = "textual", extras = ["syntax"], specifier = ">=8.0.1" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -518,11 +518,11 @@ wheels = [
 
 [[package]]
 name = "identify"
-version = "2.6.16"
+version = "2.6.17"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5b/8d/e8b97e6bd3fb6fb271346f7981362f1e04d6a7463abd0de79e1fda17c067/identify-2.6.16.tar.gz", hash = "sha256:846857203b5511bbe94d5a352a48ef2359532bc8f6727b5544077a0dcfb24980", size = 99360, upload-time = "2026-01-12T18:58:58.201Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/84/376a3b96e5a8d33a7aa2c5b3b31a4b3c364117184bf0b17418055f6ace66/identify-2.6.17.tar.gz", hash = "sha256:f816b0b596b204c9fdf076ded172322f2723cf958d02f9c3587504834c8ff04d", size = 99579, upload-time = "2026-03-01T20:04:12.702Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/58/40fbbcefeda82364720eba5cf2270f98496bdfa19ea75b4cccae79c698e6/identify-2.6.16-py2.py3-none-any.whl", hash = "sha256:391ee4d77741d994189522896270b787aed8670389bfd60f326d677d64a6dfb0", size = 99202, upload-time = "2026-01-12T18:58:56.627Z" },
+    { url = "https://files.pythonhosted.org/packages/40/66/71c1227dff78aaeb942fed29dd5651f2aec166cc7c9aeea3e8b26a539b7d/identify-2.6.17-py2.py3-none-any.whl", hash = "sha256:be5f8412d5ed4b20f2bd41a65f920990bdccaa6a4a18a08f1eefdcd0bdd885f0", size = 99382, upload-time = "2026-03-01T20:04:11.439Z" },
 ]
 
 [[package]]
@@ -1577,7 +1577,7 @@ wheels = [
 
 [[package]]
 name = "textual"
-version = "8.0.0"
+version = "8.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py", extra = ["linkify"] },
@@ -1587,9 +1587,9 @@ dependencies = [
     { name = "rich" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f7/08/1e1f705825359590ddfaeda57653bd518c4ff7a96bb2c3239ba1b6fc4c51/textual-8.0.0.tar.gz", hash = "sha256:ce48f83a3d686c0fac0e80bf9136e1f8851c653aa6a4502e43293a151df18809", size = 1595895, upload-time = "2026-02-16T17:12:14.215Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/e4/0f6b6c22a30d2dc2850b4d09c8684742cc4ab79501d4588ea05269c1de3f/textual-8.0.1.tar.gz", hash = "sha256:fe6544e57651a7c2a8249b90ec542b45fa945ce4560e69b0d563fb440e7c4db3", size = 6099133, upload-time = "2026-03-01T19:15:41.537Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/be/e191c2a15da20530fde03564564e3e4b4220eb9d687d4014957e5c6a5e85/textual-8.0.0-py3-none-any.whl", hash = "sha256:8908f4ebe93a6b4f77ca7262197784a52162bc88b05f4ecf50ac93a92d49bb8f", size = 718904, upload-time = "2026-02-16T17:12:11.962Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/23/40e0019fa60d1e83123b72e3201879b32d68a0d6358b3588d23705107921/textual-8.0.1-py3-none-any.whl", hash = "sha256:6b7522c2bc1a3ab90f534144b7e0ca6e25d35c80942ef92ccfb42a54e945d581", size = 719152, upload-time = "2026-03-01T19:15:43.7Z" },
 ]
 
 [package.optional-dependencies]
