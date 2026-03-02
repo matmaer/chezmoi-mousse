@@ -1,5 +1,6 @@
 import time
 from asyncio import sleep
+from functools import wraps
 from typing import TYPE_CHECKING
 
 from textual import on, work
@@ -24,14 +25,29 @@ from .loggers import AppLog, CmdLog
 from .messages import ProgressTextMsg
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, OpBtnEnum
 
 __all__ = ["OperateMode"]
 
-# not needed for anything else than making log messages readable for humans
-MIN_WAIT_TIME = 0.3
+# not needed for anything else than showing log messages briefly for humans
+MIN_WAIT_TIME = 0.2
+
+
+def min_wait(
+    func: "Callable[..., Awaitable[None]]",
+) -> "Callable[..., Awaitable[None]]":
+    @wraps(func)
+    async def wrapper(self: "OperateMode", *args: "OpBtnEnum") -> None:
+        start_time = time.monotonic()
+        await func(self, *args)
+        elapsed = time.monotonic() - start_time
+        if elapsed < MIN_WAIT_TIME:
+            await sleep(MIN_WAIT_TIME - elapsed)
+
+    return wrapper
 
 
 class LoadingModal(ModalScreen[None]):
@@ -116,9 +132,9 @@ class OperateMode(Vertical, AppType):
         operate_info.border_subtitle = self.btn_enum.info_sub_title
 
     @work
+    @min_wait
     async def _update_operate_info_post_run(self) -> None:
         operate_info = self.query_one(self.ids.static.operate_info_q, Static)
-        start_time = time.monotonic()
         self.loading_modal.post_message(
             ProgressTextMsg(f"[$text-darken-2]Update {operate_info.name}[/]")
         )
@@ -133,39 +149,30 @@ class OperateMode(Vertical, AppType):
         operate_info.border_subtitle = (
             self.btn_enum.info_sub_title if self.btn_enum else None
         )
-        elapsed = time.monotonic() - start_time
-        if elapsed < MIN_WAIT_TIME:
-            await sleep(MIN_WAIT_TIME - elapsed)
 
     @work
+    @min_wait
     async def _update_command_output(self) -> None:
         op_cmd_results = self.query_one(
             self.ids.container.op_cmd_results_q, ScrollableContainer
         )
         op_cmd_results.remove_children()
-        start_time = time.monotonic()
         self.loading_modal.post_message(
             ProgressTextMsg(f"[$text-darken-2]Update {op_cmd_results.name}[/]")
         )
         for cmd_result in self.all_cmd_results:
             op_cmd_results.mount(cmd_result.pretty_collapsible)
-        elapsed = time.monotonic() - start_time
-        if elapsed < MIN_WAIT_TIME:
-            await sleep(MIN_WAIT_TIME - elapsed)
 
     @work(thread=True)
-    async def _run_perform_command(self, btn_enum: OpBtnEnum):
+    @min_wait
+    async def _run_perform_command(self, btn_enum: OpBtnEnum) -> None:
         pretty_cmd = CMD.run_cmd.review_cmd(global_args=self._global_args)
-        start_time = time.monotonic()
         self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
         cmd_result = CMD.run_cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
-        elapsed = time.monotonic() - start_time
-        if elapsed < MIN_WAIT_TIME:
-            await sleep(MIN_WAIT_TIME - elapsed)
         self.run_cmd_result = cmd_result
         self.all_cmd_results.append(cmd_result)
 
-    @work(thread=True)
+    @work
     async def _run_read_commands(self) -> None:
         for read_cmd in (
             ReadCmd.managed_dirs,
@@ -173,29 +180,22 @@ class OperateMode(Vertical, AppType):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ):
-            start_time = time.monotonic()
             pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
             self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
             cmd_result = CMD.run_cmd.read(read_cmd)
             setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
             self.all_cmd_results.append(cmd_result)
-            elapsed = time.monotonic() - start_time
-            if elapsed < MIN_WAIT_TIME:
-                await sleep(MIN_WAIT_TIME - elapsed)
         CMD.update_parsed_data()
 
     @work
+    @min_wait
     async def _log_all_cmd_results(self) -> None:
-        start_time = time.monotonic()
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
         self.app_log.info("--- Commands executed in OperateMode ---")
         for cmd_result in self.all_cmd_results:
             self.app_log.log_cmd_result(cmd_result)
             self.cmd_log.log_cmd_result(cmd_result)
         self.app_log.info("--- End of OperateMode commands ---")
-        elapsed = time.monotonic() - start_time
-        if elapsed < MIN_WAIT_TIME:
-            await sleep(MIN_WAIT_TIME - elapsed)
 
     @work(exit_on_error=False)
     async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
