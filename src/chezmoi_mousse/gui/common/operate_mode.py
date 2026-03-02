@@ -66,7 +66,7 @@ class OperateMode(Vertical, AppType):
         self.all_cmd_results: list[CommandResult] = []
 
     @property
-    def global_args(self) -> tuple[str, ...]:
+    def _global_args(self) -> tuple[str, ...]:
         if self.btn_enum is None:
             return ()
         path_arg = str(self.path_arg) if self.path_arg is not None else ""
@@ -103,7 +103,7 @@ class OperateMode(Vertical, AppType):
         )
         op_cmd_results.remove_children()
         info_lines: list[str] = []
-        info_lines.append(CMD.run_cmd.review_cmd(global_args=self.global_args))
+        info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
         info_lines.append(self.btn_enum.info_string)
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
             if CMD.git_auto_commit is True:
@@ -155,7 +155,7 @@ class OperateMode(Vertical, AppType):
 
     @work(thread=True)
     async def _run_perform_command(self, btn_enum: OpBtnEnum):
-        pretty_cmd = CMD.run_cmd.review_cmd(global_args=self.global_args)
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=self._global_args)
         start_time = time.monotonic()
         self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
         cmd_result = CMD.run_cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
