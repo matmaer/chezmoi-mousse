@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING
 
 from textual.widgets import Label, Static
 
-from ._chezmoi_command import ChezmoiCommand, GlobalCmd, VerbArgs
+from ._run_cmd import ChezmoiCommand
 from ._str_enum_names import Tcss
 from ._str_enums import StatusCode
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from ._chezmoi_command import CommandResult
+    from ._run_cmd import CommandResult
 
 __all__ = ["CMD", "CommandResults", "DirNode", "ParsedJson"]
 
@@ -219,17 +219,6 @@ class Commands:
     @property
     def x_files(self) -> list[Path]:
         return self._parsed_paths.real_x_files
-
-    def get_review_cmd(self, full_command: tuple[str, ...]) -> str:
-        exclude = set(
-            GlobalCmd.default_args.value
-            + VerbArgs.git_log.value[3:]
-            + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
-        )
-        filtered_cmd = " ".join(
-            [part for part in full_command if part and part not in exclude]
-        )
-        return f"[$text-primary bold]{filtered_cmd}[/]"
 
     def update_parsed_data(self) -> None:
         self._update_dump_config()

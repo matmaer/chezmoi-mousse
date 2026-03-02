@@ -13,9 +13,9 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
-from ._chezmoi_command import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._cmd_results import CMD, CommandResults, DirNode, ParsedJson
 from ._enum_data import OpBtnEnum, SwitchEnum
+from ._run_cmd import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
     BindingDescription,

@@ -3,7 +3,7 @@ from enum import Enum, StrEnum
 from functools import cache
 from typing import TYPE_CHECKING
 
-from ._chezmoi_command import Chars, WriteCmd
+from ._run_cmd import Chars, WriteCmd
 from ._str_enum_names import ScreenName, TabName
 from ._str_enums import OpBtnLabel, SwitchLabel
 
