@@ -54,7 +54,9 @@ class DebugTab(Horizontal, AppType):
             IDS.debug.static.debug_test_paths_q, Static
         )
         existing_paths = self.test_paths.list_existing_test_paths()
-        if existing_paths:
+        if isinstance(existing_paths, str):
+            self.test_paths_static.update(existing_paths)
+        elif existing_paths:
             self.test_paths_static.update("\n".join([str(p) for p in existing_paths]))
         self.debug_test_path_view = self.query_one(
             IDS.debug.view.test_paths_q, ScrollableContainer
