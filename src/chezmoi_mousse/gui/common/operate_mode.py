@@ -65,6 +65,13 @@ class OperateMode(Vertical, AppType):
         self.run_cmd_result: CommandResult | None = None
         self.all_cmd_results: list[CommandResult] = []
 
+    @property
+    def global_args(self) -> tuple[str, ...]:
+        if self.btn_enum is None:
+            return ()
+        path_arg = str(self.path_arg) if self.path_arg is not None else ""
+        return (*self.btn_enum.write_cmd.value, path_arg)
+
     def compose(self) -> ComposeResult:
         yield Static(
             id=self.ids.static.operate_info,
@@ -89,19 +96,14 @@ class OperateMode(Vertical, AppType):
             self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
 
     def update_review_info(self) -> None:
-        if self.btn_enum is None or self.path_arg is None:
+        if self.btn_enum is None:
             return
         op_cmd_results = self.query_one(
             self.ids.container.op_cmd_results_q, ScrollableContainer
         )
         op_cmd_results.remove_children()
         info_lines: list[str] = []
-        pretty_cmd = CMD.run_cmd.review_cmd(global_args=self.btn_enum.write_cmd.value)
-        cmd_text = (
-            f"[$text-primary bold]{pretty_cmd} "
-            f"{self.path_arg.relative_to(CMD.dest_dir)}[/]"
-        )
-        info_lines.append(cmd_text)
+        info_lines.append(CMD.run_cmd.review_cmd(global_args=self.global_args))
         info_lines.append(self.btn_enum.info_string)
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
             if CMD.git_auto_commit is True:
@@ -153,14 +155,9 @@ class OperateMode(Vertical, AppType):
 
     @work(thread=True)
     async def _run_perform_command(self, btn_enum: OpBtnEnum):
-        pretty_cmd = CMD.run_cmd.review_cmd(global_args=btn_enum.write_cmd.value)
-        rel_path_arg = self.path_arg.relative_to(CMD.dest_dir) if self.path_arg else ""
-        if self.path_arg is not None:
-            pretty_cmd += f"[$text-primary bold] {rel_path_arg}[/]"
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=self.global_args)
         start_time = time.monotonic()
-        self.loading_modal.post_message(
-            ProgressTextMsg(f"Running [$text-primary bold]{pretty_cmd}[/]")
-        )
+        self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
         cmd_result = CMD.run_cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
         elapsed = time.monotonic() - start_time
         if elapsed < MIN_WAIT_TIME:
