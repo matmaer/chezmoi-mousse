@@ -172,16 +172,11 @@ def test_methods_in_use(class_data: ClassData) -> None:
 
     if results:
         pytest.fail(
-            "\n"
-            + "\n".join(
+            "\n".join(
                 (
-                    (
-                        f"{result.class_name}.{result.method_name} in "
-                        f"{result.module_path}:{result.method_lineno}"
-                    )
-                    + " (should be private)"
-                    if result.should_be_private
-                    else ""
+                    f"{result.class_name}.{result.method_name} in "
+                    + f"{result.module_path}:{result.method_lineno}"
+                    + (" (should be private)" if result.should_be_private else "")
                 )
                 for result in results
             )
