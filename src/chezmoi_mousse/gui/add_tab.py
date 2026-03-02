@@ -4,9 +4,9 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, DirectoryTree, Label, Static, Switch
+from textual.widgets import Button, DirectoryTree, Switch
 
 from chezmoi_mousse import (
     CMD,
@@ -24,46 +24,6 @@ from .common.contents import ContentsView
 from .common.operate_mode import OperateMode
 
 __all__ = ["AddTab"]
-
-
-class AddContentsView(ContentsView):
-
-    show_dir_path: reactive["Path | None"] = reactive(None)
-
-    def __init__(self) -> None:
-        super().__init__(ids=IDS.add)
-
-    def watch_show_dir_path(self, show_dir_path: Path) -> None:
-        if self.show_path is None:
-            show_dir_path = CMD.dest_dir
-        widgets = self._create_dir_contents(show_dir_path)
-        container = ScrollableContainer()
-        self.mount(container)
-        container.mount_all(widgets)
-
-    def _create_dir_contents(self, show_dir_path: Path) -> list[Static | Label]:
-        widgets: list[Static | Label] = []
-        if show_dir_path == CMD.dest_dir:
-            widgets.append(
-                Label("Destination directory", classes=Tcss.main_section_label)
-            )
-            widgets.append(
-                Static("<- Click a path to see its contents.", classes=Tcss.added)
-            )
-            return widgets
-        unmanaged: list[str] = [
-            str(p)
-            for p in list(show_dir_path.iterdir())
-            if p not in CMD.managed_dirs and p not in CMD.managed_files
-        ]
-        if not unmanaged:
-            widgets.append(Static("No unmanaged paths in this directory."))
-            return widgets
-        widgets.append(
-            Label("Contains unmanaged paths", classes=Tcss.sub_section_label)
-        )
-        widgets.append(Static("\n".join(unmanaged)))
-        return widgets
 
 
 class FilteredDirTree(DirectoryTree, AppType):
@@ -191,7 +151,7 @@ class AddTab(Horizontal, AppType):
         )
         with Vertical():
             yield OperateMode(IDS.add)
-            yield AddContentsView()
+            yield ContentsView(IDS.add)
             yield OperateButtons(IDS.add, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.add))
         yield SwitchSlider(IDS.add)
 
@@ -202,9 +162,7 @@ class AddTab(Horizontal, AppType):
         )
         self.operate_mode_container.path_arg = CMD.dest_dir
         self.query_exactly_one(FilteredDirTree).path = CMD.dest_dir
-        self.contents_view = self.query_one(
-            IDS.add.container.contents_q, AddContentsView
-        )
+        self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
 
     @on(Button.Pressed)
     def refresh_dir_tree(self, event: Button.Pressed) -> None:
@@ -228,8 +186,7 @@ class AddTab(Horizontal, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
-        self.contents_view.remove_children()
-        self.contents_view.show_dir_path = event.node.data.path
+        self.contents_view.show_path = event.node.data.path
         self.operate_mode_container.path_arg = event.node.data.path
 
     @on(Switch.Changed)

@@ -49,13 +49,13 @@ class ContentStr(StrEnum):
 
 class ContentsView(Container, AppType):
 
-    show_path: reactive["Path | None"] = reactive(None, init=False)
+    show_path: reactive["Path"] = reactive(CMD.dest_dir, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
         self.ids = ids
         self.cache: dict[Path, ScrollableContainer] = {}
-        self.current_container: ScrollableContainer | None = None
+        self.current_container: ScrollableContainer = ScrollableContainer()
 
     def on_mount(self) -> None:
         self.border_title = f" {CMD.dest_dir} "
@@ -66,6 +66,36 @@ class ContentsView(Container, AppType):
             return CMD.apply_dir_nodes
         else:
             return CMD.re_add_dir_nodes
+
+    def _set_border_title(self) -> None:
+        if self.show_path == CMD.dest_dir:
+            self.border_title = f" {CMD.dest_dir} "
+        else:
+            self.border_title = f" {self.show_path.name} "
+
+    def _create_add_dir_contents(self, show_dir_path: Path) -> list[Static | Label]:
+        widgets: list[Static | Label] = []
+        if show_dir_path == CMD.dest_dir:
+            widgets.append(
+                Label("Destination directory", classes=Tcss.main_section_label)
+            )
+            widgets.append(
+                Static("<- Click a path to see its contents.", classes=Tcss.added)
+            )
+            return widgets
+        unmanaged: list[str] = [
+            str(p)
+            for p in list(show_dir_path.iterdir())
+            if p not in CMD.managed_dirs and p not in CMD.managed_files
+        ]
+        if not unmanaged:
+            widgets.append(Static("No unmanaged paths in this directory."))
+            return widgets
+        widgets.append(
+            Label("Contains unmanaged paths", classes=Tcss.sub_section_label)
+        )
+        widgets.append(Static("\n".join(unmanaged)))
+        return widgets
 
     def _create_file_contents(
         self, file_path: Path, managed: bool
@@ -132,40 +162,48 @@ class ContentsView(Container, AppType):
             result = Static(text_obj)
         return result
 
-    def _cache_container(
-        self, path: Path, *widgets: Static | TextArea | Label
-    ) -> ScrollableContainer:
+    def _mount_and_cache_container(
+        self, path: "Path", widgets: list[Label | Static] | Static | TextArea
+    ) -> None:
+        self.current_container.display = False
         container = ScrollableContainer()
         self.mount(container)
-        if widgets:
+        if not isinstance(widgets, (TextArea, Static)):
             container.mount_all(widgets)
+        else:
+            container.mount(widgets)
         self.cache[path] = container
-        return container
+        self.current_container = container
 
     def watch_show_path(self, show_path: Path) -> None:
-        if self.show_path not in self.cache:
-            # Managed files (ApplyTab/ReAddTab)
-            if self.show_path in CMD.managed_files:
-                widget = self._create_file_contents(
-                    file_path=self.show_path, managed=True
-                )
-                self._cache_container(self.show_path, widget)
-            # Managed directories (ApplyTab/ReAddTab)
-            elif self.show_path in CMD.managed_dirs:
-                widgets = self.dir_nodes[self.show_path].dir_widgets
-                container = self._cache_container(self.show_path, *widgets)
-                self.mount(container)
-                self.cache[self.show_path] = container
-            # Unmanaged files (AddTab)
-            elif show_path.is_file():
-                self.remove_children()
-                widget = self._create_file_contents(file_path=show_path, managed=False)
-                self._cache_container(show_path, widget)
-
-        if self.show_path != CMD.dest_dir:
-            self.border_title = f" {show_path.name} "
-        # Hide current container, show the selected one
-        if self.current_container is not None:
+        if show_path in self.cache:
             self.current_container.display = False
-        self.cache[show_path].display = True
-        self.current_container = self.cache[show_path]
+            self.cache[show_path].display = True
+            self.current_container = self.cache[show_path]
+            self._set_border_title()
+            return
+        # Managed files (ApplyTab/ReAddTab)
+        if show_path in CMD.managed_files:
+            widget: Static | TextArea = self._create_file_contents(
+                file_path=self.show_path, managed=True
+            )
+            self._mount_and_cache_container(self.show_path, widget)
+        # Managed directories (ApplyTab/ReAddTab)
+        elif show_path in CMD.managed_dirs and self.ids.canvas_name != TabName.add:
+            widgets: list[Label | Static] = self.dir_nodes[show_path].dir_widgets
+            self._mount_and_cache_container(self.show_path, widgets)
+
+        # Unmanaged files (AddTab)
+        elif show_path.is_file() and self.ids.canvas_name == TabName.add:
+            widget: Static | TextArea = self._create_file_contents(
+                file_path=show_path, managed=False
+            )
+            self._mount_and_cache_container(show_path, widget)
+        # Unmanaged directories (AddTab)
+        elif show_path.is_dir() and self.ids.canvas_name == TabName.add:
+            widgets: list[Label | Static] = self._create_add_dir_contents(show_path)
+            self._mount_and_cache_container(show_path, widgets)
+        else:
+            self._mount_and_cache_container(
+                show_path, Static("unknown", classes=Tcss.removed)
+            )
