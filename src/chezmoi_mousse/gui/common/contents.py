@@ -184,24 +184,20 @@ class ContentsView(Container, AppType):
             return
         # Managed files (ApplyTab/ReAddTab)
         if show_path in CMD.managed_files:
-            widget: Static | TextArea = self._create_file_contents(
-                file_path=self.show_path, managed=True
-            )
+            widget = self._create_file_contents(file_path=self.show_path, managed=True)
             self._mount_and_cache_container(self.show_path, widget)
         # Managed directories (ApplyTab/ReAddTab)
         elif show_path in CMD.managed_dirs and self.ids.canvas_name != TabName.add:
-            widgets: list[Label | Static] = self.dir_nodes[show_path].dir_widgets
+            widgets = self.dir_nodes[show_path].dir_widgets
             self._mount_and_cache_container(self.show_path, widgets)
 
         # Unmanaged files (AddTab)
         elif show_path.is_file() and self.ids.canvas_name == TabName.add:
-            widget: Static | TextArea = self._create_file_contents(
-                file_path=show_path, managed=False
-            )
+            widget = self._create_file_contents(file_path=show_path, managed=False)
             self._mount_and_cache_container(show_path, widget)
         # Unmanaged directories (AddTab)
         elif show_path.is_dir() and self.ids.canvas_name == TabName.add:
-            widgets: list[Label | Static] = self._create_add_dir_contents(show_path)
+            widgets = self._create_add_dir_contents(show_path)
             self._mount_and_cache_container(show_path, widgets)
         else:
             self._mount_and_cache_container(
