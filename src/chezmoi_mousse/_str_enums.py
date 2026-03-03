@@ -118,7 +118,7 @@ class OpBtnLabel(StrEnum):
     apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
-    create_paths = "(Re)Create Test Paths"
+    create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"
     destroy_run = "Run Chezmoi Destroy"
     exit_app = "Exit App"
@@ -130,7 +130,7 @@ class OpBtnLabel(StrEnum):
     re_add_run = "Run Chezmoi Re-Add"
     reload = "Reload"
     remove_paths = "Remove Test Paths"
-    toggle_diffs = "Toggle Diffs"
+    create_diffs = "Create Diffs"
 
     @property
     def normalized_label(self) -> str:

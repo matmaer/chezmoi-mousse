@@ -163,8 +163,8 @@ class OperateButtonIds:
         self.create_paths_q = f"#{self.create_paths}"
         self.remove_paths = ids.operate_button_id(operation=OpBtnLabel.remove_paths)
         self.remove_paths_q = f"#{self.remove_paths}"
-        self.toggle_diffs = ids.operate_button_id(operation=OpBtnLabel.toggle_diffs)
-        self.toggle_diffs_q = f"#{self.toggle_diffs}"
+        self.create_diffs = ids.operate_button_id(operation=OpBtnLabel.create_diffs)
+        self.create_diffs_q = f"#{self.create_diffs}"
 
 
 class StaticIds:

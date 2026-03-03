@@ -23,7 +23,7 @@ class DebugTab(Horizontal, AppType):
         self.op_btn_dict: dict[str, OpBtnLabel] = {
             IDS.debug.op_btn.create_paths: OpBtnLabel.create_paths,
             IDS.debug.op_btn.remove_paths: OpBtnLabel.remove_paths,
-            IDS.debug.op_btn.toggle_diffs: OpBtnLabel.toggle_diffs,
+            IDS.debug.op_btn.create_diffs: OpBtnLabel.create_diffs,
         }
         super().__init__()
 
@@ -90,8 +90,8 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == OpBtnLabel.toggle_diffs:
-            result = self.test_paths.create_file_diffs()
+        if event.button.label == OpBtnLabel.create_diffs:
+            result = self.test_paths.create_diffs()
             self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()

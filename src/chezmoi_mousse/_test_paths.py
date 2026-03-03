@@ -1,5 +1,6 @@
 import random
-from dataclasses import dataclass
+import shutil
+from dataclasses import dataclass, fields
 from enum import StrEnum
 from pathlib import Path
 
@@ -27,12 +28,15 @@ class PileNames:
     TEST_FILE_1 = "_test_file_1.toml"
     TEST_FILE_2 = "_test_file_2.toml"
     TEST_FILE_3 = "_test_file_3.toml"
-    TEST_FILE_4 = "_test_file_4.toml"
     TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
 
     @property
     def all_toml_file_names(self) -> list[str]:
-        return [self.TEST_FILE_1, self.TEST_FILE_2, self.TEST_FILE_3, self.TEST_FILE_4]
+        return [self.TEST_FILE_1, self.TEST_FILE_2, self.TEST_FILE_3]
+
+    @property
+    def toml_file_without_diff(self) -> list[str]:
+        return [self.TEST_FILE_2]
 
     @property
     def toml_files_for_diffs(self) -> list[str]:
@@ -41,104 +45,71 @@ class PileNames:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AllTestPaths:
-    DEST_DIR: Path
+    home_dir: Path = Path.home()
+    test_dir: Path = home_dir / "_test_dir"
+
     # dir names
-    DIR_WITH_STATUS = "_test_dir_with_status"
-    EMPTY = "_test_empty_dir"
-    SUB_DIR = "_test_sub_dir"
-    WITH_NESTED_STATUS_CHILDREN = "_test_with_status_children"
-    WITH_SPECIAL_FILES = "_test_special_files"
-    WITHOUT_STATUS_CHILDREN = "_test_with_status_children"
+    _empty_dir: Path = test_dir / "_test_empty_dir"
+    dir_with_status: Path = test_dir / "_test_dir_with_status"
+    nested_dirs_1: Path = test_dir / "_test_sub_dir_1" / "_test_nested_dir"
+    _nested_dir_without_status_files_in: Path = test_dir / "_test_sub_dir_2"
+    _nested_dir_with_status_files_in: Path = (
+        _nested_dir_without_status_files_in / "_test_nested_dir"
+    )
 
     # file names
     file_names = PileNames()
 
     @property
-    def _dir_with_special_files(self) -> Path:
-        return self.DEST_DIR / self.WITH_SPECIAL_FILES
-
-    @property
-    def _dir_with_nested_dir_with_status_children(self) -> Path:
-        return self.DEST_DIR / self.WITH_NESTED_STATUS_CHILDREN
-
-    @property
-    def _dir_with_status(self) -> Path:
-        return self.DEST_DIR / self.DIR_WITH_STATUS
-
-    @property
-    def _dir_without_status_children(self) -> Path:
-        return self._dir_with_nested_dir_with_status_children / self.SUB_DIR
-
-    @property
-    def _empty_dir_path(self) -> Path:
-        return self.DEST_DIR / self.EMPTY
-
-    @property
-    def _nested_dir_with_status_paths(self) -> Path:
-        return self.DEST_DIR / self.WITH_NESTED_STATUS_CHILDREN / self.SUB_DIR
-
-    @property
-    def _sub_dir_path(self) -> Path:
-        return self.DEST_DIR / self.SUB_DIR
-
-    @property
     def all_dirs_to_create(self) -> list[Path]:
         # to create the dirs with parents True
         return [
-            self._dir_with_special_files,
-            self._dir_with_status,
-            self._dir_without_status_children,
-            self._empty_dir_path,
-            self._nested_dir_with_status_paths,
-            self._sub_dir_path,
+            self.dir_with_status,
+            self._empty_dir,
+            self.nested_dirs_1,
+            self._nested_dir_with_status_files_in,
         ]
 
     @property
-    def _dirs_with_toml_files(self) -> list[Path]:
+    def dirs_with_toml_files(self) -> list[Path]:
         return [
-            self._dir_with_status,
-            self._dir_without_status_children,
-            self._nested_dir_with_status_paths,
-            self._sub_dir_path,
-            self.DEST_DIR,
+            getattr(self, field.name)
+            for field in fields(self)
+            if field.name != "_empty_dir"
         ]
 
     @property
     def toml_files_to_create(self) -> list[Path]:
         to_create: list[Path] = []
         for file_name in self.file_names.all_toml_file_names:
-            for dir in self._dirs_with_toml_files:
-                to_create.append(dir / file_name)
+            for dir in self.dirs_with_toml_files:
+                if dir != self._nested_dir_without_status_files_in:
+                    to_create.append(dir / file_name)
+        for file_name in self.file_names.toml_file_without_diff:
+            to_create.append(self._nested_dir_without_status_files_in / file_name)
         return to_create
 
     @property
     def toml_files_for_diff(self) -> list[Path]:
         to_diff: list[Path] = []
-        dirs_to_exclude = [
-            self._dir_with_nested_dir_with_status_children,
-            self._dir_with_special_files,
-            self._dir_without_status_children,
-            self._empty_dir_path,
-            self._nested_dir_with_status_paths,
-        ]
         for file_name in self.file_names.toml_files_for_diffs:
-            for dir in self._dirs_with_toml_files:
-                if dir in dirs_to_exclude:
+            for dir in self.dirs_with_toml_files:
+                if dir in [self._nested_dir_without_status_files_in, self._empty_dir]:
                     continue
                 to_diff.append(dir / file_name)
         return to_diff
 
     @property
     def large_file_path(self) -> Path:
-        return self.DEST_DIR / self.WITH_SPECIAL_FILES / self.file_names.LARGE
+        return self.test_dir / self.file_names.LARGE
 
     @property
     def binary_file_path(self) -> Path:
-        return self.DEST_DIR / self.WITH_SPECIAL_FILES / self.file_names.BINARY
+        return self.test_dir / self.file_names.BINARY
 
     @property
     def tricky_utf8_file_path(self) -> Path:
-        return self.DEST_DIR / self.WITH_SPECIAL_FILES / self.file_names.TRICKY_UTF8
+        return self.test_dir / self.file_names.TRICKY_UTF8
 
     @property
     def all_test_paths(self) -> list[Path]:
@@ -151,30 +122,38 @@ class AllTestPaths:
 
 @dataclass(slots=True, kw_only=True)
 class TestPaths:
-    all_paths: AllTestPaths = AllTestPaths(DEST_DIR=Path.home())
+    all_paths: AllTestPaths = AllTestPaths()
 
     def _create_dir_paths(self) -> list[str]:
         created_dirs: list[str] = []
         for dir in self.all_paths.all_dirs_to_create:
             if not dir.exists():
-                dir.mkdir(parents=True, exist_ok=True)
+                dir.mkdir(parents=True)
                 created_dirs.append(str(dir))
         return created_dirs
 
-    def _create_binary_file(self) -> str:
-        file = self.all_paths.binary_file_path
+    def _create_binary_file(self, recreate: bool = False) -> list[str]:
+        file_path = self.all_paths.binary_file_path
+        if file_path.exists() and recreate is False:
+            return []
         content = FAKER.binary(length=2048)
-        with open(file, "wb") as f:
+        with open(file_path, "wb") as f:
             f.write(content)
-        return str(file)
+        return [str(file_path)]
 
-    def _create_large_file(self) -> str:
+    def _create_large_file(self, recreate: bool = False) -> list[str]:
+        file_path = self.all_paths.large_file_path
+        if file_path.exists() and recreate is False:
+            return []
         content = FAKER.text(max_nb_chars=700000)
-        with open(self.all_paths.large_file_path, "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
-        return str(self.all_paths.large_file_path)
+        return [str(file_path)]
 
-    def _create_tricky_utf8_file(self) -> str:
+    def _create_tricky_utf8_file(self, recreate: bool = False) -> list[str]:
+        file_path = self.all_paths.tricky_utf8_file_path
+        if file_path.exists() and recreate is False:
+            return []
         parts: list[str] = []
         parts.append(FAKER.sentence(nb_words=6))
         parts.append(
@@ -202,9 +181,9 @@ class TestPaths:
             + FAKER.word()
         )
         parts.append("A" + ProblemChars.ZWJ + "B" + ProblemChars.ZWJ + "C")
-        with open(self.all_paths.tricky_utf8_file_path, "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write("\n".join(parts))
-        return str(self.all_paths.tricky_utf8_file_path)
+        return [str(file_path)]
 
     def _create_toml_files(self) -> list[str]:
         def get_fake_toml_string() -> str:
@@ -224,48 +203,50 @@ class TestPaths:
         created_files: list[str] = []
         for file in self.all_paths.toml_files_to_create:
             if file.exists():
-                file.unlink()
-            with open(file, "w", encoding="utf-8") as f:
-                f.write(get_fake_toml_string())
-            created_files.append(str(file))
-        return created_files
+                continue
+            # to avoid creating the file when we deleted nested_dirs_1
+            elif file.parent.exists():
+                with open(file, "w", encoding="utf-8") as f:
+                    f.write(get_fake_toml_string())
+                created_files.append(str(file))
+        return sorted(created_files)
 
     def create_paths_on_disk(self) -> list[str]:
-        created_paths = self._create_dir_paths()
-        created_paths.append(self._create_binary_file())
-        created_paths.append(self._create_large_file())
-        created_paths.append(self._create_tricky_utf8_file())
+        created_paths: list[str] = []
+        created_paths.extend(self._create_dir_paths())
+        created_paths.extend(self._create_binary_file())
+        created_paths.extend(self._create_large_file())
+        created_paths.extend(self._create_tricky_utf8_file())
         created_paths.extend(self._create_toml_files())
-        return created_paths
+        if not created_paths:
+            return [
+                (
+                    "[$text-warning]No test paths were created because they already "
+                    "exist.[/]"
+                )
+            ] + [f"[dim]{p}[/]" for p in self.list_existing_test_paths()]
+        return ["[$text-success]Created paths:[/]"] + sorted(created_paths)
 
-    def list_existing_test_paths(self) -> str | list[Path]:
+    def list_existing_test_paths(self) -> list[Path]:
         existing_paths = [p for p in self.all_paths.all_test_paths if p.exists()]
-        if not existing_paths:
-            return "[$text-warning]No test paths exist on disk.[/]"
-        return existing_paths
+        return sorted(existing_paths)
 
     def remove_test_paths(self) -> str:
-        removed_paths: list[str] = []
-        # Remove files first
         existing_paths = self.list_existing_test_paths()
-        if isinstance(existing_paths, str):
-            return existing_paths
-        for path in existing_paths:
-            if path.is_file():
-                path.unlink()
-                removed_paths.append(str(path))
-        # Then remove directories
-        for dir_path in sorted(self.all_paths.all_dirs_to_create, reverse=True):
-            if dir_path.exists():
-                dir_path.rmdir()
-                removed_paths.append(str(dir_path))
-        if not removed_paths:
+        if not existing_paths:
             return "[$text-warning]No test paths to remove.[/]"
-        removed_paths.sort()
-        removed_path_strings = "\n".join([str(p) for p in removed_paths])
-        return "[$text-success]Removed paths:[/]\n" + removed_path_strings
+        shutil.rmtree(self.all_paths.test_dir)
+        for file_path in [
+            p
+            for p in self.all_paths.home_dir.iterdir()
+            if p.name.startswith("_test_file_") and p.name.endswith(".toml")
+        ]:
+            file_path.unlink()
+        return "[$text-success]Removed paths:[/]\n" + "\n".join(
+            [str(p) for p in existing_paths]
+        )
 
-    def create_file_diffs(self) -> str:
+    def create_diffs(self) -> str:
         if not self.list_existing_test_paths():
             return "[$text-warning]No test paths exist to modify.[/]"
         modified: list[str] = []
@@ -294,8 +275,30 @@ class TestPaths:
                     f.write(modified_content)
                 modified.append(str(file))
 
-        modified.append(self._create_binary_file())
-        modified.append(self._create_large_file())
-        modified.append(self._create_tricky_utf8_file())
+        # Modify special files
+        modified.extend(self._create_binary_file(recreate=True))
+        modified.extend(self._create_large_file(recreate=True))
+        modified.extend(self._create_tricky_utf8_file(recreate=True))
 
-        return "[$text-primary]Modified paths:[/]\n" + "\n".join(modified)
+        # Toggle between 0o750 and 0o755 for the dir with status
+        dir_with_status = self.all_paths.dir_with_status
+        if dir_with_status.exists():
+            current_permissions = dir_with_status.stat().st_mode
+            if current_permissions == 0o750:
+                dir_with_status.chmod(0o755)
+            else:
+                dir_with_status.chmod(0o750)
+            modified.append(str(dir_with_status))
+
+        # Delete or create the self.nested_dirs_1 if it's managed
+        nested_dirs_1 = self.all_paths.nested_dirs_1
+        if nested_dirs_1.exists():
+            shutil.rmtree(nested_dirs_1)
+            modified.append(f"[$text-error]{nested_dirs_1}[/]")
+        else:
+            nested_dirs_1.mkdir(parents=True)
+            created_toml_files = self._create_toml_files()
+            modified.append(f"[$text-success]{nested_dirs_1}[/]")
+            modified.extend(created_toml_files)
+
+        return "[$text-primary]Modified paths:[/]\n" + "\n".join(sorted(modified))
