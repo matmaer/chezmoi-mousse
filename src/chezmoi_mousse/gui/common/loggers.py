@@ -212,11 +212,7 @@ class DebugLog(LoggersBase, AppType):
             self.write(f"{key}: {value}")
 
 
-class CmdLog(ScrollableContainer, AppType):
-
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.cmd, classes=Tcss.border_title_top)
-        self.ids = ids
+class CmdLog(ScrollableContainer):
 
     def on_mount(self) -> None:
         self.border_title = LogString.cmd_log_title

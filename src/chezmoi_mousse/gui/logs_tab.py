@@ -21,7 +21,7 @@ class LogsTab(Vertical, AppType):
         )
         with ContentSwitcher(initial=IDS.logs.logger.app):
             yield AppLog(IDS.logs)
-            yield CmdLog(IDS.logs)
+            yield CmdLog(id=IDS.logs.logger.cmd, classes=Tcss.border_title_top)
             yield GitLog(IDS.logs)
 
     def on_mount(self) -> None:

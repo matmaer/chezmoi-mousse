@@ -7,7 +7,7 @@ from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import IDS, AppType, Chars, SectionLabel, Tcss
+from chezmoi_mousse import AppType, Chars, SectionLabel, Tcss
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
 
@@ -15,9 +15,6 @@ __all__ = ["DoctorTable", "PwMgrInfoView"]
 class DoctorTable(DataTable[Text], AppType):
 
     doctor_std_out: reactive[str | None] = reactive(None, init=False)
-
-    def __init__(self) -> None:
-        super().__init__(show_cursor=False, classes=Tcss.doctor_table)
 
     @property
     def _dr_style(self) -> dict[str, str]:
@@ -247,9 +244,6 @@ class PwCollapsible(Collapsible, AppType):
 
 
 class PwMgrInfoView(Vertical):
-
-    def __init__(self):
-        super().__init__(id=IDS.config.view.pw_mgr_info)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)

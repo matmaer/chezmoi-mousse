@@ -22,9 +22,6 @@ class CatConfigView(Vertical, AppType):
 
     cat_config_stdout: reactive[str | None] = reactive(None, init=False)
 
-    def __init__(self):
-        super().__init__(id=IDS.config.view.cat_config)
-
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
 
@@ -35,9 +32,6 @@ class CatConfigView(Vertical, AppType):
 class IgnoredView(Vertical):
 
     ignored_stdout: reactive[str | None] = reactive(None, init=False)
-
-    def __init__(self):
-        super().__init__(id=IDS.config.view.ignored)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
@@ -52,9 +46,6 @@ class DoctorTableView(Vertical, AppType):
 
     doctor_stdout: reactive[str | None] = reactive(None, init=False)
 
-    def __init__(self) -> None:
-        super().__init__(id=IDS.config.container.doctor)
-
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
         yield DoctorTable()
@@ -67,9 +58,6 @@ class DoctorTableView(Vertical, AppType):
 class TemplateDataView(Vertical, AppType):
 
     template_data_stdout: reactive[str | None] = reactive(None, init=False)
-
-    def __init__(self):
-        super().__init__(id=IDS.config.view.template_data)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
@@ -96,11 +84,11 @@ class ConfigTab(Horizontal, AppType):
             ),
         )
         with ContentSwitcher(initial=IDS.config.container.doctor):
-            yield DoctorTableView()
-            yield PwMgrInfoView()
-            yield CatConfigView()
-            yield IgnoredView()
-            yield TemplateDataView()
+            yield DoctorTableView(id=IDS.config.container.doctor)
+            yield PwMgrInfoView(id=IDS.config.view.pw_mgr_info)
+            yield CatConfigView(id=IDS.config.view.cat_config)
+            yield IgnoredView(id=IDS.config.view.ignored)
+            yield TemplateDataView(id=IDS.config.view.template_data)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
