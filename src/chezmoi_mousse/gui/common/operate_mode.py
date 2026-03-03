@@ -182,7 +182,6 @@ class OperateMode(Vertical, AppType):
         self.all_cmd_results.append(cmd_result)
 
     @work
-    @min_wait
     async def _run_read_commands(self) -> None:
         for read_cmd in (
             ReadCmd.managed_dirs,
