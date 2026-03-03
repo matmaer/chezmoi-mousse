@@ -163,6 +163,8 @@ class AddTab(Horizontal, AppType):
         self.operate_mode_container.path_arg = CMD.dest_dir
         self.query_exactly_one(FilteredDirTree).path = CMD.dest_dir
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
+        self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
+        self.add_review_btn.disabled = True
 
     @on(Button.Pressed)
     def refresh_dir_tree(self, event: Button.Pressed) -> None:
@@ -177,6 +179,8 @@ class AddTab(Horizontal, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
+        if self.add_review_btn.disabled is True:
+            self.add_review_btn.disabled = False
         self.contents_view.show_path = event.node.data.path
         self.operate_mode_container.path_arg = event.node.data.path
 
@@ -186,6 +190,8 @@ class AddTab(Horizontal, AppType):
         if event.node.data is None:
             self.app.notify("Select a new node to operate on.")
             return
+        if self.add_review_btn.disabled is True:
+            self.add_review_btn.disabled = False
         self.contents_view.show_path = event.node.data.path
         self.operate_mode_container.path_arg = event.node.data.path
 
