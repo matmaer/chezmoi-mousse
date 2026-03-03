@@ -82,7 +82,6 @@ class Tcss(StrEnum):
     changes_enabled_color = auto()
     content_switcher_left = auto()
     context = auto()
-    doctor_table = auto()
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
