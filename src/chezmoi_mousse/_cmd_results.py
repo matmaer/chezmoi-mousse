@@ -56,7 +56,6 @@ class DirNode:
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
-    dir_widgets: list[Static | Label] = field(default_factory=list[Static | Label])
 
     # property to return if the dir has any nested paths with a status
     @property
@@ -79,7 +78,8 @@ class DirNode:
             StatusCode.No_Status: "[$text-secondary]",
         }
 
-    def __post_init__(self) -> None:
+    @property
+    def dir_widgets(self) -> list[Static | Label]:
         # Populate dir_widgets for the destDir
         widgets: list[Static | Label] = []
         if self.dir_path == CMD.dest_dir:
@@ -134,7 +134,7 @@ class DirNode:
             )
             for path, status in sorted(self.nested_status_files.items()):
                 widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
-        self.dir_widgets = widgets
+        return widgets
 
 
 @dataclass(slots=True)
@@ -172,7 +172,6 @@ class Commands:
     _status_paths: set[Path] = field(default_factory=lambda: set())
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     cmd_results: CommandResults = field(default_factory=CommandResults)
-    no_status_paths: bool = False
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
 
@@ -209,6 +208,13 @@ class Commands:
         return self._parsed_paths.managed_files
 
     @property
+    def no_status_paths(self) -> bool:
+        return (
+            self.cmd_results.verify is not None
+            and self.cmd_results.verify.exit_code == 0
+        )
+
+    @property
     def status_paths(self) -> set[Path]:
         return self._status_paths
 
@@ -222,7 +228,6 @@ class Commands:
 
     def update_parsed_data(self) -> None:
         self._update_dump_config()
-        self._update_no_status_paths()
         self._update_managed_dirs_and_files()
         self._update_apply_and_re_add_status_dirs_and_files_and_status_paths()
         # Now update x files as they depend status paths and managed dirs/files
@@ -244,13 +249,6 @@ class Commands:
             git_auto_commit=parsed_config["git"]["autocommit"],
             git_auto_push=parsed_config["git"]["autopush"],
         )
-
-    def _update_no_status_paths(self) -> None:
-        if (
-            self.cmd_results.verify is not None
-            and self.cmd_results.verify.exit_code == 0
-        ):
-            self.no_status_paths = True
 
     def _update_managed_dirs_and_files(self) -> None:
         if (
@@ -372,7 +370,6 @@ class Commands:
                     if p.is_relative_to(dir_path)
                     and len(p.relative_to(dir_path).parts) > 1
                 },
-                dir_widgets=[],
             )
 
         for dir_path in self._parsed_paths.managed_dirs:
