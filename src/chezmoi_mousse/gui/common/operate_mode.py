@@ -172,7 +172,17 @@ class OperateMode(Vertical, AppType):
         self.run_cmd_result = cmd_result
         self.all_cmd_results.append(cmd_result)
 
+    @work(thread=True)
+    @min_wait
+    async def _run_read_command(self, read_cmd: ReadCmd) -> None:
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
+        self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
+        cmd_result = CMD.run_cmd.read(read_cmd)
+        setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
+        self.all_cmd_results.append(cmd_result)
+
     @work
+    @min_wait
     async def _run_read_commands(self) -> None:
         for read_cmd in (
             ReadCmd.managed_dirs,
@@ -180,11 +190,7 @@ class OperateMode(Vertical, AppType):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ):
-            pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
-            self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
-            cmd_result = CMD.run_cmd.read(read_cmd)
-            setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
-            self.all_cmd_results.append(cmd_result)
+            await self._run_read_command(read_cmd).wait()
         CMD.update_parsed_data()
 
     @work
