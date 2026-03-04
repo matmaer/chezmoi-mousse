@@ -12,6 +12,7 @@ from chezmoi_mousse import (
     CMD,
     IDS,
     AppType,
+    BorderTitle,
     Chars,
     FlatBtnLabel,
     OpBtnEnum,
@@ -39,7 +40,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         self.guide_depth = 3
         self.show_root = False
         self.add_class(Tcss.border_title_top)
-        self.border_title = " destDir "
+        self.border_title = BorderTitle.dest_dir
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         # Define condition lambdas for each switch combo

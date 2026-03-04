@@ -3,7 +3,15 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
-from chezmoi_mousse import IDS, AppType, FlatBtnLabel, OpBtnLabel, Tcss, TestPaths
+from chezmoi_mousse import (
+    IDS,
+    AppType,
+    BorderTitle,
+    FlatBtnLabel,
+    OpBtnLabel,
+    Tcss,
+    TestPaths,
+)
 
 from .common.actionables import FlatButtonsVertical, OperateButtons
 from .common.loggers import DebugLog
@@ -46,7 +54,7 @@ class DebugTab(Horizontal, AppType):
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.switcher.border_title = " Test Paths "
+        self.switcher.border_title = BorderTitle.test_paths
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
@@ -74,13 +82,13 @@ class DebugTab(Horizontal, AppType):
         switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.label == FlatBtnLabel.debug_log:
             switcher.current = IDS.debug.logger.debug
-            switcher.border_title = " Debug Log "
+            switcher.border_title = BorderTitle.debug_log
         elif event.button.label == FlatBtnLabel.test_paths:
             switcher.current = IDS.debug.static.debug_test_paths
-            switcher.border_title = " Test Paths "
+            switcher.border_title = BorderTitle.test_paths
         elif event.button.label == FlatBtnLabel.dom_nodes:
             switcher.current = IDS.debug.logger.dom_nodes
-            switcher.border_title = " DOM Nodes "
+            switcher.border_title = BorderTitle.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:

@@ -2,6 +2,7 @@ from enum import StrEnum
 
 __all__ = [
     "BindingDescription",
+    "BorderTitle",
     "Chars",
     "FlatBtnLabel",
     "LinkBtn",
@@ -72,6 +73,17 @@ class SubTabLabel(StrEnum):
 #########################
 
 
+class BorderTitle(StrEnum):
+    app_log = " Application Log "
+    cmd_log = " Chezmoi Commands Log "
+    debug_log = " Debug Log "
+    dest_dir = " destDir "
+    dom_nodes = " DOM Nodes "
+    global_git_log = " Global Chezmoi Git Log "
+    list_tree = dest_dir + "files "
+    test_paths = " Test Paths "
+
+
 class Chars(StrEnum):
     # bullet = "\u2022"  # BULLET
     burger = "\u2261"  # IDENTICAL TO
@@ -90,13 +102,10 @@ class Chars(StrEnum):
 
 class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
-    app_log_title = " Application Log "
     chezmoi_found = "Found chezmoi command"
     chezmoi_not_found = "chezmoi command not found"
     cmd_log_initialized = "Chezmoi commands log initialized"
-    cmd_log_title = " Chezmoi Commands Log "
     debug_log_initialized = "Debug log initialized"
-    debug_log_title = " Debug Log "
     dev_mode_enabled = "Dev mode enabled"
     doctor_errors_found = "One or more errors found"
     doctor_fails_found = "One or more tests failed"

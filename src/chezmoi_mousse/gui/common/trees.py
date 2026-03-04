@@ -5,7 +5,16 @@ from textual import on
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabName, Tcss, TreeName
+from chezmoi_mousse import (
+    CMD,
+    AppType,
+    BorderTitle,
+    Chars,
+    StatusCode,
+    TabName,
+    Tcss,
+    TreeName,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirNode
@@ -31,9 +40,9 @@ class TreeBase(Tree[Path], AppType):
 
     def on_mount(self) -> None:
         if self.tree_name == TreeName.list_tree:
-            self.border_title = " destDir files "
+            self.border_title = BorderTitle.list_tree
         elif self.tree_name == TreeName.managed_tree:
-            self.border_title = " destDir "
+            self.border_title = BorderTitle.dest_dir
         self.guide_depth: int = 3
         self.add_class(Tcss.border_title_top)
         self._make_node_colors_dict()

@@ -5,7 +5,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
+from chezmoi_mousse import CMD, AppType, BorderTitle, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -24,7 +24,7 @@ class GitLog(ScrollableContainer, AppType):
 
     def _set_border_title(self) -> None:
         if self.show_path == CMD.dest_dir:
-            self.border_title = " Global Chezmoi Git Log "
+            self.border_title = BorderTitle.global_git_log
         else:
             self.border_title = f" {self.show_path.name} "
 
