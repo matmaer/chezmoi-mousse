@@ -74,8 +74,12 @@ class ContainerIds:
         self.command_output_q = f"#{self.command_output}"
         self.diff = ids.container_id(name=ContainerName.diff)
         self.diff_q = f"#{self.diff}"
+        self.dir_contents = ids.container_id(name=ContainerName.dir_contents)
+        self.dir_contents_q = f"#{self.dir_contents}"
         self.doctor = ids.container_id(name=ContainerName.doctor)
         self.doctor_q = f"#{self.doctor}"
+        self.file_contents = ids.container_id(name=ContainerName.file_contents)
+        self.file_contents_q = f"#{self.file_contents}"
         self.git_log = ids.container_id(name=ContainerName.git_log)
         self.git_log_q = f"#{self.git_log}"
         self.left_side = ids.container_id(name=ContainerName.left_side)

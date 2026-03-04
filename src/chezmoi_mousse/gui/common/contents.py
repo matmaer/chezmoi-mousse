@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
+from textual.app import ComposeResult
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
@@ -54,11 +55,28 @@ class ContentsView(Container, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
         self.ids = ids
-        self.cache: dict[Path, ScrollableContainer] = {}
-        self.current_container: ScrollableContainer = ScrollableContainer()
+        self.file_cache: dict[Path, ScrollableContainer] = {}
+        self.current_file_container: ScrollableContainer = ScrollableContainer()
+
+    def compose(self) -> ComposeResult:
+        yield ScrollableContainer(id=self.ids.container.file_contents)
+        yield ScrollableContainer(id=self.ids.container.dir_contents)
 
     def on_mount(self) -> None:
+        self.dir_contents_container = self.query_one(
+            self.ids.container.dir_contents_q, ScrollableContainer
+        )
+        self.file_contents_container = self.query_one(
+            self.ids.container.file_contents_q, ScrollableContainer
+        )
+        self.file_contents_container.display = False
         self.border_title = f" {CMD.dest_dir} "
+        if self.ids.canvas_name == TabName.add:
+            self.dir_contents_container.mount(
+                *self._create_add_dir_contents(CMD.dest_dir)
+            )
+        else:
+            self.dir_contents_container.mount(*self.dir_nodes[CMD.dest_dir].dir_widgets)
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
@@ -162,44 +180,86 @@ class ContentsView(Container, AppType):
             result = Static(text_obj)
         return result
 
-    def _mount_and_cache_container(
-        self, path: "Path", widgets: list[Label | Static] | Static | TextArea
+    def _mount_and_cache_file_container(
+        self, path: "Path", widgets: Static | TextArea
     ) -> None:
-        self.current_container.display = False
-        container = ScrollableContainer()
-        self.mount(container)
-        if not isinstance(widgets, (TextArea, Static)):
-            container.mount_all(widgets)
-        else:
-            container.mount(widgets)
-        self.cache[path] = container
-        self.current_container = container
+        if path in CMD.managed_files or (
+            path.is_file() and self.ids.canvas_name == TabName.add
+        ):
+            self.dir_contents_container.display = False
+            self.file_contents_container.display = True
+            self.current_file_container.display = False
+
+            # Create a new container for this file to isolate scrolling
+            new_container = ScrollableContainer()
+            self.file_contents_container.mount(new_container)
+            new_container.mount(widgets)
+
+            self.file_cache[path] = new_container
+            self.current_file_container = new_container
+            self._set_border_title()
+
+    def _remove_and_mount_dir_container_children(
+        self, widgets: list[Static | Label]
+    ) -> None:
+        container = self.query_one(
+            self.ids.container.dir_contents_q, ScrollableContainer
+        )
+        container.remove_children()
+        container.mount(*widgets)
+        self._set_border_title()
 
     def watch_show_path(self, show_path: Path) -> None:
-        if show_path in self.cache:
-            self.current_container.display = False
-            self.cache[show_path].display = True
-            self.current_container = self.cache[show_path]
+        if show_path in self.file_cache:
+            if show_path in CMD.managed_files or (
+                show_path.is_file() and self.ids.canvas_name == TabName.add
+            ):
+                self.dir_contents_container.display = False
+                self.file_contents_container.display = True
+                self.current_file_container.display = False
+
+                cached_container = self.file_cache[show_path]
+                cached_container.display = True
+                self.current_file_container = cached_container
+            elif (
+                show_path in CMD.managed_dirs or show_path == CMD.dest_dir
+            ) and self.ids.canvas_name != TabName.add:
+                self.dir_contents_container.display = True
+                self.file_contents_container.display = False
+                self.dir_contents_container.remove_children()
+                self.dir_contents_container.mount(
+                    *self.dir_nodes[show_path].dir_widgets
+                )
+            elif self.ids.canvas_name == TabName.add and show_path.is_dir():
+                self.dir_contents_container.display = True
+                self.file_contents_container.display = False
+                self.dir_contents_container.remove_children()
+                self.dir_contents_container.mount(
+                    *self._create_add_dir_contents(show_path)
+                )
             self._set_border_title()
             return
-        # Managed files (ApplyTab/ReAddTab)
-        if show_path in CMD.managed_files:
-            widget = self._create_file_contents(file_path=self.show_path, managed=True)
-            self._mount_and_cache_container(self.show_path, widget)
+        is_managed_file = show_path in CMD.managed_files
+        # Show file contents (ApplyTab/ReAddTab/AddTab)
+        if show_path in CMD.managed_files or (
+            show_path.is_file() and self.ids.canvas_name == TabName.add
+        ):
+            widget = self._create_file_contents(
+                file_path=show_path, managed=is_managed_file
+            )
+            self._mount_and_cache_file_container(show_path, widget)
         # Managed directories (ApplyTab/ReAddTab)
-        elif show_path in CMD.managed_dirs and self.ids.canvas_name != TabName.add:
+        elif (
+            show_path in CMD.managed_dirs or show_path == CMD.dest_dir
+        ) and self.ids.canvas_name != TabName.add:
             widgets = self.dir_nodes[show_path].dir_widgets
-            self._mount_and_cache_container(self.show_path, widgets)
-
-        # Unmanaged files (AddTab)
-        elif show_path.is_file() and self.ids.canvas_name == TabName.add:
-            widget = self._create_file_contents(file_path=show_path, managed=False)
-            self._mount_and_cache_container(show_path, widget)
+            self._remove_and_mount_dir_container_children(widgets)
         # Unmanaged directories (AddTab)
         elif show_path.is_dir() and self.ids.canvas_name == TabName.add:
             widgets = self._create_add_dir_contents(show_path)
-            self._mount_and_cache_container(show_path, widgets)
+            self._remove_and_mount_dir_container_children(widgets)
         else:
-            self._mount_and_cache_container(
+            self._mount_and_cache_file_container(
                 show_path, Static("unknown", classes=Tcss.removed)
             )
+        self._set_border_title()
