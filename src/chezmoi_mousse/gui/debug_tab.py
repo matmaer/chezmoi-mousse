@@ -1,6 +1,6 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
 from chezmoi_mousse import IDS, AppType, FlatBtnLabel, OpBtnLabel, Tcss, TestPaths
@@ -26,30 +26,27 @@ class DebugTab(Horizontal, AppType):
             IDS.debug.op_btn.create_diffs: OpBtnLabel.create_diffs,
         }
         super().__init__()
+        self.test_paths = TestPaths()
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
         with Vertical():
-            with ContentSwitcher(initial=IDS.debug.view.test_paths):
-                yield ScrollableContainer(
-                    Static(
-                        "[$text-primary]No test paths exist.[/]",
-                        id=IDS.debug.static.debug_test_paths,
-                    ),
-                    id=IDS.debug.view.test_paths,
-                    classes=Tcss.border_title_top,
+            with ContentSwitcher(
+                initial=IDS.debug.static.debug_test_paths, classes=Tcss.border_title_top
+            ):
+                yield Static(
+                    "[$text-primary]No test paths exist.[/]",
+                    id=IDS.debug.static.debug_test_paths,
                 )
                 yield DebugLog(IDS.debug)
                 yield RichLog(
-                    id=IDS.debug.logger.dom_nodes,
-                    auto_scroll=False,
-                    highlight=True,
-                    classes=Tcss.border_title_top,
+                    id=IDS.debug.logger.dom_nodes, auto_scroll=False, highlight=True
                 )
             yield OperateButtons(IDS.debug, btn_dict=self.op_btn_dict)
 
     def on_mount(self) -> None:
-        self.test_paths = TestPaths()
+        self.switcher = self.query_exactly_one(ContentSwitcher)
+        self.switcher.border_title = " Test Paths "
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
@@ -58,12 +55,7 @@ class DebugTab(Horizontal, AppType):
             self.test_paths_static.update(existing_paths)
         elif existing_paths:
             self.test_paths_static.update("\n".join([str(p) for p in existing_paths]))
-        self.debug_test_path_view = self.query_one(
-            IDS.debug.view.test_paths_q, ScrollableContainer
-        )
-        self.debug_test_path_view.border_title = " Test Paths "
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
-        self.dom_node_logger.border_title = " DOM Nodes "
         self.app.call_later(self._log_dom_nodes)
 
     def _log_dom_nodes(self) -> None:
@@ -82,10 +74,13 @@ class DebugTab(Horizontal, AppType):
         switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.label == FlatBtnLabel.debug_log:
             switcher.current = IDS.debug.logger.debug
+            switcher.border_title = " Debug Log "
         elif event.button.label == FlatBtnLabel.test_paths:
-            switcher.current = IDS.debug.view.test_paths
+            switcher.current = IDS.debug.static.debug_test_paths
+            switcher.border_title = " Test Paths "
         elif event.button.label == FlatBtnLabel.dom_nodes:
             switcher.current = IDS.debug.logger.dom_nodes
+            switcher.border_title = " DOM Nodes "
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:

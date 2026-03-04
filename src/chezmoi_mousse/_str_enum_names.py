@@ -121,8 +121,6 @@ class ViewName(StrEnum):
     add_help_view = auto()
     apply_help_view = auto()
     cat_config_view = auto()
-    debug_log_view = auto()
-    debug_test_paths_view = auto()
     diagram_view = auto()
     git_ignored_view = auto()
     pw_mgr_info_view = auto()

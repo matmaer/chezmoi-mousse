@@ -121,16 +121,9 @@ class DebugLog(LoggersBase, AppType):
     type Mro = tuple[type, ...]
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(
-            id=ids.logger.debug,
-            markup=True,
-            max_lines=10000,
-            wrap=True,
-            classes=Tcss.border_title_top,
-        )
+        super().__init__(id=ids.logger.debug, markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
-        self.border_title = LogString.debug_log_title
         self.ready_to_run(LogString.debug_log_initialized)
 
     def mro(self, mro: Mro) -> None:

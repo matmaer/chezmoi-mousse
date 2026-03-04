@@ -232,12 +232,6 @@ class ViewIds:
         self.ignored = ids.view_id(view=ViewName.git_ignored_view)
         self.ignored_q = f"#{self.ignored}"
 
-        # Debug tab
-        self.debug_log = ids.view_id(view=ViewName.debug_log_view)
-        self.debug_log_q = f"#{self.debug_log}"
-        self.test_paths = ids.view_id(view=ViewName.debug_test_paths_view)
-        self.test_paths_q = f"#{self.test_paths}"
-
         # Views or shared across canvases
         self.pw_mgr_info = ids.view_id(view=ViewName.pw_mgr_info_view)
         self.pw_mgr_info_q = f"#{self.pw_mgr_info}"
