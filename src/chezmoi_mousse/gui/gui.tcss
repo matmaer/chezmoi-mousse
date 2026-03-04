@@ -4,6 +4,8 @@
 
 /* TODO implement vw and vh for screens and containers with docked components */
 
+# Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
+
 .border_title_top {
   border-top: solid $primary;
   border-title-align: center;
@@ -83,7 +85,7 @@
 /* Type Selector tcss */
 /**********************/
 
-ContentsView, ContentsInfo, DiffInfo, LoggersBase {
+ContentsView, DiffView, ContentsInfo, DiffInfo, LoggersBase {
   margin-bottom: 1;
 }
 
@@ -102,6 +104,7 @@ DoctorTable {
 }
 
 FlatButtonsVertical {
+  padding-left: 1;
   width: auto;
 }
 
@@ -274,6 +277,7 @@ LoadingModal {
 
 OperateButtons {
   dock: bottom;
+  height: 2;
   &>.operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -514,7 +518,6 @@ Switch {
 
 TabbedContent {
   /* center the tab buttons on top */
-  layers: below above;
   & #tabs-list {
     align: center top;
   }
