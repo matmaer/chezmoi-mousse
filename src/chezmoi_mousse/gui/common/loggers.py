@@ -7,7 +7,7 @@ from rich.markup import escape
 from textual.containers import ScrollableContainer
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, BorderTitle, Chars, LogString, ReadVerb, Tcss
+from chezmoi_mousse import AppType, Chars, LogString, ReadVerb
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -50,15 +50,9 @@ class LoggersBase(RichLog, AppType):
 class AppLog(LoggersBase, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(
-            id=ids.logger.app,
-            markup=True,
-            max_lines=10000,
-            classes=Tcss.border_title_top,
-        )
+        super().__init__(id=ids.logger.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
-        self.border_title = BorderTitle.app_log
         self.ready_to_run(LogString.app_log_initialized)
         if self.app.chezmoi_found:
             self.success(LogString.chezmoi_found, with_time=False)
@@ -206,9 +200,6 @@ class DebugLog(LoggersBase, AppType):
 
 
 class CmdLog(ScrollableContainer):
-
-    def on_mount(self) -> None:
-        self.border_title = BorderTitle.cmd_log
 
     def log_cmd_result(self, command_result: "CommandResult") -> None:
         self.mount(command_result.pretty_collapsible)

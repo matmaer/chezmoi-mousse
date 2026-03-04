@@ -79,11 +79,10 @@ class TabName(StrEnum):
 
 class Tcss(StrEnum):
     added = auto()
-    border_title_top = auto()
     changed = auto()
     changes_enabled_color = auto()
-    content_switcher_left = auto()
     context = auto()
+    debug_content_switcher = auto()
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
@@ -103,6 +102,7 @@ class Tcss(StrEnum):
     sub_section_label = auto()
     tab_button = auto()
     tab_left_vertical = auto()
+    tree_content_switcher = auto()
     tree_widget = auto()
     unhandled = auto()
 

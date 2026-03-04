@@ -39,7 +39,6 @@ class FilteredDirTree(DirectoryTree, AppType):
     def on_mount(self) -> None:
         self.guide_depth = 3
         self.show_root = False
-        self.add_class(Tcss.border_title_top)
         self.border_title = BorderTitle.dest_dir
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -164,6 +163,7 @@ class AddTab(Horizontal, AppType):
         self.operate_mode_container.path_arg = CMD.dest_dir
         self.query_exactly_one(FilteredDirTree).path = CMD.dest_dir
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
+        self.contents_view.border_title = f" {CMD.dest_dir} "
         self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
         self.add_review_btn.disabled = True
 
@@ -175,26 +175,19 @@ class AddTab(Horizontal, AppType):
             self.dir_tree.refresh()
 
     @on(DirectoryTree.FileSelected)
-    def update_file_contents_view(self, event: DirectoryTree.FileSelected) -> None:
-        event.stop()
-        if event.node.data is None:
-            self.app.notify("Select a new node to operate on.")
-            return
-        if self.add_review_btn.disabled is True:
-            self.add_review_btn.disabled = False
-        self.contents_view.show_path = event.node.data.path
-        self.operate_mode_container.path_arg = event.node.data.path
-
     @on(DirectoryTree.DirectorySelected)
-    def update_contents_view(self, event: DirectoryTree.DirectorySelected) -> None:
+    def update_contents_view(
+        self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
+    ) -> None:
         event.stop()
-        if event.node.data is None:
-            self.app.notify("Select a new node to operate on.")
-            return
-        if self.add_review_btn.disabled is True:
-            self.add_review_btn.disabled = False
-        self.contents_view.show_path = event.node.data.path
-        self.operate_mode_container.path_arg = event.node.data.path
+        if event.node.data is not None:
+            if self.add_review_btn.disabled is True:
+                self.add_review_btn.disabled = False
+            self.contents_view.show_path = event.node.data.path
+            self.operate_mode_container.path_arg = event.node.data.path
+            self.contents_view.border_title = (
+                f" {event.node.data.path.relative_to(CMD.dest_dir)} "
+            )
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

@@ -5,16 +5,7 @@ from textual import on
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import (
-    CMD,
-    AppType,
-    BorderTitle,
-    Chars,
-    StatusCode,
-    TabName,
-    Tcss,
-    TreeName,
-)
+from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabName, Tcss, TreeName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirNode
@@ -39,13 +30,7 @@ class TreeBase(Tree[Path], AppType):
         self.tree_name = tree_name
 
     def on_mount(self) -> None:
-        if self.tree_name == TreeName.list_tree:
-            self.border_title = BorderTitle.list_tree
-        elif self.tree_name == TreeName.managed_tree:
-            self.border_title = BorderTitle.dest_dir
         self.guide_depth: int = 3
-        self.add_class(Tcss.border_title_top)
-        self._make_node_colors_dict()
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
@@ -54,8 +39,9 @@ class TreeBase(Tree[Path], AppType):
         else:
             return CMD.re_add_dir_nodes
 
-    def _make_node_colors_dict(self) -> None:
-        self.node_colors: dict[str, str] = {
+    @property
+    def node_colors(self) -> dict[str, str]:
+        return {
             StatusCode.Added: self.app.theme_variables["text-success"],
             StatusCode.Deleted: self.app.theme_variables["text-error"],
             StatusCode.Modified: self.app.theme_variables["text-warning"],

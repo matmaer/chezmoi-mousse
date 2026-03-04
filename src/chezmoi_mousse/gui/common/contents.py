@@ -53,7 +53,7 @@ class ContentsView(Container, AppType):
     show_path: reactive["Path"] = reactive(CMD.dest_dir, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.contents, classes=Tcss.border_title_top)
+        super().__init__(id=ids.container.contents)
         self.ids = ids
         self.file_cache: dict[Path, ScrollableContainer] = {}
         self.current_file_container: ScrollableContainer = ScrollableContainer()
@@ -70,7 +70,6 @@ class ContentsView(Container, AppType):
             self.ids.container.file_contents_q, ScrollableContainer
         )
         self.file_contents_container.display = False
-        self.border_title = f" {CMD.dest_dir} "
         if self.ids.canvas_name == TabName.add:
             self.dir_contents_container.mount(
                 *self._create_add_dir_contents(CMD.dest_dir)
@@ -84,12 +83,6 @@ class ContentsView(Container, AppType):
             return CMD.apply_dir_nodes
         else:
             return CMD.re_add_dir_nodes
-
-    def _set_border_title(self) -> None:
-        if self.show_path == CMD.dest_dir:
-            self.border_title = f" {CMD.dest_dir} "
-        else:
-            self.border_title = f" {self.show_path.name} "
 
     def _create_add_dir_contents(self, show_dir_path: Path) -> list[Static | Label]:
         widgets: list[Static | Label] = []
@@ -197,7 +190,6 @@ class ContentsView(Container, AppType):
 
             self.file_cache[path] = new_container
             self.current_file_container = new_container
-            self._set_border_title()
 
     def _remove_and_mount_dir_container_children(
         self, widgets: list[Static | Label]
@@ -207,7 +199,6 @@ class ContentsView(Container, AppType):
         )
         container.remove_children()
         container.mount(*widgets)
-        self._set_border_title()
 
     def watch_show_path(self, show_path: Path) -> None:
         if show_path in self.file_cache:
@@ -237,7 +228,6 @@ class ContentsView(Container, AppType):
                 self.dir_contents_container.mount(
                     *self._create_add_dir_contents(show_path)
                 )
-            self._set_border_title()
             return
         is_managed_file = show_path in CMD.managed_files
         # Show file contents (ApplyTab/ReAddTab/AddTab)
@@ -262,4 +252,3 @@ class ContentsView(Container, AppType):
             self._mount_and_cache_file_container(
                 show_path, Static("unknown", classes=Tcss.removed)
             )
-        self._set_border_title()

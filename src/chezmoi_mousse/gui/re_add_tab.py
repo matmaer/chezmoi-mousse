@@ -31,6 +31,9 @@ class ReAddTab(Container, AppType):
         yield SwitchSlider(IDS.re_add)
 
     def on_mount(self) -> None:
+        self.tab_buttons = self.query_exactly_one(ViewSwitcher).query_exactly_one(
+            Horizontal
+        )
         self.operate_mode_container = self.query_one(
             IDS.re_add.container.op_mode_q, OperateMode
         )
@@ -51,6 +54,7 @@ class ReAddTab(Container, AppType):
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
         msg.stop()
+        self.tab_buttons.border_subtitle = f" {msg.path.relative_to(CMD.dest_dir)} "
         self.git_log_view.show_path = msg.path
         self.diff_view.show_path = msg.path
         self.operate_mode_container.path_arg = msg.path

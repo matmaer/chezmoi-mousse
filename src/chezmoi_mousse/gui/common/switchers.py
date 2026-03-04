@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
@@ -43,7 +43,7 @@ class TreeSwitcher(Container, AppType):
     def compose(self) -> ComposeResult:
         yield TabButtons(self.ids, buttons=(SubTabLabel.tree, SubTabLabel.list))
         with ContentSwitcher(
-            initial=self.ids.tree.managed, classes=Tcss.content_switcher_left
+            initial=self.ids.tree.managed, classes=Tcss.tree_content_switcher
         ):
             yield ManagedTree(self.ids)
             yield ListTree(self.ids)
@@ -156,6 +156,10 @@ class ViewSwitcher(Container):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
             yield GitLog(self.ids)
+
+    def on_mount(self) -> None:
+        self.tab_buttons = self.query_exactly_one(Horizontal)
+        self.tab_buttons.border_subtitle = f" {CMD.dest_dir} "
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:

@@ -40,7 +40,8 @@ class DebugTab(Horizontal, AppType):
         yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
         with Vertical():
             with ContentSwitcher(
-                initial=IDS.debug.static.debug_test_paths, classes=Tcss.border_title_top
+                initial=IDS.debug.static.debug_test_paths,
+                classes=Tcss.debug_content_switcher,
             ):
                 yield Static(
                     "[$text-primary]No test paths exist.[/]",
@@ -79,16 +80,15 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.label == FlatBtnLabel.debug_log:
-            switcher.current = IDS.debug.logger.debug
-            switcher.border_title = BorderTitle.debug_log
+            self.switcher.current = IDS.debug.logger.debug
+            self.switcher.border_title = BorderTitle.debug_log
         elif event.button.label == FlatBtnLabel.test_paths:
-            switcher.current = IDS.debug.static.debug_test_paths
-            switcher.border_title = BorderTitle.test_paths
+            self.switcher.current = IDS.debug.static.debug_test_paths
+            self.switcher.border_title = BorderTitle.test_paths
         elif event.button.label == FlatBtnLabel.dom_nodes:
-            switcher.current = IDS.debug.logger.dom_nodes
-            switcher.border_title = BorderTitle.dom_nodes
+            self.switcher.current = IDS.debug.logger.dom_nodes
+            self.switcher.border_title = BorderTitle.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:

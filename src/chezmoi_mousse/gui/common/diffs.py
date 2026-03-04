@@ -34,7 +34,7 @@ class DiffView(Container, AppType):
     show_path: reactive["Path"] = reactive(CMD.dest_dir)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.diff, classes=Tcss.border_title_top)
+        super().__init__(id=ids.container.diff)
         self.ids = ids
         self.cache: dict[Path, ScrollableContainer] = {}
         self.current_container: ScrollableContainer = ScrollableContainer()
@@ -45,12 +45,6 @@ class DiffView(Container, AppType):
             return CMD.apply_dir_nodes
         else:
             return CMD.re_add_dir_nodes
-
-    def _set_border_title(self) -> None:
-        if self.show_path == CMD.dest_dir:
-            self.border_title = f" {CMD.dest_dir} "
-        else:
-            self.border_title = f" {self.show_path.name} "
 
     def _create_diff_widgets(self) -> list[Label | Static]:
         widgets: list[Label | Static] = []
@@ -101,7 +95,6 @@ class DiffView(Container, AppType):
             self.current_container.display = False
             self.cache[show_path].display = True
             self.current_container = self.cache[show_path]
-            self._set_border_title()
             return
         widgets: list[Label | Static] = []
         if show_path in CMD.status_paths:
@@ -115,4 +108,3 @@ class DiffView(Container, AppType):
         else:
             widgets.append(Static("Nothing to show."))
         self._mount_and_cache_container(show_path, widgets)
-        self._set_border_title()

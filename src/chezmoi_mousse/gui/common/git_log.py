@@ -5,7 +5,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppType, BorderTitle, ReadCmd, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -18,15 +18,9 @@ class GitLog(ScrollableContainer, AppType):
     show_path: reactive[Path] = reactive(CMD.dest_dir)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.git_log, classes=Tcss.border_title_top)
+        super().__init__(id=ids.container.git_log)
         self.data_table_cache: dict[Path, DataTable[str]] = {}
         self.current_data_table: DataTable[str] = DataTable[str]()
-
-    def _set_border_title(self) -> None:
-        if self.show_path == CMD.dest_dir:
-            self.border_title = BorderTitle.global_git_log
-        else:
-            self.border_title = f" {self.show_path.name} "
 
     def _mount_and_cache_data_table(self, path: Path, table: DataTable[str]):
         self.current_data_table.display = False
@@ -66,12 +60,10 @@ class GitLog(ScrollableContainer, AppType):
             self.current_data_table.display = False
             self.data_table_cache[show_path].display = True
             self.current_data_table = self.data_table_cache[self.show_path]
-            self._set_border_title()
             return
         if show_path == CMD.dest_dir:
             table = self._create_datatable(CMD.global_git_log_lines)
         else:
             cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=self.show_path)
             table = self._create_datatable(cmd_result.std_out.splitlines())
-        self._set_border_title()
         self._mount_and_cache_data_table(self.show_path, table)

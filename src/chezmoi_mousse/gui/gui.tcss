@@ -6,11 +6,7 @@
 
 # Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
 
-.border_title_top {
-  border-top: solid $primary;
-  border-title-align: center;
-  border-title-style: bold;
-}
+
 
 .flat_button{
   background-tint: $primary-muted;
@@ -68,7 +64,7 @@
   width: auto;
   max-width: 35%;
   min-width: 16;
-  &>.content_switcher_left {
+  &>.tree_content_switcher {
     min-width: 16;
     width: auto;
     max-width: 100%;
@@ -84,6 +80,12 @@
 /**********************/
 /* Type Selector tcss */
 /**********************/
+
+AddTab > Vertical > ContentsView {
+  border-top: $primary;
+  border-title-align: center;
+  border-title-style: bold;
+}
 
 ContentsView, DiffView, ContentsInfo, DiffInfo, LoggersBase {
   margin-bottom: 1;
@@ -337,8 +339,12 @@ SwitchSlider {
 }
 
 TabButtons {
-  height: 1;
+  height: 2;
   width: 100%;
+  border-bottom: solid $primary;
+  border-subtitle-align: center;
+  border-subtitle-style: bold;
+
   &>.single_button_vertical {
     align: center middle;
   }
@@ -423,6 +429,14 @@ CollapsibleTitle {
   }
 }
 
+ContentSwitcher {
+  &.debug_content_switcher {
+    border-top: $primary;
+    border-title-align: center;
+    border-title-style: bold;
+  }
+}
+
 DataTable {
   &>.datatable--header {
     text-style: none;
@@ -430,6 +444,9 @@ DataTable {
 }
 
 DirectoryTree {
+  border-top: $primary;
+  border-title-align: center;
+  border-title-style: bold;
   min-width: 16;
   max-width: 100%;
   width: auto;
