@@ -71,7 +71,7 @@ class AllTestPaths:
         ]
 
     @property
-    def dirs_with_toml_files(self) -> list[Path]:
+    def _dirs_with_toml_files(self) -> list[Path]:
         return [
             getattr(self, field.name)
             for field in fields(self)
@@ -82,7 +82,7 @@ class AllTestPaths:
     def toml_files_to_create(self) -> list[Path]:
         to_create: list[Path] = []
         for file_name in self.file_names.all_toml_file_names:
-            for dir in self.dirs_with_toml_files:
+            for dir in self._dirs_with_toml_files:
                 if dir != self._nested_dir_without_status_files_in:
                     to_create.append(dir / file_name)
         for file_name in self.file_names.toml_file_without_diff:
@@ -93,7 +93,7 @@ class AllTestPaths:
     def toml_files_for_diff(self) -> list[Path]:
         to_diff: list[Path] = []
         for file_name in self.file_names.toml_files_for_diffs:
-            for dir in self.dirs_with_toml_files:
+            for dir in self._dirs_with_toml_files:
                 if dir in [self._nested_dir_without_status_files_in, self._empty_dir]:
                     continue
                 to_diff.append(dir / file_name)
