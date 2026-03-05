@@ -40,8 +40,9 @@ class DebugTab(Horizontal, AppType):
             IDS.debug.op_btn.log_memory: OpBtnLabel.log_memory,
         }
         super().__init__()
-        self._max_rss: float = 0.0
+        self._previous_rss: float = 0.0
         self.MiB = 1024 * 1024
+        self.interval = 2
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
@@ -55,8 +56,10 @@ class DebugTab(Horizontal, AppType):
                     id=IDS.debug.static.debug_test_paths,
                 )
                 yield DebugLog(IDS.debug)
-                yield RichLog(id=IDS.debug.logger.dom_nodes, highlight=True)
-                yield RichLog(id=IDS.debug.logger.memory, highlight=True)
+                yield RichLog(
+                    id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
+                )
+                yield RichLog(id=IDS.debug.logger.memory, markup=True)
             yield OperateButtons(IDS.debug, btn_dict=self.op_btn_dict)
 
     def on_mount(self) -> None:
@@ -77,23 +80,29 @@ class DebugTab(Horizontal, AppType):
         import psutil
 
         self._process = psutil.Process()
-        self.set_interval(5.0, self._auto_log_peak_memory)
+        self.set_interval(self.interval, lambda: self._write_to_memory_log())
 
-    def _mem_log_msg(self, rss: float, vms: float) -> str:
-        time = f"{datetime.now().strftime('%H:%M:%S')}"
-        return f"{time} New MiB max: {rss:.0f} (RSS) | {vms:.0f} (VMS)"
-
-    def _auto_log_peak_memory(self) -> None:
+    def _write_to_memory_log(self, auto: bool = True) -> None:
         mem_info = self._process.memory_info()
+        time = f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
         rss = mem_info.rss / self.MiB
-        if rss > self._max_rss * 1.02:
-            self._max_rss = rss
-            self.memory_logger.write(self._mem_log_msg(rss, mem_info.vms / self.MiB))
-
-    def _log_memory_usage(self) -> None:
-        mem_info = self._process.memory_info()
-        rss = mem_info.rss / self.MiB
-        self.memory_logger.write(self._mem_log_msg(rss, mem_info.vms / self.MiB))
+        vms = mem_info.vms / self.MiB
+        pc2_increase = rss > self._previous_rss * 1.02
+        pc2_decrease = rss < self._previous_rss * 0.98
+        pc2_change = pc2_increase or pc2_decrease
+        self._previous_rss = rss
+        now_prefix = "Current memory usage log:"
+        pc2_prefix = "Auto log 2 percent delta:"
+        color = (
+            "[cyan bold]"
+            if pc2_increase
+            else "[green bold]" if pc2_decrease else "[yellow bold]"
+        )
+        rss_str = f"{color}{rss:3.0f}[/] MiB rss"
+        vms_str = f"{color}{vms:4.0f}[/] MiB vms"
+        prefix = pc2_prefix if auto else now_prefix
+        if pc2_change and auto or not auto:
+            self.memory_logger.write(f"{time} {prefix} {rss_str} | {vms_str}")
 
     def _log_dom_nodes(self) -> None:
         dom_items = list(self.app.walk_children(with_self=True, method="depth"))
@@ -134,4 +143,4 @@ class DebugTab(Horizontal, AppType):
             result = TEST_PATHS.remove_test_paths()
             self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.log_memory:
-            self._log_memory_usage()
+            self._write_to_memory_log(auto=False)
