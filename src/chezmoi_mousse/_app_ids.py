@@ -120,6 +120,8 @@ class LoggerIds:
         self.debug_q = f"#{self.debug}"
         self.dom_nodes = ids.view_id(view=LogName.dom_node_logger)
         self.dom_nodes_q = f"#{self.dom_nodes}"
+        self.memory = ids.view_id(view=LogName.memory_usage_logger)
+        self.memory_q = f"#{self.memory}"
 
 
 class OperateButtonIds:
@@ -169,6 +171,8 @@ class OperateButtonIds:
         self.remove_paths_q = f"#{self.remove_paths}"
         self.create_diffs = ids.operate_button_id(operation=OpBtnLabel.create_diffs)
         self.create_diffs_q = f"#{self.create_diffs}"
+        self.log_memory = ids.operate_button_id(operation=OpBtnLabel.log_memory)
+        self.log_memory_q = f"#{self.log_memory}"
 
 
 class StaticIds:

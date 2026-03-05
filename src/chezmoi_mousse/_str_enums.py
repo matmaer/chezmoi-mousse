@@ -35,6 +35,7 @@ class FlatBtnLabel(StrEnum):
     refresh_tree = "Refresh Tree"
     template_data = "Template Data"
     test_paths = "Test Paths"
+    memory_usage = "Memory Usage"
 
 
 class LinkBtn(StrEnum):
@@ -77,6 +78,7 @@ class BorderTitle(StrEnum):
     app_log = " Application Log "
     cmd_log = " Chezmoi Commands Log "
     debug_log = " Debug Log "
+    memory_usage = " Memory Usage "
     dest_dir = " destDir "
     dom_nodes = " DOM Nodes "
     global_git_log = " Global Chezmoi Git Log "
@@ -140,6 +142,7 @@ class OpBtnLabel(StrEnum):
     reload = "Reload"
     remove_paths = "Remove Test Paths"
     create_diffs = "Create Diffs"
+    log_memory = "Log Memory Usage"
 
     @property
     def normalized_label(self) -> str:

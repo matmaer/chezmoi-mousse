@@ -48,6 +48,7 @@ class LogName(StrEnum):
     cmd_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
+    memory_usage_logger = auto()
 
 
 class ScreenName(StrEnum):
@@ -59,6 +60,7 @@ class ScreenName(StrEnum):
 
 class StaticName(StrEnum):
     contents_info = auto()
+    debug_memory_usage = auto()
     debug_test_paths = auto()
     diff_info = auto()
     diff_lines = auto()
