@@ -13,7 +13,7 @@ from textual.widgets.text_area import BUILTIN_LANGUAGES
 from chezmoi_mousse import CMD, AppType, ReadCmd, TabName, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, DirNode
+    from chezmoi_mousse import AppIds
 
 __all__ = ["ContentsView"]
 
@@ -57,13 +57,6 @@ class ContentsView(Container, AppType):
         super().__init__(id=ids.container.contents)
         self.ids = ids
         self.current_file_container: ScrollableContainer = ScrollableContainer()
-
-    @property
-    def dir_nodes(self) -> dict[Path, "DirNode"]:
-        if self.ids.canvas_name == TabName.apply:
-            return CMD.apply_dir_nodes
-        else:
-            return CMD.re_add_dir_nodes
 
     def compose(self) -> ComposeResult:
         yield ScrollableContainer(id=self.ids.container.dir_contents)
