@@ -22,6 +22,7 @@ dev = [
     "mypy",
     "pre-commit",
     "profiler",
+    "psutil",
     "pydeps",
     "pytest",
     "pytest-asyncio",
