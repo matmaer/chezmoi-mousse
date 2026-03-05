@@ -44,6 +44,63 @@ class CommandResults:
             if getattr(self, field.name) is not None
         ]
 
+    @property
+    def real_managed_dir_paths(self) -> list[Path]:
+        if self.managed_dirs is None:
+            return []
+        return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
+
+    @property
+    def real_managed_file_paths(self) -> list[Path]:
+        if self.managed_files is None:
+            return []
+        return [Path(line) for line in self.managed_files.std_out.splitlines()]
+
+    def parse_status_output(
+        self, status_lines: list[str], index: int
+    ) -> dict[Path, StatusCode]:
+        return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
+
+    @property
+    def apply_status_dirs(self) -> dict[Path, StatusCode]:
+        return self.parse_status_output(
+            self.status_dirs.std_out.splitlines() if self.status_dirs else [], 0
+        )
+
+    @property
+    def apply_status_files(self) -> dict[Path, StatusCode]:
+        return self.parse_status_output(
+            self.status_files.std_out.splitlines() if self.status_files else [], 0
+        )
+
+    @property
+    def re_add_status_dirs(self) -> dict[Path, StatusCode]:
+        return self.parse_status_output(
+            self.status_dirs.std_out.splitlines() if self.status_dirs else [], 1
+        )
+
+    @property
+    def re_add_status_files(self) -> dict[Path, StatusCode]:
+        return self.parse_status_output(
+            self.status_files.std_out.splitlines() if self.status_files else [], 1
+        )
+
+    @property
+    def status_paths(self) -> set[Path]:
+        if self.status_dirs is None:
+            status_dir_paths: set[Path] = set()
+        else:
+            status_dir_paths = {
+                Path(line[3:]) for line in self.status_dirs.std_out.splitlines()
+            }
+        if self.status_files is None:
+            status_file_paths: set[Path] = set()
+        else:
+            status_file_paths = {
+                Path(line[3:]) for line in self.status_files.std_out.splitlines()
+            }
+        return status_dir_paths | status_file_paths
+
 
 @dataclass(slots=True)
 class DirNode:
@@ -138,8 +195,8 @@ class DirNode:
 
 
 @dataclass(slots=True)
-class ParsedPaths:
-    managed_dirs: list[Path] = field(default_factory=list[Path])
+class CachedPaths:
+    managed_dirs_with_dest_dir: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
     x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
     tree_x_dirs: list[Path] = field(default_factory=lambda: [])
@@ -156,12 +213,12 @@ class ParsedPaths:
     re_add_status_files: dict[Path, StatusCode] = field(
         default_factory=dict[Path, StatusCode]
     )
+    status_paths: set[Path] = field(default_factory=lambda: set())
 
 
 @dataclass(slots=True)
 class Commands:
-    _parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
-    _status_paths: set[Path] = field(default_factory=lambda: set())
+    _cached_paths: CachedPaths = field(default_factory=CachedPaths)
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     cmd_results: CommandResults = field(default_factory=CommandResults)
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
@@ -184,11 +241,11 @@ class Commands:
 
     @property
     def managed_dirs(self) -> list[Path]:
-        return self._parsed_paths.managed_dirs
+        return self._cached_paths.managed_dirs_with_dest_dir
 
     @property
     def managed_files(self) -> list[Path]:
-        return self._parsed_paths.managed_files
+        return self._cached_paths.managed_files
 
     @property
     def no_status_paths(self) -> bool:
@@ -199,15 +256,15 @@ class Commands:
 
     @property
     def status_paths(self) -> set[Path]:
-        return self._status_paths
+        return self._cached_paths.status_paths
 
     @property
     def tree_x_dirs(self) -> list[Path]:
-        return self._parsed_paths.tree_x_dirs
+        return self._cached_paths.tree_x_dirs
 
     @property
     def x_files(self) -> list[Path]:
-        return self._parsed_paths.real_x_files
+        return self._cached_paths.real_x_files
 
     def update_parsed_data(self) -> None:
         self._update_parsed_config()
@@ -232,74 +289,46 @@ class Commands:
         self.git_auto_push = parsed_config["git"]["autopush"]
 
     def _update_managed_dirs_and_files(self) -> None:
-        if (
-            self.cmd_results.managed_dirs is None
-            or self.cmd_results.managed_files is None
-        ):
-            raise ValueError(
-                "One of the required CommandResults is None. Cannot update."
-            )
-        self._parsed_paths.managed_dirs = [self.dest_dir] + [
-            Path(line) for line in self.cmd_results.managed_dirs.std_out.splitlines()
-        ]
-        self._parsed_paths.managed_files = [
-            Path(line) for line in self.cmd_results.managed_files.std_out.splitlines()
-        ]
+        if self.cmd_results.managed_dirs is None:
+            self._cached_paths.managed_dirs_with_dest_dir = [self.dest_dir]
+        elif self.cmd_results.managed_files is None:
+            self._cached_paths.managed_files = []
+        else:
+            self._cached_paths.managed_dirs_with_dest_dir = [
+                self.dest_dir
+            ] + self.cmd_results.real_managed_dir_paths
+            self._cached_paths.managed_files = self.cmd_results.real_managed_file_paths
 
     def _update_apply_and_re_add_status_dirs_and_files_and_status_paths(self) -> None:
-        def parse_status_output(
-            status_lines: list[str], index: int
-        ) -> dict[Path, StatusCode]:
-            return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
-
-        if (
-            self.cmd_results.status_dirs is None
-            or self.cmd_results.status_files is None
-        ):
-            raise ValueError(
-                "One of the required CommandResults is None. Cannot update."
-            )
-
-        status_dir_lines = self.cmd_results.status_dirs.std_out.splitlines()
-        status_file_lines = self.cmd_results.status_files.std_out.splitlines()
-
         # Update status paths
-        self._status_paths = {
-            Path(line[3:]) for line in status_dir_lines + status_file_lines
-        }
-
+        self._cached_paths.status_paths = self.cmd_results.status_paths
         # Update apply status dirs and files
-        self._parsed_paths.apply_status_dirs = parse_status_output(status_dir_lines, 0)
-        self._parsed_paths.apply_status_files = parse_status_output(
-            status_file_lines, 0
-        )
-
+        self._cached_paths.apply_status_dirs = self.cmd_results.apply_status_dirs
+        self._cached_paths.apply_status_files = self.cmd_results.apply_status_files
         # Update re-add status dirs and files
-        self._parsed_paths.re_add_status_dirs = parse_status_output(status_dir_lines, 1)
-        self._parsed_paths.re_add_status_files = parse_status_output(
-            status_file_lines, 1
-        )
+        self._cached_paths.re_add_status_dirs = self.cmd_results.re_add_status_dirs
+        self._cached_paths.re_add_status_files = self.cmd_results.re_add_status_files
 
     def _update_real_x_files(self) -> None:
-        self._parsed_paths.real_x_files = [
+        self._cached_paths.real_x_files = [
             path
-            for path in self._parsed_paths.managed_files
-            if path not in self._status_paths
+            for path in self.cmd_results.real_managed_file_paths
+            if path not in self._cached_paths.status_paths
         ]
 
     def _update_dirs_with_and_dirs_without_status_children(self) -> None:
         # Update dirs with status children for tree population logic
-        self._parsed_paths.x_dirs_with_status_children = set()
-        for path in self._status_paths:
+        self._cached_paths.x_dirs_with_status_children = set()
+        for path in self._cached_paths.status_paths:
             current = path.parent
             while current != current.parent:
-                self._parsed_paths.x_dirs_with_status_children.add(current)
+                self._cached_paths.x_dirs_with_status_children.add(current)
                 current = current.parent
         # Update dirs without status children for tree population logic
-        self._parsed_paths.tree_x_dirs = [
+        self._cached_paths.tree_x_dirs = [
             d
-            for d in self._parsed_paths.managed_dirs
-            if d not in self._parsed_paths.x_dirs_with_status_children
+            for d in self._cached_paths.managed_dirs_with_dest_dir
+            if d not in self._cached_paths.x_dirs_with_status_children
         ]
 
     def _update_apply_and_re_add_dir_nodes(self) -> None:
@@ -313,8 +342,9 @@ class Commands:
             # x files are the same for apply and re_add contexts
             x_files_in = {
                 path: StatusCode.No_Status
-                for path in self._parsed_paths.managed_files
-                if path.parent == dir_path and path not in self._status_paths
+                for path in self._cached_paths.managed_files
+                if path.parent == dir_path
+                and path not in self._cached_paths.status_paths
             }
 
             tree_status_dirs_in: dict[Path, StatusCode] = {}
@@ -322,7 +352,7 @@ class Commands:
             for sub_dir in sub_dir_paths:
                 if sub_dir in status_dirs:
                     tree_status_dirs_in[sub_dir] = status_dirs[sub_dir]
-                elif sub_dir in self._parsed_paths.x_dirs_with_status_children:
+                elif sub_dir in self._cached_paths.x_dirs_with_status_children:
                     tree_status_dirs_in[sub_dir] = StatusCode.No_Status
                 else:
                     tree_x_dirs_in[sub_dir] = StatusCode.No_Status
@@ -353,21 +383,23 @@ class Commands:
                 },
             )
 
-        for dir_path in self._parsed_paths.managed_dirs:
+        for dir_path in self._cached_paths.managed_dirs_with_dest_dir:
             sub_dir_paths = [
-                p for p in self._parsed_paths.managed_dirs if p.parent == dir_path
+                p
+                for p in self._cached_paths.managed_dirs_with_dest_dir
+                if p.parent == dir_path
             ]
             self.apply_dir_nodes[dir_path] = get_dir_node(
                 dir_path,
                 sub_dir_paths,
-                self._parsed_paths.apply_status_files,
-                self._parsed_paths.apply_status_dirs,
+                self._cached_paths.apply_status_files,
+                self._cached_paths.apply_status_dirs,
             )
             self.re_add_dir_nodes[dir_path] = get_dir_node(
                 dir_path,
                 sub_dir_paths,
-                self._parsed_paths.re_add_status_files,
-                self._parsed_paths.re_add_status_dirs,
+                self._cached_paths.re_add_status_files,
+                self._cached_paths.re_add_status_dirs,
             )
 
 
