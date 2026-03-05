@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 
 __all__ = ["ContentsView"]
 
-
 BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
 # Additional mappings for "similar" language files to choose TextArea
 LANGUAGE_MAP = BUILTIN_MAP | {
@@ -39,6 +38,8 @@ SHEBANG_MAP = {
     "rustc": "rust",
 }
 
+FILE_CACHE: dict[Path, ScrollableContainer] = {}
+
 
 class ContentStr(StrEnum):
     cannot_decode = "Path cannot be decoded as UTF-8:"
@@ -55,7 +56,6 @@ class ContentsView(Container, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents)
         self.ids = ids
-        self.file_cache: dict[Path, ScrollableContainer] = {}
         self.current_file_container: ScrollableContainer = ScrollableContainer()
 
     @property
@@ -206,21 +206,21 @@ class ContentsView(Container, AppType):
         elif show_path in CMD.managed_dirs and show_path not in CMD.status_paths:
             self._mount_managed_dir_contents(show_path)
             self.dir_contents_container.display = True
-        elif show_path in self.file_cache:
+        elif show_path in FILE_CACHE:
             # Ensure the first item will be the one not displayed for the longest time
-            cached_container = self.file_cache.pop(show_path)
-            self.file_cache[show_path] = cached_container
+            cached_container = FILE_CACHE.pop(show_path)
+            FILE_CACHE[show_path] = cached_container
             cached_container.display = True
             self.current_file_container = cached_container
         else:
             # Limit cache size to 50
-            if len(self.file_cache) >= 50:
-                oldest_path = next(iter(self.file_cache))
-                oldest_container = self.file_cache.pop(oldest_path)
+            if len(FILE_CACHE) >= 50:
+                oldest_path = next(iter(FILE_CACHE))
+                oldest_container = FILE_CACHE.pop(oldest_path)
                 oldest_container.remove()
 
             new_container = self._create_file_contents(show_path)
             self.mount(new_container)
-            self.file_cache[show_path] = new_container
+            FILE_CACHE[show_path] = new_container
             self.current_file_container = new_container
             self.current_file_container.display = True
