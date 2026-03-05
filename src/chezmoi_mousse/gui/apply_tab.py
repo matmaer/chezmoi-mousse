@@ -54,7 +54,7 @@ class ApplyTab(Container, AppType):
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
         msg.stop()
-        self.tab_buttons.border_subtitle = f" {msg.path.relative_to(CMD.dest_dir)} "
+        self.tab_buttons.border_subtitle = f" {msg.path.name} "
         self.git_log_view.show_path = msg.path
         self.operate_mode_container.path_arg = msg.path
         self.diff_view.show_path = msg.path

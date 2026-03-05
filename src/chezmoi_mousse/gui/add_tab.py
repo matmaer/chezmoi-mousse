@@ -180,14 +180,14 @@ class AddTab(Horizontal, AppType):
         self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
     ) -> None:
         event.stop()
-        if event.node.data is not None:
-            if self.add_review_btn.disabled is True:
-                self.add_review_btn.disabled = False
-            self.contents_view.show_path = event.node.data.path
-            self.operate_mode_container.path_arg = event.node.data.path
-            self.contents_view.border_title = (
-                f" {event.node.data.path.relative_to(CMD.dest_dir)} "
-            )
+        if event.node.data is None:
+            raise ValueError("event.node.data is None in update_contents_view")
+
+        if self.add_review_btn.disabled is True:
+            self.add_review_btn.disabled = False
+        self.contents_view.show_path = event.node.data.path
+        self.operate_mode_container.path_arg = event.node.data.path
+        self.contents_view.border_title = f" {event.node.data.path.name} "
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

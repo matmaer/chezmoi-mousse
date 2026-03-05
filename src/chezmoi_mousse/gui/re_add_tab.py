@@ -54,7 +54,7 @@ class ReAddTab(Container, AppType):
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
         msg.stop()
-        self.tab_buttons.border_subtitle = f" {msg.path.relative_to(CMD.dest_dir)} "
+        self.tab_buttons.border_subtitle = f" {msg.path.name} "
         self.git_log_view.show_path = msg.path
         self.diff_view.show_path = msg.path
         self.operate_mode_container.path_arg = msg.path
