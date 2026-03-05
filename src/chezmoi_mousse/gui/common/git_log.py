@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 __all__ = ["GitLog"]
 
+DATA_TABLES: dict[Path, DataTable[str]] = {}
+
 
 class GitLog(ScrollableContainer, AppType):
 
@@ -19,14 +21,13 @@ class GitLog(ScrollableContainer, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
-        self.data_table_cache: dict[Path, DataTable[str]] = {}
         self.current_data_table: DataTable[str] = DataTable[str]()
 
     def _mount_and_cache_data_table(self, path: Path, table: DataTable[str]):
         self.current_data_table.display = False
         self.mount(table)
-        self.data_table_cache[path] = table
-        self.current_data_table = self.data_table_cache[self.show_path]
+        DATA_TABLES[path] = table
+        self.current_data_table = DATA_TABLES[self.show_path]
 
     def _create_datatable(self, git_log_lines: list[str]) -> DataTable[str]:
         data_table = DataTable[str]()
@@ -56,10 +57,10 @@ class GitLog(ScrollableContainer, AppType):
         return data_table
 
     def watch_show_path(self, show_path: Path) -> None:
-        if show_path in self.data_table_cache:
+        if show_path in DATA_TABLES:
             self.current_data_table.display = False
-            self.data_table_cache[show_path].display = True
-            self.current_data_table = self.data_table_cache[self.show_path]
+            DATA_TABLES[show_path].display = True
+            self.current_data_table = DATA_TABLES[self.show_path]
             return
         if show_path == CMD.dest_dir:
             table = self._create_datatable(CMD.global_git_log_lines)
