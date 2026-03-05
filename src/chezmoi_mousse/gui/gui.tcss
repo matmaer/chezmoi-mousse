@@ -320,12 +320,12 @@ SwitchSlider {
   background-tint: $surface;
   background: $surface;
   border: round $primary;
-  border-right: none;
+  border-left: none;
   color: $foreground-darken-1;
-  dock: right;
+  dock: bottom;
   layer: above;
-  offset-x: 100%;
-  margin-top: 7;
+  offset-x: -100%;
+  margin-bottom: 4;
   padding: 0 1 0 2;
   transition: offset 380ms;
   width: auto;
