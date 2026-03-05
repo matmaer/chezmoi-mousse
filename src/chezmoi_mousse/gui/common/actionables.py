@@ -90,6 +90,10 @@ class OpButton(Button, AppType):
             label = btn_enum.value
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
         self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
+        if label in (OpBtnLabel.destroy_review, OpBtnLabel.forget_review):
+            self.disabled = True
+        elif "Run" in label:
+            self.display = False
 
 
 class OperateButtons(HorizontalGroup):
@@ -123,10 +127,6 @@ class OperateButtons(HorizontalGroup):
         self.cancel_btn.display = False
         self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
         self.reload_btn.display = False
-        # disable forget and destroy buttons at app startup as we're in the destDir
-        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
-            self.query_one(self.ids.op_btn.destroy_review_q, OpButton).disabled = True
-            self.query_one(self.ids.op_btn.forget_review_q, OpButton).disabled = True
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabName.apply:
             self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = (
@@ -140,8 +140,6 @@ class OperateButtons(HorizontalGroup):
             b for b in self.query_children().results() if isinstance(b, OpButton)
         ]
         self.run_buttons = [b for b in all_buttons if b.id in self.run_btn_ids]
-        for btn in self.run_buttons:
-            btn.display = False
         self.review_buttons = [b for b in all_buttons if b.id in self.review_btn_ids]
 
     @on(OpButton.Pressed)
