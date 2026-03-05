@@ -51,7 +51,7 @@ class ContentStr(StrEnum):
 
 class ContentsView(Container, AppType):
 
-    show_path: reactive["Path"] = reactive(CMD.dest_dir, init=False)
+    show_path: reactive["Path | None"] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents)
@@ -66,9 +66,9 @@ class ContentsView(Container, AppType):
             self.ids.container.dir_contents_q, ScrollableContainer
         )
         if self.ids.canvas_name == TabName.add:
-            self._mount_add_dir_contents(CMD.dest_dir)
+            self._mount_add_dir_contents(CMD.cache.dest_dir)
         else:
-            self._mount_managed_dir_contents(CMD.dest_dir)
+            self._mount_managed_dir_contents(CMD.cache.dest_dir)
 
     def _mount_add_dir_contents(self, dir_path: Path) -> None:
         self.current_file_container.display = False
@@ -79,16 +79,16 @@ class ContentsView(Container, AppType):
         )
         unmanaged_dirs: list[str] = sorted(
             [
-                str(p.relative_to(CMD.dest_dir))
+                str(p.relative_to(CMD.cache.dest_dir))
                 for p in list(dir_path.iterdir())
-                if p not in CMD.managed_dirs and p.is_dir()
+                if p not in CMD.cache.managed_dir_paths and p.is_dir()
             ]
         )
         unmanaged_files: list[str] = sorted(
             [
-                str(p.relative_to(CMD.dest_dir))
+                str(p.relative_to(CMD.cache.dest_dir))
                 for p in list(dir_path.iterdir())
-                if p not in CMD.managed_files and p.is_file()
+                if p not in CMD.cache.managed_file_paths and p.is_file()
             ]
         )
         if unmanaged_dirs:
@@ -109,7 +109,7 @@ class ContentsView(Container, AppType):
     def _mount_managed_dir_contents(self, dir_path: Path):
         self.current_file_container.display = False
         widgets: list[Static | Label] = []
-        if dir_path == CMD.dest_dir:
+        if dir_path == CMD.cache.dest_dir:
             widgets.append(
                 Label("Destination Directory", classes=Tcss.main_section_label)
             )
@@ -187,7 +187,9 @@ class ContentsView(Container, AppType):
             result = Static(text_obj)
         return ScrollableContainer(result)
 
-    def watch_show_path(self, show_path: Path) -> None:
+    def watch_show_path(self, show_path: Path | None) -> None:
+        if show_path is None:
+            return
         # Hide existing views
         self.dir_contents_container.display = False
         if self.current_file_container:
@@ -196,7 +198,10 @@ class ContentsView(Container, AppType):
         if self.ids.canvas_name == TabName.add and show_path.is_dir():
             self._mount_add_dir_contents(show_path)
             self.dir_contents_container.display = True
-        elif show_path in CMD.managed_dirs and show_path not in CMD.status_paths:
+        elif (
+            show_path in CMD.cache.managed_dir_paths
+            and show_path not in CMD.cache.status_paths
+        ):
             self._mount_managed_dir_contents(show_path)
             self.dir_contents_container.display = True
         elif show_path in FILE_CACHE:

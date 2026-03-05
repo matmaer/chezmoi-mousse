@@ -38,6 +38,33 @@ class CommandResults:
     verify: CommandResult | None = None
 
     @property
+    def _parsed_dump_config(self) -> ParsedJson | None:
+        if self.dump_config is None:
+            return None
+        return json.loads(self.dump_config.completed_process.stdout)
+
+    @property
+    def dest_dir(self) -> Path:
+        parsed = self._parsed_dump_config
+        if parsed is None:
+            return Path.home()
+        return Path(parsed["destDir"])
+
+    @property
+    def git_auto_commit(self) -> bool:
+        parsed = self._parsed_dump_config
+        if parsed is None:
+            return False
+        return parsed["git"]["autocommit"]
+
+    @property
+    def git_auto_push(self) -> bool:
+        parsed = self._parsed_dump_config
+        if parsed is None:
+            return False
+        return parsed["git"]["autopush"]
+
+    @property
     def executed_commands(self) -> list[CommandResult]:
         return [
             getattr(self, field.name)
@@ -46,13 +73,13 @@ class CommandResults:
         ]
 
     @property
-    def real_managed_dir_paths(self) -> list[Path]:
+    def managed_dir_paths(self) -> list[Path]:
         if self.managed_dirs is None:
             return []
         return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
 
     @property
-    def real_managed_file_paths(self) -> list[Path]:
+    def managed_file_paths(self) -> list[Path]:
         if self.managed_files is None:
             return []
         return [Path(line) for line in self.managed_files.std_out.splitlines()]
@@ -89,12 +116,38 @@ class CommandResults:
     @property
     def status_paths(self) -> set[Path]:
         if self.status_files is None:
-            status_paths: set[Path] = set()
-        else:
-            status_paths = {
-                Path(line[3:]) for line in self.status_files.std_out.splitlines()
-            }
-        return status_paths
+            return set()
+        return {Path(line[3:]) for line in self.status_files.std_out.splitlines()}
+
+    @property
+    def x_dirs_with_status_children(self) -> set[Path]:
+        status_children: set[Path] = set()
+        for path in self.status_paths:
+            current = path.parent
+            while current != current.parent:
+                status_children.add(current)
+                current = current.parent
+        return status_children
+
+    @property
+    def tree_x_dirs(self) -> list[Path]:
+        x_dirs_with_status = self.x_dirs_with_status_children
+        return [d for d in self.managed_dir_paths if d not in x_dirs_with_status]
+
+    @property
+    def x_files(self) -> list[Path]:
+        status_paths = self.status_paths
+        return [path for path in self.managed_file_paths if path not in status_paths]
+
+    @property
+    def no_status_paths(self) -> bool:
+        return self.verify is not None and self.verify.exit_code == 0
+
+    @property
+    def global_git_log_lines(self) -> list[str]:
+        if self.git_log is None or not self.git_log.std_out:
+            return ["No commits;No git log entries available yet."]
+        return self.git_log.std_out.splitlines()
 
 
 @dataclass(slots=True)
@@ -108,6 +161,7 @@ class DirNode:
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
+    no_status_paths: bool = False
 
     # property to return if the dir has any nested paths with a status
     @property
@@ -134,11 +188,11 @@ class DirNode:
     def dir_widgets(self) -> list[Static | Label]:
         # Populate dir_widgets for the destDir
         widgets: list[Static | Label] = []
-        if self.dir_path == CMD.dest_dir:
+        if self.dir_path == CMD.cache.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
-            if not CMD.managed_dirs and not CMD.managed_files:
+            if not CMD.cache.managed_dir_paths and not CMD.cache.managed_file_paths:
                 widgets.append(
                     Static(
                         "No managed paths or paths with a status are in the chezmoi "
@@ -146,7 +200,7 @@ class DirNode:
                         classes=Tcss.added,
                     )
                 )
-            elif CMD.no_status_paths is True:
+            elif self.no_status_paths is True:
                 text = "No diffs are available because no paths have a status."
                 widgets.append(Static(text, classes=Tcss.info))
                 text = "<- Select an unchanged path."
@@ -189,213 +243,123 @@ class DirNode:
         return widgets
 
 
-@dataclass(slots=True)
-class CachedPaths:
-    managed_dirs_with_dest_dir: list[Path] = field(default_factory=list[Path])
-    managed_files: list[Path] = field(default_factory=list[Path])
-    x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
-    tree_x_dirs: list[Path] = field(default_factory=lambda: [])
-    real_x_files: list[Path] = field(default_factory=lambda: [])
-    apply_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    apply_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    re_add_status_dirs: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    re_add_status_files: dict[Path, StatusCode] = field(
-        default_factory=dict[Path, StatusCode]
-    )
-    status_paths: set[Path] = field(default_factory=lambda: set())
+class CachedData:
+    # Adding these as type-only hints will allow autocomplete and static
+    # analysis to work while the values remain dynamically populated.
+
+    # Parsed config attributes
+    dest_dir: Path
+    git_auto_commit: bool
+    git_auto_push: bool
+    # Parsed git log and verify command output attribute
+    global_git_log_lines: list[str]
+    no_status_paths: bool
+    # Parsed paths attributes
+    apply_status_dirs: dict[Path, StatusCode]
+    apply_status_files: dict[Path, StatusCode]
+    managed_dir_paths: list[Path]
+    managed_dirs_with_dest_dir: list[Path]
+    managed_file_paths: list[Path]
+    re_add_status_dirs: dict[Path, StatusCode]
+    re_add_status_files: dict[Path, StatusCode]
+    real_x_files: list[Path]
+    status_paths: set[Path]
+    tree_x_dirs: list[Path]
+    x_dirs_with_status_children: set[Path]
+    x_files: list[Path]
+    # Cached widgets
+    re_add_dir_nodes: dict[Path, DirNode]
+    apply_dir_nodes: dict[Path, DirNode]
+
+    def __init__(self, source: CommandResults) -> None:
+        cls = type(source)
+        for name in dir(cls):
+            member = getattr(cls, name)
+            if isinstance(member, property):
+                setattr(self, name, getattr(source, name))
+
+        self.managed_dirs_with_dest_dir = [self.dest_dir] + self.managed_dir_paths
+        self.apply_dir_nodes = {}
+        self.re_add_dir_nodes = {}
+        self._update_apply_and_re_add_dir_nodes()
+
+    def update_snapshot(self, source: CommandResults) -> None:
+        self.__init__(source)
+
+    def get_dir_node(
+        self,
+        dir_path: Path,
+        status_files: dict[Path, StatusCode],
+        status_dirs: dict[Path, StatusCode],
+    ) -> DirNode:
+        # x files are the same for apply and re_add contexts
+        x_files_in = {
+            path: StatusCode.No_Status
+            for path in self.managed_file_paths
+            if path.parent == dir_path and path not in self.status_paths
+        }
+        # sub dir paths are the same for apply and re_add contexts
+        sub_dir_paths = [
+            p for p in self.managed_dirs_with_dest_dir if p.parent == dir_path
+        ]
+        tree_status_dirs_in: dict[Path, StatusCode] = {}
+        tree_x_dirs_in: dict[Path, StatusCode] = {}
+        for sub_dir in sub_dir_paths:
+            if sub_dir in status_dirs or sub_dir in self.x_dirs_with_status_children:
+                tree_status_dirs_in[sub_dir] = status_dirs.get(
+                    sub_dir, StatusCode.No_Status
+                )
+            else:
+                tree_x_dirs_in[sub_dir] = StatusCode.No_Status
+
+        return DirNode(
+            dir_path=dir_path,
+            dir_status=status_dirs.get(dir_path, StatusCode.No_Status),
+            status_files_in={
+                p: s for p, s in status_files.items() if p.parent == dir_path
+            },
+            x_files_in=x_files_in,
+            real_status_dirs_in={
+                p: s for p, s in status_dirs.items() if p.parent == dir_path
+            },
+            tree_status_dirs_in=dict(sorted(tree_status_dirs_in.items())),
+            tree_x_dirs_in=dict(sorted(tree_x_dirs_in.items())),
+            nested_status_dirs={
+                p: s
+                for p, s in status_dirs.items()
+                if p.is_relative_to(dir_path) and len(p.relative_to(dir_path).parts) > 1
+            },
+            nested_status_files={
+                p: s
+                for p, s in status_files.items()
+                if p.is_relative_to(dir_path) and len(p.relative_to(dir_path).parts) > 1
+            },
+        )
+
+    def _update_apply_and_re_add_dir_nodes(self) -> None:
+        for dir_path in self.managed_dirs_with_dest_dir:
+
+            self.apply_dir_nodes[dir_path] = self.get_dir_node(
+                dir_path, self.apply_status_files, self.apply_status_dirs
+            )
+            self.re_add_dir_nodes[dir_path] = self.get_dir_node(
+                dir_path, self.re_add_status_files, self.re_add_status_dirs
+            )
 
 
 @dataclass(slots=True)
 class Commands:
-    _cached_paths: CachedPaths = field(default_factory=CachedPaths)
-    apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     cmd_results: CommandResults = field(default_factory=CommandResults)
-    re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
-    dest_dir: Path = Path.home()
-    git_auto_commit: bool = False
-    git_auto_push: bool = False
+    cache: CachedData = field(init=False)
 
     def __post_init__(self) -> None:
-        self.cmd_results = CommandResults()
-        self.run_cmd = ChezmoiCommand()
+        self.cache = CachedData(self.cmd_results)
 
     # Properties for easy access to fields
 
-    @property
-    def global_git_log_lines(self) -> list[str]:
-        if self.cmd_results.git_log is None or not self.cmd_results.git_log.std_out:
-            return ["No commits;No git log entries available yet."]
-        return self.cmd_results.git_log.std_out.splitlines()
-
-    @property
-    def managed_dirs(self) -> list[Path]:
-        return self._cached_paths.managed_dirs_with_dest_dir
-
-    @property
-    def managed_files(self) -> list[Path]:
-        return self._cached_paths.managed_files
-
-    @property
-    def no_status_paths(self) -> bool:
-        return (
-            self.cmd_results.verify is not None
-            and self.cmd_results.verify.exit_code == 0
-        )
-
-    @property
-    def status_paths(self) -> set[Path]:
-        return self._cached_paths.status_paths
-
-    @property
-    def tree_x_dirs(self) -> list[Path]:
-        return self._cached_paths.tree_x_dirs
-
-    @property
-    def x_files(self) -> list[Path]:
-        return self._cached_paths.real_x_files
-
     def update_parsed_data(self) -> None:
-        self._update_parsed_config()
-        self._update_managed_dirs_and_files()
-        self._update_apply_and_re_add_status_dirs_and_files_and_status_paths()
-        # Now update x files as they depend status paths and managed dirs/files
-        self._update_real_x_files()
-        # Now update dirs with and without status children as they also depend on
-        # status paths and managed dirs/files
-        self._update_dirs_with_and_dirs_without_status_children()
-        # Now update dir nodes as they depend on all of the above
-        self._update_apply_and_re_add_dir_nodes()
-
-    def _update_parsed_config(self) -> None:
-        if self.cmd_results.dump_config is None:
-            return
-        parsed_config = json.loads(
-            self.cmd_results.dump_config.completed_process.stdout
-        )
-        self.dest_dir = Path(parsed_config["destDir"])
-        self.git_auto_commit = parsed_config["git"]["autocommit"]
-        self.git_auto_push = parsed_config["git"]["autopush"]
-
-    def _update_managed_dirs_and_files(self) -> None:
-        if self.cmd_results.managed_dirs is None:
-            self._cached_paths.managed_dirs_with_dest_dir = [self.dest_dir]
-        elif self.cmd_results.managed_files is None:
-            self._cached_paths.managed_files = []
-        else:
-            self._cached_paths.managed_dirs_with_dest_dir = [
-                self.dest_dir
-            ] + self.cmd_results.real_managed_dir_paths
-            self._cached_paths.managed_files = self.cmd_results.real_managed_file_paths
-
-    def _update_apply_and_re_add_status_dirs_and_files_and_status_paths(self) -> None:
-        # Update status paths
-        self._cached_paths.status_paths = self.cmd_results.status_paths
-        # Update apply status dirs and files
-        self._cached_paths.apply_status_dirs = self.cmd_results.apply_status_dirs
-        self._cached_paths.apply_status_files = self.cmd_results.apply_status_files
-        # Update re-add status dirs and files
-        self._cached_paths.re_add_status_dirs = self.cmd_results.re_add_status_dirs
-        self._cached_paths.re_add_status_files = self.cmd_results.re_add_status_files
-
-    def _update_real_x_files(self) -> None:
-        self._cached_paths.real_x_files = [
-            path
-            for path in self.cmd_results.real_managed_file_paths
-            if path not in self._cached_paths.status_paths
-        ]
-
-    def _update_dirs_with_and_dirs_without_status_children(self) -> None:
-        # Update dirs with status children for tree population logic
-        self._cached_paths.x_dirs_with_status_children = set()
-        for path in self._cached_paths.status_paths:
-            current = path.parent
-            while current != current.parent:
-                self._cached_paths.x_dirs_with_status_children.add(current)
-                current = current.parent
-        # Update dirs without status children for tree population logic
-        self._cached_paths.tree_x_dirs = [
-            d
-            for d in self._cached_paths.managed_dirs_with_dest_dir
-            if d not in self._cached_paths.x_dirs_with_status_children
-        ]
-
-    def _update_apply_and_re_add_dir_nodes(self) -> None:
-
-        def get_dir_node(
-            dir_path: Path,
-            sub_dir_paths: list[Path],
-            status_files: dict[Path, StatusCode],
-            status_dirs: dict[Path, StatusCode],
-        ) -> DirNode:
-            # x files are the same for apply and re_add contexts
-            x_files_in = {
-                path: StatusCode.No_Status
-                for path in self._cached_paths.managed_files
-                if path.parent == dir_path
-                and path not in self._cached_paths.status_paths
-            }
-
-            tree_status_dirs_in: dict[Path, StatusCode] = {}
-            tree_x_dirs_in: dict[Path, StatusCode] = {}
-            for sub_dir in sub_dir_paths:
-                if sub_dir in status_dirs:
-                    tree_status_dirs_in[sub_dir] = status_dirs[sub_dir]
-                elif sub_dir in self._cached_paths.x_dirs_with_status_children:
-                    tree_status_dirs_in[sub_dir] = StatusCode.No_Status
-                else:
-                    tree_x_dirs_in[sub_dir] = StatusCode.No_Status
-
-            return DirNode(
-                dir_path=dir_path,
-                dir_status=status_dirs.get(dir_path, StatusCode.No_Status),
-                status_files_in={
-                    p: s for p, s in status_files.items() if p.parent == dir_path
-                },
-                x_files_in=x_files_in,
-                real_status_dirs_in={
-                    p: s for p, s in status_dirs.items() if p.parent == dir_path
-                },
-                tree_status_dirs_in=dict(sorted(tree_status_dirs_in.items())),
-                tree_x_dirs_in=dict(sorted(tree_x_dirs_in.items())),
-                nested_status_dirs={
-                    p: s
-                    for p, s in status_dirs.items()
-                    if p.is_relative_to(dir_path)
-                    and len(p.relative_to(dir_path).parts) > 1
-                },
-                nested_status_files={
-                    p: s
-                    for p, s in status_files.items()
-                    if p.is_relative_to(dir_path)
-                    and len(p.relative_to(dir_path).parts) > 1
-                },
-            )
-
-        for dir_path in self._cached_paths.managed_dirs_with_dest_dir:
-            sub_dir_paths = [
-                p
-                for p in self._cached_paths.managed_dirs_with_dest_dir
-                if p.parent == dir_path
-            ]
-            self.apply_dir_nodes[dir_path] = get_dir_node(
-                dir_path,
-                sub_dir_paths,
-                self._cached_paths.apply_status_files,
-                self._cached_paths.apply_status_dirs,
-            )
-            self.re_add_dir_nodes[dir_path] = get_dir_node(
-                dir_path,
-                sub_dir_paths,
-                self._cached_paths.re_add_status_files,
-                self._cached_paths.re_add_status_dirs,
-            )
+        self.cache.update_snapshot(self.cmd_results)
 
 
 CMD = Commands()

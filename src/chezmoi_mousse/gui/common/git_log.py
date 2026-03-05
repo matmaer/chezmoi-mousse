@@ -15,12 +15,15 @@ __all__ = ["GitLog"]
 
 class GitLog(ScrollableContainer, AppType):
 
-    show_path: reactive[Path] = reactive(CMD.dest_dir)
+    show_path: reactive[Path | None] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
         self.data_table_cache: dict[Path, DataTable[str]] = {}
         self.current_data_table: DataTable[str] = DataTable[str]()
+
+    def on_mount(self) -> None:
+        self.show_path = CMD.cache.dest_dir
 
     def _create_datatable(self, git_log_lines: list[str]) -> DataTable[str]:
         data_table = DataTable[str]()
@@ -49,14 +52,16 @@ class GitLog(ScrollableContainer, AppType):
                 data_table.add_row(*columns)
         return data_table
 
-    def watch_show_path(self, show_path: Path) -> None:
+    def watch_show_path(self, show_path: Path | None) -> None:
+        if show_path is None:
+            return
         self.current_data_table.display = False
         if show_path in self.data_table_cache:
             self.data_table_cache[show_path].display = True
             self.current_data_table = self.data_table_cache[show_path]
             return
-        if show_path == CMD.dest_dir:
-            table = self._create_datatable(CMD.global_git_log_lines)
+        if show_path == CMD.cache.dest_dir:
+            table = self._create_datatable(CMD.cache.global_git_log_lines)
         else:
             cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
             table = self._create_datatable(cmd_result.std_out.splitlines())

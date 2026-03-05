@@ -130,11 +130,11 @@ class OperateButtons(HorizontalGroup):
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabName.apply:
             self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = (
-                True if CMD.no_status_paths else False
+                True if CMD.cache.no_status_paths else False
             )
         elif self.ids.canvas_name == TabName.re_add:
             self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = (
-                True if CMD.no_status_paths else False
+                True if CMD.cache.no_status_paths else False
             )
         all_buttons: list[OpButton] = [
             b for b in self.query_children().results() if isinstance(b, OpButton)

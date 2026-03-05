@@ -22,7 +22,7 @@ class TreeBase(Tree[Path], AppType):
 
     def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
         super().__init__(
-            label=f" {CMD.dest_dir} ",
+            label=f" {CMD.cache.dest_dir} ",
             id=ids.tree_id(tree=tree_name),
             classes=Tcss.tree_widget,
         )
@@ -35,9 +35,9 @@ class TreeBase(Tree[Path], AppType):
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
         if self.ids.canvas_name == TabName.apply:
-            return CMD.apply_dir_nodes
+            return CMD.cache.apply_dir_nodes
         else:
-            return CMD.re_add_dir_nodes
+            return CMD.cache.re_add_dir_nodes
 
     @property
     def node_colors(self) -> dict[str, str]:
@@ -52,7 +52,7 @@ class TreeBase(Tree[Path], AppType):
 
     def create_colored_label(self, path: Path) -> str:
         label_text = (
-            str(path.relative_to(CMD.dest_dir))
+            str(path.relative_to(CMD.cache.dest_dir))
             if self.tree_name == TreeName.list_tree
             else path.name
         )
@@ -88,7 +88,7 @@ class ListTree(TreeBase):
 
     def populate_tree(self) -> None:
         self.clear()
-        self.root.data = CMD.dest_dir
+        self.root.data = CMD.cache.dest_dir
         self.root.expand()
         for dir_node in self.dir_nodes.values():
             for file_path in dir_node.status_files_in:
@@ -117,9 +117,9 @@ class ManagedTree(TreeBase):
             if node.is_expanded and node.data is not None
         }
         self.clear()
-        self.root.data = CMD.dest_dir
+        self.root.data = CMD.cache.dest_dir
         self.root.expand()
-        self._populate_node(self.root, CMD.dest_dir)
+        self._populate_node(self.root, CMD.cache.dest_dir)
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()

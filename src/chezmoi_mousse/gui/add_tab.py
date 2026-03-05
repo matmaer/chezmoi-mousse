@@ -49,15 +49,15 @@ class FilteredDirTree(DirectoryTree, AppType):
                 (
                     p.is_dir()
                     and not UnwantedDirs.is_unwanted(p.name)
-                    and p in CMD.managed_dirs
+                    and p in CMD.cache.managed_dir_paths
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file()
                     and not UnwantedFileExtensions.is_unwanted(p.suffix)
                     and not UnwantedFileNames.is_unwanted(p.name)
-                    and p.parent in CMD.managed_dirs
-                    and p not in CMD.managed_files
+                    and p.parent in CMD.cache.managed_dir_paths
+                    and p not in CMD.cache.managed_file_paths
                     and self._file_of_interest(p)
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
@@ -74,10 +74,10 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and not UnwantedFileExtensions.is_unwanted(p.suffix)
                     and not UnwantedFileNames.is_unwanted(p.name)
                     and (
-                        p.parent in CMD.managed_dirs
+                        p.parent in CMD.cache.managed_dir_paths
                         or self._has_unmanaged_paths_in(p.parent)
                     )
-                    and p not in CMD.managed_files
+                    and p not in CMD.cache.managed_file_paths
                     and self._file_of_interest(p)
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
@@ -86,13 +86,13 @@ class FilteredDirTree(DirectoryTree, AppType):
             (False, True): lambda p: (
                 (
                     p.is_dir()
-                    and p in CMD.managed_dirs
+                    and p in CMD.cache.managed_dir_paths
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
                     p.is_file()
-                    and p not in CMD.managed_files
-                    and p.parent in CMD.managed_dirs
+                    and p not in CMD.cache.managed_file_paths
+                    and p.parent in CMD.cache.managed_dir_paths
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
@@ -101,7 +101,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                 (p.is_dir() and self._has_unmanaged_paths_in(p))
                 or (
                     p.is_file()
-                    and p not in CMD.managed_files
+                    and p not in CMD.cache.managed_file_paths
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
@@ -129,11 +129,17 @@ class FilteredDirTree(DirectoryTree, AppType):
             # Special case for .ssh: only show if config is unmanaged
             if dir_path.name == ".ssh":
                 config_path = dir_path / "config"
-                return config_path.exists() and config_path not in CMD.managed_files
+                return (
+                    config_path.exists()
+                    and config_path not in CMD.cache.managed_file_paths
+                )
             for idx, p in enumerate(dir_path.iterdir(), start=1):
                 if idx > max_entries:
                     return False
-                elif p not in CMD.managed_dirs and p not in CMD.managed_files:
+                elif (
+                    p not in CMD.cache.managed_dir_paths
+                    and p not in CMD.cache.managed_file_paths
+                ):
                     return True
             return False
         except (PermissionError, OSError):
@@ -144,7 +150,7 @@ class AddTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield Vertical(
-            FilteredDirTree(CMD.dest_dir),
+            FilteredDirTree(CMD.cache.dest_dir),
             Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button),
             id=IDS.add.container.left_side,
             classes=Tcss.tab_left_vertical,
@@ -160,10 +166,10 @@ class AddTab(Horizontal, AppType):
         self.operate_mode_container = self.query_one(
             IDS.add.container.op_mode_q, OperateMode
         )
-        self.operate_mode_container.path_arg = CMD.dest_dir
-        self.query_exactly_one(FilteredDirTree).path = CMD.dest_dir
+        self.operate_mode_container.path_arg = CMD.cache.dest_dir
+        self.query_exactly_one(FilteredDirTree).path = CMD.cache.dest_dir
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
-        self.contents_view.border_title = f" {CMD.dest_dir} "
+        self.contents_view.border_title = f" {CMD.cache.dest_dir} "
         self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
         self.add_review_btn.disabled = True
 

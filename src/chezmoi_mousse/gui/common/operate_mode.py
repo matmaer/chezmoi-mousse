@@ -122,9 +122,9 @@ class OperateMode(Vertical, AppType):
         info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
         info_lines.append(self.btn_enum.info_string)
         if self.ids.canvas_name in (TabName.add, TabName.re_add):
-            if CMD.git_auto_commit is True:
+            if CMD.cache.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
-            if CMD.git_auto_push is True:
+            if CMD.cache.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
         operate_info = self.query_one(self.ids.static.operate_info_q, Static)
         operate_info.update("\n".join(info_lines))

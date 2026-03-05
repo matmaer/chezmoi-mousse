@@ -42,7 +42,7 @@ class ReAddTab(Container, AppType):
             IDS.re_add.container.contents_q, ContentsView
         )
         self.diff_view = self.query_one(IDS.re_add.container.diff_q, DiffView)
-        if CMD.no_status_paths:
+        if CMD.cache.no_status_paths:
             self.app.call_later(self.toggle_unchanged)
 
     def toggle_unchanged(self) -> None:
@@ -61,19 +61,23 @@ class ReAddTab(Container, AppType):
         self.contents_view.show_path = msg.path
         # disable forget and destroy buttons when in the dest_dir
         self.query_one(IDS.re_add.op_btn.forget_review_q, Button).disabled = (
-            True if msg.path == CMD.dest_dir else False
+            True if msg.path == CMD.cache.dest_dir else False
         )
         self.query_one(IDS.re_add.op_btn.destroy_review_q, Button).disabled = (
-            True if msg.path == CMD.dest_dir else False
+            True if msg.path == CMD.cache.dest_dir else False
         )
         # disable/enable re_add review button
         self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = (
             True
-            if msg.path in CMD.managed_files and msg.path not in CMD.status_paths
+            if msg.path in CMD.cache.managed_file_paths
+            and msg.path not in CMD.cache.status_paths
             else False
         )
-        if msg.path in CMD.managed_dirs and msg.path not in CMD.status_paths:
-            dir_node = CMD.re_add_dir_nodes[msg.path]
+        if (
+            msg.path in CMD.cache.managed_dir_paths
+            and msg.path not in CMD.cache.status_paths
+        ):
+            dir_node = CMD.cache.re_add_dir_nodes[msg.path]
             self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = (
                 False if dir_node.has_status_paths else True
             )

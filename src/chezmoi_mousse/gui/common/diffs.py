@@ -31,7 +31,7 @@ DIFF_TCSS = {
 
 class DiffView(Container, AppType):
 
-    show_path: reactive["Path"] = reactive(CMD.dest_dir)
+    show_path: reactive["Path | None"] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff)
@@ -39,12 +39,15 @@ class DiffView(Container, AppType):
         self.cache: dict[Path, ScrollableContainer] = {}
         self.current_container: ScrollableContainer = ScrollableContainer()
 
+    def on_mount(self) -> None:
+        self.show_path = CMD.cache.dest_dir
+
     @property
     def dir_nodes(self) -> dict["Path", "DirNode"]:
         if self.ids.canvas_name == TabName.apply:
-            return CMD.apply_dir_nodes
+            return CMD.cache.apply_dir_nodes
         else:
-            return CMD.re_add_dir_nodes
+            return CMD.cache.re_add_dir_nodes
 
     def _create_diff_widgets(self) -> list[Label | Static]:
         widgets: list[Label | Static] = []
@@ -90,18 +93,20 @@ class DiffView(Container, AppType):
         self.cache[path] = container
         self.current_container = container
 
-    def watch_show_path(self, show_path: "Path") -> None:
+    def watch_show_path(self, show_path: "Path | None") -> None:
+        if show_path is None:
+            return
         if show_path in self.cache:
             self.current_container.display = False
             self.cache[show_path].display = True
             self.current_container = self.cache[show_path]
             return
         widgets: list[Label | Static] = []
-        if show_path in CMD.status_paths:
+        if show_path in CMD.cache.status_paths:
             widgets = self._create_diff_widgets()
-        elif show_path in CMD.managed_dirs:
+        elif show_path in CMD.cache.managed_dirs_with_dest_dir:
             widgets = self.dir_nodes[show_path].dir_widgets
-        elif show_path in CMD.managed_files:
+        elif show_path in CMD.cache.managed_file_paths:
             widgets.append(Label("Managed file", classes=Tcss.main_section_label))
             widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
             widgets.append(Static("This file has no status.", classes=Tcss.context))
