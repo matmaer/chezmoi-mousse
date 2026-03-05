@@ -138,13 +138,6 @@ class DirNode:
 
 
 @dataclass(slots=True)
-class ParsedConfig:
-    dest_dir: Path = Path.home()
-    git_auto_commit: bool = False
-    git_auto_push: bool = False
-
-
-@dataclass(slots=True)
 class ParsedPaths:
     managed_dirs: list[Path] = field(default_factory=list[Path])
     managed_files: list[Path] = field(default_factory=list[Path])
@@ -167,31 +160,21 @@ class ParsedPaths:
 
 @dataclass(slots=True)
 class Commands:
-    _parsed_config: ParsedConfig = field(default_factory=ParsedConfig)
     _parsed_paths: ParsedPaths = field(default_factory=ParsedPaths)
     _status_paths: set[Path] = field(default_factory=lambda: set())
     apply_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     cmd_results: CommandResults = field(default_factory=CommandResults)
     re_add_dir_nodes: dict[Path, DirNode] = field(default_factory=dict[Path, DirNode])
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
+    dest_dir: Path = Path.home()
+    git_auto_commit: bool = False
+    git_auto_push: bool = False
 
     def __post_init__(self) -> None:
         self.cmd_results = CommandResults()
         self.run_cmd = ChezmoiCommand()
 
     # Properties for easy access to fields
-
-    @property
-    def dest_dir(self) -> Path:
-        return self._parsed_config.dest_dir
-
-    @property
-    def git_auto_commit(self) -> bool:
-        return self._parsed_config.git_auto_commit
-
-    @property
-    def git_auto_push(self) -> bool:
-        return self._parsed_config.git_auto_push
 
     @property
     def global_git_log_lines(self) -> list[str]:
@@ -227,7 +210,7 @@ class Commands:
         return self._parsed_paths.real_x_files
 
     def update_parsed_data(self) -> None:
-        self._update_dump_config()
+        self._update_parsed_config()
         self._update_managed_dirs_and_files()
         self._update_apply_and_re_add_status_dirs_and_files_and_status_paths()
         # Now update x files as they depend status paths and managed dirs/files
@@ -238,17 +221,15 @@ class Commands:
         # Now update dir nodes as they depend on all of the above
         self._update_apply_and_re_add_dir_nodes()
 
-    def _update_dump_config(self) -> None:
+    def _update_parsed_config(self) -> None:
         if self.cmd_results.dump_config is None:
             return
         parsed_config = json.loads(
             self.cmd_results.dump_config.completed_process.stdout
         )
-        self._parsed_config = ParsedConfig(
-            dest_dir=Path(parsed_config["destDir"]),
-            git_auto_commit=parsed_config["git"]["autocommit"],
-            git_auto_push=parsed_config["git"]["autopush"],
-        )
+        self.dest_dir = Path(parsed_config["destDir"])
+        self.git_auto_commit = parsed_config["git"]["autocommit"]
+        self.git_auto_push = parsed_config["git"]["autopush"]
 
     def _update_managed_dirs_and_files(self) -> None:
         if (
@@ -258,7 +239,7 @@ class Commands:
             raise ValueError(
                 "One of the required CommandResults is None. Cannot update."
             )
-        self._parsed_paths.managed_dirs = [self._parsed_config.dest_dir] + [
+        self._parsed_paths.managed_dirs = [self.dest_dir] + [
             Path(line) for line in self.cmd_results.managed_dirs.std_out.splitlines()
         ]
         self._parsed_paths.managed_files = [
