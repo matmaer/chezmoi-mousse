@@ -40,13 +40,14 @@ SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.ignored,
     ReadCmd.managed_dirs,
     ReadCmd.managed_files,
+    ReadCmd.status,
     ReadCmd.status_dirs,
     ReadCmd.status_files,
     ReadCmd.template_data,
     ReadCmd.verify,
 ]
 
-SPLASH = """\
+SPLASH_LOGO = """\
  _______________________________ ___________________._
 |       |   |   |    ___|___    |    '    |       |   |
 |    ===|       |     __|     __|         |   |   |   |
@@ -57,7 +58,9 @@ SPLASH = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-""".replace("===", "=\u200b=\u200b=").splitlines()
+"""
+
+SPLASH = SPLASH_LOGO.replace("===", "=\u200b=\u200b=").splitlines()
 
 FADE_HEIGHT = len(SPLASH)
 FADE_WIDTH = len(max(SPLASH, key=len))
@@ -158,11 +161,10 @@ class SplashScreen(Screen[None], AppType):
 
     @work
     async def _chezmoi_found_workers(self) -> None:
-        status_worker = self._run_io_worker(ReadCmd.status_files)
+        status_worker = self._run_io_worker(ReadCmd.status)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
-            assert CMD.cmd_results.status_files is not None
-            if (
+            if CMD.cmd_results.status_files is not None and (
                 CMD.cmd_results.status_files.exit_code != 0
                 or self.app.force_init_needed is True
             ):
@@ -173,7 +175,7 @@ class SplashScreen(Screen[None], AppType):
                 self._run_io_worker(ReadCmd.template_data)
             else:
                 for splash_cmd in SPLASH_COMMANDS:
-                    if splash_cmd == ReadCmd.status_files:
+                    if splash_cmd == ReadCmd.status:
                         continue
                     self._run_io_worker(splash_cmd)
 

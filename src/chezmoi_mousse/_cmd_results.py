@@ -31,6 +31,7 @@ class CommandResults:
     ignored: CommandResult | None = None
     managed_dirs: CommandResult | None = None
     managed_files: CommandResult | None = None
+    status: CommandResult | None = None
     status_dirs: CommandResult | None = None
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
@@ -87,19 +88,13 @@ class CommandResults:
 
     @property
     def status_paths(self) -> set[Path]:
-        if self.status_dirs is None:
-            status_dir_paths: set[Path] = set()
-        else:
-            status_dir_paths = {
-                Path(line[3:]) for line in self.status_dirs.std_out.splitlines()
-            }
         if self.status_files is None:
-            status_file_paths: set[Path] = set()
+            status_paths: set[Path] = set()
         else:
-            status_file_paths = {
+            status_paths = {
                 Path(line[3:]) for line in self.status_files.std_out.splitlines()
             }
-        return status_dir_paths | status_file_paths
+        return status_paths
 
 
 @dataclass(slots=True)

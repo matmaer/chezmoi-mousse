@@ -100,6 +100,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     source_path = (ReadVerb.source_path.value,)
+    status = (ReadVerb.status.value, VerbArgs.path_style_absolute.value)
     status_dirs = (
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
