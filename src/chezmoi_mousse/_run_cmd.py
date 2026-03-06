@@ -210,13 +210,17 @@ class CommandResult:
         )
 
     @property
+    def is_dry_run(self) -> bool:
+        return "--dry-run" in self.completed_process.args
+
+    @property
     def _log_entry(self) -> str:
         pretty_time = f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
         return f"{pretty_time} {self.pretty_cmd}"
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
-        dry_run_str = "(dry run)" if "--dry-run" in self.completed_process.args else ""
+        dry_run_str = "(dry run)" if self.is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self.std_err or f"{LogString.no_stderr} {dry_run_str}"
         collapsible_contents: list[Label | Static] = []
