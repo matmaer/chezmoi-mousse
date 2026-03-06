@@ -30,7 +30,7 @@ from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.loggers import AppLog, CmdLog
-from .common.messages import OperateButtonMsg
+from .common.messages import ChangedPathsMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
@@ -238,6 +238,10 @@ class ChezmoiGUI(App[None]):
     ############################
     # Message handling methods #
     ############################
+
+    @on(ChangedPathsMsg)
+    def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:
+        self.notify(f"Changed paths: {sorted(msg.changed_paths)}")
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:

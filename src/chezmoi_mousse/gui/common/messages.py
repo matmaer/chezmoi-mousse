@@ -16,7 +16,14 @@ __all__ = [
     "CurrentReAddNodeMsg",
     "OperateButtonMsg",
     "ProgressTextMsg",
+    "ChangedPathsMsg",
 ]
+
+
+class ChangedPathsMsg(Message):
+    def __init__(self, changed_paths: set[Path]) -> None:
+        self.changed_paths = changed_paths
+        super().__init__()
 
 
 class CurrentApplyNodeMsg(Message):
