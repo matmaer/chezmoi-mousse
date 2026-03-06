@@ -9,7 +9,7 @@ from ._str_enum_names import (
     TreeName,
     ViewName,
 )
-from ._str_enums import FlatBtnLabel, OpBtnLabel, SubTabLabel
+from ._str_enums import FlatBtnLabel, OpBtnLabel, TabLabel
 
 __all__ = ["IDS", "AppIds"]
 
@@ -56,7 +56,7 @@ class AppIds:
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
 
-    def tab_button_id(self, qid: str = "", *, btn: SubTabLabel) -> str:
+    def tab_button_id(self, qid: str = "", *, btn: TabLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_tab_btn"
 
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:

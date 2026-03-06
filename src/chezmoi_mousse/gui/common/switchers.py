@@ -9,15 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import (
-    CMD,
-    AppType,
-    DirNode,
-    FlatBtnLabel,
-    SubTabLabel,
-    TabName,
-    Tcss,
-)
+from chezmoi_mousse import CMD, AppType, DirNode, FlatBtnLabel, TabLabel, TabName, Tcss
 
 from .actionables import TabButtons
 from .contents import ContentsView
@@ -42,7 +34,7 @@ class TreeSwitcher(Container, AppType):
         self.old_expanded_nodes: list[TreeNode[Path]] = []
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(self.ids, buttons=(SubTabLabel.tree, SubTabLabel.list))
+        yield TabButtons(self.ids, buttons=(TabLabel.tree, TabLabel.list))
         with ContentSwitcher(
             initial=self.ids.tree.managed, classes=Tcss.tree_content_switcher
         ):
@@ -61,9 +53,9 @@ class TreeSwitcher(Container, AppType):
     def switch_view(self, event: Button.Pressed) -> None:
         if event.button.has_class(Tcss.tab_button):
             view_switcher = self.query_exactly_one(ContentSwitcher)
-            if event.button.label == SubTabLabel.tree:
+            if event.button.label == TabLabel.tree:
                 view_switcher.current = self.ids.tree.managed
-            elif event.button.label == SubTabLabel.list:
+            elif event.button.label == TabLabel.list:
                 view_switcher.current = self.ids.tree.list
             return
 
@@ -151,8 +143,7 @@ class ViewSwitcher(Container):
 
     def compose(self) -> ComposeResult:
         yield TabButtons(
-            self.ids,
-            buttons=(SubTabLabel.diff, SubTabLabel.contents, SubTabLabel.git_log),
+            self.ids, buttons=(TabLabel.diff, TabLabel.contents, TabLabel.git_log)
         )
         with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(self.ids)
@@ -166,15 +157,15 @@ class ViewSwitcher(Container):
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
         if event.button.label not in (
-            SubTabLabel.diff,
-            SubTabLabel.contents,
-            SubTabLabel.git_log,
+            TabLabel.diff,
+            TabLabel.contents,
+            TabLabel.git_log,
         ):
             return
         view_switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.label == SubTabLabel.contents:
+        if event.button.label == TabLabel.contents:
             view_switcher.current = self.ids.container.contents
-        elif event.button.label == SubTabLabel.diff:
+        elif event.button.label == TabLabel.diff:
             view_switcher.current = self.ids.container.diff
-        elif event.button.label == SubTabLabel.git_log:
+        elif event.button.label == TabLabel.git_log:
             view_switcher.current = self.ids.container.git_log

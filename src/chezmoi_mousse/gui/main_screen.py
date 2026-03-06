@@ -1,11 +1,9 @@
-from enum import StrEnum
-
 from textual import work
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, TabName
+from chezmoi_mousse import CMD, IDS, AppType, LogString, TabLabel, TabName
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -20,31 +18,21 @@ from .re_add_tab import ReAddTab
 __all__ = ["MainScreen"]
 
 
-class TabPanes(StrEnum):
-    add_tab_label = "Add"
-    apply_tab_label = "Apply"
-    config_tab_label = "Config"
-    debug_tab_label = "Debug"
-    help_tab_label = "Help"
-    logs_tab_label = "Logs"
-    re_add_tab_label = "Re-Add"
-
-
 class MainScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
         with TabbedContent():
-            yield TabPane(TabPanes.apply_tab_label, ApplyTab(), id=TabName.apply)
-            yield TabPane(TabPanes.re_add_tab_label, ReAddTab(), id=TabName.re_add)
-            yield TabPane(TabPanes.add_tab_label, AddTab(), id=TabName.add)
-            yield TabPane(TabPanes.logs_tab_label, LogsTab(), id=TabName.logs)
-            yield TabPane(TabPanes.config_tab_label, ConfigTab(), id=TabName.config)
-            yield TabPane(TabPanes.help_tab_label, HelpTab(), id=TabName.help)
+            yield TabPane(TabLabel.apply_tab, ApplyTab(), id=TabName.apply)
+            yield TabPane(TabLabel.re_add_tab, ReAddTab(), id=TabName.re_add)
+            yield TabPane(TabLabel.add_tab, AddTab(), id=TabName.add)
+            yield TabPane(TabLabel.logs_tab, LogsTab(), id=TabName.logs)
+            yield TabPane(TabLabel.config_tab, ConfigTab(), id=TabName.config)
+            yield TabPane(TabLabel.help_tab, HelpTab(), id=TabName.help)
             if self.app.dev_mode is True:
                 from .debug_tab import DebugTab
 
-                yield TabPane(TabPanes.debug_tab_label, DebugTab(), id=TabName.debug)
+                yield TabPane(TabLabel.debug_tab, DebugTab(), id=TabName.debug)
 
         yield Footer()
 

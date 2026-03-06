@@ -28,7 +28,7 @@ from ._str_enums import (
     OperateString,
     SectionLabel,
     StatusCode,
-    SubTabLabel,
+    TabLabel,
 )
 from ._test_paths import TestPaths
 
@@ -67,8 +67,8 @@ __all__ = [
     "ScreenName",
     "SectionLabel",
     "StatusCode",
-    "SubTabLabel",
     "SwitchEnum",
+    "TabLabel",
     "TabName",
     "Tcss",
     "TestPaths",

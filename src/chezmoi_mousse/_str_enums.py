@@ -12,7 +12,7 @@ __all__ = [
     "SectionLabel",
     "StatusCode",
     "SwitchLabel",
-    "SubTabLabel",
+    "TabLabel",
 ]
 
 #########################################
@@ -58,7 +58,15 @@ class LinkBtn(StrEnum):
         return self.value.replace("https://", "").replace("www.", "").rstrip("/")
 
 
-class SubTabLabel(StrEnum):
+class TabLabel(StrEnum):
+    # Main tabs
+    add_tab = "Add"
+    apply_tab = "Apply"
+    config_tab = "Config"
+    debug_tab = "Debug"
+    help_tab = "Help"
+    logs_tab = "Logs"
+    re_add_tab = "Re-Add"
     # Tab buttons for content switcher within a main tab
     app_log = "App"
     cmd_log = "Chezmoi Commands"

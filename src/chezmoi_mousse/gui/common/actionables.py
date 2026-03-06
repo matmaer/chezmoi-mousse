@@ -15,8 +15,8 @@ from chezmoi_mousse import (
     OpBtnEnum,
     OpBtnLabel,
     ScreenName,
-    SubTabLabel,
     SwitchEnum,
+    TabLabel,
     TabName,
     Tcss,
 )
@@ -211,7 +211,7 @@ class SwitchSlider(VerticalGroup):
 
 
 class TabButtons(Horizontal):
-    def __init__(self, ids: "AppIds", *, buttons: tuple[SubTabLabel, ...]):
+    def __init__(self, ids: "AppIds", *, buttons: tuple[TabLabel, ...]):
         super().__init__()
         self.ids = ids
         self.buttons = buttons
@@ -235,7 +235,7 @@ class TabButtons(Horizontal):
         for btn in self.query(Button):
             btn.remove_class(Tcss.last_clicked_tab_btn)
         event.button.add_class(Tcss.last_clicked_tab_btn)
-        if event.button.label == SubTabLabel.tree:
+        if event.button.label == TabLabel.tree:
             self.border_subtitle = BorderTitle.dest_dir
-        elif event.button.label == SubTabLabel.list:
+        elif event.button.label == TabLabel.list:
             self.border_subtitle = BorderTitle.list_tree
