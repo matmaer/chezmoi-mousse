@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
 from ._cmd_results import CMD, CachedData, CommandResults, DirNode, ParsedJson
-from ._enum_data import OpBtnEnum, SwitchEnum
+from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._str_enum_names import BindingAction, ScreenName, TabName, Tcss, TreeName
 from ._str_enums import (
@@ -24,7 +24,6 @@ from ._str_enums import (
     FlatBtnLabel,
     LinkBtn,
     LogString,
-    OpBtnLabel,
     OperateString,
     SectionLabel,
     StatusCode,

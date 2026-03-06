@@ -90,7 +90,7 @@ class ChezmoiGUI(App[None]):
         Binding(
             key="escape",
             action=BindingAction.exit_screen,
-            description=BindingDescription.cancel,
+            description=OpBtnLabel.cancel,
         ),
         Binding(
             key="M,m",

@@ -7,7 +7,6 @@ __all__ = [
     "FlatBtnLabel",
     "LinkBtn",
     "LogString",
-    "OpBtnLabel",
     "OperateString",
     "SectionLabel",
     "StatusCode",
@@ -131,43 +130,12 @@ class LogString(StrEnum):
     verify_non_zero = "Not all targets match their target state"
 
 
-class OpBtnLabel(StrEnum):
-    add_review = "Review Add Path"
-    add_run = "Run Chezmoi Add"
-    apply_review = "Review Apply Path"
-    apply_run = "Run Chezmoi Apply"
-    cancel = "Cancel"
-    create_paths = "Create Test Paths"
-    destroy_review = "Review Destroy Path"
-    destroy_run = "Run Chezmoi Destroy"
-    exit_app = "Exit App"
-    forget_review = "Review Forget Path"
-    forget_run = "Run Chezmoi Forget"
-    init_review = "Review Init Chezmoi"
-    init_run = "Run Chezmoi Init"
-    re_add_review = "Review Re-Add Path"
-    re_add_run = "Run Chezmoi Re-Add"
-    reload = "Reload"
-    remove_paths = "Remove Test Paths"
-    create_diffs = "Create Diffs"
-    log_memory = "Log Memory Usage"
-
-    @property
-    def normalized_label(self) -> str:
-        return self.value.translate(
-            str.maketrans({" ": "_", "-": "_", "(": "", ")": ""})
-        ).lower()
-
-
 class BindingDescription(StrEnum):
-    # Screen bindings
-    cancel = OpBtnLabel.cancel
     # Tab bindings
     hide_filters = "Hide filters"
     # Shared bindings
     maximize = "Maximize"
     minimize = "Minimize"
-    reload = OpBtnLabel.reload
     show_filters = "Show filters"
     toggle_dry_run = "Toggle --dry-run"
 

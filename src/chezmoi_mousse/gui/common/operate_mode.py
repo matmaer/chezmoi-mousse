@@ -121,7 +121,7 @@ class OperateMode(Vertical, AppType):
         op_cmd_results.remove_children()
         info_lines: list[str] = []
         info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
-        info_lines.append(self.btn_enum.info_string)
+        info_lines.append(self.btn_enum.op_info_string)
         if self.ids.canvas_name in (TabLabel.add, TabLabel.re_add):
             if CMD.cache.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
@@ -129,8 +129,8 @@ class OperateMode(Vertical, AppType):
                 info_lines.append(OperateString.auto_push)
         operate_info = self.query_one(self.ids.static.operate_info_q, Static)
         operate_info.update("\n".join(info_lines))
-        operate_info.border_title = self.btn_enum.info_title
-        operate_info.border_subtitle = self.btn_enum.info_sub_title
+        operate_info.border_title = self.btn_enum.op_info_title
+        operate_info.border_subtitle = self.btn_enum.op_info_subtitle
 
     @work
     @min_wait
@@ -146,9 +146,11 @@ class OperateMode(Vertical, AppType):
             f"{self.run_cmd_result.pretty_cmd}\n"
             f"Command completed with exit code {self.run_cmd_result.exit_code}"
         )
-        operate_info.border_title = self.btn_enum.info_title if self.btn_enum else None
+        operate_info.border_title = (
+            self.btn_enum.op_info_title if self.btn_enum else None
+        )
         operate_info.border_subtitle = (
-            self.btn_enum.info_sub_title if self.btn_enum else None
+            self.btn_enum.op_info_subtitle if self.btn_enum else None
         )
 
     @work

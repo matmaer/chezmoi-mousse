@@ -1,4 +1,4 @@
-from ._enum_data import SwitchEnum
+from ._enum_data import OpBtnLabel, SwitchEnum
 from ._str_enum_names import (
     ContainerName,
     LabelName,
@@ -8,7 +8,7 @@ from ._str_enum_names import (
     TreeName,
     ViewName,
 )
-from ._str_enums import FlatBtnLabel, OpBtnLabel, TabLabel
+from ._str_enums import FlatBtnLabel, TabLabel
 
 __all__ = ["IDS", "AppIds"]
 

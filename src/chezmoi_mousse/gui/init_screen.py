@@ -22,9 +22,9 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     BindingAction,
-    BindingDescription,
     LinkBtn,
     OpBtnEnum,
+    OpBtnLabel,
     OperateString,
     SectionLabel,
     SwitchEnum,
@@ -441,7 +441,7 @@ class InitChezmoi(Screen[None], AppType):
             self.ids.container.operate_buttons_q, OperateButtons
         )
         self.app.update_binding_description(
-            BindingAction.exit_screen, BindingDescription.reload
+            BindingAction.exit_screen, OpBtnLabel.reload
         )
         self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         self._update_init_info()
