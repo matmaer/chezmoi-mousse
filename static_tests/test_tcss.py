@@ -56,25 +56,26 @@ def _check_file_for_hardcoded(py_file: Path) -> list[HardcodedTcssData]:
             continue
 
         for keyword in node.keywords:
-            if keyword.arg == CLASSES_KEYWORD:  # classes= keyword is used
-                if not (isinstance(keyword.value, ast.Attribute)):
-                    code_str = ast.unparse(keyword.value)
-                    # Extract the actual string value if it's a string constant
-                    string_value = None
-                    if isinstance(keyword.value, ast.Constant) and isinstance(
-                        keyword.value.value, str
-                    ):
-                        string_value = keyword.value.value
+            if keyword.arg == CLASSES_KEYWORD and not isinstance(
+                keyword.value, ast.Attribute
+            ):  # classes= keyword is used
+                code_str = ast.unparse(keyword.value)
+                # Extract the actual string value if it's a string constant
+                string_value = None
+                if isinstance(keyword.value, ast.Constant) and isinstance(
+                    keyword.value.value, str
+                ):
+                    string_value = keyword.value.value
 
-                    # Skip excluded hardcoded classes
-                    if string_value not in EXCLUDE_TCSS_CLASSES:
-                        hardcoded_results.append(
-                            HardcodedTcssData(
-                                module_path=str(py_file),
-                                line_number=keyword.lineno,
-                                code=code_str,
-                            )
+                # Skip excluded hardcoded classes
+                if string_value not in EXCLUDE_TCSS_CLASSES:
+                    hardcoded_results.append(
+                        HardcodedTcssData(
+                            module_path=str(py_file),
+                            line_number=keyword.lineno,
+                            code=code_str,
                         )
+                    )
     return hardcoded_results
 
 

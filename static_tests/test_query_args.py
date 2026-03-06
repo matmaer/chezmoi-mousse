@@ -24,13 +24,13 @@ for file_path in MODULE_PATHS:
         query_one_nodes: list[ast.Call] = []
         # Collect classes calling query_one
         for node in ast.walk(class_def):
-            if isinstance(node, ast.Call):
-                # Check if the function being called is named 'query_one'
-                if (
-                    isinstance(node.func, ast.Attribute)
-                    and node.func.attr == "query_one"
-                ):
-                    query_one_nodes.append(node)
+            # Check if the function being called is named 'query_one'
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "query_one"
+            ):
+                query_one_nodes.append(node)
         if query_one_nodes:
             CLASSES_WITH_THEIR_QUERY_ONE_NODES.append(
                 ClassData(

@@ -117,7 +117,7 @@ class ChezmoiGUI(App[None]):
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
-        self.init_needed: bool = True if self.force_init_needed else False
+        self.init_needed: bool = bool(self.force_init_needed)
         self.init_cmd_result: CommandResult | None = None
 
     def on_mount(self) -> None:
@@ -379,9 +379,7 @@ class ChezmoiGUI(App[None]):
             )
         elif active_tab == TabName.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
-            logs_tab_buttons.display = (
-                False if logs_tab_buttons.display is True else True
-            )
+            logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab == TabName.config:
             left_side = self.screen.query_one(
                 IDS.config.container.left_side_q, FlatButtonsVertical
@@ -465,10 +463,7 @@ class CustomScrollBarRender(ScrollBarRender):  # noqa: N806
         if bar_color is None:
             bar_color = Color.parse("bright_magenta")
 
-        if vertical:
-            bars = cls.VERTICAL_BARS
-        else:
-            bars = cls.HORIZONTAL_BARS
+        bars = cls.VERTICAL_BARS if vertical else cls.HORIZONTAL_BARS
 
         back = back_color
         bar = bar_color

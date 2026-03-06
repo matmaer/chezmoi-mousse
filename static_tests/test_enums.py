@@ -116,10 +116,12 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
             if found:
                 break
             for node in module_data.module_nodes:
-                if isinstance(node, ast.ClassDef):
-                    if node.name == class_data.class_name:
-                        # Skip the enum class itself
-                        continue
+                if (
+                    isinstance(node, ast.ClassDef)
+                    and node.name == class_data.class_name
+                ):
+                    # Skip the enum class itself
+                    continue
                 if isinstance(node, ast.Attribute):
                     # direct access: EnumClass.member_name
                     if isinstance(node.value, ast.Name):
@@ -130,30 +132,31 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
                             found = True
                             break
                     # access like module.EnumClass.member_name
-                    elif isinstance(node.value, ast.Attribute):
-                        if (
-                            isinstance(node.value.value, ast.Name)
-                            and node.value.attr == class_data.class_name
-                            and node.attr == member_name
-                        ):
-                            found = True
-                            break
-                elif isinstance(node, ast.Call):
-                    if (
+                    elif isinstance(node.value, ast.Attribute) and (
+                        isinstance(node.value.value, ast.Name)
+                        and node.value.attr == class_data.class_name
+                        and node.attr == member_name
+                    ):
+                        found = True
+                        break
+                elif (
+                    isinstance(node, ast.Call)
+                    and (
                         isinstance(node.func, ast.Name)
                         and node.func.id == "getattr"
                         and len(node.args) >= 2
-                    ):
-                        if (
-                            isinstance(node.args[0], ast.Name)
-                            and node.args[0].id == class_data.class_name
-                        ):
-                            if (
-                                isinstance(node.args[1], ast.Constant)
-                                and node.args[1].value == member_name
-                            ):
-                                found = True
-                                break
+                    )
+                    and (
+                        isinstance(node.args[0], ast.Name)
+                        and node.args[0].id == class_data.class_name
+                    )
+                    and (
+                        isinstance(node.args[1], ast.Constant)
+                        and node.args[1].value == member_name
+                    )
+                ):
+                    found = True
+                    break
         if found is False:
             results.append(
                 f"{class_data.class_name}.{member_name} "

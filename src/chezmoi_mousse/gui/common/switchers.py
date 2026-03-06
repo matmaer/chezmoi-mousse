@@ -1,3 +1,4 @@
+import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -134,10 +135,8 @@ class TreeSwitcher(Container, AppType):
                     tree_node.data in CMD.cache.x_files
                     or tree_node.data in CMD.cache.tree_x_dirs
                 ):
-                    try:
+                    with contextlib.suppress(Exception):
                         tree_node.remove()
-                    except Exception:
-                        pass
             # remove x_files from list tree
             for tree_node in list_tree_nodes:
                 if tree_node.data in CMD.cache.x_files:

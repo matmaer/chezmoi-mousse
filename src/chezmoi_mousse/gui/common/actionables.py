@@ -84,10 +84,7 @@ class FlatButtonsVertical(Vertical):
 class OpButton(Button, AppType):
 
     def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum | OpBtnLabel) -> None:
-        if isinstance(btn_enum, OpBtnEnum):
-            label = btn_enum.label
-        else:
-            label = btn_enum.value
+        label = btn_enum.label if isinstance(btn_enum, OpBtnEnum) else btn_enum.value
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
         self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
         if label in (OpBtnLabel.destroy_review, OpBtnLabel.forget_review):
@@ -130,12 +127,12 @@ class OperateButtons(HorizontalGroup):
         self.reload_btn.display = False
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabName.apply:
-            self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = (
-                True if CMD.cache.no_status_paths else False
+            self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = bool(
+                CMD.cache.no_status_paths
             )
         elif self.ids.canvas_name == TabName.re_add:
-            self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = (
-                True if CMD.cache.no_status_paths else False
+            self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = bool(
+                CMD.cache.no_status_paths
             )
         all_buttons: list[OpButton] = [
             b for b in self.query_children().results() if isinstance(b, OpButton)

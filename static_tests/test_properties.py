@@ -58,12 +58,11 @@ for file_path in MODULE_PATHS:
     for class_def in class_defs:
         properties: list[PropertyData] = []
         for item in class_def.body:
-            if isinstance(item, ast.FunctionDef):
-                if any(
-                    _get_decorator_name(decorator) == "property"
-                    for decorator in item.decorator_list
-                ):
-                    properties.append(PropertyData(name=item.name, lineno=item.lineno))
+            if isinstance(item, ast.FunctionDef) and any(
+                _get_decorator_name(decorator) == "property"
+                for decorator in item.decorator_list
+            ):
+                properties.append(PropertyData(name=item.name, lineno=item.lineno))
         if properties:
             all_class_data.append(
                 ClassData(

@@ -61,17 +61,15 @@ class ApplyTab(Container, AppType):
         self.contents_view.show_path = msg.path
         # disable forget and destroy buttons when in the dest_dir
         self.query_one(IDS.apply.op_btn.forget_review_q, Button).disabled = (
-            True if msg.path == CMD.cache.dest_dir else False
+            msg.path == CMD.cache.dest_dir
         )
         self.query_one(IDS.apply.op_btn.destroy_review_q, Button).disabled = (
-            True if msg.path == CMD.cache.dest_dir else False
+            msg.path == CMD.cache.dest_dir
         )
         # disable/enable apply review button
-        self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = (
-            True
-            if msg.path in CMD.cache.managed_file_paths
+        self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = bool(
+            msg.path in CMD.cache.managed_file_paths
             and msg.path not in CMD.cache.status_paths
-            else False
         )
         if (
             msg.path in CMD.cache.managed_dir_paths
@@ -79,7 +77,7 @@ class ApplyTab(Container, AppType):
         ):
             dir_node = CMD.cache.apply_dir_nodes[msg.path]
             self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = (
-                False if dir_node.has_status_paths else True
+                not dir_node.has_status_paths
             )
 
     @on(Switch.Changed)

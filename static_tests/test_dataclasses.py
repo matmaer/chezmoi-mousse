@@ -51,12 +51,10 @@ for file_path in MODULE_PATHS:
                     fields.append(stmt.target.id)
             elif isinstance(stmt, ast.Assign):
                 for target in stmt.targets:
-                    if isinstance(target, ast.Attribute):
-                        if (
-                            isinstance(target.value, ast.Name)
-                            and target.value.id == "self"
-                        ):
-                            fields.append(target.attr)
+                    if isinstance(target, ast.Attribute) and (
+                        isinstance(target.value, ast.Name) and target.value.id == "self"
+                    ):
+                        fields.append(target.attr)
         to_append = ClassData(
             module_path=str(file_path),
             class_name=class_def.name,
@@ -91,10 +89,13 @@ def test_fields_in_use(class_data: ClassData) -> None:
             if in_use:
                 break
             for node in module_data.module_nodes:
-                if isinstance(node, ast.Attribute):
-                    if node.attr == field_name and isinstance(node.ctx, ast.Load):
-                        in_use = True
-                        break
+                if (
+                    isinstance(node, ast.Attribute)
+                    and node.attr == field_name
+                    and isinstance(node.ctx, ast.Load)
+                ):
+                    in_use = True
+                    break
         if not in_use:
             results.append(field_name)
 

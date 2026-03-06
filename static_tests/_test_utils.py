@@ -77,8 +77,9 @@ def get_modules_importing_class(class_name: str) -> set[Path]:
     modules: set[Path] = set()
     for module_path in get_module_paths():
         for node in ast.walk(get_module_ast_tree(module_path)):
-            if isinstance(node, ast.ImportFrom):
-                if class_name in (alias.name for alias in node.names):
-                    modules.add(module_path)
-                    break
+            if isinstance(node, ast.ImportFrom) and class_name in (
+                alias.name for alias in node.names
+            ):
+                modules.add(module_path)
+                break
     return modules
