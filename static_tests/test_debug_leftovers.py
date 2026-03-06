@@ -30,17 +30,16 @@ class DebugStatementVisitor(ast.NodeVisitor):
         class_name = self.class_stack[-1] if self.class_stack else None
 
         # Check for print() calls
-        if isinstance(node.func, ast.Name) and node.func.id == "print":
-            self.debug_statements.append(
-                DebugStatement(self.file_path, class_name, node.lineno)
+        if (
+            isinstance(node.func, ast.Name)
+            and node.func.id == "print"
+            or isinstance(node.func, ast.Attribute)
+            and (
+                isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "debug_log"
+                or isinstance(node.func.value, ast.Attribute)
+                and node.func.value.attr == "debug_log"
             )
-
-        # Check for debug_log.some_method() calls
-        elif isinstance(node.func, ast.Attribute) and (
-            isinstance(node.func.value, ast.Name)
-            and node.func.value.id == "debug_log"
-            or isinstance(node.func.value, ast.Attribute)
-            and node.func.value.attr == "debug_log"
         ):
             self.debug_statements.append(
                 DebugStatement(self.file_path, class_name, node.lineno)

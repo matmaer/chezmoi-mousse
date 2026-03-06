@@ -109,9 +109,10 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum)
 
     def on_mount(self) -> None:
-        if self.ids.canvas_name == TabName.debug:
-            return
-        elif self.ids.canvas_name == ScreenName.init:
+        if (
+            self.ids.canvas_name == TabName.debug
+            or self.ids.canvas_name == ScreenName.init
+        ):
             return
         self.run_btn_ids: set[str] = {
             btn_id
