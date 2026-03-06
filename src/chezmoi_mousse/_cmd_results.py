@@ -127,13 +127,17 @@ class CommandResults:
 
     @property
     def tree_x_dirs(self) -> list[Path]:
-        x_dirs_with_status = self.x_dirs_with_status_children
-        return [d for d in self.managed_dir_paths if d not in x_dirs_with_status]
+        return [
+            d
+            for d in self.managed_dir_paths
+            if d not in self.x_dirs_with_status_children
+        ]
 
     @property
     def x_files(self) -> list[Path]:
-        status_paths = self.status_paths
-        return [path for path in self.managed_file_paths if path not in status_paths]
+        return [
+            path for path in self.managed_file_paths if path not in self.status_paths
+        ]
 
     @property
     def no_status_paths(self) -> bool:
