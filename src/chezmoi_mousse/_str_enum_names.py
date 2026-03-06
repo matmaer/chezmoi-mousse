@@ -58,11 +58,7 @@ class ScreenName(StrEnum):
 
 
 class StaticName(StrEnum):
-    contents_info = auto()
     debug_test_paths = auto()
-    diff_info = auto()
-    diff_lines = auto()
-    git_log_info = auto()
     init_info = auto()
     operate_info = auto()
 

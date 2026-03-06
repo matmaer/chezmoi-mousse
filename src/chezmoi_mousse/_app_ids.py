@@ -176,16 +176,8 @@ class OperateButtonIds:
 
 class StaticIds:
     def __init__(self, ids: AppIds):
-        self.contents_info = ids.static_id(static=StaticName.contents_info)
-        self.contents_info_q = f"#{self.contents_info}"
         self.debug_test_paths = ids.static_id(static=StaticName.debug_test_paths)
         self.debug_test_paths_q = f"#{self.debug_test_paths}"
-        self.diff_info = ids.static_id(static=StaticName.diff_info)
-        self.diff_info_q = f"#{self.diff_info}"
-        self.diff_lines = ids.static_id(static=StaticName.diff_lines)
-        self.diff_lines_q = f"#{self.diff_lines}"
-        self.git_log_info = ids.static_id(static=StaticName.git_log_info)
-        self.git_log_info_q = f"#{self.git_log_info}"
         self.init_info = ids.static_id(static=StaticName.init_info)
         self.init_info_q = f"#{self.init_info}"
         self.operate_info = ids.static_id(static=StaticName.operate_info)
