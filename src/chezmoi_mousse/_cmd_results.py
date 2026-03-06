@@ -45,24 +45,21 @@ class CommandResults:
 
     @property
     def dest_dir(self) -> Path:
-        parsed = self._parsed_dump_config
-        if parsed is None:
-            return Path.home()
-        return Path(parsed["destDir"])
+        if self._parsed_dump_config is None:
+            return Path().home()
+        return Path(self._parsed_dump_config["destDir"])
 
     @property
     def git_auto_commit(self) -> bool:
-        parsed = self._parsed_dump_config
-        if parsed is None:
+        if self._parsed_dump_config is None:
             return False
-        return parsed["git"]["autocommit"]
+        return self._parsed_dump_config["git"]["autocommit"]
 
     @property
     def git_auto_push(self) -> bool:
-        parsed = self._parsed_dump_config
-        if parsed is None:
+        if self._parsed_dump_config is None:
             return False
-        return parsed["git"]["autopush"]
+        return self._parsed_dump_config["git"]["autopush"]
 
     @property
     def executed_commands(self) -> list[CommandResult]:
@@ -84,34 +81,33 @@ class CommandResults:
             return []
         return [Path(line) for line in self.managed_files.std_out.splitlines()]
 
-    def parse_status_output(
-        self, status_lines: list[str], index: int
+    def _parse_status_output(
+        self, index: int, dirs: bool = False
     ) -> dict[Path, StatusCode]:
+        status_lines = []
+        if dirs and self.status_dirs is not None:
+            status_lines = self.status_dirs.std_out.splitlines()
+        elif not dirs and self.status_files is not None:
+            status_lines = self.status_files.std_out.splitlines()
+        if not status_lines:
+            return {}
         return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
 
     @property
     def apply_status_dirs(self) -> dict[Path, StatusCode]:
-        return self.parse_status_output(
-            self.status_dirs.std_out.splitlines() if self.status_dirs else [], 0
-        )
+        return self._parse_status_output(0, dirs=True)
 
     @property
     def apply_status_files(self) -> dict[Path, StatusCode]:
-        return self.parse_status_output(
-            self.status_files.std_out.splitlines() if self.status_files else [], 0
-        )
+        return self._parse_status_output(0, dirs=False)
 
     @property
     def re_add_status_dirs(self) -> dict[Path, StatusCode]:
-        return self.parse_status_output(
-            self.status_dirs.std_out.splitlines() if self.status_dirs else [], 1
-        )
+        return self._parse_status_output(1, dirs=True)
 
     @property
     def re_add_status_files(self) -> dict[Path, StatusCode]:
-        return self.parse_status_output(
-            self.status_files.std_out.splitlines() if self.status_files else [], 1
-        )
+        return self._parse_status_output(1, dirs=False)
 
     @property
     def status_paths(self) -> set[Path]:
@@ -286,7 +282,7 @@ class CachedData:
     def update_snapshot(self, source: CommandResults) -> None:
         self.__init__(source)
 
-    def get_dir_node(
+    def _get_dir_node(
         self,
         dir_path: Path,
         status_files: dict[Path, StatusCode],
@@ -339,10 +335,10 @@ class CachedData:
     def _update_apply_and_re_add_dir_nodes(self) -> None:
         for dir_path in self.managed_dirs_with_dest_dir:
 
-            self.apply_dir_nodes[dir_path] = self.get_dir_node(
+            self.apply_dir_nodes[dir_path] = self._get_dir_node(
                 dir_path, self.apply_status_files, self.apply_status_dirs
             )
-            self.re_add_dir_nodes[dir_path] = self.get_dir_node(
+            self.re_add_dir_nodes[dir_path] = self._get_dir_node(
                 dir_path, self.re_add_status_files, self.re_add_status_dirs
             )
 
