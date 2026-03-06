@@ -1,5 +1,6 @@
 """Test all classes to ensure that all properties are being accessed at least once,
-either inside the class if it starts with an underscore, outside the class if it does not.
+either inside the class if it starts with an underscore, outside the class if it does
+not.
 """
 
 import ast
@@ -141,7 +142,8 @@ def test_properties_in_use(class_data: ClassData) -> None:
         pytest.fail(
             "\n"
             + "\n".join(
-                f"{result.class_name}.{result.property_name} (in {result.module_path}:{result.property_lineno})"
+                f"{result.class_name}.{result.property_name} "
+                f"(in {result.module_path}:{result.property_lineno})"
                 + (" (should be private)" if result.should_be_private else "")
                 for result in results
             )

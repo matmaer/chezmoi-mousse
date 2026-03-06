@@ -21,7 +21,7 @@ def run_app():
         stack_trace_path = src_dir / "stack_trace.txt"
 
         def save_stacktrace():
-            with open(stack_trace_path, "a") as f:
+            with Path.open(stack_trace_path, "a") as f:
                 traceback.print_exc(file=f)
 
         try:

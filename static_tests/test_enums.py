@@ -156,7 +156,8 @@ def test_enum_members_in_use(class_data: ClassData) -> None:
                                 break
         if found is False:
             results.append(
-                f"{class_data.class_name}.{member_name} (in {class_data.module_path}:{class_data.class_lineno})"
+                f"{class_data.class_name}.{member_name} "
+                f"(in {class_data.module_path}:{class_data.class_lineno})"
             )
     if results:
         pytest.fail("\n" + "\n".join(results))

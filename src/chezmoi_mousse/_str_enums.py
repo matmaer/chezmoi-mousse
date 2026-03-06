@@ -87,11 +87,11 @@ class BorderTitle(StrEnum):
 
 
 class Chars(StrEnum):
-    # bullet = "\u2022"  # BULLET
+    # bullet = "\u2022"  # BULLET # noqa: ERA001
     burger = "\u2261"  # IDENTICAL TO
     check_mark = "\u2714"  # HEAVY CHECK MARK
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
-    # gear = "\u2699"  # GEAR
+    # gear = "\u2699"  # GEAR # noqa: ERA001
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
@@ -206,7 +206,7 @@ class SectionLabel(StrEnum):
     doctor_output = "Doctor Output"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
-    # init_clone_repo = "Initialize Existing Chezmoi Repository"
+    # init_clone_repo = "Initialize Existing Chezmoi Repository" # noqa: ERA001
     password_managers = "Password Manager Information"
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"

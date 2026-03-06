@@ -100,5 +100,7 @@ def test_fields_in_use(class_data: ClassData) -> None:
 
     if results:
         pytest.fail(
-            f"Dataclass {class_data.class_name} in {class_data.module_path}:{class_data.class_lineno} has unused fields: {', '.join(results)}"
+            f"Dataclass {class_data.class_name} in "
+            f"{class_data.module_path}:{class_data.class_lineno} has unused fields: "
+            f"{', '.join(results)}"
         )

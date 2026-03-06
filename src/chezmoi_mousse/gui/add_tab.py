@@ -44,8 +44,7 @@ class FilteredDirTree(DirectoryTree, AppType):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         # Define condition lambdas for each switch combo
         conditions: dict[tuple[bool, bool], Callable[[Path], bool]] = {
-            # SwitchEnum: Red - Red (default)
-            (False, False): lambda p: (
+            (False, False): lambda p: (  # switches: Red - Red (default)
                 (
                     p.is_dir()
                     and not UnwantedDirs.is_unwanted(p.name)
@@ -62,8 +61,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
-            # SwitchEnum: Green - Red
-            (True, False): lambda p: (
+            (True, False): lambda p: (  # switches: Green - Red
                 (
                     p.is_dir()
                     and not UnwantedDirs.is_unwanted(p.name)
@@ -82,8 +80,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
-            # SwitchEnum: Red - Green
-            (False, True): lambda p: (
+            (False, True): lambda p: (  # switches: Red - Green
                 (
                     p.is_dir()
                     and p in CMD.cache.managed_dir_paths
@@ -96,7 +93,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
-            # SwitchEnum: Green - Green, include all unmanaged paths
+            # switches: Green - Green, include all unmanaged paths
             (True, True): lambda p: (
                 (p.is_dir() and self._has_unmanaged_paths_in(p))
                 or (
@@ -116,7 +113,7 @@ class FilteredDirTree(DirectoryTree, AppType):
             if file_path.stat().st_size > 1000 * 1024:  # 1 MiB
                 return False
             # Now read only first 8 KiB
-            with open(file_path, "rb") as f:
+            with Path.open(file_path, "rb") as f:
                 chunk = f.read(8192)
             return b"\x00" not in chunk
         except OSError:
@@ -215,12 +212,12 @@ class UnwantedDirs(StrEnum):
     dot_build = ".build"
     dot_bundle = ".bundle"
     dot_dart_tool = ".dart_tool"
-    dot_DS_Store = ".DS_Store"
+    dot_ds_store = ".DS_Store"
     dot_env = ".env"
     dot_git = ".git"
     dot_ipynb_checkpoints = ".ipynb_checkpoints"
     dot_mozilla = ".mozilla"
-    dot_Trash = ".Trash"
+    dot_trash = ".Trash"
     dot_venv = ".venv"
     Downloads = "Downloads"
     extensions = "extensions"

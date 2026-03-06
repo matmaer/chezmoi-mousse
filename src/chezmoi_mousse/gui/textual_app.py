@@ -446,7 +446,7 @@ class ChezmoiGUI(App[None]):
 ####################################################################################
 
 
-class CustomScrollBarRender(ScrollBarRender):
+class CustomScrollBarRender(ScrollBarRender):  # noqa: N806
 
     @classmethod
     def render_bar(
@@ -476,8 +476,8 @@ class CustomScrollBarRender(ScrollBarRender):
         len_bars = len(bars)
         width_thickness = thickness if vertical else 1
 
-        _Segment = Segment
-        _Style = Style
+        _Segment = Segment  # noqa: N806
+        _Style = Style  # noqa: N806
         blank = cls.BLANK_GLYPH * width_thickness
 
         foreground_meta = {"@mouse.down": "grab"}

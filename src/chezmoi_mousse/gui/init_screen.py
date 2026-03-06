@@ -60,16 +60,15 @@ class SSHSCP(Validator):
 
     # Pattern breakdown:
     # ^                           - Start of string
-    # (?P<user>[a-zA-Z0-9._-]+)  - Username: alphanumeric, dots, hyphens, underscores
+    # (?P<user>[a-zA-Z0-9._-]+)   - Username: alphanumeric, dots, hyphens, underscores
     # @                           - Literal @ separator
     # (?P<host>                   - Host group (domain or IPv4)
     #   (?:[a-zA-Z0-9-]+\.)*      - Subdomains (optional, repeating)
     #   [a-zA-Z0-9-]+             - Domain or last part of domain
     #   |                         - OR
-    #   (?:\d{1,3}\.){3}\d{1,3}   - IPv4 address
-    # )
+    #   (?:\d{1,3}\.){3}\d{1,3})  - IPv4 address
     # :                           - Literal : separator
-    # (?P<path>[^\s:]+)          - Path: any non-whitespace, non-colon characters
+    # (?P<path>[^\s:]+)           - Path: any non-whitespace, non-colon characters
     # $                           - End of string
     SCP_PATTERN = re.compile(
         r"^(?P<user>[a-zA-Z0-9._-]+)"
@@ -113,7 +112,7 @@ class SSHSCP(Validator):
         return None
 
 
-class GUESS_HTTPS(Validator):
+class GuessHttps(Validator):
     """Lenient validator for chezmoi HTTPS guess inputs.
 
     Validates inputs that will be guessed as HTTPS URLs by chezmoi.
@@ -139,7 +138,7 @@ class GUESS_HTTPS(Validator):
     # ^                    - Start of string
     # (?:https?://)?       - Optional http:// or https:// scheme (non-capturing group)
     # [                    - Character class start
-    #   a-zA-Z             - Letters (uppercase and lowercase)
+    #   a-zA-Z             - Letters (uppercase and lowercase)  # noqa: ERA001
     #   0-9                - Digits
     #   .                  - Dots (for domains like github.com)
     #   _                  - Underscores (for usernames/repos)
@@ -165,14 +164,10 @@ class GUESS_HTTPS(Validator):
             The result of the validation.
         """
         if not value:
-            return ValidationResult.failure(
-                [GUESS_HTTPS.InvalidGuessHTTPS(self, value)]
-            )
+            return ValidationResult.failure([GuessHttps.InvalidGuessHTTPS(self, value)])
 
         if not self.VALID_PATTERN.match(value):
-            return ValidationResult.failure(
-                [GUESS_HTTPS.InvalidGuessHTTPS(self, value)]
-            )
+            return ValidationResult.failure([GuessHttps.InvalidGuessHTTPS(self, value)])
 
         return self.success()
 
@@ -185,12 +180,12 @@ class GUESS_HTTPS(Validator):
         Returns:
             A string description of the failure.
         """
-        if isinstance(failure, GUESS_HTTPS.InvalidGuessHTTPS):
+        if isinstance(failure, GuessHttps.InvalidGuessHTTPS):
             return "Must be valid for HTTPS guessing (a-z, 0-9, . / : - ~, optional https://)"
         return None
 
 
-class GUESS_SSH(Validator):
+class GuessSSH(Validator):
     """Lenient validator for chezmoi SSH guess inputs.
 
     Validates inputs that will be guessed as SSH addresses by chezmoi.
@@ -215,7 +210,7 @@ class GUESS_SSH(Validator):
     # Pattern breakdown:
     # ^                - Start of string
     # [                - Character class start
-    #   a-zA-Z         - Letters (uppercase and lowercase)
+    #   a-zA-Z         - Letters (uppercase and lowercase)  # noqa: ERA001
     #   0-9            - Digits
     #   .              - Dots (for domains like github.com)
     #   _              - Underscores (for usernames)
@@ -241,10 +236,10 @@ class GUESS_SSH(Validator):
             The result of the validation.
         """
         if not value:
-            return ValidationResult.failure([GUESS_SSH.InvalidGuessSSH(self, value)])
+            return ValidationResult.failure([GuessSSH.InvalidGuessSSH(self, value)])
 
         if not self.VALID_PATTERN.match(value):
-            return ValidationResult.failure([GUESS_SSH.InvalidGuessSSH(self, value)])
+            return ValidationResult.failure([GuessSSH.InvalidGuessSSH(self, value)])
 
         return self.success()
 
@@ -257,7 +252,7 @@ class GUESS_SSH(Validator):
         Returns:
             A string description of the failure.
         """
-        if isinstance(failure, GUESS_SSH.InvalidGuessSSH):
+        if isinstance(failure, GuessSSH.InvalidGuessSSH):
             return "Must be valid for SSH guessing (a-z, 0-9, . / : - ~ @)"
         return None
 
@@ -288,7 +283,7 @@ class InputGuessURL(HorizontalGroup):
         yield Input(
             placeholder="Let chezmoi guess the repo URL",
             validate_on=["submitted"],
-            validators=GUESS_HTTPS(),
+            validators=GuessHttps(),
             classes=Tcss.input_field,
         )
         yield FlatLink(LinkBtn.chezmoi_guess)
@@ -299,7 +294,7 @@ class InputGuessSSH(HorizontalGroup):
         yield Input(
             placeholder="Let chezmoi guess the SSH repo address",
             validate_on=["submitted"],
-            validators=GUESS_SSH(),
+            validators=GuessSSH(),
             classes=Tcss.input_field,
         )
         yield FlatLink(LinkBtn.chezmoi_guess)

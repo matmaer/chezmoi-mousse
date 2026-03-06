@@ -24,7 +24,7 @@ class HardcodedTcssData(NamedTuple):
 
 def extract_tcss_classes() -> list[str]:
     pattern = r"\.[^a-z]*[a-z][a-z_]*(?=.*_)[a-z_]*(?=\s|,|$)"
-    with open(GUI_DOT_TCSS_PATH) as f:
+    with Path.open(GUI_DOT_TCSS_PATH) as f:
         content = f.read()
         matches = re.findall(pattern, content)
     return matches

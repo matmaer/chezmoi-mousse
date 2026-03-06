@@ -58,7 +58,8 @@ def test_duplicate_assignments(file_path: Path) -> None:
         ]
         if dup_lines:
             failures.append(
-                f"{class_def.name} (line {class_def.lineno}) has duplicate assignments at lines: {sorted(set(dup_lines))}"
+                f"{class_def.name} (line {class_def.lineno}) has duplicate assignments "
+                f"at lines: {sorted(set(dup_lines))}"
             )
     if failures:
         pytest.fail("\n".join(failures))

@@ -156,7 +156,7 @@ class ContentsView(Container, AppType):
             try:
                 truncate_size: int = 1024 * 1024  # 1Mib
                 file_size = file_path.stat().st_size
-                with open(file_path, encoding="utf-8") as f:
+                with Path.open(file_path, encoding="utf-8") as f:
                     f_contents = f.read(truncate_size)
                 if f_contents.strip() == "":
                     return ContentStr.empty_or_only_whitespace

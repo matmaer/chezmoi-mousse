@@ -137,7 +137,7 @@ class TestPaths:
         if file_path.exists() and recreate is False:
             return []
         content = FAKER.binary(length=2048)
-        with open(file_path, "wb") as f:
+        with Path.open(file_path, "wb") as f:
             f.write(content)
         return [str(file_path)]
 
@@ -146,7 +146,7 @@ class TestPaths:
         if file_path.exists() and recreate is False:
             return []
         content = FAKER.text(max_nb_chars=700000)
-        with open(file_path, "w", encoding="utf-8") as f:
+        with Path.open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         return [str(file_path)]
 
@@ -181,7 +181,7 @@ class TestPaths:
             + FAKER.word()
         )
         parts.append("A" + ProblemChars.ZWJ + "B" + ProblemChars.ZWJ + "C")
-        with open(file_path, "w", encoding="utf-8") as f:
+        with Path.open(file_path, "w", encoding="utf-8") as f:
             f.write("\n".join(parts))
         return [str(file_path)]
 
@@ -206,7 +206,7 @@ class TestPaths:
                 continue
             # to avoid creating the file when we deleted nested_dirs_1
             elif file.parent.exists():
-                with open(file, "w", encoding="utf-8") as f:
+                with Path.open(file, "w", encoding="utf-8") as f:
                     f.write(get_fake_toml_string())
                 created_files.append(str(file))
         return sorted(created_files)
@@ -254,7 +254,7 @@ class TestPaths:
         # Modify LARGE file
         large_file_path = self.all_paths.large_file_path
         if large_file_path.exists():
-            with open(large_file_path, "w", encoding="utf-8") as f:
+            with Path.open(large_file_path, "w", encoding="utf-8") as f:
                 modified_content = (
                     large_file_path.read_text(encoding="utf-8")
                     .replace("the", "")
@@ -271,7 +271,7 @@ class TestPaths:
                     .replace("title", "new_title")
                     .replace("true", "false")
                 )
-                with open(file, "w", encoding="utf-8") as f:
+                with Path.open(file, "w", encoding="utf-8") as f:
                     f.write(modified_content)
                 modified.append(str(file))
 

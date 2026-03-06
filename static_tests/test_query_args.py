@@ -76,6 +76,7 @@ def test_query_one_calls(class_data: ClassData) -> None:
             )
     if issues:
         pytest.fail(
-            f"Class {class_data.class_name} in {class_data.module_path}:{class_data.class_lineno} has query_one calls with issues:\n"
-            + "\n".join(issues)
+            f"Class {class_data.class_name} in "
+            f"{class_data.module_path}:{class_data.class_lineno} has query_one calls "
+            f"with issues:\n" + "\n".join(issues)
         )
