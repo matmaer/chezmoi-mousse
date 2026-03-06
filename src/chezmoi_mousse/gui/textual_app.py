@@ -19,6 +19,7 @@ from chezmoi_mousse import (
     AppIds,
     BindingAction,
     BindingDescription,
+    CachedData,
     Chars,
     OpBtnEnum,
     OpBtnLabel,
@@ -44,6 +45,8 @@ from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import CommandResult
 
 __all__ = ["ChezmoiGUI"]
@@ -134,6 +137,7 @@ class ChezmoiGUI(App[None]):
 
     @work
     async def refresh_cmd_results(self) -> None:
+        # Used in case of changes outside of the app.
         for read_cmd in (
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
@@ -145,6 +149,33 @@ class ChezmoiGUI(App[None]):
             cmd_logger = self.log_cmd_result(cmd_result)
             await cmd_logger.wait()
         CMD.update_parsed_data()
+
+    @work
+    async def get_changed_paths(self, old_cached: CachedData) -> set["Path"]:
+        old_managed = set(old_cached.managed_paths)
+        old_files = set(old_cached.managed_file_paths)
+        old_status = dict(old_cached.status_pairs)
+
+        # ^ symmetric difference: elements that exist in either set, but not in both
+        # & intersection: elements that exist in both sets
+        # | union: all elements that exist in either set
+
+        # Collect changed paths: Symmetric difference (added/removed) + Status changes
+        changes = (old_managed ^ set(CMD.cache.managed_paths)) | {
+            p
+            for p in old_managed & set(CMD.cache.managed_paths)
+            if old_status.get(p) != CMD.cache.status_pairs.get(p)
+        }
+        # Parent files to their directories
+        all_files = old_files | set(CMD.cache.managed_file_paths)
+        dirs = {p.parent if p in all_files else p for p in changes}
+
+        # Reduce to common parents
+        simplified: set[Path] = set()
+        for path in sorted(dirs, key=lambda p: len(p.parts)):
+            if not any(path.is_relative_to(parent) for parent in simplified):
+                simplified.add(path)
+        return simplified
 
     @work
     async def _run_splash_screen(self) -> None:
