@@ -422,23 +422,25 @@ class ChezmoiGUI(App[None]):
                     return False
                 active_tab = self.screen.query_exactly_one(TabbedContent).active
                 return active_tab in (TabName.apply, TabName.re_add, TabName.add)
-            else:
+            return False
+
+        if action == BindingAction.toggle_dry_run:
+            return isinstance(self.screen, (MainScreen, InitChezmoi))
+
+        if action == BindingAction.toggle_maximized:
+            if any(w.display for w in self.screen.query(OperateMode)):
                 return False
-        elif action == BindingAction.toggle_dry_run:
-            if isinstance(self.screen, (MainScreen, InitChezmoi)):
-                return True
-            else:
-                return False
-        elif action == BindingAction.toggle_maximized:
-            operate_mode_widgets = self.screen.query(OperateMode)
-            for widget in operate_mode_widgets:
-                if widget.display is True:
-                    return False
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
-        elif action == BindingAction.exit_screen:
-            if isinstance(self.screen, (InstallHelpScreen, MainScreen)):
-                return False
+
+        if action == BindingAction.exit_screen:
+            return not isinstance(self.screen, (InstallHelpScreen, MainScreen))
+
+        # Example of how to use parameters if you had parametric actions:
+        # if action == "focus_tab" and parameters:
+        #     target_tab = parameters[0]
+        #     return target_tab in self.available_tabs
+
         return True
 
 
