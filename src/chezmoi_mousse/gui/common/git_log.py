@@ -64,6 +64,7 @@ class GitLog(ScrollableContainer, AppType):
             table = self._create_datatable(CMD.cache.global_git_log_lines)
         else:
             cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
+            self.app.log_cmd_result(cmd_result)
             table = self._create_datatable(cmd_result.std_out.splitlines())
         self.mount(table)
         self.data_table_cache[show_path] = table

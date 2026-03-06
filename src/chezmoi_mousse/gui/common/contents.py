@@ -173,7 +173,9 @@ class ContentsView(Container, AppType):
         if file_path.exists():
             to_show = _read_file(file_path)
         else:
-            to_show = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path).std_out
+            cmd_result = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path)
+            to_show = cmd_result.std_out
+            self.app.log_cmd_result(cmd_result)
         if not to_show:
             return ScrollableContainer(Static("Nothing to show.", classes=Tcss.removed))
         if isinstance(to_show, Static):

@@ -57,6 +57,7 @@ class DiffView(Container, AppType):
             diff_result = CMD.run_cmd.read(
                 ReadCmd.diff_reverse, path_arg=self.show_path
             )
+        self.app.log_cmd_result(diff_result)
         diff_lines = diff_result.std_out.splitlines()
         if not diff_lines:
             return [Static("No diff output available.", classes=Tcss.info)]
