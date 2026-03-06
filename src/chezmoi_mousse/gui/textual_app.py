@@ -117,7 +117,6 @@ class ChezmoiGUI(App[None]):
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
-        self.changes_enabled = False
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
         self.force_init_needed: bool = pretend_init_needed
@@ -139,7 +138,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def refresh_cmd_results(self) -> None:
         # Used in case of changes outside of the app.
-        if self.changes_enabled is False:
+        if CMD.run_cmd.changes_enabled is False:
             CMD.run_cmd.changes_enabled = True
         for read_cmd in (
             ReadCmd.managed,
@@ -347,12 +346,10 @@ class ChezmoiGUI(App[None]):
         self.refresh_bindings()
 
     def action_toggle_dry_run(self) -> None:
-        self.changes_enabled = not self.changes_enabled
+        CMD.run_cmd.changes_enabled = not CMD.run_cmd.changes_enabled
         self.screen.query_exactly_one(CustomHeader).changes_enabled = (
-            self.changes_enabled
+            CMD.run_cmd.changes_enabled
         )
-        # do this before updating calling .update_review_info()
-        CMD.run_cmd.changes_enabled = self.changes_enabled
         operate_mode_widgets = self.screen.query(OperateMode)
         for widget in operate_mode_widgets:
             if widget.display is True:
