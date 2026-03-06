@@ -38,6 +38,7 @@ SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.dump_config,
     ReadCmd.git_log,
     ReadCmd.ignored,
+    ReadCmd.managed,
     ReadCmd.managed_dirs,
     ReadCmd.managed_files,
     ReadCmd.status,

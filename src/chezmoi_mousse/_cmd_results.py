@@ -29,6 +29,7 @@ class CommandResults:
     dump_config: CommandResult | None = None
     git_log: CommandResult | None = None
     ignored: CommandResult | None = None
+    managed: CommandResult | None = None
     managed_dirs: CommandResult | None = None
     managed_files: CommandResult | None = None
     status: CommandResult | None = None
@@ -68,6 +69,12 @@ class CommandResults:
             for field in fields(self)
             if getattr(self, field.name) is not None
         ]
+
+    @property
+    def managed_paths(self) -> list[Path]:
+        if self.managed is None:
+            return []
+        return [Path(line) for line in self.managed.std_out.splitlines()]
 
     @property
     def managed_dir_paths(self) -> list[Path]:
