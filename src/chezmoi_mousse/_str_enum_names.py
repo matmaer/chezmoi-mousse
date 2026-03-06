@@ -7,7 +7,6 @@ __all__ = [
     "LogName",
     "ScreenName",
     "StaticName",
-    "TabName",
     "Tcss",
     "TreeName",
     "ViewName",
@@ -66,16 +65,6 @@ class StaticName(StrEnum):
     git_log_info = auto()
     init_info = auto()
     operate_info = auto()
-
-
-class TabName(StrEnum):
-    add = auto()
-    apply = auto()
-    config = auto()
-    debug = auto()
-    help = auto()
-    logs = auto()
-    re_add = auto()
 
 
 class Tcss(StrEnum):

@@ -10,7 +10,7 @@ from ._str_enums import SwitchLabel, TabLabel
 if TYPE_CHECKING:
     from ._app_ids import AppIds
 
-__all__ = ["OpBtnEnum", "SwitchEnum"]
+__all__ = ["OpBtnEnum", "OpBtnLabel", "SwitchEnum"]
 
 
 class OpInfoString(StrEnum):
