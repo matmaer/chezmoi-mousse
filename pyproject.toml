@@ -72,8 +72,9 @@ select = [
     "PT",      # Pytest style
     "PTH",     # Use pathlib
     "RUF012",  # flake8-class-attributes
+    "SIM",     # Simplify
     "UP",      # pyupgrade
-    "W",       # pycodestyle warnings
+    "W",       # pycodestyle
 ]
 
 [tool.codespell]
