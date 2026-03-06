@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 from math import ceil
 from typing import TYPE_CHECKING, ClassVar
@@ -138,7 +139,11 @@ class ChezmoiGUI(App[None]):
     @work
     async def refresh_cmd_results(self) -> None:
         # Used in case of changes outside of the app.
+        if self.changes_enabled is False:
+            CMD.run_cmd.changes_enabled = True
         for read_cmd in (
+            ReadCmd.managed,
+            ReadCmd.status,
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
@@ -148,6 +153,13 @@ class ChezmoiGUI(App[None]):
             setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
             cmd_logger = self.log_cmd_result(cmd_result)
             await cmd_logger.wait()
+        CMD.run_cmd.changes_enabled = False
+        old_cached = copy.deepcopy(CMD.cache)
+        changed_paths = await self.get_changed_paths(old_cached).wait()
+        if changed_paths:
+            self.notify(f"Changed paths:\n{sorted(changed_paths)}")
+        else:
+            self.notify("No changes detected.", severity="warning")
         CMD.update_parsed_data()
 
     @work
@@ -272,7 +284,7 @@ class ChezmoiGUI(App[None]):
 
     @on(ChangedPathsMsg)
     def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:
-        self.notify(f"Changed paths: {sorted(msg.changed_paths)}")
+        self.notify(f"Changed paths:\n{sorted(msg.changed_paths)}")
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
