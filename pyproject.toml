@@ -5,7 +5,7 @@ description = "Visual interface in the terminal for the chezmoi dotfile manager,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual[syntax]>=8.0.1",
+    "textual[syntax]>=8.0.2",
 ]
 
 [project.urls]
