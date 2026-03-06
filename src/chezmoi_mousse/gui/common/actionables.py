@@ -17,7 +17,6 @@ from chezmoi_mousse import (
     ScreenName,
     SwitchEnum,
     TabLabel,
-    TabName,
     Tcss,
 )
 
@@ -107,7 +106,7 @@ class OperateButtons(HorizontalGroup):
 
     def on_mount(self) -> None:
         if (
-            self.ids.canvas_name == TabName.debug
+            self.ids.canvas_name == TabLabel.debug
             or self.ids.canvas_name == ScreenName.init
         ):
             return
@@ -126,11 +125,11 @@ class OperateButtons(HorizontalGroup):
         self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
         self.reload_btn.display = False
         # disable apply review button if no_status_paths is true
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabLabel.apply:
             self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = bool(
                 CMD.cache.no_status_paths
             )
-        elif self.ids.canvas_name == TabName.re_add:
+        elif self.ids.canvas_name == TabLabel.re_add:
             self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = bool(
                 CMD.cache.no_status_paths
             )
@@ -142,7 +141,7 @@ class OperateButtons(HorizontalGroup):
 
     @on(OpButton.Pressed)
     def update_operate_button_display(self, event: OpButton.Pressed) -> None:
-        if self.ids.canvas_name in (TabName.debug, ScreenName.init):
+        if self.ids.canvas_name in (TabLabel.debug, ScreenName.init):
             # we don't need any display toggling in those contexts for now
             return
         if not isinstance(event.button, OpButton):
@@ -196,7 +195,7 @@ class SwitchWithLabel(HorizontalGroup):
 class SwitchSlider(VerticalGroup):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.switch_slider, classes="-visible")
-        if ids.canvas_name in (TabName.apply, TabName.re_add):
+        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             self.switches = (SwitchEnum.unchanged, SwitchEnum.expand_all)
         else:  # for the AddTab
             self.switches = (SwitchEnum.unmanaged_dirs, SwitchEnum.unwanted)
@@ -227,7 +226,7 @@ class TabButtons(Horizontal):
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
-        if self.ids.canvas_name in (TabName.apply, TabName.re_add):
+        if self.ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             self.border_subtitle = BorderTitle.dest_dir
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)

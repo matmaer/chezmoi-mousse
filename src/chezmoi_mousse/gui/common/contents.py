@@ -10,7 +10,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, TabName, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -65,7 +65,7 @@ class ContentsView(Container, AppType):
         self.dir_contents_container = self.query_one(
             self.ids.container.dir_contents_q, ScrollableContainer
         )
-        if self.ids.canvas_name == TabName.add:
+        if self.ids.canvas_name == TabLabel.add:
             self._mount_add_dir_contents(CMD.cache.dest_dir)
         else:
             self._mount_managed_dir_contents(CMD.cache.dest_dir)
@@ -197,7 +197,7 @@ class ContentsView(Container, AppType):
         if self.current_file_container:
             self.current_file_container.display = False
 
-        if self.ids.canvas_name == TabName.add and show_path.is_dir():
+        if self.ids.canvas_name == TabLabel.add and show_path.is_dir():
             self._mount_add_dir_contents(show_path)
             self.dir_contents_container.display = True
         elif (

@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, DirNode, FlatBtnLabel, TabLabel, TabName, Tcss
+from chezmoi_mousse import CMD, AppType, DirNode, FlatBtnLabel, TabLabel, Tcss
 
 from .actionables import TabButtons
 from .contents import ContentsView
@@ -44,7 +44,7 @@ class TreeSwitcher(Container, AppType):
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabLabel.apply:
             return CMD.cache.apply_dir_nodes
         else:
             return CMD.cache.re_add_dir_nodes

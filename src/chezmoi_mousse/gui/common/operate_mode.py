@@ -18,7 +18,7 @@ from chezmoi_mousse import (
     OpBtnEnum,
     OperateString,
     ReadCmd,
-    TabName,
+    TabLabel,
     Tcss,
 )
 
@@ -122,7 +122,7 @@ class OperateMode(Vertical, AppType):
         info_lines: list[str] = []
         info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
         info_lines.append(self.btn_enum.info_string)
-        if self.ids.canvas_name in (TabName.add, TabName.re_add):
+        if self.ids.canvas_name in (TabLabel.add, TabLabel.re_add):
             if CMD.cache.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
             if CMD.cache.git_auto_push is True:

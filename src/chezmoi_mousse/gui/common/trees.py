@@ -5,7 +5,7 @@ from textual import on
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabName, Tcss, TreeName
+from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabLabel, Tcss, TreeName
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, DirNode
@@ -34,7 +34,7 @@ class TreeBase(Tree[Path], AppType):
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabLabel.apply:
             return CMD.cache.apply_dir_nodes
         else:
             return CMD.cache.re_add_dir_nodes
@@ -75,9 +75,9 @@ class TreeBase(Tree[Path], AppType):
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is None:
             raise ValueError("event.node.data is None in send_node_context")
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabLabel.apply:
             self.post_message(CurrentApplyNodeMsg(event.node.data))
-        elif self.ids.canvas_name == TabName.re_add:
+        elif self.ids.canvas_name == TabLabel.re_add:
             self.post_message(CurrentReAddNodeMsg(event.node.data))
 
 

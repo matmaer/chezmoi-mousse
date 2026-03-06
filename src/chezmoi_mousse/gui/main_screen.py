@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, TabbedContent, TabPane
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, TabLabel, TabName
+from chezmoi_mousse import CMD, IDS, AppType, LogString, TabLabel
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -23,16 +23,16 @@ class MainScreen(Screen[None], AppType):
     def compose(self) -> ComposeResult:
         yield CustomHeader()
         with TabbedContent():
-            yield TabPane(TabLabel.apply_tab, ApplyTab(), id=TabName.apply)
-            yield TabPane(TabLabel.re_add_tab, ReAddTab(), id=TabName.re_add)
-            yield TabPane(TabLabel.add_tab, AddTab(), id=TabName.add)
-            yield TabPane(TabLabel.logs_tab, LogsTab(), id=TabName.logs)
-            yield TabPane(TabLabel.config_tab, ConfigTab(), id=TabName.config)
-            yield TabPane(TabLabel.help_tab, HelpTab(), id=TabName.help)
+            yield TabPane(TabLabel.apply, ApplyTab(), id=TabLabel.apply)
+            yield TabPane(TabLabel.re_add, ReAddTab(), id=TabLabel.re_add)
+            yield TabPane(TabLabel.add, AddTab(), id=TabLabel.add)
+            yield TabPane(TabLabel.logs, LogsTab(), id=TabLabel.logs)
+            yield TabPane(TabLabel.config, ConfigTab(), id=TabLabel.config)
+            yield TabPane(TabLabel.help, HelpTab(), id=TabLabel.help)
             if self.app.dev_mode is True:
                 from .debug_tab import DebugTab
 
-                yield TabPane(TabLabel.debug_tab, DebugTab(), id=TabName.debug)
+                yield TabPane(TabLabel.debug, DebugTab(), id=TabLabel.debug)
 
         yield Footer()
 

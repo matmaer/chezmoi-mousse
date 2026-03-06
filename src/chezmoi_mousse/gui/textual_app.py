@@ -25,7 +25,7 @@ from chezmoi_mousse import (
     OpBtnEnum,
     OpBtnLabel,
     ReadCmd,
-    TabName,
+    TabLabel,
 )
 
 from .add_tab import AddTab
@@ -212,17 +212,17 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_tab_widget called outside of MainScreen")
         tab_to_query = self.screen.query_exactly_one(TabbedContent).active
-        if tab_to_query == TabName.apply:
+        if tab_to_query == TabLabel.apply:
             return self.screen.query_exactly_one(ApplyTab)
-        elif tab_to_query == TabName.re_add:
+        elif tab_to_query == TabLabel.re_add:
             return self.screen.query_exactly_one(ReAddTab)
-        elif tab_to_query == TabName.add:
+        elif tab_to_query == TabLabel.add:
             return self.screen.query_exactly_one(AddTab)
-        elif tab_to_query == TabName.config:
+        elif tab_to_query == TabLabel.config:
             return self.screen.query_exactly_one(ConfigTab)
-        elif tab_to_query == TabName.help:
+        elif tab_to_query == TabLabel.help:
             return self.screen.query_exactly_one(HelpTab)
-        elif tab_to_query == TabName.logs:
+        elif tab_to_query == TabLabel.logs:
             return self.screen.query_exactly_one(LogsTab)
         else:
             raise ValueError(f"Unknown active_tab on MainScreen: {tab_to_query}")
@@ -231,15 +231,15 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_switch_slider_widget called outside of MainScreen")
         tab_to_determine_id = self.screen.query_exactly_one(TabbedContent).active
-        if tab_to_determine_id == TabName.apply:
+        if tab_to_determine_id == TabLabel.apply:
             return self.screen.query_one(
                 IDS.apply.container.switch_slider_q, SwitchSlider
             )
-        elif tab_to_determine_id == TabName.re_add:
+        elif tab_to_determine_id == TabLabel.re_add:
             return self.screen.query_one(
                 IDS.re_add.container.switch_slider_q, SwitchSlider
             )
-        else:  # tab_to_determine_id == TabName.add
+        else:  # tab_to_determine_id == TabLabel.add
             return self.screen.query_one(
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
@@ -261,7 +261,7 @@ class ChezmoiGUI(App[None]):
         elif isinstance(self.screen, MainScreen):
             main_tabs = self.screen.query_exactly_one(Tabs)
             main_tabs.display = not main_tabs.display
-            if ids.canvas_name in (TabName.apply, TabName.re_add):
+            if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
                 left_side = self.screen.query_one(
                     ids.container.left_side_q, TreeSwitcher
                 )
@@ -269,7 +269,7 @@ class ChezmoiGUI(App[None]):
                 active_tab_widget = self._get_tab_widget()
                 view_switcher_buttons = active_tab_widget.query(TabButtons).last()
                 view_switcher_buttons.display = not view_switcher_buttons.display
-            elif ids.canvas_name == TabName.add:
+            elif ids.canvas_name == TabLabel.add:
                 left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
                 left_side.display = not left_side.display
             switch_slider = self.screen.query_one(
@@ -314,7 +314,11 @@ class ChezmoiGUI(App[None]):
     def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
-        if event.tabbed_content.active in (TabName.apply, TabName.re_add, TabName.add):
+        if event.tabbed_content.active in (
+            TabLabel.apply,
+            TabLabel.re_add,
+            TabLabel.add,
+        ):
             slider: SwitchSlider = self._get_switch_slider_widget()
             slider_visible = slider.has_class("-visible")
             new_description = (
@@ -385,11 +389,11 @@ class ChezmoiGUI(App[None]):
         main_tabs = self.screen.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab in (TabName.apply, TabName.re_add):
+        if active_tab in (TabLabel.apply, TabLabel.re_add):
             active_tab_widget = self._get_tab_widget()
             view_switcher_buttons = active_tab_widget.query(TabButtons).last()
 
-        if active_tab == TabName.apply:
+        if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
                 IDS.apply.container.left_side_q, TreeSwitcher
             )
@@ -399,7 +403,7 @@ class ChezmoiGUI(App[None]):
             switch_slider = self.screen.query_one(
                 IDS.apply.container.switch_slider_q, SwitchSlider
             )
-        elif active_tab == TabName.re_add:
+        elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
                 IDS.re_add.container.left_side_q, TreeSwitcher
             )
@@ -409,7 +413,7 @@ class ChezmoiGUI(App[None]):
             switch_slider = self.screen.query_one(
                 IDS.re_add.container.switch_slider_q, SwitchSlider
             )
-        elif active_tab == TabName.add:
+        elif active_tab == TabLabel.add:
             left_side = self.screen.query_one(IDS.add.container.left_side_q, Vertical)
             operation_buttons = self.screen.query_one(
                 IDS.add.container.operate_buttons_q
@@ -417,14 +421,14 @@ class ChezmoiGUI(App[None]):
             switch_slider = self.screen.query_one(
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
-        elif active_tab == TabName.logs:
+        elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
-        elif active_tab == TabName.config:
+        elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
                 IDS.config.container.left_side_q, FlatButtonsVertical
             )
-        elif active_tab == TabName.help:
+        elif active_tab == TabLabel.help:
             left_side = self.screen.query_one(
                 IDS.help.container.left_side_q, FlatButtonsVertical
             )
@@ -461,7 +465,7 @@ class ChezmoiGUI(App[None]):
                 if header.display is False or switch_slider.display is False:
                     return False
                 active_tab = self.screen.query_exactly_one(TabbedContent).active
-                return active_tab in (TabName.apply, TabName.re_add, TabName.add)
+                return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)
             return False
 
         if action == BindingAction.toggle_dry_run:

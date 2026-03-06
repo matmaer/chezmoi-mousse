@@ -4,8 +4,8 @@ from functools import cache
 from typing import TYPE_CHECKING
 
 from ._run_cmd import Chars, WriteCmd
-from ._str_enum_names import ScreenName, TabName
-from ._str_enums import OpBtnLabel, SwitchLabel
+from ._str_enum_names import ScreenName
+from ._str_enums import OpBtnLabel, SwitchLabel, TabLabel
 
 if TYPE_CHECKING:
     from ._app_ids import AppIds
@@ -176,20 +176,20 @@ class OpBtnEnum(Enum):
                 ids.op_btn.exit_app: OpBtnLabel.exit_app,
             }
 
-        if ids.canvas_name != TabName.add:
+        if ids.canvas_name != TabLabel.add:
             _btn_dict = {
                 ids.op_btn.forget_review: cls._forget_review,
                 ids.op_btn.forget_run: cls._forget_run,
                 ids.op_btn.destroy_review: cls._destroy_review,
                 ids.op_btn.destroy_run: cls._destroy_run,
             }
-            if ids.canvas_name == TabName.apply:
+            if ids.canvas_name == TabLabel.apply:
                 _btn_dict = {
                     ids.op_btn.apply_review: cls._apply_review,
                     ids.op_btn.apply_run: cls._apply_run,
                     **_btn_dict,
                 }
-            if ids.canvas_name == TabName.re_add:
+            if ids.canvas_name == TabLabel.re_add:
                 _btn_dict = {
                     ids.op_btn.re_add_review: cls._re_add_review,
                     ids.op_btn.re_add_run: cls._re_add_run,

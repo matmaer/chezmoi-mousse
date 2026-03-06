@@ -5,7 +5,7 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, TabName, Tcss
+from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -44,14 +44,14 @@ class DiffView(Container, AppType):
 
     @property
     def dir_nodes(self) -> dict["Path", "DirNode"]:
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabLabel.apply:
             return CMD.cache.apply_dir_nodes
         else:
             return CMD.cache.re_add_dir_nodes
 
     def _create_diff_widgets(self) -> list[Label | Static]:
         widgets: list[Label | Static] = []
-        if self.ids.canvas_name == TabName.apply:
+        if self.ids.canvas_name == TabLabel.apply:
             diff_result = CMD.run_cmd.read(ReadCmd.diff, path_arg=self.show_path)
         else:  # re-add tab
             diff_result = CMD.run_cmd.read(

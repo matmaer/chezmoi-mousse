@@ -60,13 +60,13 @@ class LinkBtn(StrEnum):
 
 class TabLabel(StrEnum):
     # Main tabs
-    add_tab = "Add"
-    apply_tab = "Apply"
-    config_tab = "Config"
-    debug_tab = "Debug"
-    help_tab = "Help"
-    logs_tab = "Logs"
-    re_add_tab = "Re-Add"
+    add = "Add"
+    apply = "Apply"
+    config = "Config"
+    debug = "Debug"
+    help = "Help"
+    logs = "Logs"
+    re_add = "Re-Add"
     # Tab buttons for content switcher within a main tab
     app_log = "App"
     cmd_log = "Chezmoi Commands"

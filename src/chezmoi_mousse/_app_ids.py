@@ -5,7 +5,6 @@ from ._str_enum_names import (
     LogName,
     ScreenName,
     StaticName,
-    TabName,
     TreeName,
     ViewName,
 )
@@ -27,7 +26,7 @@ class AppIds:
         "view",
     )
 
-    def __init__(self, canvas_name: TabName | ScreenName) -> None:
+    def __init__(self, canvas_name: TabLabel | ScreenName) -> None:
         self.canvas_name = canvas_name
         self.container = ContainerIds(self)
         self.label = LabelIds(self)
@@ -251,13 +250,13 @@ class CanvasIds:
         self.main_tabs = AppIds(ScreenName.main_tabs)
         self.init = AppIds(ScreenName.init)
         # TabPanes
-        self.add = AppIds(TabName.add)
-        self.apply = AppIds(TabName.apply)
-        self.config = AppIds(TabName.config)
-        self.debug = AppIds(TabName.debug)
-        self.help = AppIds(TabName.help)
-        self.logs = AppIds(TabName.logs)
-        self.re_add = AppIds(TabName.re_add)
+        self.add = AppIds(TabLabel.add)
+        self.apply = AppIds(TabLabel.apply)
+        self.config = AppIds(TabLabel.config)
+        self.debug = AppIds(TabLabel.debug)
+        self.help = AppIds(TabLabel.help)
+        self.logs = AppIds(TabLabel.logs)
+        self.re_add = AppIds(TabLabel.re_add)
 
 
 IDS = CanvasIds()
