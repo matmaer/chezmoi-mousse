@@ -117,6 +117,14 @@ class CommandResults:
         return self._parse_status_output(1, dirs=False)
 
     @property
+    def status_pairs(self) -> dict[Path, str]:
+        if self.status is None:
+            return {}
+        return {
+            Path(line[3:]): line[:2] for line in list(self.status.std_out.splitlines())
+        }
+
+    @property
     def status_paths(self) -> set[Path]:
         if self.status_files is None:
             return set()
@@ -261,20 +269,22 @@ class CachedData:
     # Parsed git log and verify command output attribute
     global_git_log_lines: list[str]
     no_status_paths: bool
-    # Parsed paths attributes
-    apply_status_dirs: dict[Path, StatusCode]
-    apply_status_files: dict[Path, StatusCode]
+    # Parsed paths in a list or set
     managed_dir_paths: list[Path]
     managed_dirs_with_dest_dir: list[Path]
     managed_file_paths: list[Path]
-    re_add_status_dirs: dict[Path, StatusCode]
-    re_add_status_files: dict[Path, StatusCode]
     real_x_files: list[Path]
     status_paths: set[Path]
     tree_x_dirs: list[Path]
     x_dirs_with_status_children: set[Path]
     x_files: list[Path]
-    # Cached widgets
+    # Parsed paths with status in dicts
+    status_pairs: dict[Path, str]  # used after a live operation to get changes
+    apply_status_dirs: dict[Path, StatusCode]
+    apply_status_files: dict[Path, StatusCode]
+    re_add_status_dirs: dict[Path, StatusCode]
+    re_add_status_files: dict[Path, StatusCode]
+    # Cached widgets, populated here, not in the source
     re_add_dir_nodes: dict[Path, DirNode]
     apply_dir_nodes: dict[Path, DirNode]
 
