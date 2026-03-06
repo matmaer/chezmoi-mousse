@@ -270,6 +270,7 @@ class CachedData:
     global_git_log_lines: list[str]
     no_status_paths: bool
     # Parsed paths in a list or set
+    managed_paths: list[Path]
     managed_dir_paths: list[Path]
     managed_dirs_with_dest_dir: list[Path]
     managed_file_paths: list[Path]
