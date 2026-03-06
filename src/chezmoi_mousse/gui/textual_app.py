@@ -413,7 +413,9 @@ class ChezmoiGUI(App[None]):
     def action_exit_screen(self) -> None:
         self.screen.dismiss()
 
-    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]  # noqa: ARG002
+    ) -> bool | None:
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
@@ -435,11 +437,6 @@ class ChezmoiGUI(App[None]):
 
         if action == BindingAction.exit_screen:
             return not isinstance(self.screen, (InstallHelpScreen, MainScreen))
-
-        # Example of how to use parameters if you had parametric actions:
-        # if action == "focus_tab" and parameters:
-        #     target_tab = parameters[0]
-        #     return target_tab in self.available_tabs
 
         return True
 
