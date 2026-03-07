@@ -10,7 +10,6 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.git_log import GitLog
 from .common.messages import CurrentReAddNodeMsg
-from .common.operate_mode import OperateMode
 from .common.switchers import TreeSwitcher, ViewSwitcher
 
 __all__ = ["ReAddTab"]
@@ -23,7 +22,6 @@ class ReAddTab(Container, AppType):
         self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.re_add)
 
     def compose(self) -> ComposeResult:
-        yield OperateMode(IDS.re_add)
         with Horizontal():
             yield TreeSwitcher(IDS.re_add)
             yield Vertical(

@@ -1,19 +1,29 @@
-from textual import work
-from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Footer, TabbedContent, TabPane
+from typing import TYPE_CHECKING
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, TabLabel
+from textual import on, work
+from textual.app import ComposeResult
+from textual.containers import Vertical
+from textual.screen import Screen
+from textual.widgets import Footer, TabbedContent, TabPane, Tabs
+
+from chezmoi_mousse import CMD, IDS, AppType, LogString, OpBtnEnum, OpBtnLabel, TabLabel
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
+from .common.actionables import TabButtons
 from .common.loggers import AppLog, DebugLog
+from .common.messages import ChangedPathsMsg, OperateButtonMsg
+from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
+from .common.switchers import TreeSwitcher
 from .common.trees import ListTree, ManagedTree
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
 
 __all__ = ["MainScreen"]
 
@@ -22,7 +32,8 @@ class MainScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
-        with TabbedContent():
+        yield OperateMode(IDS.main_tabs)
+        with Vertical(), TabbedContent():
             yield TabPane(TabLabel.apply, ApplyTab(), id=TabLabel.apply)
             yield TabPane(TabLabel.re_add, ReAddTab(), id=TabLabel.re_add)
             yield TabPane(TabLabel.add, AddTab(), id=TabLabel.add)
@@ -33,14 +44,14 @@ class MainScreen(Screen[None], AppType):
                 from .debug_tab import DebugTab
 
                 yield TabPane(TabLabel.debug, DebugTab(), id=TabLabel.debug)
-
         yield Footer()
 
     def on_mount(self) -> None:
-        # Initialize App logger
+        self.operate_mode_container = self.query_one(
+            IDS.main_tabs.container.op_mode_q, OperateMode
+        )
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
-        self.app_log.success(LogString.cmd_log_initialized)
-        # Initialize Debug logger if in dev mode
+        # Debug logger if in dev mode
         if self.app.dev_mode is True:
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.app_log.success(LogString.dev_mode_enabled)
@@ -74,3 +85,43 @@ class MainScreen(Screen[None], AppType):
         self.app_log.success("Re-Add tab managed tree populated.")
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Re-Add tab list tree populated.")
+
+    #######################
+    # Operate mode helper #
+    #######################
+
+    def _toggle_operate_display(self, ids: "AppIds") -> None:
+        main_tabs = self.screen.query_exactly_one(Tabs)
+        main_tabs.display = not main_tabs.display
+        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
+            left_side = self.screen.query_one(ids.container.left_side_q, TreeSwitcher)
+            left_side.display = not left_side.display
+            active_tab_widget = self.app.get_tab_widget()
+            view_switcher_buttons = active_tab_widget.query(TabButtons).last()
+            view_switcher_buttons.display = not view_switcher_buttons.display
+        elif ids.canvas_name == TabLabel.add:
+            left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
+            left_side.display = not left_side.display
+        switch_slider = self.app.get_switch_slider_widget()
+        switch_slider.display = not switch_slider.display
+
+    ############################
+    # Message handling methods #
+    ############################
+
+    @on(ChangedPathsMsg)
+    def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:
+        self.notify(f"Changed paths:\n{sorted(msg.changed_paths)}")
+
+    @on(OperateButtonMsg)
+    def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
+        operate_mode_container = self.screen.query_exactly_one(OperateMode)
+        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
+            operate_mode_container.display = False
+            self._toggle_operate_display(msg.ids)
+        elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
+            operate_mode_container.btn_enum = msg.button.btn_enum
+            operate_mode_container.display = True
+            self._toggle_operate_display(msg.ids)
+        elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
+            operate_mode_container.btn_enum = msg.button.btn_enum

@@ -17,12 +17,10 @@ from textual.widgets import Button, TabbedContent, Tabs
 from chezmoi_mousse import (
     CMD,
     IDS,
-    AppIds,
     BindingAction,
     BindingDescription,
     CachedData,
     Chars,
-    OpBtnEnum,
     OpBtnLabel,
     ReadCmd,
     TabLabel,
@@ -32,7 +30,6 @@ from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.loggers import AppLog, CmdLog
-from .common.messages import ChangedPathsMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
@@ -212,7 +209,7 @@ class ChezmoiGUI(App[None]):
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
 
-    def _get_tab_widget(
+    def get_tab_widget(
         self,
     ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab:
         if not isinstance(self.screen, MainScreen):
@@ -233,7 +230,7 @@ class ChezmoiGUI(App[None]):
         else:
             raise ValueError(f"Unknown active_tab on MainScreen: {tab_to_query}")
 
-    def _get_switch_slider_widget(self) -> SwitchSlider:
+    def get_switch_slider_widget(self) -> SwitchSlider:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_switch_slider_widget called outside of MainScreen")
         tab_to_determine_id = self.screen.query_exactly_one(TabbedContent).active
@@ -249,62 +246,6 @@ class ChezmoiGUI(App[None]):
             return self.screen.query_one(
                 IDS.add.container.switch_slider_q, SwitchSlider
             )
-
-    #######################
-    # Operate mode method #
-    #######################
-
-    def _toggle_operate_display(self, ids: AppIds) -> None:
-        if isinstance(self.screen, InitChezmoi):
-            init_left_side = self.screen.query_one(
-                ids.container.left_side_q, FlatButtonsVertical
-            )
-            init_left_side.display = not init_left_side.display
-            switch_slider = self.screen.query_one(
-                ids.container.switch_slider_q, SwitchSlider
-            )
-            switch_slider.display = not switch_slider.display
-        elif isinstance(self.screen, MainScreen):
-            main_tabs = self.screen.query_exactly_one(Tabs)
-            main_tabs.display = not main_tabs.display
-            if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
-                left_side = self.screen.query_one(
-                    ids.container.left_side_q, TreeSwitcher
-                )
-                left_side.display = not left_side.display
-                active_tab_widget = self._get_tab_widget()
-                view_switcher_buttons = active_tab_widget.query(TabButtons).last()
-                view_switcher_buttons.display = not view_switcher_buttons.display
-            elif ids.canvas_name == TabLabel.add:
-                left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
-                left_side.display = not left_side.display
-            switch_slider = self.screen.query_one(
-                ids.container.switch_slider_q, SwitchSlider
-            )
-            switch_slider.display = not switch_slider.display
-
-    ############################
-    # Message handling methods #
-    ############################
-
-    @on(ChangedPathsMsg)
-    def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:
-        self.notify(f"Changed paths:\n{sorted(msg.changed_paths)}")
-
-    @on(OperateButtonMsg)
-    def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
-        operate_mode_container = self.screen.query_one(
-            msg.ids.container.op_mode_q, OperateMode
-        )
-        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
-            operate_mode_container.display = False
-            self._toggle_operate_display(msg.ids)
-        elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
-            operate_mode_container.btn_enum = msg.button.btn_enum
-            operate_mode_container.display = True
-            self._toggle_operate_display(msg.ids)
-        elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
-            operate_mode_container.btn_enum = msg.button.btn_enum
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:
@@ -325,7 +266,7 @@ class ChezmoiGUI(App[None]):
             TabLabel.re_add,
             TabLabel.add,
         ):
-            slider: SwitchSlider = self._get_switch_slider_widget()
+            slider: SwitchSlider = self.get_switch_slider_widget()
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters
@@ -368,7 +309,7 @@ class ChezmoiGUI(App[None]):
     def action_toggle_switch_slider_visibility(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        slider: SwitchSlider = self._get_switch_slider_widget()
+        slider: SwitchSlider = self.get_switch_slider_widget()
         slider_visible = slider.has_class("-visible")
         new_description = (
             BindingDescription.hide_filters
@@ -396,7 +337,7 @@ class ChezmoiGUI(App[None]):
         main_tabs.display = not main_tabs.display
 
         if active_tab in (TabLabel.apply, TabLabel.re_add):
-            active_tab_widget = self._get_tab_widget()
+            active_tab_widget = self.get_tab_widget()
             view_switcher_buttons = active_tab_widget.query(TabButtons).last()
 
         if active_tab == TabLabel.apply:
@@ -467,7 +408,7 @@ class ChezmoiGUI(App[None]):
         if action == BindingAction.toggle_switch_slider_visibility:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
-                switch_slider = self._get_switch_slider_widget()
+                switch_slider = self.get_switch_slider_widget()
                 if header.display is False or switch_slider.display is False:
                     return False
                 active_tab = self.screen.query_exactly_one(TabbedContent).active

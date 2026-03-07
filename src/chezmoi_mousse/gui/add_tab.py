@@ -22,7 +22,6 @@ from chezmoi_mousse import (
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
-from .common.operate_mode import OperateMode
 
 __all__ = ["AddTab"]
 
@@ -152,7 +151,6 @@ class AddTab(Horizontal, AppType):
             classes=Tcss.tab_left_vertical,
         )
         with Vertical():
-            yield OperateMode(IDS.add)
             yield ContentsView(IDS.add)
             yield OperateButtons(IDS.add, btn_dict=self.op_btn_dict)
         yield SwitchSlider(IDS.add)
