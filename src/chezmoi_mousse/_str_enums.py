@@ -113,7 +113,6 @@ class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
     chezmoi_found = "Found chezmoi command"
     chezmoi_not_found = "chezmoi command not found"
-    cmd_log_initialized = "Chezmoi commands log initialized"
     debug_log_initialized = "Debug log initialized"
     dev_mode_enabled = "Dev mode enabled"
     doctor_errors_found = "One or more errors found"
