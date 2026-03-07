@@ -82,6 +82,14 @@ class OperateMode(Vertical, AppType):
         self.all_cmd_results: list[CommandResult] = []
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
+        self.read_commands = [
+            ReadCmd.managed,
+            ReadCmd.status,
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ]
 
     @property
     def _path_arg(self) -> "Path | None":
@@ -218,6 +226,22 @@ class OperateMode(Vertical, AppType):
         self.app_log.info("--- End of OperateMode commands ---")
 
     @work(exit_on_error=False)
+    @min_wait
+    async def manual_refresh(self) -> None:
+        changes_enabled = bool(CMD.run_cmd.changes_enabled)
+        if changes_enabled is False:
+            CMD.run_cmd.changes_enabled = True
+        self.all_cmd_results = []
+        self.loading_modal = LoadingModal(self.ids)
+        self.old_cached = None
+        await self.app.push_screen(self.loading_modal)
+        await self._run_read_commands(self.read_commands).wait()
+        await self._log_all_cmd_results().wait()
+        await self._update_cached_data().wait()
+        CMD.run_cmd.changes_enabled = changes_enabled
+        self.loading_modal.dismiss()
+
+    @work(exit_on_error=False)
     async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
         self.all_cmd_results = []
         self.loading_modal = LoadingModal(self.ids)
@@ -225,16 +249,7 @@ class OperateMode(Vertical, AppType):
         await self.app.push_screen(self.loading_modal)
         await self._run_perform_command(btn_enum).wait()
         await self._update_operate_info_post_run().wait()
-        await self._run_read_commands(
-            [
-                ReadCmd.managed,
-                ReadCmd.status,
-                ReadCmd.managed_dirs,
-                ReadCmd.managed_files,
-                ReadCmd.status_dirs,
-                ReadCmd.status_files,
-            ]
-        ).wait()
+        await self._run_read_commands(self.read_commands).wait()
         await self._update_command_output().wait()
         await self._log_all_cmd_results().wait()
         if self.run_cmd_result is not None and self.run_cmd_result.is_dry_run is False:

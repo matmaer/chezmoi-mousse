@@ -21,7 +21,7 @@ __all__ = [
 
 
 class ChangedPathsMsg(Message):
-    def __init__(self, changed_paths: set[Path]) -> None:
+    def __init__(self, changed_paths: list[Path]) -> None:
         self.changed_paths = changed_paths
         super().__init__()
 

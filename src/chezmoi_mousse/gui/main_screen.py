@@ -4,9 +4,18 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
-from textual.widgets import Footer, TabbedContent, TabPane, Tabs
+from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, OpBtnEnum, OpBtnLabel, TabLabel
+from chezmoi_mousse import (
+    CMD,
+    IDS,
+    AppType,
+    FlatBtnLabel,
+    LogString,
+    OpBtnEnum,
+    OpBtnLabel,
+    TabLabel,
+)
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -109,9 +118,27 @@ class MainScreen(Screen[None], AppType):
     # Message handling methods #
     ############################
 
+    @on(Button.Pressed)
+    async def refresh_tree(self, event: Button.Pressed) -> None:
+        if event.button.label == FlatBtnLabel.refresh_tree:
+            event.stop()
+            await self.operate_mode_container.manual_refresh().wait()
+            apply_managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
+            apply_managed_tree.populate_tree()
+            apply_list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
+            apply_list_tree.populate_tree()
+            re_add_managed_tree = self.query_one(IDS.re_add.tree.managed_q, ManagedTree)
+            re_add_managed_tree.populate_tree()
+            re_add_list_tree = self.query_one(IDS.re_add.tree.list_q, ListTree)
+            re_add_list_tree.populate_tree()
+
     @on(ChangedPathsMsg)
     def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:
-        self.notify(f"Changed paths:\n{sorted(msg.changed_paths)}")
+        if not msg.changed_paths:
+            self.notify("No managed paths changed.", severity="warning")
+        else:
+            changed_paths = "\n".join(sorted(str(path) for path in msg.changed_paths))
+            self.notify(f"Changed paths:\n{changed_paths}")
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:

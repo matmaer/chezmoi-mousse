@@ -1,4 +1,3 @@
-import copy
 import dataclasses
 from math import ceil
 from typing import TYPE_CHECKING, ClassVar
@@ -139,33 +138,7 @@ class ChezmoiGUI(App[None]):
         self.screen.query_exactly_one(CmdLog).log_cmd_result(command_result)
 
     @work
-    async def refresh_cmd_results(self) -> None:
-        # Used in case of changes outside of the app.
-        if CMD.run_cmd.changes_enabled is False:
-            CMD.run_cmd.changes_enabled = True
-        for read_cmd in (
-            ReadCmd.managed,
-            ReadCmd.status,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ):
-            cmd_result = CMD.run_cmd.read(read_cmd)
-            setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
-            cmd_logger = self.log_cmd_result(cmd_result)
-            await cmd_logger.wait()
-        CMD.run_cmd.changes_enabled = False
-        old_cached = copy.deepcopy(CMD.cache)
-        changed_paths = await self.get_changed_paths(old_cached).wait()
-        if changed_paths:
-            self.notify(f"Changed paths:\n{sorted(changed_paths)}")
-        else:
-            self.notify("No changes detected.", severity="warning")
-        CMD.update_parsed_data()
-
-    @work
-    async def get_changed_paths(self, old_cached: CachedData) -> set["Path"]:
+    async def get_changed_paths(self, old_cached: CachedData) -> list["Path"]:
         old_managed = set(old_cached.managed_paths)
         old_files = set(old_cached.managed_file_paths)
         old_status = dict(old_cached.status_pairs)
@@ -189,7 +162,7 @@ class ChezmoiGUI(App[None]):
         for path in sorted(dirs, key=lambda p: len(p.parts)):
             if not any(path.is_relative_to(parent) for parent in simplified):
                 simplified.add(path)
-        return simplified
+        return sorted(simplified)
 
     @work
     async def _run_splash_screen(self) -> None:

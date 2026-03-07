@@ -59,17 +59,6 @@ class TreeSwitcher(Container, AppType):
                 view_switcher.current = self.ids.tree.list
             return
 
-    @on(Button.Pressed)
-    async def refresh_tree(self, event: Button.Pressed) -> None:
-        if event.button.has_class(Tcss.refresh_button):
-            event.stop()
-            worker = self.app.refresh_cmd_results()
-            await worker.wait()
-            managed_tree = self.query_exactly_one(ManagedTree)
-            managed_tree.populate_tree()
-            list_tree = self.query_exactly_one(ListTree)
-            list_tree.populate_tree()
-
     def _get_managed_tree_nodes(self) -> list[TreeNode[Path]]:
         managed_tree = self.query_exactly_one(ManagedTree)
         return managed_tree.get_all_nodes()
