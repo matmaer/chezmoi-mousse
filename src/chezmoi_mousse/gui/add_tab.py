@@ -48,7 +48,6 @@ class FilteredDirTree(DirectoryTree, AppType):
                 (
                     p.is_dir()
                     and not UnwantedDirs.is_unwanted(p.name)
-                    and p in CMD.cache.managed_dir_paths
                     and self._has_unmanaged_paths_in(p)
                 )
                 or (
@@ -120,22 +119,18 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
 
     def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
-        # Assume a directory with more than max_entries is not of interest
-        max_entries = 300
         try:
-            # Special case for .ssh: only show if config is unmanaged
-            if dir_path.name == ".ssh":
-                config_path = dir_path / "config"
-                return (
-                    config_path.exists()
-                    and config_path not in CMD.cache.managed_file_paths
-                )
-            for idx, p in enumerate(dir_path.iterdir(), start=1):
-                if idx > max_entries:
-                    return False
+            for p in dir_path.iterdir():
+                if p.is_file():
+                    if (
+                        p not in CMD.cache.managed_file_paths
+                        and self._file_of_interest(p)
+                    ):
+                        return True
                 elif (
-                    p not in CMD.cache.managed_dir_paths
-                    and p not in CMD.cache.managed_file_paths
+                    p.is_dir()
+                    and not UnwantedDirs.is_unwanted(p.name)
+                    and self._has_unmanaged_paths_in(p)
                 ):
                     return True
             return False
