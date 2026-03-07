@@ -36,8 +36,8 @@ class DiffView(Container, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff)
         self.ids = ids
-        self.cache: dict[Path, ScrollableContainer] = {}
-        self.current_container: ScrollableContainer = ScrollableContainer()
+        self.container_cache: dict[Path, ScrollableContainer] = {}
+        self.current_container_path: Path | None = None
 
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir
@@ -87,21 +87,34 @@ class DiffView(Container, AppType):
     def _mount_and_cache_container(
         self, path: "Path", widgets: list[Label | Static]
     ) -> None:
-        self.current_container.display = False
-        container = ScrollableContainer()
-        self.mount(container)
-        container.mount_all(widgets)
-        self.cache[path] = container
-        self.current_container = container
+        self.container_cache[path] = ScrollableContainer(*widgets)
+        self.mount(self.container_cache[path])
+        self.current_container_path = path
+
+    def update_mounted_containers(self, changed_paths: list["Path"]) -> None:
+        for path, container in self.container_cache.items():
+            if path in changed_paths:
+                container.remove()
+        self.show_path = CMD.cache.dest_dir
 
     def watch_show_path(self, show_path: "Path | None") -> None:
         if show_path is None:
             return
-        if show_path in self.cache:
-            self.current_container.display = False
-            self.cache[show_path].display = True
-            self.current_container = self.cache[show_path]
+
+        # Hide the previously displayed container
+        if self.current_container_path is not None:
+            previous_container = self.container_cache.get(
+                self.current_container_path, None
+            )
+            if previous_container is not None:
+                previous_container.display = False
+
+        is_mounted = show_path in self.container_cache
+        if is_mounted and self.current_container_path is not None:
+            self.container_cache[show_path].display = True
+            self.current_container_path = show_path
             return
+
         widgets: list[Label | Static] = []
         if show_path in CMD.cache.status_paths:
             widgets = self._create_diff_widgets()

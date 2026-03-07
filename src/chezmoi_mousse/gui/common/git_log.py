@@ -52,6 +52,13 @@ class GitLog(ScrollableContainer, AppType):
                 data_table.add_row(*columns)
         return data_table
 
+    def remove_all_cached(self) -> None:
+        mounted_tables = list(self.query(DataTable[str]))
+        for table in mounted_tables:
+            table.remove()
+        self.data_table_cache.clear()
+        self.show_path = CMD.cache.dest_dir
+
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return

@@ -123,14 +123,6 @@ class MainScreen(Screen[None], AppType):
         if event.button.label == FlatBtnLabel.refresh_tree:
             event.stop()
             await self.operate_mode_container.manual_refresh().wait()
-            apply_managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
-            apply_managed_tree.populate_tree()
-            apply_list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
-            apply_list_tree.populate_tree()
-            re_add_managed_tree = self.query_one(IDS.re_add.tree.managed_q, ManagedTree)
-            re_add_managed_tree.populate_tree()
-            re_add_list_tree = self.query_one(IDS.re_add.tree.list_q, ListTree)
-            re_add_list_tree.populate_tree()
 
     @on(ChangedPathsMsg)
     def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:

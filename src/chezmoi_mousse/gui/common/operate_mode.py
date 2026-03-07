@@ -23,8 +23,12 @@ from chezmoi_mousse import (
     Tcss,
 )
 
+from .contents import ContentsView
+from .diffs import DiffView
+from .git_log import GitLog
 from .loggers import AppLog, CmdLog
 from .messages import ChangedPathsMsg, ProgressTextMsg
+from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -81,8 +85,8 @@ class OperateMode(Vertical, AppType):
         self.ids = ids
         self.run_cmd_result: CommandResult | None = None
         self.all_cmd_results: list[CommandResult] = []
-        self.review_btn_enums = OpBtnEnum.review_btn_enums()
-        self.run_btn_enums = OpBtnEnum.run_btn_enums()
+        self.review_btn_enums: set[OpBtnEnum] = set()
+        self.run_btn_enums: set[OpBtnEnum] = set()
         self.read_commands = [
             ReadCmd.managed,
             ReadCmd.status,
@@ -91,6 +95,12 @@ class OperateMode(Vertical, AppType):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ]
+        self.diff_views: list[DiffView] = []
+        self.contents_views: list[ContentsView] = []
+        self.git_logs: list[GitLog] = []
+        self.managed_trees: list[ManagedTree] = []
+        self.list_trees: list[ListTree] = []
+        self.changed_paths: list[Path] = []
 
     @property
     def _path_arg(self) -> "Path | None":
@@ -115,8 +125,15 @@ class OperateMode(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.display = False
+        self.review_btn_enums = OpBtnEnum.review_btn_enums()
+        self.run_btn_enums = OpBtnEnum.run_btn_enums()
         self.app_log = self.screen.query_exactly_one(AppLog)
         self.cmd_log = self.screen.query_exactly_one(CmdLog)
+        self.contents_views = list(self.screen.query(ContentsView))
+        self.diff_views = list(self.screen.query(DiffView))
+        self.git_logs = list(self.screen.query(GitLog))
+        self.managed_trees = list(self.screen.query(ManagedTree))
+        self.list_trees = list(self.screen.query(ListTree))
 
     def watch_btn_enum(self, btn_enum: OpBtnEnum) -> None:
         if btn_enum in self.review_btn_enums:
@@ -242,6 +259,18 @@ class OperateMode(Vertical, AppType):
         CMD.update_parsed_data()
         changed_paths = await self._get_changed_paths(old_cached).wait()
         self.post_message(ChangedPathsMsg(changed_paths=changed_paths))
+        if not changed_paths:
+            return
+        for diff_view in self.diff_views:
+            diff_view.update_mounted_containers(changed_paths)
+        for contents_view in self.contents_views:
+            contents_view.update_mounted_containers(changed_paths)
+        for git_log in self.git_logs:
+            git_log.remove_all_cached()
+        for managed_tree in self.managed_trees:
+            managed_tree.populate_tree()
+        for list_tree in self.list_trees:
+            list_tree.populate_tree()
 
     @work
     @min_wait
