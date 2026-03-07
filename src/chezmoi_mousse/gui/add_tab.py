@@ -140,6 +140,10 @@ class FilteredDirTree(DirectoryTree, AppType):
 
 class AddTab(Horizontal, AppType):
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.add)
+
     def compose(self) -> ComposeResult:
         yield Vertical(
             FilteredDirTree(CMD.cache.dest_dir),
@@ -150,15 +154,11 @@ class AddTab(Horizontal, AppType):
         with Vertical():
             yield OperateMode(IDS.add)
             yield ContentsView(IDS.add)
-            yield OperateButtons(IDS.add, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.add))
+            yield OperateButtons(IDS.add, btn_dict=self.op_btn_dict)
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.operate_mode_container = self.query_one(
-            IDS.add.container.op_mode_q, OperateMode
-        )
-        self.operate_mode_container.path_arg = CMD.cache.dest_dir
         self.query_exactly_one(FilteredDirTree).path = CMD.cache.dest_dir
         self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
@@ -184,8 +184,11 @@ class AddTab(Horizontal, AppType):
         if self.add_review_btn.disabled is True:
             self.add_review_btn.disabled = False
         self.contents_view.show_path = event.node.data.path
-        self.operate_mode_container.path_arg = event.node.data.path
         self.contents_view.border_title = f" {event.node.data.path.name} "
+        # Set path_arg for the btn_enums in OperateMode
+        for btn_enum in self.op_btn_dict.values():
+            if isinstance(btn_enum, OpBtnEnum):
+                btn_enum.path_arg = event.node.data.path
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

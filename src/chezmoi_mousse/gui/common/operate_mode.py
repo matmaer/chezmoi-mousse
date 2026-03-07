@@ -78,15 +78,20 @@ class OperateMode(Vertical, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.op_mode)
         self.ids = ids
-        self.path_arg: Path | None = None
         self.run_cmd_result: CommandResult | None = None
         self.all_cmd_results: list[CommandResult] = []
+        self.review_btn_enums = OpBtnEnum.review_btn_enums()
+        self.run_btn_enums = OpBtnEnum.run_btn_enums()
+
+    @property
+    def _path_arg(self) -> "Path | None":
+        return self.btn_enum.path_arg if self.btn_enum is not None else None
 
     @property
     def _global_args(self) -> tuple[str, ...]:
         if self.btn_enum is None:
             return ()
-        path_arg = str(self.path_arg) if self.path_arg is not None else ""
+        path_arg = str(self._path_arg) if self._path_arg is not None else ""
         return (*self.btn_enum.write_cmd.value, path_arg)
 
     def compose(self) -> ComposeResult:
@@ -105,9 +110,9 @@ class OperateMode(Vertical, AppType):
         self.cmd_log = self.screen.query_exactly_one(CmdLog)
 
     def watch_btn_enum(self, btn_enum: OpBtnEnum) -> None:
-        if btn_enum in OpBtnEnum.review_btn_enums():
+        if btn_enum in self.review_btn_enums:
             self.update_review_info()
-        elif btn_enum in OpBtnEnum.run_btn_enums():
+        elif btn_enum in self.run_btn_enums:
             self._run_write_command(btn_enum)
         else:
             self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
@@ -171,7 +176,7 @@ class OperateMode(Vertical, AppType):
     async def _run_perform_command(self, btn_enum: OpBtnEnum) -> None:
         pretty_cmd = CMD.run_cmd.review_cmd(global_args=self._global_args)
         self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
-        cmd_result = CMD.run_cmd.perform(btn_enum.write_cmd, path_arg=self.path_arg)
+        cmd_result = CMD.run_cmd.perform(btn_enum.write_cmd, path_arg=self._path_arg)
         self.run_cmd_result = cmd_result
         self.all_cmd_results.append(cmd_result)
         if not cmd_result.is_dry_run:
@@ -189,15 +194,8 @@ class OperateMode(Vertical, AppType):
         self.all_cmd_results.append(cmd_result)
 
     @work
-    async def _run_read_commands(self) -> None:
-        for read_cmd in (
-            ReadCmd.managed,
-            ReadCmd.status,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ):
+    async def _run_read_commands(self, read_commands: list[ReadCmd]) -> None:
+        for read_cmd in read_commands:
             await self._run_read_command(read_cmd).wait()
 
     @work
@@ -227,7 +225,16 @@ class OperateMode(Vertical, AppType):
         await self.app.push_screen(self.loading_modal)
         await self._run_perform_command(btn_enum).wait()
         await self._update_operate_info_post_run().wait()
-        await self._run_read_commands().wait()
+        await self._run_read_commands(
+            [
+                ReadCmd.managed,
+                ReadCmd.status,
+                ReadCmd.managed_dirs,
+                ReadCmd.managed_files,
+                ReadCmd.status_dirs,
+                ReadCmd.status_files,
+            ]
+        ).wait()
         await self._update_command_output().wait()
         await self._log_all_cmd_results().wait()
         if self.run_cmd_result is not None and self.run_cmd_result.is_dry_run is False:

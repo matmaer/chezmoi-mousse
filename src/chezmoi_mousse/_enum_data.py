@@ -8,6 +8,8 @@ from ._str_enum_names import ScreenName
 from ._str_enums import SwitchLabel, TabLabel
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from ._app_ids import AppIds
 
 __all__ = ["OpBtnEnum", "OpBtnLabel", "SwitchEnum"]
@@ -89,6 +91,7 @@ class OpBtnData:
     op_info_string: str
     op_info_title: str | None
     op_info_subtitle: str | None = None
+    path_arg: "Path | None" = None
 
 
 class OpBtnEnum(Enum):
@@ -137,6 +140,7 @@ class OpBtnEnum(Enum):
         op_info_string=OpInfoString.forget_path_info,
         op_info_subtitle=OpInfoString.forget_subtitle,
         op_info_title=OpInfoString.ready_to_run,
+        path_arg=None,
     )
     _forget_run = OpBtnData(
         label=OpBtnLabel.forget_run,
@@ -193,6 +197,14 @@ class OpBtnEnum(Enum):
     @property
     def op_info_title(self) -> str | None:
         return self.value.op_info_title
+
+    @property
+    def path_arg(self) -> "Path | None":
+        return self.value.path_arg
+
+    @path_arg.setter
+    def path_arg(self, value: "Path | None") -> None:
+        self.value.path_arg = value
 
     @classmethod
     @cache

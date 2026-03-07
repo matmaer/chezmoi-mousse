@@ -18,24 +18,23 @@ __all__ = ["ReAddTab"]
 
 class ReAddTab(Container, AppType):
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.re_add)
+
     def compose(self) -> ComposeResult:
         yield OperateMode(IDS.re_add)
         with Horizontal():
             yield TreeSwitcher(IDS.re_add)
             yield Vertical(
                 ViewSwitcher(IDS.re_add),
-                OperateButtons(
-                    IDS.re_add, btn_dict=OpBtnEnum.op_btn_enum_dict(IDS.re_add)
-                ),
+                OperateButtons(IDS.re_add, btn_dict=self.op_btn_dict),
             )
         yield SwitchSlider(IDS.re_add)
 
     def on_mount(self) -> None:
         self.tab_buttons = self.query_exactly_one(ViewSwitcher).query_exactly_one(
             Horizontal
-        )
-        self.operate_mode_container = self.query_one(
-            IDS.re_add.container.op_mode_q, OperateMode
         )
         self.git_log_view = self.query_one(IDS.re_add.container.git_log_q, GitLog)
         self.contents_view = self.query_one(
@@ -57,8 +56,11 @@ class ReAddTab(Container, AppType):
         self.tab_buttons.border_subtitle = f" {msg.path.name} "
         self.git_log_view.show_path = msg.path
         self.diff_view.show_path = msg.path
-        self.operate_mode_container.path_arg = msg.path
         self.contents_view.show_path = msg.path
+        # Set path_arg for the btn_enums in OperateMode
+        for btn_enum in self.op_btn_dict.values():
+            if isinstance(btn_enum, OpBtnEnum):
+                btn_enum.path_arg = msg.path
         # disable forget and destroy buttons when in the dest_dir
         self.query_one(IDS.re_add.op_btn.forget_review_q, Button).disabled = (
             msg.path == CMD.cache.dest_dir
