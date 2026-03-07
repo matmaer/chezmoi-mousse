@@ -14,6 +14,7 @@ from textual.widgets import Label, LoadingIndicator, Static
 from chezmoi_mousse import (
     CMD,
     AppType,
+    CachedData,
     CommandResult,
     OpBtnEnum,
     OperateString,
@@ -207,12 +208,39 @@ class OperateMode(Vertical, AppType):
             await self._run_read_command(read_cmd).wait()
 
     @work
+    async def _get_changed_paths(self, old_cached: CachedData) -> list["Path"]:
+        old_managed = set(old_cached.managed_paths)
+        old_files = set(old_cached.managed_file_paths)
+        old_status = dict(old_cached.status_pairs)
+
+        # ^ symmetric difference: elements that exist in either set, but not in both
+        # & intersection: elements that exist in both sets
+        # | union: all elements that exist in either set
+
+        # Collect changed paths: Symmetric difference (added/removed) + Status changes
+        changes = (old_managed ^ set(CMD.cache.managed_paths)) | {
+            p
+            for p in old_managed & set(CMD.cache.managed_paths)
+            if old_status.get(p) != CMD.cache.status_pairs.get(p)
+        }
+        # Parent files to their directories
+        all_files = old_files | set(CMD.cache.managed_file_paths)
+        dirs = {p.parent if p in all_files else p for p in changes}
+
+        # Reduce to common parents
+        simplified: set[Path] = set()
+        for path in sorted(dirs, key=lambda p: len(p.parts)):
+            if not any(path.is_relative_to(parent) for parent in simplified):
+                simplified.add(path)
+        return sorted(simplified)
+
+    @work
     @min_wait
     async def _update_cached_data(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Updating cached data"))
         old_cached = copy.deepcopy(CMD.cache)
         CMD.update_parsed_data()
-        changed_paths = await self.app.get_changed_paths(old_cached).wait()
+        changed_paths = await self._get_changed_paths(old_cached).wait()
         self.post_message(ChangedPathsMsg(changed_paths=changed_paths))
 
     @work
