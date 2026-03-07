@@ -184,6 +184,8 @@ class OperateMode(Vertical, AppType):
         self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
         cmd_result = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
+        if cmd_result.is_dry_run:
+            return
         self.all_cmd_results.append(cmd_result)
 
     @work
