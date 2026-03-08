@@ -1,3 +1,4 @@
+import os
 from collections.abc import Callable, Iterable
 from enum import StrEnum
 from pathlib import Path
@@ -41,30 +42,65 @@ class AddTabContentsView(ContentsView):
             widgets.append(
                 Static("<- Click a path to see its contents.", classes=Tcss.added)
             )
-        unmanaged_dirs: list[str] = sorted(
-            [
-                str(p.relative_to(CMD.cache.dest_dir))
-                for p in list(dir_path.iterdir())
-                if p not in CMD.cache.managed_dir_paths and p.is_dir()
-            ]
-        )
-        unmanaged_files: list[str] = sorted(
-            [
-                str(p.relative_to(CMD.cache.dest_dir))
-                for p in list(dir_path.iterdir())
-                if p not in CMD.cache.managed_file_paths and p.is_file()
-            ]
-        )
+        unmanaged_dirs: list[str] = []
+        unmanaged_files: list[str] = []
+        output_limit = 50
+        limited_dirs = False
+        limited_files = False
+
+        for root, dirs, _ in os.walk(dir_path):
+            root_path = Path(root)
+
+            for name in dirs:
+                path = root_path / name
+                if path not in CMD.cache.managed_dir_paths:
+                    unmanaged_dirs.append(str(path.relative_to(CMD.cache.dest_dir)))
+                    if len(unmanaged_dirs) >= output_limit:
+                        limited_dirs = True
+                        break
+            if limited_dirs:
+                break
+
+        for root, _, files in os.walk(dir_path):
+            root_path = Path(root)
+            for name in files:
+                path = root_path / name
+                if path not in CMD.cache.managed_file_paths:
+                    unmanaged_files.append(str(path.relative_to(CMD.cache.dest_dir)))
+                    if len(unmanaged_files) >= output_limit:
+                        limited_files = True
+                        break
+            if limited_files:
+                break
+
+        unmanaged_dirs.sort()
+        unmanaged_files.sort()
+
         if unmanaged_dirs:
             widgets.append(
                 Label("Contains unmanaged directories", classes=Tcss.sub_section_label)
             )
             widgets.append(Static("\n".join(unmanaged_dirs), classes=Tcss.info))
+            if limited_dirs:
+                widgets.append(
+                    Label(
+                        f"Limited output to {output_limit} unmanaged directories",
+                        classes=Tcss.limited_label,
+                    )
+                )
         if unmanaged_files:
             widgets.append(
                 Label("Contains unmanaged files", classes=Tcss.sub_section_label)
             )
             widgets.append(Static("\n".join(unmanaged_files), classes=Tcss.info))
+            if limited_files:
+                widgets.append(
+                    Label(
+                        f"Limited output to {output_limit} unmanaged files",
+                        classes=Tcss.limited_label,
+                    )
+                )
+
         if not unmanaged_dirs and not unmanaged_files:
             widgets.append(Static("No unmanaged paths in this directory."))
         self.container_cache[dir_path] = ScrollableContainer(*widgets)

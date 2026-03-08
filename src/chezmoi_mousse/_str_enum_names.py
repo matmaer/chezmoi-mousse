@@ -76,6 +76,7 @@ class Tcss(StrEnum):
     input_select = auto()
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
+    limited_label = auto()
     main_section_label = auto()
     operate_button = auto()
     operate_info = auto()

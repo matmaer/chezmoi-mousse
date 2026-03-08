@@ -247,6 +247,14 @@ Label{
     color: $primary-lighten-3;
     width: 100%;
   }
+  &.limited_label {
+    background-tint: $surface;
+    background: $surface;
+    border-bottom: wide $surface;
+    border-top: wide $surface;
+    color: $text-error;
+    width: 100%;
+  }
   &.sub_section_label {
     background-tint: $panel;
     background: $panel;
