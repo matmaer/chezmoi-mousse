@@ -20,6 +20,7 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import SwitchSlider
+from .common.contents import ContentsView
 from .common.loggers import AppLog, DebugLog
 from .common.messages import ChangedPathsMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
@@ -116,7 +117,7 @@ class MainScreen(Screen[None], AppType):
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             right_side = self.screen.query_one(ids.container.right_side_q, ViewSwitcher)
         elif ids.canvas_name == TabLabel.add:
-            right_side = self.screen.query_one(ids.container.contents_q, Vertical)
+            right_side = self.screen.query_one(ids.container.contents_q, ContentsView)
         else:
             self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
             return
@@ -128,7 +129,7 @@ class MainScreen(Screen[None], AppType):
             right_side = self.screen.query_one(ids.container.right_side_q, ViewSwitcher)
         elif ids.canvas_name == TabLabel.add:
             left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
-            right_side = self.screen.query_one(ids.container.right_side_q, ViewSwitcher)
+            right_side = self.screen.query_one(ids.container.contents_q, ContentsView)
         else:
             self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
             return

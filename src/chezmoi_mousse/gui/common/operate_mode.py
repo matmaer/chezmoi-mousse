@@ -190,8 +190,23 @@ class OperateMode(Vertical, AppType):
         self.loading_modal.post_message(
             ProgressTextMsg(f"[$text-darken-2]Update {self.op_cmd_results.name}[/]")
         )
+        self.op_cmd_results.mount(
+            Label("Command output", classes=Tcss.main_section_label)
+        )
         for cmd_result in self.all_cmd_results:
             self.op_cmd_results.mount(cmd_result.pretty_collapsible)
+        self.op_cmd_results.mount(
+            Label("Changed paths", classes=Tcss.main_section_label)
+        )
+        if not self.changed_paths:
+            dry_run = (
+                " (dry run)"
+                if self.run_cmd_result and self.run_cmd_result.is_dry_run
+                else ""
+            )
+            self.op_cmd_results.mount(Static(f"No paths changed.{dry_run}"))
+        for path in self.changed_paths:
+            self.op_cmd_results.mount(Static(str(path)))
 
     @work(thread=True)
     @min_wait
