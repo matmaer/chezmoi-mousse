@@ -7,6 +7,8 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, TabLabel, Tcss
 
+from .mixins import ContainerCache
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -29,7 +31,7 @@ DIFF_TCSS = {
 }
 
 
-class DiffView(Container, AppType):
+class DiffView(Container, AppType, ContainerCache):
 
     show_path: reactive["Path | None"] = reactive(None)
 
@@ -90,12 +92,6 @@ class DiffView(Container, AppType):
         self.container_cache[path] = ScrollableContainer(*widgets)
         self.mount(self.container_cache[path])
         self.current_container_path = path
-
-    def update_mounted_containers(self, changed_paths: list["Path"]) -> None:
-        for path, container in self.container_cache.items():
-            if path in changed_paths:
-                container.remove()
-        self.show_path = CMD.cache.dest_dir
 
     def watch_show_path(self, show_path: "Path | None") -> None:
         if show_path is None:

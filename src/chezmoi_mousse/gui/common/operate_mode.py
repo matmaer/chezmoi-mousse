@@ -228,7 +228,7 @@ class OperateMode(Vertical, AppType):
         self.all_cmd_results.append(cmd_result)
 
     @work
-    async def run_read_commands(self) -> None:
+    async def _run_read_commands(self) -> None:
         for read_cmd in self.read_commands:
             await self._run_read_command(read_cmd).wait()
 
@@ -236,9 +236,9 @@ class OperateMode(Vertical, AppType):
     async def manual_refresh(self) -> None:
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
-        await self.run_read_commands().wait()
-        await self.log_all_cmd_results().wait()
-        await self.update_cached_data().wait()
+        await self._run_read_commands().wait()
+        await self._log_all_cmd_results().wait()
+        await self._update_cached_data().wait()
 
     @work
     async def _get_changed_paths(self, old_cached: CachedData) -> list["Path"]:
@@ -270,7 +270,7 @@ class OperateMode(Vertical, AppType):
 
     @work
     @min_wait
-    async def update_cached_data(self) -> None:
+    async def _update_cached_data(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Updating cached data"))
         old_cached = copy.deepcopy(CMD.cache)
         CMD.update_parsed_data()
@@ -278,11 +278,11 @@ class OperateMode(Vertical, AppType):
         if not changed_paths:
             return
         for diff_view in self.diff_views:
-            diff_view.update_mounted_containers(changed_paths)
+            diff_view.purge_mounted_containers(changed_paths)
         for contents_view in self.contents_views:
             contents_view.purge_mounted_containers(changed_paths)
         for git_log in self.git_logs:
-            git_log.remove_all_cached()
+            git_log.purge_mounted_containers(changed_paths)
         for managed_tree in self.managed_trees:
             managed_tree.populate_tree()
         for list_tree in self.list_trees:
@@ -290,7 +290,7 @@ class OperateMode(Vertical, AppType):
 
     @work
     @min_wait
-    async def log_all_cmd_results(self) -> None:
+    async def _log_all_cmd_results(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
         self.app_log.info("--- Commands executed in OperateMode ---")
         for cmd_result in self.all_cmd_results:
@@ -306,9 +306,9 @@ class OperateMode(Vertical, AppType):
         await self.app.push_screen(self.loading_modal)
         await self._run_perform_command(btn_enum).wait()
         await self._update_operate_info_post_run().wait()
-        await self.run_read_commands().wait()
+        await self._run_read_commands().wait()
         await self._update_command_output().wait()
-        await self.log_all_cmd_results().wait()
+        await self._log_all_cmd_results().wait()
         if self.run_cmd_result is not None and self.run_cmd_result.is_dry_run is False:
-            await self.update_cached_data().wait()
+            await self._update_cached_data().wait()
         self.loading_modal.dismiss()

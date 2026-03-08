@@ -11,16 +11,17 @@ from textual.widgets.text_area import BUILTIN_LANGUAGES
 
 from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
 
+from .mixins import ContainerCache
+
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 __all__ = ["ContentsView"]
 
 BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
-# Additional mappings for "similar" language files to choose TextArea
 
 
-class ContentsView(Container, AppType):
+class ContentsView(Container, AppType, ContainerCache):
 
     class ContentStr(StrEnum):
         cannot_decode = "Path cannot be decoded as UTF-8:"
@@ -133,26 +134,6 @@ class ContentsView(Container, AppType):
             ReprHighlighter().highlight(text_obj)
             widgets.append(Static(text_obj))
         self.container_cache[file_path] = ScrollableContainer(*widgets)
-
-    def purge_mounted_containers(self, changed_paths: list["Path"]) -> None:
-        keys_to_remove = [
-            cached_path
-            for cached_path in self.container_cache
-            if any(
-                cached_path == changed_path or changed_path in cached_path.parents
-                for changed_path in changed_paths
-            )
-        ]
-
-        for cached_path in keys_to_remove:
-            container = self.container_cache.pop(cached_path, None)
-            if container is not None:
-                container.remove()
-
-        if self.current_container_path in keys_to_remove:
-            self.current_container_path = None
-
-        self.show_path = CMD.cache.dest_dir
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:

@@ -7,20 +7,22 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import CMD, AppType, ReadCmd
 
+from .mixins import ContainerCache
+
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 __all__ = ["GitLog"]
 
 
-class GitLog(ScrollableContainer, AppType):
+class GitLog(ScrollableContainer, AppType, ContainerCache):
 
     show_path: reactive[Path | None] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
-        self.data_table_cache: dict[Path, DataTable[str]] = {}
-        self.current_data_table: DataTable[str] = DataTable[str]()
+        self.container_cache: dict[Path, DataTable[str]] = {}
+        self.current_container_path: Path | None = None
 
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir
@@ -52,21 +54,23 @@ class GitLog(ScrollableContainer, AppType):
                 data_table.add_row(*columns)
         return data_table
 
-    def remove_all_cached(self) -> None:
-        mounted_tables = list(self.query(DataTable[str]))
-        for table in mounted_tables:
-            table.remove()
-        self.data_table_cache.clear()
-        self.show_path = CMD.cache.dest_dir
-
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        self.current_data_table.display = False
-        if show_path in self.data_table_cache:
-            self.data_table_cache[show_path].display = True
-            self.current_data_table = self.data_table_cache[show_path]
+
+        # Hide the previously displayed table
+        if self.current_container_path is not None:
+            previous_table = self.container_cache.get(self.current_container_path, None)
+            if previous_table is not None:
+                previous_table.display = False
+
+        # Show cached table if available
+        if show_path in self.container_cache:
+            self.container_cache[show_path].display = True
+            self.current_container_path = show_path
             return
+
+        # Create new table
         if show_path == CMD.cache.dest_dir:
             table = self._create_datatable(CMD.cache.global_git_log_lines)
         else:
@@ -74,5 +78,5 @@ class GitLog(ScrollableContainer, AppType):
             self.app.log_cmd_result(cmd_result)
             table = self._create_datatable(cmd_result.std_out.splitlines())
         self.mount(table)
-        self.data_table_cache[show_path] = table
-        self.current_data_table = self.data_table_cache[show_path]
+        self.container_cache[show_path] = table
+        self.current_container_path = show_path
