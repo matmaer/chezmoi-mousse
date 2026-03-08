@@ -19,12 +19,12 @@ from chezmoi_mousse import (
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.actionables import SwitchSlider, TabButtons
+from .common.actionables import SwitchSlider
 from .common.loggers import AppLog, DebugLog
 from .common.messages import ChangedPathsMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
-from .common.switchers import TreeSwitcher
+from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.trees import ListTree, ManagedTree
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
@@ -98,21 +98,46 @@ class MainScreen(Screen[None], AppType):
     # Operate mode helper #
     #######################
 
-    def _toggle_operate_display(self, ids: "AppIds") -> None:
-        main_tabs = self.screen.query_exactly_one(Tabs)
-        main_tabs.display = not main_tabs.display
+    def _set_review_display(self, ids: "AppIds") -> None:
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             left_side = self.screen.query_one(ids.container.left_side_q, TreeSwitcher)
-            left_side.display = not left_side.display
-            active_tab_widget = self.app.get_tab_widget()
-            view_switcher_buttons = active_tab_widget.query(TabButtons).last()
-            view_switcher_buttons.display = not view_switcher_buttons.display
         elif ids.canvas_name == TabLabel.add:
             left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
-            left_side.display = not left_side.display
+        else:
+            self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
+            return
+        self.screen.query_exactly_one(Tabs).display = False
+        left_side.display = False
         switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
         if switch_slider is not None:
-            switch_slider.display = not switch_slider.display
+            switch_slider.display = False
+
+    def _set_post_run_display(self, ids: "AppIds") -> None:
+        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
+            right_side = self.screen.query_one(ids.container.right_side_q, ViewSwitcher)
+        elif ids.canvas_name == TabLabel.add:
+            right_side = self.screen.query_one(ids.container.contents_q, Vertical)
+        else:
+            self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
+            return
+        right_side.display = False
+
+    def _restore_display(self, ids: "AppIds") -> None:
+        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
+            left_side = self.screen.query_one(ids.container.left_side_q, TreeSwitcher)
+            right_side = self.screen.query_one(ids.container.right_side_q, ViewSwitcher)
+        elif ids.canvas_name == TabLabel.add:
+            left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
+            right_side = self.screen.query_one(ids.container.right_side_q, ViewSwitcher)
+        else:
+            self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
+            return
+        self.screen.query_exactly_one(Tabs).display = True
+        left_side.display = True
+        right_side.display = True
+        switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
+        if switch_slider is not None:
+            switch_slider.display = True
 
     ############################
     # Message handling methods #
@@ -137,10 +162,11 @@ class MainScreen(Screen[None], AppType):
         operate_mode_container = self.screen.query_exactly_one(OperateMode)
         if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
             operate_mode_container.display = False
-            self._toggle_operate_display(msg.ids)
+            self._restore_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
             operate_mode_container.display = True
             operate_mode_container.btn_enum = msg.button.btn_enum
-            self._toggle_operate_display(msg.ids)
+            self._set_review_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
             operate_mode_container.btn_enum = msg.button.btn_enum
+            self._set_post_run_display(msg.ids)

@@ -92,6 +92,7 @@ class OpBtnData:
     op_info_title: str | None
     op_info_subtitle: str | None = None
     path_arg: "Path | None" = None
+    changed_paths: list["Path | None"] | None = None
 
 
 class OpBtnEnum(Enum):
