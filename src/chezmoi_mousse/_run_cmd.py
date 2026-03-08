@@ -36,7 +36,6 @@ class GlobalCmd(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
-        "--verbose=true",
         "--use-builtin-git=true",
         "--use-builtin-diff=true",
     )
