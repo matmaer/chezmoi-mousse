@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from textual import on, work
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
@@ -88,8 +88,7 @@ class MainScreen(Screen[None], AppType):
         self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_tree()
         self.app_log.success("Apply tab list tree populated.")
 
-    @work
-    async def _populate_re_add_trees(self) -> None:
+    def _populate_re_add_trees(self) -> None:
         self.screen.query_one(IDS.re_add.tree.managed_q, ManagedTree).populate_tree()
         self.app_log.success("Re-Add tab managed tree populated.")
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
