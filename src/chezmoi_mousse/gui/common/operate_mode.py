@@ -25,7 +25,7 @@ from chezmoi_mousse import (
 
 from .contents import ContentsView
 from .diffs import DiffView
-from .git_log import GitLog
+from .git_log import GitLogView
 from .loggers import AppLog, CmdLog
 from .messages import ProgressTextMsg
 from .trees import ListTree, ManagedTree
@@ -93,7 +93,7 @@ class OperateMode(Vertical, AppType):
         ]
         self.diff_views: list[DiffView] = []
         self.contents_views: list[ContentsView] = []
-        self.git_logs: list[GitLog] = []
+        self.git_logs: list[GitLogView] = []
         self.managed_trees: list[ManagedTree] = []
         self.list_trees: list[ListTree] = []
         self.changed_paths: list[Path] = []
@@ -117,7 +117,7 @@ class OperateMode(Vertical, AppType):
         self.cmd_log = self.screen.query_exactly_one(CmdLog)
         self.contents_views = list(self.screen.query(ContentsView))
         self.diff_views = list(self.screen.query(DiffView))
-        self.git_logs = list(self.screen.query(GitLog))
+        self.git_logs = list(self.screen.query(GitLogView))
         self.managed_trees = list(self.screen.query(ManagedTree))
         self.list_trees = list(self.screen.query(ListTree))
         self.op_cmd_results = self.query_one(

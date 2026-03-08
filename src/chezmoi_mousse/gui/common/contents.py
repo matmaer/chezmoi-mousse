@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
-from textual.containers import Container, ScrollableContainer
+from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
+from chezmoi_mousse import CMD, ReadCmd, Tcss
 
 from .mixins import ContainerCache
 
@@ -21,7 +21,7 @@ __all__ = ["ContentsView"]
 BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
 
 
-class ContentsView(Container, AppType, ContainerCache):
+class ContentsView(ContainerCache):
 
     class ContentStr(StrEnum):
         cannot_decode = "Path cannot be decoded as UTF-8:"
@@ -59,7 +59,7 @@ class ContentsView(Container, AppType, ContainerCache):
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir
 
-    def _cache_managed_dir_contents(self, dir_path: Path) -> None:
+    def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
         if dir_path == CMD.cache.dest_dir:
             widgets.append(
@@ -71,10 +71,9 @@ class ContentsView(Container, AppType, ContainerCache):
         widgets.append(
             Static("<- Click a file to see its contents.", classes=Tcss.added)
         )
-        self.container_cache[dir_path] = ScrollableContainer(*widgets)
-        self.current_container_path = dir_path
+        return ScrollableContainer(*widgets)
 
-    def _cache_file_contents(self, file_path: Path) -> None:
+    def _create_file_container(self, file_path: Path) -> ScrollableContainer:
         widgets: list[Label | Static | TextArea] = []
 
         def _detect_language(lines: list[str], file_path: Path) -> str | None:
@@ -133,34 +132,23 @@ class ContentsView(Container, AppType, ContainerCache):
             text_obj = Text(file_contents)
             ReprHighlighter().highlight(text_obj)
             widgets.append(Static(text_obj))
-        self.container_cache[file_path] = ScrollableContainer(*widgets)
+        return ScrollableContainer(*widgets)
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
 
-        # Hide the previously displayed container
-        if self.current_container_path is not None:
-            previous_container = self.container_cache.get(
-                self.current_container_path, None
-            )
-            if previous_container is not None:
-                previous_container.display = False
-
-        is_mounted = show_path in self.container_cache
-        if is_mounted:
-            self.container_cache[show_path].display = True
-            self.current_container_path = show_path
-            return
-
-        if show_path == CMD.cache.dest_dir or (
-            show_path in CMD.cache.managed_dir_paths
-            and show_path not in CMD.cache.status_paths
-        ):
-            self._cache_managed_dir_contents(show_path)
-            self.mount(self.container_cache[show_path])
-            self.current_container_path = show_path
-        elif show_path.is_file():
-            self._cache_file_contents(show_path)
-            self.mount(self.container_cache[show_path])
-            self.current_container_path = show_path
+        container = self.container_cache.get(show_path, None)
+        new_container: ScrollableContainer | None = None
+        if container is None:
+            # Create container based on path type
+            if show_path == CMD.cache.dest_dir or (
+                show_path in CMD.cache.managed_dir_paths
+                and show_path not in CMD.cache.status_paths
+            ):
+                new_container = self._create_managed_dir_container(show_path)
+            elif show_path.is_file():
+                new_container = self._create_file_container(show_path)
+            else:
+                return
+        self._update_container_display(show_path, new_container)

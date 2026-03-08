@@ -8,7 +8,7 @@ from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, SwitchEnum, TabLabel
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
-from .common.git_log import GitLog
+from .common.git_log import GitLogView
 from .common.messages import CurrentReAddNodeMsg
 from .common.switchers import TreeSwitcher, ViewSwitcher
 
@@ -34,7 +34,7 @@ class ReAddTab(Container, AppType):
         self.tab_buttons = self.query_exactly_one(ViewSwitcher).query_exactly_one(
             Horizontal
         )
-        self.git_log_view = self.query_one(IDS.re_add.container.git_log_q, GitLog)
+        self.git_log_view = self.query_one(IDS.re_add.container.git_log_q, GitLogView)
         self.contents_view = self.query_one(
             IDS.re_add.container.contents_q, ContentsView
         )

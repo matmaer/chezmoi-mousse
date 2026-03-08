@@ -8,7 +8,7 @@ from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, SwitchEnum, TabLabel
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
-from .common.git_log import GitLog
+from .common.git_log import GitLogView
 from .common.messages import CurrentApplyNodeMsg
 from .common.switchers import TreeSwitcher, ViewSwitcher
 
@@ -37,7 +37,7 @@ class ApplyTab(Container, AppType):
         self.contents_view = self.query_one(
             IDS.apply.container.contents_q, ContentsView
         )
-        self.git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLog)
+        self.git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLogView)
         self.diff_view = self.query_one(IDS.apply.container.diff_q, DiffView)
         if CMD.cache.no_status_paths:
             self.app.call_later(self.toggle_unchanged)

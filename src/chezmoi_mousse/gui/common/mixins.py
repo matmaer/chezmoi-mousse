@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse import CMD
+from textual.containers import Container, ScrollableContainer
+
+from chezmoi_mousse import CMD, AppType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -8,7 +10,26 @@ if TYPE_CHECKING:
 __all__ = ["ContainerCache"]
 
 
-class ContainerCache:
+class ContainerCache(AppType, Container):
+
+    def _update_container_display(
+        self, show_path: "Path", new_container: "ScrollableContainer | None"
+    ) -> None:
+        # Hide the previously displayed container
+        previous_container = self.container_cache.get(  # type: ignore[attr-defined]
+            self.current_container_path, None
+        )
+        if previous_container is not None:
+            previous_container.display = False
+        if new_container is not None:
+            # Cache the new container
+            self.container_cache[show_path] = new_container  # type: ignore[attr-defined]
+            self.mount(new_container)
+        else:
+            # Display the cached container
+            self.container_cache[show_path].display = True  # type: ignore[attr-defined]
+        # Update the current container path
+        self.current_container_path = show_path  # type: ignore[attr-defined]
 
     def purge_mounted_containers(self, changed_paths: list["Path"]) -> None:
         # Remove exact changed paths and anything cached under those paths

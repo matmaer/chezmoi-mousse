@@ -5,29 +5,31 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppType, ReadCmd
+from chezmoi_mousse import CMD, ReadCmd
 
 from .mixins import ContainerCache
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
-__all__ = ["GitLog"]
+__all__ = ["GitLogView"]
 
 
-class GitLog(ScrollableContainer, AppType, ContainerCache):
+class GitLogView(ContainerCache):
 
     show_path: reactive[Path | None] = reactive(None)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
-        self.container_cache: dict[Path, DataTable[str]] = {}
+        self.container_cache: dict[Path, ScrollableContainer] = {}
         self.current_container_path: Path | None = None
 
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir
 
-    def _create_datatable(self, git_log_lines: list[str]) -> DataTable[str]:
+    def _create_datatable_container(
+        self, git_log_lines: list[str]
+    ) -> ScrollableContainer:
         data_table = DataTable[str]()
 
         def add_row_with_style(columns: list[str], style: str) -> None:
@@ -52,31 +54,23 @@ class GitLog(ScrollableContainer, AppType, ContainerCache):
                 add_row_with_style(columns, row_color["error"])
             else:
                 data_table.add_row(*columns)
-        return data_table
+        return ScrollableContainer(data_table)
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-
-        # Hide the previously displayed table
-        if self.current_container_path is not None:
-            previous_table = self.container_cache.get(self.current_container_path, None)
-            if previous_table is not None:
-                previous_table.display = False
-
-        # Show cached table if available
-        if show_path in self.container_cache:
-            self.container_cache[show_path].display = True
-            self.current_container_path = show_path
-            return
-
-        # Create new table
-        if show_path == CMD.cache.dest_dir:
-            table = self._create_datatable(CMD.cache.global_git_log_lines)
-        else:
-            cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
-            self.app.log_cmd_result(cmd_result)
-            table = self._create_datatable(cmd_result.std_out.splitlines())
-        self.mount(table)
-        self.container_cache[show_path] = table
-        self.current_container_path = show_path
+        container = self.container_cache.get(show_path, None)
+        new_container: ScrollableContainer | None = None
+        if container is None:
+            # Create new table
+            if show_path == CMD.cache.dest_dir:
+                new_container = self._create_datatable_container(
+                    CMD.cache.global_git_log_lines
+                )
+            else:
+                cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
+                self.app.log_cmd_result(cmd_result)
+                new_container = self._create_datatable_container(
+                    cmd_result.std_out.splitlines()
+                )
+        self._update_container_display(show_path, new_container)

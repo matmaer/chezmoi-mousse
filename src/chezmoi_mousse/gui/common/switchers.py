@@ -14,7 +14,7 @@ from chezmoi_mousse import CMD, AppType, DirNode, OpBtnLabel, TabLabel, Tcss
 from .actionables import TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
-from .git_log import GitLog
+from .git_log import GitLogView
 from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -137,7 +137,7 @@ class ViewSwitcher(Container):
         with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
-            yield GitLog(self.ids)
+            yield GitLogView(self.ids)
 
     def on_mount(self) -> None:
         self.tab_buttons = self.query_exactly_one(Horizontal)
