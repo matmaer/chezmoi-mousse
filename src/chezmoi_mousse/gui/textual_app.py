@@ -20,7 +20,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OpBtnLabel,
-    ReadCmd,
     TabLabel,
 )
 
@@ -126,12 +125,6 @@ class ChezmoiGUI(App[None]):
     @work
     async def log_cmd_result(self, command_result: "CommandResult") -> None:
         # self.screen contains the currently active screen
-        if (
-            command_result.is_dry_run
-            and command_result.cmd_enum in ReadCmd.all_read_cmds()
-        ):
-            # Don't log read results if it's a dry-run
-            return
         self.screen.query_exactly_one(AppLog).log_cmd_result(command_result)
         self.screen.query_exactly_one(CmdLog).log_cmd_result(command_result)
 
