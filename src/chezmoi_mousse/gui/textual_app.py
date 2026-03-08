@@ -92,7 +92,7 @@ class ChezmoiGUI(App[None]):
         ),
         Binding(
             key="F,f",
-            action=BindingAction.toggle_switch_slider_visibility,
+            action=BindingAction.toggle_switch_slider,
             description=BindingDescription.hide_filters,
         ),
         Binding(
@@ -173,22 +173,13 @@ class ChezmoiGUI(App[None]):
         else:
             raise ValueError(f"Unknown active_tab on MainScreen: {tab_to_query}")
 
-    def get_switch_slider_widget(self) -> SwitchSlider:
+    def get_switch_slider_widget(self) -> SwitchSlider | None:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_switch_slider_widget called outside of MainScreen")
-        tab_to_determine_id = self.screen.query_exactly_one(TabbedContent).active
-        if tab_to_determine_id == TabLabel.apply:
-            return self.screen.query_one(
-                IDS.apply.container.switch_slider_q, SwitchSlider
-            )
-        elif tab_to_determine_id == TabLabel.re_add:
-            return self.screen.query_one(
-                IDS.re_add.container.switch_slider_q, SwitchSlider
-            )
-        else:  # tab_to_determine_id == TabLabel.add
-            return self.screen.query_one(
-                IDS.add.container.switch_slider_q, SwitchSlider
-            )
+        current_tab_widget = self.get_tab_widget()
+        if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
+            return current_tab_widget.query_exactly_one(SwitchSlider)
+        return None
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:
@@ -209,7 +200,9 @@ class ChezmoiGUI(App[None]):
             TabLabel.re_add,
             TabLabel.add,
         ):
-            slider: SwitchSlider = self.get_switch_slider_widget()
+            slider: SwitchSlider | None = self.get_switch_slider_widget()
+            if slider is None:
+                return
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters
@@ -217,7 +210,7 @@ class ChezmoiGUI(App[None]):
                 else BindingDescription.show_filters
             )
             self.update_binding_description(
-                binding_action=BindingAction.toggle_switch_slider_visibility,
+                binding_action=BindingAction.toggle_switch_slider,
                 new_description=new_description,
             )
         self.refresh_bindings()
@@ -249,10 +242,12 @@ class ChezmoiGUI(App[None]):
             if widget.display is True:
                 widget.update_review_info()
 
-    def action_toggle_switch_slider_visibility(self) -> None:
+    def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        slider: SwitchSlider = self.get_switch_slider_widget()
+        slider: SwitchSlider | None = self.get_switch_slider_widget()
+        if slider is None:
+            return
         slider_visible = slider.has_class("-visible")
         new_description = (
             BindingDescription.hide_filters
@@ -260,7 +255,7 @@ class ChezmoiGUI(App[None]):
             else BindingDescription.show_filters
         )
         self.update_binding_description(
-            binding_action=BindingAction.toggle_switch_slider_visibility,
+            binding_action=BindingAction.toggle_switch_slider,
             new_description=new_description,
         )
         slider.toggle_class("-visible")
@@ -271,7 +266,7 @@ class ChezmoiGUI(App[None]):
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         left_side = None
         operation_buttons = None
-        switch_slider = None
+        switch_slider: SwitchSlider | None = self.get_switch_slider_widget()
         view_switcher_buttons = None
 
         header = self.screen.query_exactly_one(CustomHeader)
@@ -290,9 +285,6 @@ class ChezmoiGUI(App[None]):
             operation_buttons = self.screen.query_one(
                 IDS.apply.container.operate_buttons_q
             )
-            switch_slider = self.screen.query_one(
-                IDS.apply.container.switch_slider_q, SwitchSlider
-            )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
                 IDS.re_add.container.left_side_q, TreeSwitcher
@@ -300,16 +292,10 @@ class ChezmoiGUI(App[None]):
             operation_buttons = self.screen.query_one(
                 IDS.re_add.container.operate_buttons_q
             )
-            switch_slider = self.screen.query_one(
-                IDS.re_add.container.switch_slider_q, SwitchSlider
-            )
         elif active_tab == TabLabel.add:
             left_side = self.screen.query_one(IDS.add.container.left_side_q, Vertical)
             operation_buttons = self.screen.query_one(
                 IDS.add.container.operate_buttons_q
-            )
-            switch_slider = self.screen.query_one(
-                IDS.add.container.switch_slider_q, SwitchSlider
             )
         elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
@@ -348,11 +334,15 @@ class ChezmoiGUI(App[None]):
     def check_action(
         self, action: str, parameters: tuple[object, ...]  # noqa: ARG002
     ) -> bool | None:
-        if action == BindingAction.toggle_switch_slider_visibility:
+        if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
                 switch_slider = self.get_switch_slider_widget()
-                if header.display is False or switch_slider.display is False:
+                if (
+                    switch_slider is None
+                    or header.display is False
+                    or switch_slider.display is False
+                ):
                     return False
                 active_tab = self.screen.query_exactly_one(TabbedContent).active
                 return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)

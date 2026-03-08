@@ -19,7 +19,7 @@ from chezmoi_mousse import (
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.actionables import TabButtons
+from .common.actionables import SwitchSlider, TabButtons
 from .common.loggers import AppLog, DebugLog
 from .common.messages import ChangedPathsMsg, OperateButtonMsg
 from .common.operate_mode import OperateMode
@@ -110,8 +110,9 @@ class MainScreen(Screen[None], AppType):
         elif ids.canvas_name == TabLabel.add:
             left_side = self.screen.query_one(ids.container.left_side_q, Vertical)
             left_side.display = not left_side.display
-        switch_slider = self.app.get_switch_slider_widget()
-        switch_slider.display = not switch_slider.display
+        switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
+        if switch_slider is not None:
+            switch_slider.display = not switch_slider.display
 
     ############################
     # Message handling methods #

@@ -17,7 +17,7 @@ class BindingAction(StrEnum):
     exit_screen = auto()
     toggle_dry_run = auto()
     toggle_maximized = auto()
-    toggle_switch_slider_visibility = auto()
+    toggle_switch_slider = auto()
 
 
 class ContainerName(StrEnum):
@@ -34,7 +34,6 @@ class ContainerName(StrEnum):
     operate_buttons = auto()
     repo_input = auto()
     right_side = auto()
-    switch_slider = auto()
 
 
 class LabelName(StrEnum):

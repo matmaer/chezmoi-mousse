@@ -93,8 +93,6 @@ class ContainerIds:
         self.repo_input_q = f"#{self.repo_input}"
         self.right_side = ids.container_id(name=ContainerName.right_side)
         self.right_side_q = f"#{self.right_side}"
-        self.switch_slider = ids.container_id(name=ContainerName.switch_slider)
-        self.switch_slider_q = f"#{self.switch_slider}"
 
 
 class LabelIds:

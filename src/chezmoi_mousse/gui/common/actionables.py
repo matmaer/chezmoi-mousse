@@ -194,7 +194,7 @@ class SwitchWithLabel(HorizontalGroup):
 
 class SwitchSlider(VerticalGroup):
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.switch_slider, classes="-visible")
+        super().__init__(classes="-visible")
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             self.switches = (SwitchEnum.unchanged, SwitchEnum.expand_all)
         else:  # for the AddTab
