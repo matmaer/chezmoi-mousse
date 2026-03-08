@@ -4,9 +4,9 @@ from pathlib import Path
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, DirectoryTree, Switch
+from textual.widgets import Button, DirectoryTree, Label, Static, Switch
 
 from chezmoi_mousse import (
     CMD,
@@ -24,6 +24,144 @@ from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 
 __all__ = ["AddTab"]
+
+
+class AddTabContentsView(ContentsView):
+
+    show_path: reactive["Path | None"] = reactive(None)
+
+    def on_mount(self) -> None:
+        self.show_path = CMD.cache.dest_dir
+
+    def _cache_add_dir_contents(self, dir_path: Path) -> None:
+        widgets: list[Static | Label] = []
+        if dir_path == CMD.cache.dest_dir:
+            widgets.append(
+                Label("Destination directory", classes=Tcss.main_section_label)
+            )
+            widgets.append(
+                Static("<- Click a path to see its contents.", classes=Tcss.added)
+            )
+        unmanaged_dirs: list[str] = sorted(
+            [
+                str(p.relative_to(CMD.cache.dest_dir))
+                for p in list(dir_path.iterdir())
+                if p not in CMD.cache.managed_dir_paths and p.is_dir()
+            ]
+        )
+        unmanaged_files: list[str] = sorted(
+            [
+                str(p.relative_to(CMD.cache.dest_dir))
+                for p in list(dir_path.iterdir())
+                if p not in CMD.cache.managed_file_paths and p.is_file()
+            ]
+        )
+        if unmanaged_dirs:
+            widgets.append(
+                Label("Contains unmanaged directories", classes=Tcss.sub_section_label)
+            )
+            widgets.append(Static("\n".join(unmanaged_dirs), classes=Tcss.info))
+        if unmanaged_files:
+            widgets.append(
+                Label("Contains unmanaged files", classes=Tcss.sub_section_label)
+            )
+            widgets.append(Static("\n".join(unmanaged_files), classes=Tcss.info))
+        if not unmanaged_dirs and not unmanaged_files:
+            widgets.append(Static("No unmanaged paths in this directory."))
+        self.container_cache[dir_path] = ScrollableContainer(*widgets)
+        self.current_container_path = dir_path
+
+    def watch_show_path(self, show_path: Path | None) -> None:
+        if show_path is None:
+            return
+
+        # Hide the previously displayed container
+        if self.current_container_path is not None:
+            previous_container = self.container_cache.get(
+                self.current_container_path, None
+            )
+            if previous_container is not None:
+                previous_container.display = False
+
+        is_mounted = show_path in self.container_cache
+        if is_mounted:
+            self.container_cache[show_path].display = True
+            self.current_container_path = show_path
+            return
+
+        if show_path == CMD.cache.dest_dir or show_path.is_dir():
+            self._cache_add_dir_contents(show_path)
+            self.mount(self.container_cache[show_path])
+            self.current_container_path = show_path
+        elif show_path.is_file():
+            self._cache_file_contents(show_path)
+            self.mount(self.container_cache[show_path])
+            self.current_container_path = show_path
+
+
+class AddTab(Horizontal, AppType):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.add)
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            FilteredDirTree(CMD.cache.dest_dir),
+            Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button),
+            id=IDS.add.container.left_side,
+            classes=Tcss.tab_left_vertical,
+        )
+        with Vertical():
+            yield AddTabContentsView(IDS.add)
+            yield OperateButtons(IDS.add, btn_dict=self.op_btn_dict)
+        yield SwitchSlider(IDS.add)
+
+    def on_mount(self) -> None:
+        self.dir_tree = self.query_exactly_one(FilteredDirTree)
+        self.query_exactly_one(FilteredDirTree).path = CMD.cache.dest_dir
+        self.contents_view = self.query_one(
+            IDS.add.container.contents_q, AddTabContentsView
+        )
+        self.contents_view.border_title = f" {CMD.cache.dest_dir} "
+        self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
+        self.add_review_btn.disabled = True
+
+    @on(Button.Pressed)
+    def refresh_dir_tree(self, event: Button.Pressed) -> None:
+        event.stop()
+        self.contents_view.container_cache.clear()
+        self.contents_view.show_path = CMD.cache.dest_dir
+        if event.button.label in (FlatBtnLabel.refresh_tree, OpBtnLabel.reload):
+            self.dir_tree.reload()
+            self.dir_tree.refresh()
+
+    @on(DirectoryTree.FileSelected)
+    @on(DirectoryTree.DirectorySelected)
+    def update_contents_view(
+        self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
+    ) -> None:
+        event.stop()
+        if event.node.data is None:
+            raise ValueError("event.node.data is None in update_contents_view")
+
+        if self.add_review_btn.disabled is True:
+            self.add_review_btn.disabled = False
+        self.contents_view.show_path = event.node.data.path
+        self.contents_view.border_title = f" {event.node.data.path.name} "
+        # Set path_arg for the btn_enums in OperateMode
+        for btn_enum in self.op_btn_dict.values():
+            if isinstance(btn_enum, OpBtnEnum):
+                btn_enum.path_arg = event.node.data.path
+
+    @on(Switch.Changed)
+    def handle_filter_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == IDS.add.switch.unmanaged_dirs:
+            self.dir_tree.unmanaged_dirs = event.value
+        elif event.switch.id == IDS.add.switch.unwanted:
+            self.dir_tree.unwanted = event.value
+        self.dir_tree.reload()
 
 
 class FilteredDirTree(DirectoryTree, AppType):
@@ -132,67 +270,6 @@ class FilteredDirTree(DirectoryTree, AppType):
             return False
         except (PermissionError, OSError):
             return False
-
-
-class AddTab(Horizontal, AppType):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.add)
-
-    def compose(self) -> ComposeResult:
-        yield Vertical(
-            FilteredDirTree(CMD.cache.dest_dir),
-            Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button),
-            id=IDS.add.container.left_side,
-            classes=Tcss.tab_left_vertical,
-        )
-        with Vertical():
-            yield ContentsView(IDS.add)
-            yield OperateButtons(IDS.add, btn_dict=self.op_btn_dict)
-        yield SwitchSlider(IDS.add)
-
-    def on_mount(self) -> None:
-        self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.query_exactly_one(FilteredDirTree).path = CMD.cache.dest_dir
-        self.contents_view = self.query_one(IDS.add.container.contents_q, ContentsView)
-        self.contents_view.border_title = f" {CMD.cache.dest_dir} "
-        self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
-        self.add_review_btn.disabled = True
-
-    @on(Button.Pressed)
-    def refresh_dir_tree(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label in (FlatBtnLabel.refresh_tree, OpBtnLabel.reload):
-            self.dir_tree.reload()
-            self.dir_tree.refresh()
-
-    @on(DirectoryTree.FileSelected)
-    @on(DirectoryTree.DirectorySelected)
-    def update_contents_view(
-        self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
-    ) -> None:
-        event.stop()
-        if event.node.data is None:
-            raise ValueError("event.node.data is None in update_contents_view")
-
-        if self.add_review_btn.disabled is True:
-            self.add_review_btn.disabled = False
-        self.contents_view.show_path = event.node.data.path
-        self.contents_view.border_title = f" {event.node.data.path.name} "
-        # Set path_arg for the btn_enums in OperateMode
-        for btn_enum in self.op_btn_dict.values():
-            if isinstance(btn_enum, OpBtnEnum):
-                btn_enum.path_arg = event.node.data.path
-
-    @on(Switch.Changed)
-    def handle_filter_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == IDS.add.switch.unmanaged_dirs:
-            self.dir_tree.unmanaged_dirs = event.value
-        elif event.switch.id == IDS.add.switch.unwanted:
-            self.dir_tree.unwanted = event.value
-        self.dir_tree.reload()
 
 
 class UnwantedDirs(StrEnum):

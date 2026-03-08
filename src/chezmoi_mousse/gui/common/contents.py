@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, TabLabel, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -18,35 +18,16 @@ __all__ = ["ContentsView"]
 
 BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
 # Additional mappings for "similar" language files to choose TextArea
-LANGUAGE_MAP = BUILTIN_MAP | {
-    ".cfg": BUILTIN_MAP["toml"],
-    ".ini": BUILTIN_MAP["toml"],
-    ".sh": BUILTIN_MAP["bash"],
-    ".yml": BUILTIN_MAP["yaml"],
-    ".zsh": BUILTIN_MAP["bash"],
-}
-SHEBANG_MAP = {
-    "python": "python",
-    "python3": "python",
-    "bash": "bash",
-    "sh": "bash",
-    "zsh": "bash",
-    "node": "javascript",
-    "java": "java",
-    "go": "go",
-    "rustc": "rust",
-}
-
-
-class ContentStr(StrEnum):
-    cannot_decode = "Path cannot be decoded as UTF-8:"
-    empty_or_only_whitespace = "File is empty or contains only whitespace."
-    permission_denied = "Permission denied to read file"
-    read_error = "Error reading path"
-    truncated = "\n--- File content truncated to"
 
 
 class ContentsView(Container, AppType):
+
+    class ContentStr(StrEnum):
+        cannot_decode = "Path cannot be decoded as UTF-8:"
+        empty_or_only_whitespace = "File is empty or contains only whitespace."
+        permission_denied = "Permission denied to read file"
+        read_error = "Error reading path"
+        truncated = "\n--- File content truncated to"
 
     show_path: reactive["Path | None"] = reactive(None)
 
@@ -55,47 +36,27 @@ class ContentsView(Container, AppType):
         self.ids = ids
         self.container_cache: dict[Path, ScrollableContainer] = {}
         self.current_container_path: Path | None = None
+        self.language_map = BUILTIN_MAP | {
+            ".cfg": BUILTIN_MAP["toml"],
+            ".ini": BUILTIN_MAP["toml"],
+            ".sh": BUILTIN_MAP["bash"],
+            ".yml": BUILTIN_MAP["yaml"],
+            ".zsh": BUILTIN_MAP["bash"],
+        }
+        self.shebang_map = {
+            "python": "python",
+            "python3": "python",
+            "bash": "bash",
+            "sh": "bash",
+            "zsh": "bash",
+            "node": "javascript",
+            "java": "java",
+            "go": "go",
+            "rustc": "rust",
+        }
 
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir
-
-    def _cache_add_dir_contents(self, dir_path: Path) -> None:
-        widgets: list[Static | Label] = []
-        if dir_path == CMD.cache.dest_dir:
-            widgets.append(
-                Label("Destination directory", classes=Tcss.main_section_label)
-            )
-            widgets.append(
-                Static("<- Click a path to see its contents.", classes=Tcss.added)
-            )
-        unmanaged_dirs: list[str] = sorted(
-            [
-                str(p.relative_to(CMD.cache.dest_dir))
-                for p in list(dir_path.iterdir())
-                if p not in CMD.cache.managed_dir_paths and p.is_dir()
-            ]
-        )
-        unmanaged_files: list[str] = sorted(
-            [
-                str(p.relative_to(CMD.cache.dest_dir))
-                for p in list(dir_path.iterdir())
-                if p not in CMD.cache.managed_file_paths and p.is_file()
-            ]
-        )
-        if unmanaged_dirs:
-            widgets.append(
-                Label("Contains unmanaged directories", classes=Tcss.sub_section_label)
-            )
-            widgets.append(Static("\n".join(unmanaged_dirs), classes=Tcss.info))
-        if unmanaged_files:
-            widgets.append(
-                Label("Contains unmanaged files", classes=Tcss.sub_section_label)
-            )
-            widgets.append(Static("\n".join(unmanaged_files), classes=Tcss.info))
-        if not unmanaged_dirs and not unmanaged_files:
-            widgets.append(Static("No unmanaged paths in this directory."))
-        self.container_cache[dir_path] = ScrollableContainer(*widgets)
-        self.current_container_path = dir_path
 
     def _cache_managed_dir_contents(self, dir_path: Path) -> None:
         widgets: list[Static | Label] = []
@@ -121,20 +82,20 @@ class ContentsView(Container, AppType):
                 parts = lines[0].split()
                 if len(parts) > 1:
                     shebang = parts[-1]
-                    if shebang in SHEBANG_MAP:
-                        return SHEBANG_MAP[shebang]
+                    if shebang in self.shebang_map:
+                        return self.shebang_map[shebang]
             # If no shebang, check path suffix
-            return LANGUAGE_MAP.get(file_path.suffix.lower())
+            return self.language_map.get(file_path.suffix.lower())
 
         def _handle_exception(
             exception: PermissionError | UnicodeDecodeError | OSError,
         ) -> str:
             if isinstance(exception, PermissionError):
-                return f"{ContentStr.permission_denied} for {file_path}"
+                return f"{ContentsView.ContentStr.permission_denied} for {file_path}"
             elif isinstance(exception, UnicodeDecodeError):
-                return f"{ContentStr.cannot_decode} for {file_path}"
+                return f"{ContentsView.ContentStr.cannot_decode} for {file_path}"
             else:
-                return f"{ContentStr.read_error} for {file_path}"
+                return f"{ContentsView.ContentStr.read_error} for {file_path}"
 
         def _read_file(file_path: Path) -> str:
             file_contents: str = ""
@@ -148,11 +109,11 @@ class ContentsView(Container, AppType):
                 with Path.open(file_path, encoding="utf-8") as f:
                     f_contents = f.read(truncate_size)
                 if f_contents.strip() == "":
-                    file_contents = ContentStr.empty_or_only_whitespace
+                    file_contents = ContentsView.ContentStr.empty_or_only_whitespace
                 elif file_size > truncate_size:
                     file_contents = (
-                        f_contents
-                        + f"\n--- {ContentStr.truncated} {truncate_size / 1024} KiB ---"
+                        f_contents + f"\n--- {ContentsView.ContentStr.truncated} "
+                        f"{truncate_size / 1024} KiB ---"
                     )
                 else:
                     file_contents = (
@@ -197,18 +158,7 @@ class ContentsView(Container, AppType):
             self.current_container_path = show_path
             return
 
-        if show_path == CMD.cache.dest_dir:
-            if self.ids.canvas_name == TabLabel.add:
-                self._cache_add_dir_contents(show_path)
-            else:
-                self._cache_managed_dir_contents(show_path)
-            self.mount(self.container_cache[show_path])
-            self.current_container_path = show_path
-        elif self.ids.canvas_name == TabLabel.add and show_path.is_dir():
-            self._cache_add_dir_contents(show_path)
-            self.mount(self.container_cache[show_path])
-            self.current_container_path = show_path
-        elif (
+        if show_path == CMD.cache.dest_dir or (
             show_path in CMD.cache.managed_dir_paths
             and show_path not in CMD.cache.status_paths
         ):
