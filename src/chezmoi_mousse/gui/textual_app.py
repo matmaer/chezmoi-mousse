@@ -81,11 +81,6 @@ class ChezmoiGUI(App[None]):
             priority=True,
         ),
         Binding(
-            key="escape",
-            action=BindingAction.exit_screen,
-            description=OpBtnLabel.cancel,
-        ),
-        Binding(
             key="M,m",
             action=BindingAction.toggle_maximized,
             description=BindingDescription.maximize,
@@ -328,9 +323,6 @@ class ChezmoiGUI(App[None]):
             new_description=new_description,
         )
 
-    def action_exit_screen(self) -> None:
-        self.screen.dismiss()
-
     def check_action(
         self, action: str, parameters: tuple[object, ...]  # noqa: ARG002
     ) -> bool | None:
@@ -356,9 +348,6 @@ class ChezmoiGUI(App[None]):
                 return False
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
-
-        if action == BindingAction.exit_screen:
-            return not isinstance(self.screen, (InstallHelpScreen, MainScreen))
 
         return True
 

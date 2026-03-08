@@ -14,7 +14,6 @@ __all__ = [
 
 
 class BindingAction(StrEnum):
-    exit_screen = auto()
     toggle_dry_run = auto()
     toggle_maximized = auto()
     toggle_switch_slider = auto()
