@@ -51,12 +51,11 @@ class FilteredDirTree(DirectoryTree, AppType):
                 )
                 or (
                     p.is_file()
-                    and not UnwantedFileExtensions.is_unwanted(p.suffix)
-                    and not UnwantedFileNames.is_unwanted(p.name)
+                    and not UnwantedFileExtensions.is_unwanted(p)
+                    and not UnwantedFileNames.is_unwanted(p)
                     and p.parent in CMD.cache.managed_dir_paths
                     and p not in CMD.cache.managed_file_paths
                     and self._file_of_interest(p)
-                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
             (True, False): lambda p: (  # switches: Green - Red
@@ -67,15 +66,14 @@ class FilteredDirTree(DirectoryTree, AppType):
                 )
                 or (
                     p.is_file()
-                    and not UnwantedFileExtensions.is_unwanted(p.suffix)
-                    and not UnwantedFileNames.is_unwanted(p.name)
+                    and not UnwantedFileExtensions.is_unwanted(p)
+                    and not UnwantedFileNames.is_unwanted(p)
                     and (
                         p.parent in CMD.cache.managed_dir_paths
                         or self._has_unmanaged_paths_in(p.parent)
                     )
                     and p not in CMD.cache.managed_file_paths
                     and self._file_of_interest(p)
-                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
             (False, True): lambda p: (  # switches: Red - Green
@@ -88,17 +86,12 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file()
                     and p not in CMD.cache.managed_file_paths
                     and p.parent in CMD.cache.managed_dir_paths
-                    and not UnwantedFileNames.is_private_key_name(p.name)
                 )
             ),
             # switches: Green - Green, include all unmanaged paths
             (True, True): lambda p: (
                 (p.is_dir() and self._has_unmanaged_paths_in(p))
-                or (
-                    p.is_file()
-                    and p not in CMD.cache.managed_file_paths
-                    and not UnwantedFileNames.is_private_key_name(p.name)
-                )
+                or (p.is_file() and p not in CMD.cache.managed_file_paths)
             ),
         }
 
@@ -107,6 +100,10 @@ class FilteredDirTree(DirectoryTree, AppType):
         return (p for p in paths if conditions[key](p))
 
     def _file_of_interest(self, file_path: Path) -> bool:
+        if UnwantedFileNames.is_unwanted(
+            file_path
+        ) or UnwantedFileExtensions.is_unwanted(file_path):
+            return False
         try:
             if file_path.stat().st_size > 1000 * 1024:  # 1 MiB
                 return False
@@ -276,12 +273,16 @@ class UnwantedFileExtensions(StrEnum):
     zip = ".zip"
 
     @classmethod
-    def is_unwanted(cls, extension: str) -> bool:
+    def is_unwanted(cls, file_path: Path) -> bool:
+        if UnwantedFileNames.is_unwanted(file_path):
+            return True
         try:
-            cls(extension)
+            cls(file_path.suffix)
             return True
         except ValueError:
-            return "cache" in extension.lower()
+            if file_path.parent.name == ".ssh" and file_path.name != "config":
+                return True
+            return "cache" in file_path.name.lower()
 
 
 class UnwantedFileNames(StrEnum):
@@ -331,13 +332,11 @@ class UnwantedFileNames(StrEnum):
     privatekey_wg = "privatekey"
 
     @classmethod
-    def is_unwanted(cls, name: str) -> bool:
+    def is_unwanted(cls, file_path: Path) -> bool:
         try:
-            cls(name)
+            cls(file_path.name)
             return True
         except ValueError:
-            return "cache" in name.lower()
-
-    @classmethod
-    def is_private_key_name(cls, value: str) -> bool:
-        return cls.is_unwanted(value)
+            if file_path.parent.name == ".ssh" and file_path.name != "config":
+                return True
+            return "cache" in file_path.name.lower()
