@@ -7,7 +7,6 @@ from rich.text import Text
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
-from textual.widgets.text_area import BUILTIN_LANGUAGES
 
 from chezmoi_mousse import CMD, ReadCmd, Tcss
 
@@ -17,8 +16,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 __all__ = ["ContentsView"]
-
-BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
 
 
 class ContentsView(ContainerCache):
@@ -34,27 +31,6 @@ class ContentsView(ContainerCache):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents)
-        self.ids = ids
-        self.container_cache: dict[Path, ScrollableContainer] = {}
-        self.current_container_path: Path | None = None
-        self.language_map = BUILTIN_MAP | {
-            ".cfg": BUILTIN_MAP["toml"],
-            ".ini": BUILTIN_MAP["toml"],
-            ".sh": BUILTIN_MAP["bash"],
-            ".yml": BUILTIN_MAP["yaml"],
-            ".zsh": BUILTIN_MAP["bash"],
-        }
-        self.shebang_map = {
-            "python": "python",
-            "python3": "python",
-            "bash": "bash",
-            "sh": "bash",
-            "zsh": "bash",
-            "node": "javascript",
-            "java": "java",
-            "go": "go",
-            "rustc": "rust",
-        }
 
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir

@@ -21,8 +21,6 @@ class GitLogView(ContainerCache):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
-        self.container_cache: dict[Path, ScrollableContainer] = {}
-        self.current_container_path: Path | None = None
 
     def on_mount(self) -> None:
         self.show_path = CMD.cache.dest_dir
