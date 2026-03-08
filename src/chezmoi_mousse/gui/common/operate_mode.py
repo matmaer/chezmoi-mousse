@@ -280,7 +280,7 @@ class OperateMode(Vertical, AppType):
         for diff_view in self.diff_views:
             diff_view.update_mounted_containers(changed_paths)
         for contents_view in self.contents_views:
-            contents_view.update_mounted_containers(changed_paths)
+            contents_view.purge_mounted_containers(changed_paths)
         for git_log in self.git_logs:
             git_log.remove_all_cached()
         for managed_tree in self.managed_trees:

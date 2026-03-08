@@ -134,10 +134,24 @@ class ContentsView(Container, AppType):
             widgets.append(Static(text_obj))
         self.container_cache[file_path] = ScrollableContainer(*widgets)
 
-    def update_mounted_containers(self, changed_paths: list["Path"]) -> None:
-        for path, container in self.container_cache.items():
-            if path in changed_paths:
+    def purge_mounted_containers(self, changed_paths: list["Path"]) -> None:
+        keys_to_remove = [
+            cached_path
+            for cached_path in self.container_cache
+            if any(
+                cached_path == changed_path or changed_path in cached_path.parents
+                for changed_path in changed_paths
+            )
+        ]
+
+        for cached_path in keys_to_remove:
+            container = self.container_cache.pop(cached_path, None)
+            if container is not None:
                 container.remove()
+
+        if self.current_container_path in keys_to_remove:
+            self.current_container_path = None
+
         self.show_path = CMD.cache.dest_dir
 
     def watch_show_path(self, show_path: Path | None) -> None:
