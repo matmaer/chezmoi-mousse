@@ -87,7 +87,7 @@ AddTab > Vertical > ContentsView {
   border-title-style: bold;
 }
 
-AppLog, CmdLog, ContentsView, DiffView, ContentsInfo, DiffInfo, LoggersBase {
+AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 1;
 }
 
