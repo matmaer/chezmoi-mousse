@@ -12,7 +12,7 @@ __all__ = ["ContainerCache"]
 
 class ContainerCache(AppType, Container):
 
-    def _update_container_display(
+    def update_container_display(
         self, show_path: "Path", new_container: "ScrollableContainer | None"
     ) -> None:
         # Hide the previously displayed container

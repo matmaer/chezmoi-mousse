@@ -151,4 +151,4 @@ class ContentsView(ContainerCache):
                 new_container = self._create_file_container(show_path)
             else:
                 return
-        self._update_container_display(show_path, new_container)
+        self.update_container_display(show_path, new_container)

@@ -116,7 +116,7 @@ class AddTabContentsView(ContentsView):
                 new_container = self._create_add_dir_container(show_path)
             elif show_path.is_file():
                 new_container = self._create_file_container(show_path)
-        self._update_container_display(show_path, new_container)
+        self.update_container_display(show_path, new_container)
 
 
 class AddTab(Horizontal, AppType):

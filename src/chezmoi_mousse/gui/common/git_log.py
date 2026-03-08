@@ -73,4 +73,4 @@ class GitLogView(ContainerCache):
                 new_container = self._create_datatable_container(
                     cmd_result.std_out.splitlines()
                 )
-        self._update_container_display(show_path, new_container)
+        self.update_container_display(show_path, new_container)

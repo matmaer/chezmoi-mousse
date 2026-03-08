@@ -105,4 +105,4 @@ class DiffView(ContainerCache):
             else:
                 widgets.append(Static("Nothing to show."))
             new_container = ScrollableContainer(*widgets)
-        self._update_container_display(show_path, new_container)
+        self.update_container_display(show_path, new_container)
