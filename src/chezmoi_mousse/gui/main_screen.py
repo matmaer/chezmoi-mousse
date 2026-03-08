@@ -142,10 +142,7 @@ class MainScreen(Screen[None], AppType):
             CMD.run_cmd.changes_enabled = True
         self.all_cmd_results = []
         self.old_cached = None
-        await self.app.push_screen(self.operate_mode.loading_modal)
-        await self.operate_mode.run_read_commands().wait()
-        await self.operate_mode.log_all_cmd_results().wait()
-        await self.operate_mode.update_cached_data().wait()
+        await self.operate_mode.manual_refresh().wait()
         CMD.run_cmd.changes_enabled = changes_enabled
         self.dir_tree.reload()
         self.dir_tree.refresh()

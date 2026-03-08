@@ -233,6 +233,14 @@ class OperateMode(Vertical, AppType):
             await self._run_read_command(read_cmd).wait()
 
     @work
+    async def manual_refresh(self) -> None:
+        self.loading_modal = LoadingModal()
+        await self.app.push_screen(self.loading_modal)
+        await self.run_read_commands().wait()
+        await self.log_all_cmd_results().wait()
+        await self.update_cached_data().wait()
+
+    @work
     async def _get_changed_paths(self, old_cached: CachedData) -> list["Path"]:
         old_managed = set(old_cached.managed_paths)
         old_files = set(old_cached.managed_file_paths)
