@@ -91,6 +91,10 @@ AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 1;
 }
 
+AppLog, CmdLog {
+  margin-bottom: 2;
+}
+
 CustomHeader {
   border-bottom: dashed $surface-lighten-3;
   color: $primary;
