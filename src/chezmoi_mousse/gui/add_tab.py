@@ -14,7 +14,6 @@ from chezmoi_mousse import (
     AppType,
     BorderTitle,
     Chars,
-    FlatBtnLabel,
     OpBtnEnum,
     OpBtnLabel,
     Tcss,
@@ -23,7 +22,7 @@ from chezmoi_mousse import (
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 
-__all__ = ["AddTab"]
+__all__ = ["AddTab", "FilteredDirTree"]
 
 
 class AddTabContentsView(ContentsView):
@@ -108,7 +107,7 @@ class AddTab(Horizontal, AppType):
     def compose(self) -> ComposeResult:
         yield Vertical(
             FilteredDirTree(CMD.cache.dest_dir),
-            Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button),
+            Button(label=OpBtnLabel.refresh_tree, classes=Tcss.refresh_button),
             id=IDS.add.container.left_side,
             classes=Tcss.tab_left_vertical,
         )
@@ -126,15 +125,6 @@ class AddTab(Horizontal, AppType):
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
         self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
         self.add_review_btn.disabled = True
-
-    @on(Button.Pressed)
-    def refresh_dir_tree(self, event: Button.Pressed) -> None:
-        event.stop()
-        self.contents_view.container_cache.clear()
-        self.contents_view.show_path = CMD.cache.dest_dir
-        if event.button.label in (FlatBtnLabel.refresh_tree, OpBtnLabel.reload):
-            self.dir_tree.reload()
-            self.dir_tree.refresh()
 
     @on(DirectoryTree.FileSelected)
     @on(DirectoryTree.DirectorySelected)

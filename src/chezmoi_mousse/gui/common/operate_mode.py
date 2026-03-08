@@ -27,7 +27,7 @@ from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLog
 from .loggers import AppLog, CmdLog
-from .messages import ChangedPathsMsg, ProgressTextMsg
+from .messages import ProgressTextMsg
 from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -58,19 +58,15 @@ def min_wait(
 
 class LoadingModal(ModalScreen[None]):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
-        self.ids = ids
-
     def compose(self) -> ComposeResult:
         with VerticalGroup():
-            yield Label(id=self.ids.label.loading)
+            yield Label()
             yield LoadingIndicator()
 
     @on(ProgressTextMsg)
     def update_pretty_cmd_text(self, message: ProgressTextMsg) -> None:
         message.stop()
-        label = self.query_one(self.ids.label.loading_q, Label)
+        label = self.query_exactly_one(Label)
         label.update(f"{message.text}")
 
 
@@ -113,6 +109,7 @@ class OperateMode(Vertical, AppType):
         )
 
     def on_mount(self) -> None:
+        self.loading_modal = LoadingModal()
         self.display = False
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
@@ -231,8 +228,8 @@ class OperateMode(Vertical, AppType):
         self.all_cmd_results.append(cmd_result)
 
     @work
-    async def _run_read_commands(self, read_commands: list[ReadCmd]) -> None:
-        for read_cmd in read_commands:
+    async def run_read_commands(self) -> None:
+        for read_cmd in self.read_commands:
             await self._run_read_command(read_cmd).wait()
 
     @work
@@ -265,12 +262,11 @@ class OperateMode(Vertical, AppType):
 
     @work
     @min_wait
-    async def _update_cached_data(self) -> None:
+    async def update_cached_data(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Updating cached data"))
         old_cached = copy.deepcopy(CMD.cache)
         CMD.update_parsed_data()
         changed_paths = await self._get_changed_paths(old_cached).wait()
-        self.post_message(ChangedPathsMsg(changed_paths=changed_paths))
         if not changed_paths:
             return
         for diff_view in self.diff_views:
@@ -286,7 +282,7 @@ class OperateMode(Vertical, AppType):
 
     @work
     @min_wait
-    async def _log_all_cmd_results(self) -> None:
+    async def log_all_cmd_results(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
         self.app_log.info("--- Commands executed in OperateMode ---")
         for cmd_result in self.all_cmd_results:
@@ -295,32 +291,16 @@ class OperateMode(Vertical, AppType):
         self.app_log.info("--- End of OperateMode commands ---")
 
     @work(exit_on_error=False)
-    @min_wait
-    async def manual_refresh(self) -> None:
-        changes_enabled = bool(CMD.run_cmd.changes_enabled)
-        if changes_enabled is False:
-            CMD.run_cmd.changes_enabled = True
-        self.all_cmd_results = []
-        self.loading_modal = LoadingModal(self.ids)
-        self.old_cached = None
-        await self.app.push_screen(self.loading_modal)
-        await self._run_read_commands(self.read_commands).wait()
-        await self._log_all_cmd_results().wait()
-        await self._update_cached_data().wait()
-        CMD.run_cmd.changes_enabled = changes_enabled
-        self.loading_modal.dismiss()
-
-    @work(exit_on_error=False)
     async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
         self.all_cmd_results = []
-        self.loading_modal = LoadingModal(self.ids)
+        self.loading_modal = LoadingModal()
         self.old_cached = None
         await self.app.push_screen(self.loading_modal)
         await self._run_perform_command(btn_enum).wait()
         await self._update_operate_info_post_run().wait()
-        await self._run_read_commands(self.read_commands).wait()
+        await self.run_read_commands().wait()
         await self._update_command_output().wait()
-        await self._log_all_cmd_results().wait()
+        await self.log_all_cmd_results().wait()
         if self.run_cmd_result is not None and self.run_cmd_result.is_dry_run is False:
-            await self._update_cached_data().wait()
+            await self.update_cached_data().wait()
         self.loading_modal.dismiss()

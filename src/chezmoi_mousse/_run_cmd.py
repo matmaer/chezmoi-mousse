@@ -114,10 +114,6 @@ class ReadCmd(Enum):
     template_data = (ReadVerb.data.value,)
     verify = (ReadVerb.verify.value,)
 
-    @classmethod
-    def all_read_cmds(cls) -> set["ReadCmd"]:
-        return set(cls)
-
 
 class WriteVerb(Enum):
     add = "add"

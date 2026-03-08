@@ -141,7 +141,7 @@ class ChezmoiGUI(App[None]):
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
 
-    def get_tab_widget(
+    def _get_tab_widget(
         self,
     ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab | DebugTab:
         if not isinstance(self.screen, MainScreen):
@@ -167,7 +167,7 @@ class ChezmoiGUI(App[None]):
     def get_switch_slider_widget(self) -> SwitchSlider | None:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_switch_slider_widget called outside of MainScreen")
-        current_tab_widget = self.get_tab_widget()
+        current_tab_widget = self._get_tab_widget()
         if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
             return current_tab_widget.query_exactly_one(SwitchSlider)
         return None
@@ -200,13 +200,13 @@ class ChezmoiGUI(App[None]):
                 if slider_visible is True
                 else BindingDescription.show_filters
             )
-            self.update_binding_description(
+            self._update_binding_description(
                 binding_action=BindingAction.toggle_switch_slider,
                 new_description=new_description,
             )
         self.refresh_bindings()
 
-    def update_binding_description(
+    def _update_binding_description(
         self, binding_action: BindingAction, new_description: str
     ) -> None:
         for key, binding in self._bindings:
@@ -245,7 +245,7 @@ class ChezmoiGUI(App[None]):
             if slider_visible is False
             else BindingDescription.show_filters
         )
-        self.update_binding_description(
+        self._update_binding_description(
             binding_action=BindingAction.toggle_switch_slider,
             new_description=new_description,
         )
@@ -266,7 +266,7 @@ class ChezmoiGUI(App[None]):
         main_tabs.display = not main_tabs.display
 
         if active_tab in (TabLabel.apply, TabLabel.re_add):
-            active_tab_widget = self.get_tab_widget()
+            active_tab_widget = self._get_tab_widget()
             view_switcher_buttons = active_tab_widget.query(TabButtons).last()
 
         if active_tab == TabLabel.apply:
@@ -318,7 +318,7 @@ class ChezmoiGUI(App[None]):
             if header.display is True
             else BindingDescription.minimize
         )
-        self.update_binding_description(
+        self._update_binding_description(
             binding_action=BindingAction.toggle_maximized,
             new_description=new_description,
         )

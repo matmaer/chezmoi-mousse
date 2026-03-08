@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, DirNode, FlatBtnLabel, TabLabel, Tcss
+from chezmoi_mousse import CMD, AppType, DirNode, OpBtnLabel, TabLabel, Tcss
 
 from .actionables import TabButtons
 from .contents import ContentsView
@@ -40,7 +40,7 @@ class TreeSwitcher(Container, AppType):
         ):
             yield ManagedTree(self.ids)
             yield ListTree(self.ids)
-        yield Button(label=FlatBtnLabel.refresh_tree, classes=Tcss.refresh_button)
+        yield Button(label=OpBtnLabel.refresh_tree, classes=Tcss.refresh_button)
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:

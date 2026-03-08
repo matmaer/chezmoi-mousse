@@ -1,28 +1,19 @@
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
-from chezmoi_mousse import (
-    CMD,
-    IDS,
-    AppType,
-    FlatBtnLabel,
-    LogString,
-    OpBtnEnum,
-    OpBtnLabel,
-    TabLabel,
-)
+from chezmoi_mousse import CMD, IDS, AppType, LogString, OpBtnEnum, OpBtnLabel, TabLabel
 
-from .add_tab import AddTab
+from .add_tab import AddTab, FilteredDirTree
 from .apply_tab import ApplyTab
 from .common.actionables import SwitchSlider
 from .common.contents import ContentsView
 from .common.loggers import AppLog, DebugLog
-from .common.messages import ChangedPathsMsg, OperateButtonMsg
+from .common.messages import OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher, ViewSwitcher
@@ -57,7 +48,7 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.operate_mode_container = self.query_one(
+        self.operate_mode = self.query_one(
             IDS.main_tabs.container.op_mode_q, OperateMode
         )
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
@@ -66,7 +57,7 @@ class MainScreen(Screen[None], AppType):
             self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
             self.app_log.success(LogString.dev_mode_enabled)
             self.notify(LogString.dev_mode_enabled)
-
+        self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self._populate_apply_trees()
         self._populate_re_add_trees()
         self._set_config_screen_reactives()
@@ -144,30 +135,45 @@ class MainScreen(Screen[None], AppType):
     # Message handling methods #
     ############################
 
-    @on(Button.Pressed)
-    async def refresh_tree(self, event: Button.Pressed) -> None:
-        if event.button.label == FlatBtnLabel.refresh_tree:
-            event.stop()
-            await self.operate_mode_container.manual_refresh().wait()
-
-    @on(ChangedPathsMsg)
-    def handle_changed_paths_msg(self, msg: ChangedPathsMsg) -> None:
-        if not msg.changed_paths:
+    @work
+    async def _manual_refresh(self) -> None:
+        changes_enabled = bool(CMD.run_cmd.changes_enabled)
+        if changes_enabled is False:
+            CMD.run_cmd.changes_enabled = True
+        self.all_cmd_results = []
+        self.old_cached = None
+        await self.app.push_screen(self.operate_mode.loading_modal)
+        await self.operate_mode.run_read_commands().wait()
+        await self.operate_mode.log_all_cmd_results().wait()
+        await self.operate_mode.update_cached_data().wait()
+        CMD.run_cmd.changes_enabled = changes_enabled
+        self.dir_tree.reload()
+        self.dir_tree.refresh()
+        self.operate_mode.loading_modal.dismiss()
+        if not self.operate_mode.changed_paths:
             self.notify("No managed paths changed.", severity="warning")
         else:
-            changed_paths = "\n".join(sorted(str(path) for path in msg.changed_paths))
+            changed_paths = "\n".join(
+                sorted(str(path) for path in self.operate_mode.changed_paths)
+            )
             self.notify(f"Changed paths:\n{changed_paths}")
+
+    @on(Button.Pressed)
+    async def refresh_tree(self, event: Button.Pressed) -> None:
+        if event.button.label == OpBtnLabel.refresh_tree:
+            event.stop()
+            await self._manual_refresh().wait()
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
-        operate_mode_container = self.screen.query_exactly_one(OperateMode)
+        operate_mode = self.screen.query_exactly_one(OperateMode)
         if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
-            operate_mode_container.display = False
+            operate_mode.display = False
             self._restore_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
-            operate_mode_container.display = True
-            operate_mode_container.btn_enum = msg.button.btn_enum
+            operate_mode.display = True
+            operate_mode.btn_enum = msg.button.btn_enum
             self._set_review_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
-            operate_mode_container.btn_enum = msg.button.btn_enum
+            operate_mode.btn_enum = msg.button.btn_enum
             self._set_post_run_display(msg.ids)

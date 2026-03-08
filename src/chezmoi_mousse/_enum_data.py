@@ -62,6 +62,7 @@ class OpBtnLabel(StrEnum):
     apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
+    create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"
     destroy_run = "Run Chezmoi Destroy"
@@ -70,12 +71,12 @@ class OpBtnLabel(StrEnum):
     forget_run = "Run Chezmoi Forget"
     init_review = "Review Init Chezmoi"
     init_run = "Run Chezmoi Init"
+    log_memory = "Log Memory Usage"
     re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
+    refresh_tree = "Refresh All Trees"
     reload = "Reload"
     remove_paths = "Remove Test Paths"
-    create_diffs = "Create Diffs"
-    log_memory = "Log Memory Usage"
 
     @property
     def normalized_label(self) -> str:
@@ -87,9 +88,9 @@ class OpBtnLabel(StrEnum):
 @dataclass(slots=True)
 class OpBtnData:
     label: str
-    write_cmd: WriteCmd
-    op_info_string: str
-    op_info_title: str | None
+    write_cmd: WriteCmd | None = None
+    op_info_string: str | None = None
+    op_info_title: str | None = None
     op_info_subtitle: str | None = None
     path_arg: "Path | None" = None
     changed_paths: list["Path | None"] | None = None
@@ -185,10 +186,14 @@ class OpBtnEnum(Enum):
 
     @property
     def write_cmd(self) -> WriteCmd:
+        if self.value.write_cmd is None:
+            raise ValueError(f"OpBtnEnum member {self.name} has no write_cmd")
         return self.value.write_cmd
 
     @property
     def op_info_string(self) -> str:
+        if self.value.op_info_string is None:
+            raise ValueError(f"OpBtnEnum member {self.name} has no op_info_string")
         return self.value.op_info_string
 
     @property
