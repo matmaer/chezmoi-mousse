@@ -102,17 +102,6 @@ class OperateMode(Vertical, AppType):
         self.list_trees: list[ListTree] = []
         self.changed_paths: list[Path] = []
 
-    @property
-    def _path_arg(self) -> "Path | None":
-        return self.btn_enum.path_arg if self.btn_enum is not None else None
-
-    @property
-    def _global_args(self) -> tuple[str, ...]:
-        if self.btn_enum is None:
-            return ()
-        path_arg = str(self._path_arg) if self._path_arg is not None else ""
-        return (*self.btn_enum.write_cmd.value, path_arg)
-
     def compose(self) -> ComposeResult:
         yield Static(
             id=self.ids.static.operate_info,
@@ -134,6 +123,20 @@ class OperateMode(Vertical, AppType):
         self.git_logs = list(self.screen.query(GitLog))
         self.managed_trees = list(self.screen.query(ManagedTree))
         self.list_trees = list(self.screen.query(ListTree))
+        self.op_cmd_results = self.query_one(
+            self.ids.container.op_cmd_results_q, ScrollableContainer
+        )
+
+    @property
+    def _path_arg(self) -> "Path | None":
+        return self.btn_enum.path_arg if self.btn_enum is not None else None
+
+    @property
+    def _global_args(self) -> tuple[str, ...]:
+        if self.btn_enum is None:
+            return ()
+        path_arg = str(self._path_arg) if self._path_arg is not None else ""
+        return (*self.btn_enum.write_cmd.value, path_arg)
 
     def watch_btn_enum(self, btn_enum: OpBtnEnum) -> None:
         if btn_enum in self.review_btn_enums:
@@ -144,12 +147,9 @@ class OperateMode(Vertical, AppType):
             self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
 
     def update_review_info(self) -> None:
-        if self.btn_enum is None:
+        if self.btn_enum is None or self.display is False:
             return
-        op_cmd_results = self.query_one(
-            self.ids.container.op_cmd_results_q, ScrollableContainer
-        )
-        op_cmd_results.remove_children()
+        self.op_cmd_results.remove_children()
         info_lines: list[str] = []
         info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
         info_lines.append(self.btn_enum.op_info_string)
@@ -187,15 +187,11 @@ class OperateMode(Vertical, AppType):
     @work
     @min_wait
     async def _update_command_output(self) -> None:
-        op_cmd_results = self.query_one(
-            self.ids.container.op_cmd_results_q, ScrollableContainer
-        )
-        op_cmd_results.remove_children()
         self.loading_modal.post_message(
-            ProgressTextMsg(f"[$text-darken-2]Update {op_cmd_results.name}[/]")
+            ProgressTextMsg(f"[$text-darken-2]Update {self.op_cmd_results.name}[/]")
         )
         for cmd_result in self.all_cmd_results:
-            op_cmd_results.mount(cmd_result.pretty_collapsible)
+            self.op_cmd_results.mount(cmd_result.pretty_collapsible)
 
     @work(thread=True)
     @min_wait
@@ -249,6 +245,7 @@ class OperateMode(Vertical, AppType):
         for path in sorted(dirs, key=lambda p: len(p.parts)):
             if not any(path.is_relative_to(parent) for parent in simplified):
                 simplified.add(path)
+        self.changed_paths = sorted(simplified)
         return sorted(simplified)
 
     @work

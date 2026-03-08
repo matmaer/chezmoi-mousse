@@ -139,8 +139,8 @@ class MainScreen(Screen[None], AppType):
             operate_mode_container.display = False
             self._toggle_operate_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
-            operate_mode_container.btn_enum = msg.button.btn_enum
             operate_mode_container.display = True
+            operate_mode_container.btn_enum = msg.button.btn_enum
             self._toggle_operate_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
             operate_mode_container.btn_enum = msg.button.btn_enum
