@@ -21,10 +21,8 @@ from chezmoi_mousse import (
     CMD,
     IDS,
     AppType,
-    BindingAction,
     LinkBtn,
     OpBtnEnum,
-    OpBtnLabel,
     OperateString,
     SectionLabel,
     SwitchEnum,
@@ -439,9 +437,6 @@ class InitChezmoi(Screen[None], AppType):
     def on_mount(self) -> None:
         self.operate_buttons = self.query_one(
             self.ids.container.operate_buttons_q, OperateButtons
-        )
-        self.app.update_binding_description(
-            BindingAction.exit_screen, OpBtnLabel.reload
         )
         self.init_info = self.query_one(self.ids.static.init_info_q, Static)
         self._update_init_info()
