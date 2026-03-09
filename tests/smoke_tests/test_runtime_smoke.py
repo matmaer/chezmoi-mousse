@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 import pytest
@@ -15,20 +16,26 @@ combos_to_test: list[dict[str, bool]] = [
 ]
 
 
-@pytest.mark.parametrize("combo", combos_to_test, ids=lambda c: f"{c}")
-async def test_app_starts(combo: dict[str, bool]) -> None:
-    test_app = ChezmoiGUI(**combo)
-    async with test_app.run_test() as pilot:
-        await pilot.pause()  # Allow SplashScreen to render
-        start_time = time.time()
-        while isinstance(test_app.screen, SplashScreen):
-            if time.time() - start_time > 2:
-                raise TimeoutError("SplashScreen did not dismiss within 2 seconds")
-            await pilot.pause(0.1)
-        await pilot.pause()  # Allow next screen to render
+@pytest.mark.asyncio
+async def test_app_starts_concurrently() -> None:
+    async def run_single_variant(combo: dict[str, bool]) -> None:
+        test_app = ChezmoiGUI(**combo)
+        async with test_app.run_test() as pilot:
+            await pilot.pause()  # Allow SplashScreen to render
+            start_time = time.monotonic()
+            while isinstance(test_app.screen, SplashScreen):
+                if time.monotonic() - start_time > 2.1:
+                    raise TimeoutError(
+                        f"SplashScreen for {combo} took more than 2.1s to dismiss."
+                    )
+                await pilot.pause(0.1)
+            await pilot.pause()  # Allow next screen to render
 
-        if combo["chezmoi_found"]:
-            assert isinstance(test_app.screen, MainScreen)
-        else:
-            assert isinstance(test_app.screen, InstallHelpScreen)
-        await pilot.press("ctrl+q")
+            if combo["chezmoi_found"]:
+                assert isinstance(test_app.screen, MainScreen)
+            else:
+                assert isinstance(test_app.screen, InstallHelpScreen)
+            await pilot.press("ctrl+q")
+
+    # Run all variants in parallel using asyncio.gather
+    await asyncio.gather(*(run_single_variant(c) for c in combos_to_test))

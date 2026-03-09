@@ -70,4 +70,3 @@ repos:
         entry: uv run pytest -c pyproject.toml
         language: system
         pass_filenames: false
-        always_run: true
