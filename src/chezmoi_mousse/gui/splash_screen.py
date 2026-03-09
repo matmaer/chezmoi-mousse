@@ -158,6 +158,7 @@ class SplashScreen(Screen[None], AppType):
         install_help_worker = self._get_install_screen_data()
         await install_help_worker.wait()
         InstallHelpScreen.install_help_data = install_help_worker.result
+        self.dismiss()
         return
 
     @work
