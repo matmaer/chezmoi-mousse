@@ -8,10 +8,11 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import CMD, IDS, AppType, LogString, OpBtnEnum, OpBtnLabel, TabLabel
 
-from .add_tab import AddTab, FilteredDirTree
+from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import SwitchSlider
 from .common.contents import ContentsView
+from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, DebugLog
 from .common.messages import OperateButtonMsg
 from .common.operate_mode import OperateMode
