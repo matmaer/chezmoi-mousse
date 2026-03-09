@@ -62,3 +62,12 @@ repos:
         minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [python, pyi]
+
+  - repo: local
+    hooks:
+      - id: pytest-tests
+        name: pytest tests
+        entry: uv run pytest -c pyproject.toml
+        language: system
+        pass_filenames: false
+        always_run: true
