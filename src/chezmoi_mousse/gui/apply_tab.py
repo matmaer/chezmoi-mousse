@@ -45,8 +45,6 @@ class ApplyTab(Container, AppType):
     def toggle_unchanged(self) -> None:
         unchanged_switch = self.query_one(IDS.apply.switch.unchanged_q, Switch)
         unchanged_switch.toggle()
-        managed_tree = self.query_one(IDS.apply.tree.managed_q)
-        managed_tree.refresh()
 
     @on(CurrentApplyNodeMsg)
     def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:

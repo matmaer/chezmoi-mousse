@@ -162,4 +162,5 @@ class AddTab(Horizontal, AppType):
             self.dir_tree.unmanaged_dirs = event.value
         elif event.switch.id == IDS.add.switch.unwanted:
             self.dir_tree.unwanted = event.value
+        self.dir_tree.refresh()
         self.dir_tree.reload()

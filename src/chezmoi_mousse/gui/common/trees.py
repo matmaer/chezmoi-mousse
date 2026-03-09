@@ -86,6 +86,9 @@ class ListTree(TreeBase):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.list_tree)
 
+    def on_mount(self) -> None:
+        self.show_root = False
+
     def populate_tree(self) -> None:
         self.clear()
         self.root.data = CMD.cache.dest_dir
@@ -123,6 +126,8 @@ class ManagedTree(TreeBase):
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()
+        self.select_node(self.root)
+        self.root.expand()
 
     def _populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         dir_node = self.dir_nodes[dir_path]

@@ -153,11 +153,10 @@ class OperateButtonIds:
         self.re_add_run = ids.operate_button_id(operation=OpBtnLabel.re_add_run)
         self.re_add_run_q = f"#{self.re_add_run}"
 
-        # Close button, can be either cancel, exit app or reload
         self.cancel = ids.operate_button_id(operation=OpBtnLabel.cancel)
         self.cancel_q = f"#{self.cancel}"
-        self.reload = ids.operate_button_id(operation=OpBtnLabel.reload)
-        self.reload_q = f"#{self.reload}"
+        self.close = ids.operate_button_id(operation=OpBtnLabel.close)
+        self.close_q = f"#{self.close}"
         self.exit_app = ids.operate_button_id(operation=OpBtnLabel.exit_app)
         self.exit_app_q = f"#{self.exit_app}"
 

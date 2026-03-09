@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from textual import on, work
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import Screen
@@ -135,36 +135,16 @@ class MainScreen(Screen[None], AppType):
     # Message handling methods #
     ############################
 
-    @work
-    async def _manual_refresh(self) -> None:
-        changes_enabled = bool(CMD.run_cmd.changes_enabled)
-        if changes_enabled is False:
-            CMD.run_cmd.changes_enabled = True
-        self.all_cmd_results = []
-        self.old_cached = None
-        await self.operate_mode.manual_refresh().wait()
-        CMD.run_cmd.changes_enabled = changes_enabled
-        self.dir_tree.reload()
-        self.dir_tree.refresh()
-        self.operate_mode.loading_modal.dismiss()
-        if not self.operate_mode.changed_paths:
-            self.notify("No managed paths changed.", severity="warning")
-        else:
-            changed_paths = "\n".join(
-                sorted(str(path) for path in self.operate_mode.changed_paths)
-            )
-            self.notify(f"Changed paths:\n{changed_paths}")
-
     @on(Button.Pressed)
-    async def refresh_tree(self, event: Button.Pressed) -> None:
+    async def refresh_all_trees(self, event: Button.Pressed) -> None:
         if event.button.label == OpBtnLabel.refresh_tree:
             event.stop()
-            await self._manual_refresh().wait()
+            await self.operate_mode.manual_refresh().wait()
 
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
         operate_mode = self.screen.query_exactly_one(OperateMode)
-        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
+        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.close):
             operate_mode.display = False
             self._restore_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():

@@ -45,8 +45,6 @@ class ReAddTab(Container, AppType):
     def toggle_unchanged(self) -> None:
         unchanged_switch = self.query_one(IDS.re_add.switch.unchanged_q, Switch)
         unchanged_switch.toggle()
-        managed_tree = self.query_one(IDS.re_add.tree.managed_q)
-        managed_tree.refresh()
 
     @on(CurrentReAddNodeMsg)
     def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
