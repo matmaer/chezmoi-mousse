@@ -19,7 +19,7 @@ type AstClassDefs = list[ast.ClassDef]
 MODULE_PATHS = get_module_paths()
 
 
-class TestResults(NamedTuple):
+class ResultsTuple(NamedTuple):
     module_path: str  # the module path for error reporting
     class_name: str  # the ast.ClassDef.name containing an unused method
     method_name: str  # the ast.FunctionDef.name of the method not in use
@@ -114,7 +114,7 @@ for file_path in MODULE_PATHS:
     ids=lambda x: f"{x.class_name} ({x.module_path}:{x.class_lineno})",
 )
 def test_methods_in_use(class_data: ClassData) -> None:
-    results: list[TestResults] = []
+    results: list[ResultsTuple] = []
     class_node_set = set(class_data.class_nodes)
 
     for method in class_data.methods:
@@ -130,7 +130,7 @@ def test_methods_in_use(class_data: ClassData) -> None:
                     break
             if not in_use:
                 results.append(
-                    TestResults(
+                    ResultsTuple(
                         module_path=class_data.module_path,
                         class_name=class_data.class_name,
                         method_name=method.name,
@@ -161,7 +161,7 @@ def test_methods_in_use(class_data: ClassData) -> None:
                             break
             if not in_use:
                 results.append(
-                    TestResults(
+                    ResultsTuple(
                         module_path=class_data.module_path,
                         class_name=class_data.class_name,
                         method_name=method.name,
