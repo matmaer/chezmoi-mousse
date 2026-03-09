@@ -193,7 +193,10 @@ class ChezmoiGUI(App[None]):
         ):
             slider: SwitchSlider | None = self.get_switch_slider_widget()
             if slider is None:
-                return
+                raise ValueError(
+                    "SwitchSlider widget not found in apply, re-add, or add tab "
+                    "when updating binding description on tab activation."
+                )
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters

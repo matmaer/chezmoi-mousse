@@ -130,7 +130,7 @@ class OperateMode(Vertical, AppType):
     @property
     def _global_args(self) -> tuple[str, ...]:
         if self.btn_enum is None:
-            return ()
+            raise ValueError("btn_enum is None when trying to access global args.")
         path_arg = (
             str(self.btn_enum.path_arg) if self.btn_enum.path_arg is not None else ""
         )

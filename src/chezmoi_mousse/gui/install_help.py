@@ -65,12 +65,9 @@ class InstallHelpScreen(Screen[None], AppType):
             pretty_widget.update(self.path_env_list)
 
     def populate_tree(self) -> None:
-        help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
         if self.install_help_data is None:
-            self.app.notify(
-                "InstallHelpScreen: No install help data found", severity="error"
-            )
-            return
+            raise ValueError("No install help data found")
+        help_tree: CommandsTree = self.query_exactly_one(CommandsTree)
         install_help: ParsedJson = self.install_help_data
         help_tree.show_root = False
         for k, v in install_help.items():

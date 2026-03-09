@@ -353,7 +353,7 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
             return
         select_widget: Select[str] = self.query_exactly_one(Select[str])
         if select_widget.selection is None:
-            return
+            raise ValueError("No selection in select widget on input submitted event.")
         init_cmd = None
         valid_arg = None
         if select_widget.selection == "https":
