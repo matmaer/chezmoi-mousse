@@ -1,15 +1,23 @@
+import asyncio
+
 import pytest
 from textual.widgets import ContentSwitcher, TabbedContent
 
 from chezmoi_mousse import IDS, TabLabel
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.gui.main_screen import MainScreen
+from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 
 
 def _open_main_screen_immediately(self: ChezmoiGUI) -> None:
     # Bypass SplashScreen for now
     self.push_screen(MainScreen())
+
+
+def _splash_runs_without_real_workers(self: SplashScreen) -> None:
+    # Keep splash lifecycle active but avoid I/O and network worker setup.
+    self.app._splash_screen_ran = True
 
 
 async def test_app_starts_and_main_screen_renders(
@@ -21,6 +29,25 @@ async def test_app_starts_and_main_screen_renders(
 
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
+        assert isinstance(app.screen, MainScreen)
+        tabbed_content = app.screen.query_exactly_one(TabbedContent)
+        assert tabbed_content.active == TabLabel.apply
+
+
+async def test_app_starts_when_splash_screen_runs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        SplashScreen, "_chezmoi_found_workers", _splash_runs_without_real_workers
+    )
+    app = ChezmoiGUI(chezmoi_found=True, dev_mode=False, pretend_init_needed=False)
+
+    async with app.run_test(size=(120, 40)) as pilot:
+        await pilot.pause()
+        # SplashScreen dismisses itself via its own interval callback.
+        await asyncio.sleep(2.2)
+        await pilot.pause()
+        assert getattr(app, "_splash_screen_ran", False) is True
         assert isinstance(app.screen, MainScreen)
         tabbed_content = app.screen.query_exactly_one(TabbedContent)
         assert tabbed_content.active == TabLabel.apply
