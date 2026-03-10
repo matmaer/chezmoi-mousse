@@ -94,7 +94,7 @@ class AppLog(RichLoggers):
         if self.app.dev_mode is True:
             self.write_warning(f"{Chars.warning_sign} {LogString.dev_mode_enabled}")
 
-    def _log_cmd_result(self, command_result: "CommandResult") -> None:
+    def log_cmd_result(self, command_result: "CommandResult") -> None:
         cmd_color = LogColor.cmd
         log_text: list[str] = [f"{command_result.filtered_cmd} |"]
 
@@ -133,7 +133,7 @@ class AppLog(RichLoggers):
     def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
         if cmd_result is None:
             return
-        self._log_cmd_result(cmd_result)
+        self.log_cmd_result(cmd_result)
 
 
 class CmdLog(ScrollableContainer):
@@ -146,9 +146,9 @@ class CmdLog(ScrollableContainer):
     def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
         if cmd_result is None:
             return
-        self._log_cmd_result(cmd_result)
+        self.log_cmd_result(cmd_result)
 
-    def _log_cmd_result(self, cmd_result: "CommandResult") -> None:
+    def log_cmd_result(self, cmd_result: "CommandResult") -> None:
         self.mount(cmd_result.pretty_collapsible)
 
 

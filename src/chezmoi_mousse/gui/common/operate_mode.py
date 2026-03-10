@@ -28,7 +28,7 @@ from .diffs import DiffView
 from .filtered_dir_tree import FilteredDirTree
 from .git_log import GitLogView
 from .loggers import AppLog, CmdLog
-from .messages import ProgressTextMsg
+from .messages import ChangedRootPaths, ProgressTextMsg
 from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -294,6 +294,7 @@ class OperateMode(Vertical, AppType):
             if not any(path.is_relative_to(parent) for parent in simplified):
                 simplified.add(path)
         self.changed_root_paths = sorted(simplified)
+        self.post_message(ChangedRootPaths(self.changed_root_paths))
         return sorted(simplified)
 
     @work

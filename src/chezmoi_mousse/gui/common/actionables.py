@@ -122,8 +122,8 @@ class OperateButtons(HorizontalGroup):
         }
         self.cancel_btn = self.query_one(self.ids.op_btn.cancel_q, OpButton)
         self.cancel_btn.display = False
-        self.close_btn = self.query_one(self.ids.op_btn.close_q, OpButton)
-        self.close_btn.display = False
+        self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
+        self.reload_btn.display = False
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabLabel.apply:
             self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = bool(
@@ -147,9 +147,9 @@ class OperateButtons(HorizontalGroup):
         if not isinstance(event.button, OpButton):
             return
 
-        if event.button.label in (OpBtnLabel.cancel, OpBtnLabel.close):
+        if event.button.label in (OpBtnLabel.cancel, OpBtnLabel.reload):
             self.cancel_btn.display = False
-            self.close_btn.display = False
+            self.reload_btn.display = False
             for btn in self.run_buttons:
                 btn.display = False
             for btn in self.review_buttons:
@@ -173,7 +173,7 @@ class OperateButtons(HorizontalGroup):
 
         elif event.button in self.run_buttons:
             self.cancel_btn.display = False
-            self.close_btn.display = True
+            self.reload_btn.display = True
             event.button.disabled = True
             self.post_message(OperateButtonMsg(self.ids, button=event.button))
 

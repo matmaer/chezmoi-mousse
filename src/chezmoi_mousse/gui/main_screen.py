@@ -143,7 +143,7 @@ class MainScreen(Screen[None], AppType):
     @on(OperateButtonMsg)
     def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
         operate_mode = self.screen.query_exactly_one(OperateMode)
-        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.close):
+        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
             operate_mode.display = False
             self._restore_display(msg.ids)
         elif msg.button.btn_enum in OpBtnEnum.review_btn_enums():
