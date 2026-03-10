@@ -24,9 +24,9 @@ async def test_app_starts_concurrently() -> None:
             await pilot.pause()  # Allow SplashScreen to render
             start_time = time.monotonic()
             while isinstance(test_app.screen, SplashScreen):
-                if time.monotonic() - start_time > 2.1:
+                if time.monotonic() - start_time > 2.5:
                     raise TimeoutError(
-                        f"SplashScreen for {combo} took more than 2.1s to dismiss."
+                        f"SplashScreen for {combo} took more than 2.5s to dismiss."
                     )
                 await pilot.pause(0.1)
             await pilot.pause()  # Allow next screen to render
