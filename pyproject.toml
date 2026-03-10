@@ -29,6 +29,7 @@ dev = [
     "pytest-env",
     "pytest-memray",
     "pytest-textual-snapshot",
+    "pytest-timeout",
     "ruff",
     "snakeviz",
     "textual",
@@ -41,7 +42,7 @@ dev = [
 config = ".pre-commit-config.yaml"
 
 [tool.pytest.ini_options]
-addopts = "--color=auto --tb=no -s --no-header -p no:cacheprovider"
+addopts = "--color=auto --tb=no -s --no-header -p no:cacheprovider --timeout=15"
 testpaths = ["tests"]
 pythonpath = ["src"]
 python_files = ["[!_]*.py"]

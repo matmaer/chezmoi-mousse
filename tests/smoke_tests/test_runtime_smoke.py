@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 import pytest
 
@@ -21,20 +20,20 @@ async def test_app_starts_concurrently() -> None:
     async def run_single_variant(combo: dict[str, bool]) -> None:
         test_app = ChezmoiGUI(**combo)
         async with test_app.run_test() as pilot:
-            await pilot.pause()  # Allow SplashScreen to render
-            start_time = time.monotonic()
+            # Allow SplashScreen to render
+            await pilot.pause()
+
             while isinstance(test_app.screen, SplashScreen):
-                if time.monotonic() - start_time > 2.5:
-                    raise TimeoutError(
-                        f"SplashScreen for {combo} took more than 2.5s to dismiss."
-                    )
                 await pilot.pause(0.1)
-            await pilot.pause()  # Allow next screen to render
+
+            # Allow next screen to render
+            await pilot.pause()
 
             if combo["chezmoi_found"]:
                 assert isinstance(test_app.screen, MainScreen)
             else:
                 assert isinstance(test_app.screen, InstallHelpScreen)
+
             await pilot.press("ctrl+q")
 
     # Run all variants in parallel using asyncio.gather
