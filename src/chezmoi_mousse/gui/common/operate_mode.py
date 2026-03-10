@@ -238,15 +238,11 @@ class OperateMode(Vertical, AppType):
 
     @work
     async def manual_refresh(self) -> None:
-        changes_enabled = bool(CMD.run_cmd.changes_enabled)
-        if changes_enabled is False:
-            CMD.run_cmd.changes_enabled = True
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         await self._run_read_commands().wait()
         await self._log_all_cmd_results_to_logs_tab().wait()
         await self._update_cached_data_and_trees().wait()
-        CMD.run_cmd.changes_enabled = changes_enabled
         if not self.all_changed_paths:
             self.notify("No managed paths changed.", severity="warning")
         else:
