@@ -7,6 +7,7 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import CMD, ReadCmd
 
+from .messages import NewCmdResults
 from .mixins import ContainerCache
 
 if TYPE_CHECKING:
@@ -67,7 +68,7 @@ class GitLogView(ContainerCache):
                 )
             else:
                 cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
-                self.app.log_cmd_result(cmd_result)
+                self.post_message(NewCmdResults([cmd_result]))
                 new_container = self._create_datatable_container(
                     cmd_result.std_out.splitlines()
                 )

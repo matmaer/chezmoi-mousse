@@ -28,7 +28,7 @@ from .diffs import DiffView
 from .filtered_dir_tree import FilteredDirTree
 from .git_log import GitLogView
 from .loggers import AppLog, CmdLog
-from .messages import ChangedRootPaths, ProgressTextMsg
+from .messages import NewCmdResults, ProgressTextMsg
 from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -293,8 +293,6 @@ class OperateMode(Vertical, AppType):
         for path in sorted(dirs, key=lambda p: len(p.parts)):
             if not any(path.is_relative_to(parent) for parent in simplified):
                 simplified.add(path)
-        self.changed_root_paths = sorted(simplified)
-        self.post_message(ChangedRootPaths(self.changed_root_paths))
         return sorted(simplified)
 
     @work
@@ -306,6 +304,7 @@ class OperateMode(Vertical, AppType):
         old_cached = copy.deepcopy(CMD.cache)
         CMD.update_parsed_data()
         changed = await self._get_changed_root_paths(old_cached).wait()
+        self.post_message(NewCmdResults(self.all_cmd_results, changed))
         if not changed:
             return
         for diff_view in self.diff_views:

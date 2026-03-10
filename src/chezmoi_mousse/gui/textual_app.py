@@ -26,7 +26,6 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .common.loggers import AppLog, CmdLog
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
@@ -116,13 +115,6 @@ class ChezmoiGUI(App[None]):
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
-
-    def log_cmd_result(self, command_result: "CommandResult") -> None:
-        # self.screen contains the currently active screen
-        app_log = self.screen.query_one(IDS.logs.logger.app_q, AppLog)
-        app_log.cmd_result = command_result
-        cmd_log = self.screen.query_one(IDS.logs.logger.cmd_q, CmdLog)
-        cmd_log.cmd_result = command_result
 
     @work
     async def _run_splash_screen(self) -> None:

@@ -7,6 +7,7 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import CMD, AppIds, ReadCmd, TabLabel, Tcss
 
+from .messages import NewCmdResults
 from .mixins import ContainerCache
 
 if TYPE_CHECKING:
@@ -57,7 +58,7 @@ class DiffView(ContainerCache):
             diff_result = CMD.run_cmd.read(
                 ReadCmd.diff_reverse, path_arg=self.show_path
             )
-        self.app.log_cmd_result(diff_result)
+        self.post_message(NewCmdResults([diff_result]))
         diff_lines = diff_result.std_out.splitlines()
         if not diff_lines:
             return [Static("No diff output available.", classes=Tcss.info)]

@@ -6,15 +6,24 @@ from textual.containers import Vertical
 from textual.screen import Screen
 from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, OpBtnEnum, OpBtnLabel, TabLabel
+from chezmoi_mousse import (
+    CMD,
+    IDS,
+    AppType,
+    CommandResult,
+    LogString,
+    OpBtnEnum,
+    OpBtnLabel,
+    TabLabel,
+)
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import SwitchSlider
 from .common.contents import ContentsView
 from .common.filtered_dir_tree import FilteredDirTree
-from .common.loggers import AppLog  # , DebugLog
-from .common.messages import OperateButtonMsg
+from .common.loggers import AppLog, CmdLog  # , DebugLog
+from .common.messages import NewCmdResults, OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher, ViewSwitcher
@@ -62,6 +71,13 @@ class MainScreen(Screen[None], AppType):
         self._set_config_screen_reactives()
         self.app.call_later(self._log_splash_log_commands)
 
+    def log_cmd_result(self, command_result: "CommandResult") -> None:
+        # self.screen contains the currently active screen
+        app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
+        app_log.cmd_result = command_result
+        cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
+        cmd_log.cmd_result = command_result
+
     def _set_config_screen_reactives(self) -> None:
         config_tab = self.screen.query_exactly_one(ConfigTab)
         config_tab.command_results = CMD.cmd_results
@@ -70,7 +86,7 @@ class MainScreen(Screen[None], AppType):
         self.app_log.write_ready("Commands executed in loading screen")
         commands_to_log = CMD.cmd_results.executed_commands
         for cmd in commands_to_log:
-            self.app.log_cmd_result(cmd)
+            self.log_cmd_result(cmd)
         self.app_log.write_ready("End of loading screen commands")
 
     def _populate_apply_trees(self) -> None:
@@ -153,3 +169,19 @@ class MainScreen(Screen[None], AppType):
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
             operate_mode.btn_enum = msg.button.btn_enum
             self._set_post_run_display(msg.ids)
+
+    @on(NewCmdResults)
+    def handle_changed_root_paths(self, msg: NewCmdResults) -> None:
+        if msg.changed_root_paths is not None:
+            self.notify(
+                f"Changed root paths:\n"
+                f"{'\n'.join(str(p) for p in msg.changed_root_paths)}",
+                severity="error",
+            )
+        self.notify(
+            f"Command results:\n"
+            f"{'\n'.join(str(r.filtered_cmd) for r in msg.cmd_results)}",
+            severity="warning",
+        )
+        for cmd_result in msg.cmd_results:
+            self.log_cmd_result(cmd_result)

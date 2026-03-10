@@ -10,6 +10,7 @@ from textual.widgets import Label, Static, TextArea
 
 from chezmoi_mousse import CMD, ReadCmd, Tcss
 
+from .messages import NewCmdResults
 from .mixins import ContainerCache
 
 if TYPE_CHECKING:
@@ -78,7 +79,7 @@ class ContentsView(ContainerCache):
             if not file_path.exists():
                 cmd_result = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path)
                 file_contents = cmd_result.std_out
-                self.app.log_cmd_result(cmd_result)
+                self.post_message(NewCmdResults([cmd_result]))
             try:
                 truncate_size: int = 1024 * 1024  # 1Mib
                 file_size = file_path.stat().st_size
