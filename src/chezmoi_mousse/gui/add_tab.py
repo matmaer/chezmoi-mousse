@@ -129,7 +129,7 @@ class AddTab(Horizontal, AppType):
 
     def on_mount(self) -> None:
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.query_exactly_one(FilteredDirTree).path = CMD.cache.dest_dir
+        self.dir_tree.path = CMD.cache.dest_dir
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, AddTabContentsView
         )
