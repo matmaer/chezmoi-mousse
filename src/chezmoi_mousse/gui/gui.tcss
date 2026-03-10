@@ -6,8 +6,6 @@
 
 # Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
 
-
-
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
