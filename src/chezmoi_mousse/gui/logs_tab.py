@@ -15,9 +15,7 @@ __all__ = ["LogsTab"]
 class LogsTab(Vertical, AppType):
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(
-            IDS.logs, buttons=(TabLabel.app_log, TabLabel.cmd_log, TabLabel.git_log)
-        )
+        yield TabButtons((TabLabel.app_log, TabLabel.cmd_log, TabLabel.git_log))
         with ContentSwitcher(initial=IDS.logs.logger.app):
             yield AppLog(IDS.logs)
             yield CmdLog(id=IDS.logs.logger.cmd)

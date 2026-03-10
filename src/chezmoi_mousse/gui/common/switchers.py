@@ -34,13 +34,16 @@ class TreeSwitcher(Container, AppType):
         self.old_expanded_nodes: list[TreeNode[Path]] = []
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(self.ids, buttons=(TabLabel.tree, TabLabel.list))
+        yield TabButtons((TabLabel.tree, TabLabel.list))
         with ContentSwitcher(
             initial=self.ids.tree.managed, classes=Tcss.tree_content_switcher
         ):
             yield ManagedTree(self.ids)
             yield ListTree(self.ids)
         yield Button(label=OpBtnLabel.refresh_tree, classes=Tcss.refresh_button)
+
+    def on_mount(self) -> None:
+        self.view_switcher = self.query_exactly_one(ContentSwitcher)
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
@@ -51,13 +54,11 @@ class TreeSwitcher(Container, AppType):
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
-        if event.button.has_class(Tcss.tab_button):
-            view_switcher = self.query_exactly_one(ContentSwitcher)
-            if event.button.label == TabLabel.tree:
-                view_switcher.current = self.ids.tree.managed
-            elif event.button.label == TabLabel.list:
-                view_switcher.current = self.ids.tree.list
-            return
+        if event.button.label == TabLabel.tree:
+            self.view_switcher.current = self.ids.tree.managed
+        elif event.button.label == TabLabel.list:
+            self.view_switcher.current = self.ids.tree.list
+        return
 
     def _get_managed_tree_nodes(self) -> list[TreeNode[Path]]:
         managed_tree = self.query_exactly_one(ManagedTree)
@@ -131,30 +132,22 @@ class ViewSwitcher(Container):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(
-            self.ids, buttons=(TabLabel.diff, TabLabel.contents, TabLabel.git_log)
-        )
+        yield TabButtons((TabLabel.diff, TabLabel.contents, TabLabel.git_log))
         with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
             yield GitLogView(self.ids)
 
     def on_mount(self) -> None:
+        self.view_switcher = self.query_exactly_one(ContentSwitcher)
         self.tab_buttons = self.query_exactly_one(Horizontal)
         self.tab_buttons.border_subtitle = f" {CMD.cache.dest_dir} "
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
-        if event.button.label not in (
-            TabLabel.diff,
-            TabLabel.contents,
-            TabLabel.git_log,
-        ):
-            return
-        view_switcher = self.query_exactly_one(ContentSwitcher)
         if event.button.label == TabLabel.contents:
-            view_switcher.current = self.ids.container.contents
+            self.view_switcher.current = self.ids.container.contents
         elif event.button.label == TabLabel.diff:
-            view_switcher.current = self.ids.container.diff
+            self.view_switcher.current = self.ids.container.diff
         elif event.button.label == TabLabel.git_log:
-            view_switcher.current = self.ids.container.git_log
+            self.view_switcher.current = self.ids.container.git_log

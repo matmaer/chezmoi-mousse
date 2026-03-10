@@ -210,24 +210,18 @@ class SwitchSlider(VerticalGroup):
 
 
 class TabButtons(Horizontal):
-    def __init__(self, ids: "AppIds", *, buttons: tuple[TabLabel, ...]):
+    def __init__(self, buttons: tuple[TabLabel, ...]):
         super().__init__()
-        self.ids = ids
         self.buttons = buttons
 
     def compose(self) -> ComposeResult:
         for btn_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield Button(
-                    label=btn_enum,
-                    id=self.ids.tab_button_id(btn=btn_enum),
-                    classes=Tcss.tab_button,
-                )
+                yield Button(label=btn_enum, classes=Tcss.tab_button)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
-        if self.ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
-            self.border_subtitle = BorderTitle.dest_dir
+        self.border_subtitle = BorderTitle.dest_dir.value
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def update_tcss_classes(self, event: Button.Pressed) -> None:

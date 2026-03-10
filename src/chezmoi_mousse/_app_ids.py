@@ -55,9 +55,6 @@ class AppIds:
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
 
-    def tab_button_id(self, qid: str = "", *, btn: TabLabel) -> str:
-        return f"{qid}{self.canvas_name.name}_{btn.name}_tab_btn"
-
     def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
         return f"{qid}{self.canvas_name.name}_{tree.name}"
 
