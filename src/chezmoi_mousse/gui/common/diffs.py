@@ -33,7 +33,7 @@ DIFF_TCSS = {
 
 class DiffView(ContainerCache):
 
-    show_path: reactive["Path | None"] = reactive(None)
+    show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff)

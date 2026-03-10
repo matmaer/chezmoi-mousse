@@ -27,7 +27,7 @@ class ContentsView(ContainerCache):
         read_error = "Error reading path"
         truncated = "\n--- File content truncated to"
 
-    show_path: reactive["Path | None"] = reactive(None)
+    show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents)
