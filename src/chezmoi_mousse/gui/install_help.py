@@ -51,7 +51,7 @@ class InstallHelpScreen(Screen[None], AppType):
             )
         yield Footer()
 
-    async def on_mount(self) -> None:
+    def on_mount(self) -> None:
         self.screen.title = HeaderTitle.install_help
         self._update_path_widget()
         self.populate_tree()
