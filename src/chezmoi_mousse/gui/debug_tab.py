@@ -55,7 +55,7 @@ class DebugTab(Horizontal, AppType):
                     "[$text-primary]No test paths exist.[/]",
                     id=IDS.debug.static.debug_test_paths,
                 )
-                yield DebugLog(IDS.debug)
+                yield DebugLog()
                 yield RichLog(
                     id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
                 )

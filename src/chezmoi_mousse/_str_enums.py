@@ -95,7 +95,7 @@ class BorderTitle(StrEnum):
 class Chars(StrEnum):
     # bullet = "\u2022"  # BULLET # noqa: ERA001
     burger = "\u2261"  # IDENTICAL TO
-    check_mark = "\u2714"  # HEAVY CHECK MARK
+    # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     # gear = "\u2699"  # GEAR # noqa: ERA001
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
@@ -120,12 +120,9 @@ class LogString(StrEnum):
     doctor_warnings_found = "Only warnings found, probably safe to ignore"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
-    see_config_tab = "See the Config tab for the doctor command output."
-    std_err_logged = "Command stderr available in an Output log view"
-    succes_no_output = f"Success, {no_stdout.lower()}"
-    success_with_output = "Success, output will be processed"
-    verify_exit_zero = "All targets match their target state"
-    verify_non_zero = "Not all targets match their target state"
+    output_will_be_processed = "Command output will be processed"
+    verify_exit_zero = "All targets match their target state, no diffs available"
+    verify_non_zero = "Not all targets match their target state, diffs aro available"
 
 
 class BindingDescription(StrEnum):

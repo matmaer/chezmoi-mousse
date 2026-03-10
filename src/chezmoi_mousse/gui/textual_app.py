@@ -117,11 +117,12 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
-    @work
-    async def log_cmd_result(self, command_result: "CommandResult") -> None:
+    def log_cmd_result(self, command_result: "CommandResult") -> None:
         # self.screen contains the currently active screen
-        self.screen.query_exactly_one(AppLog).log_cmd_result(command_result)
-        self.screen.query_exactly_one(CmdLog).log_cmd_result(command_result)
+        app_log = self.screen.query_one(IDS.logs.logger.app_q, AppLog)
+        app_log.cmd_result = command_result
+        cmd_log = self.screen.query_one(IDS.logs.logger.cmd_q, CmdLog)
+        cmd_log.cmd_result = command_result
 
     @work
     async def _run_splash_screen(self) -> None:

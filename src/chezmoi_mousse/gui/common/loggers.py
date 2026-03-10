@@ -1,130 +1,170 @@
 import inspect
 import os
 from datetime import datetime
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from textual.containers import ScrollableContainer
+from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import AppType, Chars, LogString, ReadVerb
+from chezmoi_mousse import IDS, AppType, Chars, LogString, ReadVerb
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["AppLog", "CmdLog", "DebugLog"]
 
 
-class LoggersBase(RichLog, AppType):
+class LogColor(StrEnum):
+    cmd = "primary-lighten-3"
+    dimmed = "text-muted"
+    error = "text-error"
+    info = "text-primary"
+    ready = "accent-darken-2"
+    success = "text-success"
+    warning = "text-warning"
 
-    def log_time(self) -> str:
+
+class Loggers(AppType):
+
+    @property
+    def _log_time(self) -> str:
         return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
 
-    def ready_to_run(self, message: str) -> None:
-        color = self.app.theme_variables["accent-darken-3"]
-        self.write(f"{self.log_time()} [{color}]--- {message} ---[/]")
+    def get_log_line(self, msg: str, color: LogColor) -> str:
+        msg_color = self.app.theme_variables[color.value]
+        return f"{self._log_time} [{msg_color}]{msg}[/]"
 
-    def info(self, message: str) -> None:
-        color = self.app.theme_variables["text-secondary"]
-        self.write(f"{self.log_time()} [{color}]{message}[/]")
-
-    def error(self, message: str, with_time: bool = True) -> None:
-        color = self.app.theme_variables["text-error"]
-        time = f"{self.log_time()} " if with_time else ""
-        self.write(f"{time}[{color}]{message}[/]")
-
-    def dimmed(self, message: str) -> None:
+    def get_dimmed_lines(self, message: str) -> str:
         if message.strip() == "":
-            return
+            return ""
         lines: list[str] = message.splitlines()
-        color = self.app.theme_variables["foreground-darken-2"]
+        color = self.app.theme_variables[LogColor.dimmed]
         for line in lines:
             if line.strip() != "":
                 escaped_line = escape(line)
-                self.write(f"[{color}]{escaped_line}[/]")
+                lines.append(f"[{color}]{escaped_line}[/]")
+        return "  \n".join(lines)
 
 
-class AppLog(LoggersBase, AppType):
+class RichLoggers(Loggers, RichLog):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.app, markup=True, max_lines=10000)
+    def ready_to_run(self, message: str) -> None:
+        self.write(self.get_log_line(message, LogColor.ready))
+
+    def write_cmd(self, message: str, color: LogColor) -> None:
+        self.write(self.get_log_line(message, color))
+
+    def write_dimmed(self, message: str) -> None:
+        if message.strip() == "":
+            return
+        self.write(self.get_dimmed_lines(message))
+
+    def write_error(self, message: str) -> None:
+        self.write(self.get_log_line(message, LogColor.error))
+
+    def write_info(self, message: str) -> None:
+        self.write(self.get_log_line(message, LogColor.info))
+
+    def write_ready(self, message: str) -> None:
+        self.write(self.get_log_line(f"--- {message} ---", LogColor.ready))
+
+    def write_warning(self, message: str) -> None:
+        self.write(self.get_log_line(message, LogColor.warning))
+
+
+class AppLog(RichLoggers):
+
+    cmd_result: reactive["CommandResult | None"] = reactive(None)
+
+    def __init__(self) -> None:
+        super().__init__(id=IDS.logs.logger.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
         self.ready_to_run(LogString.app_log_initialized)
         if self.app.chezmoi_found:
-            self.success(LogString.chezmoi_found, with_time=False)
+            self.write_info(LogString.chezmoi_found)
         else:
-            self.error(LogString.chezmoi_not_found, with_time=False)
+            self.write_error(LogString.chezmoi_not_found)
         if self.app.dev_mode is True:
-            self._warning(
-                f"{Chars.warning_sign} {LogString.dev_mode_enabled}", with_time=False
-            )
+            self.write_warning(f"{Chars.warning_sign} {LogString.dev_mode_enabled}")
 
-    def _log_command(self, command_result: "CommandResult") -> str:
-        time = self.log_time()
-        color = self.app.theme_variables["primary-lighten-3"]
-        return f"{time} [{color}]{command_result.filtered_cmd}[/]"
+    def _log_cmd_result(self, command_result: "CommandResult") -> None:
+        cmd_color = LogColor.cmd
+        log_text: list[str] = [f"{command_result.filtered_cmd} |"]
 
-    def success(self, message: str, with_time: bool = False) -> None:
-        color = self.app.theme_variables["text-success"]
-        time = f"{self.log_time()} " if with_time else ""
-        self.write(f"{time}[{color}]{Chars.check_mark} {message}[/]")
-
-    def _warning(self, message: str, with_time: bool = True) -> None:
-        lines = message.splitlines()
-        color = self.app.theme_variables["text-warning"]
-        for line in [line for line in lines if line.strip() != ""]:
-            time = f"{self.log_time()} " if with_time else ""
-            self.write(f"{time}[{color}]{line}[/]")
-
-    def log_cmd_result(self, command_result: "CommandResult") -> None:
-        self.write(self._log_command(command_result))
         if ReadVerb.verify.value in command_result.completed_process.args:
             if command_result.exit_code == 0:
-                self.success(LogString.verify_exit_zero, with_time=False)
+                cmd_color = LogColor.success
+                log_text.append(LogString.verify_exit_zero)
             else:
-                self.success(LogString.verify_non_zero, with_time=False)
-            return
+                log_text.append(LogString.verify_non_zero)
         elif ReadVerb.doctor.value in command_result.completed_process.args:
             output_lower = command_result.std_out.lower()
             if "error" in output_lower:
-                self.error(LogString.doctor_errors_found, with_time=False)
+                cmd_color = LogColor.error
+                log_text.append(LogString.doctor_errors_found)
             elif "failed" in output_lower:
-                self.error(LogString.doctor_fails_found, with_time=False)
+                log_text.append(LogString.doctor_fails_found)
             elif "warning" in output_lower:
-                self._warning(LogString.doctor_warnings_found, with_time=False)
+                log_text.append(LogString.doctor_warnings_found)
             else:
-                self.success(LogString.doctor_no_issue_found, with_time=False)
-            self.dimmed(LogString.see_config_tab)
+                log_text.append(LogString.doctor_no_issue_found)
+                cmd_color = LogColor.success
         elif command_result.exit_code == 0:
+            cmd_color = LogColor.success
             if command_result.std_out == "":
-                self.success(LogString.succes_no_output)
-            else:
-                self.success(LogString.success_with_output)
-        if command_result.std_err != "":
-            self.error(
-                f"{LogString.std_err_logged}, exit code: {command_result.exit_code}"
+                log_text.append(LogString.no_stdout)
+            elif command_result.std_out != "":
+                log_text.append(LogString.output_will_be_processed)
+        elif command_result.exit_code != 0:
+            cmd_color = LogColor.warning
+            log_text.append(
+                f"Exit code: {command_result.exit_code}, see the 'Chezmoi Commands' "
+                "tab for details"
             )
+        self.write_cmd(" ".join(log_text), color=cmd_color)
+
+    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
+        if cmd_result is None:
+            return
+        self._log_cmd_result(cmd_result)
 
 
-class DebugLog(LoggersBase, AppType):
+class CmdLog(ScrollableContainer):
 
-    type Mro = tuple[type, ...]
+    def __init__(self) -> None:
+        super().__init__(id=IDS.logs.logger.cmd)
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.logger.debug, markup=True, max_lines=10000, wrap=True)
+    cmd_result: reactive["CommandResult | None"] = reactive(None)
+
+    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
+        if cmd_result is None:
+            return
+        self._log_cmd_result(cmd_result)
+
+    def _log_cmd_result(self, cmd_result: "CommandResult") -> None:
+        self.mount(cmd_result.pretty_collapsible)
+
+
+class DebugLog(RichLoggers):
+
+    def __init__(self) -> None:
+        super().__init__(
+            id=IDS.logs.logger.debug, markup=True, max_lines=10000, wrap=True
+        )
 
     def on_mount(self) -> None:
         self.ready_to_run(LogString.debug_log_initialized)
 
-    def mro(self, mro: Mro) -> None:
+    def mro(self, mro: tuple[type, ...]) -> None:
         """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
-
-        color = self.app.theme_variables["accent-darken-2"]
-        self.write(f"{self.log_time()} [{color}]Method Resolution Order:[/]")
+        self.write_info("Method Resolution Order:")
 
         exclude = {
             "typing.Generic",
@@ -141,7 +181,7 @@ class DebugLog(LoggersBase, AppType):
                 e in (qname := f"{cls.__module__}.{cls.__qualname__}") for e in exclude
             )
         )
-        self.dimmed(pretty_mro)
+        self.write_dimmed(pretty_mro)
 
     def list_attr(
         self,
@@ -158,13 +198,13 @@ class DebugLog(LoggersBase, AppType):
             for member_name in members:
                 member = getattr(obj, member_name)
                 if inspect.isroutine(member):
-                    self.info(f"Source for method {member_name}:")
+                    self.write_info(f"Source for method {member_name}:")
                     try:
                         source = inspect.getsource(member)
-                        self.dimmed(source)
+                        self.write_dimmed(source)
                     except OSError as e:
-                        self.error("Could not retrieve source")
-                        self.dimmed(f"{e}")
+                        self.write_error("Could not retrieve source")
+                        self.write_dimmed(f"{e}")
 
         def _type_for(name: str) -> str:
             try:
@@ -182,24 +222,18 @@ class DebugLog(LoggersBase, AppType):
                 return "unknown"
 
         members_with_types = [f"{m}: {_type_for(m)}" for m in members]
-        self.info(f"{obj.__class__.__name__} attributes:")
-        self.dimmed("\n".join(members_with_types))
+        self.write_info(f"{obj.__class__.__name__} attributes:")
+        self.write_dimmed("\n".join(members_with_types))
 
     def callable_source(self, callable: "Callable[..., Any]") -> None:
-        self.info(f"Function source for {callable.__name__}:")
+        self.write_info(f"Function source for {callable.__name__}:")
         try:
             source = inspect.getsource(callable)
-            self.dimmed(source)
+            self.write_dimmed(source)
         except OSError as e:
-            self.error("Could not retrieve source")
-            self.dimmed(f"{e}")
+            self.write_error("Could not retrieve source")
+            self.write_dimmed(f"{e}")
 
     def print_env_vars(self) -> None:
         for key, value in os.environ.items():
             self.write(f"{key}: {value}")
-
-
-class CmdLog(ScrollableContainer):
-
-    def log_cmd_result(self, command_result: "CommandResult") -> None:
-        self.mount(command_result.pretty_collapsible)

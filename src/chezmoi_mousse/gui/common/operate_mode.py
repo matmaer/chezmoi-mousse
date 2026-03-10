@@ -261,13 +261,11 @@ class OperateMode(Vertical, AppType):
     @min_wait
     async def _log_all_cmd_results_to_logs_tab(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
-        self.app_log.info("--- Commands logged in OperateMode ---")
+        self.app_log.write_ready("Commands logged in OperateMode")
         for cmd_result in self.all_cmd_results:
-            if cmd_result.is_dry_run and cmd_result.cmd_enum in self.read_commands:
-                continue
             self.app_log.log_cmd_result(cmd_result)
             self.cmd_log.log_cmd_result(cmd_result)
-        self.app_log.info("--- End of OperateMode commands ---")
+        self.app_log.write_ready("End of OperateMode commands")
 
     @work
     async def _get_changed_root_paths(self, old_cached: CachedData) -> list["Path"]:

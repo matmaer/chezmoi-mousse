@@ -13,7 +13,7 @@ from .apply_tab import ApplyTab
 from .common.actionables import SwitchSlider
 from .common.contents import ContentsView
 from .common.filtered_dir_tree import FilteredDirTree
-from .common.loggers import AppLog, DebugLog
+from .common.loggers import AppLog  # , DebugLog
 from .common.messages import OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
@@ -55,8 +55,6 @@ class MainScreen(Screen[None], AppType):
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         # Debug logger if in dev mode
         if self.app.dev_mode is True:
-            self.debug_log = self.query_one(IDS.debug.logger.debug_q, DebugLog)
-            self.app_log.success(LogString.dev_mode_enabled)
             self.notify(LogString.dev_mode_enabled)
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self._populate_apply_trees()
@@ -69,23 +67,23 @@ class MainScreen(Screen[None], AppType):
         config_tab.command_results = CMD.cmd_results
 
     def _log_splash_log_commands(self) -> None:
-        self.app_log.info("--- Commands executed in loading screen ---")
+        self.app_log.write_ready("Commands executed in loading screen")
         commands_to_log = CMD.cmd_results.executed_commands
         for cmd in commands_to_log:
             self.app.log_cmd_result(cmd)
-        self.app_log.info("--- End of loading screen commands ---")
+        self.app_log.write_ready("End of loading screen commands")
 
     def _populate_apply_trees(self) -> None:
         self.screen.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_tree()
-        self.app_log.success("Apply tab managed tree populated.")
+        self.app_log.write_info("Apply tab managed tree populated.")
         self.screen.query_one(IDS.apply.tree.list_q, ListTree).populate_tree()
-        self.app_log.success("Apply tab list tree populated.")
+        self.app_log.write_info("Apply tab list tree populated.")
 
     def _populate_re_add_trees(self) -> None:
         self.screen.query_one(IDS.re_add.tree.managed_q, ManagedTree).populate_tree()
-        self.app_log.success("Re-Add tab managed tree populated.")
+        self.app_log.write_info("Re-Add tab managed tree populated.")
         self.screen.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
-        self.app_log.success("Re-Add tab list tree populated.")
+        self.app_log.write_info("Re-Add tab list tree populated.")
 
     #######################
     # Operate mode helper #
