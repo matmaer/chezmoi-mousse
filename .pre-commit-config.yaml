@@ -72,7 +72,7 @@ repos:
       - id: pytest-local
         name: pytest-local
         description: pytest static and smoke tests
-        entry: env PYTHONPATH=src pytest tests
+        entry: env PYTHONPATH=src sh -c "pytest tests/static_tests && pytest tests/smoke_tests"
         language: python
         additional_dependencies:
           - pytest
