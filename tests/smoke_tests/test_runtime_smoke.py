@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -15,26 +16,30 @@ combos_to_test: list[dict[str, bool]] = [
 ]
 
 
-@pytest.mark.asyncio
-async def test_app_starts_concurrently() -> None:
-    async def run_single_variant(combo: dict[str, bool]) -> None:
+def _run_variant(combo: dict[str, bool]) -> None:
+
+    async def _inner() -> None:
         test_app = ChezmoiGUI(**combo)
         async with test_app.run_test() as pilot:
-            # Allow SplashScreen to render
             await pilot.pause()
-
             while isinstance(test_app.screen, SplashScreen):
                 await pilot.pause(0.1)
-
-            # Allow next screen to render
             await pilot.pause()
-
             if combo["chezmoi_found"]:
                 assert isinstance(test_app.screen, MainScreen)
             else:
                 assert isinstance(test_app.screen, InstallHelpScreen)
-
             await pilot.press("ctrl+q")
 
-    # Run all variants in parallel using asyncio.gather
-    await asyncio.gather(*(run_single_variant(c) for c in combos_to_test))
+    asyncio.run(_inner())
+
+
+@pytest.mark.asyncio
+async def test_app_starts_concurrently() -> None:
+    # Each variant runs in its own thread with its own event loop so the apps
+    # don't share a thread-pool executor and can't deadlock each other.
+    loop = asyncio.get_running_loop()
+    with ThreadPoolExecutor(max_workers=len(combos_to_test)) as pool:
+        await asyncio.gather(
+            *(loop.run_in_executor(pool, _run_variant, c) for c in combos_to_test)
+        )
