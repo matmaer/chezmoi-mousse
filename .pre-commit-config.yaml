@@ -68,3 +68,22 @@ repos:
     hooks:
       - id: uv-lock
       - id: uv-export
+
+
+  - repo: local
+    hooks:
+      - id: pytest-local
+        name: pytest-local
+        description: pytest static and smoke tests
+        entry: env PYTHONPATH=src pytest tests
+        language: python
+        additional_dependencies:
+          - pytest
+          - pytest-asyncio
+          - pytest-env
+          - textual[syntax]
+          - faker
+          - tomlkit
+          - psutil
+        pass_filenames: false
+        types: [python]
