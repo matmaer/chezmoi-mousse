@@ -9,7 +9,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import IDS, AppType, Chars, LogString, ReadVerb
+from chezmoi_mousse import CMD, IDS, AppType, Chars, LogString, ReadVerb
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -74,6 +74,9 @@ class RichLoggers(Loggers, RichLog):
     def write_ready(self, message: str) -> None:
         self.write(self.get_log_line(f"--- {message} ---", LogColor.ready))
 
+    def write_success(self, message: str) -> None:
+        self.write(self.get_log_line(message, LogColor.success))
+
     def write_warning(self, message: str) -> None:
         self.write(self.get_log_line(message, LogColor.warning))
 
@@ -88,24 +91,29 @@ class AppLog(RichLoggers):
     def on_mount(self) -> None:
         self.ready_to_run(LogString.app_log_initialized)
         if self.app.chezmoi_found:
-            self.write_info(LogString.chezmoi_found)
+            self.write_success(LogString.chezmoi_found)
         else:
             self.write_error(LogString.chezmoi_not_found)
         if self.app.dev_mode is True:
             self.write_warning(f"{Chars.warning_sign} {LogString.dev_mode_enabled}")
 
-    def log_cmd_result(self, command_result: "CommandResult") -> None:
+    def log_cmd_result(self, cmd_result: "CommandResult") -> None:
         cmd_color = LogColor.cmd
-        log_text: list[str] = [f"{command_result.filtered_cmd} |"]
+        if cmd_result.path_arg is not None:
+            rel_path = f" {cmd_result.path_arg.relative_to(CMD.cache.dest_dir)} "
+        else:
+            rel_path = " "
 
-        if ReadVerb.verify.value in command_result.completed_process.args:
-            if command_result.exit_code == 0:
+        log_text: list[str] = [f"{cmd_result.filtered_cmd_without_path_arg}{rel_path}|"]
+
+        if ReadVerb.verify.value in cmd_result.completed_process.args:
+            if cmd_result.exit_code == 0:
                 cmd_color = LogColor.success
                 log_text.append(LogString.verify_exit_zero)
             else:
                 log_text.append(LogString.verify_non_zero)
-        elif ReadVerb.doctor.value in command_result.completed_process.args:
-            output_lower = command_result.std_out.lower()
+        elif ReadVerb.doctor.value in cmd_result.completed_process.args:
+            output_lower = cmd_result.std_out.lower()
             if "error" in output_lower:
                 cmd_color = LogColor.error
                 log_text.append(LogString.doctor_errors_found)
@@ -116,19 +124,19 @@ class AppLog(RichLoggers):
             else:
                 log_text.append(LogString.doctor_no_issue_found)
                 cmd_color = LogColor.success
-        elif command_result.exit_code == 0:
+        elif cmd_result.exit_code == 0:
             cmd_color = LogColor.success
-            if command_result.std_out == "":
+            if cmd_result.std_out == "":
                 log_text.append(LogString.no_stdout)
-            elif command_result.std_out != "":
+            elif cmd_result.std_out != "":
                 log_text.append(LogString.output_will_be_processed)
-        elif command_result.exit_code != 0:
+        elif cmd_result.exit_code != 0:
             cmd_color = LogColor.warning
             log_text.append(
-                f"Exit code: {command_result.exit_code}, see the 'Chezmoi Commands' "
+                f"Exit code: {cmd_result.exit_code}, see the 'Chezmoi Commands' "
                 "tab for details"
             )
-        self.write_cmd(" ".join(log_text), color=cmd_color)
+        self.write_cmd(" ".join(log_text), cmd_color)
 
     def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
         if cmd_result is None:

@@ -3,7 +3,6 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
-from typing import NamedTuple
 
 from textual.widgets import Collapsible, Label, Static
 
@@ -11,19 +10,6 @@ from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
 __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
-
-
-def _get_filtered_cmd(cmd_args: tuple[str, ...], review_color: bool) -> str:
-    filter_git_log_args = VerbArgs.git_log.value[3:]
-    exclude = set(
-        GlobalCmd.default_args.value
-        + filter_git_log_args
-        + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
-    )
-    filtered_cmd = " ".join([part for part in cmd_args if part and part not in exclude])
-    if review_color:
-        return f"[$text-primary bold]{filtered_cmd}[/]"
-    return filtered_cmd
 
 
 class GlobalCmd(Enum):
@@ -136,9 +122,17 @@ class WriteCmd(Enum):
     re_add = (WriteVerb.re_add.value,)
 
 
-class RunCmdResult(NamedTuple):
-    completed_process: CompletedProcess[str]
-    filtered_cmd: str
+def _get_filtered_cmd(cmd_args: tuple[str, ...], review_color: bool) -> str:
+    filter_git_log_args = VerbArgs.git_log.value[3:]
+    exclude = set(
+        GlobalCmd.default_args.value
+        + filter_git_log_args
+        + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
+    )
+    filtered_cmd = " ".join([part for part in cmd_args if part and part not in exclude])
+    if review_color:
+        return f"[$text-primary bold]{filtered_cmd}[/]"
+    return filtered_cmd
 
 
 def _run_chezmoi_cmd(
@@ -159,10 +153,9 @@ def _run_chezmoi_cmd(
 
 @dataclass(slots=True)
 class CommandResult:
+    cmd_without_path_arg: tuple[str, ...]
     completed_process: CompletedProcess[str]
-    filtered_cmd: str
-    cmd_enum: ReadCmd | WriteCmd
-    path_arg: Path | None = None
+    path_arg: Path | None
     std_out: str = ""
     std_err: str = ""
 
@@ -196,29 +189,22 @@ class CommandResult:
         return self.completed_process.returncode
 
     @property
-    def pretty_cmd(self) -> str:
-        success_color = "$text-success" if self.cmd_enum in WriteCmd else "$success"
-        warning_color = "$text-warning" if self.cmd_enum in WriteCmd else "$warning"
-        filtered_cmd = _get_filtered_cmd(
-            self.completed_process.args, review_color=False
-        )
-        return (
-            f"[{success_color}]{filtered_cmd}[/]"
-            if self.completed_process.returncode == 0
-            else f"[{warning_color}]{filtered_cmd}[/]"
-        )
+    def full_cmd_filtered(self) -> str:
+        return _get_filtered_cmd(self.completed_process.args, review_color=False)
+
+    @property
+    def filtered_cmd_without_path_arg(self) -> str:
+        return _get_filtered_cmd(self.cmd_without_path_arg, review_color=False)
 
     @property
     def is_dry_run(self) -> bool:
         return "--dry-run" in self.completed_process.args
 
     @property
-    def _log_entry(self) -> str:
-        pretty_time = f"[$text-success][{datetime.now().strftime('%H:%M:%S')}][/]"
-        return f"{pretty_time} {self.pretty_cmd}"
-
-    @property
     def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
+        pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
+        cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
+        title = f"{cmd_color}{pretty_time} {self.full_cmd_filtered}[/]"
         dry_run_str = "(dry run)" if self.is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self.std_err or f"{LogString.no_stderr} {dry_run_str}"
@@ -237,7 +223,7 @@ class CommandResult:
         )
         return Collapsible(
             *collapsible_contents,
-            title=self._log_entry,
+            title=title,
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
             collapsed=collapsed,
@@ -264,7 +250,8 @@ class ChezmoiCommand:
         old_changes_enabled = self.changes_enabled
         # always run read commands live
         self.changes_enabled = True
-        command = self._global_cmd + read_cmd.value
+        cmd_without_path_arg = self._global_cmd + read_cmd.value
+        cmd_to_run = cmd_without_path_arg
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
@@ -273,12 +260,11 @@ class ChezmoiCommand:
                     read_cmd=ReadCmd.source_path,
                 ).stdout.strip()
                 path_str = source_path_str
-            command += (path_str,)
-        result: CompletedProcess[str] = _run_chezmoi_cmd(command, read_cmd=read_cmd)
+            cmd_to_run += (path_str,)
+        result: CompletedProcess[str] = _run_chezmoi_cmd(cmd_to_run, read_cmd=read_cmd)
         command_result = CommandResult(
-            cmd_enum=read_cmd,
             completed_process=result,
-            filtered_cmd=_get_filtered_cmd(result.args, review_color=False),
+            cmd_without_path_arg=cmd_without_path_arg,
             path_arg=path_arg,
         )
         if self.changes_enabled != old_changes_enabled:
@@ -294,18 +280,21 @@ class ChezmoiCommand:
     ) -> CommandResult:
         command: tuple[str, ...] = self._global_cmd + write_cmd.value
 
+        cmd_without_path_arg = command
+        cmd_to_run = command
         if init_arg is not None:
             if write_cmd != WriteCmd.init_new:
                 raise ValueError("init_arg only valid with WriteCmd.init_new")
-            command += (init_arg,)
+            cmd_to_run += (init_arg,)
         elif path_arg is not None:
-            command += (str(path_arg),)
+            cmd_to_run += (str(path_arg),)
 
-        result: CompletedProcess[str] = _run_chezmoi_cmd(command, write_cmd=write_cmd)
+        result: CompletedProcess[str] = _run_chezmoi_cmd(
+            cmd_to_run, write_cmd=write_cmd
+        )
         command_result = CommandResult(
-            cmd_enum=write_cmd,
+            cmd_without_path_arg=cmd_without_path_arg,
             completed_process=result,
-            filtered_cmd=_get_filtered_cmd(result.args, review_color=False),
             path_arg=path_arg,
         )
         return command_result

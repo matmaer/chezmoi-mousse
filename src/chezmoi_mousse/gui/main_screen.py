@@ -180,7 +180,7 @@ class MainScreen(Screen[None], AppType):
             )
         self.notify(
             f"Command results:\n"
-            f"{'\n'.join(str(r.filtered_cmd) for r in msg.cmd_results)}",
+            f"{'\n'.join(str(r.full_cmd_filtered) for r in msg.cmd_results)}",
             severity="warning",
         )
         for cmd_result in msg.cmd_results:

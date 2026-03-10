@@ -217,7 +217,7 @@ class OperateMode(Vertical, AppType):
         )
         self.all_cmd_results.append(self.run_cmd_result)
         self.operate_info.update(
-            f"{self.run_cmd_result.pretty_cmd}\n"
+            f"{self.run_cmd_result.full_cmd_filtered}\n"
             f"Command completed with exit code {self.run_cmd_result.exit_code}"
         )
         if self.btn_enum is not None:
