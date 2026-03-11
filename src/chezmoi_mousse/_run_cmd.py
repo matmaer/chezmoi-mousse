@@ -247,10 +247,8 @@ class ChezmoiCommand:
         return _get_filtered_cmd(command, review_color=True)
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
-        old_changes_enabled = self.changes_enabled
-        # always run read commands live
-        self.changes_enabled = True
-        cmd_without_path_arg = self._global_cmd + read_cmd.value
+        read_global_cmd = tuple(arg for arg in self._global_cmd if arg != "--dry-run")
+        cmd_without_path_arg = read_global_cmd + read_cmd.value
         cmd_to_run = cmd_without_path_arg
         if path_arg is not None:
             path_str = str(path_arg)
@@ -267,8 +265,6 @@ class ChezmoiCommand:
             cmd_without_path_arg=cmd_without_path_arg,
             path_arg=path_arg,
         )
-        if self.changes_enabled != old_changes_enabled:
-            self.changes_enabled = old_changes_enabled
         return command_result
 
     def perform(
