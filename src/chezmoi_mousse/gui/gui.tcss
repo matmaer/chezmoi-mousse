@@ -322,7 +322,7 @@ OperateMode {
     border-title-align: center;
   }
   &>ScrollableContainer {
-    height: 1fr;
+    height: auto;
   }
 }
 
