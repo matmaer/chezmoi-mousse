@@ -195,13 +195,6 @@ class OperateMode(Vertical, AppType):
             self.loading_modal.run_command = read_cmd
 
     @work
-    async def _cleanup_after_operation(self) -> None:
-        self.all_cmd_results = []
-        self.old_cached = None
-        self.changed_root_paths = []
-        self.log_collapsibles.remove_children()
-
-    @work
     @min_wait
     async def _update_log_collapsibles(self) -> None:
         self.log_collapsibles.mount(
@@ -252,7 +245,6 @@ class OperateMode(Vertical, AppType):
                 sorted(str(path) for path in self.all_changed_paths)
             )
             self.notify(f"Updated trees with changed paths:\n{changed_paths}")
-        await self._cleanup_after_operation().wait()
         self.loading_modal.dismiss()
 
     @work
