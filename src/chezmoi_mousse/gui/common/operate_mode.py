@@ -1,9 +1,9 @@
 import copy
 import time
 from asyncio import sleep
+from dataclasses import dataclass, field
 from functools import wraps
 from typing import TYPE_CHECKING
-
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
@@ -14,33 +14,26 @@ from textual.widgets import Label, LoadingIndicator, Static
 from chezmoi_mousse import (
     CMD,
     AppType,
-    CachedData,
-    CommandResult,
     OpBtnEnum,
     OperateString,
     ReadCmd,
     TabLabel,
     Tcss,
-    WriteCmd,
+    OpBtnLabel,
 )
 
-from .contents import ContentsView
-from .diffs import DiffView
-from .filtered_dir_tree import FilteredDirTree
-from .git_log import GitLogView
-from .messages import CmdResultMsg, NewCmdResults
-from .trees import ListTree, ManagedTree
+from .messages import LoadingResultMsg
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, OpBtnEnum
+    from chezmoi_mousse import AppIds, CommandResult
 
-__all__ = ["OperateMode"]
+__all__ = ["OperateMode", "LoadingModal", "LoadingModalResult"]
 
 # not needed for anything else than showing log messages briefly for humans
-MIN_WAIT_TIME = 0.2
+MIN_WAIT_TIME = 1.2
 
 
 def min_wait(
@@ -57,13 +50,34 @@ def min_wait(
     return wrapper
 
 
-class LoadingModal(ModalScreen[None], AppType):
+@dataclass
+class LoadingModalResult:
+    changed_paths: list["Path"] = field(default_factory=lambda: [])
+    changed_root_paths: list["Path"] = field(default_factory=lambda: [])
+    read_cmd_results: list["CommandResult"] = field(default_factory=lambda: [])
+    write_cmd_result: "CommandResult | None" = None
 
-    run_command: reactive[ReadCmd | WriteCmd | None] = reactive(None)
+    @property
+    def all_cmd_results(self) -> list["CommandResult"]:
+        if self.write_cmd_result is not None:
+            return [self.write_cmd_result] + self.read_cmd_results
+        return self.read_cmd_results
+
+
+class LoadingModal(ModalScreen[LoadingModalResult], AppType):
 
     def __init__(self) -> None:
-        self.cmd_results: list[CommandResult] = []
         super().__init__()
+        self.read_cmds = [
+            ReadCmd.managed,
+            ReadCmd.status,
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ]
+        self.btn_enum: OpBtnEnum | OpBtnLabel | None = None
+        self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
@@ -71,24 +85,105 @@ class LoadingModal(ModalScreen[None], AppType):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
+        self.to_return = LoadingModalResult()
         self.label = self.query_exactly_one(Label)
+        self.old_cached = copy.deepcopy(CMD.cache)
+        self.run_commands(self.btn_enum)
 
-    async def watch_run_command(self, run_command: ReadCmd | WriteCmd | None) -> None:
-        if run_command is not None:
-            self.label.update(f"Running {run_command}")
-            if isinstance(run_command, ReadCmd):
-                await self._run_read_command(run_command).wait()
-            else:
-                self.notify("under construction")
+    @property
+    def _global_args(self) -> tuple[str, ...]:
+        if self.btn_enum is None:
+            raise ValueError("btn_enum is None when trying to access global args.")
+        if self.btn_enum == OpBtnLabel.refresh_tree:
+            return ()
+        elif (
+            isinstance(self.btn_enum, OpBtnEnum) and self.btn_enum in self.run_btn_enums
+        ):
+            path_arg = (
+                str(self.btn_enum.path_arg)
+                if self.btn_enum.path_arg is not None
+                else ""
+            )
+            return (*self.btn_enum.write_cmd.value, path_arg)
+        else:
+            raise ValueError(f"Invalid btn_enum {self.btn_enum} in _global_args")
+
+    @work
+    async def run_commands(self, btn_enum: "OpBtnEnum | OpBtnLabel | None") -> None:
+        self.label = self.query_exactly_one(Label)
+        if btn_enum in self.run_btn_enums:
+            self.label.update("Running write command")
+            await self._run_write_command(btn_enum).wait()
+            self.label.update("Running read commands to update cache")
+            await self._run_all_read_commands().wait()
+        elif btn_enum == OpBtnLabel.refresh_tree:
+            self.label.update("Running read commands to update cache")
+            await self._run_all_read_commands().wait()
+        self.label.update("Updating cached data in CMD singleton")
+        await self._update_cached_data().wait()
+        self.label.update("Collecting changed paths")
+        await self._get_changed_paths().wait()
+        self.dismiss(self.to_return)
+
+    @work(thread=True, exit_on_error=False)
+    @min_wait
+    async def _run_write_command(self, btn_enum: "OpBtnEnum") -> None:
+        cmd_result: CommandResult = CMD.run_cmd.perform(
+            btn_enum.write_cmd, path_arg=btn_enum.path_arg
+        )
+        self.to_return.write_cmd_result = cmd_result
+
+    @work
+    async def _run_all_read_commands(self) -> None:
+        for read_cmd in self.read_cmds:
+            pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
+            self.label.update(f"Running {pretty_cmd}")
+            self._run_read_command(read_cmd)
 
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
-        self.label.update(f"Running {pretty_cmd}")
-        cmd_result = CMD.run_cmd.read(read_cmd)
+        cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
-        self.cmd_results.append(cmd_result)
+        self.to_return.read_cmd_results.append(cmd_result)
+
+    @work
+    @min_wait
+    async def _update_cached_data(self) -> None:
+        CMD.update_parsed_data()
+
+    @work
+    @min_wait
+    async def _get_changed_paths(self) -> None:
+        old_managed = set(self.old_cached.managed_paths)
+        old_status = dict(self.old_cached.status_pairs)
+
+        # ^ symmetric difference: elements that exist in either set, but not in both
+        # & intersection: elements that exist in both sets
+        # | union: all elements that exist in either set
+
+        # Collect changed paths: Symmetric difference (added/removed) + Status changes
+        changes = (old_managed ^ set(CMD.cache.managed_paths)) | {
+            p
+            for p in old_managed & set(CMD.cache.managed_paths)
+            if old_status.get(p) != CMD.cache.status_pairs.get(p)
+        }
+        self.to_return.changed_root_paths = self._get_changed_root_paths(changes)
+        self.to_return.changed_paths.extend(sorted(changes))
+
+    def _get_changed_root_paths(self, changed_paths: set["Path"]) -> list["Path"]:
+        old_files = set(self.old_cached.managed_file_paths)
+
+        # Parent files to their directories
+        all_files = old_files | set(CMD.cache.managed_file_paths)
+        dirs = {p.parent if p in all_files else p for p in changed_paths}
+
+        # Reduce to common parents
+        simplified: set[Path] = set()
+        for path in sorted(dirs, key=lambda p: len(p.parts)):
+            if not any(path.is_relative_to(parent) for parent in simplified):
+                simplified.add(path)
+        return sorted(simplified)
 
 
 class OperateMode(Vertical, AppType):
@@ -98,25 +193,6 @@ class OperateMode(Vertical, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.op_mode)
         self.ids = ids
-        self.run_cmd_result: CommandResult | None = None
-        self.all_cmd_results: list[CommandResult] = []
-        self.review_btn_enums: set[OpBtnEnum] = set()
-        self.run_btn_enums: set[OpBtnEnum] = set()
-        self.read_commands = [
-            ReadCmd.managed,
-            ReadCmd.status,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ]
-        self.diff_views: list[DiffView] = []
-        self.contents_views: list[ContentsView] = []
-        self.git_logs: list[GitLogView] = []
-        self.managed_trees: list[ManagedTree] = []
-        self.list_trees: list[ListTree] = []
-        self.all_changed_paths: list[Path] = []
-        self.changed_root_paths: list[Path] = []
 
     def compose(self) -> ComposeResult:
         yield Static(
@@ -130,19 +206,12 @@ class OperateMode(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.display = False
-        self.contents_views = list(self.screen.query(ContentsView))
-        self.diff_views = list(self.screen.query(DiffView))
-        self.dir_tree = self.screen.query_exactly_one(FilteredDirTree)
-        self.git_logs = list(self.screen.query(GitLogView))
-        self.list_trees = list(self.screen.query(ListTree))
         self.log_collapsibles = self.query_one(
             self.ids.container.command_output_q, ScrollableContainer
         )
-        self.managed_trees = list(self.screen.query(ManagedTree))
         self.operate_info = self.query_one(self.ids.static.operate_info_q, Static)
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
-        self.loading_modal = LoadingModal()
 
     @property
     def _global_args(self) -> tuple[str, ...]:
@@ -153,13 +222,61 @@ class OperateMode(Vertical, AppType):
         )
         return (*self.btn_enum.write_cmd.value, path_arg)
 
-    def watch_btn_enum(self, btn_enum: OpBtnEnum) -> None:
+    def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
+        if btn_enum.label == OpBtnLabel.reload:
+            return
         if btn_enum in self.review_btn_enums:
             self.update_review_info()
         elif btn_enum in self.run_btn_enums:
-            self._run_write_command(btn_enum)
+            loading_modal = LoadingModal()
+            loading_modal.btn_enum = btn_enum
+            self.app.push_screen(
+                loading_modal,
+                callback=self.process_loading_modal_result,
+                wait_for_dismiss=True,
+            )
+
+    def process_loading_modal_result(self, result: "LoadingModalResult | None") -> None:
+        if result is None or self.btn_enum is None:
+            return
+        self.post_message(LoadingResultMsg(loading_result=result))
+        self.log_collapsibles.mount(
+            Label("Command output", classes=Tcss.main_section_label)
+        )
+        if result.write_cmd_result is not None:
+            self.log_collapsibles.mount(result.write_cmd_result.pretty_collapsible)
+        for cmd_result in result.read_cmd_results:
+            self.log_collapsibles.mount(cmd_result.pretty_collapsible)
+        self.log_collapsibles.mount(
+            Label("Changed paths", classes=Tcss.main_section_label)
+        )
+        if not result.changed_paths:
+            dry_run = (
+                " (dry run)"
+                if result.write_cmd_result and result.write_cmd_result.is_dry_run
+                else ""
+            )
+            self.log_collapsibles.mount(Static(f"No paths changed.{dry_run}"))
+        for path in result.changed_paths:
+            self.log_collapsibles.mount(Static(str(path), classes=Tcss.info))
+
+        # Update operate info with summary of the operation
+        self.operate_info.visible = False
+        if result.write_cmd_result is not None:
+            self.operate_info.update(
+                f"{result.write_cmd_result.full_cmd_filtered}\n"
+                f"Command completed with exit code "
+                f"{result.write_cmd_result.exit_code}"
+            )
+            self.operate_info.border_title = self.btn_enum.op_info_title
+            self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
         else:
-            self.notify(f"Wrong btn_enum {btn_enum} in watch_btn_enum")
+            self.operate_info.update("Tree refreshed")
+            self.operate_info.border_title = "Refresh tree"
+            self.operate_info.border_subtitle = (
+                "Updated tree with current state of managed paths"
+            )
+        self.operate_info.visible = True
 
     def update_review_info(self) -> None:
         if self.btn_enum is None or self.display is False:
@@ -176,130 +293,17 @@ class OperateMode(Vertical, AppType):
         self.operate_info.border_title = self.btn_enum.op_info_title
         self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
 
-    @work(exit_on_error=False)
-    @min_wait
-    async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
-        self.old_cached = None
-        await self.app.push_screen(self.loading_modal)
-        await self._run_perform_command(btn_enum).wait()
-        await self._run_read_commands().wait()
-        await self._update_log_collapsibles().wait()
-        await self._log_all_cmd_results_to_logs_tab().wait()
-        if self.run_cmd_result is not None and self.run_cmd_result.is_dry_run is False:
-            await self._update_cached_data_and_trees().wait()
-        self.loading_modal.dismiss()
-
-    @work(exit_on_error=False)
-    async def _run_read_commands(self) -> None:
-        for read_cmd in self.read_commands:
-            self.loading_modal.run_command = read_cmd
-
-    @work
-    @min_wait
-    async def _update_log_collapsibles(self) -> None:
-        self.log_collapsibles.mount(
-            Label("Command output", classes=Tcss.main_section_label)
-        )
-        for cmd_result in self.all_cmd_results:
-            self.log_collapsibles.mount(cmd_result.pretty_collapsible)
-        self.log_collapsibles.mount(
-            Label("Changed paths", classes=Tcss.main_section_label)
-        )
-        if not self.all_changed_paths:
-            dry_run = (
-                " (dry run)"
-                if self.run_cmd_result and self.run_cmd_result.is_dry_run
-                else ""
-            )
-            self.log_collapsibles.mount(Static(f"No paths changed.{dry_run}"))
-        for path in self.all_changed_paths:
-            self.log_collapsibles.mount(Static(str(path), classes=Tcss.info))
-
-    @work(thread=True)
-    @min_wait
-    async def _run_perform_command(self, btn_enum: OpBtnEnum) -> None:
-        self.run_cmd_result = CMD.run_cmd.perform(
-            btn_enum.write_cmd, path_arg=btn_enum.path_arg
-        )
-        self.all_cmd_results.append(self.run_cmd_result)
-        self.operate_info.update(
-            f"{self.run_cmd_result.full_cmd_filtered}\n"
-            f"Command completed with exit code {self.run_cmd_result.exit_code}"
-        )
-        if self.btn_enum is not None:
-            self.operate_info.border_title = self.btn_enum.op_info_title
-            self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
-        self.old_cached = copy.deepcopy(CMD.cache)
-
-    @work
-    async def manual_refresh(self) -> None:
-        self.loading_modal = LoadingModal()
-        await self.app.push_screen(self.loading_modal)
-        await self._run_read_commands().wait()
-        await self._log_all_cmd_results_to_logs_tab().wait()
-        await self._update_cached_data_and_trees().wait()
-        if not self.all_changed_paths:
-            self.notify("No managed paths changed.", severity="warning")
-        else:
-            changed_paths = "\n".join(
-                sorted(str(path) for path in self.all_changed_paths)
-            )
-            self.notify(f"Updated trees with changed paths:\n{changed_paths}")
-        self.loading_modal.dismiss()
-
-    @work
-    @min_wait
-    async def _log_all_cmd_results_to_logs_tab(self) -> None:
-        for cmd_result in self.all_cmd_results:
-            self.post_message(CmdResultMsg(cmd_result))
-
-    @work
-    async def _get_changed_root_paths(self, old_cached: CachedData) -> list["Path"]:
-        old_managed = set(old_cached.managed_paths)
-        old_files = set(old_cached.managed_file_paths)
-        old_status = dict(old_cached.status_pairs)
-
-        # ^ symmetric difference: elements that exist in either set, but not in both
-        # & intersection: elements that exist in both sets
-        # | union: all elements that exist in either set
-
-        # Collect changed paths: Symmetric difference (added/removed) + Status changes
-        changes = (old_managed ^ set(CMD.cache.managed_paths)) | {
-            p
-            for p in old_managed & set(CMD.cache.managed_paths)
-            if old_status.get(p) != CMD.cache.status_pairs.get(p)
-        }
-        self.all_changed_paths = sorted(changes)
-        # Parent files to their directories
-        all_files = old_files | set(CMD.cache.managed_file_paths)
-        dirs = {p.parent if p in all_files else p for p in changes}
-
-        # Reduce to common parents
-        simplified: set[Path] = set()
-        for path in sorted(dirs, key=lambda p: len(p.parts)):
-            if not any(path.is_relative_to(parent) for parent in simplified):
-                simplified.add(path)
-        return sorted(simplified)
-
-    @work
-    @min_wait
-    async def _update_cached_data_and_trees(self) -> None:
-        old_cached = copy.deepcopy(CMD.cache)
-        CMD.update_parsed_data()
-        changed = await self._get_changed_root_paths(old_cached).wait()
-        self.post_message(NewCmdResults(self.all_cmd_results, changed))
-        if not changed:
-            return
-        for diff_view in self.diff_views:
-            diff_view.purge_mounted_containers(changed)
-        for contents_view in self.contents_views:
-            contents_view.purge_mounted_containers(changed)
-        for git_log in self.git_logs:
-            git_log.purge_mounted_containers(changed)
-        for managed_tree in self.managed_trees:
-            managed_tree.populate_tree()
-        for list_tree in self.list_trees:
-            list_tree.populate_tree()
-        self.dir_tree.refresh()
-        self.dir_tree.reload()
-        self.dir_tree.select_node(self.dir_tree.root)
+    # @work
+    # async def manual_refresh(self) -> None:
+    #     self.loading_modal = LoadingModal()
+    #     await self.app.push_screen(self.loading_modal)
+    #     # await self._run_read_commands().wait()
+    #     await self._log_all_cmd_results_to_logs_tab().wait()
+    #     if not self.all_changed_paths:
+    #         self.notify("No managed paths changed.", severity="warning")
+    #     else:
+    #         changed_paths = "\n".join(
+    #             sorted(str(path) for path in self.all_changed_paths)
+    #         )
+    #         self.notify(f"Updated trees with changed paths:\n{changed_paths}")
+    #     self.loading_modal.dismiss()

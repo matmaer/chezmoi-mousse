@@ -4,20 +4,33 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
+
 if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse import AppIds, CommandResult
-
     from .actionables import OpButton
+    from .operate_mode import LoadingModalResult
 
 __all__ = [
+    "LoadingResultMsg",
+    "LogCmdResultMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    "CmdResultMsg",
-    "NewCmdResults",
     "OperateButtonMsg",
 ]
+
+
+class LoadingResultMsg(Message):
+    def __init__(self, loading_result: LoadingModalResult) -> None:
+        self.loading_result = loading_result
+        super().__init__()
+
+
+class LogCmdResultMsg(Message):
+    def __init__(self, cmd_result: CommandResult) -> None:
+        self.cmd_result = cmd_result
+        super().__init__()
 
 
 class CurrentApplyNodeMsg(Message):
@@ -29,23 +42,6 @@ class CurrentApplyNodeMsg(Message):
 class CurrentReAddNodeMsg(Message):
     def __init__(self, path: Path) -> None:
         self.path = path
-        super().__init__()
-
-
-class CmdResultMsg(Message):
-    def __init__(self, cmd_result: CommandResult) -> None:
-        self.cmd_result = cmd_result
-        super().__init__()
-
-
-class NewCmdResults(Message):
-    def __init__(
-        self,
-        cmd_results: list[CommandResult],
-        changed_root_paths: list[Path] | None = None,
-    ) -> None:
-        self.cmd_results = cmd_results
-        self.changed_root_paths = changed_root_paths
         super().__init__()
 
 
