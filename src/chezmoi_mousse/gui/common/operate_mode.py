@@ -4,7 +4,7 @@ from asyncio import sleep
 from functools import wraps
 from typing import TYPE_CHECKING
 
-from textual import on, work
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.reactive import reactive
@@ -28,7 +28,7 @@ from .contents import ContentsView
 from .diffs import DiffView
 from .filtered_dir_tree import FilteredDirTree
 from .git_log import GitLogView
-from .messages import CmdResultMsg, NewCmdResults, ProgressTextMsg
+from .messages import CmdResultMsg, NewCmdResults
 from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -89,12 +89,6 @@ class LoadingModal(ModalScreen[None], AppType):
         cmd_result = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
         self.cmd_results.append(cmd_result)
-
-    @on(ProgressTextMsg)
-    def update_pretty_cmd_text(self, message: ProgressTextMsg) -> None:
-        message.stop()
-        label = self.query_exactly_one(Label)
-        label.update(f"{message.text}")
 
 
 class OperateMode(Vertical, AppType):
@@ -210,9 +204,6 @@ class OperateMode(Vertical, AppType):
     @work
     @min_wait
     async def _update_log_collapsibles(self) -> None:
-        self.loading_modal.post_message(
-            ProgressTextMsg(f"[$text-darken-2]Update {self.log_collapsibles.name}[/]")
-        )
         self.log_collapsibles.mount(
             Label("Command output", classes=Tcss.main_section_label)
         )
@@ -234,8 +225,6 @@ class OperateMode(Vertical, AppType):
     @work(thread=True)
     @min_wait
     async def _run_perform_command(self, btn_enum: OpBtnEnum) -> None:
-        pretty_cmd = CMD.run_cmd.review_cmd(global_args=self._global_args)
-        self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
         self.run_cmd_result = CMD.run_cmd.perform(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
@@ -269,7 +258,6 @@ class OperateMode(Vertical, AppType):
     @work
     @min_wait
     async def _log_all_cmd_results_to_logs_tab(self) -> None:
-        self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
         for cmd_result in self.all_cmd_results:
             self.post_message(CmdResultMsg(cmd_result))
 
@@ -304,9 +292,6 @@ class OperateMode(Vertical, AppType):
     @work
     @min_wait
     async def _update_cached_data_and_trees(self) -> None:
-        self.loading_modal.post_message(
-            ProgressTextMsg("Updating cached data and trees")
-        )
         old_cached = copy.deepcopy(CMD.cache)
         CMD.update_parsed_data()
         changed = await self._get_changed_root_paths(old_cached).wait()

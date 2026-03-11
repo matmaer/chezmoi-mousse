@@ -17,7 +17,6 @@ __all__ = [
     "CmdResultMsg",
     "NewCmdResults",
     "OperateButtonMsg",
-    "ProgressTextMsg",
 ]
 
 
@@ -54,10 +53,4 @@ class OperateButtonMsg(Message):
     def __init__(self, ids: AppIds, *, button: OpButton) -> None:
         self.button: OpButton = button
         self.ids = ids
-        super().__init__()
-
-
-class ProgressTextMsg(Message):
-    def __init__(self, text: str) -> None:
-        self.text = text
         super().__init__()
