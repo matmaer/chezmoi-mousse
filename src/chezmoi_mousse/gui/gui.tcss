@@ -3,7 +3,7 @@
 /****************/
 
 /* TODO implement vw and vh for screens and containers with docked components */
-
+/* TODO, check scrollbar-gutter: stable */
 # Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
 
 .flat_button{
@@ -322,7 +322,7 @@ OperateMode {
     border-title-align: center;
   }
   &>ScrollableContainer {
-    height: auto;
+    height: 1fr;
   }
 }
 
