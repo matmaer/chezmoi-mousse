@@ -75,12 +75,10 @@ class ContentsView(ContainerCache):
                 return f"{ContentsView.ContentStr.read_error} for {file_path}"
 
         def _read_file(file_path: Path) -> str:
-            file_contents: str = ""
             if not file_path.exists():
                 cmd_result = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path)
-                file_contents = cmd_result.std_out
                 self.post_message(LogCmdResultMsg(cmd_result))
-                return file_contents
+                return cmd_result.std_out
             try:
                 truncate_size: int = 1024 * 1024  # 1Mib
                 file_size = file_path.stat().st_size
@@ -100,8 +98,7 @@ class ContentsView(ContainerCache):
                 return file_contents
 
             except (UnicodeDecodeError, PermissionError, OSError) as e:
-                file_contents = _handle_exception(e)
-                return file_contents
+                return _handle_exception(e)
 
         file_contents = _read_file(file_path)
         language = _detect_language(file_contents.splitlines(), file_path)
@@ -121,13 +118,8 @@ class ContentsView(ContainerCache):
         new_container: ScrollableContainer | None = None
         if container is None:
             # Create container based on path type
-            if show_path == CMD.cache.dest_dir or (
-                show_path in CMD.cache.managed_dir_paths
-                and show_path not in CMD.cache.status_paths
-            ):
+            if show_path in CMD.cache.managed_dirs_with_dest_dir:
                 new_container = self._create_managed_dir_container(show_path)
-            elif show_path.is_file():
-                new_container = self._create_file_container(show_path)
             else:
-                return
+                new_container = self._create_file_container(show_path)
         self.update_container_display(show_path, new_container)
