@@ -21,6 +21,7 @@ from chezmoi_mousse import (
     ReadCmd,
     TabLabel,
     Tcss,
+    WriteCmd,
 )
 
 from .contents import ContentsView
@@ -56,12 +57,38 @@ def min_wait(
     return wrapper
 
 
-class LoadingModal(ModalScreen[None]):
+class LoadingModal(ModalScreen[None], AppType):
+
+    run_command: reactive[ReadCmd | WriteCmd | None] = reactive(None)
+
+    def __init__(self) -> None:
+        self.cmd_results: list[CommandResult] = []
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
             yield Label()
             yield LoadingIndicator()
+
+    def on_mount(self) -> None:
+        self.label = self.query_exactly_one(Label)
+
+    async def watch_run_command(self, run_command: ReadCmd | WriteCmd | None) -> None:
+        if run_command is not None:
+            self.label.update(f"Running {run_command}")
+            if isinstance(run_command, ReadCmd):
+                await self._run_read_command(run_command).wait()
+            else:
+                self.notify("under construction")
+
+    @work(thread=True)
+    @min_wait
+    async def _run_read_command(self, read_cmd: ReadCmd) -> None:
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
+        self.label.update(f"Running {pretty_cmd}")
+        cmd_result = CMD.run_cmd.read(read_cmd)
+        setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
+        self.cmd_results.append(cmd_result)
 
     @on(ProgressTextMsg)
     def update_pretty_cmd_text(self, message: ProgressTextMsg) -> None:
@@ -121,6 +148,7 @@ class OperateMode(Vertical, AppType):
         self.operate_info = self.query_one(self.ids.static.operate_info_q, Static)
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
+        self.loading_modal = LoadingModal()
 
     @property
     def _global_args(self) -> tuple[str, ...]:
@@ -157,7 +185,6 @@ class OperateMode(Vertical, AppType):
     @work(exit_on_error=False)
     @min_wait
     async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
-        self.loading_modal = LoadingModal()
         self.old_cached = None
         await self.app.push_screen(self.loading_modal)
         await self._run_perform_command(btn_enum).wait()
@@ -171,7 +198,7 @@ class OperateMode(Vertical, AppType):
     @work(exit_on_error=False)
     async def _run_read_commands(self) -> None:
         for read_cmd in self.read_commands:
-            await self._run_read_command(read_cmd).wait()
+            self.loading_modal.run_command = read_cmd
 
     @work
     async def _cleanup_after_operation(self) -> None:
@@ -221,17 +248,6 @@ class OperateMode(Vertical, AppType):
             self.operate_info.border_title = self.btn_enum.op_info_title
             self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
         self.old_cached = copy.deepcopy(CMD.cache)
-
-    @work(thread=True)
-    @min_wait
-    async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
-        self.loading_modal.post_message(ProgressTextMsg(f"Running {pretty_cmd}"))
-        cmd_result = CMD.run_cmd.read(read_cmd)
-        setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
-        if cmd_result.is_dry_run:
-            return
-        self.all_cmd_results.append(cmd_result)
 
     @work
     async def manual_refresh(self) -> None:
