@@ -27,8 +27,7 @@ from .contents import ContentsView
 from .diffs import DiffView
 from .filtered_dir_tree import FilteredDirTree
 from .git_log import GitLogView
-from .loggers import AppLog, CmdLog
-from .messages import NewCmdResults, ProgressTextMsg
+from .messages import CmdResultMsg, NewCmdResults, ProgressTextMsg
 from .trees import ListTree, ManagedTree
 
 if TYPE_CHECKING:
@@ -110,8 +109,6 @@ class OperateMode(Vertical, AppType):
 
     def on_mount(self) -> None:
         self.display = False
-        self.app_log = self.screen.query_exactly_one(AppLog)
-        self.cmd_log = self.screen.query_exactly_one(CmdLog)
         self.contents_views = list(self.screen.query(ContentsView))
         self.diff_views = list(self.screen.query(DiffView))
         self.dir_tree = self.screen.query_exactly_one(FilteredDirTree)
@@ -257,11 +254,8 @@ class OperateMode(Vertical, AppType):
     @min_wait
     async def _log_all_cmd_results_to_logs_tab(self) -> None:
         self.loading_modal.post_message(ProgressTextMsg("Logging command results"))
-        self.app_log.write_ready("Commands logged in OperateMode")
         for cmd_result in self.all_cmd_results:
-            self.app_log.log_cmd_result(cmd_result)
-            self.cmd_log.log_cmd_result(cmd_result)
-        self.app_log.write_ready("End of OperateMode commands")
+            self.post_message(CmdResultMsg(cmd_result))
 
     @work
     async def _get_changed_root_paths(self, old_cached: CachedData) -> list["Path"]:

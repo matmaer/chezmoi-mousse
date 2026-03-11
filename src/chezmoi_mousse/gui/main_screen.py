@@ -23,7 +23,7 @@ from .common.actionables import SwitchSlider
 from .common.contents import ContentsView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog  # , DebugLog
-from .common.messages import NewCmdResults, OperateButtonMsg
+from .common.messages import CmdResultMsg, NewCmdResults, OperateButtonMsg
 from .common.operate_mode import OperateMode
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher, ViewSwitcher
@@ -169,6 +169,10 @@ class MainScreen(Screen[None], AppType):
         elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
             operate_mode.btn_enum = msg.button.btn_enum
             self._set_post_run_display(msg.ids)
+
+    @on(CmdResultMsg)
+    def log_new_cmd_result(self, msg: CmdResultMsg) -> None:
+        self.log_cmd_result(msg.cmd_result)
 
     @on(NewCmdResults)
     def handle_changed_root_paths(self, msg: NewCmdResults) -> None:

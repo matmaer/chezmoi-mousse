@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 __all__ = [
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
+    "CmdResultMsg",
     "NewCmdResults",
     "OperateButtonMsg",
     "ProgressTextMsg",
@@ -29,6 +30,12 @@ class CurrentApplyNodeMsg(Message):
 class CurrentReAddNodeMsg(Message):
     def __init__(self, path: Path) -> None:
         self.path = path
+        super().__init__()
+
+
+class CmdResultMsg(Message):
+    def __init__(self, cmd_result: CommandResult) -> None:
+        self.cmd_result = cmd_result
         super().__init__()
 
 
