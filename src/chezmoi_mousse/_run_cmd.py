@@ -123,7 +123,7 @@ class WriteCmd(Enum):
 
 
 def _get_filtered_cmd(cmd_args: tuple[str, ...], review_color: bool) -> str:
-    filter_git_log_args = VerbArgs.git_log.value[3:]
+    filter_git_log_args = VerbArgs.git_log.value[2:]
     exclude = set(
         GlobalCmd.default_args.value
         + filter_git_log_args
