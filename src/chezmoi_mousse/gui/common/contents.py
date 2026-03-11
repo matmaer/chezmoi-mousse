@@ -80,6 +80,7 @@ class ContentsView(ContainerCache):
                 cmd_result = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path)
                 file_contents = cmd_result.std_out
                 self.post_message(NewCmdResults([cmd_result]))
+                return file_contents
             try:
                 truncate_size: int = 1024 * 1024  # 1Mib
                 file_size = file_path.stat().st_size
@@ -96,10 +97,11 @@ class ContentsView(ContainerCache):
                     file_contents = (
                         "Nothing to read." if f_contents == "" else f_contents
                     )
+                return file_contents
 
             except (UnicodeDecodeError, PermissionError, OSError) as e:
                 file_contents = _handle_exception(e)
-            return file_contents
+                return file_contents
 
         file_contents = _read_file(file_path)
         language = _detect_language(file_contents.splitlines(), file_path)
