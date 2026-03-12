@@ -13,6 +13,7 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import (
     CMD,
+    IDS,
     AppType,
     OpBtnEnum,
     OperateString,
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["OperateMode", "LoadingModal", "LoadingModalResult"]
 
@@ -190,26 +191,22 @@ class OperateMode(Vertical, AppType):
 
     btn_enum: reactive[OpBtnEnum | None] = reactive(None, init=False)
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.op_mode)
-        self.ids = ids
+    def __init__(self) -> None:
+        super().__init__(id=IDS.main_tabs.container.op_mode)
 
     def compose(self) -> ComposeResult:
         yield Static(
-            id=self.ids.static.operate_info,
+            id=IDS.main_tabs.static.operate_info,
             classes=Tcss.operate_info,
             name="operate info",
         )
         yield ScrollableContainer(
-            id=self.ids.container.command_output, name="operate command results"
+            id=IDS.main_tabs.container.command_output, name="operate command results"
         )
 
     def on_mount(self) -> None:
         self.display = False
-        self.log_collapsibles = self.query_one(
-            self.ids.container.command_output_q, ScrollableContainer
-        )
-        self.operate_info = self.query_one(self.ids.static.operate_info_q, Static)
+        self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
@@ -223,8 +220,6 @@ class OperateMode(Vertical, AppType):
         return (*self.btn_enum.write_cmd.value, path_arg)
 
     def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
-        if btn_enum.label == OpBtnLabel.reload:
-            return
         if btn_enum in self.review_btn_enums:
             self.update_review_info()
         elif btn_enum in self.run_btn_enums:
@@ -240,25 +235,25 @@ class OperateMode(Vertical, AppType):
         if result is None or self.btn_enum is None:
             return
         self.post_message(LoadingResultMsg(loading_result=result))
-        self.log_collapsibles.mount(
-            Label("Command output", classes=Tcss.main_section_label)
+        log_collapsibles = self.query_one(
+            IDS.main_tabs.container.command_output_q, ScrollableContainer
         )
+        log_collapsibles.remove_children()
+        log_collapsibles.mount(Label("Command output", classes=Tcss.main_section_label))
         if result.write_cmd_result is not None:
-            self.log_collapsibles.mount(result.write_cmd_result.pretty_collapsible)
+            log_collapsibles.mount(result.write_cmd_result.pretty_collapsible)
         for cmd_result in result.read_cmd_results:
-            self.log_collapsibles.mount(cmd_result.pretty_collapsible)
-        self.log_collapsibles.mount(
-            Label("Changed paths", classes=Tcss.main_section_label)
-        )
+            log_collapsibles.mount(cmd_result.pretty_collapsible)
+        log_collapsibles.mount(Label("Changed paths", classes=Tcss.main_section_label))
         if not result.changed_paths:
             dry_run = (
                 " (dry run)"
                 if result.write_cmd_result and result.write_cmd_result.is_dry_run
                 else ""
             )
-            self.log_collapsibles.mount(Static(f"No paths changed.{dry_run}"))
+            log_collapsibles.mount(Static(f"No paths changed.{dry_run}"))
         for path in result.changed_paths:
-            self.log_collapsibles.mount(Static(str(path), classes=Tcss.info))
+            log_collapsibles.mount(Static(str(path), classes=Tcss.info))
 
         # Update operate info with summary of the operation
         self.operate_info.visible = False
@@ -284,7 +279,7 @@ class OperateMode(Vertical, AppType):
         info_lines: list[str] = []
         info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
         info_lines.append(self.btn_enum.op_info_string)
-        if self.ids.canvas_name in (TabLabel.add, TabLabel.re_add):
+        if IDS.main_tabs.canvas_name in (TabLabel.add, TabLabel.re_add):
             if CMD.cache.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
             if CMD.cache.git_auto_push is True:
