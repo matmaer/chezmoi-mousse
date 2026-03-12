@@ -9,9 +9,9 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, DirNode, OpBtnLabel, TabLabel, Tcss
+from chezmoi_mousse import CMD, AppType, DirNode, OpBtnEnum, TabLabel, Tcss
 
-from .actionables import TabButtons
+from .actionables import OpButton, TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLogView
@@ -40,10 +40,17 @@ class TreeSwitcher(Container, AppType):
         ):
             yield ManagedTree(self.ids)
             yield ListTree(self.ids)
-        yield Button(label=OpBtnLabel.refresh_tree, classes=Tcss.refresh_button)
+        yield OpButton(
+            btn_enum=OpBtnEnum.refresh_tree,
+            btn_id=self.ids.op_btn.refresh_tree,
+            app_ids=self.ids,
+        )
 
     def on_mount(self) -> None:
         self.view_switcher = self.query_exactly_one(ContentSwitcher)
+        self.query_one(self.ids.op_btn.refresh_tree_q, OpButton).add_class(
+            Tcss.refresh_button
+        )
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:

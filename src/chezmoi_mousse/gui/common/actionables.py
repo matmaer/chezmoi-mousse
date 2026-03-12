@@ -20,7 +20,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from .messages import OperateButtonMsg
+# from .messages import OperateButtonMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -82,10 +82,14 @@ class FlatButtonsVertical(Vertical):
 
 class OpButton(Button, AppType):
 
-    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum | OpBtnLabel) -> None:
+    def __init__(
+        self, *, btn_id: str, btn_enum: OpBtnEnum | OpBtnLabel, app_ids: "AppIds"
+    ) -> None:
         label = btn_enum.label if isinstance(btn_enum, OpBtnEnum) else btn_enum.value
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
         self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
+        self.btn_id: str = btn_id
+        self.app_ids: "AppIds" = app_ids
         if label in (OpBtnLabel.destroy_review, OpBtnLabel.forget_review):
             self.disabled = True
         elif "Run" in label:
@@ -102,7 +106,7 @@ class OperateButtons(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_id, btn_enum in self.btn_dict.items():
-            yield OpButton(btn_id=btn_id, btn_enum=btn_enum)
+            yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
 
     def on_mount(self) -> None:
         if (
@@ -154,7 +158,7 @@ class OperateButtons(HorizontalGroup):
                 btn.display = False
             for btn in self.review_buttons:
                 btn.display = True
-            self.post_message(OperateButtonMsg(self.ids, button=event.button))
+            # self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
         elif event.button.id in self.review_btn_ids:
             self.cancel_btn.display = True
@@ -169,13 +173,13 @@ class OperateButtons(HorizontalGroup):
                 b for b in self.run_buttons if b.btn_enum == run_btn_enum
             )
             btn_widget.display = True
-            self.post_message(OperateButtonMsg(self.ids, button=event.button))
+            # self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
         elif event.button in self.run_buttons:
             self.cancel_btn.display = False
             self.reload_btn.display = True
             event.button.disabled = True
-            self.post_message(OperateButtonMsg(self.ids, button=event.button))
+            # self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 
 class SwitchWithLabel(HorizontalGroup):

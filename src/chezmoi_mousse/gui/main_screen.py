@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Label, Static, TabbedContent, TabPane, Tabs
+from textual.widgets import Footer, Label, Static, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -21,14 +21,14 @@ from chezmoi_mousse import (
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.actionables import SwitchSlider
+from .common.actionables import OpButton, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
 from .common.loading_modal import LoadingModal, LoadingModalResult, min_wait
 from .common.loggers import AppLog, CmdLog
-from .common.messages import LoadingResultMsg, LogCmdResultMsg, OperateButtonMsg
+from .common.messages import LoadingResultMsg, LogCmdResultMsg
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.trees import ListTree, ManagedTree
@@ -65,8 +65,6 @@ class OperateMode(Vertical, AppType):
     def on_mount(self) -> None:
         self.display = False
         self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
-        self.review_btn_enums = OpBtnEnum.review_btn_enums()
-        self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
     @property
     def _global_args(self) -> tuple[str, ...]:
@@ -78,9 +76,12 @@ class OperateMode(Vertical, AppType):
         return (*self.btn_enum.write_cmd.value, path_arg)
 
     def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
-        if btn_enum in self.review_btn_enums:
+        if btn_enum in self.app.review_btn_enums:
             self.update_review_info()
-        elif btn_enum in self.run_btn_enums:
+        elif (
+            btn_enum in self.app.run_btn_enums
+            or btn_enum.label == OpBtnLabel.refresh_tree
+        ):
             loading_modal = LoadingModal()
             loading_modal.btn_enum = btn_enum
             self.app.push_screen(
@@ -93,7 +94,9 @@ class OperateMode(Vertical, AppType):
         self, result: "LoadingModalResult | None"
     ) -> None:
         if result is None or self.btn_enum is None:
-            return
+            raise ValueError(
+                "Result or btn_enum is None in _process_loading_modal_result."
+            )
         self.post_message(LoadingResultMsg(loading_result=result))
         log_collapsibles = self.query_one(
             IDS.main_tabs.container.command_output_q, ScrollableContainer
@@ -148,13 +151,6 @@ class OperateMode(Vertical, AppType):
         self.operate_info.border_title = self.btn_enum.op_info_title
         self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
 
-    @work
-    async def manual_refresh(self) -> None:
-        loading_modal = LoadingModal()
-        await self.app.push_screen(loading_modal)
-        await loading_modal.run_all_read_commands().wait()
-        loading_modal.dismiss()
-
 
 class MainScreen(Screen[None], AppType):
 
@@ -179,6 +175,7 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.query_exactly_one(ConfigTab).command_results = CMD.cmd_results
         self.operate_mode = self.query_one(
             IDS.main_tabs.container.op_mode_q, OperateMode
         )
@@ -189,7 +186,6 @@ class MainScreen(Screen[None], AppType):
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self._populate_apply_trees()
         self._populate_re_add_trees()
-        self._set_config_screen_reactives()
         self.app.call_later(self._log_splash_log_commands)
 
         self.contents_views = list(self.query(ContentsView))
@@ -204,10 +200,6 @@ class MainScreen(Screen[None], AppType):
         app_log.cmd_result = command_result
         cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         cmd_log.cmd_result = command_result
-
-    def _set_config_screen_reactives(self) -> None:
-        config_tab = self.query_exactly_one(ConfigTab)
-        config_tab.command_results = CMD.cmd_results
 
     def _log_splash_log_commands(self) -> None:
         self.app_log.write_ready("Commands executed in loading screen")
@@ -298,17 +290,6 @@ class MainScreen(Screen[None], AppType):
         self.dir_tree.reload()
         self.dir_tree.select_node(self.dir_tree.root)
 
-    ############################
-    # Message handling methods #
-    ############################
-
-    @on(Button.Pressed)
-    async def refresh_all_trees(self, event: Button.Pressed) -> None:
-        if event.button.label == OpBtnLabel.refresh_tree:
-            self.notify("not yet implemented refresh all trees")
-            event.stop()
-            await self.operate_mode.manual_refresh().wait()
-
     @work
     async def _handle_reload_button(self) -> None:
         loading_modal = LoadingModal()
@@ -321,23 +302,36 @@ class MainScreen(Screen[None], AppType):
         label.update("updating trees")
         await self._update_trees(self.last_loading_result.changed_paths).wait()
 
-    @on(OperateButtonMsg)
-    def handle_operate_btn_msg(self, msg: OperateButtonMsg) -> None:
-        msg.stop()
-        operate_mode = self.query_exactly_one(OperateMode)
-        if msg.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
-            operate_mode.display = False
-            self._restore_display(msg.ids)
-        if msg.button.btn_enum == OpBtnLabel.reload:
-            self._handle_reload_button()
+    ############################
+    # Message handling methods #
+    ############################
+
+    @on(OpButton.Pressed)
+    async def refresh_all_trees(self, event: OpButton.Pressed) -> None:
+        event.stop()
+        if event.button.label == OpBtnEnum.refresh_tree.label:
+            self.notify(
+                f"not yet implemented for {event.button.label}", severity="error"
+            )
+
+    @on(OpButton.Pressed)
+    def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
+        if not isinstance(event.button, OpButton):
             return
-        if msg.button.btn_enum in OpBtnEnum.review_btn_enums():
-            operate_mode.display = True
-            operate_mode.btn_enum = msg.button.btn_enum
-            self._set_review_display(msg.ids)
-        elif msg.button.btn_enum in OpBtnEnum.run_btn_enums():
-            operate_mode.btn_enum = msg.button.btn_enum
-            self._set_post_run_display(msg.ids)
+        if event.button.btn_enum == OpBtnLabel.cancel:
+            self.operate_mode.display = False
+            self._restore_display(event.button.app_ids)
+        elif event.button.btn_enum == OpBtnLabel.reload:
+            self.operate_mode.display = False
+            self._restore_display(event.button.app_ids)
+            self._handle_reload_button()
+        elif event.button.btn_enum in OpBtnEnum.review_btn_enums():
+            self.operate_mode.display = True
+            self.operate_mode.btn_enum = event.button.btn_enum
+            self._set_review_display(event.button.app_ids)
+        elif event.button.btn_enum in OpBtnEnum.run_btn_enums():
+            self.operate_mode.btn_enum = event.button.btn_enum
+            self._set_post_run_display(event.button.app_ids)
 
     @on(LogCmdResultMsg)
     def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
@@ -346,4 +340,3 @@ class MainScreen(Screen[None], AppType):
     @on(LoadingResultMsg)
     def handle_changed_root_paths(self, msg: LoadingResultMsg) -> None:
         self.last_loading_result = msg.loading_result
-        self.notify(f"received LoadingResultMsg {msg}")

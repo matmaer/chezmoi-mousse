@@ -154,6 +154,8 @@ class OperateButtonIds:
         self.cancel_q = f"#{self.cancel}"
         self.exit_app = ids.operate_button_id(operation=OpBtnLabel.exit_app)
         self.exit_app_q = f"#{self.exit_app}"
+        self.refresh_tree = ids.operate_button_id(operation=OpBtnLabel.refresh_tree)
+        self.refresh_tree_q = f"#{self.refresh_tree}"
         self.reload = ids.operate_button_id(operation=OpBtnLabel.reload)
         self.reload_q = f"#{self.reload}"
 

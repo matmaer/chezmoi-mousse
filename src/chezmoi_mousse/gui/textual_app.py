@@ -19,6 +19,7 @@ from chezmoi_mousse import (
     BindingAction,
     BindingDescription,
     Chars,
+    OpBtnEnum,
     OpBtnLabel,
     TabLabel,
 )
@@ -108,6 +109,8 @@ class ChezmoiGUI(App[None]):
         self.force_init_needed: bool = pretend_init_needed
         self.init_needed: bool = bool(self.force_init_needed)
         self.init_cmd_result: CommandResult | None = None
+        self.review_btn_enums = OpBtnEnum.review_btn_enums()
+        self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)

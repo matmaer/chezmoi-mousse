@@ -66,7 +66,6 @@ class LoadingModal(ModalScreen[LoadingModalResult], AppType):
             ReadCmd.status_files,
         ]
         self.btn_enum: OpBtnEnum | OpBtnLabel | None = None
-        self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
@@ -80,22 +79,25 @@ class LoadingModal(ModalScreen[LoadingModalResult], AppType):
         self._run_commands(self.btn_enum)
 
     @property
-    def _global_args(self) -> tuple[str, ...]:
+    def _global_args(self) -> tuple[str, ...] | None:
         if self.btn_enum is None:
             raise ValueError("btn_enum is None when trying to access global args.")
-        if self.btn_enum in self.run_btn_enums:
+        if self.btn_enum in self.app.run_btn_enums:
             path_arg = (
                 str(self.btn_enum.path_arg)
                 if self.btn_enum.path_arg is not None
                 else ""
             )
             return (*self.btn_enum.write_cmd.value, path_arg)
-        return ()
 
     @work
     async def _run_commands(self, btn_enum: "OpBtnEnum | OpBtnLabel | None") -> None:
         self.label = self.query_exactly_one(Label)
-        if btn_enum in self.run_btn_enums:
+        if btn_enum in self.app.run_btn_enums:
+            if self._global_args is None:
+                raise ValueError(
+                    "Global args are None when trying to run write command."
+                )
             self.label.update(f"Running {CMD.run_cmd.review_cmd(self._global_args)})")
             await self._run_write_command(btn_enum).wait()
             self.label.update("Running read commands to update cache")

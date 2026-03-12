@@ -7,9 +7,9 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import CommandResult
 
-    from .actionables import OpButton
+    # from .actionables import OpButton
     from .loading_modal import LoadingModalResult
 
 __all__ = [
@@ -17,7 +17,7 @@ __all__ = [
     "LogCmdResultMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    "OperateButtonMsg",
+    # "OperateButtonMsg",
 ]
 
 
@@ -45,8 +45,8 @@ class CurrentReAddNodeMsg(Message):
         super().__init__()
 
 
-class OperateButtonMsg(Message):
-    def __init__(self, ids: AppIds, *, button: OpButton) -> None:
-        self.button: OpButton = button
-        self.ids = ids
-        super().__init__()
+# class OperateButtonMsg(Message):
+#     def __init__(self, ids: AppIds, *, button: OpButton) -> None:
+#         self.button: OpButton = button
+#         self.ids = ids
+#         super().__init__()

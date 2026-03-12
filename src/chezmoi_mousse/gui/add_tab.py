@@ -5,11 +5,11 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, DirectoryTree, Label, Static, Switch
+from textual.widgets import DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, OpBtnLabel, Tcss
+from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, Tcss
 
-from .common.actionables import OperateButtons, SwitchSlider
+from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.filtered_dir_tree import FilteredDirTree
 
@@ -118,7 +118,11 @@ class AddTab(Horizontal, AppType):
     def compose(self) -> ComposeResult:
         yield Vertical(
             FilteredDirTree(CMD.cache.dest_dir),
-            Button(label=OpBtnLabel.refresh_tree, classes=Tcss.refresh_button),
+            OpButton(
+                btn_enum=OpBtnEnum.refresh_tree,
+                btn_id=IDS.add.op_btn.refresh_tree,
+                app_ids=IDS.add,
+            ),
             id=IDS.add.container.left_side,
             classes=Tcss.tab_left_vertical,
         )
@@ -128,13 +132,16 @@ class AddTab(Horizontal, AppType):
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:
+        self.query_one(IDS.add.op_btn.refresh_tree_q, OpButton).add_class(
+            Tcss.refresh_button
+        )
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.dir_tree.path = CMD.cache.dest_dir
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, AddTabContentsView
         )
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
-        self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, Button)
+        self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, OpButton)
         self.add_review_btn.disabled = True
 
     @on(DirectoryTree.FileSelected)
