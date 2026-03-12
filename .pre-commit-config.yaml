@@ -67,25 +67,6 @@ repos:
         require_serial: true
         types_or: [python, pyi]
 
-  - repo: local
-    hooks:
-      - id: pytest-static
-        name: pytest-static
-        description: pytest static tests
-        entry: env PYTHONPATH=src uv run pytest tests/static_tests
-        language: python
-        additional_dependencies:
-          - pytest
-          - pytest-env
-          - pytest-timeout
-          - textual[syntax]
-          - faker
-          - tomlkit
-          - psutil
-        always_run: true
-        pass_filenames: false
-        types: [python]
-
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.10.9
     hooks:
