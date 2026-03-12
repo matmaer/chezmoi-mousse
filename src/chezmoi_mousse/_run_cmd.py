@@ -242,7 +242,7 @@ class ChezmoiCommand:
         else:
             return GlobalCmd.dry_run.value
 
-    def review_cmd(self, *, global_args: tuple[str, ...]) -> str:
+    def review_cmd(self, global_args: tuple[str, ...]) -> str:
         command = self._global_cmd + global_args
         return _get_filtered_cmd(command, review_color=True)
 

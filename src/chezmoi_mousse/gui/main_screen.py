@@ -2,11 +2,22 @@ from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import ScrollableContainer, Vertical
+from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Label, TabbedContent, TabPane, Tabs
+from textual.widgets import Button, Footer, Label, Static, TabbedContent, TabPane, Tabs
 
-from chezmoi_mousse import CMD, IDS, AppType, LogString, OpBtnEnum, OpBtnLabel, TabLabel
+from chezmoi_mousse import (
+    CMD,
+    IDS,
+    AppType,
+    LogString,
+    OpBtnEnum,
+    OpBtnLabel,
+    OperateString,
+    TabLabel,
+    Tcss,
+)
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -15,9 +26,9 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
+from .common.loading_modal import LoadingModal, LoadingModalResult, min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.messages import LoadingResultMsg, LogCmdResultMsg, OperateButtonMsg
-from .common.operate_mode import LoadingModal, LoadingModalResult, OperateMode, min_wait
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.trees import ListTree, ManagedTree
@@ -31,7 +42,118 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, CommandResult
 
-__all__ = ["MainScreen"]
+__all__ = ["MainScreen", "OperateMode"]
+
+
+class OperateMode(Vertical, AppType):
+
+    btn_enum: reactive[OpBtnEnum | None] = reactive(None, init=False)
+
+    def __init__(self) -> None:
+        super().__init__(id=IDS.main_tabs.container.op_mode)
+
+    def compose(self) -> ComposeResult:
+        yield Static(
+            id=IDS.main_tabs.static.operate_info,
+            classes=Tcss.operate_info,
+            name="operate info",
+        )
+        yield ScrollableContainer(
+            id=IDS.main_tabs.container.command_output, name="operate command results"
+        )
+
+    def on_mount(self) -> None:
+        self.display = False
+        self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
+        self.review_btn_enums = OpBtnEnum.review_btn_enums()
+        self.run_btn_enums = OpBtnEnum.run_btn_enums()
+
+    @property
+    def _global_args(self) -> tuple[str, ...]:
+        if self.btn_enum is None:
+            raise ValueError("btn_enum is None when trying to access global args.")
+        path_arg = (
+            str(self.btn_enum.path_arg) if self.btn_enum.path_arg is not None else ""
+        )
+        return (*self.btn_enum.write_cmd.value, path_arg)
+
+    def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
+        if btn_enum in self.review_btn_enums:
+            self.update_review_info()
+        elif btn_enum in self.run_btn_enums:
+            loading_modal = LoadingModal()
+            loading_modal.btn_enum = btn_enum
+            self.app.push_screen(
+                loading_modal,
+                callback=self._process_loading_modal_result,
+                wait_for_dismiss=True,
+            )
+
+    def _process_loading_modal_result(
+        self, result: "LoadingModalResult | None"
+    ) -> None:
+        if result is None or self.btn_enum is None:
+            return
+        self.post_message(LoadingResultMsg(loading_result=result))
+        log_collapsibles = self.query_one(
+            IDS.main_tabs.container.command_output_q, ScrollableContainer
+        )
+        log_collapsibles.remove_children()
+        log_collapsibles.mount(Label("Command output", classes=Tcss.main_section_label))
+        if result.write_cmd_result is not None:
+            log_collapsibles.mount(result.write_cmd_result.pretty_collapsible)
+        for cmd_result in result.read_cmd_results:
+            log_collapsibles.mount(cmd_result.pretty_collapsible)
+        log_collapsibles.mount(Label("Changed paths", classes=Tcss.main_section_label))
+        if not result.changed_paths:
+            dry_run = (
+                " (dry run)"
+                if result.write_cmd_result and result.write_cmd_result.is_dry_run
+                else ""
+            )
+            log_collapsibles.mount(Static(f"No paths changed.{dry_run}"))
+        for path in result.changed_paths:
+            log_collapsibles.mount(Static(str(path), classes=Tcss.info))
+
+        # Update operate info with summary of the operation
+        self.operate_info.visible = False
+        if result.write_cmd_result is not None:
+            self.operate_info.update(
+                f"{result.write_cmd_result.full_cmd_filtered}\n"
+                f"Command completed with exit code "
+                f"{result.write_cmd_result.exit_code}"
+            )
+            self.operate_info.border_title = self.btn_enum.op_info_title
+            self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
+        else:
+            self.operate_info.update("Tree refreshed")
+            self.operate_info.border_title = "Refresh tree"
+            self.operate_info.border_subtitle = (
+                "Updated tree with current state of managed paths"
+            )
+        self.operate_info.visible = True
+
+    def update_review_info(self) -> None:
+        if self.btn_enum is None or self.display is False:
+            return
+        info_lines: list[str] = []
+        info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
+        info_lines.append(self.btn_enum.op_info_string)
+        if IDS.main_tabs.canvas_name in (TabLabel.add, TabLabel.re_add):
+            if CMD.cache.git_auto_commit is True:
+                info_lines.append(OperateString.auto_commit)
+            if CMD.cache.git_auto_push is True:
+                info_lines.append(OperateString.auto_push)
+        self.operate_info.update("\n".join(info_lines))
+        self.operate_info.border_title = self.btn_enum.op_info_title
+        self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
+
+    @work
+    async def manual_refresh(self) -> None:
+        loading_modal = LoadingModal()
+        await self.app.push_screen(loading_modal)
+        await loading_modal.run_all_read_commands().wait()
+        loading_modal.dismiss()
 
 
 class MainScreen(Screen[None], AppType):
@@ -185,10 +307,10 @@ class MainScreen(Screen[None], AppType):
         if event.button.label == OpBtnLabel.refresh_tree:
             self.notify("not yet implemented refresh all trees")
             event.stop()
-            # await self.operate_mode.manual_refresh().wait()
+            await self.operate_mode.manual_refresh().wait()
 
     @work
-    async def handle_reload_button(self) -> None:
+    async def _handle_reload_button(self) -> None:
         loading_modal = LoadingModal()
         self.app.push_screen(loading_modal)
         label = loading_modal.query_exactly_one(Label)
@@ -207,7 +329,7 @@ class MainScreen(Screen[None], AppType):
             operate_mode.display = False
             self._restore_display(msg.ids)
         if msg.button.btn_enum == OpBtnLabel.reload:
-            self.handle_reload_button()
+            self._handle_reload_button()
             return
         if msg.button.btn_enum in OpBtnEnum.review_btn_enums():
             operate_mode.display = True

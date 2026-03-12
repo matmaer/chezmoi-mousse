@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse import AppIds, CommandResult
+
     from .actionables import OpButton
-    from .operate_mode import LoadingModalResult
+    from .loading_modal import LoadingModalResult
 
 __all__ = [
     "LoadingResultMsg",

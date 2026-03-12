@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CachedData", "CommandResults", "DirNode", "ParsedJson"]
+__all__ = ["CMD", "CommandResults", "DirNode", "ParsedJson"]
 
 
 type ParsedJson = dict[str, Any]
@@ -71,10 +71,10 @@ class CommandResults:
         ]
 
     @property
-    def managed_paths(self) -> list[Path]:
+    def managed_paths(self) -> set[Path]:
         if self.managed is None:
-            return []
-        return [Path(line) for line in self.managed.std_out.splitlines()]
+            return set()
+        return {Path(line) for line in self.managed.std_out.splitlines()}
 
     @property
     def managed_dir_paths(self) -> list[Path]:
@@ -270,7 +270,7 @@ class CachedData:
     global_git_log_lines: list[str]
     no_status_paths: bool
     # Parsed paths in a list or set
-    managed_paths: list[Path]
+    managed_paths: set[Path]
     managed_dir_paths: list[Path]
     managed_dirs_with_dest_dir: list[Path]
     managed_file_paths: list[Path]
