@@ -7,13 +7,16 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, Tcss
+from chezmoi_mousse import CMD, IDS, OpBtnEnum, Tcss
 
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.filtered_dir_tree import FilteredDirTree
 
 __all__ = ["AddTab"]
+
+
+OUTPUT_LIMIT = 50
 
 
 class AddTabContentsView(ContentsView):
@@ -34,7 +37,7 @@ class AddTabContentsView(ContentsView):
             )
         unmanaged_dirs: list[str] = []
         unmanaged_files: list[str] = []
-        output_limit = 50
+
         limited_dirs = False
         limited_files = False
 
@@ -45,7 +48,7 @@ class AddTabContentsView(ContentsView):
                 path = root_path / name
                 if path not in CMD.cache.managed_dir_paths:
                     unmanaged_dirs.append(str(path.relative_to(CMD.cache.dest_dir)))
-                    if len(unmanaged_dirs) >= output_limit:
+                    if len(unmanaged_dirs) >= OUTPUT_LIMIT:
                         limited_dirs = True
                         break
             if limited_dirs:
@@ -57,7 +60,7 @@ class AddTabContentsView(ContentsView):
                 path = root_path / name
                 if path not in CMD.cache.managed_file_paths:
                     unmanaged_files.append(str(path.relative_to(CMD.cache.dest_dir)))
-                    if len(unmanaged_files) >= output_limit:
+                    if len(unmanaged_files) >= OUTPUT_LIMIT:
                         limited_files = True
                         break
             if limited_files:
@@ -74,7 +77,7 @@ class AddTabContentsView(ContentsView):
             if limited_dirs:
                 widgets.append(
                     Label(
-                        f"Limited output to {output_limit} unmanaged directories",
+                        f"Limited output to {OUTPUT_LIMIT} unmanaged directories",
                         classes=Tcss.limited_label,
                     )
                 )
@@ -86,7 +89,7 @@ class AddTabContentsView(ContentsView):
             if limited_files:
                 widgets.append(
                     Label(
-                        f"Limited output to {output_limit} unmanaged files",
+                        f"Limited output to {OUTPUT_LIMIT} unmanaged files",
                         classes=Tcss.limited_label,
                     )
                 )
@@ -109,11 +112,7 @@ class AddTabContentsView(ContentsView):
         self.update_container_display(show_path, new_container)
 
 
-class AddTab(Horizontal, AppType):
-
-    def __init__(self) -> None:
-        super().__init__()
-        pass
+class AddTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         yield Vertical(
@@ -142,7 +141,6 @@ class AddTab(Horizontal, AppType):
         )
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
         self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, OpButton)
-        self.add_review_btn.disabled = True
 
     @on(DirectoryTree.FileSelected)
     @on(DirectoryTree.DirectorySelected)
@@ -153,8 +151,6 @@ class AddTab(Horizontal, AppType):
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
 
-        if self.add_review_btn.disabled is True:
-            self.add_review_btn.disabled = False
         self.contents_view.show_path = event.node.data.path
         self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
@@ -162,6 +158,19 @@ class AddTab(Horizontal, AppType):
             IDS.add.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.set_path_arg(event.node.data.path)
+        if isinstance(event, DirectoryTree.DirectorySelected):
+            current_container = self.contents_view.container_cache.get(
+                event.node.data.path, None
+            )
+            if current_container is None:
+                return
+            if any(
+                Tcss.limited_label in getattr(label, "classes", ())
+                for label in list(current_container.query(Label))
+            ):
+                self.add_review_btn.disabled = True
+            else:
+                self.add_review_btn.disabled = False
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
