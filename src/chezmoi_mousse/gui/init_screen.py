@@ -22,7 +22,6 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     LinkBtn,
-    OpBtnEnum,
     OperateString,
     SectionLabel,
     SwitchEnum,
@@ -429,7 +428,6 @@ class InitChezmoi(Screen[None], AppType):
         )
         yield InputInitCloneRepo()
         yield Static(id=self.ids.static.init_info)
-        yield OperateButtons(self.ids, btn_dict=OpBtnEnum.op_btn_enum_dict(self.ids))
         yield Footer()
 
     def on_mount(self) -> None:

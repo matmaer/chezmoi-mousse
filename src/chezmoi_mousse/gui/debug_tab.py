@@ -31,18 +31,12 @@ class DebugTab(Horizontal, AppType):
         FlatBtnLabel.dom_nodes,
         FlatBtnLabel.memory_usage,
     )
+    MiB = 1024 * 1024
+    INTERVAL = 2
 
     def __init__(self) -> None:
-        self.op_btn_dict: dict[str, OpBtnLabel] = {
-            IDS.debug.op_btn.create_paths: OpBtnLabel.create_paths,
-            IDS.debug.op_btn.remove_paths: OpBtnLabel.remove_paths,
-            IDS.debug.op_btn.create_diffs: OpBtnLabel.create_diffs,
-            IDS.debug.op_btn.log_memory: OpBtnLabel.log_memory,
-        }
         super().__init__()
         self._previous_rss: float = 0.0
-        self.MiB = 1024 * 1024
-        self.interval = 2
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
@@ -60,7 +54,7 @@ class DebugTab(Horizontal, AppType):
                     id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
                 )
                 yield RichLog(id=IDS.debug.logger.memory, markup=True)
-            yield OperateButtons(IDS.debug, btn_dict=self.op_btn_dict)
+            yield OperateButtons(IDS.debug)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
@@ -80,7 +74,7 @@ class DebugTab(Horizontal, AppType):
         import psutil
 
         self._process = psutil.Process()
-        self.set_interval(self.interval, lambda: self._write_to_memory_log())
+        self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
 
     def _write_to_memory_log(self, auto: bool = True) -> None:
         mem_info = self._process.memory_info()
@@ -118,7 +112,7 @@ class DebugTab(Horizontal, AppType):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == FlatBtnLabel.debug_log:
-            self.switcher.current = IDS.debug.logger.debug
+            self.switcher.current = IDS.logs.logger.debug
             self.switcher.border_title = BorderTitle.debug_log
         elif event.button.label == FlatBtnLabel.test_paths:
             self.switcher.current = IDS.debug.static.debug_test_paths

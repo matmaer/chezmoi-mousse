@@ -113,7 +113,7 @@ class AddTab(Horizontal, AppType):
 
     def __init__(self) -> None:
         super().__init__()
-        self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.add)
+        pass
 
     def compose(self) -> ComposeResult:
         yield Vertical(
@@ -128,7 +128,7 @@ class AddTab(Horizontal, AppType):
         )
         with Vertical():
             yield AddTabContentsView(IDS.add)
-            yield OperateButtons(IDS.add, btn_dict=self.op_btn_dict)
+            yield OperateButtons(IDS.add)
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:
@@ -158,9 +158,10 @@ class AddTab(Horizontal, AppType):
         self.contents_view.show_path = event.node.data.path
         self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
-        for btn_enum in self.op_btn_dict.values():
-            if isinstance(btn_enum, OpBtnEnum):
-                btn_enum.path_arg = event.node.data.path
+        operate_buttons = self.query_one(
+            IDS.add.container.operate_buttons_q, OperateButtons
+        )
+        operate_buttons.set_path_arg(event.node.data.path)
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:

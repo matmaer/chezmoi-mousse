@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -20,9 +19,9 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-# from .messages import OperateButtonMsg
-
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import AppIds
 
 
@@ -89,23 +88,32 @@ class OpButton(Button, AppType):
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
         self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
         self.btn_id: str = btn_id
-        self.app_ids: "AppIds" = app_ids
-        if label in (OpBtnLabel.destroy_review, OpBtnLabel.forget_review):
+        self.app_ids: AppIds = app_ids
+        if label in (
+            OpBtnLabel.destroy_review,
+            OpBtnLabel.forget_review,
+            OpBtnLabel.add_review,
+        ):
             self.disabled = True
-        elif "Run" in label:
+        elif label in (
+            OpBtnLabel.add_run,
+            OpBtnLabel.apply_run,
+            OpBtnLabel.re_add_run,
+            OpBtnLabel.forget_run,
+            OpBtnLabel.destroy_run,
+            OpBtnLabel.cancel,
+            OpBtnLabel.reload,
+        ):
             self.display = False
 
 
 class OperateButtons(HorizontalGroup):
-    def __init__(
-        self, ids: "AppIds", *, btn_dict: Mapping[str, OpBtnEnum | OpBtnLabel]
-    ) -> None:
+    def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.operate_buttons)
         self.ids = ids
-        self.btn_dict = btn_dict
 
     def compose(self) -> ComposeResult:
-        for btn_id, btn_enum in self.btn_dict.items():
+        for btn_id, btn_enum in self.ids.op_btn_map.items():
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
 
     def on_mount(self) -> None:
@@ -113,21 +121,10 @@ class OperateButtons(HorizontalGroup):
             self.ids.canvas_name == TabLabel.debug
             or self.ids.canvas_name == ScreenName.init
         ):
+            # we never toggle display on these tabs
             return
-        self.run_btn_ids: set[str] = {
-            btn_id
-            for btn_id, btn_enum in self.btn_dict.items()
-            if isinstance(btn_enum, OpBtnEnum) and "Run" in btn_enum.label
-        }
-        self.review_btn_ids: set[str] = {
-            btn_id
-            for btn_id, btn_enum in self.btn_dict.items()
-            if isinstance(btn_enum, OpBtnEnum) and "Review" in btn_enum.label
-        }
         self.cancel_btn = self.query_one(self.ids.op_btn.cancel_q, OpButton)
-        self.cancel_btn.display = False
         self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
-        self.reload_btn.display = False
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabLabel.apply:
             self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = bool(
@@ -140,27 +137,38 @@ class OperateButtons(HorizontalGroup):
         all_buttons: list[OpButton] = [
             b for b in self.query_children().results() if isinstance(b, OpButton)
         ]
-        self.run_buttons = [b for b in all_buttons if b.id in self.run_btn_ids]
-        self.review_buttons = [b for b in all_buttons if b.id in self.review_btn_ids]
+        self.run_buttons = [b for b in all_buttons if b.id in self.ids.run_btn_ids]
+        self.review_buttons = [
+            b for b in all_buttons if b.id in self.ids.review_btn_ids
+        ]
+
+    def set_path_arg(self, path: "Path") -> None:
+        for btn_enum in self.ids.op_btn_map.values():
+            if isinstance(btn_enum, OpBtnEnum):
+                btn_enum.path_arg = path
 
     @on(OpButton.Pressed)
     def update_operate_button_display(self, event: OpButton.Pressed) -> None:
-        if self.ids.canvas_name in (TabLabel.debug, ScreenName.init):
-            # we don't need any display toggling in those contexts for now
-            return
         if not isinstance(event.button, OpButton):
+            # allows for type hinting to work and we only toggle display for OpButton
             return
 
-        if event.button.label in (OpBtnLabel.cancel, OpBtnLabel.reload):
+        if (
+            self.ids.canvas_name in (TabLabel.debug, ScreenName.init)
+            or event.button.label == OpBtnLabel.refresh_tree
+        ):
+            # we don't need any display toggling in those contexts for now
+            return
+
+        if event.button.id in (self.ids.op_btn.cancel, self.ids.op_btn.reload):
             self.cancel_btn.display = False
             self.reload_btn.display = False
             for btn in self.run_buttons:
                 btn.display = False
             for btn in self.review_buttons:
                 btn.display = True
-            # self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
-        elif event.button.id in self.review_btn_ids:
+        elif event.button.id in self.ids.review_btn_ids:
             self.cancel_btn.display = True
             for btn in self.review_buttons:
                 btn.display = False
@@ -173,13 +181,11 @@ class OperateButtons(HorizontalGroup):
                 b for b in self.run_buttons if b.btn_enum == run_btn_enum
             )
             btn_widget.display = True
-            # self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
-        elif event.button in self.run_buttons:
+        elif event.button.id in self.ids.run_btn_ids:
             self.cancel_btn.display = False
             self.reload_btn.display = True
             event.button.disabled = True
-            # self.post_message(OperateButtonMsg(self.ids, button=event.button))
 
 
 class SwitchWithLabel(HorizontalGroup):

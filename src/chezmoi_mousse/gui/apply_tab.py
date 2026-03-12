@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Button, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, SwitchEnum, TabLabel
+from chezmoi_mousse import CMD, IDS, AppType, SwitchEnum, TabLabel
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -17,17 +17,10 @@ __all__ = ["ApplyTab"]
 
 class ApplyTab(Container, AppType):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.op_btn_dict = OpBtnEnum.op_btn_enum_dict(IDS.apply)
-
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield TreeSwitcher(IDS.apply)
-            yield Vertical(
-                ViewSwitcher(IDS.apply),
-                OperateButtons(IDS.apply, btn_dict=self.op_btn_dict),
-            )
+            yield Vertical(ViewSwitcher(IDS.apply), OperateButtons(IDS.apply))
         yield SwitchSlider(IDS.apply)
 
     def on_mount(self) -> None:
@@ -54,9 +47,10 @@ class ApplyTab(Container, AppType):
         self.diff_view.show_path = msg.path
         self.contents_view.show_path = msg.path
         # Set path_arg for the btn_enums in OperateMode
-        for btn_enum in self.op_btn_dict.values():
-            if isinstance(btn_enum, OpBtnEnum):
-                btn_enum.path_arg = msg.path
+        operate_buttons = self.query_one(
+            IDS.apply.container.operate_buttons_q, OperateButtons
+        )
+        operate_buttons.set_path_arg(msg.path)
         # disable forget and destroy buttons when in the dest_dir
         self.query_one(IDS.apply.op_btn.forget_review_q, Button).disabled = (
             msg.path == CMD.cache.dest_dir

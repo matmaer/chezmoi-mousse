@@ -1,4 +1,4 @@
-from ._enum_data import OpBtnLabel, SwitchEnum
+from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._str_enum_names import (
     ContainerName,
     LabelName,
@@ -60,6 +60,68 @@ class AppIds:
 
     def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
         return f"{qid}{self.canvas_name.name}_{view.name}"
+
+    @property
+    def op_btn_map(self) -> dict[str, "OpBtnEnum | OpBtnLabel"]:
+        if self.canvas_name == ScreenName.init:
+            return {
+                self.op_btn.init_review: OpBtnEnum.init_review,
+                self.op_btn.init_run: OpBtnEnum.init_run,
+                self.op_btn.exit_app: OpBtnLabel.exit_app,
+            }
+        elif self.canvas_name == TabLabel.debug:
+            return {
+                self.op_btn.create_paths: OpBtnLabel.create_paths,
+                self.op_btn.remove_paths: OpBtnLabel.remove_paths,
+                self.op_btn.create_diffs: OpBtnLabel.create_diffs,
+                self.op_btn.log_memory: OpBtnLabel.log_memory,
+            }
+
+        if self.canvas_name != TabLabel.add:
+            _btn_dict = {
+                self.op_btn.forget_review: OpBtnEnum.forget_review,
+                self.op_btn.forget_run: OpBtnEnum.forget_run,
+                self.op_btn.destroy_review: OpBtnEnum.destroy_review,
+                self.op_btn.destroy_run: OpBtnEnum.destroy_run,
+            }
+            if self.canvas_name == TabLabel.apply:
+                _btn_dict = {
+                    self.op_btn.apply_review: OpBtnEnum.apply_review,
+                    self.op_btn.apply_run: OpBtnEnum.apply_run,
+                    **_btn_dict,
+                }
+            if self.canvas_name == TabLabel.re_add:
+                _btn_dict = {
+                    self.op_btn.re_add_review: OpBtnEnum.re_add_review,
+                    self.op_btn.re_add_run: OpBtnEnum.re_add_run,
+                    **_btn_dict,
+                }
+        else:  # Add tab
+            _btn_dict = {
+                self.op_btn.add_review: OpBtnEnum.add_review,
+                self.op_btn.add_run: OpBtnEnum.add_run,
+            }
+        return {
+            **_btn_dict,
+            self.op_btn.cancel: OpBtnLabel.cancel,
+            self.op_btn.reload: OpBtnLabel.reload,
+        }
+
+    @property
+    def run_btn_ids(self) -> set[str]:
+        return {
+            btn_id
+            for btn_id, btn_enum in self.op_btn_map.items()
+            if isinstance(btn_enum, OpBtnEnum) and "Run" in btn_enum.label
+        }
+
+    @property
+    def review_btn_ids(self) -> set[str]:
+        return {
+            btn_id
+            for btn_id, btn_enum in self.op_btn_map.items()
+            if isinstance(btn_enum, OpBtnEnum) and "Review" in btn_enum.label
+        }
 
 
 class ContainerIds:
