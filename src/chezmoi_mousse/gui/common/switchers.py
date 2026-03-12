@@ -65,7 +65,6 @@ class TreeSwitcher(Container, AppType):
             self.view_switcher.current = self.ids.tree.managed
         elif event.button.label == TabLabel.list:
             self.view_switcher.current = self.ids.tree.list
-        return
 
     def _get_managed_tree_nodes(self) -> list[TreeNode[Path]]:
         managed_tree = self.query_exactly_one(ManagedTree)

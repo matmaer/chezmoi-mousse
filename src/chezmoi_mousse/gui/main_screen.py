@@ -308,7 +308,6 @@ class MainScreen(Screen[None], AppType):
 
     @on(OpButton.Pressed)
     async def refresh_all_trees(self, event: OpButton.Pressed) -> None:
-        event.stop()
         if event.button.label == OpBtnEnum.refresh_tree.label:
             self.notify(
                 f"not yet implemented for {event.button.label}", severity="error"
@@ -335,8 +334,10 @@ class MainScreen(Screen[None], AppType):
 
     @on(LogCmdResultMsg)
     def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
+        msg.stop()
         self.log_cmd_result(msg.cmd_result)
 
     @on(LoadingResultMsg)
     def handle_changed_root_paths(self, msg: LoadingResultMsg) -> None:
+        msg.stop()
         self.last_loading_result = msg.loading_result

@@ -83,8 +83,10 @@ class ReAddTab(Container, AppType):
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
+        if event.button.label not in (TabLabel.list, TabLabel.tree):
+            return
         expand_all_switch = self.query_one(IDS.re_add.switch.expand_all_q, Switch)
-        if event.button.label == TabLabel.tree:
+        if event.button.label == TabLabel.list:
             expand_all_switch.disabled = False
             expand_all_switch.tooltip = SwitchEnum.expand_all.enabled_tooltip
         elif event.button.label == TabLabel.list:
