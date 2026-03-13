@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import CommandResult
 
-    # from .actionables import OpButton
     from .loading_modal import LoadingModalResult
 
 __all__ = [
@@ -17,7 +16,6 @@ __all__ = [
     "LogCmdResultMsg",
     "CurrentApplyNodeMsg",
     "CurrentReAddNodeMsg",
-    # "OperateButtonMsg",
 ]
 
 
@@ -43,10 +41,3 @@ class CurrentReAddNodeMsg(Message):
     def __init__(self, path: Path) -> None:
         self.path = path
         super().__init__()
-
-
-# class OperateButtonMsg(Message):
-#     def __init__(self, ids: AppIds, *, button: OpButton) -> None:
-#         self.button: OpButton = button
-#         self.ids = ids
-#         super().__init__()

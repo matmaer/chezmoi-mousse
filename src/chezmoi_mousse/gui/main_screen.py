@@ -70,6 +70,11 @@ class OperateMode(Vertical, AppType):
     def _global_args(self) -> tuple[str, ...]:
         if self.btn_enum is None:
             raise ValueError("btn_enum is None when trying to access global args.")
+        # Only run-btn enums have a write_cmd; guard against refresh_tree
+        if self.btn_enum not in self.app.run_btn_enums:
+            raise ValueError(
+                "btn_enum has no write_cmd when trying to access global args."
+            )
         path_arg = (
             str(self.btn_enum.path_arg) if self.btn_enum.path_arg is not None else ""
         )
@@ -78,10 +83,7 @@ class OperateMode(Vertical, AppType):
     def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
         if btn_enum in self.app.review_btn_enums:
             self.update_review_info()
-        elif (
-            btn_enum in self.app.run_btn_enums
-            or btn_enum.label == OpBtnLabel.refresh_tree
-        ):
+        elif btn_enum in self.app.run_btn_enums or btn_enum == OpBtnEnum.refresh_tree:
             loading_modal = LoadingModal()
             loading_modal.btn_enum = btn_enum
             self.app.push_screen(
@@ -135,6 +137,11 @@ class OperateMode(Vertical, AppType):
                 "Updated tree with current state of managed paths"
             )
         self.operate_info.visible = True
+        # If this was a refresh-only operation, clear the btn_enum so that
+        # pressing the Refresh Trees button again will trigger the
+        # reactive watcher (assigning the same enum again won't fire it).
+        if self.btn_enum == OpBtnEnum.refresh_tree:
+            self.btn_enum = None
 
     def update_review_info(self) -> None:
         if self.btn_enum is None or self.display is False:
@@ -307,13 +314,6 @@ class MainScreen(Screen[None], AppType):
     ############################
 
     @on(OpButton.Pressed)
-    async def refresh_all_trees(self, event: OpButton.Pressed) -> None:
-        if event.button.label == OpBtnEnum.refresh_tree.label:
-            self.notify(
-                f"not yet implemented for {event.button.label}", severity="error"
-            )
-
-    @on(OpButton.Pressed)
     def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
         if not isinstance(event.button, OpButton):
             return
@@ -331,6 +331,8 @@ class MainScreen(Screen[None], AppType):
         elif event.button.btn_enum in OpBtnEnum.run_btn_enums():
             self.operate_mode.btn_enum = event.button.btn_enum
             self._set_post_run_display(event.button.app_ids)
+        elif event.button.btn_enum == OpBtnEnum.refresh_tree:
+            self.operate_mode.btn_enum = OpBtnEnum.refresh_tree
 
     @on(LogCmdResultMsg)
     def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
@@ -338,6 +340,17 @@ class MainScreen(Screen[None], AppType):
         self.log_cmd_result(msg.cmd_result)
 
     @on(LoadingResultMsg)
-    def handle_changed_root_paths(self, msg: LoadingResultMsg) -> None:
+    async def handle_changed_root_paths(self, msg: LoadingResultMsg) -> None:
         msg.stop()
+        if msg.loading_result.changed_root_paths:
+            self.notify(
+                f"Changed root paths:\n"
+                f"{'\n'.join(str(p) for p in msg.loading_result.changed_root_paths)}"
+            )
+        else:
+            self.notify("No root paths were changed.")
         self.last_loading_result = msg.loading_result
+        await self._log_loading_cmd_results(
+            self.last_loading_result.all_cmd_results
+        ).wait()
+        await self._update_trees(self.last_loading_result.changed_paths).wait()

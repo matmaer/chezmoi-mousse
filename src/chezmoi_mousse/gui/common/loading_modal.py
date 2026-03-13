@@ -42,7 +42,7 @@ def min_wait(
 @dataclass
 class LoadingModalResult:
     changed_paths: list["Path"] = field(default_factory=lambda: [])
-    changed_root_paths: list["Path"] = field(default_factory=lambda: [])
+    changed_root_paths: set["Path"] = field(default_factory=lambda: set())
     read_cmd_results: list["CommandResult"] = field(default_factory=lambda: [])
     write_cmd_result: "CommandResult | None" = None
 
@@ -101,10 +101,10 @@ class LoadingModal(ModalScreen[LoadingModalResult], AppType):
             self.label.update(f"Running {CMD.run_cmd.review_cmd(self._global_args)})")
             await self._run_write_command(btn_enum).wait()
             self.label.update("Running read commands to update cache")
-            await self.run_all_read_commands().wait()
-        elif btn_enum == OpBtnLabel.refresh_tree:
+            await self._run_all_read_commands().wait()
+        elif btn_enum == OpBtnEnum.refresh_tree:
             self.label.update("Running read commands to update cache")
-            await self.run_all_read_commands().wait()
+            await self._run_all_read_commands().wait()
         self.label.update("Updating cached data in CMD singleton")
         self.label.update("Collecting changed paths")
         await self._get_changed_paths().wait()
@@ -119,11 +119,11 @@ class LoadingModal(ModalScreen[LoadingModalResult], AppType):
         self.to_return.write_cmd_result = cmd_result
 
     @work
-    async def run_all_read_commands(self) -> None:
+    async def _run_all_read_commands(self) -> None:
         for read_cmd in self.read_cmds:
             pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
             self.label.update(f"Running {pretty_cmd}")
-            self._run_read_command(read_cmd)
+            await self._run_read_command(read_cmd).wait()
 
     @work(thread=True)
     @min_wait
@@ -148,19 +148,16 @@ class LoadingModal(ModalScreen[LoadingModalResult], AppType):
             for p in self.old_cached.managed_paths & set(CMD.cache.managed_paths)
             if old_status.get(p) != CMD.cache.status_pairs.get(p)
         }
-        self.to_return.changed_root_paths = self._get_changed_root_paths(changes)
         self.to_return.changed_paths.extend(sorted(changes))
 
-    def _get_changed_root_paths(self, changed_paths: set["Path"]) -> list["Path"]:
+        # Collect changed root paths
         old_files = set(self.old_cached.managed_file_paths)
-
         # Parent files to their directories
         all_files = old_files | set(CMD.cache.managed_file_paths)
-        dirs = {p.parent if p in all_files else p for p in changed_paths}
-
+        dirs = {p.parent if p in all_files else p for p in changes}
         # Reduce to common parents
         simplified: set[Path] = set()
         for path in sorted(dirs, key=lambda p: len(p.parts)):
             if not any(path.is_relative_to(parent) for parent in simplified):
                 simplified.add(path)
-        return sorted(simplified)
+        self.to_return.changed_root_paths.update(simplified)
