@@ -99,7 +99,7 @@ class AllTestPaths:
         to_delete: set[Path] = set()
         for file_name in self.toml_files_to_create:
             if file_name.name == self.file_names.TEST_FILE_3:
-                to_delete.add(self._nested_dir_without_status_files_in / file_name)
+                to_delete.add(self._nested_dir_without_status_files_in / file_name.name)
         return sorted(to_delete)
 
     @property
@@ -126,11 +126,44 @@ class AllTestPaths:
 
     @property
     def all_test_paths(self) -> list[Path]:
-        return sorted(
-            set(self.all_dirs_to_create)
-            | set(self.toml_files_to_create)
-            | {self.large_file_path, self.binary_file_path, self.tricky_utf8_file_path}
-        )
+        collected: set[Path] = set()
+        test_dir_str = str(self.test_dir)
+
+        # always include the test dir itself
+        collected.add(self.test_dir)
+
+        # include directories and their ancestors under test_dir
+        for d in self.all_dirs_to_create:
+            collected.add(d)
+            for dir_parent in d.parents:
+                if str(dir_parent).startswith(test_dir_str):
+                    collected.add(dir_parent)
+                else:
+                    break
+
+        # include toml files and their parent dirs under test_dir
+        for f in self.toml_files_to_create:
+            collected.add(f)
+            for parent in f.parents:
+                if str(parent).startswith(test_dir_str):
+                    collected.add(parent)
+                else:
+                    break
+
+        # include other test files and their parents
+        for f in (
+            self.large_file_path,
+            self.binary_file_path,
+            self.tricky_utf8_file_path,
+        ):
+            collected.add(f)
+            for parent in f.parents:
+                if str(parent).startswith(test_dir_str):
+                    collected.add(parent)
+                else:
+                    break
+
+        return sorted(collected)
 
 
 @dataclass(slots=True, kw_only=True)
@@ -225,44 +258,50 @@ class TestPaths:
         return sorted(created_files)
 
     def create_paths_on_disk(self) -> list[str]:
-        created_paths: set[str] = set()
-        created_paths.update(self._create_dir_paths())
-        created_paths.update(self._create_binary_file())
-        created_paths.update(self._create_large_file())
-        created_paths.update(self._create_tricky_utf8_file())
-        created_paths.update(self._create_toml_files())
-        if not created_paths:
+        # record existing expected paths before creating anything
+        existing_before = set(self.list_existing_test_paths())
+
+        # perform creations using existing helpers
+        self._create_dir_paths()
+        self._create_binary_file()
+        self._create_large_file()
+        self._create_tricky_utf8_file()
+        self._create_toml_files()
+
+        # compute which expected paths now exist but didn't before
+        existing_after = {p for p in self.all_paths.all_test_paths if p.exists()}
+        created = {str(p) for p in (existing_after - existing_before)}
+
+        if not created:
             return [
                 (
                     "[$text-warning]No test paths were created because they already "
                     "exist.[/]"
                 )
-            ] + [f"[dim]{p}[/]" for p in self.list_existing_test_paths()]
-        return ["[$text-primary bold]Created paths:[/]\n"] + sorted(created_paths)
+            ] + [f"[dim]{p}[/]" for p in sorted(existing_after)]
+
+        return ["[$text-primary bold]Created paths:[/]"] + sorted(created)
 
     def list_existing_test_paths(self) -> list[Path]:
-        existing_paths = [p for p in self.all_paths.all_test_paths if p.exists()]
-        return sorted(existing_paths)
+        return sorted(p for p in self.all_paths.all_test_paths if p.exists())
 
-    def remove_test_paths(self) -> str:
+    def remove_test_paths(self) -> list[str]:
         existing_paths = self.list_existing_test_paths()
-        removed_paths: set[str] = set()
         if not existing_paths:
-            return "[$text-warning bold]No test paths to remove.[/]\n"
-        paths_in_test_dir = self.all_paths.test_dir.rglob("*")
-        removed_paths.update([f"[$text-error]{p}[/]" for p in paths_in_test_dir])
-        shutil.rmtree(self.all_paths.test_dir)
-        for file_path in [
-            p
-            for p in self.all_paths.home_dir.iterdir()
-            if p.name.startswith("_test_file_") and p.name.endswith(".toml")
-        ]:
-            file_path.unlink()
-            removed_paths.add(f"[$text-error]{file_path}[/]")
+            return ["[$text-warning bold]No test paths to remove.[/]"]
 
-        return "[$text-primary bold]Removed paths:[/]\n" + "\n".join(
-            sorted(removed_paths)
-        )
+        removed_entries = [f"[$text-error]{p}[/]" for p in sorted(existing_paths)]
+
+        # Remove the test directory tree
+        shutil.rmtree(self.all_paths.test_dir, ignore_errors=True)
+
+        # Remove any test files left in the home directory (those listed in
+        # `existing_paths`).
+        for p in existing_paths:
+            if p.exists() and p.parent == self.all_paths.home_dir and p.is_file():
+                p.unlink()
+
+        return ["[$text-primary bold]Removed paths:[/]"] + removed_entries
 
     def create_diffs(self) -> str:
         if not self.list_existing_test_paths():

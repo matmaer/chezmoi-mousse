@@ -147,7 +147,7 @@ class DebugTab(Horizontal, AppType):
             self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.remove_paths:
             result = TEST_PATHS.remove_test_paths()
-            self.test_paths_static.update(result)
+            self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.log_memory:
             self._update_existing_test_paths()
             self._write_to_memory_log(auto=False)
