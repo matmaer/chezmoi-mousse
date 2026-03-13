@@ -310,22 +310,6 @@ OperateButtons {
   }
 }
 
-OperateMode {
-  background-tint: $surface;
-  background: $surface;
-  height: auto;
-  &>.operate_info {
-    padding: 0 1;
-    height: auto;
-    border: round $foreground;
-    border-subtitle-align: center;
-    border-title-align: center;
-  }
-  &>ScrollableContainer {
-    height: auto;
-  }
-}
-
 SwitchSlider {
   background-tint: $surface;
   background: $surface;
@@ -483,6 +467,10 @@ Footer {
   background: $surface;
 }
 
+# ScrollableContainer {
+#   border: green;
+# }
+
 Static {
   &.added {
     color: $text-success;
@@ -503,6 +491,13 @@ Static {
     color: $text-muted;
     background: $surface;
     background-tint: $surface;
+  }
+  &.operate_info {
+    padding: 0 1;
+    height: auto;
+    border: round $foreground;
+    border-subtitle-align: center;
+    border-title-align: center;
   }
   &.removed {
     color: $text-error;
