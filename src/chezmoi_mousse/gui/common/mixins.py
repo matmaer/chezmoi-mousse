@@ -4,7 +4,7 @@ from textual.containers import Container, ScrollableContainer
 from textual.widget import Widget
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import CMD, AppType
+from chezmoi_mousse import AppType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -74,8 +74,3 @@ class ContainerCache(AppType, Container):
             container = self.container_cache.pop(cached_path, None)
             if container is not None:
                 container.remove()
-
-        if self.current_container_path in keys_to_remove:
-            self.current_container_path = None
-
-        self.show_path = CMD.cache.dest_dir

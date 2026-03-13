@@ -86,6 +86,7 @@ class MainScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.query_exactly_one(ConfigTab).command_results = CMD.cmd_results
+        self.tabs = self.query_exactly_one(Tabs)
         self.op_container = self.query_one(IDS.main_tabs.container.op_mode_q, Vertical)
         self.op_container.display = False
         self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
@@ -113,7 +114,6 @@ class MainScreen(Screen[None], AppType):
             return
         if btn_enum in self.app.review_btn_enums:
             self.update_review_info()
-            self._set_review_display(IDS.main_tabs)
         elif btn_enum in self.app.run_btn_enums:
             loading_modal = LoadingModal()
             loading_modal.btn_enum = btn_enum
@@ -135,13 +135,16 @@ class MainScreen(Screen[None], AppType):
     #######################
 
     def update_review_info(self) -> None:
-        if self.btn_enum is None or self.display is False:
+        if (
+            self.btn_enum is None
+            or self.operate_info.display is False
+            or self.btn_enum == OpBtnEnum.refresh_tree
+        ):
             return
         info_lines: list[str] = []
-        path_arg = ""
+        path_arg: str = ""
         if (
-            self.btn_enum != OpBtnEnum.refresh_tree
-            and self.btn_enum in self.app.run_btn_enums
+            self.btn_enum in self.app.run_btn_enums
             or self.btn_enum in self.app.review_btn_enums
         ):
             path_arg = (
@@ -164,44 +167,42 @@ class MainScreen(Screen[None], AppType):
         self.operate_info.border_title = self.btn_enum.op_info_title
         self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
 
-    def _set_review_display(self, ids: "AppIds") -> None:
+    def _get_left_side(self, ids: "AppIds") -> TreeSwitcher | Vertical:
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             left_side = self.query_one(ids.container.left_side_q, TreeSwitcher)
         elif ids.canvas_name == TabLabel.add:
             left_side = self.query_one(ids.container.left_side_q, Vertical)
         else:
-            self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
-            return
-        self.query_exactly_one(Tabs).display = False
-        left_side.display = False
+            raise NotImplementedError(f"Not implemented for {ids.canvas_name}")
+        return left_side
+
+    def _set_review_display(self, op_button: OpButton) -> None:
+        self.tabs.display = False
+        self._get_left_side(op_button.app_ids).display = False
         switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
         self.command_output.display = False
         if switch_slider is not None:
             switch_slider.display = False
 
-    def _set_post_run_display(self, ids: "AppIds") -> None:
+    def _set_right_side(self, ids: "AppIds") -> ViewSwitcher | ContentsView:
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             right_side = self.query_one(ids.container.right_side_q, ViewSwitcher)
         elif ids.canvas_name == TabLabel.add:
             right_side = self.query_one(ids.container.contents_q, ContentsView)
         else:
-            self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
-            return
-        right_side.display = False
+            raise NotImplementedError(f"Not implemented for {ids.canvas_name}")
+        return right_side
+
+    def _set_post_run_display(self, ids: "AppIds") -> None:
+        self._set_right_side(ids).display = False
+
+    def _set_refresh_tree_display(self, ids: "AppIds") -> None:
+        self._set_right_side(ids).display = False
 
     def _restore_display(self, ids: "AppIds") -> None:
-        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
-            left_side = self.query_one(ids.container.left_side_q, TreeSwitcher)
-            right_side = self.query_one(ids.container.right_side_q, ViewSwitcher)
-        elif ids.canvas_name == TabLabel.add:
-            left_side = self.query_one(ids.container.left_side_q, Vertical)
-            right_side = self.query_one(ids.container.contents_q, ContentsView)
-        else:
-            self.notify(f"Not yet implemented for {ids.canvas_name}", severity="error")
-            return
-        self.query_exactly_one(Tabs).display = True
-        left_side.display = True
-        right_side.display = True
+        self.tabs.display = True
+        self._get_left_side(ids).display = True
+        self._set_right_side(ids).display = True
         switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
         if switch_slider is not None:
             switch_slider.display = True
@@ -214,25 +215,25 @@ class MainScreen(Screen[None], AppType):
                 "Result or btn_enum is None in _process_loading_modal_result."
             )
         self.post_message(LoadingResultMsg(loading_result=result))
-        log_collapsibles = self.query_one(
-            IDS.main_tabs.container.command_output_q, ScrollableContainer
+        self.command_output.mount(
+            Label("Command output", classes=Tcss.main_section_label)
         )
-        log_collapsibles.remove_children()
-        log_collapsibles.mount(Label("Command output", classes=Tcss.main_section_label))
         if result.write_cmd_result is not None:
-            log_collapsibles.mount(result.write_cmd_result.pretty_collapsible)
+            self.command_output.mount(result.write_cmd_result.pretty_collapsible)
         for cmd_result in result.read_cmd_results:
-            log_collapsibles.mount(cmd_result.pretty_collapsible)
-        log_collapsibles.mount(Label("Changed paths", classes=Tcss.main_section_label))
+            self.command_output.mount(cmd_result.pretty_collapsible)
+        self.command_output.mount(
+            Label("Changed paths", classes=Tcss.main_section_label)
+        )
         if not result.changed_paths:
             dry_run = (
                 " (dry run)"
                 if result.write_cmd_result and result.write_cmd_result.is_dry_run
                 else ""
             )
-            log_collapsibles.mount(Static(f"No paths changed.{dry_run}"))
+            self.command_output.mount(Static(f"No paths changed.{dry_run}"))
         for path in result.changed_paths:
-            log_collapsibles.mount(Static(str(path), classes=Tcss.info))
+            self.command_output.mount(Static(str(path), classes=Tcss.info))
 
         # Update operate info with summary of the operation
         self.operate_info.visible = False
@@ -268,22 +269,22 @@ class MainScreen(Screen[None], AppType):
     @work
     @min_wait
     async def _update_trees(self, changed: list["Path"]) -> None:
-        for diff_view in self.diff_views:
-            diff_view.purge_mounted_containers(changed)
-        for contents_view in self.contents_views:
-            contents_view.purge_mounted_containers(changed)
-        for git_log in self.git_logs:
-            git_log.purge_mounted_containers(changed)
+        for view in self.diff_views + self.contents_views + self.git_logs:
+            view.purge_mounted_containers(changed)
+            view.show_path = CMD.cache.dest_dir
         for managed_tree in self.managed_trees:
             managed_tree.populate_tree()
+            managed_tree.select_node(managed_tree.root)
         for list_tree in self.list_trees:
             list_tree.populate_tree()
+            list_tree.select_node(list_tree.root)
         self.dir_tree.refresh()
         self.dir_tree.reload()
         self.dir_tree.select_node(self.dir_tree.root)
 
     @work
     async def _handle_reload_button(self) -> None:
+        self.command_output.remove_children()
         loading_modal = LoadingModal()
         await self.app.push_screen(loading_modal, wait_for_dismiss=True)
         label = loading_modal.query_exactly_one(Label)
@@ -302,17 +303,16 @@ class MainScreen(Screen[None], AppType):
     def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
         if not isinstance(event.button, OpButton):
             return
-        if event.button.btn_enum == OpBtnLabel.cancel:
+        if event.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
             self.op_container.display = False
+            self.command_output.remove_children()
             self._restore_display(event.button.app_ids)
-        elif event.button.btn_enum == OpBtnLabel.reload:
-            self.op_container.display = False
-            self._restore_display(event.button.app_ids)
-            self._handle_reload_button()
+            if event.button.btn_enum == OpBtnLabel.reload:
+                self._handle_reload_button()
         elif event.button.btn_enum in OpBtnEnum.review_btn_enums():
             self.op_container.display = True
             self.btn_enum = event.button.btn_enum
-            self._set_review_display(event.button.app_ids)
+            self._set_review_display(event.button)
         elif event.button.btn_enum in OpBtnEnum.run_btn_enums():
             self.btn_enum = event.button.btn_enum
             self._set_post_run_display(event.button.app_ids)
@@ -337,22 +337,20 @@ class MainScreen(Screen[None], AppType):
             else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
-        diff_view = self.query_one(ids.container.diff_q, DiffView)
-        diff_view.show_path = msg.path
-        contents_view = self.query_one(ids.container.contents_q, ContentsView)
-        contents_view.show_path = msg.path
-        git_log_view = self.query_one(ids.container.git_log_q, GitLogView)
-        git_log_view.show_path = msg.path
+        self.query_one(ids.container.diff_q, DiffView).show_path = msg.path
+        self.query_one(ids.container.contents_q, ContentsView).show_path = msg.path
+        self.query_one(ids.container.git_log_q, GitLogView).show_path = msg.path
         # Set path_arg for the btn_enums for subsequent operations
         operate_buttons = self.query_one(
             ids.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.set_path_arg(msg.path)
-        # disable/enable review buttons for file nodes without a status
+        # disable/enable review buttons for file nodes
         if msg.path in CMD.cache.managed_file_paths:
-            self.query_one(ids.tab_operation_btn_q, Button).disabled = bool(
-                msg.path not in CMD.cache.status_paths
-            )
+            has_status = msg.path in CMD.cache.status_paths
+            self.query_one(ids.tab_operation_btn_q, Button).disabled = not has_status
+            for btn_id_q in ids.forget_destroy_review_btn_qids:
+                self.query_one(btn_id_q, Button).disabled = not has_status
         elif msg.path in CMD.cache.managed_dirs_with_dest_dir:
             if msg.path == CMD.cache.dest_dir:
                 for btn_id_q in ids.forget_destroy_review_btn_qids:
