@@ -337,70 +337,48 @@ class MainScreen(Screen[None], AppType):
             self.btn_enum = OpBtnEnum.refresh_tree
 
     @on(CurrentReAddNodeMsg)
-    def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
-        msg.stop()
-        tab_buttons = self.query_one(
-            IDS.re_add.container.right_side_q, ViewSwitcher
-        ).query_exactly_one(Horizontal)
-        contents_view = self.query_one(IDS.re_add.container.contents_q, ContentsView)
-        git_log_view = self.query_one(IDS.re_add.container.git_log_q, GitLogView)
-        diff_view = self.query_one(IDS.re_add.container.diff_q, DiffView)
-        tab_buttons.border_subtitle = f" {msg.path.name} "
-        git_log_view.show_path = msg.path
-        diff_view.show_path = msg.path
-        contents_view.show_path = msg.path
-        # Set path_arg for the btn_enums in OperateMode
-        operate_buttons = self.query_one(
-            IDS.re_add.container.operate_buttons_q, OperateButtons
-        )
-        operate_buttons.set_path_arg(msg.path)
-        # disable/enable re_add review button for file nodes without a status
-        self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = bool(
-            msg.path in CMD.cache.managed_file_paths
-            and msg.path not in CMD.cache.status_paths
-        )
-        # disable/enable re_add review button for dir nodes without a status
-        if (
-            msg.path in CMD.cache.managed_dir_paths
-            and msg.path not in CMD.cache.status_paths
-        ):
-            dir_node = CMD.cache.re_add_dir_nodes[msg.path]
-            self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = (
-                not dir_node.has_status_paths
-            )
-
     @on(CurrentApplyNodeMsg)
-    def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
+    def handle_new_tree_node_selected(
+        self, msg: CurrentApplyNodeMsg | CurrentReAddNodeMsg
+    ) -> None:
         msg.stop()
+        ids = IDS.apply if isinstance(msg, CurrentApplyNodeMsg) else IDS.re_add
+
+        # Update the border subtitle for the tab buttons in the ViewSwitcher
         tab_buttons = self.query_one(
-            IDS.apply.container.right_side_q, ViewSwitcher
+            ids.container.right_side_q, ViewSwitcher
         ).query_exactly_one(Horizontal)
-        contents_view = self.query_one(IDS.apply.container.contents_q, ContentsView)
-        git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLogView)
-        diff_view = self.query_one(IDS.apply.container.diff_q, DiffView)
         tab_buttons.border_subtitle = f" {msg.path.name} "
-        git_log_view.show_path = msg.path
+        # Update diff_view, contents_view, and git_log_view with the new path
+        diff_view = self.query_one(ids.container.diff_q, DiffView)
         diff_view.show_path = msg.path
+        contents_view = self.query_one(ids.container.contents_q, ContentsView)
         contents_view.show_path = msg.path
-        # Set path_arg for the btn_enums in OperateMode
+        git_log_view = self.query_one(ids.container.git_log_q, GitLogView)
+        git_log_view.show_path = msg.path
+        # Set path_arg for the btn_enums for subsequent operations
         operate_buttons = self.query_one(
-            IDS.apply.container.operate_buttons_q, OperateButtons
+            ids.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.set_path_arg(msg.path)
-        # disable/enable apply review button for file nodes without a status
-        self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = bool(
-            msg.path in CMD.cache.managed_file_paths
-            and msg.path not in CMD.cache.status_paths
-        )
-        # disable/enable apply review button for dir nodes without a status
-        if (
-            msg.path in CMD.cache.managed_dir_paths
-            and msg.path not in CMD.cache.status_paths
-        ):
-            dir_node = CMD.cache.apply_dir_nodes[msg.path]
-            self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = (
-                not dir_node.has_status_paths
+        # disable/enable review buttons for file nodes without a status
+        if msg.path in CMD.cache.managed_file_paths:
+            self.query_one(ids.tab_operation_btn_qid, Button).disabled = bool(
+                msg.path not in CMD.cache.status_paths
             )
+        elif msg.path in CMD.cache.managed_dirs_with_dest_dir:
+            if msg.path == CMD.cache.dest_dir:
+                for btn_qid in ids.forget_destroy_review_btn_qids:
+                    self.query_one(btn_qid, Button).disabled = True
+                if CMD.cmd_results.no_status_paths is True:
+                    self.query_one(ids.tab_operation_btn_qid, Button).disabled = True
+            else:
+                for btn_qid in ids.forget_destroy_review_btn_qids:
+                    self.query_one(btn_qid, Button).disabled = False
+                self.query_one(ids.tab_operation_btn_qid, Button).disabled = bool(
+                    msg.path not in CMD.cache.status_paths
+                    and msg.path not in CMD.cache.x_dirs_with_status_children
+                )
 
     @on(LogCmdResultMsg)
     def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
