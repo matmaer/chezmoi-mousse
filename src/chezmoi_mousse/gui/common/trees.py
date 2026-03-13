@@ -99,6 +99,7 @@ class ListTree(TreeBase):
                 ):
                     colored_label = self.create_colored_label(file_path)
                     self.root.add_leaf(colored_label, data=file_path)
+        self.select_node(self.root)
 
     def get_all_nodes(self) -> list[TreeNode[Path]]:
         return [child for child in self.root.children if child.data is not None]
@@ -130,6 +131,7 @@ class ManagedTree(TreeBase):
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()
+        self.select_node(self.root)
 
     def _populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         dir_node = self.dir_nodes[dir_path]

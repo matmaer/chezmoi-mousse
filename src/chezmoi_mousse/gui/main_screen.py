@@ -348,7 +348,11 @@ class MainScreen(Screen[None], AppType):
         tab_buttons = self.query_one(
             ids.container.right_side_q, ViewSwitcher
         ).query_exactly_one(Horizontal)
-        tab_buttons.border_subtitle = f" {msg.path.name} "
+        tab_buttons.border_subtitle = (
+            f" {CMD.cache.dest_dir} "
+            if msg.path == CMD.cache.dest_dir
+            else f" {msg.path.name} "
+        )
         # Update diff_view, contents_view, and git_log_view with the new path
         diff_view = self.query_one(ids.container.diff_q, DiffView)
         diff_view.show_path = msg.path

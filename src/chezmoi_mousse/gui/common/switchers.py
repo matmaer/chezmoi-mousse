@@ -147,7 +147,6 @@ class ViewSwitcher(Container):
     def on_mount(self) -> None:
         self.view_switcher = self.query_exactly_one(ContentSwitcher)
         self.tab_buttons = self.query_exactly_one(Horizontal)
-        self.tab_buttons.border_subtitle = f" {CMD.cache.dest_dir} "
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:

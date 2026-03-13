@@ -231,7 +231,6 @@ class TabButtons(Horizontal):
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
-        self.border_subtitle = BorderTitle.dest_dir.value
 
     @on(Button.Pressed, Tcss.tab_button.dot_prefix)
     def update_tcss_classes(self, event: Button.Pressed) -> None:
