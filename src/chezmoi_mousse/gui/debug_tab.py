@@ -6,6 +6,7 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, ContentSwitcher, RichLog, Static
 
 from chezmoi_mousse import (
+    CMD,
     IDS,
     AppType,
     BorderTitle,
@@ -45,10 +46,7 @@ class DebugTab(Horizontal, AppType):
                 initial=IDS.debug.static.debug_test_paths,
                 classes=Tcss.debug_content_switcher,
             ):
-                yield Static(
-                    "[$text-primary]No test paths exist.[/]",
-                    id=IDS.debug.static.debug_test_paths,
-                )
+                yield Static(id=IDS.debug.static.debug_test_paths)
                 yield DebugLog()
                 yield RichLog(
                     id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
@@ -62,19 +60,32 @@ class DebugTab(Horizontal, AppType):
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
-        existing_paths = TEST_PATHS.list_existing_test_paths()
-        if isinstance(existing_paths, str):
-            self.test_paths_static.update(existing_paths)
-        elif existing_paths:
-            self.test_paths_static.update("\n".join([str(p) for p in existing_paths]))
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.memory_logger = self.query_one(IDS.debug.logger.memory_q, RichLog)
         self.app.call_later(self._log_dom_nodes)
-
+        self._update_existing_test_paths()
         import psutil
 
         self._process = psutil.Process()
         self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
+
+    def _update_existing_test_paths(self) -> None:
+        colored_paths: list[str] = []
+        for path in TEST_PATHS.list_existing_test_paths():
+            if path in CMD.cache.managed_dir_paths:
+                colored_paths.append(f"[$text-accent bold]{path}[/]")
+            elif path in CMD.cache.managed_file_paths:
+                colored_paths.append(f"[$text-accent]{path}[/]")
+            else:
+                colored_paths.append(f"[$text-disabled]{path}[/]")
+
+        if colored_paths:
+            self.test_paths_static.update(
+                "[$text-primary bold]Existing test paths:[/]\n"
+                + "\n".join(colored_paths)
+            )
+        else:
+            self.test_paths_static.update("[$text-warning bold]No test paths exist.[/]")
 
     def _write_to_memory_log(self, auto: bool = True) -> None:
         mem_info = self._process.memory_info()
@@ -111,6 +122,7 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
+        self._update_existing_test_paths()
         if event.button.label == FlatBtnLabel.debug_log:
             self.switcher.current = IDS.logs.logger.debug
             self.switcher.border_title = BorderTitle.debug_log
@@ -137,4 +149,5 @@ class DebugTab(Horizontal, AppType):
             result = TEST_PATHS.remove_test_paths()
             self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.log_memory:
+            self._update_existing_test_paths()
             self._write_to_memory_log(auto=False)
