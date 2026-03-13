@@ -42,10 +42,12 @@
 .refresh_button {
   background-tint: $surface-lighten-1;
   background: $surface-lighten-1;
-  border-top: wide $surface-lighten-1;
   border-bottom: none;
+  border-top: wide $surface-lighten-1;
   color: $primary-lighten-3;
   dock: bottom;
+  margin: 0 1;
+  min-width: 18;
   text-style: none;
   width: 100%;
   &:hover {
@@ -61,13 +63,13 @@
   margin-right: 2;
   width: auto;
   max-width: 35%;
-  min-width: 16;
+  min-width: 18;
   &>.tree_content_switcher {
-    min-width: 16;
+    min-width: 18;
     width: auto;
     max-width: 100%;
     &>.tree_widget {
-      min-width: 16;
+      min-width: 18;
       margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
       max-width: 100%;
       width: auto;
@@ -441,7 +443,7 @@ DirectoryTree {
   border-top: $primary;
   border-title-align: center;
   border-title-style: bold;
-  min-width: 16;
+  min-width: 18;
   max-width: 100%;
   width: auto;
   &>.directory-tree--folder {
