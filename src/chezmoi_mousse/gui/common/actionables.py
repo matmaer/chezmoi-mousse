@@ -85,7 +85,12 @@ class OpButton(Button, AppType):
         self, *, btn_id: str, btn_enum: OpBtnEnum | OpBtnLabel, app_ids: "AppIds"
     ) -> None:
         label = btn_enum.label if isinstance(btn_enum, OpBtnEnum) else btn_enum.value
-        super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
+        tcss_class = (
+            Tcss.refresh_button
+            if btn_enum == OpBtnEnum.refresh_tree
+            else Tcss.operate_button
+        )
+        super().__init__(classes=tcss_class, id=btn_id, label=label)
         self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
         self.btn_id: str = btn_id
         self.app_ids: AppIds = app_ids

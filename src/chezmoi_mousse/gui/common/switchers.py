@@ -48,9 +48,6 @@ class TreeSwitcher(Container, AppType):
 
     def on_mount(self) -> None:
         self.view_switcher = self.query_exactly_one(ContentSwitcher)
-        self.query_one(self.ids.op_btn.refresh_tree_q, OpButton).add_class(
-            Tcss.refresh_button
-        )
 
     @property
     def dir_nodes(self) -> dict[Path, "DirNode"]:
