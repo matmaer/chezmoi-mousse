@@ -35,7 +35,7 @@ from .help_tab import HelpTab
 from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
-from .main_screen import MainScreen, OperateMode
+from .main_screen import MainScreen
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
@@ -223,13 +223,11 @@ class ChezmoiGUI(App[None]):
 
     def action_toggle_dry_run(self) -> None:
         CMD.run_cmd.changes_enabled = not CMD.run_cmd.changes_enabled
-        self.screen.query_exactly_one(CustomHeader).changes_enabled = (
-            CMD.run_cmd.changes_enabled
-        )
-        operate_mode_widgets = self.screen.query(OperateMode)
-        for widget in operate_mode_widgets:
-            if widget.display is True:
-                widget.update_review_info()
+        if isinstance(self.screen, MainScreen):
+            self.screen.query_exactly_one(CustomHeader).changes_enabled = (
+                CMD.run_cmd.changes_enabled
+            )
+            self.screen.update_review_info()
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -342,7 +340,13 @@ class ChezmoiGUI(App[None]):
             return isinstance(self.screen, (MainScreen, InitChezmoi))
 
         if action == BindingAction.toggle_maximized:
-            if any(w.display for w in self.screen.query(OperateMode)):
+            if (
+                isinstance(self.screen, MainScreen)
+                and self.screen.query_one(
+                    IDS.main_tabs.container.op_mode_q, Vertical
+                ).display
+                is True
+            ):
                 return False
             if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
                 return False
