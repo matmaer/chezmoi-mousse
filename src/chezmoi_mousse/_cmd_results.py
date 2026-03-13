@@ -176,11 +176,10 @@ class DirNode:
     nested_status_dirs: dict[Path, StatusCode]
     nested_status_files: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
-    no_status_paths: bool = False
 
     # property to return if the dir has any nested paths with a status
     @property
-    def has_status_paths(self) -> bool:
+    def _has_status_paths(self) -> bool:
         return bool(
             self.status_files_in
             or self.real_status_dirs_in
@@ -215,7 +214,7 @@ class DirNode:
                         classes=Tcss.added,
                     )
                 )
-            elif self.no_status_paths is True:
+            elif self._has_status_paths is True:
                 text = "No diffs are available because no paths have a status."
                 widgets.append(Static(text, classes=Tcss.info))
                 text = "<- Select an unchanged path."

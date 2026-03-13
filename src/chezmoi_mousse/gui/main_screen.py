@@ -350,19 +350,19 @@ class MainScreen(Screen[None], AppType):
         operate_buttons.set_path_arg(msg.path)
         # disable/enable review buttons for file nodes without a status
         if msg.path in CMD.cache.managed_file_paths:
-            self.query_one(ids.tab_operation_btn_qid, Button).disabled = bool(
+            self.query_one(ids.tab_operation_btn_q, Button).disabled = bool(
                 msg.path not in CMD.cache.status_paths
             )
         elif msg.path in CMD.cache.managed_dirs_with_dest_dir:
             if msg.path == CMD.cache.dest_dir:
-                for btn_qid in ids.forget_destroy_review_btn_qids:
-                    self.query_one(btn_qid, Button).disabled = True
+                for btn_id_q in ids.forget_destroy_review_btn_qids:
+                    self.query_one(btn_id_q, Button).disabled = True
                 if CMD.cmd_results.no_status_paths is True:
-                    self.query_one(ids.tab_operation_btn_qid, Button).disabled = True
+                    self.query_one(ids.tab_operation_btn_q, Button).disabled = True
             else:
-                for btn_qid in ids.forget_destroy_review_btn_qids:
-                    self.query_one(btn_qid, Button).disabled = False
-                self.query_one(ids.tab_operation_btn_qid, Button).disabled = bool(
+                for btn_id_q in ids.forget_destroy_review_btn_qids:
+                    self.query_one(btn_id_q, Button).disabled = False
+                self.query_one(ids.tab_operation_btn_q, Button).disabled = bool(
                     msg.path not in CMD.cache.status_paths
                     and msg.path not in CMD.cache.x_dirs_with_status_children
                 )
