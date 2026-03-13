@@ -51,18 +51,12 @@ class ApplyTab(Container, AppType):
             IDS.apply.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.set_path_arg(msg.path)
-        # disable forget and destroy buttons when in the dest_dir
-        self.query_one(IDS.apply.op_btn.forget_review_q, Button).disabled = (
-            msg.path == CMD.cache.dest_dir
-        )
-        self.query_one(IDS.apply.op_btn.destroy_review_q, Button).disabled = (
-            msg.path == CMD.cache.dest_dir
-        )
-        # disable/enable apply review button
+        # disable/enable apply review button for file nodes without a status
         self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = bool(
             msg.path in CMD.cache.managed_file_paths
             and msg.path not in CMD.cache.status_paths
         )
+        # disable/enable apply review button for dir nodes without a status
         if (
             msg.path in CMD.cache.managed_dir_paths
             and msg.path not in CMD.cache.status_paths

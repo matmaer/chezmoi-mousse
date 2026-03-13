@@ -51,18 +51,12 @@ class ReAddTab(Container, AppType):
             IDS.re_add.container.operate_buttons_q, OperateButtons
         )
         operate_buttons.set_path_arg(msg.path)
-        # disable forget and destroy buttons when in the dest_dir
-        self.query_one(IDS.re_add.op_btn.forget_review_q, Button).disabled = (
-            msg.path == CMD.cache.dest_dir
-        )
-        self.query_one(IDS.re_add.op_btn.destroy_review_q, Button).disabled = (
-            msg.path == CMD.cache.dest_dir
-        )
-        # disable/enable re_add review button
+        # disable/enable re_add review button for file nodes without a status
         self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = bool(
             msg.path in CMD.cache.managed_file_paths
             and msg.path not in CMD.cache.status_paths
         )
+        # disable/enable re_add review button for dir nodes without a status
         if (
             msg.path in CMD.cache.managed_dir_paths
             and msg.path not in CMD.cache.status_paths
