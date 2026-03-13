@@ -125,6 +125,7 @@ class ManagedTree(TreeBase):
         color = self.app.theme_variables["text-primary"]
         self.root.label = f"[{color} bold]{CMD.cache.dest_dir}[/]"
         self.root.expand()
+        self.root.allow_expand = False
         self._populate_node(self.root, CMD.cache.dest_dir)
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
