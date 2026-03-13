@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.app import ComposeResult
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Footer, Label, Static, TabbedContent, TabPane, Tabs
+from textual.widgets import Button, Footer, Label, Static, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -21,14 +21,19 @@ from chezmoi_mousse import (
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
-from .common.actionables import OpButton, SwitchSlider
+from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
 from .common.loading_modal import LoadingModal, LoadingModalResult, min_wait
 from .common.loggers import AppLog, CmdLog
-from .common.messages import LoadingResultMsg, LogCmdResultMsg
+from .common.messages import (
+    CurrentApplyNodeMsg,
+    CurrentReAddNodeMsg,
+    LoadingResultMsg,
+    LogCmdResultMsg,
+)
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher, ViewSwitcher
 from .common.trees import ListTree, ManagedTree
@@ -105,20 +110,27 @@ class MainScreen(Screen[None], AppType):
     def _global_args(self) -> tuple[str, ...]:
         if self.btn_enum is None:
             raise ValueError("btn_enum is None when trying to access global args.")
-        # Only run-btn enums have a write_cmd; guard against refresh_tree
-        if self.btn_enum not in self.app.run_btn_enums:
-            raise ValueError(
-                "btn_enum has no write_cmd when trying to access global args."
+        if (
+            self.btn_enum != OpBtnEnum.refresh_tree
+            and self.btn_enum in self.app.run_btn_enums
+            or self.btn_enum in self.app.review_btn_enums
+        ):
+            path_arg = (
+                str(self.btn_enum.path_arg)
+                if self.btn_enum.path_arg is not None
+                else ""
             )
-        path_arg = (
-            str(self.btn_enum.path_arg) if self.btn_enum.path_arg is not None else ""
-        )
-        return (*self.btn_enum.write_cmd.value, path_arg)
+            return (*self.btn_enum.write_cmd.value, path_arg)
+        else:
+            raise ValueError(
+                f"btn_enum {self.btn_enum} is not in run_btn_enums or review_btn_enums."
+            )
 
     def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
         if btn_enum in self.app.review_btn_enums:
             self.update_review_info()
-        elif btn_enum in self.app.run_btn_enums or btn_enum == OpBtnEnum.refresh_tree:
+            self._set_review_display(IDS.main_tabs)
+        elif btn_enum in self.app.run_btn_enums:
             loading_modal = LoadingModal()
             loading_modal.btn_enum = btn_enum
             self.app.push_screen(
@@ -180,6 +192,7 @@ class MainScreen(Screen[None], AppType):
         self.query_exactly_one(Tabs).display = False
         left_side.display = False
         switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
+        self.command_output.display = False
         if switch_slider is not None:
             switch_slider.display = False
 
@@ -322,6 +335,72 @@ class MainScreen(Screen[None], AppType):
             self._set_post_run_display(event.button.app_ids)
         elif event.button.btn_enum == OpBtnEnum.refresh_tree:
             self.btn_enum = OpBtnEnum.refresh_tree
+
+    @on(CurrentReAddNodeMsg)
+    def handle_new_re_add_node_selected(self, msg: CurrentReAddNodeMsg) -> None:
+        msg.stop()
+        tab_buttons = self.query_one(
+            IDS.re_add.container.right_side_q, ViewSwitcher
+        ).query_exactly_one(Horizontal)
+        contents_view = self.query_one(IDS.re_add.container.contents_q, ContentsView)
+        git_log_view = self.query_one(IDS.re_add.container.git_log_q, GitLogView)
+        diff_view = self.query_one(IDS.re_add.container.diff_q, DiffView)
+        tab_buttons.border_subtitle = f" {msg.path.name} "
+        git_log_view.show_path = msg.path
+        diff_view.show_path = msg.path
+        contents_view.show_path = msg.path
+        # Set path_arg for the btn_enums in OperateMode
+        operate_buttons = self.query_one(
+            IDS.re_add.container.operate_buttons_q, OperateButtons
+        )
+        operate_buttons.set_path_arg(msg.path)
+        # disable/enable re_add review button for file nodes without a status
+        self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = bool(
+            msg.path in CMD.cache.managed_file_paths
+            and msg.path not in CMD.cache.status_paths
+        )
+        # disable/enable re_add review button for dir nodes without a status
+        if (
+            msg.path in CMD.cache.managed_dir_paths
+            and msg.path not in CMD.cache.status_paths
+        ):
+            dir_node = CMD.cache.re_add_dir_nodes[msg.path]
+            self.query_one(IDS.re_add.op_btn.re_add_review_q, Button).disabled = (
+                not dir_node.has_status_paths
+            )
+
+    @on(CurrentApplyNodeMsg)
+    def handle_new_apply_node_selected(self, msg: CurrentApplyNodeMsg) -> None:
+        msg.stop()
+        tab_buttons = self.query_one(
+            IDS.apply.container.right_side_q, ViewSwitcher
+        ).query_exactly_one(Horizontal)
+        contents_view = self.query_one(IDS.apply.container.contents_q, ContentsView)
+        git_log_view = self.query_one(IDS.apply.container.git_log_q, GitLogView)
+        diff_view = self.query_one(IDS.apply.container.diff_q, DiffView)
+        tab_buttons.border_subtitle = f" {msg.path.name} "
+        git_log_view.show_path = msg.path
+        diff_view.show_path = msg.path
+        contents_view.show_path = msg.path
+        # Set path_arg for the btn_enums in OperateMode
+        operate_buttons = self.query_one(
+            IDS.apply.container.operate_buttons_q, OperateButtons
+        )
+        operate_buttons.set_path_arg(msg.path)
+        # disable/enable apply review button for file nodes without a status
+        self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = bool(
+            msg.path in CMD.cache.managed_file_paths
+            and msg.path not in CMD.cache.status_paths
+        )
+        # disable/enable apply review button for dir nodes without a status
+        if (
+            msg.path in CMD.cache.managed_dir_paths
+            and msg.path not in CMD.cache.status_paths
+        ):
+            dir_node = CMD.cache.apply_dir_nodes[msg.path]
+            self.query_one(IDS.apply.op_btn.apply_review_q, Button).disabled = (
+                not dir_node.has_status_paths
+            )
 
     @on(LogCmdResultMsg)
     def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
