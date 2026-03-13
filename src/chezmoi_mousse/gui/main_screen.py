@@ -86,8 +86,8 @@ class MainScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.query_exactly_one(ConfigTab).command_results = CMD.cmd_results
-        self.operate_mode = self.query_one(IDS.main_tabs.container.op_mode_q, Vertical)
-        self.operate_mode.display = False
+        self.op_container = self.query_one(IDS.main_tabs.container.op_mode_q, Vertical)
+        self.op_container.display = False
         self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
         self.command_output = self.query_one(IDS.main_tabs.container.command_output_q)
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
@@ -95,38 +95,22 @@ class MainScreen(Screen[None], AppType):
         # Debug logger if in dev mode
         if self.app.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
-        self._populate_apply_trees()
-        self._populate_re_add_trees()
-        self.app.call_later(self._log_splash_log_commands)
-
-        self.contents_views = list(self.query(ContentsView))
-        self.diff_views = list(self.query(DiffView))
+        self.app_log.write_ready("Commands executed in loading screen")
+        for cmd in CMD.cmd_results.executed_commands:
+            self.log_cmd_result(cmd)
+        self.app_log.write_ready("End of loading screen commands")
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.git_logs = list(self.query(GitLogView))
         self.list_trees = list(self.query(ListTree))
         self.managed_trees = list(self.query(ManagedTree))
+        for tree in self.list_trees + self.managed_trees:
+            tree.populate_tree()
+        self.contents_views = list(self.query(ContentsView))
+        self.diff_views = list(self.query(DiffView))
+        self.git_logs = list(self.query(GitLogView))
 
-    @property
-    def _global_args(self) -> tuple[str, ...]:
-        if self.btn_enum is None:
-            raise ValueError("btn_enum is None when trying to access global args.")
-        if (
-            self.btn_enum != OpBtnEnum.refresh_tree
-            and self.btn_enum in self.app.run_btn_enums
-            or self.btn_enum in self.app.review_btn_enums
-        ):
-            path_arg = (
-                str(self.btn_enum.path_arg)
-                if self.btn_enum.path_arg is not None
-                else ""
-            )
-            return (*self.btn_enum.write_cmd.value, path_arg)
-        else:
-            raise ValueError(
-                f"btn_enum {self.btn_enum} is not in run_btn_enums or review_btn_enums."
-            )
-
-    def watch_btn_enum(self, btn_enum: "OpBtnEnum") -> None:
+    def watch_btn_enum(self, btn_enum: "OpBtnEnum | None") -> None:
+        if btn_enum is None:
+            return
         if btn_enum in self.app.review_btn_enums:
             self.update_review_info()
             self._set_review_display(IDS.main_tabs)
@@ -138,29 +122,13 @@ class MainScreen(Screen[None], AppType):
                 callback=self._process_loading_modal_result,
                 wait_for_dismiss=True,
             )
+        elif btn_enum == OpBtnEnum.refresh_tree:
+            self._handle_reload_button()
+            self.btn_enum = None
 
     def log_cmd_result(self, command_result: "CommandResult") -> None:
         self.app_log.cmd_result = command_result
         self.cmd_log.cmd_result = command_result
-
-    def _log_splash_log_commands(self) -> None:
-        self.app_log.write_ready("Commands executed in loading screen")
-        commands_to_log = CMD.cmd_results.executed_commands
-        for cmd in commands_to_log:
-            self.log_cmd_result(cmd)
-        self.app_log.write_ready("End of loading screen commands")
-
-    def _populate_apply_trees(self) -> None:
-        self.query_one(IDS.apply.tree.managed_q, ManagedTree).populate_tree()
-        self.app_log.write_info("Apply tab managed tree populated.")
-        self.query_one(IDS.apply.tree.list_q, ListTree).populate_tree()
-        self.app_log.write_info("Apply tab list tree populated.")
-
-    def _populate_re_add_trees(self) -> None:
-        self.query_one(IDS.re_add.tree.managed_q, ManagedTree).populate_tree()
-        self.app_log.write_info("Re-Add tab managed tree populated.")
-        self.query_one(IDS.re_add.tree.list_q, ListTree).populate_tree()
-        self.app_log.write_info("Re-Add tab list tree populated.")
 
     #######################
     # Operate mode helper #
@@ -170,7 +138,22 @@ class MainScreen(Screen[None], AppType):
         if self.btn_enum is None or self.display is False:
             return
         info_lines: list[str] = []
-        info_lines.append(CMD.run_cmd.review_cmd(global_args=self._global_args))
+        path_arg = ""
+        if (
+            self.btn_enum != OpBtnEnum.refresh_tree
+            and self.btn_enum in self.app.run_btn_enums
+            or self.btn_enum in self.app.review_btn_enums
+        ):
+            path_arg = (
+                str(self.btn_enum.path_arg)
+                if self.btn_enum.path_arg is not None
+                else ""
+            )
+        info_lines.append(
+            CMD.run_cmd.review_cmd(
+                global_args=(*self.btn_enum.write_cmd.value, path_arg)
+            )
+        )
         info_lines.append(self.btn_enum.op_info_string)
         if IDS.main_tabs.canvas_name in (TabLabel.add, TabLabel.re_add):
             if CMD.cache.git_auto_commit is True:
@@ -302,7 +285,7 @@ class MainScreen(Screen[None], AppType):
     @work
     async def _handle_reload_button(self) -> None:
         loading_modal = LoadingModal()
-        self.app.push_screen(loading_modal)
+        await self.app.push_screen(loading_modal, wait_for_dismiss=True)
         label = loading_modal.query_exactly_one(Label)
         label.update("logging result to app and cmd log")
         await self._log_loading_cmd_results(
@@ -320,14 +303,14 @@ class MainScreen(Screen[None], AppType):
         if not isinstance(event.button, OpButton):
             return
         if event.button.btn_enum == OpBtnLabel.cancel:
-            self.operate_mode.display = False
+            self.op_container.display = False
             self._restore_display(event.button.app_ids)
         elif event.button.btn_enum == OpBtnLabel.reload:
-            self.operate_mode.display = False
+            self.op_container.display = False
             self._restore_display(event.button.app_ids)
             self._handle_reload_button()
         elif event.button.btn_enum in OpBtnEnum.review_btn_enums():
-            self.operate_mode.display = True
+            self.op_container.display = True
             self.btn_enum = event.button.btn_enum
             self._set_review_display(event.button.app_ids)
         elif event.button.btn_enum in OpBtnEnum.run_btn_enums():
