@@ -39,7 +39,6 @@
   min-width: 78;
 }
 
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -76,7 +75,6 @@
       text-style: none;
     }
   }
-
 }
 
 /**********************/
@@ -466,10 +464,6 @@ Footer {
   background-tint: $surface;
   background: $surface;
 }
-
-# ScrollableContainer {
-#   border: green;
-# }
 
 Static {
   &.added {
