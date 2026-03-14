@@ -171,6 +171,8 @@ class AddTab(Horizontal):
                 self.add_review_btn.disabled = True
             else:
                 self.add_review_btn.disabled = False
+        else:  # isinstance(event, DirectoryTree.FileSelected):
+            self.add_review_btn.disabled = False
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
