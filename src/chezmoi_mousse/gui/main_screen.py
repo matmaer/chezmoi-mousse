@@ -304,10 +304,9 @@ class MainScreen(Screen[None], AppType):
         self.query_one(ids.container.contents_q, ContentsView).show_path = msg.path
         self.query_one(ids.container.git_log_q, GitLogView).show_path = msg.path
         # Set path_arg for the btn_enums for subsequent operations
-        operate_buttons = self.query_one(
-            ids.container.operate_buttons_q, OperateButtons
+        self.query_one(ids.container.operate_buttons_q, OperateButtons).set_path_arg(
+            msg.path
         )
-        operate_buttons.set_path_arg(msg.path)
         # disable/enable review buttons for file nodes
         if msg.path in CMD.cache.managed_file_paths:
             has_status = msg.path in CMD.cache.status_paths
