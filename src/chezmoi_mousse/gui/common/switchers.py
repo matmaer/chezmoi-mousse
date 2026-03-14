@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
@@ -131,7 +131,7 @@ class TreeSwitcher(Vertical, AppType):
                     tree_node.remove()
 
 
-class ViewSwitcher(Container):
+class ViewSwitcher(Vertical):
 
     def __init__(self, ids: "AppIds"):
         super().__init__(id=ids.container.right_side)

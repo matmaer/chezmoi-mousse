@@ -89,11 +89,7 @@ AddTab > Vertical > ContentsView {
   border-title-style: bold;
 }
 
-ContentsView, DiffView {
-  margin-bottom: 1;
-}
-
-AppLog, CmdLog {
+AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 2;
 }
 
