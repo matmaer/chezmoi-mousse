@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import IDS, AppType, BorderTitle, TabLabel
+from chezmoi_mousse import CMD, IDS, AppType, BorderTitle, TabLabel
 
 from .common.actionables import TabButtons
 from .common.git_log import GitLogView
@@ -26,6 +26,7 @@ class LogsTab(Vertical, AppType):
         self.tab_buttons.border_subtitle = BorderTitle.app_log
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.git_log = self.query_one(IDS.logs.container.git_log_q, GitLogView)
+        self.git_log.show_path = CMD.cache.dest_dir
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:

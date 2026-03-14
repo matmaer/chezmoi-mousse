@@ -5,7 +5,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, ReadCmd
+from chezmoi_mousse import CMD, ContainerName, ReadCmd
 
 from .messages import LogCmdResultMsg
 from .mixins import ContainerCache
@@ -21,10 +21,7 @@ class GitLogView(ContainerCache):
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.git_log)
-
-    def on_mount(self) -> None:
-        self.show_path = CMD.cache.dest_dir
+        super().__init__(id=ids.container.git_log, container=ContainerName.git_log)
 
     def _create_datatable_container(
         self, git_log_lines: list[str]
@@ -59,17 +56,16 @@ class GitLogView(ContainerCache):
         if show_path is None:
             return
         container = self.container_cache.get(show_path, None)
-        new_container: ScrollableContainer | None = None
         if container is None:
             # Create new table
             if show_path == CMD.cache.dest_dir:
-                new_container = self._create_datatable_container(
+                container = self._create_datatable_container(
                     CMD.cache.global_git_log_lines
                 )
             else:
                 cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
                 self.post_message(LogCmdResultMsg(cmd_result))
-                new_container = self._create_datatable_container(
+                container = self._create_datatable_container(
                     cmd_result.std_out.splitlines()
                 )
-        self.update_container_display(show_path, new_container)
+        self.update_container_display(show_path, container)

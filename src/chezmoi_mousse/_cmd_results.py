@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from dataclasses import dataclass, field, fields
 from pathlib import Path
@@ -369,6 +370,7 @@ class Commands:
     cmd_results: CommandResults = field(default_factory=CommandResults)
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
     cache: CachedData = field(init=False)
+    changed_paths: list[Path] = field(default_factory=lambda: [])
 
     def __post_init__(self) -> None:
         self.cache = CachedData(self.cmd_results)
@@ -376,7 +378,21 @@ class Commands:
     # Properties for easy access to fields
 
     def update_parsed_data(self) -> None:
+        self.changed_paths.clear()
+        old_cached = copy.deepcopy(self.cache)
         self.cache.update_snapshot(self.cmd_results)
+
+        # ^ symmetric difference: elements that exist in either set, but not in both
+        # & intersection: elements that exist in both sets
+        # | union: all elements that exist in either set
+
+        # Collect changed paths: Symmetric difference (added/removed) + Status changes
+        changed_paths = (old_cached.managed_paths ^ set(self.cache.managed_paths)) | {
+            p
+            for p in old_cached.managed_paths & set(self.cache.managed_paths)
+            if old_cached.status_pairs.get(p) != self.cache.status_pairs.get(p)
+        }
+        self.changed_paths = sorted(changed_paths)
 
 
 CMD = Commands()

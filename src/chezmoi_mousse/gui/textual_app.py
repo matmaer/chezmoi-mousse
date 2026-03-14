@@ -27,7 +27,7 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .common.loading_modal import LoadingModal
+from .common.loading_modal import RunCmdModal
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
@@ -36,7 +36,7 @@ from .help_tab import HelpTab
 from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
-from .main_screen import MainScreen
+from .main_screen import MainScreen, OperateInfo
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
@@ -99,7 +99,7 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS: ClassVar = {"loading_modal": LoadingModal, "main_screen": MainScreen}
+    SCREENS: ClassVar = {"loading_modal": RunCmdModal, "main_screen": MainScreen}
 
     def __init__(
         self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool
@@ -164,7 +164,7 @@ class ChezmoiGUI(App[None]):
 
     def get_switch_slider_widget(self) -> SwitchSlider | None:
         if not isinstance(self.screen, MainScreen):
-            raise ValueError("get_switch_slider_widget called outside of MainScreen")
+            return None
         current_tab_widget = self._get_tab_widget()
         if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
             return current_tab_widget.query_exactly_one(SwitchSlider)
@@ -191,10 +191,7 @@ class ChezmoiGUI(App[None]):
         ):
             slider: SwitchSlider | None = self.get_switch_slider_widget()
             if slider is None:
-                raise ValueError(
-                    "SwitchSlider widget not found in apply, re-add, or add tab "
-                    "when updating binding description on tab activation."
-                )
+                return
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters
@@ -230,7 +227,9 @@ class ChezmoiGUI(App[None]):
             self.screen.query_exactly_one(CustomHeader).changes_enabled = (
                 CMD.run_cmd.changes_enabled
             )
-            self.screen.update_review_info()
+            self.screen.query_one(
+                IDS.main_tabs.static.operate_info_q, OperateInfo
+            ).changes_enabled = CMD.run_cmd.changes_enabled
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -346,7 +345,7 @@ class ChezmoiGUI(App[None]):
             if (
                 isinstance(self.screen, MainScreen)
                 and self.screen.query_one(
-                    IDS.main_tabs.container.op_mode_q, Vertical
+                    IDS.main_tabs.container.op_feed_back_q, Vertical
                 ).display
                 is True
             ):

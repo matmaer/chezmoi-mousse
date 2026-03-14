@@ -131,7 +131,7 @@ def _get_filtered_cmd(cmd_args: tuple[str, ...], review_color: bool) -> str:
     )
     filtered_cmd = " ".join([part for part in cmd_args if part and part not in exclude])
     if review_color:
-        return f"[$text-primary bold]{filtered_cmd}[/]"
+        return f"[$text-primary]{filtered_cmd}[/]"
     return filtered_cmd
 
 
@@ -153,6 +153,7 @@ def _run_chezmoi_cmd(
 
 @dataclass(slots=True)
 class CommandResult:
+    cmd_enum: ReadCmd | WriteCmd
     cmd_without_path_arg: tuple[str, ...]
     completed_process: CompletedProcess[str]
     path_arg: Path | None
@@ -261,6 +262,7 @@ class ChezmoiCommand:
             cmd_to_run += (path_str,)
         result: CompletedProcess[str] = _run_chezmoi_cmd(cmd_to_run, read_cmd=read_cmd)
         command_result = CommandResult(
+            cmd_enum=read_cmd,
             completed_process=result,
             cmd_without_path_arg=cmd_without_path_arg,
             path_arg=path_arg,
@@ -289,6 +291,7 @@ class ChezmoiCommand:
             cmd_to_run, write_cmd=write_cmd
         )
         command_result = CommandResult(
+            cmd_enum=write_cmd,
             cmd_without_path_arg=cmd_without_path_arg,
             completed_process=result,
             path_arg=path_arg,

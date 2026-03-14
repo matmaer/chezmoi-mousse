@@ -102,14 +102,13 @@ class AddTabContentsView(ContentsView):
         if show_path is None:
             return
         container = self.container_cache.get(show_path, None)
-        new_container: ScrollableContainer | None = None
         if container is None:
             # Create container based on path type
             if show_path == CMD.cache.dest_dir or show_path.is_dir():
-                new_container = self._create_add_dir_container(show_path)
+                container = self._create_add_dir_container(show_path)
             elif show_path.is_file():
-                new_container = self._create_file_container(show_path)
-        self.update_container_display(show_path, new_container)
+                container = self._create_file_container(show_path)
+        self.update_container_display(show_path, container)
 
 
 class AddTab(Horizontal):
@@ -152,7 +151,10 @@ class AddTab(Horizontal):
             raise ValueError("event.node.data is None in update_contents_view")
 
         self.contents_view.show_path = event.node.data.path
-        self.contents_view.border_title = f" {event.node.data.path.name} "
+        if event.node.data.path == CMD.cache.dest_dir:
+            self.contents_view.border_title = f" {CMD.cache.dest_dir} "
+        else:
+            self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
         operate_buttons = self.query_one(
             IDS.add.container.operate_buttons_q, OperateButtons

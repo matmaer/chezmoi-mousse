@@ -16,7 +16,7 @@ from ._app_ids import IDS, AppIds
 from ._cmd_results import CMD, CommandResults, DirNode, ParsedJson
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._str_enum_names import BindingAction, ScreenName, Tcss, TreeName
+from ._str_enum_names import BindingAction, ContainerName, ScreenName, Tcss, TreeName
 from ._str_enums import (
     BindingDescription,
     BorderTitle,
@@ -52,6 +52,7 @@ __all__ = [
     "Chars",
     "CommandResult",
     "CommandResults",
+    "ContainerName",
     "DirNode",
     "FlatBtnLabel",
     "LinkBtn",

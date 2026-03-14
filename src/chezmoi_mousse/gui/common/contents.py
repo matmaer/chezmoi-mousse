@@ -8,7 +8,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static, TextArea
 
-from chezmoi_mousse import CMD, ReadCmd, Tcss
+from chezmoi_mousse import CMD, ContainerName, ReadCmd, Tcss
 
 from .messages import LogCmdResultMsg
 from .mixins import ContainerCache
@@ -31,10 +31,7 @@ class ContentsView(ContainerCache):
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.contents)
-
-    def on_mount(self) -> None:
-        self.show_path = CMD.cache.dest_dir
+        super().__init__(id=ids.container.contents, container=ContainerName.contents)
 
     def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
@@ -59,10 +56,10 @@ class ContentsView(ContainerCache):
                 parts = lines[0].split()
                 if len(parts) > 1:
                     shebang = parts[-1]
-                    if shebang in self.shebang_map:
-                        return self.shebang_map[shebang]
+                    if shebang in self.SHEBANG_MAP:
+                        return self.SHEBANG_MAP[shebang]
             # If no shebang, check path suffix
-            return self.language_map.get(file_path.suffix.lower())
+            return self.LANGUAGE_MAP.get(file_path.suffix.lower())
 
         def _handle_exception(
             exception: PermissionError | UnicodeDecodeError | OSError,
@@ -115,11 +112,10 @@ class ContentsView(ContainerCache):
             return
 
         container = self.container_cache.get(show_path, None)
-        new_container: ScrollableContainer | None = None
         if container is None:
             # Create container based on path type
             if show_path in CMD.cache.managed_dirs_with_dest_dir:
-                new_container = self._create_managed_dir_container(show_path)
+                container = self._create_managed_dir_container(show_path)
             else:
-                new_container = self._create_file_container(show_path)
-        self.update_container_display(show_path, new_container)
+                container = self._create_file_container(show_path)
+        self.update_container_display(show_path, container)

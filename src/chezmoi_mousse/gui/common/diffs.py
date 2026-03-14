@@ -5,7 +5,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppIds, ReadCmd, TabLabel, Tcss
+from chezmoi_mousse import CMD, AppIds, ContainerName, ReadCmd, TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
 from .mixins import ContainerCache
@@ -37,11 +37,8 @@ class DiffView(ContainerCache):
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.diff)
+        super().__init__(id=ids.container.diff, container=ContainerName.diff)
         self.ids = ids
-
-    def on_mount(self) -> None:
-        self.show_path = CMD.cache.dest_dir
 
     @property
     def dir_nodes(self) -> dict["Path", "DirNode"]:
@@ -89,7 +86,6 @@ class DiffView(ContainerCache):
         if show_path is None:
             return
         container = self.container_cache.get(show_path, None)
-        new_container: ScrollableContainer | None = None
         if container is None:
             # Create widgets based on path type
             widgets: list[Label | Static] = []
@@ -103,5 +99,5 @@ class DiffView(ContainerCache):
                 widgets.append(Static("This file has no status.", classes=Tcss.context))
             else:
                 widgets.append(Static("Nothing to show."))
-            new_container = ScrollableContainer(*widgets)
-        self.update_container_display(show_path, new_container)
+            container = ScrollableContainer(*widgets)
+        self.update_container_display(show_path, container)

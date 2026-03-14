@@ -61,6 +61,7 @@ class TreeSwitcher(Vertical, AppType):
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
+        event.stop()
         if event.button.label == TabLabel.tree:
             self.view_switcher.current = self.ids.tree.managed
         elif event.button.label == TabLabel.list:
@@ -150,6 +151,7 @@ class ViewSwitcher(Vertical):
 
     @on(Button.Pressed)
     def switch_view(self, event: Button.Pressed) -> None:
+        event.stop()
         if event.button.label == TabLabel.contents:
             self.view_switcher.current = self.ids.container.contents
         elif event.button.label == TabLabel.diff:

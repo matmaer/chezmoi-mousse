@@ -8,6 +8,8 @@ from ._str_enums import SwitchLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from chezmoi_mousse import AppIds
+
 __all__ = ["OpBtnEnum", "OpBtnLabel", "SwitchEnum"]
 
 
@@ -93,19 +95,27 @@ class OpBtnLabel(StrEnum):
 @dataclass(slots=True)
 class OpBtnData:
     label: str
+    app_ids: "AppIds | None" = None
     write_cmd: WriteCmd | None = None
     op_info_string: str | None = None
     op_info_title: str | None = None
     op_info_subtitle: str | None = None
-    path_arg: "Path | None " = None
+    path_arg: "Path | None" = None
 
 
 class OpBtnEnum(Enum):
 
+    cancel = OpBtnData(label=OpBtnLabel.cancel)
+    create_diffs = OpBtnData(label=OpBtnLabel.create_diffs)
+    create_paths = OpBtnData(label=OpBtnLabel.create_paths)
+    exit_app = OpBtnData(label=OpBtnLabel.exit_app)
+    log_memory = OpBtnData(label=OpBtnLabel.log_memory)
     refresh_tree = OpBtnData(
         label=OpBtnLabel.refresh_tree,
         op_info_string=OpInfoString.refresh_tree_changed_paths,
     )
+    reload = OpBtnData(label=OpBtnLabel.reload)
+    remove_paths = OpBtnData(label=OpBtnLabel.remove_paths)
 
     add_review = OpBtnData(
         label=OpBtnLabel.add_review,
@@ -221,6 +231,14 @@ class OpBtnEnum(Enum):
     @path_arg.setter
     def path_arg(self, value: "Path | None") -> None:
         self.value.path_arg = value
+
+    @property
+    def app_ids(self) -> "AppIds | None":
+        return self.value.app_ids
+
+    @app_ids.setter
+    def app_ids(self, value: "AppIds | None") -> None:
+        self.value.app_ids = value
 
     @classmethod
     def review_to_run(cls, btn_label: OpBtnLabel) -> "OpBtnEnum":

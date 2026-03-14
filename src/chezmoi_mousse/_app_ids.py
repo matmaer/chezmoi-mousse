@@ -62,57 +62,61 @@ class AppIds:
         return f"{qid}{self.canvas_name.name}_{view.name}"
 
     @property
-    def op_btn_map(self) -> dict[str, "OpBtnEnum | OpBtnLabel"]:
+    def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
         if self.canvas_name == ScreenName.init:
             return {
                 self.op_btn.init_review: OpBtnEnum.init_review,
                 self.op_btn.init_run: OpBtnEnum.init_run,
-                self.op_btn.exit_app: OpBtnLabel.exit_app,
+                self.op_btn.exit_app: OpBtnEnum.exit_app,
             }
         elif self.canvas_name == TabLabel.debug:
             return {
-                self.op_btn.create_paths: OpBtnLabel.create_paths,
-                self.op_btn.remove_paths: OpBtnLabel.remove_paths,
-                self.op_btn.create_diffs: OpBtnLabel.create_diffs,
-                self.op_btn.log_memory: OpBtnLabel.log_memory,
+                self.op_btn.create_paths: OpBtnEnum.create_paths,
+                self.op_btn.remove_paths: OpBtnEnum.remove_paths,
+                self.op_btn.create_diffs: OpBtnEnum.create_diffs,
+                self.op_btn.log_memory: OpBtnEnum.log_memory,
             }
-
-        if self.canvas_name != TabLabel.add:
-            _btn_dict = {
-                self.op_btn.forget_review: OpBtnEnum.forget_review,
-                self.op_btn.forget_run: OpBtnEnum.forget_run,
-                self.op_btn.destroy_review: OpBtnEnum.destroy_review,
-                self.op_btn.destroy_run: OpBtnEnum.destroy_run,
-            }
-            if self.canvas_name == TabLabel.apply:
-                _btn_dict = {
-                    self.op_btn.apply_review: OpBtnEnum.apply_review,
-                    self.op_btn.apply_run: OpBtnEnum.apply_run,
-                    **_btn_dict,
-                }
-            if self.canvas_name == TabLabel.re_add:
-                _btn_dict = {
-                    self.op_btn.re_add_review: OpBtnEnum.re_add_review,
-                    self.op_btn.re_add_run: OpBtnEnum.re_add_run,
-                    **_btn_dict,
-                }
-        else:  # Add tab
-            _btn_dict = {
+        _common_buttons = {
+            self.op_btn.cancel: OpBtnEnum.cancel,
+            self.op_btn.reload: OpBtnEnum.reload,
+        }
+        if self.canvas_name == TabLabel.add:
+            return {
                 self.op_btn.add_review: OpBtnEnum.add_review,
                 self.op_btn.add_run: OpBtnEnum.add_run,
+                **_common_buttons,
             }
-        return {
-            **_btn_dict,
-            self.op_btn.cancel: OpBtnLabel.cancel,
-            self.op_btn.reload: OpBtnLabel.reload,
+        _forget_destroy_buttons = {
+            self.op_btn.destroy_review: OpBtnEnum.destroy_review,
+            self.op_btn.destroy_run: OpBtnEnum.destroy_run,
+            self.op_btn.forget_review: OpBtnEnum.forget_review,
+            self.op_btn.forget_run: OpBtnEnum.forget_run,
         }
+        if self.canvas_name == TabLabel.apply:
+            return {
+                self.op_btn.apply_review: OpBtnEnum.apply_review,
+                self.op_btn.apply_run: OpBtnEnum.apply_run,
+                **_forget_destroy_buttons,
+                **_common_buttons,
+            }
+        elif self.canvas_name == TabLabel.re_add:
+            return {
+                self.op_btn.re_add_review: OpBtnEnum.re_add_review,
+                self.op_btn.re_add_run: OpBtnEnum.re_add_run,
+                **_forget_destroy_buttons,
+                **_common_buttons,
+            }
+        else:
+            raise ValueError(
+                f"Unexpected canvas_name {self.canvas_name} for op_btn_map"
+            )
 
     @property
     def run_btn_ids(self) -> set[str]:
         return {
             btn_id
             for btn_id, btn_enum in self.op_btn_map.items()
-            if isinstance(btn_enum, OpBtnEnum) and "Run" in btn_enum.label
+            if "Run" in btn_enum.label
         }
 
     @property
@@ -120,7 +124,7 @@ class AppIds:
         return {
             btn_id
             for btn_id, btn_enum in self.op_btn_map.items()
-            if isinstance(btn_enum, OpBtnEnum) and "Review" in btn_enum.label
+            if "Review" in btn_enum.label
         }
 
     @property
@@ -149,20 +153,16 @@ class ContainerIds:
         self.command_output_q: str = f"#{self.command_output}"
         self.diff: str = ids.container_id(name=ContainerName.diff)
         self.diff_q: str = f"#{self.diff}"
-        self.dir_contents: str = ids.container_id(name=ContainerName.dir_contents)
-        self.dir_contents_q: str = f"#{self.dir_contents}"
         self.doctor: str = ids.container_id(name=ContainerName.doctor)
         self.doctor_q: str = f"#{self.doctor}"
-        self.file_contents: str = ids.container_id(name=ContainerName.file_contents)
-        self.file_contents_q: str = f"#{self.file_contents}"
         self.git_log: str = ids.container_id(name=ContainerName.git_log)
         self.git_log_q: str = f"#{self.git_log}"
         self.left_side: str = ids.container_id(name=ContainerName.left_side)
         self.left_side_q: str = f"#{self.left_side}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
-        self.op_mode: str = ids.container_id(name=ContainerName.op_mode)
-        self.op_mode_q: str = f"#{self.op_mode}"
+        self.op_feed_back: str = ids.container_id(name=ContainerName.op_feed_back)
+        self.op_feed_back_q: str = f"#{self.op_feed_back}"
         self.op_cmd_results: str = ids.container_id(name=ContainerName.op_cmd_results)
         self.op_cmd_results_q: str = f"#{self.op_cmd_results}"
         self.repo_input: str = ids.container_id(name=ContainerName.repo_input)

@@ -1,10 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from textual.containers import Container, ScrollableContainer
 from textual.widget import Widget
 from textual.widgets.text_area import BUILTIN_LANGUAGES
 
-from chezmoi_mousse import AppType
+from chezmoi_mousse import AppType, ContainerName
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -17,28 +17,32 @@ __all__ = ["ContainerCache"]
 
 class ContainerCache(AppType, Container):
 
-    def __init__(self, *children: Widget, id: str | None = None) -> None:
+    LANGUAGE_MAP = BUILTIN_MAP | {
+        ".cfg": BUILTIN_MAP["toml"],
+        ".ini": BUILTIN_MAP["toml"],
+        ".sh": BUILTIN_MAP["bash"],
+        ".yml": BUILTIN_MAP["yaml"],
+        ".zsh": BUILTIN_MAP["bash"],
+    }
+    SHEBANG_MAP: ClassVar = {
+        "python": "python",
+        "python3": "python",
+        "bash": "bash",
+        "sh": "bash",
+        "zsh": "bash",
+        "node": "javascript",
+        "java": "java",
+        "go": "go",
+        "rustc": "rust",
+    }
+
+    def __init__(
+        self, *children: Widget, id: str | None = None, container: ContainerName
+    ) -> None:
         super().__init__(*children, id=id)
+        self.container = container
         self.container_cache: dict[Path, ScrollableContainer] = {}
         self.current_container_path: Path | None = None
-        self.language_map = BUILTIN_MAP | {
-            ".cfg": BUILTIN_MAP["toml"],
-            ".ini": BUILTIN_MAP["toml"],
-            ".sh": BUILTIN_MAP["bash"],
-            ".yml": BUILTIN_MAP["yaml"],
-            ".zsh": BUILTIN_MAP["bash"],
-        }
-        self.shebang_map = {
-            "python": "python",
-            "python3": "python",
-            "bash": "bash",
-            "sh": "bash",
-            "zsh": "bash",
-            "node": "javascript",
-            "java": "java",
-            "go": "go",
-            "rustc": "rust",
-        }
 
     def update_container_display(
         self, show_path: "Path", new_container: "ScrollableContainer | None"
@@ -59,18 +63,8 @@ class ContainerCache(AppType, Container):
         # Update the current container path
         self.current_container_path = show_path
 
-    def purge_mounted_containers(self, changed_paths: list["Path"]) -> None:
-        # Remove exact changed paths and anything cached under those paths
-        keys_to_remove: list[Path] = [
-            cached_path
-            for cached_path in self.container_cache
-            if any(
-                cached_path == changed_path or changed_path in cached_path.parents
-                for changed_path in changed_paths
-            )
-        ]
-
-        for cached_path in keys_to_remove:
+    def purge_mounted_containers(self) -> None:
+        for cached_path in list(self.container_cache.keys()):
             container = self.container_cache.pop(cached_path, None)
             if container is not None:
                 container.remove()

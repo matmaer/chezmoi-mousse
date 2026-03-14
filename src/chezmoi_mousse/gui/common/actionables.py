@@ -81,28 +81,25 @@ class FlatButtonsVertical(Vertical):
 
 class OpButton(Button, AppType):
 
-    def __init__(
-        self, *, btn_id: str, btn_enum: OpBtnEnum | OpBtnLabel, app_ids: "AppIds"
-    ) -> None:
-        label = btn_enum.label if isinstance(btn_enum, OpBtnEnum) else btn_enum.value
-        super().__init__(classes=Tcss.operate_button, id=btn_id, label=label)
-        self.btn_enum: OpBtnEnum | OpBtnLabel = btn_enum
+    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: "AppIds") -> None:
+        super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
+        self.btn_enum: OpBtnEnum = btn_enum
         self.btn_id: str = btn_id
-        self.app_ids: AppIds = app_ids
-        if label in (
-            OpBtnLabel.destroy_review,
-            OpBtnLabel.forget_review,
-            OpBtnLabel.add_review,
+        self.btn_enum.app_ids = app_ids
+        if btn_enum in (
+            OpBtnEnum.destroy_review,
+            OpBtnEnum.forget_review,
+            OpBtnEnum.add_review,
         ):
             self.disabled = True
-        elif label in (
-            OpBtnLabel.add_run,
-            OpBtnLabel.apply_run,
-            OpBtnLabel.re_add_run,
-            OpBtnLabel.forget_run,
-            OpBtnLabel.destroy_run,
-            OpBtnLabel.cancel,
-            OpBtnLabel.reload,
+        elif btn_enum in (
+            OpBtnEnum.add_run,
+            OpBtnEnum.apply_run,
+            OpBtnEnum.re_add_run,
+            OpBtnEnum.forget_run,
+            OpBtnEnum.destroy_run,
+            OpBtnEnum.cancel,
+            OpBtnEnum.reload,
         ):
             self.display = False
 
@@ -144,8 +141,7 @@ class OperateButtons(HorizontalGroup):
 
     def set_path_arg(self, path: "Path") -> None:
         for btn_enum in self.ids.op_btn_map.values():
-            if isinstance(btn_enum, OpBtnEnum):
-                btn_enum.path_arg = path
+            btn_enum.path_arg = path
 
     @on(OpButton.Pressed)
     def update_operate_button_display(self, event: OpButton.Pressed) -> None:
