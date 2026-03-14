@@ -195,9 +195,9 @@ class MainScreen(Screen[None], AppType):
         if switch_slider is not None:
             switch_slider.display = True
 
-    ############################
-    # Message handling methods #
-    ############################
+    ################################
+    # Message handling and helpers #
+    ################################
 
     def _process_loading_modal_result(
         self, result: "LoadingModalResult | None"
