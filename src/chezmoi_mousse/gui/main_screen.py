@@ -87,20 +87,20 @@ class MainScreen(Screen[None], AppType):
     def on_mount(self) -> None:
         self.query_exactly_one(ConfigTab).command_results = CMD.cmd_results
         self.tabs = self.query_exactly_one(Tabs)
-        self.op_container = self.query_one(IDS.main_tabs.container.op_mode_q, Vertical)
-        self.op_container.display = False
+        self.command_output = self.query_one(
+            IDS.main_tabs.container.op_mode_q, Vertical
+        )
+        self.command_output.display = False
         self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
         self.command_output = self.query_one(IDS.main_tabs.container.command_output_q)
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
-        # Debug logger if in dev mode
         if self.app.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
         self.app_log.write_ready("Commands executed in loading screen")
         for cmd in CMD.cmd_results.executed_commands:
             self.log_cmd_result(cmd)
         self.app_log.write_ready("End of loading screen commands")
-        self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.list_trees = list(self.query(ListTree))
         self.managed_trees = list(self.query(ManagedTree))
         for tree in self.list_trees + self.managed_trees:
@@ -109,30 +109,13 @@ class MainScreen(Screen[None], AppType):
         self.diff_views = list(self.query(DiffView))
         self.git_logs = list(self.query(GitLogView))
 
-    def watch_btn_enum(self, btn_enum: "OpBtnEnum | None") -> None:
-        if btn_enum is None:
-            return
-        if btn_enum in self.app.review_btn_enums:
-            self.update_review_info()
-        elif btn_enum in self.app.run_btn_enums:
-            loading_modal = LoadingModal()
-            loading_modal.btn_enum = btn_enum
-            self.app.push_screen(
-                loading_modal,
-                callback=self._process_loading_modal_result,
-                wait_for_dismiss=True,
-            )
-        elif btn_enum == OpBtnEnum.refresh_tree:
-            self._handle_reload_button()
-            self.btn_enum = None
-
     def log_cmd_result(self, command_result: "CommandResult") -> None:
         self.app_log.cmd_result = command_result
         self.cmd_log.cmd_result = command_result
 
-    #######################
-    # Operate mode helper #
-    #######################
+    ###################
+    # Operate helpers #
+    ###################
 
     def update_review_info(self) -> None:
         if (
@@ -278,9 +261,10 @@ class MainScreen(Screen[None], AppType):
         for list_tree in self.list_trees:
             list_tree.populate_tree()
             list_tree.select_node(list_tree.root)
-        self.dir_tree.refresh()
-        self.dir_tree.reload()
-        self.dir_tree.select_node(self.dir_tree.root)
+        dir_tree = self.query_exactly_one(FilteredDirTree)
+        dir_tree.refresh()
+        dir_tree.reload()
+        dir_tree.select_node(dir_tree.root)
 
     @work
     async def _handle_reload_button(self) -> None:
@@ -304,13 +288,13 @@ class MainScreen(Screen[None], AppType):
         if not isinstance(event.button, OpButton):
             return
         if event.button.btn_enum in (OpBtnLabel.cancel, OpBtnLabel.reload):
-            self.op_container.display = False
+            self.command_output.display = False
             self.command_output.remove_children()
             self._restore_display(event.button.app_ids)
             if event.button.btn_enum == OpBtnLabel.reload:
                 self._handle_reload_button()
         elif event.button.btn_enum in OpBtnEnum.review_btn_enums():
-            self.op_container.display = True
+            self.command_output.display = True
             self.btn_enum = event.button.btn_enum
             self._set_review_display(event.button)
         elif event.button.btn_enum in OpBtnEnum.run_btn_enums():
@@ -385,3 +369,20 @@ class MainScreen(Screen[None], AppType):
             self.last_loading_result.all_cmd_results
         ).wait()
         await self._update_trees(self.last_loading_result.changed_paths).wait()
+
+    def watch_btn_enum(self, btn_enum: "OpBtnEnum | None") -> None:
+        if btn_enum is None:
+            return
+        if btn_enum in self.app.review_btn_enums:
+            self.update_review_info()
+        elif btn_enum in self.app.run_btn_enums:
+            loading_modal = LoadingModal()
+            loading_modal.btn_enum = btn_enum
+            self.app.push_screen(
+                loading_modal,
+                callback=self._process_loading_modal_result,
+                wait_for_dismiss=True,
+            )
+        elif btn_enum == OpBtnEnum.refresh_tree:
+            self._handle_reload_button()
+            self.btn_enum = None
