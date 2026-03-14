@@ -94,8 +94,6 @@ class MainScreen(Screen[None], AppType):
         self.command_output.display = False
         self.operate_info = self.query_one(IDS.main_tabs.static.operate_info_q, Static)
         self.command_output = self.query_one(IDS.main_tabs.container.command_output_q)
-        self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
-        self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         if self.app.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
         # Log splash log commands
@@ -110,17 +108,19 @@ class MainScreen(Screen[None], AppType):
     async def _log_cmd_results(
         self, to_log: "LogCmdResultMsg | CommandResult | list[CommandResult]"
     ) -> None:
+        app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
+        cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         if isinstance(to_log, LogCmdResultMsg):
             to_log.stop()
-            self.app_log.log_cmd_result(to_log.cmd_result)
-            self.cmd_log.log_cmd_result(to_log.cmd_result)
+            app_log.log_cmd_result(to_log.cmd_result)
+            cmd_log.log_cmd_result(to_log.cmd_result)
         elif isinstance(to_log, CommandResult):
-            self.app_log.log_cmd_result(to_log)
-            self.cmd_log.log_cmd_result(to_log)
+            app_log.log_cmd_result(to_log)
+            cmd_log.log_cmd_result(to_log)
         else:  # list[CommandResult])
             for cmd_result in to_log:
-                self.app_log.log_cmd_result(cmd_result)
-                self.cmd_log.log_cmd_result(cmd_result)
+                app_log.log_cmd_result(cmd_result)
+                cmd_log.log_cmd_result(cmd_result)
 
     @work
     async def _update_views_and_trees(
