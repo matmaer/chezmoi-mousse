@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal
+from textual.containers import Container, Horizontal, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher
 from textual.widgets.tree import TreeNode
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 __all__ = ["TreeSwitcher", "ViewSwitcher"]
 
 
-class TreeSwitcher(Container, AppType):
+class TreeSwitcher(Vertical, AppType):
 
     unchanged: reactive[bool] = reactive(False)
     expand_all: reactive[bool] = reactive(False)

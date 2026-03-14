@@ -39,25 +39,6 @@
   min-width: 78;
 }
 
-.refresh_button {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border-bottom: none;
-  border-top: wide $surface-lighten-1;
-  color: $primary-lighten-3;
-  dock: bottom;
-  margin: 0 1;
-  min-width: 18;
-  text-style: none;
-  width: 100%;
-  &:hover {
-    text-style: none;
-    color: $accent-lighten-1;
-  }
-  &:focus {
-    text-style: none;
-  }
-}
 
 .tab_left_vertical {
   margin-right: 2;
@@ -65,16 +46,37 @@
   max-width: 35%;
   min-width: 18;
   &>.tree_content_switcher {
+    height: 1fr;
     min-width: 18;
     width: auto;
     max-width: 100%;
     &>.tree_widget {
       min-width: 18;
-      margin-bottom: 1; /* to make sure bottom scrollbar remains visible */
       max-width: 100%;
       width: auto;
     }
   }
+  &>.refresh_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: none;
+    border-top: wide $surface-lighten-1;
+    color: $primary-lighten-3;
+    dock: bottom;
+    height: 2;
+    margin: 0 1;
+    min-width: 18;
+    text-style: none;
+    width: 100%;
+    &:hover {
+      text-style: none;
+      color: $accent-lighten-1;
+    }
+    &:focus {
+      text-style: none;
+    }
+  }
+
 }
 
 /**********************/
