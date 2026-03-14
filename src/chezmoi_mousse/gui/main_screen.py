@@ -27,7 +27,7 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
-from .common.loading_modal import LoadingModal, LoadingModalResult, min_wait
+from .common.loading_modal import LoadingModal, LoadingModalResult  # , min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.messages import (
     CurrentApplyNodeMsg,
@@ -99,20 +99,15 @@ class MainScreen(Screen[None], AppType):
         if self.app.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
         # Log splash log commands
-        self.app_log.write_ready("Commands executed in loading screen")
-        self.log_cmd_results(CMD.cmd_results.executed_commands)
-        self.app_log.write_ready("End of loading screen commands")
+        self.app.call_later(self._log_cmd_results, CMD.cmd_results.executed_commands)
         # Populate trees and views with initial data
-        self.list_trees = list(self.query(ListTree))
-        self.managed_trees = list(self.query(ManagedTree))
-        for tree in self.list_trees + self.managed_trees:
-            tree.populate_tree()
-        self.contents_views = list(self.query(ContentsView))
-        self.diff_views = list(self.query(DiffView))
-        self.git_logs = list(self.query(GitLogView))
+        self.app.call_later(
+            self._update_views_and_trees, [CMD.cache.dest_dir], first_startup=True
+        )
 
+    @work
     @on(LogCmdResultMsg)
-    def log_cmd_results(
+    async def _log_cmd_results(
         self, to_log: "LogCmdResultMsg | CommandResult | list[CommandResult]"
     ) -> None:
         if isinstance(to_log, LogCmdResultMsg):
@@ -127,9 +122,32 @@ class MainScreen(Screen[None], AppType):
                 self.app_log.log_cmd_result(cmd_result)
                 self.cmd_log.log_cmd_result(cmd_result)
 
-    ###################
-    # Operate helpers #
-    ###################
+    @work
+    async def _update_views_and_trees(
+        self, changed: list["Path"], first_startup: bool = False
+    ) -> None:
+        contents_views = list(self.query(ContentsView))
+        diff_views = list(self.query(DiffView))
+        git_log_views = list(self.query(GitLogView))
+        list_trees = list(self.query(ListTree))
+        managed_trees = list(self.query(ManagedTree))
+        # Purge existing mounted containers based on changed var in all views.
+        if not first_startup:
+            for view in diff_views + contents_views + git_log_views:
+                view.purge_mounted_containers(changed)
+                view.refresh()
+        # Repopulate Trees widgets
+        for tree in list_trees + managed_trees:
+            tree.populate_tree()
+            tree.select_node(tree.root)
+        # Update FilteredDirTree
+        dir_tree = self.query_exactly_one(FilteredDirTree)
+        dir_tree.reload()
+        dir_tree.select_node(dir_tree.root)
+
+    ####################
+    # Display Toggling #
+    ####################
 
     def _get_left_side(self, ids: "AppIds") -> TreeSwitcher | Vertical:
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
@@ -176,6 +194,10 @@ class MainScreen(Screen[None], AppType):
         switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
         if switch_slider is not None:
             switch_slider.display = True
+
+    ############################
+    # Message handling methods #
+    ############################
 
     def _process_loading_modal_result(
         self, result: "LoadingModalResult | None"
@@ -228,36 +250,17 @@ class MainScreen(Screen[None], AppType):
             self.btn_enum = None
 
     @work
-    @min_wait
-    async def _update_trees(self, changed: list["Path"]) -> None:
-        for view in self.diff_views + self.contents_views + self.git_logs:
-            view.purge_mounted_containers(changed)
-            view.show_path = CMD.cache.dest_dir
-        for managed_tree in self.managed_trees:
-            managed_tree.populate_tree()
-            managed_tree.select_node(managed_tree.root)
-        for list_tree in self.list_trees:
-            list_tree.populate_tree()
-            list_tree.select_node(list_tree.root)
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.refresh()
-        dir_tree.reload()
-        dir_tree.select_node(dir_tree.root)
-
-    @work
     async def _handle_reload_button(self) -> None:
         self.command_output.remove_children()
         loading_modal = LoadingModal()
         await self.app.push_screen(loading_modal, wait_for_dismiss=True)
         label = loading_modal.query_exactly_one(Label)
         label.update("logging result to app and cmd log")
-        self.log_cmd_results(self.last_loading_result.all_cmd_results)
-        label.update("updating trees")
-        await self._update_trees(self.last_loading_result.changed_paths).wait()
-
-    ############################
-    # Message handling methods #
-    ############################
+        self._log_cmd_results(self.last_loading_result.all_cmd_results)
+        label.update("updating views and trees")
+        await self._update_views_and_trees(
+            self.last_loading_result.changed_paths
+        ).wait()
 
     @on(OpButton.Pressed)
     def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
@@ -367,8 +370,10 @@ class MainScreen(Screen[None], AppType):
         else:
             self.notify("No root paths were changed.")
         self.last_loading_result = msg.loading_result
-        self.log_cmd_results(self.last_loading_result.all_cmd_results)
-        await self._update_trees(self.last_loading_result.changed_paths).wait()
+        self._log_cmd_results(self.last_loading_result.all_cmd_results)
+        await self._update_views_and_trees(
+            self.last_loading_result.changed_paths
+        ).wait()
 
     def watch_btn_enum(self, btn_enum: "OpBtnEnum | None") -> None:
         if btn_enum is None:
