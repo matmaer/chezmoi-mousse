@@ -39,6 +39,11 @@
   min-width: 78;
 }
 
+.op_mode {
+  height: auto;
+}
+
+
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -577,3 +582,4 @@ Tree {
     }
   }
 }
+
