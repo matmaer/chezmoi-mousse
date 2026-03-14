@@ -37,7 +37,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     p.is_file()
                     and not UnwantedFileExtensions.is_unwanted(p)
                     and not UnwantedFileNames.is_unwanted(p)
-                    and p.parent in CMD.cache.managed_dir_paths
+                    and p.parent in CMD.cache.managed_dirs_with_dest_dir
                     and p not in CMD.cache.managed_file_paths
                     and self._file_of_interest(p)
                 )
@@ -108,7 +108,7 @@ class FilteredDirTree(DirectoryTree, AppType):
                     ):
                         return True
                 elif (
-                    p.is_dir()
+                    p.is_dir(follow_symlinks=False)
                     and not UnwantedDirs.is_unwanted(p.name)
                     and self._has_unmanaged_paths_in(p)
                 ):
