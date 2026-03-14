@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import CommandResult
 
-__all__ = ["LoadingModal", "LoadingModalResult", "min_wait"]
+__all__ = ["LoadingModal", "LoadingResults", "min_wait"]
 
 # not needed for anything else than showing log messages briefly for humans
 MIN_WAIT_TIME = 1.2
@@ -40,7 +40,7 @@ def min_wait(
 
 
 @dataclass
-class LoadingModalResult:
+class LoadingResults:
     changed_paths: list["Path"] = field(default_factory=lambda: [])
     changed_root_paths: set["Path"] = field(default_factory=lambda: set())
     read_cmd_results: list["CommandResult"] = field(default_factory=lambda: [])
@@ -53,7 +53,7 @@ class LoadingModalResult:
         return self.read_cmd_results
 
 
-class LoadingModal(ModalScreen[LoadingModalResult], AppType):
+class LoadingModal(ModalScreen[LoadingResults], AppType):
 
     def __init__(self) -> None:
         super().__init__()
@@ -73,7 +73,7 @@ class LoadingModal(ModalScreen[LoadingModalResult], AppType):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
-        self.to_return = LoadingModalResult()
+        self.to_return = LoadingResults()
         self.label = self.query_exactly_one(Label)
         self.old_cached = copy.deepcopy(CMD.cache)
         self._run_commands(self.btn_enum)
