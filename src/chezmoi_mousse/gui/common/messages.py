@@ -9,20 +9,8 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import CommandResult
 
-    from .loading_modal import LoadingModalResult
 
-__all__ = [
-    "LoadingResultMsg",
-    "LogCmdResultMsg",
-    "CurrentApplyNodeMsg",
-    "CurrentReAddNodeMsg",
-]
-
-
-class LoadingResultMsg(Message):
-    def __init__(self, loading_result: LoadingModalResult) -> None:
-        self.loading_result = loading_result
-        super().__init__()
+__all__ = ["LogCmdResultMsg", "CurrentApplyNodeMsg", "CurrentReAddNodeMsg"]
 
 
 class LogCmdResultMsg(Message):
