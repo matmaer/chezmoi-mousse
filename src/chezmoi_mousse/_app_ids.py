@@ -140,6 +140,10 @@ class AppIds:
                 f"Unexpected canvas_name {self.canvas_name} for tab_operation_btn_q"
             )
 
+    @property
+    def cancel_btn_q(self) -> set[str]:
+        return {self.op_btn.cancel_q, self.op_btn.cancel_q}
+
 
 class ContainerIds:
     def __init__(self, ids: AppIds):
