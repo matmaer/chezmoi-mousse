@@ -117,39 +117,6 @@ class MainScreen(Screen[None], AppType):
     # Operate helpers #
     ###################
 
-    def update_review_info(self) -> None:
-        if (
-            self.btn_enum is None
-            or self.operate_info.display is False
-            or self.btn_enum == OpBtnEnum.refresh_tree
-        ):
-            return
-        info_lines: list[str] = []
-        path_arg: str = ""
-        if (
-            self.btn_enum in self.app.run_btn_enums
-            or self.btn_enum in self.app.review_btn_enums
-        ):
-            path_arg = (
-                str(self.btn_enum.path_arg)
-                if self.btn_enum.path_arg is not None
-                else ""
-            )
-        info_lines.append(
-            CMD.run_cmd.review_cmd(
-                global_args=(*self.btn_enum.write_cmd.value, path_arg)
-            )
-        )
-        info_lines.append(self.btn_enum.op_info_string)
-        if IDS.main_tabs.canvas_name in (TabLabel.add, TabLabel.re_add):
-            if CMD.cache.git_auto_commit is True:
-                info_lines.append(OperateString.auto_commit)
-            if CMD.cache.git_auto_push is True:
-                info_lines.append(OperateString.auto_push)
-        self.operate_info.update("\n".join(info_lines))
-        self.operate_info.border_title = self.btn_enum.op_info_title
-        self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
-
     def _get_left_side(self, ids: "AppIds") -> TreeSwitcher | Vertical:
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             left_side = self.query_one(ids.container.left_side_q, TreeSwitcher)
@@ -159,15 +126,7 @@ class MainScreen(Screen[None], AppType):
             raise NotImplementedError(f"Not implemented for {ids.canvas_name}")
         return left_side
 
-    def _set_review_display(self, op_button: OpButton) -> None:
-        self.tabs.display = False
-        self._get_left_side(op_button.app_ids).display = False
-        switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
-        self.command_output.display = False
-        if switch_slider is not None:
-            switch_slider.display = False
-
-    def _set_right_side(self, ids: "AppIds") -> ViewSwitcher | ContentsView:
+    def _get_right_side(self, ids: "AppIds") -> ViewSwitcher | ContentsView:
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             right_side = self.query_one(ids.container.right_side_q, ViewSwitcher)
         elif ids.canvas_name == TabLabel.add:
@@ -176,16 +135,30 @@ class MainScreen(Screen[None], AppType):
             raise NotImplementedError(f"Not implemented for {ids.canvas_name}")
         return right_side
 
+    def _set_review_display(self, op_button: OpButton) -> None:
+        self.tabs.display = False
+        self._get_left_side(op_button.app_ids).display = False
+        switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
+        self.command_output.display = False
+        if switch_slider is not None:
+            switch_slider.display = False
+
     def _set_post_run_display(self, ids: "AppIds") -> None:
-        self._set_right_side(ids).display = False
+        self._get_right_side(ids).display = False
 
     def _set_refresh_tree_display(self, ids: "AppIds") -> None:
-        self._set_right_side(ids).display = False
+        self.tabs.display = False
+        self._get_left_side(ids).display = False
+        self._get_right_side(ids).display = False
+        self.tabs.display = False
+        switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
+        if switch_slider is not None:
+            switch_slider.display = False
 
     def _restore_display(self, ids: "AppIds") -> None:
         self.tabs.display = True
         self._get_left_side(ids).display = True
-        self._set_right_side(ids).display = True
+        self._get_right_side(ids).display = True
         switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
         if switch_slider is not None:
             switch_slider.display = True
@@ -236,8 +209,7 @@ class MainScreen(Screen[None], AppType):
             )
         self.operate_info.visible = True
         # If this was a refresh-only operation, clear the btn_enum so that
-        # pressing the Refresh Trees button again will trigger the
-        # reactive watcher (assigning the same enum again won't fire it).
+        # pressing the Refresh Trees button again will trigger the watcher.
         if self.btn_enum == OpBtnEnum.refresh_tree:
             self.btn_enum = None
 
@@ -353,6 +325,37 @@ class MainScreen(Screen[None], AppType):
     def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
         msg.stop()
         self.log_cmd_result(msg.cmd_result)
+
+    def update_review_info(self) -> None:
+        if (
+            self.btn_enum is None
+            or self.operate_info.display is False
+            or self.btn_enum == OpBtnEnum.refresh_tree
+        ):
+            return
+        info_lines: list[str] = []
+        if self.btn_enum in self.app.run_btn_enums | self.app.review_btn_enums:
+            path_arg = (
+                str(self.btn_enum.path_arg)
+                if self.btn_enum.path_arg is not None
+                else ""
+            )
+        else:
+            path_arg = ""
+        info_lines.append(
+            CMD.run_cmd.review_cmd(
+                global_args=(*self.btn_enum.write_cmd.value, path_arg)
+            )
+        )
+        info_lines.append(self.btn_enum.op_info_string)
+        if IDS.main_tabs.canvas_name in (TabLabel.add, TabLabel.re_add):
+            if CMD.cache.git_auto_commit is True:
+                info_lines.append(OperateString.auto_commit)
+            if CMD.cache.git_auto_push is True:
+                info_lines.append(OperateString.auto_push)
+        self.operate_info.update("\n".join(info_lines))
+        self.operate_info.border_title = self.btn_enum.op_info_title
+        self.operate_info.border_subtitle = self.btn_enum.op_info_subtitle
 
     @on(LoadingResultMsg)
     async def handle_changed_root_paths(self, msg: LoadingResultMsg) -> None:
