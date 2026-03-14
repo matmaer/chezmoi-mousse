@@ -11,6 +11,7 @@ from chezmoi_mousse import (
     CMD,
     IDS,
     AppType,
+    CommandResult,
     LogString,
     OpBtnEnum,
     OpBtnLabel,
@@ -97,10 +98,11 @@ class MainScreen(Screen[None], AppType):
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         if self.app.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
+        # Log splash log commands
         self.app_log.write_ready("Commands executed in loading screen")
-        for cmd in CMD.cmd_results.executed_commands:
-            self.log_cmd_result(cmd)
+        self.log_cmd_results(CMD.cmd_results.executed_commands)
         self.app_log.write_ready("End of loading screen commands")
+        # Populate trees and views with initial data
         self.list_trees = list(self.query(ListTree))
         self.managed_trees = list(self.query(ManagedTree))
         for tree in self.list_trees + self.managed_trees:
@@ -109,9 +111,21 @@ class MainScreen(Screen[None], AppType):
         self.diff_views = list(self.query(DiffView))
         self.git_logs = list(self.query(GitLogView))
 
-    def log_cmd_result(self, command_result: "CommandResult") -> None:
-        self.app_log.cmd_result = command_result
-        self.cmd_log.cmd_result = command_result
+    @on(LogCmdResultMsg)
+    def log_cmd_results(
+        self, to_log: "LogCmdResultMsg | CommandResult | list[CommandResult]"
+    ) -> None:
+        if isinstance(to_log, LogCmdResultMsg):
+            to_log.stop()
+            self.app_log.log_cmd_result(to_log.cmd_result)
+            self.cmd_log.log_cmd_result(to_log.cmd_result)
+        elif isinstance(to_log, CommandResult):
+            self.app_log.log_cmd_result(to_log)
+            self.cmd_log.log_cmd_result(to_log)
+        else:  # list[CommandResult])
+            for cmd_result in to_log:
+                self.app_log.log_cmd_result(cmd_result)
+                self.cmd_log.log_cmd_result(cmd_result)
 
     ###################
     # Operate helpers #
@@ -215,14 +229,6 @@ class MainScreen(Screen[None], AppType):
 
     @work
     @min_wait
-    async def _log_loading_cmd_results(
-        self, cmd_results: list["CommandResult"]
-    ) -> None:
-        for cmd_result in cmd_results:
-            self.log_cmd_result(cmd_result)
-
-    @work
-    @min_wait
     async def _update_trees(self, changed: list["Path"]) -> None:
         for view in self.diff_views + self.contents_views + self.git_logs:
             view.purge_mounted_containers(changed)
@@ -245,9 +251,7 @@ class MainScreen(Screen[None], AppType):
         await self.app.push_screen(loading_modal, wait_for_dismiss=True)
         label = loading_modal.query_exactly_one(Label)
         label.update("logging result to app and cmd log")
-        await self._log_loading_cmd_results(
-            self.last_loading_result.all_cmd_results
-        ).wait()
+        self.log_cmd_results(self.last_loading_result.all_cmd_results)
         label.update("updating trees")
         await self._update_trees(self.last_loading_result.changed_paths).wait()
 
@@ -321,11 +325,6 @@ class MainScreen(Screen[None], AppType):
                     and msg.path not in CMD.cache.x_dirs_with_status_children
                 )
 
-    @on(LogCmdResultMsg)
-    def log_new_cmd_result(self, msg: LogCmdResultMsg) -> None:
-        msg.stop()
-        self.log_cmd_result(msg.cmd_result)
-
     def update_review_info(self) -> None:
         if (
             self.btn_enum is None
@@ -368,9 +367,7 @@ class MainScreen(Screen[None], AppType):
         else:
             self.notify("No root paths were changed.")
         self.last_loading_result = msg.loading_result
-        await self._log_loading_cmd_results(
-            self.last_loading_result.all_cmd_results
-        ).wait()
+        self.log_cmd_results(self.last_loading_result.all_cmd_results)
         await self._update_trees(self.last_loading_result.changed_paths).wait()
 
     def watch_btn_enum(self, btn_enum: "OpBtnEnum | None") -> None:
