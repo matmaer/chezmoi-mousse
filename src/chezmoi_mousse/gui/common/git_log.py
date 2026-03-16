@@ -60,7 +60,7 @@ class GitLogView(ContainerCache):
             # Create new table
             if show_path == CMD.cache.dest_dir:
                 container = self._create_datatable_container(
-                    CMD.cache.global_git_log_lines
+                    CMD.cmd_results.global_git_log_lines
                 )
             else:
                 cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)

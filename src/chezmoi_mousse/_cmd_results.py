@@ -267,7 +267,6 @@ class CachedData:
     git_auto_commit: bool
     git_auto_push: bool
     # Parsed git log and verify command output attribute
-    global_git_log_lines: list[str]
     no_status_paths: bool
     # Parsed paths in a list or set
     managed_paths: set[Path]
