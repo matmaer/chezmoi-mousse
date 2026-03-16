@@ -194,6 +194,11 @@ class CommandResult:
         return _get_filtered_cmd(self.completed_process.args, review_color=False)
 
     @property
+    def exit_code_colored_cmd(self) -> str:
+        cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
+        return f"{cmd_color}{self.full_cmd_filtered}[/]"
+
+    @property
     def filtered_cmd_without_path_arg(self) -> str:
         return _get_filtered_cmd(self.cmd_without_path_arg, review_color=False)
 
@@ -204,8 +209,7 @@ class CommandResult:
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
         pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
-        cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
-        title = f"{cmd_color}{pretty_time} {self.full_cmd_filtered}[/]"
+        title = f"{pretty_time} {self.exit_code_colored_cmd}"
         dry_run_str = "(dry run)" if self.is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self.std_err or f"{LogString.no_stderr} {dry_run_str}"

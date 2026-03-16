@@ -15,10 +15,11 @@ from chezmoi_mousse import (
     LogString,
     OpBtnEnum,
     OperateString,
+    OpInfoString,
+    ReadCmd,
     TabLabel,
     Tcss,
 )
-from chezmoi_mousse._run_cmd import ReadCmd
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -74,16 +75,13 @@ class OperateInfo(Static, AppType):
         self.border_title = btn_enum.op_info_title
         self.border_subtitle = btn_enum.op_info_subtitle
 
-    def update_post_run_info(
-        self, button: OpButton, write_cmd_result: "CommandResult"
-    ) -> None:
-        cmd_color = (
-            "[$text-success]" if write_cmd_result.exit_code == 0 else "[$text-error]"
+    async def update_post_run_info(self, write_cmd_result: CommandResult) -> None:
+        self.update(
+            f"{write_cmd_result.exit_code_colored_cmd}\n"
+            f"Exit code {write_cmd_result.exit_code}"
         )
-        cmd = write_cmd_result.full_cmd_filtered
-        self.border_title = button.btn_enum.op_info_title
-        self.border_subtitle = button.btn_enum.op_info_subtitle
-        self.update(f"{cmd_color}{cmd}[/]\nExit code {write_cmd_result.exit_code}")
+        self.border_title = OpInfoString.command_completed
+        self.border_subtitle = None
 
     def watch_changes_enabled(self) -> None:
         if self.btn_enum is None or not self.display:
@@ -161,22 +159,14 @@ class MainScreen(Screen[None], AppType):
         self.run_cmd_modal = RunCmdModal()
         self.run_cmd_modal.btn_enum = button.btn_enum
 
-        async def _run_cmd_modal_callback(
-            results: "list[CommandResult] | None",
-        ) -> None:
-            if results is None:
-                raise ValueError("results is None in _run_cmd_modal_callback.")
-            await self._update_op_feedback(button, results)
-            self.run_cmd_results = results
-
         await self.app.push_screen(
-            self.run_cmd_modal, callback=_run_cmd_modal_callback, wait_for_dismiss=True
+            self.run_cmd_modal, callback=self._update_feedback, wait_for_dismiss=True
         )
 
-    async def _update_op_feedback(
-        self, button: OpButton, results: "list[CommandResult]"
-    ) -> None:
-        self.operate_info.update_post_run_info(button, results[0])
+    async def _update_feedback(self, results: list["CommandResult"] | None) -> None:
+        if results is None:
+            raise ValueError("results is None in _update_feedback.")
+        await self.operate_info.update_post_run_info(results[0])
         self.command_output.mount(
             Label("Command output", classes=Tcss.main_section_label)
         )
