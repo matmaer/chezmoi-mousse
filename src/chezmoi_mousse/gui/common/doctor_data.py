@@ -14,6 +14,9 @@ __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 class DoctorTable(DataTable[Text], AppType):
 
+    def __init__(self) -> None:
+        super().__init__(cursor_type="row")
+
     doctor_std_out: reactive[str | None] = reactive(None, init=False)
 
     @property

@@ -26,7 +26,7 @@ class GitLogView(ContainerCache):
     def _create_datatable_container(
         self, git_log_lines: list[str]
     ) -> ScrollableContainer:
-        data_table = DataTable[str]()
+        data_table = DataTable[str](cursor_type="row")
 
         def add_row_with_style(columns: list[str], style: str) -> None:
             row: list[str] = [
