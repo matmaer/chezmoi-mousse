@@ -44,20 +44,21 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen", "OperateInfo"]
 
 
-class OperateInfo(Static):
+class OperateInfo(Static, AppType):
 
-    btn_enum: reactive[OpBtnEnum | None] = reactive(None, init=False)
     changes_enabled: reactive[bool] = reactive(False, init=False)
 
     def __init__(self) -> None:
         super().__init__(
             id=IDS.main_tabs.static.operate_info, classes=Tcss.operate_info
         )
+        self.btn_enum: OpBtnEnum | None = None
 
     def on_mount(self) -> None:
         self.display = False
 
-    def _update_review_info(self, btn_enum: OpBtnEnum) -> None:
+    def update_review_info(self, btn_enum: OpBtnEnum) -> None:
+        self.btn_enum = btn_enum
         info_lines: list[str] = []
         path_arg = str(btn_enum.path_arg) if btn_enum.path_arg is not None else ""
         info_lines.append(
@@ -73,15 +74,14 @@ class OperateInfo(Static):
         self.border_title = btn_enum.op_info_title
         self.border_subtitle = btn_enum.op_info_subtitle
 
-    def watch_btn_enum(self, btn_enum: OpBtnEnum | None) -> None:
-        if btn_enum is None:
-            raise ValueError("btn_enum is None in watch_btn_enum.")
-        self._update_review_info(btn_enum)
-
     def watch_changes_enabled(self) -> None:
-        if self.btn_enum is None or self.display is False:
+        if (
+            self.btn_enum is None
+            or self.display is False
+            or self.btn_enum in self.app.run_btn_enums
+        ):
             return
-        self._update_review_info(self.btn_enum)
+        self.update_review_info(self.btn_enum)
 
 
 class OpFeedBack(Vertical):
@@ -180,8 +180,8 @@ class MainScreen(Screen[None], AppType):
             cmd = cmd_result.full_cmd_filtered
             self.operate_info.border_title = button.btn_enum.op_info_title
             self.operate_info.border_subtitle = button.btn_enum.op_info_subtitle
-            self.operate_info.mount(
-                Static(f"{cmd_color}{cmd}[/]\nExit code {cmd_result.exit_code}")
+            self.operate_info.update(
+                f"{cmd_color}{cmd}[/]\nExit code {cmd_result.exit_code}"
             )
             self.command_output.mount(cmd_result.pretty_collapsible)
         self.command_output.mount(
@@ -268,11 +268,12 @@ class MainScreen(Screen[None], AppType):
             raise TypeError(f"Expected OpButton, got {type(event.button)}")
         self._set_display(event.button)
         if event.button.btn_enum == OpBtnEnum.reload:
+            self.command_output.remove_children()
             await self._push_refresh_modal(
                 OpBtnEnum.reload, self.run_cmd_results
             ).wait()
         elif event.button.btn_enum in self.app.review_btn_enums:
-            self.operate_info.btn_enum = event.button.btn_enum
+            self.operate_info.update_review_info(event.button.btn_enum)
         elif event.button.btn_enum in self.app.run_btn_enums:
             await self._push_run_cmd_modal(event.button).wait()
         elif event.button.btn_enum == OpBtnEnum.refresh_tree:
@@ -374,7 +375,6 @@ class MainScreen(Screen[None], AppType):
             self._get_set_switch_slider_display(True)
             self.op_feed_back.display = False
             self.command_output.display = False
-            self.command_output.remove_children()
             self.operate_info.display = False
         else:
             raise NotImplementedError(
