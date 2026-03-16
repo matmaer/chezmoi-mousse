@@ -150,16 +150,16 @@ class MainScreen(Screen[None], AppType):
         await self._run_refresh_commands(btn_enum, cmd_results).wait()
 
     @work
-    async def _push_run_cmd_modal(self, btn_enum: OpBtnEnum) -> None:
+    async def _push_run_cmd_modal(self, button: OpButton) -> None:
         self.run_cmd_modal = RunCmdModal()
-        self.run_cmd_modal.btn_enum = btn_enum
+        self.run_cmd_modal.btn_enum = button.btn_enum
 
         async def _run_cmd_modal_callback(
             results: "list[CommandResult] | None",
         ) -> None:
             if results is None:
                 raise ValueError("results is None in _run_cmd_modal_callback.")
-            await self._update_op_feedback(btn_enum, results)
+            await self._update_op_feedback(button, results)
             self.run_cmd_results = results
 
         await self.app.push_screen(
@@ -167,10 +167,8 @@ class MainScreen(Screen[None], AppType):
         )
 
     async def _update_op_feedback(
-        self, btn_enum: OpBtnEnum, results: "list[CommandResult]"
+        self, button: OpButton, results: "list[CommandResult]"
     ) -> None:
-        if btn_enum.app_ids is None:
-            raise ValueError("btn_enum.app_ids is None in _update_op_feedback.")
         self.loading_results = results
         self.command_output.mount(
             Label("Command output", classes=Tcss.main_section_label)
@@ -180,8 +178,8 @@ class MainScreen(Screen[None], AppType):
                 "[$text-success]" if cmd_result.exit_code == 0 else "[$text-error]"
             )
             cmd = cmd_result.full_cmd_filtered
-            self.operate_info.border_title = btn_enum.op_info_title
-            self.operate_info.border_subtitle = btn_enum.op_info_subtitle
+            self.operate_info.border_title = button.btn_enum.op_info_title
+            self.operate_info.border_subtitle = button.btn_enum.op_info_subtitle
             self.operate_info.mount(
                 Static(f"{cmd_color}{cmd}[/]\nExit code {cmd_result.exit_code}")
             )
@@ -268,7 +266,7 @@ class MainScreen(Screen[None], AppType):
     async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
         if not isinstance(event.button, OpButton):
             raise TypeError(f"Expected OpButton, got {type(event.button)}")
-        self._set_display(event.button.btn_enum)
+        self._set_display(event.button)
         if event.button.btn_enum == OpBtnEnum.reload:
             await self._push_refresh_modal(
                 OpBtnEnum.reload, self.run_cmd_results
@@ -276,7 +274,7 @@ class MainScreen(Screen[None], AppType):
         elif event.button.btn_enum in self.app.review_btn_enums:
             self.operate_info.btn_enum = event.button.btn_enum
         elif event.button.btn_enum in self.app.run_btn_enums:
-            await self._push_run_cmd_modal(event.button.btn_enum).wait()
+            await self._push_run_cmd_modal(event.button).wait()
         elif event.button.btn_enum == OpBtnEnum.refresh_tree:
             await self._push_refresh_modal(
                 OpBtnEnum.refresh_tree, self.run_cmd_results
@@ -349,32 +347,36 @@ class MainScreen(Screen[None], AppType):
         if switch_slider is not None:
             switch_slider.display = display
 
-    def _set_display(self, btn_enum: OpBtnEnum) -> None:
-        if btn_enum.app_ids is None:
-            raise ValueError("Trying to set display for a button enum with no app_ids.")
-        if btn_enum in self.app.review_btn_enums:
+    def _set_display(self, button: OpButton) -> None:
+        if button.btn_enum in self.app.review_btn_enums:
             self.op_feed_back.display = True
             self.command_output.display = False
             self.operate_info.display = True
             self.main_tabs.display = False
-            self._get_set_left_side_display(btn_enum.app_ids, False)
-            self._get_set_right_side_display(btn_enum.app_ids, True)
+            self._get_set_left_side_display(button.app_ids, False)
+            self._get_set_right_side_display(button.app_ids, True)
             self._get_set_switch_slider_display(False)
-        elif btn_enum in self.app.run_btn_enums or btn_enum == OpBtnEnum.refresh_tree:
+        elif (
+            button.btn_enum in self.app.run_btn_enums
+            or button.btn_enum == OpBtnEnum.refresh_tree
+        ):
             self.op_feed_back.display = True
             self.command_output.display = True
             self.operate_info.display = True
             self.main_tabs.display = False
-            self._get_set_left_side_display(btn_enum.app_ids, False)
-            self._get_set_right_side_display(btn_enum.app_ids, False)
+            self._get_set_left_side_display(button.app_ids, False)
+            self._get_set_right_side_display(button.app_ids, False)
             self._get_set_switch_slider_display(False)
-        elif btn_enum in (OpBtnEnum.cancel, OpBtnEnum.reload):
+        elif button.btn_enum in (OpBtnEnum.cancel, OpBtnEnum.reload):
             self.main_tabs.display = True
-            self._get_set_left_side_display(btn_enum.app_ids, True)
-            self._get_set_right_side_display(btn_enum.app_ids, True)
+            self._get_set_left_side_display(button.app_ids, True)
+            self._get_set_right_side_display(button.app_ids, True)
             self._get_set_switch_slider_display(True)
             self.op_feed_back.display = False
             self.command_output.display = False
+            self.command_output.remove_children()
             self.operate_info.display = False
         else:
-            raise NotImplementedError(f"Display logic not implemented for {btn_enum}")
+            raise NotImplementedError(
+                f"Display logic not implemented for {button.label}"
+            )

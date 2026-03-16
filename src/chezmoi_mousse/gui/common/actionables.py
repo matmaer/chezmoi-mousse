@@ -85,7 +85,7 @@ class OpButton(Button, AppType):
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
         self.btn_enum: OpBtnEnum = btn_enum
         self.btn_id: str = btn_id
-        self.btn_enum.app_ids = app_ids
+        self.app_ids = app_ids
         if btn_enum in (
             OpBtnEnum.destroy_review,
             OpBtnEnum.forget_review,
@@ -140,6 +140,9 @@ class OperateButtons(HorizontalGroup):
         ]
 
     def set_path_arg(self, path: "Path") -> None:
+        # TODO: This mutates the shared 'OpBtnEnum' 'path_arg field.
+        # Check if the path arg is correct after clicking tree nodes in different tabs.
+        # before clicking a review button.
         for btn_enum in self.ids.op_btn_map.values():
             btn_enum.path_arg = path
 

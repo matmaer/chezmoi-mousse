@@ -8,8 +8,6 @@ from ._str_enums import SwitchLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds
-
 __all__ = ["OpBtnEnum", "OpBtnLabel", "SwitchEnum"]
 
 
@@ -95,7 +93,6 @@ class OpBtnLabel(StrEnum):
 @dataclass(slots=True)
 class OpBtnData:
     label: str
-    app_ids: "AppIds | None" = None
     write_cmd: WriteCmd | None = None
     op_info_string: str | None = None
     op_info_title: str | None = None
@@ -231,14 +228,6 @@ class OpBtnEnum(Enum):
     @path_arg.setter
     def path_arg(self, value: "Path | None") -> None:
         self.value.path_arg = value
-
-    @property
-    def app_ids(self) -> "AppIds | None":
-        return self.value.app_ids
-
-    @app_ids.setter
-    def app_ids(self, value: "AppIds | None") -> None:
-        self.value.app_ids = value
 
     @classmethod
     def review_to_run(cls, btn_label: OpBtnLabel) -> "OpBtnEnum":
