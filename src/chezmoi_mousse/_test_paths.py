@@ -25,6 +25,7 @@ class ProblemChars(StrEnum):
 class PileNames:
     BINARY = "_test_file_binary.bin"
     LARGE = "_test_file_large.txt"
+    PYTHON_FILE = "_test_file.py"
     TEST_FILE_1 = "_test_file_1.toml"
     TEST_FILE_2 = "_test_file_2.toml"
     TEST_FILE_3 = "_test_file_3.toml"
@@ -121,6 +122,10 @@ class AllTestPaths:
         return self.test_dir / self.file_names.BINARY
 
     @property
+    def python_file_path(self) -> Path:
+        return self.test_dir / self.file_names.PYTHON_FILE
+
+    @property
     def tricky_utf8_file_path(self) -> Path:
         return self.test_dir / self.file_names.TRICKY_UTF8
 
@@ -155,6 +160,7 @@ class AllTestPaths:
             self.large_file_path,
             self.binary_file_path,
             self.tricky_utf8_file_path,
+            self.python_file_path,
         ):
             collected.add(f)
             for parent in f.parents:
@@ -194,6 +200,13 @@ class TestPaths:
         content = FAKER.text(max_nb_chars=700000)
         with Path.open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
+        return [str(file_path)]
+
+    def _create_python_file(self) -> list[str]:
+        file_path = self.all_paths.python_file_path
+        shutil.copyfile(
+            Path(__file__).resolve().parent / "_str_enum_names.py", file_path
+        )
         return [str(file_path)]
 
     def _create_tricky_utf8_file(self) -> list[str]:
@@ -267,6 +280,7 @@ class TestPaths:
         self._create_large_file()
         self._create_tricky_utf8_file()
         self._create_toml_files()
+        self._create_python_file()
 
         # compute which expected paths now exist but didn't before
         existing_after = {p for p in self.all_paths.all_test_paths if p.exists()}
