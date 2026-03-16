@@ -1,8 +1,7 @@
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
 from textual.widget import Widget
-from textual.widgets.text_area import BUILTIN_LANGUAGES
 
 from chezmoi_mousse import AppType, ContainerName
 
@@ -10,31 +9,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-BUILTIN_MAP = {lang: lang for lang in BUILTIN_LANGUAGES}
-
 __all__ = ["ContainerCache"]
 
 
 class ContainerCache(AppType, Container):
-
-    LANGUAGE_MAP = BUILTIN_MAP | {
-        ".cfg": BUILTIN_MAP["toml"],
-        ".ini": BUILTIN_MAP["toml"],
-        ".sh": BUILTIN_MAP["bash"],
-        ".yml": BUILTIN_MAP["yaml"],
-        ".zsh": BUILTIN_MAP["bash"],
-    }
-    SHEBANG_MAP: ClassVar = {
-        "python": "python",
-        "python3": "python",
-        "bash": "bash",
-        "sh": "bash",
-        "zsh": "bash",
-        "node": "javascript",
-        "java": "java",
-        "go": "go",
-        "rustc": "rust",
-    }
 
     def __init__(
         self, *children: Widget, id: str | None = None, container: ContainerName

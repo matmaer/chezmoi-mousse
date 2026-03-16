@@ -6,7 +6,7 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import Label, Static, TextArea
+from textual.widgets import Label, Static
 
 from chezmoi_mousse import CMD, ContainerName, ReadCmd, Tcss
 
@@ -48,18 +48,7 @@ class ContentsView(ContainerCache):
         return ScrollableContainer(*widgets)
 
     def _create_file_container(self, file_path: Path) -> ScrollableContainer:
-        widgets: list[Label | Static | TextArea] = []
-
-        def _detect_language(lines: list[str], file_path: Path) -> str | None:
-            # Check shebang first
-            if lines and lines[0].startswith("#!"):
-                parts = lines[0].split()
-                if len(parts) > 1:
-                    shebang = parts[-1]
-                    if shebang in self.SHEBANG_MAP:
-                        return self.SHEBANG_MAP[shebang]
-            # If no shebang, check path suffix
-            return self.LANGUAGE_MAP.get(file_path.suffix.lower())
+        widgets: list[Label | Static] = []
 
         def _handle_exception(
             exception: PermissionError | UnicodeDecodeError | OSError,
@@ -98,13 +87,9 @@ class ContentsView(ContainerCache):
                 return _handle_exception(e)
 
         file_contents = _read_file(file_path)
-        language = _detect_language(file_contents.splitlines(), file_path)
-        if language is not None:
-            widgets.append(TextArea(text=file_contents, language=language))
-        else:
-            text_obj = Text(file_contents)
-            ReprHighlighter().highlight(text_obj)
-            widgets.append(Static(text_obj))
+        text_obj = Text(file_contents)
+        ReprHighlighter().highlight(text_obj)
+        widgets.append(Static(text_obj))
         return ScrollableContainer(*widgets)
 
     def watch_show_path(self, show_path: Path | None) -> None:
