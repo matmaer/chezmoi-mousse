@@ -74,12 +74,19 @@ class OperateInfo(Static, AppType):
         self.border_title = btn_enum.op_info_title
         self.border_subtitle = btn_enum.op_info_subtitle
 
+    def update_post_run_info(
+        self, button: OpButton, write_cmd_result: "CommandResult"
+    ) -> None:
+        cmd_color = (
+            "[$text-success]" if write_cmd_result.exit_code == 0 else "[$text-error]"
+        )
+        cmd = write_cmd_result.full_cmd_filtered
+        self.border_title = button.btn_enum.op_info_title
+        self.border_subtitle = button.btn_enum.op_info_subtitle
+        self.update(f"{cmd_color}{cmd}[/]\nExit code {write_cmd_result.exit_code}")
+
     def watch_changes_enabled(self) -> None:
-        if (
-            self.btn_enum is None
-            or self.display is False
-            or self.btn_enum in self.app.run_btn_enums
-        ):
+        if self.btn_enum is None or not self.display:
             return
         self.update_review_info(self.btn_enum)
 
@@ -169,20 +176,11 @@ class MainScreen(Screen[None], AppType):
     async def _update_op_feedback(
         self, button: OpButton, results: "list[CommandResult]"
     ) -> None:
-        self.loading_results = results
+        self.operate_info.update_post_run_info(button, results[0])
         self.command_output.mount(
             Label("Command output", classes=Tcss.main_section_label)
         )
         for cmd_result in results:
-            cmd_color = (
-                "[$text-success]" if cmd_result.exit_code == 0 else "[$text-error]"
-            )
-            cmd = cmd_result.full_cmd_filtered
-            self.operate_info.border_title = button.btn_enum.op_info_title
-            self.operate_info.border_subtitle = button.btn_enum.op_info_subtitle
-            self.operate_info.update(
-                f"{cmd_color}{cmd}[/]\nExit code {cmd_result.exit_code}"
-            )
             self.command_output.mount(cmd_result.pretty_collapsible)
         self.command_output.mount(
             Label("Changed paths", classes=Tcss.main_section_label)
