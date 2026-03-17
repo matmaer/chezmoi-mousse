@@ -34,6 +34,8 @@ class ApplyTab(Container, AppType):
 
     @on(TabButton.Pressed)
     def enable_disable_expand_all(self, event: TabButton.Pressed) -> None:
+        if not isinstance(event.button, TabButton):
+            return
         event.stop()
         expand_all_switch = self.query_one(IDS.apply.switch.expand_all_q, Switch)
         if event.button.label == TabLabel.tree:

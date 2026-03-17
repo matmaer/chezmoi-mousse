@@ -107,7 +107,7 @@ class RunCmdModal(RefreshModal):
         self.cmd_results: list[CommandResult] = []
         if self.btn_enum is None:
             raise ValueError("btn_enum is None when trying to run commands.")
-        self._run_write_and_read_commands(self.btn_enum)
+        self._run_commands(self.btn_enum)
 
     @property
     def _global_args(self) -> tuple[str, ...] | None:
@@ -120,9 +120,11 @@ class RunCmdModal(RefreshModal):
             return (*self.btn_enum.write_cmd.value, path_arg)
 
     @work
-    async def _run_write_and_read_commands(self, btn_enum: "OpBtnEnum") -> None:
+    async def _run_commands(self, btn_enum: "OpBtnEnum") -> None:
         if btn_enum in self.app.run_btn_enums:
             await self._run_write_command(btn_enum).wait()
+            await self.run_read_commands().wait()
+        elif btn_enum == OpBtnEnum.refresh_tree:
             await self.run_read_commands().wait()
         self.dismiss(self.cmd_results)
 

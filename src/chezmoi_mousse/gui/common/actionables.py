@@ -12,7 +12,7 @@ from chezmoi_mousse import (
     FlatBtnLabel,
     LinkBtn,
     OpBtnEnum,
-    OpBtnLabel,
+    # OpBtnLabel,
     ScreenName,
     SwitchEnum,
     TabLabel,
@@ -146,46 +146,6 @@ class OperateButtons(HorizontalGroup):
         # before clicking a review button.
         for btn_enum in self.ids.op_btn_map.values():
             btn_enum.path_arg = path
-
-    @on(OpButton.Pressed)
-    def update_operate_button_display(self, event: OpButton.Pressed) -> None:
-        if not isinstance(event.button, OpButton):
-            # allows for type hinting to work and we only toggle display for OpButton
-            return
-
-        if (
-            self.ids.canvas_name in (TabLabel.debug, ScreenName.init)
-            or event.button.label == OpBtnLabel.refresh_tree
-        ):
-            # we don't need any display toggling in those contexts for now
-            return
-
-        if event.button.id in (self.ids.op_btn.cancel, self.ids.op_btn.reload):
-            self.cancel_btn.display = False
-            self.reload_btn.display = False
-            for btn in self.run_buttons:
-                btn.display = False
-            for btn in self.review_buttons:
-                btn.display = True
-
-        elif event.button.id in self.ids.review_btn_ids:
-            self.cancel_btn.display = True
-            for btn in self.review_buttons:
-                btn.display = False
-            for btn in self.run_buttons:
-                btn.disabled = False
-            run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(event.button.label)))
-            # now lookup the button widget in self.run_buttons with the
-            # corresponding enum
-            btn_widget: OpButton = next(
-                b for b in self.run_buttons if b.btn_enum == run_btn_enum
-            )
-            btn_widget.display = True
-
-        elif event.button.id in self.ids.run_btn_ids:
-            self.cancel_btn.display = False
-            self.reload_btn.display = True
-            event.button.disabled = True
 
 
 class SwitchWithLabel(HorizontalGroup):

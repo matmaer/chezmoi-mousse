@@ -136,9 +136,9 @@ class AddTab(Horizontal, AppType):
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:
-        self.query_one(IDS.add.op_btn.refresh_tree_q, OpButton).add_class(
-            Tcss.refresh_button
-        )
+        refresh_btn = self.query_one(IDS.add.op_btn.refresh_tree_q, OpButton)
+        refresh_btn.remove_class(Tcss.operate_button)
+        refresh_btn.add_class(Tcss.refresh_button)
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, AddTabContentsView

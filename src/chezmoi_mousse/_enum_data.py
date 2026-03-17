@@ -44,14 +44,6 @@ class OpInfoString(StrEnum):
         " will be recursed in.[/]"
     )
     re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-    refresh_tree_changed_paths = (
-        "All read commands for managed paths completed. Changed paths detected. All "
-        "tree widgets on all tabs will be updated on reload."
-    )
-    refresh_tree_no_changes = (
-        "All read commands for managed paths completed, however no changes were "
-        "detected."
-    )
     init_new_info = (
         "Ready to initialize a new chezmoi repository. Toggle the "
         "[$foreground-darken-1 on $surface-lighten-1] "
@@ -67,7 +59,6 @@ class OpBtnLabel(StrEnum):
     apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
-    close = "Close"
     create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"
@@ -108,10 +99,7 @@ class OpBtnEnum(Enum):
     create_paths = OpBtnData(label=OpBtnLabel.create_paths)
     exit_app = OpBtnData(label=OpBtnLabel.exit_app)
     log_memory = OpBtnData(label=OpBtnLabel.log_memory)
-    refresh_tree = OpBtnData(
-        label=OpBtnLabel.refresh_tree,
-        op_info_string=OpInfoString.refresh_tree_changed_paths,
-    )
+    refresh_tree = OpBtnData(label=OpBtnLabel.refresh_tree)
     reload = OpBtnData(label=OpBtnLabel.reload)
     remove_paths = OpBtnData(label=OpBtnLabel.remove_paths)
 
