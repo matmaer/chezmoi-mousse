@@ -1,14 +1,13 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual.containers import ScrollableContainer
+from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, ContainerName, ReadCmd
+from chezmoi_mousse import CMD, AppType, ReadCmd
 
 from .messages import LogCmdResultMsg
-from .mixins import ContainerCache
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -16,12 +15,14 @@ if TYPE_CHECKING:
 __all__ = ["GitLogView"]
 
 
-class GitLogView(ContainerCache):
+class GitLogView(Container, AppType):
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.git_log, container=ContainerName.git_log)
+        super().__init__(id=ids.container.git_log)
+        self.container_cache: dict[Path, ScrollableContainer] = {}
+        self.current_path: Path | None = None
 
     def _create_datatable_container(
         self, git_log_lines: list[str]
@@ -56,8 +57,12 @@ class GitLogView(ContainerCache):
         if show_path is None:
             return
         container = self.container_cache.get(show_path, None)
+        if container is not None:
+            if self.current_path is not None:
+                self.container_cache[self.current_path].display = False
+            container.display = True
+            self.current_path = show_path
         if container is None:
-            # Create new table
             if show_path == CMD.cache.dest_dir:
                 container = self._create_datatable_container(
                     CMD.cmd_results.global_git_log_lines
@@ -68,4 +73,11 @@ class GitLogView(ContainerCache):
                 container = self._create_datatable_container(
                     cmd_result.std_out.splitlines()
                 )
-        self.update_container_display(show_path, container)
+            self.mount(container)
+            self.current_path = show_path
+
+    def purge_mounted_containers(self) -> None:
+        for cached_path in list(self.container_cache.keys()):
+            container = self.container_cache.pop(cached_path, None)
+            if container is not None:
+                container.remove()

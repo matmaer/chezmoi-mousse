@@ -23,9 +23,6 @@ class AddTabContentsView(ContentsView):
 
     show_path: reactive["Path | None"] = reactive(None)
 
-    def on_mount(self) -> None:
-        self.show_path = CMD.cache.dest_dir
-
     def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
         if dir_path == CMD.cache.dest_dir:
@@ -102,13 +99,27 @@ class AddTabContentsView(ContentsView):
         if show_path is None:
             return
         container = self.container_cache.get(show_path, None)
-        if container is None:
-            # Create container based on path type
-            if show_path == CMD.cache.dest_dir or show_path.is_dir():
-                container = self._create_add_dir_container(show_path)
-            elif show_path.is_file():
-                container = self._create_file_container(show_path)
-        self.update_container_display(show_path, container)
+        if container is not None:
+            self.container_cache[self.current_path].display = False
+            container.display = True
+            self.current_path = show_path
+            return
+        if show_path == CMD.cache.dest_dir or show_path.is_dir():
+            container = self._create_add_dir_container(show_path)
+        elif show_path.is_file():
+            container = self._create_file_container(show_path)
+        else:
+            raise ValueError(
+                f"show_path {show_path} is neither a file nor a directory."
+            )
+        self.mount(container)
+        self.current_path = show_path
+
+    def purge_mounted_containers(self) -> None:
+        for cached_path in list(self.container_cache.keys()):
+            container = self.container_cache.pop(cached_path, None)
+            if container is not None:
+                container.remove()
 
 
 class AddTab(Horizontal):

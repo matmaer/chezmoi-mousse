@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
-from textual.containers import ScrollableContainer
+from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, ContainerName, ReadCmd, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
 
 from .messages import LogCmdResultMsg
-from .mixins import ContainerCache
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["ContentsView"]
 
 
-class ContentsView(ContainerCache):
+class ContentsView(Container, AppType):
 
     class ContentStr(StrEnum):
         cannot_decode = "Path cannot be decoded as UTF-8:"
@@ -31,7 +30,11 @@ class ContentsView(ContainerCache):
     show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.contents, container=ContainerName.contents)
+        super().__init__(id=ids.container.contents)
+        self.container_cache: dict[Path, ScrollableContainer] = {}
+
+    def on_mount(self) -> None:
+        self.current_path = CMD.cache.dest_dir
 
     def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
@@ -95,12 +98,21 @@ class ContentsView(ContainerCache):
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-
         container = self.container_cache.get(show_path, None)
-        if container is None:
-            # Create container based on path type
-            if show_path in CMD.cache.managed_dirs_with_dest_dir:
-                container = self._create_managed_dir_container(show_path)
-            else:
-                container = self._create_file_container(show_path)
-        self.update_container_display(show_path, container)
+        if container is not None:
+            self.container_cache[self.current_path].display = False
+            container.display = True
+            self.current_path = show_path
+            return
+        if show_path in CMD.cache.managed_dirs_with_dest_dir:
+            container = self._create_managed_dir_container(show_path)
+        else:
+            container = self._create_file_container(show_path)
+        self.mount(container)
+        self.current_path = show_path
+
+    def purge_mounted_containers(self) -> None:
+        for cached_path in list(self.container_cache.keys()):
+            container = self.container_cache.pop(cached_path, None)
+            if container is not None:
+                container.remove()
