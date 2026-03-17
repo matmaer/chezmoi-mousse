@@ -88,8 +88,13 @@ class DiffView(Container, AppType):
             return
         container = self.container_cache.get(show_path, None)
         if container is not None:
-            if self.current_path is not None:
-                self.container_cache[self.current_path].display = False
+            prev = (
+                self.container_cache.get(self.current_path)
+                if self.current_path is not None
+                else None
+            )
+            if prev is not None:
+                prev.display = False
             container.display = True
             self.current_path = show_path
             return
@@ -106,6 +111,18 @@ class DiffView(Container, AppType):
             widgets.append(Static("Nothing to show."))
         container = ScrollableContainer(*widgets)
         self.mount(container)
+        # Cache the mounted container so subsequent switches can hide it.
+        self.container_cache[show_path] = container
+
+        # Hide the previous container if we have it cached.
+        prev = (
+            self.container_cache.get(self.current_path)
+            if self.current_path is not None
+            else None
+        )
+        if prev is not None and prev is not container:
+            prev.display = False
+
         self.current_path = show_path
 
     def purge_mounted_containers(self) -> None:
