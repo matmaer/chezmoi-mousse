@@ -281,8 +281,8 @@ class CachedData:
 
             self.apply_dir_nodes[dir_path] = self._get_dir_node(
                 dir_path,
-                self._parse_status_output(0, dirs=True),
                 self._parse_status_output(0, dirs=False),
+                self._parse_status_output(0, dirs=True),
             )
             self.re_add_dir_nodes[dir_path] = self._get_dir_node(
                 dir_path,

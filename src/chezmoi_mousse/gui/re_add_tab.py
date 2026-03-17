@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Button, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, SwitchEnum, TabLabel
+from chezmoi_mousse import IDS, AppType, SwitchEnum, TabLabel
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.switchers import TreeSwitcher, ViewSwitcher
@@ -19,14 +19,6 @@ class ReAddTab(Container, AppType):
             yield Vertical(ViewSwitcher(IDS.re_add), OperateButtons(IDS.re_add))
         yield SwitchSlider(IDS.re_add)
 
-    def on_mount(self) -> None:
-        if CMD.cache.no_status_paths:
-            self.app.call_later(self.toggle_unchanged)
-
-    def toggle_unchanged(self) -> None:
-        unchanged_switch = self.query_one(IDS.re_add.switch.unchanged_q, Switch)
-        unchanged_switch.toggle()
-
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
@@ -41,7 +33,7 @@ class ReAddTab(Container, AppType):
         if event.button.label not in (TabLabel.list, TabLabel.tree):
             return
         expand_all_switch = self.query_one(IDS.re_add.switch.expand_all_q, Switch)
-        if event.button.label == TabLabel.list:
+        if event.button.label == TabLabel.tree:
             expand_all_switch.disabled = False
             expand_all_switch.tooltip = SwitchEnum.expand_all.enabled_tooltip
         elif event.button.label == TabLabel.list:
