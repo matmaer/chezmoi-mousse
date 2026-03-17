@@ -1,4 +1,6 @@
 import dataclasses
+import os
+import zlib
 from math import ceil
 from typing import TYPE_CHECKING, ClassVar
 
@@ -41,9 +43,12 @@ from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse import CommandResult
 
 __all__ = ["ChezmoiGUI"]
+
 
 chezmoi_mousse_dark = Theme(
     name="chezmoi-mousse-dark",
@@ -138,6 +143,11 @@ class ChezmoiGUI(App[None]):
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
+
+    def path_to_id(self, p: "Path") -> str:
+        b = os.fsencode(os.fspath(p))  # safe, uses fs encoding + surrogateescape
+        crc = zlib.crc32(b) & 0xFFFFFFFF  # 0xFFFFFFFF to ensure unsigned 32-bit integer
+        return "p_" + str(crc)
 
     def _get_tab_widget(
         self,
