@@ -34,6 +34,7 @@ __all__ = [
     "OperateButtons",
     "SwitchWithLabel",
     "SwitchSlider",
+    "TabButton",
 ]
 
 
@@ -218,22 +219,30 @@ class SwitchSlider(VerticalGroup):
         self.query_children(HorizontalGroup).last().styles.padding = 0
 
 
+class TabButton(Button, AppType):
+
+    def __init__(self, *, app_ids: "AppIds", label: TabLabel) -> None:
+        super().__init__(classes=Tcss.tab_button, label=label)
+        self.app_ids = app_ids
+
+
 class TabButtons(Horizontal):
-    def __init__(self, buttons: tuple[TabLabel, ...]):
+    def __init__(self, ids: "AppIds", buttons: tuple[TabLabel, ...]):
         super().__init__()
         self.buttons = buttons
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         for btn_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield Button(label=btn_enum, classes=Tcss.tab_button)
+                yield TabButton(app_ids=self.ids, label=btn_enum)
 
     def on_mount(self) -> None:
-        self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
+        self.query(TabButton).first().add_class(Tcss.last_clicked_tab_btn)
 
-    @on(Button.Pressed, Tcss.tab_button.dot_prefix)
-    def update_tcss_classes(self, event: Button.Pressed) -> None:
-        for btn in self.query(Button):
+    @on(TabButton.Pressed)
+    def update_tcss_classes(self, event: TabButton.Pressed) -> None:
+        for btn in self.query(TabButton):
             btn.remove_class(Tcss.last_clicked_tab_btn)
         event.button.add_class(Tcss.last_clicked_tab_btn)
         if event.button.label == TabLabel.tree:
