@@ -140,7 +140,10 @@ class MainScreen(Screen[None], AppType):
             IDS.main_tabs.container.command_output_q, ScrollableContainer
         )
         self.command_output.display = False
-        self._push_refresh_modal(None, CMD.cmd_results.executed_commands)
+        splash_commands = [
+            attr for attr in vars(CMD.cache).values() if isinstance(attr, CommandResult)
+        ]
+        self._push_refresh_modal(None, splash_commands)
 
     ###########################################
     # Push modal methods with their callbacks #
@@ -196,7 +199,7 @@ class MainScreen(Screen[None], AppType):
         if ReadCmd.cat_config in [cmd_result.cmd_enum for cmd_result in cmd_results]:
             self.refresh_modal.label_text = "Update Config tab"
             config_tab = self.query_exactly_one(ConfigTab)
-            config_tab.command_results = CMD.cmd_results
+            config_tab.command_results = CMD.cache
 
     @work
     async def _run_refresh_commands(
@@ -211,11 +214,12 @@ class MainScreen(Screen[None], AppType):
 
     @work
     @min_wait
-    async def _log_all_cmd_results(self, to_log: "list[CommandResult]") -> None:
+    async def _log_all_cmd_results(self, to_log: list["CommandResult | None"]) -> None:
         self.refresh_modal.label_text = "Logging command results"
         for cmd_result in to_log:
-            self.app_log.log_cmd_result(cmd_result)
-            self.cmd_log.log_cmd_result(cmd_result)
+            if cmd_result is not None:
+                self.app_log.log_cmd_result(cmd_result)
+                self.cmd_log.log_cmd_result(cmd_result)
 
     @work
     @min_wait
@@ -225,7 +229,8 @@ class MainScreen(Screen[None], AppType):
         diff_views = list(self.query(DiffView))
         git_log_views = list(self.query(GitLogView))
         for view in diff_views + contents_views + git_log_views:
-            view.purge_mounted_containers()
+            view.remove_children()
+            view.mounted.clear()
 
     @work
     @min_wait
@@ -304,7 +309,7 @@ class MainScreen(Screen[None], AppType):
             if msg.path == CMD.cache.dest_dir:
                 for btn_id_q in ids.forget_destroy_review_btn_qids:
                     self.query_one(btn_id_q, Button).disabled = True
-                if CMD.cmd_results.no_status_paths is True:
+                if CMD.cache.no_status_paths is True:
                     self.query_one(ids.tab_operation_btn_q, Button).disabled = True
             else:
                 for btn_id_q in ids.forget_destroy_review_btn_qids:

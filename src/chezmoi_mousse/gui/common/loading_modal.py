@@ -92,7 +92,7 @@ class RefreshModal(LoadingModalBase):
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
-        setattr(CMD.cmd_results, f"{read_cmd.name}", cmd_result)
+        setattr(CMD.cache, f"{read_cmd.name}", cmd_result)
         self.cmd_results.append(cmd_result)
 
 

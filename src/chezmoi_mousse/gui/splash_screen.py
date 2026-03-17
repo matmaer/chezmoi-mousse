@@ -165,8 +165,8 @@ class SplashScreen(Screen[None], AppType):
         status_worker = self._run_io_worker(ReadCmd.status)
         await status_worker.wait()
         if status_worker.state == WorkerState.SUCCESS:
-            if CMD.cmd_results.status_files is not None and (
-                CMD.cmd_results.status_files.exit_code != 0
+            if CMD.cache.status_files is not None and (
+                CMD.cache.status_files.exit_code != 0
                 or self.app.force_init_needed is True
             ):
                 self.app.init_needed = True
@@ -183,7 +183,7 @@ class SplashScreen(Screen[None], AppType):
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         cmd_result = CMD.run_cmd.read(splash_cmd)
-        setattr(CMD.cmd_results, f"{splash_cmd.name}", cmd_result)
+        setattr(CMD.cache, f"{splash_cmd.name}", cmd_result)
         padding = LOG_PADDING_WIDTH - len(cmd_result.full_cmd_filtered)
         log_text = f"{cmd_result.full_cmd_filtered} {'.' * padding} {LOADED_SUFFIX}"
         if cmd_result.exit_code == 0:

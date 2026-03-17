@@ -42,11 +42,9 @@ class DiffView(Container, AppType):
         self.mounted: dict[Path, str] = {}
         self.current_path: Path | None = None
 
-    @property
-    def previous_sc_id_q(self) -> str | None:
-        if self.current_path is not None:
-            return f"#{self.mounted.get(self.current_path)}"
-        return None
+    def hide_all_containers(self) -> None:
+        for container in self.query_children(ScrollableContainer):
+            container.display = False
 
     @property
     def dir_nodes(self) -> dict["Path", "DirNode"]:
@@ -91,7 +89,7 @@ class DiffView(Container, AppType):
     def watch_show_path(self, show_path: "Path | None") -> None:
         if show_path is None:
             return
-        # lookup widget by generated id instead of keeping a container cache
+        self.hide_all_containers()
         sc_id = self.app.path_to_id(show_path)
         sc_id_q = self.app.path_to_qid(show_path)
         try:
@@ -124,15 +122,6 @@ class DiffView(Container, AppType):
             container = ScrollableContainer(*widgets, id=sc_id)
             self.mount(container)
             self.mounted[show_path] = sc_id
-
-        # Hide previous container if present and different from the current one
-        if self.previous_sc_id_q is not None and self.previous_sc_id_q != sc_id_q:
-            try:
-                prev_sc = self.query_one(self.previous_sc_id_q, ScrollableContainer)
-            except NoMatches:
-                prev_sc = None
-            if prev_sc is not None:
-                prev_sc.display = False
 
         self.current_path = show_path
 

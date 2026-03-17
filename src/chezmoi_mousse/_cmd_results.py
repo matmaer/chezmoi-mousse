@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import copy
 import json
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from textual.widgets import Label, Static
 
@@ -17,165 +17,10 @@ if TYPE_CHECKING:
 
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CommandResults", "DirNode", "ParsedJson"]
+__all__ = ["CMD", "CachedData", "DirNode", "ParsedJson"]
 
 
 type ParsedJson = dict[str, Any]
-
-
-@dataclass(slots=True)
-class CommandResults:
-    cat_config: CommandResult | None = None
-    doctor: CommandResult | None = None
-    dump_config: CommandResult | None = None
-    git_log: CommandResult | None = None
-    ignored: CommandResult | None = None
-    managed: CommandResult | None = None
-    managed_dirs: CommandResult | None = None
-    managed_files: CommandResult | None = None
-    status: CommandResult | None = None
-    status_dirs: CommandResult | None = None
-    status_files: CommandResult | None = None
-    template_data: CommandResult | None = None
-    verify: CommandResult | None = None
-
-    #####################################################
-    # Properties derived from the above command results #
-    #####################################################
-
-    @property
-    def _parsed_dump_config(self) -> ParsedJson | None:
-        if self.dump_config is None:
-            return None
-        return json.loads(self.dump_config.std_out)
-
-    @property
-    def executed_commands(self) -> list[CommandResult]:
-        return [
-            getattr(self, field.name)
-            for field in fields(self)
-            if getattr(self, field.name) is not None
-        ]
-
-    @property
-    def dest_dir(self) -> Path:
-        if self._parsed_dump_config is None:
-            return Path().home()
-        return Path(self._parsed_dump_config["destDir"])
-
-    @property
-    def git_auto_commit(self) -> bool:
-        if self._parsed_dump_config is None:
-            return False
-        return self._parsed_dump_config["git"]["autocommit"]
-
-    @property
-    def git_auto_push(self) -> bool:
-        if self._parsed_dump_config is None:
-            return False
-        return self._parsed_dump_config["git"]["autopush"]
-
-    @property
-    def global_git_log_lines(self) -> list[str]:
-        if self.git_log is None or not self.git_log.std_out:
-            return ["No commits;No git log entries available yet."]
-        return self.git_log.std_out.splitlines()
-
-    @property
-    def managed_paths(self) -> set[Path]:
-        if self.managed is None:
-            return set()
-        return {Path(line) for line in self.managed.std_out.splitlines()}
-
-    @property
-    def managed_dir_paths(self) -> list[Path]:
-        if self.managed_dirs is None:
-            return []
-        return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
-
-    @property
-    def managed_dirs_with_dest_dir(self) -> list[Path]:
-        return [self.dest_dir] + self.managed_dir_paths
-
-    @property
-    def managed_file_paths(self) -> list[Path]:
-        if self.managed_files is None:
-            return []
-        return [Path(line) for line in self.managed_files.std_out.splitlines()]
-
-    ########################################################
-    # Derived properties depending on the properties above #
-    ########################################################
-
-    def _parse_status_output(
-        self, index: int, dirs: bool = False
-    ) -> dict[Path, StatusCode]:
-        status_lines = []
-        if dirs and self.status_dirs is not None:
-            status_lines = self.status_dirs.std_out.splitlines()
-        elif not dirs and self.status_files is not None:
-            status_lines = self.status_files.std_out.splitlines()
-        if not status_lines:
-            return {}
-        return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
-
-    @property
-    def apply_status_dirs(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(0, dirs=True)
-
-    @property
-    def apply_status_files(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(0, dirs=False)
-
-    @property
-    def re_add_status_dirs(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(1, dirs=True)
-
-    @property
-    def re_add_status_files(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(1, dirs=False)
-
-    @property
-    def status_pairs(self) -> dict[Path, str]:
-        if self.status is None:
-            return {}
-        return {
-            Path(line[3:]): line[:2] for line in list(self.status.std_out.splitlines())
-        }
-
-    @property
-    def status_paths(self) -> set[Path]:
-        if self.status_files is None:
-            return set()
-        return {Path(line[3:]) for line in self.status_files.std_out.splitlines()}
-
-    @property
-    def x_dirs_with_status_children(self) -> set[Path]:
-        status_children: set[Path] = set()
-        for path in self.status_paths:
-            current = path.parent
-            while current != current.parent:
-                status_children.add(current)
-                current = current.parent
-        return status_children
-
-    @property
-    def tree_x_dirs(self) -> list[Path]:
-        return [
-            d
-            for d in self.managed_dir_paths
-            if d not in self.x_dirs_with_status_children
-        ]
-
-    @property
-    def x_files(self) -> list[Path]:
-        return [
-            path for path in self.managed_file_paths if path not in self.status_paths
-        ]
-
-    @property
-    def no_status_paths(self) -> bool:
-        return self.verify is not None and self.verify.exit_code == 0
 
 
 @dataclass(slots=True)
@@ -260,48 +105,142 @@ class DirNode:
 
 
 class CachedData:
-    # Adding these as type-only hints will allow autocomplete and static
-    # analysis to work while the values remain dynamically populated.
+    cat_config: ClassVar[CommandResult | None] = None
+    doctor: ClassVar[CommandResult | None] = None
+    dump_config: ClassVar[CommandResult | None] = None
+    git_log: ClassVar[CommandResult | None] = None
+    ignored: ClassVar[CommandResult | None] = None
+    managed: ClassVar[CommandResult | None] = None
+    managed_dirs: ClassVar[CommandResult | None] = None
+    managed_files: ClassVar[CommandResult | None] = None
+    status: ClassVar[CommandResult | None] = None
+    status_dirs: ClassVar[CommandResult | None] = None
+    status_files: ClassVar[CommandResult | None] = None
+    template_data: ClassVar[CommandResult | None] = None
+    verify: ClassVar[CommandResult | None] = None
+    re_add_dir_nodes: ClassVar[dict[Path, DirNode]] = {}
+    apply_dir_nodes: ClassVar[dict[Path, DirNode]] = {}
 
-    # Parsed config attributes
-    dest_dir: Path
-    git_auto_commit: bool
-    git_auto_push: bool
-    # Parsed git log and verify command output attribute
-    no_status_paths: bool
-    # Parsed paths in a list or set
-    managed_paths: set[Path]
-    managed_dir_paths: list[Path]
-    managed_dirs_with_dest_dir: list[Path]
-    managed_file_paths: list[Path]
-    real_x_files: list[Path]
-    status_paths: set[Path]
-    tree_x_dirs: list[Path]
-    x_dirs_with_status_children: set[Path]
-    x_files: list[Path]
-    # Parsed paths with status in dicts
-    status_pairs: dict[Path, str]  # used after a live operation to get changes
-    apply_status_dirs: dict[Path, StatusCode]
-    apply_status_files: dict[Path, StatusCode]
-    re_add_status_dirs: dict[Path, StatusCode]
-    re_add_status_files: dict[Path, StatusCode]
-    # Cached widgets, populated here, not in the source
-    re_add_dir_nodes: dict[Path, DirNode]
-    apply_dir_nodes: dict[Path, DirNode]
+    def __init__(self) -> None:
+        _parsed_dump_cfg: ParsedJson = self._get_parsed_dump_config()
+        self.dest_dir = _parsed_dump_cfg.get("destDir", Path().home())
+        self.git_auto_commit = _parsed_dump_cfg.get("git", {}).get("autocommit", False)
+        self.git_auto_push = _parsed_dump_cfg.get("git", {}).get("autopush", False)
 
-    def __init__(self, source: CommandResults) -> None:
-        cls = type(source)
-        for name in dir(cls):
-            member = getattr(cls, name)
-            if isinstance(member, property):
-                setattr(self, name, getattr(source, name))
+    #####################################################
+    # Properties derived from the above command results #
+    #####################################################
 
-        self.apply_dir_nodes = {}
-        self.re_add_dir_nodes = {}
-        self._update_apply_and_re_add_dir_nodes()
+    def _get_parsed_dump_config(self) -> ParsedJson:
+        if self.dump_config is None:
+            return {}
+        try:
+            json.loads(self.dump_config.std_out)
+        except Exception:
+            return {}
+        return {}
 
-    def update_snapshot(self, source: CommandResults) -> None:
-        self.__init__(source)
+    @property
+    def global_git_log_lines(self) -> list[str]:
+        if self.git_log is None or not self.git_log.std_out:
+            return ["No commits;No git log entries available yet."]
+        return self.git_log.std_out.splitlines()
+
+    @property
+    def managed_paths(self) -> set[Path]:
+        if self.managed is None:
+            return set()
+        return {Path(line) for line in self.managed.std_out.splitlines()}
+
+    @property
+    def managed_dir_paths(self) -> list[Path]:
+        if self.managed_dirs is None:
+            return []
+        return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
+
+    @property
+    def managed_dirs_with_dest_dir(self) -> list[Path]:
+        return [self.dest_dir] + self.managed_dir_paths
+
+    @property
+    def managed_file_paths(self) -> list[Path]:
+        if self.managed_files is None:
+            return []
+        return [Path(line) for line in self.managed_files.std_out.splitlines()]
+
+    ########################################################
+    # Derived properties depending on the properties above #
+    ########################################################
+
+    def _parse_status_output(
+        self, index: int, dirs: bool = False
+    ) -> dict[Path, StatusCode]:
+        status_lines = []
+        if dirs and self.status_dirs is not None:
+            status_lines = self.status_dirs.std_out.splitlines()
+        elif not dirs and self.status_files is not None:
+            status_lines = self.status_files.std_out.splitlines()
+        if not status_lines:
+            return {}
+        return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
+
+    @property
+    def apply_status_dirs(self) -> dict[Path, StatusCode]:
+        return self._parse_status_output(0, dirs=True)
+
+    @property
+    def apply_status_files(self) -> dict[Path, StatusCode]:
+        return self._parse_status_output(0, dirs=False)
+
+    @property
+    def re_add_status_dirs(self) -> dict[Path, StatusCode]:
+        return self._parse_status_output(1, dirs=True)
+
+    @property
+    def re_add_status_files(self) -> dict[Path, StatusCode]:
+        return self._parse_status_output(1, dirs=False)
+
+    @property
+    def status_pairs(self) -> dict[Path, str]:
+        if self.status is None:
+            return {}
+        return {
+            Path(line[3:]): line[:2] for line in list(self.status.std_out.splitlines())
+        }
+
+    @property
+    def status_paths(self) -> set[Path]:
+        if self.status is None:
+            return set()
+        return {Path(line[3:]) for line in self.status.std_out.splitlines()}
+
+    @property
+    def x_dirs_with_status_children(self) -> set[Path]:
+        status_children: set[Path] = set()
+        for path in self.status_paths:
+            current = path.parent
+            while current != current.parent:
+                status_children.add(current)
+                current = current.parent
+        return status_children
+
+    @property
+    def tree_x_dirs(self) -> list[Path]:
+        return [
+            d
+            for d in self.managed_dir_paths
+            if d not in self.x_dirs_with_status_children
+        ]
+
+    @property
+    def x_files(self) -> list[Path]:
+        return [
+            path for path in self.managed_file_paths if path not in self.status_paths
+        ]
+
+    @property
+    def no_status_paths(self) -> bool:
+        return self.verify is not None and self.verify.exit_code == 0
 
     def _get_dir_node(
         self,
@@ -353,7 +292,7 @@ class CachedData:
             },
         )
 
-    def _update_apply_and_re_add_dir_nodes(self) -> None:
+    def update_apply_and_re_add_dir_nodes(self) -> None:
         for dir_path in self.managed_dirs_with_dest_dir:
 
             self.apply_dir_nodes[dir_path] = self._get_dir_node(
@@ -366,20 +305,16 @@ class CachedData:
 
 @dataclass(slots=True)
 class Commands:
-    cmd_results: CommandResults = field(default_factory=CommandResults)
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
-    cache: CachedData = field(init=False)
+    cache: CachedData = CachedData()
     changed_paths: list[Path] = field(default_factory=lambda: [])
-
-    def __post_init__(self) -> None:
-        self.cache = CachedData(self.cmd_results)
 
     # Properties for easy access to fields
 
     def update_parsed_data(self) -> None:
         self.changed_paths.clear()
         old_cached = copy.deepcopy(self.cache)
-        self.cache.update_snapshot(self.cmd_results)
+        self.cache.update_apply_and_re_add_dir_nodes()
 
         # ^ symmetric difference: elements that exist in either set, but not in both
         # & intersection: elements that exist in both sets

@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
+from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
@@ -21,11 +22,15 @@ class GitLogView(Container, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
-        self.container_cache: dict[Path, ScrollableContainer] = {}
+        self.mounted: dict[Path, str] = {}
         self.current_path: Path | None = None
 
+    def hide_all_containers(self) -> None:
+        for container in self.query_children(ScrollableContainer):
+            container.display = False
+
     def _create_datatable_container(
-        self, git_log_lines: list[str]
+        self, git_log_lines: list[str], path: Path
     ) -> ScrollableContainer:
         data_table = DataTable[str](cursor_type="row")
 
@@ -51,33 +56,28 @@ class GitLogView(Container, AppType):
                 add_row_with_style(columns, row_color["error"])
             else:
                 data_table.add_row(*columns)
-        return ScrollableContainer(data_table)
+        return ScrollableContainer(data_table, id=self.app.path_to_id(path))
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        container = self.container_cache.get(show_path, None)
-        if container is not None:
-            if self.current_path is not None:
-                self.container_cache[self.current_path].display = False
+        self.hide_all_containers()
+        sc_id = self.app.path_to_id(show_path)
+        sc_id_q = self.app.path_to_qid(show_path)
+        try:
+            container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True
-            self.current_path = show_path
-        if container is None:
+        except NoMatches:
             if show_path == CMD.cache.dest_dir:
                 container = self._create_datatable_container(
-                    CMD.cmd_results.global_git_log_lines
+                    CMD.cache.global_git_log_lines, show_path
                 )
             else:
                 cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
                 self.post_message(LogCmdResultMsg(cmd_result))
                 container = self._create_datatable_container(
-                    cmd_result.std_out.splitlines()
+                    cmd_result.std_out.splitlines(), show_path
                 )
             self.mount(container)
-            self.current_path = show_path
-
-    def purge_mounted_containers(self) -> None:
-        for cached_path in list(self.container_cache.keys()):
-            container = self.container_cache.pop(cached_path, None)
-            if container is not None:
-                container.remove()
+            self.mounted[show_path] = sc_id
+        self.current_path = show_path

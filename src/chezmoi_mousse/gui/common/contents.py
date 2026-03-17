@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 from textual.containers import Container, ScrollableContainer
+from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
@@ -31,10 +32,12 @@ class ContentsView(Container, AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents)
-        self.container_cache: dict[Path, ScrollableContainer] = {}
+        self.mounted: dict[Path, str] = {}
+        self.current_path: Path | None = None
 
-    def on_mount(self) -> None:
-        self.current_path = CMD.cache.dest_dir
+    def hide_all_containers(self) -> None:
+        for container in self.query_children(ScrollableContainer):
+            container.display = False
 
     def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
@@ -48,7 +51,7 @@ class ContentsView(Container, AppType):
         widgets.append(
             Static("<- Click a file to see its contents.", classes=Tcss.added)
         )
-        return ScrollableContainer(*widgets)
+        return ScrollableContainer(*widgets, id=self.app.path_to_id(dir_path))
 
     def _create_file_container(self, file_path: Path) -> ScrollableContainer:
         widgets: list[Label | Static] = []
@@ -93,26 +96,22 @@ class ContentsView(Container, AppType):
         text_obj = Text(file_contents)
         ReprHighlighter().highlight(text_obj)
         widgets.append(Static(text_obj))
-        return ScrollableContainer(*widgets)
+        return ScrollableContainer(*widgets, id=self.app.path_to_id(file_path))
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        container = self.container_cache.get(show_path, None)
-        if container is not None:
-            self.container_cache[self.current_path].display = False
+        self.hide_all_containers()
+        sc_id = self.app.path_to_id(show_path)
+        sc_id_q = self.app.path_to_qid(show_path)
+        try:
+            container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True
-            self.current_path = show_path
-            return
-        if show_path in CMD.cache.managed_dirs_with_dest_dir:
-            container = self._create_managed_dir_container(show_path)
-        else:
-            container = self._create_file_container(show_path)
-        self.mount(container)
+        except NoMatches:
+            if show_path in CMD.cache.managed_dirs_with_dest_dir:
+                container = self._create_managed_dir_container(show_path)
+            else:
+                container = self._create_file_container(show_path)
+            self.mount(container)
+            self.mounted[show_path] = sc_id
         self.current_path = show_path
-
-    def purge_mounted_containers(self) -> None:
-        for cached_path in list(self.container_cache.keys()):
-            container = self.container_cache.pop(cached_path, None)
-            if container is not None:
-                container.remove()

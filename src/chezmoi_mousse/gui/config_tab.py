@@ -13,7 +13,7 @@ from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResults
+    from chezmoi_mousse import CachedData
 
 __all__ = ["ConfigTab"]
 
@@ -70,7 +70,7 @@ class TemplateDataView(Vertical, AppType):
 
 class ConfigTab(Horizontal, AppType):
 
-    command_results: reactive["CommandResults | None"] = reactive(None, init=False)
+    command_results: reactive["CachedData | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(
@@ -107,7 +107,7 @@ class ConfigTab(Horizontal, AppType):
         elif event.button.label == FlatBtnLabel.template_data:
             self.switcher.current = IDS.config.view.template_data
 
-    def watch_command_results(self, command_results: "CommandResults") -> None:
+    def watch_command_results(self, command_results: "CachedData") -> None:
         if (
             command_results.cat_config is None
             or command_results.doctor is None

@@ -4,10 +4,11 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, OpBtnEnum, Tcss
+from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, Tcss
 
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -98,31 +99,25 @@ class AddTabContentsView(ContentsView):
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        container = self.container_cache.get(show_path, None)
-        if container is not None:
-            self.container_cache[self.current_path].display = False
+        self.hide_all_containers()
+        sc_id = self.app.path_to_id(show_path)
+        sc_id_q = self.app.path_to_qid(show_path)
+        try:
+            container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True
-            self.current_path = show_path
-            return
-        if show_path == CMD.cache.dest_dir or show_path.is_dir():
-            container = self._create_add_dir_container(show_path)
-        elif show_path.is_file():
-            container = self._create_file_container(show_path)
-        else:
-            raise ValueError(
-                f"show_path {show_path} is neither a file nor a directory."
-            )
-        self.mount(container)
+        except NoMatches as e:
+            if show_path == CMD.cache.dest_dir or show_path.is_dir():
+                container = self._create_add_dir_container(show_path)
+            elif show_path.is_file():
+                container = self._create_file_container(show_path)
+            else:
+                raise ValueError(f"{show_path} does not exist") from e
+            self.mount(container)
+            self.mounted[show_path] = sc_id
         self.current_path = show_path
 
-    def purge_mounted_containers(self) -> None:
-        for cached_path in list(self.container_cache.keys()):
-            container = self.container_cache.pop(cached_path, None)
-            if container is not None:
-                container.remove()
 
-
-class AddTab(Horizontal):
+class AddTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield Vertical(
@@ -145,7 +140,6 @@ class AddTab(Horizontal):
             Tcss.refresh_button
         )
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.dir_tree.path = CMD.cache.dest_dir
         self.contents_view = self.query_one(
             IDS.add.container.contents_q, AddTabContentsView
         )
@@ -172,10 +166,11 @@ class AddTab(Horizontal):
         )
         operate_buttons.set_path_arg(event.node.data.path)
         if isinstance(event, DirectoryTree.DirectorySelected):
-            current_container = self.contents_view.container_cache.get(
-                event.node.data.path, None
-            )
-            if current_container is None:
+            try:
+                current_container = self.contents_view.query_one(
+                    self.app.path_to_qid(event.node.data.path), ScrollableContainer
+                )
+            except NoMatches:
                 return
             if any(
                 Tcss.limited_label in getattr(label, "classes", ())
