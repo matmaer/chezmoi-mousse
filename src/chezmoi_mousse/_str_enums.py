@@ -198,7 +198,7 @@ class StatusCode(StrEnum):
     # Fake X status: managed paths absent from chezmoi status output
 
     @property
-    def static_markup_colors(self) -> dict[str, str]:
+    def _static_markup_colors(self) -> dict[str, str]:
         return {
             StatusCode.Added: "[$text-success]",
             StatusCode.Deleted: "[$text-error]",
@@ -211,4 +211,4 @@ class StatusCode(StrEnum):
     @property
     def color(self) -> str:
         # return the color for a status code
-        return self.static_markup_colors[self]
+        return self._static_markup_colors[self]

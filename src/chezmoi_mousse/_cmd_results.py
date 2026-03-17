@@ -185,22 +185,6 @@ class CachedData:
         return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
 
     @property
-    def apply_status_dirs(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(0, dirs=True)
-
-    @property
-    def apply_status_files(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(0, dirs=False)
-
-    @property
-    def re_add_status_dirs(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(1, dirs=True)
-
-    @property
-    def re_add_status_files(self) -> dict[Path, StatusCode]:
-        return self._parse_status_output(1, dirs=False)
-
-    @property
     def status_pairs(self) -> dict[Path, str]:
         if self.status is None:
             return {}
@@ -296,10 +280,14 @@ class CachedData:
         for dir_path in self.managed_dirs_with_dest_dir:
 
             self.apply_dir_nodes[dir_path] = self._get_dir_node(
-                dir_path, self.apply_status_files, self.apply_status_dirs
+                dir_path,
+                self._parse_status_output(0, dirs=True),
+                self._parse_status_output(0, dirs=False),
             )
             self.re_add_dir_nodes[dir_path] = self._get_dir_node(
-                dir_path, self.re_add_status_files, self.re_add_status_dirs
+                dir_path,
+                self._parse_status_output(1, dirs=False),
+                self._parse_status_output(1, dirs=True),
             )
 
 

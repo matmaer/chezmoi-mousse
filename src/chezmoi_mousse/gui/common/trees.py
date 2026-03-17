@@ -37,7 +37,7 @@ class TreeBase(Tree[Path], AppType):
             return CMD.cache.re_add_dir_nodes
 
     @property
-    def node_colors(self) -> dict[str, str]:
+    def _node_colors(self) -> dict[str, str]:
         return {
             StatusCode.Added: self.app.theme_variables["text-success"],
             StatusCode.Deleted: self.app.theme_variables["text-error"],
@@ -64,7 +64,7 @@ class TreeBase(Tree[Path], AppType):
             status = self.dir_nodes[path].dir_status
 
         # Get color and create styled label
-        color = self.node_colors.get(status, self.node_colors[StatusCode.No_Status])
+        color = self._node_colors.get(status, self._node_colors[StatusCode.No_Status])
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{label_text}[/]"
 

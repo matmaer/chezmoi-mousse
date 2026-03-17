@@ -124,13 +124,3 @@ class DiffView(Container, AppType):
             self.mounted[show_path] = sc_id
 
         self.current_path = show_path
-
-    def purge_mounted_containers(self) -> None:
-        for sc_id in list(self.mounted.values()):
-            sc_id_q = f"#{sc_id}"
-            try:
-                container = self.query_one(sc_id_q, ScrollableContainer)
-            except NoMatches:
-                continue
-            container.remove()
-        self.mounted.clear()

@@ -54,9 +54,6 @@ class Loggers(AppType):
 
 class RichLoggers(Loggers, RichLog):
 
-    def ready_to_run(self, message: str) -> None:
-        self.write(self.get_log_line(message, LogColor.ready))
-
     def write_cmd(self, message: str, color: LogColor) -> None:
         self.write(self.get_log_line(message, color))
 
@@ -89,7 +86,7 @@ class AppLog(RichLoggers):
         super().__init__(id=IDS.logs.logger.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
-        self.ready_to_run(LogString.app_log_initialized)
+        self.write_ready(LogString.app_log_initialized)
         if self.app.chezmoi_found:
             self.write_success(LogString.chezmoi_found)
         else:
@@ -168,7 +165,7 @@ class DebugLog(RichLoggers):
         )
 
     def on_mount(self) -> None:
-        self.ready_to_run(LogString.debug_log_initialized)
+        self.write_ready(LogString.debug_log_initialized)
 
     def mro(self, mro: tuple[type, ...]) -> None:
         """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""

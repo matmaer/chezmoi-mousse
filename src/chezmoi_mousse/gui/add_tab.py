@@ -167,8 +167,9 @@ class AddTab(Horizontal, AppType):
         operate_buttons.set_path_arg(event.node.data.path)
         if isinstance(event, DirectoryTree.DirectorySelected):
             try:
+                sc_id_q = self.app.path_to_qid(event.node.data.path)
                 current_container = self.contents_view.query_one(
-                    self.app.path_to_qid(event.node.data.path), ScrollableContainer
+                    sc_id_q, ScrollableContainer
                 )
             except NoMatches:
                 return
