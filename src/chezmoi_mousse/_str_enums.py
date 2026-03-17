@@ -196,3 +196,19 @@ class StatusCode(StrEnum):
     No_Status = "X"
     Run = "R"  # not implemented TODO: disable operate buttons
     # Fake X status: managed paths absent from chezmoi status output
+
+    @property
+    def static_markup_colors(self) -> dict[str, str]:
+        return {
+            StatusCode.Added: "[$text-success]",
+            StatusCode.Deleted: "[$text-error]",
+            StatusCode.Modified: "[$text-warning]",
+            StatusCode.No_Change: "[$warning-darken-2]",
+            StatusCode.Run: "[$error]",
+            StatusCode.No_Status: "[$text-secondary]",
+        }
+
+    @property
+    def color(self) -> str:
+        # return the color for a status code
+        return self.static_markup_colors[self]

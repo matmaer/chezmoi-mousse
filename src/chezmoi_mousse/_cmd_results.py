@@ -39,11 +39,23 @@ class CommandResults:
     template_data: CommandResult | None = None
     verify: CommandResult | None = None
 
+    #####################################################
+    # Properties derived from the above command results #
+    #####################################################
+
     @property
     def _parsed_dump_config(self) -> ParsedJson | None:
         if self.dump_config is None:
             return None
-        return json.loads(self.dump_config.completed_process.stdout)
+        return json.loads(self.dump_config.std_out)
+
+    @property
+    def executed_commands(self) -> list[CommandResult]:
+        return [
+            getattr(self, field.name)
+            for field in fields(self)
+            if getattr(self, field.name) is not None
+        ]
 
     @property
     def dest_dir(self) -> Path:
@@ -64,12 +76,10 @@ class CommandResults:
         return self._parsed_dump_config["git"]["autopush"]
 
     @property
-    def executed_commands(self) -> list[CommandResult]:
-        return [
-            getattr(self, field.name)
-            for field in fields(self)
-            if getattr(self, field.name) is not None
-        ]
+    def global_git_log_lines(self) -> list[str]:
+        if self.git_log is None or not self.git_log.std_out:
+            return ["No commits;No git log entries available yet."]
+        return self.git_log.std_out.splitlines()
 
     @property
     def managed_paths(self) -> set[Path]:
@@ -84,10 +94,18 @@ class CommandResults:
         return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
 
     @property
+    def managed_dirs_with_dest_dir(self) -> list[Path]:
+        return [self.dest_dir] + self.managed_dir_paths
+
+    @property
     def managed_file_paths(self) -> list[Path]:
         if self.managed_files is None:
             return []
         return [Path(line) for line in self.managed_files.std_out.splitlines()]
+
+    ########################################################
+    # Derived properties depending on the properties above #
+    ########################################################
 
     def _parse_status_output(
         self, index: int, dirs: bool = False
@@ -159,12 +177,6 @@ class CommandResults:
     def no_status_paths(self) -> bool:
         return self.verify is not None and self.verify.exit_code == 0
 
-    @property
-    def global_git_log_lines(self) -> list[str]:
-        if self.git_log is None or not self.git_log.std_out:
-            return ["No commits;No git log entries available yet."]
-        return self.git_log.std_out.splitlines()
-
 
 @dataclass(slots=True)
 class DirNode:
@@ -187,17 +199,6 @@ class DirNode:
             or self.nested_status_dirs
             or self.nested_status_files
         )
-
-    @property
-    def node_colors(self) -> dict[str, str]:
-        return {
-            StatusCode.Added: "[$text-success]",
-            StatusCode.Deleted: "[$text-error]",
-            StatusCode.Modified: "[$text-warning]",
-            StatusCode.No_Change: "[$warning-darken-2]",
-            StatusCode.Run: "[$error]",
-            StatusCode.No_Status: "[$text-secondary]",
-        }
 
     @property
     def dir_widgets(self) -> list[Static | Label]:
@@ -239,13 +240,13 @@ class DirNode:
                 )
             )
             for path, status in self.real_status_dirs_in.items():
-                widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
+                widgets.append(Static(f"{status.color}{path}[/]"))
         if self.status_files_in:
             widgets.append(
                 Label("Contains files with a status", classes=Tcss.sub_section_label)
             )
             for path, status in self.status_files_in.items():
-                widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
+                widgets.append(Static(f"{status.color}{path}[/]"))
         if self.nested_status_files:
             widgets.append(
                 Label(
@@ -254,7 +255,7 @@ class DirNode:
                 )
             )
             for path, status in sorted(self.nested_status_files.items()):
-                widgets.append(Static(f"{self.node_colors[status]}{path}[/]"))
+                widgets.append(Static(f"{status.color}{path}[/]"))
         return widgets
 
 
@@ -295,7 +296,6 @@ class CachedData:
             if isinstance(member, property):
                 setattr(self, name, getattr(source, name))
 
-        self.managed_dirs_with_dest_dir = [self.dest_dir] + self.managed_dir_paths
         self.apply_dir_nodes = {}
         self.re_add_dir_nodes = {}
         self._update_apply_and_re_add_dir_nodes()

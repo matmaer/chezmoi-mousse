@@ -149,6 +149,9 @@ class ChezmoiGUI(App[None]):
         crc = zlib.crc32(b) & 0xFFFFFFFF  # 0xFFFFFFFF to ensure unsigned 32-bit integer
         return "p_" + str(crc)
 
+    def path_to_qid(self, p: "Path") -> str:
+        return f"#{self.path_to_id(p)}"
+
     def _get_tab_widget(
         self,
     ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab | DebugTab:

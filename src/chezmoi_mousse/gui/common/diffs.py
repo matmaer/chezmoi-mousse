@@ -2,6 +2,7 @@ from itertools import groupby
 from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
+from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
@@ -38,8 +39,14 @@ class DiffView(Container, AppType):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff)
         self.ids = ids
-        self.container_cache: dict[Path, ScrollableContainer] = {}
+        self.mounted: dict[Path, str] = {}
         self.current_path: Path | None = None
+
+    @property
+    def previous_sc_id_q(self) -> str | None:
+        if self.current_path is not None:
+            return f"#{self.mounted.get(self.current_path)}"
+        return None
 
     @property
     def dir_nodes(self) -> dict["Path", "DirNode"]:
@@ -48,14 +55,12 @@ class DiffView(Container, AppType):
         else:
             return CMD.cache.re_add_dir_nodes
 
-    def _create_diff_widgets(self) -> list[Label | Static]:
+    def _create_diff_widgets(self, path: "Path") -> list[Label | Static]:
         widgets: list[Label | Static] = []
         if self.ids.canvas_name == TabLabel.apply:
-            diff_result = CMD.run_cmd.read(ReadCmd.diff, path_arg=self.show_path)
+            diff_result = CMD.run_cmd.read(ReadCmd.diff, path_arg=path)
         else:  # re-add tab
-            diff_result = CMD.run_cmd.read(
-                ReadCmd.diff_reverse, path_arg=self.show_path
-            )
+            diff_result = CMD.run_cmd.read(ReadCmd.diff_reverse, path_arg=path)
         self.post_message(LogCmdResultMsg(diff_result))
         diff_lines = diff_result.std_out.splitlines()
         if not diff_lines:
@@ -86,47 +91,57 @@ class DiffView(Container, AppType):
     def watch_show_path(self, show_path: "Path | None") -> None:
         if show_path is None:
             return
-        container = self.container_cache.get(show_path, None)
-        if container is not None:
-            prev = (
-                self.container_cache.get(self.current_path)
-                if self.current_path is not None
-                else None
-            )
-            if prev is not None:
-                prev.display = False
+        # lookup widget by generated id instead of keeping a container cache
+        sc_id = self.app.path_to_id(show_path)
+        sc_id_q = self.app.path_to_qid(show_path)
+        try:
+            container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True
-            self.current_path = show_path
-            return
-        widgets: list[Label | Static] = []
-        if show_path in CMD.cache.status_paths:
-            widgets = self._create_diff_widgets()
-        elif show_path in CMD.cache.managed_dirs_with_dest_dir:
-            widgets = self.dir_nodes[show_path].dir_widgets
-        elif show_path in CMD.cache.managed_file_paths:
-            widgets.append(Label("Managed file", classes=Tcss.main_section_label))
-            widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
-            widgets.append(Static("This file has no status.", classes=Tcss.context))
-        else:
-            widgets.append(Static("Nothing to show."))
-        container = ScrollableContainer(*widgets)
-        self.mount(container)
-        # Cache the mounted container so subsequent switches can hide it.
-        self.container_cache[show_path] = container
+        except NoMatches:
+            widgets: list[Label | Static] = []
+            if show_path == CMD.cache.dest_dir:
+                widgets = self.dir_nodes[show_path].dir_widgets
+            elif show_path in CMD.cache.managed_dir_paths:
+                if show_path in CMD.cache.status_paths:
+                    widgets = self._create_diff_widgets(show_path)
+                else:
+                    widgets = self.dir_nodes[show_path].dir_widgets
+            elif show_path in CMD.cache.managed_file_paths:
+                if show_path in CMD.cache.status_paths:
+                    widgets = self._create_diff_widgets(show_path)
+                else:
+                    widgets.append(
+                        Label("Managed file", classes=Tcss.main_section_label)
+                    )
+                    widgets.append(
+                        Label(str(show_path), classes=Tcss.sub_section_label)
+                    )
+                    widgets.append(
+                        Static("This file has no status.", classes=Tcss.context)
+                    )
+            else:
+                widgets.append(Static("Nothing to show."))
+            container = ScrollableContainer(*widgets, id=sc_id)
+            self.mount(container)
+            self.mounted[show_path] = sc_id
 
-        # Hide the previous container if we have it cached.
-        prev = (
-            self.container_cache.get(self.current_path)
-            if self.current_path is not None
-            else None
-        )
-        if prev is not None and prev is not container:
-            prev.display = False
+        # Hide previous container if present and different from the current one
+        if self.previous_sc_id_q is not None and self.previous_sc_id_q != sc_id_q:
+            try:
+                prev_sc = self.query_one(self.previous_sc_id_q, ScrollableContainer)
+            except NoMatches:
+                prev_sc = None
+            if prev_sc is not None:
+                prev_sc.display = False
 
         self.current_path = show_path
 
     def purge_mounted_containers(self) -> None:
-        for cached_path in list(self.container_cache.keys()):
-            container = self.container_cache.pop(cached_path, None)
-            if container is not None:
-                container.remove()
+        for sc_id in list(self.mounted.values()):
+            sc_id_q = f"#{sc_id}"
+            try:
+                container = self.query_one(sc_id_q, ScrollableContainer)
+            except NoMatches:
+                continue
+            container.remove()
+        self.mounted.clear()
