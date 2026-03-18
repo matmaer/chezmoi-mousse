@@ -16,8 +16,3 @@ A call to the debug_log would fail if the app is run in "non-dev" mode, as the d
 
 Ensures calls to textual its query functions always include the hash before the id.
 
-## Smoke tests
-
-> directory smoke_tests
-
-Basic smoke tests.
