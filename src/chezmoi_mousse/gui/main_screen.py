@@ -1,4 +1,5 @@
 import json
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -260,10 +261,10 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _purge_views_cache(self) -> None:
         self.refresh_modal.label_text = LoadingLabel.purge_cache.with_color
-        contents_views = list(self.query(ContentsView))
-        diff_views = list(self.query(DiffView))
-        git_log_views = list(self.query(GitLogView))
-        for view in diff_views + contents_views + git_log_views:
+        contents_views = self.query(ContentsView).results()
+        diff_views = self.query(DiffView).results()
+        git_log_views = self.query(GitLogView).results()
+        for view in chain(diff_views, contents_views, git_log_views):
             view.remove_children()
             view.mounted.clear()
 
@@ -271,9 +272,9 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _update_trees(self) -> None:
         self.refresh_modal.label_text = LoadingLabel.update_trees.with_color
-        list_trees = list(self.query(ListTree))
-        managed_trees = list(self.query(ManagedTree))
-        for tree in list_trees + managed_trees:
+        list_trees = self.query(ListTree).results()
+        managed_trees = self.query(ManagedTree).results()
+        for tree in chain(list_trees, managed_trees):
             tree.populate_tree()
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)

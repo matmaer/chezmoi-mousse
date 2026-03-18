@@ -75,7 +75,7 @@ class FlatButtonsVertical(Vertical):
 
     @on(FlatButton.Pressed, Tcss.flat_button.dot_prefix)
     def update_tcss_classes(self, event: FlatButton.Pressed) -> None:
-        for btn in self.query(Button):
+        for btn in self.query(Button).results():
             btn.remove_class(Tcss.last_clicked_flat_btn)
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
@@ -202,7 +202,7 @@ class TabButtons(Horizontal):
 
     @on(TabButton.Pressed)
     def update_tcss_classes(self, event: TabButton.Pressed) -> None:
-        for btn in self.query(TabButton):
+        for btn in self.query(TabButton).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
         event.button.add_class(Tcss.last_clicked_tab_btn)
         if event.button.label == TabLabel.tree:
