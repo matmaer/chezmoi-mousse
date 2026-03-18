@@ -276,7 +276,7 @@ OpFeedBack {
   }
 }
 
-RefreshModal, RunCmdModal {
+LoadingModal, RunCmdModal {
   align: center middle;
   &>VerticalGroup {
     border: $warning-darken-3;

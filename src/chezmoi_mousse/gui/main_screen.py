@@ -1,7 +1,7 @@
 import json
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from textual import on, work
 from textual.app import ComposeResult
@@ -23,7 +23,6 @@ from chezmoi_mousse import (
     ReadCmd,
     TabLabel,
     Tcss,
-    WriteCmd,
 )
 
 from .add_tab import AddTab
@@ -33,7 +32,7 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
-from .common.loading_modal import LoadingLabel, RefreshModal, RunCmdModal, min_wait
+from .common.loading_modal import LoadingLabel, LoadingModal, min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg, LogCmdResultMsg
 from .common.screen_header import CustomHeader
@@ -90,10 +89,11 @@ class OperateInfo(Static, AppType):
         self.border_title = button.btn_enum.op_info_title
         self.border_subtitle = button.btn_enum.op_info_subtitle
 
-    async def update_write_cmd_info(self, write_cmd_result: CommandResult) -> None:
+    @work
+    async def update_write_cmd_info(self) -> None:
         self.update(
-            f"{write_cmd_result.exit_code_colored_cmd}\n"
-            f"Exit code {write_cmd_result.exit_code}"
+            f"{CMD.loading_modal_results[0].exit_code_colored_cmd}\n"
+            f"Exit code {CMD.loading_modal_results[0].exit_code}"
         )
         self.border_title = OpInfoString.command_completed
         self.border_subtitle = None
@@ -104,6 +104,35 @@ class OperateInfo(Static, AppType):
         self.update_review_info(self.current_button)
 
 
+class CommandOutput(ScrollableContainer):
+
+    def __init__(self) -> None:
+        super().__init__(id=IDS.main_tabs.container.command_output)
+
+    def compose(self) -> ComposeResult:
+        yield Label("Command output", classes=Tcss.main_section_label)
+        yield Label("Changed paths", classes=Tcss.main_section_label)
+
+    def on_mount(self) -> None:
+        self.display = False
+
+    async def update_mounted(self) -> None:
+        for cmd_result in CMD.loading_modal_results:
+            self.mount(cmd_result.pretty_collapsible, after=0)
+        if not CMD.changed_paths:
+            dry_run = (
+                " (dry run)"
+                if any(
+                    cmd_result.is_dry_run for cmd_result in CMD.loading_modal_results
+                )
+                else ""
+            )
+            self.mount(Static(f"No paths changed.{dry_run}"))
+        else:
+            for path in CMD.changed_paths:
+                self.mount(Static(str(path), classes=Tcss.info))
+
+
 class OpFeedBack(Vertical):
 
     def __init__(self) -> None:
@@ -111,15 +140,22 @@ class OpFeedBack(Vertical):
 
     def compose(self) -> ComposeResult:
         yield OperateInfo()
-        yield ScrollableContainer(
-            id=IDS.main_tabs.container.command_output, name="operate command results"
-        )
+        yield CommandOutput()
 
     def on_mount(self) -> None:
         self.display = False
 
 
 class MainScreen(Screen[None], AppType):
+
+    READ_CMDS: ClassVar[list[ReadCmd]] = [
+        ReadCmd.managed,
+        ReadCmd.status,
+        ReadCmd.managed_dirs,
+        ReadCmd.managed_files,
+        ReadCmd.status_dirs,
+        ReadCmd.status_files,
+    ]
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
@@ -146,116 +182,77 @@ class MainScreen(Screen[None], AppType):
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
         self.op_feed_back = self.query_one(
-            IDS.main_tabs.container.op_feed_back_q, Vertical
+            IDS.main_tabs.container.op_feed_back_q, OpFeedBack
         )
         self.operate_info = self.query_one(
             IDS.main_tabs.static.operate_info_q, OperateInfo
         )
         self.command_output = self.query_one(
-            IDS.main_tabs.container.command_output_q, ScrollableContainer
+            IDS.main_tabs.container.command_output_q, CommandOutput
         )
         self.command_output.display = False
-        splash_commands = [
-            attr for attr in vars(CMD.cache).values() if isinstance(attr, CommandResult)
-        ]
-        self._push_refresh_modal(None, splash_commands)
+        self._push_loading_modal(None)
 
     ###########################################
     # Push modal methods with their callbacks #
     ###########################################
 
     @work
-    async def _push_refresh_modal(
-        self, btn_enum: OpBtnEnum | None, cmd_results: list[CommandResult]
-    ) -> None:
-        if btn_enum == OpBtnEnum.reload:
+    async def _push_loading_modal(self, btn_enum: OpBtnEnum | None) -> None:
+        self.loading_modal = LoadingModal(btn_enum)
+        await self.app.push_screen(self.loading_modal)
+
+        if btn_enum is None and self.app.chezmoi_found is True:
+            if CMD.cache.dump_config is not None:
+                await self._update_parsed_config(CMD.cache.dump_config.std_out).wait()
+            await self._update_trees().wait()
+            cmd_results = [
+                attr
+                for attr in vars(CMD.cache).values()
+                if isinstance(attr, CommandResult)
+            ]
+            await self._log_all_cmd_results(cmd_results).wait()
+            await self._update_config_tab().wait()
+            self.loading_modal.dismiss()
+        elif btn_enum in self.app.run_btn_enums:
+            await self.loading_modal.run_write_command(btn_enum).wait()
+            await self.operate_info.update_write_cmd_info().wait()
+            for read_cmd in self.READ_CMDS:
+                await self.loading_modal.run_read_command(read_cmd).wait()
+            await self.loading_modal.update_changed_paths().wait()
+            await self.command_output.update_mounted()
+            self.loading_modal.dismiss()
+        elif btn_enum == OpBtnEnum.refresh_tree:
+            for read_cmd in self.READ_CMDS:
+                await self.loading_modal.run_read_command(read_cmd).wait()
+            await self.loading_modal.update_changed_paths().wait()
+            await self.command_output.update_mounted()
+            self.loading_modal.dismiss()
+        elif btn_enum == OpBtnEnum.reload:
             if not CMD.changed_paths and btn_enum == OpBtnEnum.reload:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
                 )
-            return
-        self.refresh_modal = RefreshModal()
-        await self.app.push_screen(self.refresh_modal)
-        await self._run_refresh_commands(btn_enum, cmd_results).wait()
-
-    @work
-    async def _push_run_cmd_modal(self, button: OpButton) -> None:
-        self.run_cmd_modal = RunCmdModal()
-        self.run_cmd_modal.btn_enum = button.btn_enum
-        await self.app.push_screen(
-            self.run_cmd_modal, callback=self._update_feedback, wait_for_dismiss=True
-        )
-
-    async def _update_feedback(self, results: list["CommandResult"] | None) -> None:
-        if results is None:
-            raise ValueError("results is None in _update_feedback.")
-        write_cmd_result = next(
-            (r for r in results if isinstance(r.cmd_enum, WriteCmd)), None
-        )
-        if write_cmd_result is not None:
-            await self.operate_info.update_write_cmd_info(write_cmd_result)
-        self.command_output.mount(
-            Label("Command output", classes=Tcss.main_section_label)
-        )
-        for cmd_result in results:
-            self.command_output.mount(cmd_result.pretty_collapsible)
-        self.command_output.mount(
-            Label("Changed paths", classes=Tcss.main_section_label)
-        )
-        if not CMD.changed_paths:
-            dry_run = (
-                " (dry run)"
-                if any(cmd_result.is_dry_run for cmd_result in results)
-                else ""
-            )
-            self.command_output.mount(Static(f"No paths changed.{dry_run}"))
-        else:
-            for path in CMD.changed_paths:
-                self.command_output.mount(Static(str(path), classes=Tcss.info))
-
-    ########################
-    # RefreshModal methods #
-    ########################
-
-    @work
-    @min_wait
-    async def _update_config_tab(self, cmd_results: list["CommandResult"]) -> None:
-        if ReadCmd.cat_config in [cmd_result.cmd_enum for cmd_result in cmd_results]:
-            self.refresh_modal.label_text = LoadingLabel.update_config_tab.with_color
-            config_tab = self.query_exactly_one(ConfigTab)
-            config_tab.command_results = CMD.cache
-
-    @work
-    @min_wait
-    async def _update_parsed_config(self, dump_config: str) -> None:
-        try:
-            self.refresh_modal.label_text = LoadingLabel.parse_dump_config.with_color
-            parsed_cfg = json.loads(dump_config)
-            CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
-            CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
-            CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
-        except Exception:
-            pass
-
-    @work
-    async def _run_refresh_commands(
-        self, btn_enum: OpBtnEnum | None, cmd_results: list[CommandResult]
-    ) -> None:
-        if btn_enum is None:
-            if CMD.cache.dump_config is None:
+                self.loading_modal.dismiss()
                 return
-            await self._update_parsed_config(CMD.cache.dump_config.std_out).wait()
-            await self._update_config_tab(cmd_results).wait()
-        await self._purge_views_cache().wait()
-        await self._log_all_cmd_results(cmd_results).wait()
-        await self._update_trees().wait()
-        self.refresh_modal.dismiss()
+            else:
+                await self.command_output.update_mounted()
+                await self._purge_views_cache().wait()
+                await self._update_trees().wait()
+                await self._log_all_cmd_results(CMD.loading_modal_results).wait()
+                self.loading_modal.dismiss()
+        else:
+            raise NotImplementedError(f"Button enum {btn_enum} not implemented")
+
+    #####################
+    # UI update workers #
+    #####################
 
     @work
     @min_wait
     async def _log_all_cmd_results(self, to_log: list["CommandResult | None"]) -> None:
-        self.refresh_modal.label_text = LoadingLabel.log_cmd_results.with_color
+        self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
         for cmd_result in to_log:
             if cmd_result is not None:
                 self.app_log.log_cmd_result(cmd_result)
@@ -264,7 +261,7 @@ class MainScreen(Screen[None], AppType):
     @work
     @min_wait
     async def _purge_views_cache(self) -> None:
-        self.refresh_modal.label_text = LoadingLabel.purge_cache.with_color
+        self.loading_modal.label_text = LoadingLabel.purge_cache.with_color
         contents_views = self.query(ContentsView).results()
         diff_views = self.query(DiffView).results()
         git_log_views = self.query(GitLogView).results()
@@ -274,8 +271,27 @@ class MainScreen(Screen[None], AppType):
 
     @work
     @min_wait
+    async def _update_config_tab(self) -> None:
+        self.loading_modal.label_text = LoadingLabel.update_config_tab.with_color
+        config_tab = self.query_exactly_one(ConfigTab)
+        config_tab.command_results = CMD.cache
+
+    @work
+    @min_wait
+    async def _update_parsed_config(self, dump_config: str) -> None:
+        try:
+            self.loading_modal.label_text = LoadingLabel.parse_dump_config.with_color
+            parsed_cfg = json.loads(dump_config)
+            CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
+            CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
+            CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
+        except Exception:
+            pass
+
+    @work
+    @min_wait
     async def _update_trees(self) -> None:
-        self.refresh_modal.label_text = LoadingLabel.update_trees.with_color
+        self.loading_modal.label_text = LoadingLabel.update_trees.with_color
         list_trees = self.query(ListTree).results()
         managed_trees = self.query(ManagedTree).results()
         for tree in chain(list_trees, managed_trees):
@@ -300,18 +316,18 @@ class MainScreen(Screen[None], AppType):
         if not isinstance(event.button, OpButton):
             raise TypeError(f"Expected OpButton, got {type(event.button)}")
         self._set_display(event.button)
+        if event.button.btn_enum in self.app.review_btn_enums:
+            self.operate_info.update_review_info(event.button)
+            return
         if event.button.btn_enum == OpBtnEnum.reload:
             self.command_output.remove_children()
-            await self._push_refresh_modal(
-                OpBtnEnum.reload, self.run_cmd_results
-            ).wait()
-        elif event.button.btn_enum in self.app.review_btn_enums:
-            self.operate_info.update_review_info(event.button)
+            await self._push_loading_modal(OpBtnEnum.reload).wait()
         elif (
-            event.button.btn_enum in self.app.run_btn_enums
-            or event.button.btn_enum == OpBtnEnum.refresh_tree
+            event.button.btn_enum
+            in self.app.run_btn_enums
+            # or event.button.btn_enum == OpBtnEnum.refresh_tree
         ):
-            await self._push_run_cmd_modal(event.button).wait()
+            await self._push_loading_modal(event.button.btn_enum).wait()
 
     @on(CurrentReAddNodeMsg)
     @on(CurrentApplyNodeMsg)

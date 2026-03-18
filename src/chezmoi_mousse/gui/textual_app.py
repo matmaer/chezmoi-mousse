@@ -29,7 +29,6 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .common.loading_modal import RunCmdModal
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
@@ -104,7 +103,7 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS: ClassVar = {"loading_modal": RunCmdModal, "main_screen": MainScreen}
+    SCREENS: ClassVar = {"main_screen": MainScreen}
 
     def __init__(
         self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool

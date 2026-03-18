@@ -2,7 +2,7 @@ import time
 from asyncio import sleep
 from enum import StrEnum
 from functools import wraps
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from textual import work
 from textual.app import ComposeResult
@@ -15,20 +15,21 @@ from chezmoi_mousse import CMD, AppType, OpBtnEnum, ReadCmd
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
+    from pathlib import Path
 
     from chezmoi_mousse import CommandResult
 
-__all__ = ["LoadingLabel", "RefreshModal", "RunCmdModal", "min_wait"]
+__all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
 # not needed for anything else than showing log messages briefly for humans
-MIN_WAIT_TIME = 1
+MIN_WAIT_TIME = 1.5
 
 
 def min_wait(
     func: "Callable[..., Awaitable[None]]",
 ) -> "Callable[..., Awaitable[CommandResult | None]]":
     @wraps(func)
-    async def wrapper(self: "RunCmdModal", *args: "OpBtnEnum") -> None:
+    async def wrapper(self: "LoadingModal", *args: "OpBtnEnum") -> None:
         start_time = time.monotonic()
         await func(self, *args)
         elapsed = time.monotonic() - start_time
@@ -51,23 +52,24 @@ class LoadingLabel(StrEnum):
         return f"[$text-primary bold]{self.value}[/]"
 
 
-class LoadingModalBase(ModalScreen[list["CommandResult"] | None], AppType):
+class LoadingModal(ModalScreen[None], AppType):
 
-    label_text: reactive[str | None] = reactive(None, init=False)
+    label_text: reactive[str | None] = reactive(None)
 
-    READ_CMDS: ClassVar[list[ReadCmd]] = [
-        ReadCmd.managed,
-        ReadCmd.status,
-        ReadCmd.managed_dirs,
-        ReadCmd.managed_files,
-        ReadCmd.status_dirs,
-        ReadCmd.status_files,
-    ]
+    def __init__(self, btn_enum: OpBtnEnum | None) -> None:
+        super().__init__()
+        self.btn_enum: OpBtnEnum | None = btn_enum
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
             yield Label()
             yield LoadingIndicator()
+
+    def on_mount(self) -> None:
+        CMD.changed_paths = []
+        CMD.loading_modal_results = []
+        self.old_managed_paths: set[Path] = CMD.cache.managed_paths.copy()
+        self.old_status_pairs: dict[Path, str] = CMD.cache.status_pairs.copy()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
@@ -75,72 +77,41 @@ class LoadingModalBase(ModalScreen[list["CommandResult"] | None], AppType):
         label = self.query_exactly_one(Label)
         label.update(label_text)
 
-
-class RefreshModal(LoadingModalBase):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.btn_enum: OpBtnEnum | None = None
-        self.cmd_results: list[CommandResult] = []
-
-    def on_mount(self) -> None:
-        self.cmd_results: list[CommandResult] = []
-
-    @work
-    async def run_read_commands(self) -> list["CommandResult"]:
-        for read_cmd in self.READ_CMDS:
-            pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
-            self.label_text = f"Running {pretty_cmd}"
-            await self._run_read_command(read_cmd).wait()
-        return self.cmd_results
-
     @work(thread=True)
     @min_wait
-    async def _run_read_command(self, read_cmd: ReadCmd) -> None:
+    async def run_read_command(self, read_cmd: ReadCmd) -> None:
+        pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
+        self.label_text = f"Running {pretty_cmd}"
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cache, f"{read_cmd.name}", cmd_result)
-        self.cmd_results.append(cmd_result)
-
-
-class RunCmdModal(RefreshModal):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.btn_enum: OpBtnEnum | None = None
-        self.cmd_results: list[CommandResult] = []
-
-    def on_mount(self) -> None:
-        self.cmd_results: list[CommandResult] = []
-        if self.btn_enum is None:
-            raise ValueError("btn_enum is None when trying to run commands.")
-        self._run_commands(self.btn_enum)
-
-    @property
-    def _global_args(self) -> tuple[str, ...] | None:
-        if self.btn_enum in self.app.run_btn_enums:
-            path_arg = (
-                str(self.btn_enum.path_arg)
-                if self.btn_enum.path_arg is not None
-                else ""
-            )
-            return (*self.btn_enum.write_cmd.value, path_arg)
-
-    @work
-    async def _run_commands(self, btn_enum: "OpBtnEnum") -> None:
-        if btn_enum in self.app.run_btn_enums:
-            await self._run_write_command(btn_enum).wait()
-            await self.run_read_commands().wait()
-        elif btn_enum == OpBtnEnum.refresh_tree:
-            await self.run_read_commands().wait()
-        self.dismiss(self.cmd_results)
+        CMD.loading_modal_results.append(cmd_result)
 
     @work(thread=True, exit_on_error=False)
     @min_wait
-    async def _run_write_command(self, btn_enum: "OpBtnEnum") -> None:
-        if self._global_args is None:
-            raise ValueError("Global args are None when trying to run write command.")
-        self.label_text = f"Running {CMD.run_cmd.review_cmd(self._global_args)})"
+    async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
+        for_review_cmd = ()
+        if btn_enum in self.app.run_btn_enums:
+            path_arg = str(btn_enum.path_arg) if btn_enum.path_arg is not None else ""
+            for_review_cmd = (*btn_enum.write_cmd.value, path_arg)
+        self.label_text = f"Running {CMD.run_cmd.review_cmd(for_review_cmd)})"
         cmd_result: CommandResult = CMD.run_cmd.perform(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
-        self.cmd_results.append(cmd_result)
+        CMD.loading_modal_results.append(cmd_result)
+
+    @work(thread=True)
+    @min_wait
+    async def update_changed_paths(self) -> None:
+        self.label_text = LoadingLabel.update_changed_and_cached.with_color
+
+        # ^ symmetric difference: elements that exist in either set, but not in both
+        # & intersection: elements that exist in both sets
+        # | union: all elements that exist in either set
+
+        # Collect changed paths: Symmetric difference (added/removed) + Status changes
+        changed_paths = (self.old_managed_paths ^ set(CMD.cache.managed_paths)) | {
+            p
+            for p in self.old_managed_paths & set(CMD.cache.managed_paths)
+            if self.old_status_pairs.get(p) != CMD.cache.status_pairs.get(p)
+        }
+        CMD.changed_paths = sorted(changed_paths)
