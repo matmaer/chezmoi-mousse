@@ -318,9 +318,5 @@ class Commands:
         }
         self.changed_paths = sorted(changed_paths)
 
-        self.cache.re_add_dir_nodes.clear()
-        self.cache.apply_dir_nodes.clear()
-        self.cache.update_apply_and_re_add_dir_nodes()
-
 
 CMD = Commands()

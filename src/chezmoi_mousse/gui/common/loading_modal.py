@@ -55,13 +55,6 @@ class LoadingModalBase(ModalScreen[list["CommandResult"] | None], AppType):
             yield Label()
             yield LoadingIndicator()
 
-    @work
-    @min_wait
-    async def update_parsed_data(self) -> None:
-        label = self.query_exactly_one(Label)
-        label.update("Updating CMD cached data and changed paths")
-        CMD.update_parsed_data()
-
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
             return
@@ -85,7 +78,7 @@ class RefreshModal(LoadingModalBase):
             pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
             self.label_text = f"Running {pretty_cmd}"
             await self._run_read_command(read_cmd).wait()
-        await self.update_parsed_data().wait()
+        await self._update_changes().wait()
         return self.cmd_results
 
     @work(thread=True)
@@ -94,6 +87,12 @@ class RefreshModal(LoadingModalBase):
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cache, f"{read_cmd.name}", cmd_result)
         self.cmd_results.append(cmd_result)
+
+    @work(thread=True)
+    @min_wait
+    async def _update_changes(self) -> None:
+        self.label_text = "Updating changed paths and cached dir nodes"
+        CMD.update_parsed_data()
 
 
 class RunCmdModal(RefreshModal):
