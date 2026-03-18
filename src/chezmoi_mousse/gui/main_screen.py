@@ -77,11 +77,15 @@ class OperateInfo(Static, AppType):
             )
         )
         info_lines.append(button.btn_enum.op_info_string)
-        if button.app_ids.canvas_name in (TabLabel.add, TabLabel.re_add):
+        if button.btn_enum != OpBtnEnum.apply_review:
             if CMD.cache.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
             if CMD.cache.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
+        else:
+            info_lines.append(
+                "[dim]Apply operation: auto-commit and auto-push not applicable[/]"
+            )
         self.update("\n".join(info_lines))
         self.border_title = button.btn_enum.op_info_title
         self.border_subtitle = button.btn_enum.op_info_subtitle
