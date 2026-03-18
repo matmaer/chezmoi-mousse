@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on, work
@@ -30,7 +32,7 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
-from .common.loading_modal import RefreshModal, RunCmdModal, min_wait
+from .common.loading_modal import LoadingLabel, RefreshModal, RunCmdModal, min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg, LogCmdResultMsg
 from .common.screen_header import CustomHeader
@@ -55,27 +57,33 @@ class OperateInfo(Static, AppType):
         super().__init__(
             id=IDS.main_tabs.static.operate_info, classes=Tcss.operate_info
         )
-        self.btn_enum: OpBtnEnum | None = None
+        self.current_button: OpButton | None = None
 
     def on_mount(self) -> None:
         self.display = False
 
-    def update_review_info(self, btn_enum: OpBtnEnum) -> None:
-        self.btn_enum = btn_enum
+    def update_review_info(self, button: OpButton) -> None:
+        self.current_button = button
         info_lines: list[str] = []
-        path_arg = str(btn_enum.path_arg) if btn_enum.path_arg is not None else ""
-        info_lines.append(
-            CMD.run_cmd.review_cmd(global_args=(*btn_enum.write_cmd.value, path_arg))
+        path_arg = (
+            str(button.btn_enum.path_arg)
+            if button.btn_enum.path_arg is not None
+            else ""
         )
-        info_lines.append(btn_enum.op_info_string)
-        if IDS.main_tabs.canvas_name in (TabLabel.add, TabLabel.re_add):
+        info_lines.append(
+            CMD.run_cmd.review_cmd(
+                global_args=(*button.btn_enum.write_cmd.value, path_arg)
+            )
+        )
+        info_lines.append(button.btn_enum.op_info_string)
+        if button.app_ids.canvas_name in (TabLabel.add, TabLabel.re_add):
             if CMD.cache.git_auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
             if CMD.cache.git_auto_push is True:
                 info_lines.append(OperateString.auto_push)
         self.update("\n".join(info_lines))
-        self.border_title = btn_enum.op_info_title
-        self.border_subtitle = btn_enum.op_info_subtitle
+        self.border_title = button.btn_enum.op_info_title
+        self.border_subtitle = button.btn_enum.op_info_subtitle
 
     async def update_write_cmd_info(self, write_cmd_result: CommandResult) -> None:
         self.update(
@@ -86,9 +94,9 @@ class OperateInfo(Static, AppType):
         self.border_subtitle = None
 
     def watch_changes_enabled(self) -> None:
-        if self.btn_enum is None or not self.display:
+        if not self.display or self.current_button is None:
             return
-        self.update_review_info(self.btn_enum)
+        self.update_review_info(self.current_button)
 
 
 class OpFeedBack(Vertical):
@@ -209,15 +217,30 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _update_config_tab(self, cmd_results: list["CommandResult"]) -> None:
         if ReadCmd.cat_config in [cmd_result.cmd_enum for cmd_result in cmd_results]:
-            self.refresh_modal.label_text = "Update Config tab"
+            self.refresh_modal.label_text = LoadingLabel.update_config_tab.with_color
             config_tab = self.query_exactly_one(ConfigTab)
             config_tab.command_results = CMD.cache
+
+    @work
+    @min_wait
+    async def _update_parsed_config(self, dump_config: str) -> None:
+        try:
+            self.refresh_modal.label_text = LoadingLabel.parse_dump_config.with_color
+            parsed_cfg = json.loads(dump_config)
+            CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
+            CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
+            CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
+        except Exception:
+            pass
 
     @work
     async def _run_refresh_commands(
         self, btn_enum: OpBtnEnum | None, cmd_results: list[CommandResult]
     ) -> None:
         if btn_enum is None:
+            if CMD.cache.dump_config is None:
+                return
+            await self._update_parsed_config(CMD.cache.dump_config.std_out).wait()
             await self._update_config_tab(cmd_results).wait()
         await self._purge_views_cache().wait()
         await self._log_all_cmd_results(cmd_results).wait()
@@ -227,7 +250,7 @@ class MainScreen(Screen[None], AppType):
     @work
     @min_wait
     async def _log_all_cmd_results(self, to_log: list["CommandResult | None"]) -> None:
-        self.refresh_modal.label_text = "Logging command results"
+        self.refresh_modal.label_text = LoadingLabel.log_cmd_results.with_color
         for cmd_result in to_log:
             if cmd_result is not None:
                 self.app_log.log_cmd_result(cmd_result)
@@ -236,7 +259,7 @@ class MainScreen(Screen[None], AppType):
     @work
     @min_wait
     async def _purge_views_cache(self) -> None:
-        self.refresh_modal.label_text = "Purge cached data"
+        self.refresh_modal.label_text = LoadingLabel.purge_cache.with_color
         contents_views = list(self.query(ContentsView))
         diff_views = list(self.query(DiffView))
         git_log_views = list(self.query(GitLogView))
@@ -247,7 +270,7 @@ class MainScreen(Screen[None], AppType):
     @work
     @min_wait
     async def _update_trees(self) -> None:
-        self.refresh_modal.label_text = "Update Trees"
+        self.refresh_modal.label_text = LoadingLabel.update_trees.with_color
         list_trees = list(self.query(ListTree))
         managed_trees = list(self.query(ManagedTree))
         for tree in list_trees + managed_trees:
@@ -278,7 +301,7 @@ class MainScreen(Screen[None], AppType):
                 OpBtnEnum.reload, self.run_cmd_results
             ).wait()
         elif event.button.btn_enum in self.app.review_btn_enums:
-            self.operate_info.update_review_info(event.button.btn_enum)
+            self.operate_info.update_review_info(event.button)
         elif (
             event.button.btn_enum in self.app.run_btn_enums
             or event.button.btn_enum == OpBtnEnum.refresh_tree

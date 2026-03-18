@@ -1,5 +1,6 @@
 import time
 from asyncio import sleep
+from enum import StrEnum
 from functools import wraps
 from typing import TYPE_CHECKING, ClassVar
 
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import CommandResult
 
-__all__ = ["RefreshModal", "RunCmdModal", "min_wait"]
+__all__ = ["LoadingLabel", "RefreshModal", "RunCmdModal", "min_wait"]
 
 # not needed for anything else than showing log messages briefly for humans
 MIN_WAIT_TIME = 1
@@ -35,6 +36,19 @@ def min_wait(
             await sleep(MIN_WAIT_TIME - elapsed)
 
     return wrapper
+
+
+class LoadingLabel(StrEnum):
+    update_config_tab = "Update Config tab"
+    parse_dump_config = "Parse dump-config output"
+    purge_cache = "Purge cached data"
+    update_trees = "Update Trees"
+    log_cmd_results = "Logging command results"
+    update_changed_and_cached = "Update changed paths and cached dir nodes"
+
+    @property
+    def with_color(self) -> str:
+        return f"[$text-primary bold]{self.value}[/]"
 
 
 class LoadingModalBase(ModalScreen[list["CommandResult"] | None], AppType):
@@ -91,8 +105,8 @@ class RefreshModal(LoadingModalBase):
     @work(thread=True)
     @min_wait
     async def _update_changes(self) -> None:
-        self.label_text = "Updating changed paths and cached dir nodes"
-        CMD.update_parsed_data()
+        self.label_text = LoadingLabel.update_changed_and_cached.with_color
+        CMD.update_changed_paths()
 
 
 class RunCmdModal(RefreshModal):

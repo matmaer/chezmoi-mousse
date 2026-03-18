@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -125,23 +124,13 @@ class CachedData:
         self.re_add_dir_nodes: dict[Path, DirNode] = {}
         self.apply_dir_nodes: dict[Path, DirNode] = {}
 
-        _parsed_dump_cfg: ParsedJson = self._get_parsed_dump_config()
-        self.dest_dir = _parsed_dump_cfg.get("destDir", Path().home())
-        self.git_auto_commit = _parsed_dump_cfg.get("git", {}).get("autocommit", False)
-        self.git_auto_push = _parsed_dump_cfg.get("git", {}).get("autopush", False)
+        self.dest_dir: Path = Path().home()
+        self.git_auto_commit: bool = False
+        self.git_auto_push: bool = False
 
     #####################################################
     # Properties derived from the above command results #
     #####################################################
-
-    def _get_parsed_dump_config(self) -> ParsedJson:
-        if self.dump_config is None:
-            return {}
-        try:
-            json.loads(self.dump_config.std_out)
-        except Exception:
-            return {}
-        return {}
 
     @property
     def global_git_log_lines(self) -> list[str]:
@@ -302,7 +291,7 @@ class Commands:
 
     # Properties for easy access to fields
 
-    def update_parsed_data(self) -> None:
+    def update_changed_paths(self) -> None:
         self.changed_paths.clear()
         old_cached = copy.deepcopy(self.cache)
 
