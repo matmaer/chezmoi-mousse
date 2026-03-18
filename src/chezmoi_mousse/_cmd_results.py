@@ -4,7 +4,7 @@ import copy
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from textual.widgets import Label, Static
 
@@ -105,23 +105,26 @@ class DirNode:
 
 
 class CachedData:
-    cat_config: ClassVar[CommandResult | None] = None
-    doctor: ClassVar[CommandResult | None] = None
-    dump_config: ClassVar[CommandResult | None] = None
-    git_log: ClassVar[CommandResult | None] = None
-    ignored: ClassVar[CommandResult | None] = None
-    managed: ClassVar[CommandResult | None] = None
-    managed_dirs: ClassVar[CommandResult | None] = None
-    managed_files: ClassVar[CommandResult | None] = None
-    status: ClassVar[CommandResult | None] = None
-    status_dirs: ClassVar[CommandResult | None] = None
-    status_files: ClassVar[CommandResult | None] = None
-    template_data: ClassVar[CommandResult | None] = None
-    verify: ClassVar[CommandResult | None] = None
-    re_add_dir_nodes: ClassVar[dict[Path, DirNode]] = {}
-    apply_dir_nodes: ClassVar[dict[Path, DirNode]] = {}
-
     def __init__(self) -> None:
+        # command result caches (instance attributes so deepcopy snapshots work)
+        self.cat_config: CommandResult | None = None
+        self.doctor: CommandResult | None = None
+        self.dump_config: CommandResult | None = None
+        self.git_log: CommandResult | None = None
+        self.ignored: CommandResult | None = None
+        self.managed: CommandResult | None = None
+        self.managed_dirs: CommandResult | None = None
+        self.managed_files: CommandResult | None = None
+        self.status: CommandResult | None = None
+        self.status_dirs: CommandResult | None = None
+        self.status_files: CommandResult | None = None
+        self.template_data: CommandResult | None = None
+        self.verify: CommandResult | None = None
+
+        # dir node caches
+        self.re_add_dir_nodes: dict[Path, DirNode] = {}
+        self.apply_dir_nodes: dict[Path, DirNode] = {}
+
         _parsed_dump_cfg: ParsedJson = self._get_parsed_dump_config()
         self.dest_dir = _parsed_dump_cfg.get("destDir", Path().home())
         self.git_auto_commit = _parsed_dump_cfg.get("git", {}).get("autocommit", False)
@@ -302,7 +305,6 @@ class Commands:
     def update_parsed_data(self) -> None:
         self.changed_paths.clear()
         old_cached = copy.deepcopy(self.cache)
-        self.cache.update_apply_and_re_add_dir_nodes()
 
         # ^ symmetric difference: elements that exist in either set, but not in both
         # & intersection: elements that exist in both sets
@@ -315,6 +317,10 @@ class Commands:
             if old_cached.status_pairs.get(p) != self.cache.status_pairs.get(p)
         }
         self.changed_paths = sorted(changed_paths)
+
+        self.cache.re_add_dir_nodes.clear()
+        self.cache.apply_dir_nodes.clear()
+        self.cache.update_apply_and_re_add_dir_nodes()
 
 
 CMD = Commands()
