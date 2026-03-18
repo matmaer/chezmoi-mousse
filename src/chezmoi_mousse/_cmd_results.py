@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -287,25 +286,8 @@ class CachedData:
 class Commands:
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
     cache: CachedData = CachedData()
+    loading_modal_results: list[CommandResult] = field(default_factory=lambda: [])
     changed_paths: list[Path] = field(default_factory=lambda: [])
-
-    # Properties for easy access to fields
-
-    def update_changed_paths(self) -> None:
-        self.changed_paths.clear()
-        old_cached = copy.deepcopy(self.cache)
-
-        # ^ symmetric difference: elements that exist in either set, but not in both
-        # & intersection: elements that exist in both sets
-        # | union: all elements that exist in either set
-
-        # Collect changed paths: Symmetric difference (added/removed) + Status changes
-        changed_paths = (old_cached.managed_paths ^ set(self.cache.managed_paths)) | {
-            p
-            for p in old_cached.managed_paths & set(self.cache.managed_paths)
-            if old_cached.status_pairs.get(p) != self.cache.status_pairs.get(p)
-        }
-        self.changed_paths = sorted(changed_paths)
 
 
 CMD = Commands()
