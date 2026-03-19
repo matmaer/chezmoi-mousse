@@ -283,6 +283,7 @@ class CachedData:
         )
 
     def update_apply_and_re_add_dir_nodes(self) -> None:
+        self.update_path_sets()
         for dir_path in self.managed_dirs_with_dest_dir:
 
             self.apply_dir_nodes[dir_path] = self._get_dir_node(
@@ -299,6 +300,7 @@ class CachedData:
     def update_path_sets(self) -> None:
         self.sets.managed_files = set(self.managed_file_paths)
         self.sets.managed_dirs = set(self.managed_dir_paths)
+        self.sets.managed_dirs_plus_dest_dir = set(self.managed_dirs_with_dest_dir)
         self.sets.managed_paths = self.sets.managed_dirs | self.sets.managed_files
         self.sets.status_dirs = set(self.dir_status_pairs.keys())
         self.sets.status_files = set(self.file_status_pairs.keys())

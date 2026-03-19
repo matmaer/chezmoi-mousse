@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from enum import StrEnum
 from pathlib import Path
 
@@ -25,63 +25,43 @@ class FilteredDirTree(DirectoryTree, AppType):
         self.border_title = BorderTitle.dest_dir
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        # Define condition lambdas for each switch combo
-        conditions: dict[tuple[bool, bool], Callable[[Path], bool]] = {
-            (False, False): lambda p: (  # switches: Red - Red (default)
-                (
-                    p.is_dir()
-                    and not UnwantedDirs.is_unwanted(p.name)
-                    and self._has_unmanaged_paths_in(p)
-                )
-                or (
-                    p.is_file()
-                    and not UnwantedFileExtensions.is_unwanted(p)
-                    and not UnwantedFileNames.is_unwanted(p)
-                    and p.parent in CMD.cache.managed_dirs_with_dest_dir
-                    and p not in CMD.cache.managed_file_paths
-                    and self._file_of_interest(p)
-                )
-            ),
-            (True, False): lambda p: (  # switches: Green - Red
-                (
-                    p.is_dir()
-                    and not UnwantedDirs.is_unwanted(p.name)
-                    and self._has_unmanaged_paths_in(p)
-                )
-                or (
-                    p.is_file()
-                    and not UnwantedFileExtensions.is_unwanted(p)
-                    and not UnwantedFileNames.is_unwanted(p)
-                    and (
-                        p.parent in CMD.cache.managed_dir_paths
-                        or self._has_unmanaged_paths_in(p.parent)
-                    )
-                    and p not in CMD.cache.managed_file_paths
-                    and self._file_of_interest(p)
-                )
-            ),
-            (False, True): lambda p: (  # switches: Red - Green
-                (
-                    p.is_dir()
-                    and p in CMD.cache.managed_dir_paths
-                    and self._has_unmanaged_paths_in(p)
-                )
-                or (
-                    p.is_file()
-                    and p not in CMD.cache.managed_file_paths
-                    and p.parent in CMD.cache.managed_dir_paths
-                )
-            ),
-            # switches: Green - Green, include all unmanaged paths
-            (True, True): lambda p: (
-                (p.is_dir() and self._has_unmanaged_paths_in(p))
-                or (p.is_file() and p not in CMD.cache.managed_file_paths)
-            ),
-        }
+        show_unmanaged = bool(self.unmanaged_dirs)
+        show_unwanted = bool(self.unwanted)
 
-        # Select the condition based on switches and filter
-        key = (self.unmanaged_dirs, self.unwanted)
-        return (p for p in paths if conditions[key](p))
+        def is_unwanted_file(fp: Path) -> bool:
+            return UnwantedFileNames.is_unwanted(
+                fp
+            ) or UnwantedFileExtensions.is_unwanted(fp)
+
+        def dir_matches(d: Path) -> bool:
+            if show_unwanted and UnwantedDirs.is_unwanted(d.name):
+                return True
+            if (
+                show_unmanaged
+                and self._has_unmanaged_paths_in(d)
+                and not UnwantedDirs.is_unwanted(d.name)
+            ):
+                return True
+            return d in CMD.cache.sets.managed_dirs_plus_dest_dir
+
+        def file_matches(f: Path) -> bool:
+            if is_unwanted_file(f):
+                return show_unwanted
+            if not self._file_of_interest(f):
+                return False
+            if show_unmanaged:
+                parent_ok = (
+                    f.parent in CMD.cache.sets.managed_dirs_plus_dest_dir
+                    or self._has_unmanaged_paths_in(f.parent)
+                )
+                return f not in CMD.cache.sets.managed_files and parent_ok
+            return f in CMD.cache.sets.managed_files
+
+        return (
+            p
+            for p in paths
+            if (p.is_dir() and dir_matches(p)) or (p.is_file() and file_matches(p))
+        )
 
     def _file_of_interest(self, file_path: Path) -> bool:
         if UnwantedFileNames.is_unwanted(
@@ -103,14 +83,14 @@ class FilteredDirTree(DirectoryTree, AppType):
             for p in dir_path.iterdir():
                 if p.is_file():
                     if (
-                        p not in CMD.cache.managed_file_paths
+                        p not in CMD.cache.sets.managed_files
                         and self._file_of_interest(p)
                     ):
                         return True
                 elif (
                     p.is_dir(follow_symlinks=False)
-                    and not UnwantedDirs.is_unwanted(p.name)
                     and self._has_unmanaged_paths_in(p)
+                    and not UnwantedDirs.is_unwanted(p.name)
                 ):
                     return True
             return False
