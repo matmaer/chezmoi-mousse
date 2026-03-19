@@ -113,6 +113,9 @@ class PathSets:
     x_dirs: set[Path] = field(default_factory=lambda: set())
     x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
 
+    def get_sub_dirs_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.managed_dirs if p.parent == dir_path}
+
 
 class CachedData:
     def __init__(self) -> None:
@@ -223,6 +226,15 @@ class CachedData:
             return StatusCode.Nested
         return status
 
+    def get_status_files_in(
+        self, dir_path: Path, canvas_name: str
+    ) -> dict[Path, StatusCode]:
+        if canvas_name == TabLabel.apply:
+            status_files = self._apply_status_files
+        else:
+            status_files = self._re_add_status_files
+        return {p: s for p, s in status_files.items() if p.parent == dir_path}
+
     def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
         if canvas_name == TabLabel.apply:
             status_files = self._apply_status_files
@@ -230,13 +242,9 @@ class CachedData:
         else:
             status_files = self._re_add_status_files
             status_dirs = self._re_add_status_dirs
-        # sub dir paths are the same for apply and re_add contexts
-        sub_dir_paths = [
-            p for p in self.sets.managed_dirs_plus_dest_dir if p.parent == dir_path
-        ]
         tree_status_dirs_in: dict[Path, StatusCode] = {}
         tree_x_dirs_in: dict[Path, StatusCode] = {}
-        for sub_dir in sub_dir_paths:
+        for sub_dir in CMD.cache.sets.get_sub_dirs_in(dir_path):
             if (
                 sub_dir in status_dirs
                 or sub_dir in self.sets.x_dirs_with_status_children
@@ -249,9 +257,7 @@ class CachedData:
 
         return DirNode(
             dir_path=dir_path,
-            status_files_in={
-                p: s for p, s in status_files.items() if p.parent == dir_path
-            },
+            status_files_in=self.get_status_files_in(dir_path, canvas_name),
             real_status_dirs_in={
                 p: s for p, s in status_dirs.items() if p.parent == dir_path
             },

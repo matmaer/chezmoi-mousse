@@ -48,7 +48,9 @@ class TreeBase(Tree[Path], AppType):
         # Get status code for the path
         status = StatusCode.Space  # default status if not found
         for dir_node in self.dir_nodes.values():
-            if path in dir_node.status_files_in:
+            if path in CMD.cache.get_status_files_in(
+                dir_node.dir_path, self.ids.canvas_name
+            ):
                 status = StatusCode.Nested
                 break
         else:
@@ -84,7 +86,9 @@ class ListTree(TreeBase):
         self.root.data = CMD.cache.dest_dir
         self.root.expand()
         for dir_node in self.dir_nodes.values():
-            for file_path in dir_node.status_files_in:
+            for file_path in CMD.cache.get_status_files_in(
+                dir_node.dir_path, self.ids.canvas_name
+            ):
                 # only add files as leaves, if they were not added already.
                 if not any(
                     child.data and child.data == file_path
@@ -146,7 +150,9 @@ class ManagedTree(TreeBase):
         for sub_dir, _ in dir_node.tree_status_dirs_in.items():
             child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
             self._populate_node(child_node, sub_dir)
-        for file_path, _ in dir_node.status_files_in.items():
+        for file_path, _ in CMD.cache.get_status_files_in(
+            dir_path, self.ids.canvas_name
+        ).items():
             tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
 
     def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
