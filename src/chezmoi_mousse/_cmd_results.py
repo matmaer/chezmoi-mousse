@@ -111,6 +111,7 @@ class PathSets:
     status_files: set[Path] = field(default_factory=lambda: set())
     x_files: set[Path] = field(default_factory=lambda: set())
     x_dirs: set[Path] = field(default_factory=lambda: set())
+    x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
 
 
 class CachedData:
@@ -148,22 +149,6 @@ class CachedData:
         if self.git_log is None or not self.git_log.std_out:
             return ["No commits;No git log entries available yet."]
         return self.git_log.std_out.splitlines()
-
-    @property
-    def managed_dir_paths(self) -> list[Path]:
-        if self.managed_dirs is None:
-            return []
-        return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
-
-    @property
-    def managed_file_paths(self) -> list[Path]:
-        if self.managed_files is None:
-            return []
-        return [Path(line) for line in self.managed_files.std_out.splitlines()]
-
-    @property
-    def managed_dirs_with_dest_dir(self) -> list[Path]:
-        return [self.dest_dir] + self.managed_dir_paths
 
     ########################################################
     # Derived properties depending on the properties above #
@@ -206,7 +191,7 @@ class CachedData:
         }
 
     @property
-    def dir_status_pairs(self) -> dict[Path, str]:
+    def _dir_status_pairs(self) -> dict[Path, str]:
         if self.status_dirs is None:
             return {}
         return {
@@ -215,7 +200,7 @@ class CachedData:
         }
 
     @property
-    def file_status_pairs(self) -> dict[Path, str]:
+    def _file_status_pairs(self) -> dict[Path, str]:
         if self.status_files is None:
             return {}
         return {
@@ -225,24 +210,14 @@ class CachedData:
 
     @property
     def status_pairs(self) -> dict[Path, str]:
-        return self.dir_status_pairs | self.file_status_pairs
-
-    @property
-    def x_dirs_with_status_children(self) -> set[Path]:
-        status_children: set[Path] = set()
-        for path in self.status_pairs:
-            current = path.parent
-            while current != current.parent:
-                status_children.add(current)
-                current = current.parent
-        return status_children
+        return self._dir_status_pairs | self._file_status_pairs
 
     @property
     def tree_x_dirs(self) -> list[Path]:
         return [
             d
-            for d in self.managed_dir_paths
-            if d not in self.x_dirs_with_status_children
+            for d in self.sets.managed_dirs
+            if d not in self.sets.x_dirs_with_status_children
         ]
 
     @property
@@ -252,18 +227,23 @@ class CachedData:
     def get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
         return {
             path: StatusCode.Space
-            for path in self.managed_file_paths
+            for path in self.sets.managed_files
             if path.parent == dir_path and path not in self.sets.status_files
         }
 
     def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
-        if path in self.x_dirs_with_status_children:
-            return StatusCode.Nested
         if canvas_name == TabLabel.apply:
             paths_dict = self._apply_status_dirs | self._apply_status_files
         else:
             paths_dict = self._re_add_status_dirs | self._re_add_status_files
-        return paths_dict.get(path, StatusCode.Space)
+        status = paths_dict.get(path, StatusCode.Space)
+        if (
+            path in self.sets.x_dirs_with_status_children
+            and status == StatusCode.Space
+            or path == self.dest_dir
+        ):
+            return StatusCode.Nested
+        return status
 
     def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
         if canvas_name == TabLabel.apply:
@@ -274,12 +254,15 @@ class CachedData:
             status_dirs = self._re_add_status_dirs
         # sub dir paths are the same for apply and re_add contexts
         sub_dir_paths = [
-            p for p in self.managed_dirs_with_dest_dir if p.parent == dir_path
+            p for p in self.sets.managed_dirs_plus_dest_dir if p.parent == dir_path
         ]
         tree_status_dirs_in: dict[Path, StatusCode] = {}
         tree_x_dirs_in: dict[Path, StatusCode] = {}
         for sub_dir in sub_dir_paths:
-            if sub_dir in status_dirs or sub_dir in self.x_dirs_with_status_children:
+            if (
+                sub_dir in status_dirs
+                or sub_dir in self.sets.x_dirs_with_status_children
+            ):
                 tree_status_dirs_in[sub_dir] = status_dirs.get(
                     sub_dir, StatusCode.Space
                 )
@@ -309,18 +292,39 @@ class CachedData:
         )
 
     def update_path_sets(self) -> None:
-        self.sets.managed_files = set(self.managed_file_paths)
-        self.sets.managed_dirs = set(self.managed_dir_paths)
-        self.sets.managed_dirs_plus_dest_dir = set(self.managed_dirs_with_dest_dir)
+
+        def managed_dir_paths() -> set[Path]:
+            if self.managed_dirs is None:
+                return set()
+            return {Path(line) for line in self.managed_dirs.std_out.splitlines()}
+
+        def managed_file_paths() -> set[Path]:
+            if self.managed_files is None:
+                return set()
+            return {Path(line) for line in self.managed_files.std_out.splitlines()}
+
+        self.sets.managed_dirs = managed_dir_paths()
+
+        self.sets.managed_files = set(managed_file_paths())
+        self.sets.managed_dirs_plus_dest_dir = {self.dest_dir} | self.sets.managed_dirs
+        self.sets.status_dirs = set(self._dir_status_pairs.keys())
+        self.sets.status_files = set(self._file_status_pairs.keys())
+        # derived assignments
         self.sets.managed_paths = self.sets.managed_dirs | self.sets.managed_files
-        self.sets.status_dirs = set(self.dir_status_pairs.keys())
-        self.sets.status_files = set(self.file_status_pairs.keys())
         self.sets.status_paths = self.sets.status_dirs | self.sets.status_files
-        self.sets.x_dirs = set(self.tree_x_dirs)
+        self.sets.x_dirs = {
+            d for d in self.sets.managed_dirs if d not in self.sets.status_dirs
+        }
         self.sets.x_files = {
-            path
-            for path in self.sets.managed_files
-            if path not in self.sets.status_files
+            f for f in self.sets.managed_files if f not in self.sets.status_files
+        }
+        self.sets.x_dirs_with_status_children = {
+            dir_path
+            for dir_path in self.sets.x_dirs
+            if any(
+                status_path.is_relative_to(dir_path)
+                for status_path in self.sets.status_paths
+            )
         }
 
 
