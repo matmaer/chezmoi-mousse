@@ -50,7 +50,7 @@ class DirNode:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
-            if not CMD.cache.managed_dir_paths and not CMD.cache.managed_file_paths:
+            if CMD.cache.no_status_paths is True:
                 widgets.append(
                     Static(
                         "No managed paths or paths with a status are in the chezmoi "
@@ -110,6 +110,8 @@ class PathSets:
     managed_files: set[Path] = field(default_factory=lambda: set())
     status_dirs: set[Path] = field(default_factory=lambda: set())
     status_files: set[Path] = field(default_factory=lambda: set())
+    x_files: set[Path] = field(default_factory=lambda: set())
+    x_dirs: set[Path] = field(default_factory=lambda: set())
 
 
 class CachedData:
@@ -305,6 +307,8 @@ class CachedData:
         self.sets.status_dirs = set(self.dir_status_pairs.keys())
         self.sets.status_files = set(self.file_status_pairs.keys())
         self.sets.status_paths = self.sets.status_dirs | self.sets.status_files
+        self.sets.x_dirs = set(self.tree_x_dirs)
+        self.sets.x_files = set(self.x_files)
 
 
 @dataclass(slots=True)

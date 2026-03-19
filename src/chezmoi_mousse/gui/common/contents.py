@@ -108,7 +108,7 @@ class ContentsView(Container, AppType):
             container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True
         except NoMatches:
-            if show_path in CMD.cache.managed_dirs_with_dest_dir:
+            if show_path in CMD.cache.sets.managed_dirs_plus_dest_dir:
                 container = self._create_managed_dir_container(show_path)
             else:
                 container = self._create_file_container(show_path)

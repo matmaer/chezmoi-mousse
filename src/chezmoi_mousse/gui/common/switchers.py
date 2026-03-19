@@ -112,7 +112,7 @@ class TreeSwitcher(Vertical, AppType):
                         if self.expand_all:
                             node.expand()
 
-            for x_file in CMD.cache.x_files:
+            for x_file in CMD.cache.sets.x_files:
                 if x_file in [node.data for node in list_tree_nodes]:
                     continue
                 rel_path = str(x_file.relative_to(CMD.cache.dest_dir))
@@ -121,14 +121,14 @@ class TreeSwitcher(Vertical, AppType):
             # remove x_files and x_dirs from managed tree
             for tree_node in nodes_before_unchanged_toggle:
                 if (
-                    tree_node.data in CMD.cache.x_files
+                    tree_node.data in CMD.cache.sets.x_files
                     or tree_node.data in CMD.cache.tree_x_dirs
                 ):
                     with contextlib.suppress(Exception):
                         tree_node.remove()
             # remove x_files from list tree
             for tree_node in list_tree_nodes:
-                if tree_node.data in CMD.cache.x_files:
+                if tree_node.data in CMD.cache.sets.x_files:
                     tree_node.remove()
 
 

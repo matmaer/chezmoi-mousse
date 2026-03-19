@@ -72,9 +72,9 @@ class DebugTab(Horizontal, AppType):
     def _update_existing_test_paths(self) -> None:
         colored_paths: list[str] = []
         for path in TEST_PATHS.list_existing_test_paths():
-            if path in CMD.cache.managed_dir_paths:
+            if path in CMD.cache.sets.managed_dirs:
                 colored_paths.append(f"[$text-accent bold]{path}[/]")
-            elif path in CMD.cache.managed_file_paths:
+            elif path in CMD.cache.sets.managed_files:
                 colored_paths.append(f"[$text-accent]{path}[/]")
             else:
                 colored_paths.append(f"[$text-disabled]{path}[/]")

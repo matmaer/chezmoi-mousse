@@ -99,13 +99,13 @@ class DiffView(Container, AppType):
             widgets: list[Label | Static] = []
             if show_path == CMD.cache.dest_dir:
                 widgets = self.dir_nodes[show_path].dir_widgets
-            elif show_path in CMD.cache.managed_dir_paths:
-                if show_path in CMD.cache.dir_status_pairs:
+            elif show_path in CMD.cache.sets.managed_dirs:
+                if show_path in CMD.cache.sets.status_dirs:
                     widgets = self._create_diff_widgets(show_path)
                 else:
                     widgets = self.dir_nodes[show_path].dir_widgets
-            elif show_path in CMD.cache.managed_file_paths:
-                if show_path in CMD.cache.file_status_pairs:
+            elif show_path in CMD.cache.sets.managed_files:
+                if show_path in CMD.cache.sets.status_files:
                     widgets = self._create_diff_widgets(show_path)
                 else:
                     widgets.append(

@@ -44,7 +44,7 @@ class AddTabContentsView(ContentsView):
 
             for name in dirs:
                 path = root_path / name
-                if path not in CMD.cache.managed_dir_paths:
+                if path not in CMD.cache.sets.managed_dirs:
                     unmanaged_dirs.append(str(path.relative_to(CMD.cache.dest_dir)))
                     if len(unmanaged_dirs) >= OUTPUT_LIMIT:
                         limited_dirs = True
@@ -56,7 +56,7 @@ class AddTabContentsView(ContentsView):
             root_path = Path(root)
             for name in files:
                 path = root_path / name
-                if path not in CMD.cache.managed_file_paths:
+                if path not in CMD.cache.sets.managed_files:
                     unmanaged_files.append(str(path.relative_to(CMD.cache.dest_dir)))
                     if len(unmanaged_files) >= OUTPUT_LIMIT:
                         limited_files = True
