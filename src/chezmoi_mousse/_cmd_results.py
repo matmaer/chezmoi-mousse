@@ -140,20 +140,6 @@ class CachedData:
         # cached for frequent lookups
         self.sets: PathSets = PathSets()
 
-    #####################################################
-    # Properties derived from the above command results #
-    #####################################################
-
-    @property
-    def global_git_log_lines(self) -> list[str]:
-        if self.git_log is None or not self.git_log.std_out:
-            return ["No commits;No git log entries available yet."]
-        return self.git_log.std_out.splitlines()
-
-    ########################################################
-    # Derived properties depending on the properties above #
-    ########################################################
-
     @property
     def _apply_status_dirs(self) -> dict[Path, StatusCode]:
         if self.status_dirs is None:

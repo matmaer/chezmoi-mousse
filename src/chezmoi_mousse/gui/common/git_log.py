@@ -69,9 +69,11 @@ class GitLogView(Container, AppType):
             container.display = True
         except NoMatches:
             if show_path == CMD.cache.dest_dir:
-                container = self._create_datatable_container(
-                    CMD.cache.global_git_log_lines, show_path
-                )
+                if CMD.cache.git_log is None or not CMD.cache.git_log.std_out:
+                    git_log_lines = ["No commits;No git log entries available yet."]
+                else:
+                    git_log_lines = CMD.cache.git_log.std_out.splitlines()
+                container = self._create_datatable_container(git_log_lines, show_path)
             else:
                 cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
                 self.post_message(LogCmdResultMsg(cmd_result))
