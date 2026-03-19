@@ -199,14 +199,6 @@ class CachedData:
         return self._dir_status_pairs | self._file_status_pairs
 
     @property
-    def tree_x_dirs(self) -> list[Path]:
-        return [
-            d
-            for d in self.sets.managed_dirs
-            if d not in self.sets.x_dirs_with_status_children
-        ]
-
-    @property
     def no_status_paths(self) -> bool:
         return self.verify is not None and self.verify.exit_code == 0
 

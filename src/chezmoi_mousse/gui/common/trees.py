@@ -202,11 +202,10 @@ class ManagedTree(TreeBase):
                             node.expand()
 
         elif unchanged is False:
-            # remove x_files and x_dirs from managed tree
             for tree_node in nodes_before_toggle:
-                if (
-                    tree_node.data in CMD.cache.sets.x_files
-                    or tree_node.data in CMD.cache.tree_x_dirs
+                if tree_node.data in CMD.cache.sets.x_files or (
+                    tree_node.data in CMD.cache.sets.x_dirs
+                    and tree_node.data not in CMD.cache.sets.x_dirs_with_status_children
                 ):
                     with contextlib.suppress(Exception):
                         tree_node.remove()
