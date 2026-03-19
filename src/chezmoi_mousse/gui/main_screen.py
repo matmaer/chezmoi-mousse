@@ -116,6 +116,7 @@ class CommandOutput(ScrollableContainer):
     def on_mount(self) -> None:
         self.display = False
 
+    @work
     async def update_mounted(self) -> None:
         for cmd_result in CMD.loading_modal_results:
             self.mount(cmd_result.pretty_collapsible, after=0)
@@ -220,13 +221,13 @@ class MainScreen(Screen[None], AppType):
             for read_cmd in self.READ_CMDS:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
-            await self.command_output.update_mounted()
+            await self.command_output.update_mounted().wait()
             self.loading_modal.dismiss()
         elif btn_enum == OpBtnEnum.refresh_tree:
             for read_cmd in self.READ_CMDS:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
-            await self.command_output.update_mounted()
+            await self.command_output.update_mounted().wait()
             self.loading_modal.dismiss()
         elif btn_enum == OpBtnEnum.reload:
             if not CMD.changed_paths and btn_enum == OpBtnEnum.reload:
@@ -237,7 +238,7 @@ class MainScreen(Screen[None], AppType):
                 self.loading_modal.dismiss()
                 return
             else:
-                await self.command_output.update_mounted()
+                await self.command_output.update_mounted().wait()
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
                 await self._log_all_cmd_results(CMD.loading_modal_results).wait()
