@@ -306,13 +306,6 @@ class CachedData:
             },
         )
 
-    def update_apply_and_re_add_dir_nodes(self) -> None:
-        for dir_path in self.managed_dirs_with_dest_dir:
-            self.apply_dir_nodes[dir_path] = self.get_dir_node(dir_path, TabLabel.apply)
-            self.re_add_dir_nodes[dir_path] = self.get_dir_node(
-                dir_path, TabLabel.re_add
-            )
-
     def update_path_sets(self) -> None:
         self.sets.managed_files = set(self.managed_file_paths)
         self.sets.managed_dirs = set(self.managed_dir_paths)
