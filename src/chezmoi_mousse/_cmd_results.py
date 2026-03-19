@@ -101,6 +101,17 @@ class DirNode:
         return widgets
 
 
+@dataclass(slots=True)
+class PathSets:
+    managed_paths: set[Path] = field(default_factory=lambda: set())
+    status_paths: set[Path] = field(default_factory=lambda: set())
+    managed_dirs: set[Path] = field(default_factory=lambda: set())
+    managed_dirs_plus_dest_dir: set[Path] = field(default_factory=lambda: set())
+    managed_files: set[Path] = field(default_factory=lambda: set())
+    status_dirs: set[Path] = field(default_factory=lambda: set())
+    status_files: set[Path] = field(default_factory=lambda: set())
+
+
 class CachedData:
     def __init__(self) -> None:
         # command result caches (instance attributes so deepcopy snapshots work)
@@ -109,7 +120,6 @@ class CachedData:
         self.dump_config: CommandResult | None = None
         self.git_log: CommandResult | None = None
         self.ignored: CommandResult | None = None
-        self.managed: CommandResult | None = None
         self.managed_dirs: CommandResult | None = None
         self.managed_files: CommandResult | None = None
         self.status_dirs: CommandResult | None = None
@@ -125,6 +135,9 @@ class CachedData:
         self.git_auto_commit: bool = False
         self.git_auto_push: bool = False
 
+        # cached for frequent lookups
+        self.sets: PathSets = PathSets()
+
     #####################################################
     # Properties derived from the above command results #
     #####################################################
@@ -136,26 +149,20 @@ class CachedData:
         return self.git_log.std_out.splitlines()
 
     @property
-    def managed_paths(self) -> set[Path]:
-        if self.managed is None:
-            return set()
-        return {Path(line) for line in self.managed.std_out.splitlines()}
-
-    @property
     def managed_dir_paths(self) -> list[Path]:
         if self.managed_dirs is None:
             return []
         return [Path(line) for line in self.managed_dirs.std_out.splitlines()]
 
     @property
-    def managed_dirs_with_dest_dir(self) -> list[Path]:
-        return [self.dest_dir] + self.managed_dir_paths
-
-    @property
     def managed_file_paths(self) -> list[Path]:
         if self.managed_files is None:
             return []
         return [Path(line) for line in self.managed_files.std_out.splitlines()]
+
+    @property
+    def managed_dirs_with_dest_dir(self) -> list[Path]:
+        return [self.dest_dir] + self.managed_dir_paths
 
     ########################################################
     # Derived properties depending on the properties above #
@@ -288,6 +295,14 @@ class CachedData:
                 self._parse_status_output(1, dirs=False),
                 self._parse_status_output(1, dirs=True),
             )
+
+    def update_path_sets(self) -> None:
+        self.sets.managed_files = set(self.managed_file_paths)
+        self.sets.managed_dirs = set(self.managed_dir_paths)
+        self.sets.managed_paths = self.sets.managed_dirs | self.sets.managed_files
+        self.sets.status_dirs = set(self.dir_status_pairs.keys())
+        self.sets.status_files = set(self.file_status_pairs.keys())
+        self.sets.status_paths = self.sets.status_dirs | self.sets.status_files
 
 
 @dataclass(slots=True)

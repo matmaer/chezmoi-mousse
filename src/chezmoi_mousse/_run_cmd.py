@@ -74,7 +74,6 @@ class ReadCmd(Enum):
     dump_config = (VerbArgs.format_json.value, ReadVerb.dump_config.value)
     git_log = (ReadVerb.git.value,) + VerbArgs.git_log.value
     ignored = (ReadVerb.ignored.value,)
-    managed = (ReadVerb.managed.value, VerbArgs.path_style_absolute.value)
     managed_dirs = (
         ReadVerb.managed.value,
         VerbArgs.path_style_absolute.value,

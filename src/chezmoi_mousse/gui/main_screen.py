@@ -162,7 +162,6 @@ class OpFeedBack(Vertical):
 class MainScreen(Screen[None], AppType):
 
     READ_CMDS: ClassVar[list[ReadCmd]] = [
-        ReadCmd.managed,
         ReadCmd.managed_dirs,
         ReadCmd.managed_files,
         ReadCmd.status_dirs,

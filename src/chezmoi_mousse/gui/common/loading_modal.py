@@ -69,7 +69,7 @@ class LoadingModal(ModalScreen[None], AppType):
         if self.btn_enum != OpBtnEnum.reload:
             CMD.changed_paths.clear()
         CMD.loading_modal_results.clear()
-        self.old_managed_paths: set[Path] = CMD.cache.managed_paths.copy()
+        self.old_managed_paths: set[Path] = CMD.cache.sets.managed_paths.copy()
         self.old_status_pairs: dict[Path, str] = CMD.cache.status_pairs.copy()
 
     def watch_label_text(self, label_text: str | None) -> None:
@@ -110,9 +110,9 @@ class LoadingModal(ModalScreen[None], AppType):
         # | union: all elements that exist in either set
 
         # Collect changed paths: Symmetric difference (added/removed) + Status changes
-        changed_paths = (self.old_managed_paths ^ set(CMD.cache.managed_paths)) | {
+        changed_paths = (self.old_managed_paths ^ CMD.cache.sets.managed_paths) | {
             p
-            for p in self.old_managed_paths & set(CMD.cache.managed_paths)
+            for p in self.old_managed_paths & CMD.cache.sets.managed_paths
             if self.old_status_pairs.get(p) != CMD.cache.status_pairs.get(p)
         }
         CMD.changed_paths = sorted(changed_paths)
