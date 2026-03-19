@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import ContentSwitcher
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, DirNode, OpBtnEnum, TabLabel, Tcss
+from chezmoi_mousse import CMD, AppType, OpBtnEnum, TabLabel, Tcss
 
 from .actionables import OpButton, TabButton, TabButtons
 from .contents import ContentsView
@@ -51,13 +51,6 @@ class TreeSwitcher(Vertical, AppType):
         refresh_btn.remove_class(Tcss.operate_button)
         refresh_btn.add_class(Tcss.refresh_button)
         self.content_switcher = self.query_exactly_one(ContentSwitcher)
-
-    @property
-    def dir_nodes(self) -> dict[Path, "DirNode"]:
-        if self.ids.canvas_name == TabLabel.apply:
-            return CMD.cache.apply_dir_nodes
-        else:
-            return CMD.cache.re_add_dir_nodes
 
     @on(TabButton.Pressed)
     def switch_view(self, event: TabButton.Pressed) -> None:
@@ -103,7 +96,7 @@ class TreeSwitcher(Vertical, AppType):
         if unchanged is True:
             for node in nodes_before_toggle:
                 # Add unchanged children to nodes already in the tree (the changed ones)
-                if node.data in self.dir_nodes:
+                if node.data in CMD.cache.sets.managed_dirs:
                     dir_node = CMD.cache.get_dir_node(node.data, self.ids.canvas_name)
                     x_files_in = CMD.cache.get_x_files_in(node.data)
                     # Only populate if there are actual unchanged paths in this
@@ -113,7 +106,6 @@ class TreeSwitcher(Vertical, AppType):
                         # Only expand if expand_all is enabled
                         if self.expand_all:
                             node.expand()
-
             for x_file in CMD.cache.sets.x_files:
                 if x_file in [node.data for node in list_tree_nodes]:
                     continue
