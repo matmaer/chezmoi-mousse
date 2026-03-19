@@ -71,7 +71,9 @@ class TreeSwitcher(Vertical, AppType):
         return managed_tree.get_all_nodes()
 
     def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
-        dir_node = self.dir_nodes[dir_path]
+        if tree_node.data is None:
+            return
+        dir_node = CMD.cache.get_dir_node(tree_node.data, self.ids.canvas_name)
         for x_file in CMD.cache.get_x_files_in(dir_path):
             tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
 
@@ -82,27 +84,27 @@ class TreeSwitcher(Vertical, AppType):
             self._populate_x_node(new_x_node, x_sub_dir)
 
     def watch_expand_all(self, expand_all: bool) -> None:
-        nodes_before_expand_all_toggle = self._get_managed_tree_nodes()
+        nodes_before_toggle = self._get_managed_tree_nodes()
         if expand_all is True:
             self.old_expanded_nodes = [
-                node for node in nodes_before_expand_all_toggle if node.is_expanded
+                node for node in nodes_before_toggle if node.is_expanded
             ]
-            for node in nodes_before_expand_all_toggle:
+            for node in nodes_before_toggle:
                 node.expand()
         else:
-            for node in nodes_before_expand_all_toggle:
+            for node in nodes_before_toggle:
                 if node not in self.old_expanded_nodes:
                     node.collapse()
 
     def watch_unchanged(self, unchanged: bool) -> None:
-        nodes_before_unchanged_toggle = self._get_managed_tree_nodes()
+        nodes_before_toggle = self._get_managed_tree_nodes()
         list_tree = self.query_exactly_one(ListTree)
         list_tree_nodes = list_tree.get_all_nodes()
         if unchanged is True:
-            for node in nodes_before_unchanged_toggle:
+            for node in nodes_before_toggle:
                 # Add unchanged children to nodes already in the tree (the changed ones)
                 if node.data in self.dir_nodes:
-                    dir_node = self.dir_nodes[node.data]
+                    dir_node = CMD.cache.get_dir_node(node.data, self.ids.canvas_name)
                     x_files_in = CMD.cache.get_x_files_in(node.data)
                     # Only populate if there are actual unchanged paths in this
                     # directory
@@ -119,7 +121,7 @@ class TreeSwitcher(Vertical, AppType):
                 list_tree.root.add_leaf(f"[dim]{rel_path}[/]", x_file)
         elif unchanged is False:
             # remove x_files and x_dirs from managed tree
-            for tree_node in nodes_before_unchanged_toggle:
+            for tree_node in nodes_before_toggle:
                 if (
                     tree_node.data in CMD.cache.sets.x_files
                     or tree_node.data in CMD.cache.tree_x_dirs

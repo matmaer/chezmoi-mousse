@@ -296,6 +296,6 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            CMD.cache.update_apply_and_re_add_dir_nodes()
+            CMD.cache.update_path_sets()
             if all(w for w in self.workers if w.is_finished):
                 self.dismiss()

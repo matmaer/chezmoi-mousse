@@ -13,8 +13,6 @@ from .messages import LogCmdResultMsg
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import DirNode
-
 
 __all__ = ["DiffView"]
 
@@ -45,13 +43,6 @@ class DiffView(Container, AppType):
     def hide_all_containers(self) -> None:
         for container in self.query_children(ScrollableContainer):
             container.display = False
-
-    @property
-    def dir_nodes(self) -> dict["Path", "DirNode"]:
-        if self.ids.canvas_name == TabLabel.apply:
-            return CMD.cache.apply_dir_nodes
-        else:
-            return CMD.cache.re_add_dir_nodes
 
     def _create_diff_widgets(self, path: "Path") -> list[Label | Static]:
         widgets: list[Label | Static] = []
@@ -98,12 +89,16 @@ class DiffView(Container, AppType):
         except NoMatches:
             widgets: list[Label | Static] = []
             if show_path == CMD.cache.dest_dir:
-                widgets = self.dir_nodes[show_path].dir_widgets
+                widgets = CMD.cache.get_dir_node(
+                    show_path, self.ids.canvas_name
+                ).dir_widgets
             elif show_path in CMD.cache.sets.managed_dirs:
                 if show_path in CMD.cache.sets.status_dirs:
                     widgets = self._create_diff_widgets(show_path)
                 else:
-                    widgets = self.dir_nodes[show_path].dir_widgets
+                    widgets = CMD.cache.get_dir_node(
+                        show_path, self.ids.canvas_name
+                    ).dir_widgets
             elif show_path in CMD.cache.sets.managed_files:
                 if show_path in CMD.cache.sets.status_files:
                     widgets = self._create_diff_widgets(show_path)

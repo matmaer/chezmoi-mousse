@@ -8,7 +8,7 @@ from textual.widgets import Label, Static
 
 from ._run_cmd import ChezmoiCommand
 from ._str_enum_names import Tcss
-from ._str_enums import StatusCode
+from ._str_enums import StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from typing import Any
@@ -24,7 +24,6 @@ type ParsedJson = dict[str, Any]
 @dataclass(slots=True)
 class DirNode:
     dir_path: Path
-    dir_status: StatusCode
     status_files_in: dict[Path, StatusCode]
     real_status_dirs_in: dict[Path, StatusCode]
     tree_status_dirs_in: dict[Path, StatusCode]
@@ -170,17 +169,41 @@ class CachedData:
     # Derived properties depending on the properties above #
     ########################################################
 
-    def _parse_status_output(
-        self, index: int, dirs: bool = False
-    ) -> dict[Path, StatusCode]:
-        status_lines = []
-        if dirs and self.status_dirs is not None:
-            status_lines = self.status_dirs.std_out.splitlines()
-        elif not dirs and self.status_files is not None:
-            status_lines = self.status_files.std_out.splitlines()
-        if not status_lines:
+    @property
+    def _apply_status_dirs(self) -> dict[Path, StatusCode]:
+        if self.status_dirs is None:
             return {}
-        return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
+        return {
+            Path(line[3:]): StatusCode(line[0])
+            for line in self.status_dirs.std_out.splitlines()
+        }
+
+    @property
+    def _apply_status_files(self) -> dict[Path, StatusCode]:
+        if self.status_files is None:
+            return {}
+        return {
+            Path(line[3:]): StatusCode(line[0])
+            for line in self.status_files.std_out.splitlines()
+        }
+
+    @property
+    def _re_add_status_dirs(self) -> dict[Path, StatusCode]:
+        if self.status_dirs is None:
+            return {}
+        return {
+            Path(line[3:]): StatusCode(line[1])
+            for line in self.status_dirs.std_out.splitlines()
+        }
+
+    @property
+    def _re_add_status_files(self) -> dict[Path, StatusCode]:
+        if self.status_files is None:
+            return {}
+        return {
+            Path(line[3:]): StatusCode(line[1])
+            for line in self.status_files.std_out.splitlines()
+        }
 
     @property
     def dir_status_pairs(self) -> dict[Path, str]:
@@ -223,14 +246,6 @@ class CachedData:
         ]
 
     @property
-    def x_files(self) -> list[Path]:
-        return [
-            path
-            for path in self.managed_file_paths
-            if path not in self.file_status_pairs
-        ]
-
-    @property
     def no_status_paths(self) -> bool:
         return self.verify is not None and self.verify.exit_code == 0
 
@@ -238,15 +253,23 @@ class CachedData:
         return {
             path: StatusCode.No_Status
             for path in self.managed_file_paths
-            if path.parent == dir_path and path not in self.file_status_pairs
+            if path.parent == dir_path and path not in self.sets.status_files
         }
 
-    def _get_dir_node(
-        self,
-        dir_path: Path,
-        status_files: dict[Path, StatusCode],
-        status_dirs: dict[Path, StatusCode],
-    ) -> DirNode:
+    def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
+        if canvas_name == TabLabel.apply:
+            paths_dict = self._apply_status_dirs | self._apply_status_files
+        else:
+            paths_dict = self._re_add_status_dirs | self._re_add_status_files
+        return paths_dict.get(path, StatusCode.No_Status)
+
+    def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
+        if canvas_name == TabLabel.apply:
+            status_files = self._apply_status_files
+            status_dirs = self._apply_status_dirs
+        else:
+            status_files = self._re_add_status_files
+            status_dirs = self._re_add_status_dirs
         # sub dir paths are the same for apply and re_add contexts
         sub_dir_paths = [
             p for p in self.managed_dirs_with_dest_dir if p.parent == dir_path
@@ -263,7 +286,6 @@ class CachedData:
 
         return DirNode(
             dir_path=dir_path,
-            dir_status=status_dirs.get(dir_path, StatusCode.No_Status),
             status_files_in={
                 p: s for p, s in status_files.items() if p.parent == dir_path
             },
@@ -285,18 +307,10 @@ class CachedData:
         )
 
     def update_apply_and_re_add_dir_nodes(self) -> None:
-        self.update_path_sets()
         for dir_path in self.managed_dirs_with_dest_dir:
-
-            self.apply_dir_nodes[dir_path] = self._get_dir_node(
-                dir_path,
-                self._parse_status_output(0, dirs=False),
-                self._parse_status_output(0, dirs=True),
-            )
-            self.re_add_dir_nodes[dir_path] = self._get_dir_node(
-                dir_path,
-                self._parse_status_output(1, dirs=False),
-                self._parse_status_output(1, dirs=True),
+            self.apply_dir_nodes[dir_path] = self.get_dir_node(dir_path, TabLabel.apply)
+            self.re_add_dir_nodes[dir_path] = self.get_dir_node(
+                dir_path, TabLabel.re_add
             )
 
     def update_path_sets(self) -> None:
@@ -308,7 +322,11 @@ class CachedData:
         self.sets.status_files = set(self.file_status_pairs.keys())
         self.sets.status_paths = self.sets.status_dirs | self.sets.status_files
         self.sets.x_dirs = set(self.tree_x_dirs)
-        self.sets.x_files = set(self.x_files)
+        self.sets.x_files = {
+            path
+            for path in self.sets.managed_files
+            if path not in self.sets.status_files
+        }
 
 
 @dataclass(slots=True)

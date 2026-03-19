@@ -61,7 +61,7 @@ class TreeBase(Tree[Path], AppType):
                 status = dir_node.status_files_in[path]
                 break
         else:
-            status = self.dir_nodes[path].dir_status
+            status = CMD.cache.get_path_status(path, self.ids.canvas_name)
 
         # Get color and create styled label
         color = self._node_colors.get(status, self._node_colors[StatusCode.No_Status])
@@ -134,7 +134,7 @@ class ManagedTree(TreeBase):
         self.select_node(self.root)
 
     def _populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
-        dir_node = self.dir_nodes[dir_path]
+        dir_node = CMD.cache.get_dir_node(dir_path, self.ids.canvas_name)
         for sub_dir, _ in dir_node.tree_status_dirs_in.items():
             child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
             self._populate_node(child_node, sub_dir)
