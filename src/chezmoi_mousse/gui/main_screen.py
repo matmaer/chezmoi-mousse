@@ -163,7 +163,6 @@ class MainScreen(Screen[None], AppType):
 
     READ_CMDS: ClassVar[list[ReadCmd]] = [
         ReadCmd.managed,
-        ReadCmd.status,
         ReadCmd.managed_dirs,
         ReadCmd.managed_files,
         ReadCmd.status_dirs,
@@ -372,7 +371,7 @@ class MainScreen(Screen[None], AppType):
         )
         # disable/enable review buttons for file nodes
         if msg.path in CMD.cache.managed_file_paths:
-            has_status = msg.path in CMD.cache.status_pairs
+            has_status = msg.path in CMD.cache.file_status_pairs
             self.query_one(ids.tab_operation_btn_q, Button).disabled = not has_status
             for btn_id_q in ids.forget_destroy_review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = not has_status
@@ -386,7 +385,7 @@ class MainScreen(Screen[None], AppType):
                 for btn_id_q in ids.forget_destroy_review_btn_qids:
                     self.query_one(btn_id_q, Button).disabled = False
                 self.query_one(ids.tab_operation_btn_q, Button).disabled = bool(
-                    msg.path not in CMD.cache.status_pairs
+                    msg.path not in CMD.cache.dir_status_pairs
                     and msg.path not in CMD.cache.x_dirs_with_status_children
                 )
 

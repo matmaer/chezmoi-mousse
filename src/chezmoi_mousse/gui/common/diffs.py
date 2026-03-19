@@ -100,12 +100,12 @@ class DiffView(Container, AppType):
             if show_path == CMD.cache.dest_dir:
                 widgets = self.dir_nodes[show_path].dir_widgets
             elif show_path in CMD.cache.managed_dir_paths:
-                if show_path in CMD.cache.status_pairs:
+                if show_path in CMD.cache.dir_status_pairs:
                     widgets = self._create_diff_widgets(show_path)
                 else:
                     widgets = self.dir_nodes[show_path].dir_widgets
             elif show_path in CMD.cache.managed_file_paths:
-                if show_path in CMD.cache.status_pairs:
+                if show_path in CMD.cache.file_status_pairs:
                     widgets = self._create_diff_widgets(show_path)
                 else:
                     widgets.append(

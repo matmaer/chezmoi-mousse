@@ -112,7 +112,6 @@ class CachedData:
         self.managed: CommandResult | None = None
         self.managed_dirs: CommandResult | None = None
         self.managed_files: CommandResult | None = None
-        self.status: CommandResult | None = None
         self.status_dirs: CommandResult | None = None
         self.status_files: CommandResult | None = None
         self.template_data: CommandResult | None = None
@@ -175,12 +174,26 @@ class CachedData:
         return {Path(line[3:]): StatusCode(line[index]) for line in status_lines}
 
     @property
-    def status_pairs(self) -> dict[Path, str]:
-        if self.status is None:
+    def dir_status_pairs(self) -> dict[Path, str]:
+        if self.status_dirs is None:
             return {}
         return {
-            Path(line[3:]): line[:2] for line in list(self.status.std_out.splitlines())
+            Path(line[3:]): line[:2]
+            for line in list(self.status_dirs.std_out.splitlines())
         }
+
+    @property
+    def file_status_pairs(self) -> dict[Path, str]:
+        if self.status_files is None:
+            return {}
+        return {
+            Path(line[3:]): line[:2]
+            for line in list(self.status_files.std_out.splitlines())
+        }
+
+    @property
+    def status_pairs(self) -> dict[Path, str]:
+        return self.dir_status_pairs | self.file_status_pairs
 
     @property
     def x_dirs_with_status_children(self) -> set[Path]:
@@ -203,7 +216,9 @@ class CachedData:
     @property
     def x_files(self) -> list[Path]:
         return [
-            path for path in self.managed_file_paths if path not in self.status_pairs
+            path
+            for path in self.managed_file_paths
+            if path not in self.file_status_pairs
         ]
 
     @property
@@ -214,7 +229,7 @@ class CachedData:
         return {
             path: StatusCode.No_Status
             for path in self.managed_file_paths
-            if path.parent == dir_path and path not in self.status_pairs
+            if path.parent == dir_path and path not in self.file_status_pairs
         }
 
     def _get_dir_node(

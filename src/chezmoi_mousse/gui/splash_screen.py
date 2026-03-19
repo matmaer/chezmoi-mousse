@@ -41,7 +41,6 @@ SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.managed,
     ReadCmd.managed_dirs,
     ReadCmd.managed_files,
-    ReadCmd.status,
     ReadCmd.status_dirs,
     ReadCmd.status_files,
     ReadCmd.template_data,
@@ -162,23 +161,23 @@ class SplashScreen(Screen[None], AppType):
 
     @work
     async def _chezmoi_found_workers(self) -> None:
-        status_worker = self._run_io_worker(ReadCmd.status)
-        await status_worker.wait()
-        if status_worker.state == WorkerState.SUCCESS:
-            if CMD.cache.status_files is not None and (
-                CMD.cache.status_files.exit_code != 0
-                or self.app.force_init_needed is True
-            ):
-                self.app.init_needed = True
-                self.app.force_init_needed = False
-                # Run io workers for OperateScreen init commands
-                self._run_io_worker(ReadCmd.doctor)
-                self._run_io_worker(ReadCmd.template_data)
-            else:
-                for splash_cmd in SPLASH_COMMANDS:
-                    if splash_cmd == ReadCmd.status:
-                        continue
-                    self._run_io_worker(splash_cmd)
+        worker = self._run_io_worker(ReadCmd.status_files)
+        # try to run chezmoi status to see if init is needed
+        await worker.wait()
+        if (
+            CMD.cache.status_files is not None
+            and CMD.cache.status_files.completed_process.returncode != 0
+        ):
+            self.app.init_needed = True
+            self.app.force_init_needed = False
+            # Run io workers for extra info when init is needed
+            self._run_io_worker(ReadCmd.doctor)
+            self._run_io_worker(ReadCmd.template_data)
+        else:
+            for splash_cmd in SPLASH_COMMANDS:
+                if splash_cmd == ReadCmd.status_files:
+                    continue
+                self._run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
