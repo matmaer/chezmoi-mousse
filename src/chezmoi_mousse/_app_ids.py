@@ -267,6 +267,8 @@ class OperateButtonIds:
 
 class StaticIds:
     def __init__(self, ids: AppIds):
+        self.changed_paths: str = ids.static_id(static=StaticName.changed_paths)
+        self.changed_paths_q: str = f"#{self.changed_paths}"
         self.debug_test_paths: str = ids.static_id(static=StaticName.debug_test_paths)
         self.debug_test_paths_q: str = f"#{self.debug_test_paths}"
         self.init_info: str = ids.static_id(static=StaticName.init_info)

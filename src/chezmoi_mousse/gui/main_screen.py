@@ -8,7 +8,16 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Label, Static, TabbedContent, TabPane, Tabs
+from textual.widgets import (
+    Button,
+    Collapsible,
+    Footer,
+    Label,
+    Static,
+    TabbedContent,
+    TabPane,
+    Tabs,
+)
 
 from chezmoi_mousse import (
     CMD,
@@ -110,16 +119,17 @@ class CommandOutput(ScrollableContainer):
         super().__init__(id=IDS.main_tabs.container.command_output)
 
     def compose(self) -> ComposeResult:
-        yield Label("Command output", classes=Tcss.main_section_label)
         yield Label("Changed paths", classes=Tcss.main_section_label)
+        yield Static(id=IDS.main_tabs.static.changed_paths, classes=Tcss.info)
+        yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self.display = False
+        self.changed_paths_static = self.query_one(
+            IDS.main_tabs.static.changed_paths_q, Static
+        )
 
     @work
     async def update_mounted(self) -> None:
-        for cmd_result in CMD.loading_modal_results:
-            self.mount(cmd_result.pretty_collapsible, after=0)
         if not CMD.changed_paths:
             dry_run = (
                 " (dry run)"
@@ -128,10 +138,12 @@ class CommandOutput(ScrollableContainer):
                 )
                 else ""
             )
-            self.mount(Static(f"No paths changed.{dry_run}"))
+            self.changed_paths_static.update(f"No paths changed.{dry_run}")
         else:
-            for path in CMD.changed_paths:
-                self.mount(Static(str(path), classes=Tcss.info))
+            changed_paths_strings = "\n".join(str(path) for path in CMD.changed_paths)
+            self.changed_paths_static.update(changed_paths_strings)
+        for cmd_result in CMD.loading_modal_results:
+            self.mount(cmd_result.pretty_collapsible)
 
 
 class OpFeedBack(Vertical):
@@ -230,15 +242,13 @@ class MainScreen(Screen[None], AppType):
             await self.command_output.update_mounted().wait()
             self.loading_modal.dismiss()
         elif btn_enum == OpBtnEnum.reload:
-            if not CMD.changed_paths and btn_enum == OpBtnEnum.reload:
+            if len(CMD.changed_paths) == 0:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
                 )
                 self.loading_modal.dismiss()
-                return
             else:
-                await self.command_output.update_mounted().wait()
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
                 await self._log_all_cmd_results(CMD.loading_modal_results).wait()
@@ -293,10 +303,14 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _update_trees(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees.with_color
-        list_trees = self.query(ListTree).results()
-        managed_trees = self.query(ManagedTree).results()
-        for tree in chain(list_trees, managed_trees):
-            tree.populate_tree()
+        apply_list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
+        apply_managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
+        re_add_list_tree = self.query_one(IDS.re_add.tree.list_q, ListTree)
+        re_add_managed_tree = self.query_one(IDS.re_add.tree.managed_q, ManagedTree)
+        apply_list_tree.populate_tree()
+        apply_managed_tree.populate_tree()
+        re_add_list_tree.populate_tree()
+        re_add_managed_tree.populate_tree()
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
@@ -321,12 +335,13 @@ class MainScreen(Screen[None], AppType):
             self.operate_info.update_review_info(event.button)
             return
         if event.button.btn_enum == OpBtnEnum.reload:
-            self.command_output.remove_children()
+            collapsibles = self.command_output.query(Collapsible).results()
+            for collapsible in collapsibles:
+                collapsible.remove()
             await self._push_loading_modal(OpBtnEnum.reload).wait()
         elif (
-            event.button.btn_enum
-            in self.app.run_btn_enums
-            # or event.button.btn_enum == OpBtnEnum.refresh_tree
+            event.button.btn_enum in self.app.run_btn_enums
+            or event.button.btn_enum == OpBtnEnum.refresh_tree
         ):
             await self._push_loading_modal(event.button.btn_enum).wait()
 

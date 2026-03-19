@@ -66,8 +66,9 @@ class LoadingModal(ModalScreen[None], AppType):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
-        CMD.changed_paths = []
-        CMD.loading_modal_results = []
+        if self.btn_enum != OpBtnEnum.reload:
+            CMD.changed_paths.clear()
+        CMD.loading_modal_results.clear()
         self.old_managed_paths: set[Path] = CMD.cache.managed_paths.copy()
         self.old_status_pairs: dict[Path, str] = CMD.cache.status_pairs.copy()
 
