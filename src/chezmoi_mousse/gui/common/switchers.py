@@ -72,7 +72,7 @@ class TreeSwitcher(Vertical, AppType):
 
     def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         dir_node = self.dir_nodes[dir_path]
-        for x_file in dir_node.x_files_in:
+        for x_file in CMD.cache.get_x_files_in(dir_path):
             tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
 
         for x_sub_dir in dir_node.tree_x_dirs_in:
@@ -103,9 +103,10 @@ class TreeSwitcher(Vertical, AppType):
                 # Add unchanged children to nodes already in the tree (the changed ones)
                 if node.data in self.dir_nodes:
                     dir_node = self.dir_nodes[node.data]
+                    x_files_in = CMD.cache.get_x_files_in(node.data)
                     # Only populate if there are actual unchanged paths in this
                     # directory
-                    if dir_node.x_files_in or dir_node.tree_x_dirs_in:
+                    if x_files_in or dir_node.tree_x_dirs_in:
                         self._populate_x_node(node, node.data)
                         # Only expand if expand_all is enabled
                         if self.expand_all:

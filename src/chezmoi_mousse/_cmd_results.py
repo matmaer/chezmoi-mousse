@@ -25,7 +25,6 @@ type ParsedJson = dict[str, Any]
 class DirNode:
     dir_path: Path
     dir_status: StatusCode
-    x_files_in: dict[Path, StatusCode]
     status_files_in: dict[Path, StatusCode]
     real_status_dirs_in: dict[Path, StatusCode]
     tree_status_dirs_in: dict[Path, StatusCode]
@@ -217,18 +216,19 @@ class CachedData:
     def no_status_paths(self) -> bool:
         return self.verify is not None and self.verify.exit_code == 0
 
+    def get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+        return {
+            path: StatusCode.No_Status
+            for path in self.managed_file_paths
+            if path.parent == dir_path and path not in self.status_paths
+        }
+
     def _get_dir_node(
         self,
         dir_path: Path,
         status_files: dict[Path, StatusCode],
         status_dirs: dict[Path, StatusCode],
     ) -> DirNode:
-        # x files are the same for apply and re_add contexts
-        x_files_in = {
-            path: StatusCode.No_Status
-            for path in self.managed_file_paths
-            if path.parent == dir_path and path not in self.status_paths
-        }
         # sub dir paths are the same for apply and re_add contexts
         sub_dir_paths = [
             p for p in self.managed_dirs_with_dest_dir if p.parent == dir_path
@@ -249,7 +249,6 @@ class CachedData:
             status_files_in={
                 p: s for p, s in status_files.items() if p.parent == dir_path
             },
-            x_files_in=x_files_in,
             real_status_dirs_in={
                 p: s for p, s in status_dirs.items() if p.parent == dir_path
             },
