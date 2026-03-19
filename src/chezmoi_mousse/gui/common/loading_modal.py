@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
 # not needed for anything else than showing log messages briefly for humans
-MIN_WAIT_TIME = 1.5
+MIN_WAIT_TIME = 0.4
 
 
 def min_wait(
