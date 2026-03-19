@@ -192,23 +192,24 @@ class StatusCode(StrEnum):
     Added = "A"
     Deleted = "D"
     Modified = "M"
-    No_Change = " "
-    No_Status = "X"
-    Run = "R"  # not implemented TODO: disable operate buttons
-    # Fake X status: managed paths absent from chezmoi status output
+    Space = " "
+    Nested = "N"  # Fake status used for dirs without status but with status children
 
     @property
-    def _static_markup_colors(self) -> dict[str, str]:
+    def _theme_var_color_name(self) -> dict[str, str]:
         return {
-            StatusCode.Added: "[$text-success]",
-            StatusCode.Deleted: "[$text-error]",
-            StatusCode.Modified: "[$text-warning]",
-            StatusCode.No_Change: "[$warning-darken-2]",
-            StatusCode.Run: "[$error]",
-            StatusCode.No_Status: "[$text-secondary]",
+            StatusCode.Added: "text-success",
+            StatusCode.Deleted: "text-error",
+            StatusCode.Modified: "text-warning",
+            StatusCode.Space: "text-muted",
+            StatusCode.Nested: "text-secondary",
         }
 
     @property
-    def color(self) -> str:
+    def color_var(self) -> str:
+        return self._theme_var_color_name[self.value]
+
+    @property
+    def color_tag(self) -> str:
         # return the color for a status code
-        return self._static_markup_colors[self]
+        return f"[${self.color_var}]"

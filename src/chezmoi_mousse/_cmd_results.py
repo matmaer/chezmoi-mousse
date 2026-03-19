@@ -81,13 +81,13 @@ class DirNode:
                 )
             )
             for path, status in self.real_status_dirs_in.items():
-                widgets.append(Static(f"{status.color}{path}[/]"))
+                widgets.append(Static(f"{status.color_tag}{path}[/]"))
         if self.status_files_in:
             widgets.append(
                 Label("Contains files with a status", classes=Tcss.sub_section_label)
             )
             for path, status in self.status_files_in.items():
-                widgets.append(Static(f"{status.color}{path}[/]"))
+                widgets.append(Static(f"{status.color_tag}{path}[/]"))
         if self.nested_status_files:
             widgets.append(
                 Label(
@@ -96,7 +96,7 @@ class DirNode:
                 )
             )
             for path, status in sorted(self.nested_status_files.items()):
-                widgets.append(Static(f"{status.color}{path}[/]"))
+                widgets.append(Static(f"{status.color_tag}{path}[/]"))
         return widgets
 
 
@@ -251,17 +251,19 @@ class CachedData:
 
     def get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
         return {
-            path: StatusCode.No_Status
+            path: StatusCode.Space
             for path in self.managed_file_paths
             if path.parent == dir_path and path not in self.sets.status_files
         }
 
     def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
+        if path in self.x_dirs_with_status_children:
+            return StatusCode.Nested
         if canvas_name == TabLabel.apply:
             paths_dict = self._apply_status_dirs | self._apply_status_files
         else:
             paths_dict = self._re_add_status_dirs | self._re_add_status_files
-        return paths_dict.get(path, StatusCode.No_Status)
+        return paths_dict.get(path, StatusCode.Space)
 
     def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
         if canvas_name == TabLabel.apply:
@@ -279,10 +281,10 @@ class CachedData:
         for sub_dir in sub_dir_paths:
             if sub_dir in status_dirs or sub_dir in self.x_dirs_with_status_children:
                 tree_status_dirs_in[sub_dir] = status_dirs.get(
-                    sub_dir, StatusCode.No_Status
+                    sub_dir, StatusCode.Space
                 )
             else:
-                tree_x_dirs_in[sub_dir] = StatusCode.No_Status
+                tree_x_dirs_in[sub_dir] = StatusCode.Space
 
         return DirNode(
             dir_path=dir_path,

@@ -38,17 +38,6 @@ class TreeBase(Tree[Path], AppType):
         else:
             return CMD.cache.re_add_dir_nodes
 
-    @property
-    def _node_colors(self) -> dict[str, str]:
-        return {
-            StatusCode.Added: self.app.theme_variables["text-success"],
-            StatusCode.Deleted: self.app.theme_variables["text-error"],
-            StatusCode.Modified: self.app.theme_variables["text-warning"],
-            StatusCode.No_Change: self.app.theme_variables["warning-darken-2"],
-            StatusCode.Run: self.app.theme_variables["error"],
-            StatusCode.No_Status: self.app.theme_variables["text-secondary"],
-        }
-
     def create_colored_label(self, path: Path) -> str:
         label_text = (
             str(path.relative_to(CMD.cache.dest_dir))
@@ -57,16 +46,16 @@ class TreeBase(Tree[Path], AppType):
         )
 
         # Get status code for the path
-        status = StatusCode.No_Status
+        status = StatusCode.Space  # default status if not found
         for dir_node in self.dir_nodes.values():
             if path in dir_node.status_files_in:
-                status = dir_node.status_files_in[path]
+                status = StatusCode.Nested
                 break
         else:
             status = CMD.cache.get_path_status(path, self.ids.canvas_name)
 
         # Get color and create styled label
-        color = self._node_colors.get(status, self._node_colors[StatusCode.No_Status])
+        color = self.app.theme_var_to_hex(status.color_var)
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{label_text}[/]"
 
