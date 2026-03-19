@@ -183,15 +183,9 @@ class CachedData:
         }
 
     @property
-    def status_paths(self) -> set[Path]:
-        if self.status is None:
-            return set()
-        return {Path(line[3:]) for line in self.status.std_out.splitlines()}
-
-    @property
     def x_dirs_with_status_children(self) -> set[Path]:
         status_children: set[Path] = set()
-        for path in self.status_paths:
+        for path in self.status_pairs:
             current = path.parent
             while current != current.parent:
                 status_children.add(current)
@@ -209,7 +203,7 @@ class CachedData:
     @property
     def x_files(self) -> list[Path]:
         return [
-            path for path in self.managed_file_paths if path not in self.status_paths
+            path for path in self.managed_file_paths if path not in self.status_pairs
         ]
 
     @property
@@ -220,7 +214,7 @@ class CachedData:
         return {
             path: StatusCode.No_Status
             for path in self.managed_file_paths
-            if path.parent == dir_path and path not in self.status_paths
+            if path.parent == dir_path and path not in self.status_pairs
         }
 
     def _get_dir_node(
