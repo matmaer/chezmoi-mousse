@@ -1,7 +1,9 @@
+import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
+from textual.reactive import reactive
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
@@ -80,6 +82,8 @@ class TreeBase(Tree[Path], AppType):
 
 class ListTree(TreeBase):
 
+    unchanged: reactive[bool] = reactive(False)
+
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.list_tree)
 
@@ -104,11 +108,26 @@ class ListTree(TreeBase):
     def get_all_nodes(self) -> list[TreeNode[Path]]:
         return [child for child in self.root.children if child.data is not None]
 
+    def watch_unchanged(self, unchanged: bool) -> None:
+        if unchanged is True:
+            for x_file in sorted(CMD.cache.sets.x_files):
+                rel_path = str(x_file.relative_to(CMD.cache.dest_dir))
+                self.root.add_leaf(f"[dim]{rel_path}[/]", x_file)
+        elif unchanged is False:
+            for node in self.get_all_nodes():
+                if node.data in CMD.cache.sets.x_files:
+                    with contextlib.suppress(Exception):
+                        node.remove()
+
 
 class ManagedTree(TreeBase):
 
+    unchanged: reactive[bool] = reactive(False)
+    expand_all: reactive[bool] = reactive(False)
+
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.managed_tree)
+        self.old_expanded_nodes: list[TreeNode[Path]] = []
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
@@ -141,6 +160,19 @@ class ManagedTree(TreeBase):
         for file_path, _ in dir_node.status_files_in.items():
             tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
 
+    def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
+        if tree_node.data is None:
+            return
+        dir_node = CMD.cache.get_dir_node(tree_node.data, self.ids.canvas_name)
+        for x_file in CMD.cache.get_x_files_in(dir_path):
+            tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
+
+        for x_sub_dir in dir_node.tree_x_dirs_in:
+            new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
+            if self.expand_all:
+                new_x_node.expand()
+            self._populate_x_node(new_x_node, x_sub_dir)
+
     def get_all_nodes(self) -> list[TreeNode[Path]]:
         # BFS approach
         all_nodes: list[TreeNode[Path]] = []
@@ -150,3 +182,42 @@ class ManagedTree(TreeBase):
             all_nodes.append(node)  # Add to results
             to_visit.extend(node.children)  # Enqueue children
         return all_nodes
+
+    def watch_expand_all(self, expand_all: bool) -> None:
+        nodes_before_toggle = self.get_all_nodes()
+        if expand_all is True:
+            self.old_expanded_nodes = [
+                node for node in nodes_before_toggle if node.is_expanded
+            ]
+            for node in nodes_before_toggle:
+                node.expand()
+        else:
+            for node in nodes_before_toggle:
+                if node not in self.old_expanded_nodes:
+                    node.collapse()
+
+    def watch_unchanged(self, unchanged: bool) -> None:
+        nodes_before_toggle = self.get_all_nodes()
+        if unchanged is True:
+            for node in nodes_before_toggle:
+                # Add unchanged children to nodes already in the tree (the changed ones)
+                if node.data in CMD.cache.sets.managed_dirs:
+                    dir_node = CMD.cache.get_dir_node(node.data, self.ids.canvas_name)
+                    x_files_in = CMD.cache.get_x_files_in(node.data)
+                    # Only populate if there are actual unchanged paths in this
+                    # directory
+                    if x_files_in or dir_node.tree_x_dirs_in:
+                        self._populate_x_node(node, node.data)
+                        # Only expand if expand_all is enabled
+                        if self.expand_all:
+                            node.expand()
+
+        elif unchanged is False:
+            # remove x_files and x_dirs from managed tree
+            for tree_node in nodes_before_toggle:
+                if (
+                    tree_node.data in CMD.cache.sets.x_files
+                    or tree_node.data in CMD.cache.tree_x_dirs
+                ):
+                    with contextlib.suppress(Exception):
+                        tree_node.remove()

@@ -7,6 +7,7 @@ from chezmoi_mousse import IDS, AppType, SwitchEnum, TabLabel
 
 from .common.actionables import OperateButtons, SwitchSlider, TabButton
 from .common.switchers import TreeSwitcher, ViewSwitcher
+from .common.trees import ListTree, ManagedTree
 
 __all__ = ["ApplyTab"]
 
@@ -20,17 +21,17 @@ class ApplyTab(Container, AppType):
         yield SwitchSlider(IDS.apply)
 
     def on_mount(self) -> None:
-        self.tree_switcher = self.query_one(
-            IDS.apply.container.left_side_q, TreeSwitcher
-        )
+        self.managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
+        self.list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
         if event.switch.id == IDS.apply.switch.unchanged:
-            self.tree_switcher.unchanged = event.value
+            self.list_tree.unchanged = event.value
+            self.managed_tree.unchanged = event.value
         elif event.switch.id == IDS.apply.switch.expand_all:
-            self.tree_switcher.expand_all = event.value
+            self.managed_tree.expand_all = event.value
 
     @on(TabButton.Pressed)
     def enable_disable_expand_all(self, event: TabButton.Pressed) -> None:
