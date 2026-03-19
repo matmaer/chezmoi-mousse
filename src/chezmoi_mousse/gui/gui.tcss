@@ -474,42 +474,43 @@ Footer {
 
 Static {
   &.added {
-    color: $text-success;
-    background: $success-muted;
     background-tint: $success-muted;
+    background: $success-muted;
+    color: $text-success;
   }
   &.changed {
-    color: $text-warning;
-    background: $warning-muted;
     background-tint: $warning-muted;
+    background: $warning-muted;
+    color: $text-warning;
   }
   &.context{
-    color: $text-disabled;
-    background: $surface;
     background-tint: $surface;
+    background: $surface;
+    color: $text-disabled;
   }
   &.info {
-    color: $text-muted;
-    background: $surface;
     background-tint: $surface;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
   }
   &.operate_info {
-    padding: 0 1;
-    height: auto;
-    border: round $foreground;
     border-subtitle-align: center;
     border-title-align: center;
+    border: round $foreground;
+    height: auto;
+    padding: 0 1;
   }
   &.removed {
-    color: $text-error;
-    background: $error-muted;
     background-tint: $error-muted;
+    background: $error-muted;
+    color: $text-error;
   }
   &.unhandled {
     /* only used for debugging by visualizing unhandled formatting conditions */
-    color: $foreground;
-    background: $error-darken-3;
     background-tint: $error-darken-3;
+    background: $error-darken-3;
+    color: $foreground;
   }
 }
 
