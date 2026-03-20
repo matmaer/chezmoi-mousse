@@ -4,7 +4,12 @@ from pathlib import Path
 from typing import NamedTuple
 
 import pytest
-from _test_utils import get_module_ast_tree, get_modules_importing_class
+from _test_utils import (
+    get_gui_module_paths,
+    get_module_ast_class_defs,
+    get_module_ast_tree,
+    get_modules_importing_class,
+)
 
 from chezmoi_mousse import Tcss
 
@@ -90,3 +95,55 @@ def test_no_hardcoded(py_file: Path) -> None:
             for d in hardcoded
         )
         pytest.fail(failures)
+
+
+def extract_type_selectors() -> set[str]:
+    pattern = r"\b(?=[A-Z][A-Za-z]*[a-z])[A-Z][A-Za-z]*\b"
+    with Path.open(GUI_DOT_TCSS_PATH) as f:
+        content = f.read()
+    matches: set[str] = set()
+    for line in content.splitlines():
+        if line.startswith("/"):
+            continue
+        matches.update(re.findall(pattern, line))
+    return matches
+
+
+def _get_module_class_imports(module_path: Path) -> set[str]:
+    imports: set[str] = set()
+    for node in ast.walk(get_module_ast_tree(module_path)):
+        if isinstance(node, (ast.ImportFrom)):
+            for alias in node.names:
+                # only consider imports with some uppercase letters, like classes have
+                if alias.name.casefold() != alias.name:
+                    imports.add(alias.name)
+    return imports
+
+
+def test_no_orphaned_type_selectors() -> None:
+    type_selectors = extract_type_selectors()
+    names_to_check_against: set[str] = set()
+    module_paths = get_gui_module_paths()
+    exclude = {
+        "CheckBox",
+        "CollapsibleTitle",
+        "Contents",
+        "SelectCurrent",
+        "SelectOverlay",
+        "Tab",
+        "Toast",
+        "Valid",
+    }
+
+    for module_path in module_paths:
+        for class_def in get_module_ast_class_defs(module_path):
+            if class_def.name not in exclude:
+                names_to_check_against.add(class_def.name)
+        for import_name in _get_module_class_imports(module_path):
+            if import_name not in exclude:
+                names_to_check_against.add(import_name)
+
+    orphaned = type_selectors - names_to_check_against - exclude
+
+    if orphaned:
+        pytest.fail(f"Type selectors not in use:\n{'\n'.join(orphaned)}")
