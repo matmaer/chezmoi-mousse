@@ -42,3 +42,4 @@ class LogsTab(Vertical, AppType):
         elif event.button.label == TabLabel.git_log:
             self.switcher.current = IDS.logs.container.git_log
             self.tab_buttons.border_subtitle = BorderTitle.global_git_log
+            self.git_log.display = True
