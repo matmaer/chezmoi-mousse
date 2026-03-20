@@ -10,7 +10,7 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabLabel, Tcss, TreeName
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, DirNode
+    from chezmoi_mousse import AppIds
 
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
@@ -31,13 +31,6 @@ class TreeBase(Tree[Path], AppType):
         self.ids = ids
         self.tree_name = tree_name
 
-    @property
-    def dir_nodes(self) -> dict[Path, "DirNode"]:
-        if self.ids.canvas_name == TabLabel.apply:
-            return CMD.cache.apply_dir_nodes
-        else:
-            return CMD.cache.re_add_dir_nodes
-
     def create_colored_label(self, path: Path) -> str:
         label_text = (
             str(path.relative_to(CMD.cache.dest_dir))
@@ -47,12 +40,10 @@ class TreeBase(Tree[Path], AppType):
 
         # Get status code for the path
         status = StatusCode.Space  # default status if not found
-        for dir_node in self.dir_nodes.values():
-            if path in CMD.cache.get_status_files_in(
-                dir_node.dir_path, self.ids.canvas_name
-            ):
+        for dir_node in CMD.cache.sets.managed_dirs:
+            if CMD.cache.sets.has_status_paths(dir_node):
                 status = StatusCode.Nested
-                break
+                continue
         else:
             status = CMD.cache.get_path_status(path, self.ids.canvas_name)
 
@@ -85,9 +76,9 @@ class ListTree(TreeBase):
         self.clear()
         self.root.data = CMD.cache.dest_dir
         self.root.expand()
-        for dir_node in self.dir_nodes.values():
+        for dir_path in CMD.cache.sets.x_dirs_with_status_children:
             for file_path in CMD.cache.get_status_files_in(
-                dir_node.dir_path, self.ids.canvas_name
+                dir_path, self.ids.canvas_name
             ):
                 # only add files as leaves, if they were not added already.
                 if not any(
@@ -195,17 +186,13 @@ class ManagedTree(TreeBase):
         nodes_before_toggle = self.get_all_nodes()
         if unchanged is True:
             for node in nodes_before_toggle:
-                # Add unchanged children to nodes already in the tree (the changed ones)
-                if node.data in CMD.cache.sets.managed_dirs:
-                    dir_node = CMD.cache.get_dir_node(node.data, self.ids.canvas_name)
-                    x_files_in = CMD.cache.get_x_files_in(node.data)
-                    # Only populate if there are actual unchanged paths in this
-                    # directory
-                    if x_files_in or dir_node.tree_x_dirs_in:
-                        self._populate_x_node(node, node.data)
-                        # Only expand if expand_all is enabled
-                        if self.expand_all:
-                            node.expand()
+                if node.data is None:
+                    raise ValueError("node.data is None")
+
+                if CMD.cache.sets.has_status_paths(node.data):
+                    self._populate_x_node(node, node.data)
+                    if self.expand_all:
+                        node.expand()
 
         elif unchanged is False:
             for tree_node in nodes_before_toggle:

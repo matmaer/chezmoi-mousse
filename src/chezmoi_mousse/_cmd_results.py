@@ -27,7 +27,6 @@ class DirNode:
     has_status_paths: bool
     all_status_files_in: dict[Path, StatusCode]
     all_status_dirs_in: dict[Path, StatusCode]
-    real_status_dirs_in: dict[Path, StatusCode]
     tree_status_dirs_in: dict[Path, StatusCode]
     tree_x_dirs_in: dict[Path, StatusCode]
 
@@ -223,20 +222,20 @@ class CachedData:
             return {p: s for p, s in status_files.items() if p.is_relative_to(dir_path)}
         return {p: s for p, s in status_files.items() if p.parent == dir_path}
 
-    def get_all_status_dirs_in(
-        self, dir_path: Path, canvas_name: str
-    ) -> dict[Path, StatusCode]:
-        if canvas_name == TabLabel.apply:
-            status_dirs = self._apply_status_dirs
-        else:
-            status_dirs = self._re_add_status_dirs
-        return {
-            p: s
-            for p, s in status_dirs.items()
-            if p.is_relative_to(dir_path) and len(p.relative_to(dir_path).parts) > 1
-        }
-
     def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
+        def get_all_status_dirs_in(
+            dir_path: Path, canvas_name: str
+        ) -> dict[Path, StatusCode]:
+            if canvas_name == TabLabel.apply:
+                status_dirs = self._apply_status_dirs
+            else:
+                status_dirs = self._re_add_status_dirs
+            return {
+                p: s
+                for p, s in status_dirs.items()
+                if p.is_relative_to(dir_path) and len(p.relative_to(dir_path).parts) > 1
+            }
+
         if canvas_name == TabLabel.apply:
             status_dirs = self._apply_status_dirs
         else:
@@ -245,7 +244,7 @@ class CachedData:
         tree_x_dirs_in: dict[Path, StatusCode] = {}
         for sub_dir in CMD.cache.sets.get_sub_dirs_in(dir_path):
             if (
-                sub_dir in status_dirs
+                sub_dir in self.sets.status_dirs
                 or sub_dir in self.sets.x_dirs_with_status_children
             ):
                 tree_status_dirs_in[sub_dir] = status_dirs.get(
@@ -260,10 +259,7 @@ class CachedData:
             all_status_files_in=self.get_status_files_in(
                 dir_path, canvas_name, recursive=True
             ),
-            all_status_dirs_in=self.get_all_status_dirs_in(dir_path, canvas_name),
-            real_status_dirs_in={
-                p: s for p, s in status_dirs.items() if p.parent == dir_path
-            },
+            all_status_dirs_in=get_all_status_dirs_in(dir_path, canvas_name),
             tree_status_dirs_in=dict(sorted(tree_status_dirs_in.items())),
             tree_x_dirs_in=dict(sorted(tree_x_dirs_in.items())),
         )
