@@ -146,7 +146,7 @@ class SplashScreen(Screen[None], AppType):
         else:
             self._chezmoi_found_workers()
 
-    @work
+    @work(group="io_worker")
     async def _install_help_workers(self) -> None:
         self.splash_log.styles.height = 1
         cmd_text = "chezmoi command"
@@ -156,8 +156,6 @@ class SplashScreen(Screen[None], AppType):
         install_help_worker = self._get_install_screen_data()
         await install_help_worker.wait()
         InstallHelpScreen.install_help_data = install_help_worker.result
-        self.dismiss()
-        return
 
     @work
     async def _chezmoi_found_workers(self) -> None:
@@ -222,8 +220,8 @@ class SplashScreen(Screen[None], AppType):
                 self.splash_log.write, f"[{color}]{log_text}[/{color}]"
             )
 
-    @work
-    async def _get_install_screen_data(self) -> "ParsedJson":
+    @work(thread=True, group="io_workers")
+    def _get_install_screen_data(self) -> "ParsedJson":
         with urllib.request.urlopen(TemplateStr.chezmoi_latest_release_url) as response:
             data = json.load(response)
             latest_version = data.get("tag_name")
@@ -316,14 +314,14 @@ class SplashScreen(Screen[None], AppType):
         return {child["text"]: collapse(child) for child in root_node["children"]}
 
     def _all_workers_finished(self) -> None:
-        if self.app.chezmoi_found is False:
-            self.dismiss(None)
-            return
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.workers
             if worker.group == "io_workers"
         ):
+            if self.app.chezmoi_found is False:
+                self.dismiss(None)
+                return
             CMD.cache.update_path_sets()
             if all(w for w in self.workers if w.is_finished):
                 self.dismiss()
