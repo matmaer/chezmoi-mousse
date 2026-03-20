@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CachedData", "DirNode", "ParsedJson"]
+__all__ = ["CMD", "CachedData", "ParsedJson"]
 
 
 type ParsedJson = dict[str, Any]

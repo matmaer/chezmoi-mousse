@@ -13,7 +13,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING
 
 from ._app_ids import IDS, AppIds
-from ._cmd_results import CMD, CachedData, DirNode, ParsedJson
+from ._cmd_results import CMD, CachedData, ParsedJson
 from ._enum_data import OpBtnEnum, OpBtnLabel, OpInfoString, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._str_enum_names import BindingAction, ScreenName, Tcss, TreeName
@@ -52,7 +52,6 @@ __all__ = [
     "CachedData",
     "Chars",
     "CommandResult",
-    "DirNode",
     "FlatBtnLabel",
     "LinkBtn",
     "LogString",
