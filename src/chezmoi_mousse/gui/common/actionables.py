@@ -12,7 +12,6 @@ from chezmoi_mousse import (
     FlatBtnLabel,
     LinkBtn,
     OpBtnEnum,
-    # OpBtnLabel,
     ScreenName,
     SwitchEnum,
     TabLabel,
