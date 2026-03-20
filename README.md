@@ -5,8 +5,8 @@
 
 > [!WARNING]
 > It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
-> Write operations need to be re-implemented after the most recent app overhaul.
-> There are quite a bit of todo's and bugs left in the current state which will be solved soon, this project is work in progress.
+> Write operations are partially implemented, next priority is supporting 'chezmoi init'.
+> There could be some bugs left in the current state, this project is work in progress, feedback welcome.
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
 
@@ -38,7 +38,7 @@ The easiest way is to run the app with `uv`, [install uv](https://docs.astral.sh
 
 `uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
 
-If Python 3.13 with the latest `textual` version is available, and the module is in your PYTHONPATH, you can run:
+If Python 3.13 with the latest `textual` version is available, and the module is in your PYTHONPATH, in the `src` directory, you can run:
 
 `python -m chezmoi_mousse`
 
@@ -97,23 +97,23 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 
 > Note: see `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
 
-- [ ] `chezmoi add` directory
-- [ ] `chezmoi add` file
+- [x] `chezmoi add` directory
+- [x] `chezmoi add` file
 - [ ] `chezmoi archive`
-- [ ] `chezmoi apply` directory
-- [ ] `chezmoi apply` file
-- [ ] `chezmoi destroy` directory
-- [ ] `chezmoi destroy` file
+- [x] `chezmoi apply` directory
+- [x] `chezmoi apply` file
+- [x] `chezmoi destroy` directory
+- [x] `chezmoi destroy` file
 - [ ] `chezmoi edit`
-- [ ] `chezmoi forget` directory
-- [ ] `chezmoi forget` file
+- [x] `chezmoi forget` directory
+- [x] `chezmoi forget` file
 - [ ] `chezmoi generate`
 - [ ] `chezmoi import`
 - [ ] `chezmoi init` new repository
 - [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
-- [ ] `chezmoi re-add` directory
-- [ ] `chezmoi re-add` file
+- [x] `chezmoi re-add` directory
+- [x] `chezmoi re-add` file
 
 ### Read Operations
 
