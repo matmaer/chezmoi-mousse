@@ -2,6 +2,7 @@ import json
 import urllib.request
 from collections import deque
 from enum import StrEnum
+from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 from rich.segment import Segment
@@ -63,8 +64,7 @@ SPLASH = SPLASH_LOGO.replace("===", "=\u200b=\u200b=").splitlines()
 
 FADE_HEIGHT = len(SPLASH)
 FADE_WIDTH = len(max(SPLASH, key=len))
-LOG_PADDING_WIDTH = 37
-LOADED_SUFFIX = "loaded"
+LOG_MSG_WIDTH = 44
 
 
 class TemplateStr(StrEnum):
@@ -114,7 +114,7 @@ class SplashLog(RichLog):
         super().__init__(markup=True)
 
     def on_mount(self) -> None:
-        self.styles.height = len(SPLASH_COMMANDS)
+        self.styles.height = len(SPLASH_COMMANDS) + 1  # +1 for parse dump-config log
         self.styles.width = "auto"
         self.styles.margin = 2
 
@@ -150,8 +150,9 @@ class SplashScreen(Screen[None], AppType):
     async def _install_help_workers(self) -> None:
         self.splash_log.styles.height = 1
         cmd_text = "chezmoi command"
-        padding = LOG_PADDING_WIDTH - len(cmd_text)
-        self.splash_log.write(f"{cmd_text} {'.' * padding} not found")
+        suffix = "not found"
+        padding = LOG_MSG_WIDTH - (len(cmd_text) + len(suffix))
+        self.splash_log.write(f"{cmd_text} {'.' * padding} {suffix}")
         install_help_worker = self._get_install_screen_data()
         await install_help_worker.wait()
         InstallHelpScreen.install_help_data = install_help_worker.result
@@ -182,17 +183,44 @@ class SplashScreen(Screen[None], AppType):
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         cmd_result = CMD.run_cmd.read(splash_cmd)
         setattr(CMD.cache, f"{splash_cmd.name}", cmd_result)
-        padding = LOG_PADDING_WIDTH - len(cmd_result.full_cmd_filtered)
-        log_text = f"{cmd_result.full_cmd_filtered} {'.' * padding} {LOADED_SUFFIX}"
+        filtered_cmd = cmd_result.full_cmd_filtered
+        color = self.app.theme_variables["text-primary"]
+        suffix = "unknown"
         if cmd_result.exit_code == 0:
-            color = self.app.theme_variables["text-primary"]
+            suffix = "success" if splash_cmd != ReadCmd.verify else "matches"
         elif cmd_result.exit_code == 1:
-            color = self.app.theme_variables["text-warning"]
-        else:
-            color = self.app.theme_variables["text-error"]
+            if splash_cmd == ReadCmd.verify:
+                suffix = "checked"
+            else:
+                suffix = f"exit code {cmd_result.exit_code}"
+                color = self.app.theme_variables["text-warning"]
+        padding = LOG_MSG_WIDTH - (len(filtered_cmd) + len(suffix))
+        log_text = f"{filtered_cmd} {'.' * padding} {suffix}"
         self.app.call_from_thread(
             self.splash_log.write, f"[{color}]{log_text}[/{color}]"
         )
+        if splash_cmd == ReadCmd.dump_config:
+            try:
+                parsed_cfg = json.loads(cmd_result.std_out)
+                CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
+                CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
+                CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
+                color = self.app.theme_variables["text-success"]
+                suffix = "parsed"
+            except (json.JSONDecodeError, KeyError, TypeError) as exc:
+                warning_color = self.app.theme_variables.get("text-warning", "yellow")
+                self.app.call_from_thread(
+                    self.splash_log.write,
+                    f"[{warning_color}]Parse chezmoi dump-config: "
+                    f"{exc}[/{warning_color}]",
+                )
+                color = self.app.theme_variables["text-error"]
+                suffix = "not parsed"
+            padding = LOG_MSG_WIDTH - (len(filtered_cmd) + len(suffix))
+            log_text = f"{filtered_cmd} {'.' * padding} {suffix}"
+            self.app.call_from_thread(
+                self.splash_log.write, f"[{color}]{log_text}[/{color}]"
+            )
 
     @work
     async def _get_install_screen_data(self) -> "ParsedJson":

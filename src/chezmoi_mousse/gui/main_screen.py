@@ -1,6 +1,4 @@
-import json
 from itertools import chain
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from textual import on, work
@@ -214,8 +212,6 @@ class MainScreen(Screen[None], AppType):
         await self.app.push_screen(self.loading_modal)
 
         if btn_enum is None and self.app.chezmoi_found is True:
-            if CMD.cache.dump_config is not None:
-                await self._update_parsed_config(CMD.cache.dump_config.std_out).wait()
             await self._update_trees().wait()
             cmd_results = [
                 attr
@@ -284,18 +280,6 @@ class MainScreen(Screen[None], AppType):
         self.loading_modal.label_text = LoadingLabel.update_config_tab.with_color
         config_tab = self.query_exactly_one(ConfigTab)
         config_tab.command_results = CMD.cache
-
-    @work
-    @min_wait
-    async def _update_parsed_config(self, dump_config: str) -> None:
-        try:
-            self.loading_modal.label_text = LoadingLabel.parse_dump_config.with_color
-            parsed_cfg = json.loads(dump_config)
-            CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
-            CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
-            CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
-        except Exception:
-            pass
 
     @work
     @min_wait
