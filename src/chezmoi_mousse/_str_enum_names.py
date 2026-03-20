@@ -3,7 +3,6 @@ from enum import StrEnum, auto
 __all__ = [
     "BindingAction",
     "ContainerName",
-    "LabelName",
     "LogName",
     "ScreenName",
     "StaticName",
@@ -26,16 +25,10 @@ class ContainerName(StrEnum):
     doctor = auto()
     git_log = auto()
     left_side = auto()
-    op_cmd_results = auto()
     op_feed_back = auto()
     operate_buttons = auto()
     repo_input = auto()
     right_side = auto()
-
-
-class LabelName(StrEnum):
-    cat_config_output = auto()
-    loading = auto()
 
 
 class LogName(StrEnum):

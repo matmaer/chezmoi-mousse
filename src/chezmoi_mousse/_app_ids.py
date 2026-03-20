@@ -1,7 +1,6 @@
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._str_enum_names import (
     ContainerName,
-    LabelName,
     LogName,
     ScreenName,
     StaticName,
@@ -29,7 +28,6 @@ class AppIds:
     def __init__(self, canvas_name: TabLabel | ScreenName) -> None:
         self.canvas_name = canvas_name
         self.container = ContainerIds(self)
-        self.label = LabelIds(self)
         self.logger = LoggerIds(self)
         self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
@@ -42,9 +40,6 @@ class AppIds:
 
     def flat_button_id(self, qid: str = "", *, btn: FlatBtnLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{btn.name}_flat_btn"
-
-    def label_id(self, qid: str = "", *, label: LabelName) -> str:
-        return f"{qid}{self.canvas_name.name}_{label.name}_label"
 
     def operate_button_id(self, qid: str = "", *, operation: OpBtnLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{operation.normalized_label}_op_btn"
@@ -163,27 +158,13 @@ class ContainerIds:
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
         self.op_feed_back: str = ids.container_id(name=ContainerName.op_feed_back)
         self.op_feed_back_q: str = f"#{self.op_feed_back}"
-        self.op_cmd_results: str = ids.container_id(name=ContainerName.op_cmd_results)
-        self.op_cmd_results_q: str = f"#{self.op_cmd_results}"
         self.repo_input: str = ids.container_id(name=ContainerName.repo_input)
         self.repo_input_q: str = f"#{self.repo_input}"
         self.right_side: str = ids.container_id(name=ContainerName.right_side)
         self.right_side_q: str = f"#{self.right_side}"
 
 
-class LabelIds:
-    """Label widgets their id's to target for show/hide or update the text."""
-
-    def __init__(self, ids: AppIds):
-        self.cat_config_output: str = ids.label_id(label=LabelName.cat_config_output)
-        self.cat_config_output_q: str = f"#{self.cat_config_output}"
-        self.loading: str = ids.label_id(label=LabelName.loading)
-        self.loading_q: str = f"#{self.loading}"
-
-
 class LoggerIds:
-    """RichLog widgets their id's."""
-
     def __init__(self, ids: AppIds):
         self.app: str = ids.view_id(view=LogName.app_logger)
         self.app_q: str = f"#{self.app}"
