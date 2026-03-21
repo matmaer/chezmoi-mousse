@@ -6,7 +6,7 @@
 > [!WARNING]
 > It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
 >
-> Write operations are partially implemented, next priority is supporting 'chezmoi init'.
+> Write operations are partially implemented, next priority is supporting `chezmoi init`.
 >
 > There could be some bugs left in the current state, this project is work in progress, feedback welcome.
 
@@ -40,7 +40,7 @@ The easiest way is to run the app with `uv`, [install uv](https://docs.astral.sh
 
 `uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
 
-If Python 3.13 with the latest `textual` version is available, and the module is in your PYTHONPATH, in the `src` directory, you can run:
+If Python 3.13 with the latest `textual` version is available, and the module is in your `PYTHONPATH`, in the `src` directory, you can run:
 
 `python -m chezmoi_mousse`
 
@@ -340,7 +340,7 @@ warnings
 
 ### Chezmoi not found screenshot
 
-If the `chezmoi` command is not available, a screen will be shown with the value for $PATH and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
+If the `chezmoi` command is not available, a screen will be shown with the value for `PATH` and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
 ![App screenshot](screenshots/command_not_found.png)
 
