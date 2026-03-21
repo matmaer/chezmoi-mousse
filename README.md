@@ -5,7 +5,9 @@
 
 > [!WARNING]
 > It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
+> [!WARNING]
 > Write operations are partially implemented, next priority is implementing `chezmoi init`, see the [Use Case][use-case-section].
+> [!WARNING]
 > There could be some bugs left in the current state, this project is work in progress, feedback welcome.
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
