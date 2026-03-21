@@ -5,7 +5,7 @@
 
 > [!WARNING]
 > It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
-> Write operations are partially implemented, next priority is supporting 'chezmoi init'.
+> Write operations are partially implemented, next priority is implementing `chezmoi init`, see the [Use Case][use-case-section].
 > There could be some bugs left in the current state, this project is work in progress, feedback welcome.
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
@@ -17,6 +17,7 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 ## Use Case
 
+- Run the app when an initialized chezmoi repository exists (`chezmoi init` already executed)
 - Can be safely used to visualize your chezmoi repository, as no write operations are enabled by default.
 - To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer. This will enable commands changing your config files or the chezmoi state. Test first in a VM or container, see the [Test][test-section] section.
 - Run the app with your own user. Running the app with `sudo` or elevated permissions is **not needed** and **should be avoided**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
