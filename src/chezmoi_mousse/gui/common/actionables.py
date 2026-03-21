@@ -140,9 +140,6 @@ class OperateButtons(HorizontalGroup):
         ]
 
     def set_path_arg(self, path: "Path") -> None:
-        # TODO: This mutates the shared 'OpBtnEnum' 'path_arg field.
-        # Check if the path arg is correct after clicking tree nodes in different tabs.
-        # before clicking a review button.
         for btn_enum in self.ids.op_btn_map.values():
             btn_enum.path_arg = path
 

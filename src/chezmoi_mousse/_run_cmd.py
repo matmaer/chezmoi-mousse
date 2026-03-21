@@ -120,7 +120,7 @@ class WriteCmd(Enum):
     re_add = (WriteVerb.re_add.value,)
 
 
-def _get_filtered_cmd(cmd_args: tuple[str, ...], review_color: bool) -> str:
+def _get_filtered_cmd(cmd_args: tuple[str, ...]) -> str:
     filter_git_log_args = VerbArgs.git_log.value[2:]
     exclude = set(
         GlobalCmd.default_args.value
@@ -128,8 +128,6 @@ def _get_filtered_cmd(cmd_args: tuple[str, ...], review_color: bool) -> str:
         + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
     )
     filtered_cmd = " ".join([part for part in cmd_args if part and part not in exclude])
-    if review_color:
-        return f"[$text-primary]{filtered_cmd}[/]"
     return filtered_cmd
 
 
@@ -188,7 +186,7 @@ class CommandResult:
 
     @property
     def full_cmd_filtered(self) -> str:
-        return _get_filtered_cmd(self.completed_process.args, review_color=False)
+        return _get_filtered_cmd(self.completed_process.args)
 
     @property
     def exit_code_colored_cmd(self) -> str:
@@ -197,7 +195,7 @@ class CommandResult:
 
     @property
     def filtered_cmd_without_path_arg(self) -> str:
-        return _get_filtered_cmd(self.cmd_without_path_arg, review_color=False)
+        return _get_filtered_cmd(self.cmd_without_path_arg)
 
     @property
     def is_dry_run(self) -> bool:
@@ -244,9 +242,9 @@ class ChezmoiCommand:
         else:
             return GlobalCmd.dry_run.value
 
-    def review_cmd(self, global_args: tuple[str, ...]) -> str:
-        command = self._global_cmd + global_args
-        return _get_filtered_cmd(command, review_color=True)
+    def pretty_cmd(self, global_args: tuple[str, ...]) -> str:
+        filtered_cmd = _get_filtered_cmd(self._global_cmd + global_args)
+        return f"[$text-primary]{filtered_cmd}[/]"
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
         read_global_cmd = tuple(arg for arg in self._global_cmd if arg != "--dry-run")
