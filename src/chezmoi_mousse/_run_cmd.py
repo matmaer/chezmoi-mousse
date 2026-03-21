@@ -236,25 +236,28 @@ class ChezmoiCommand:
         self.changes_enabled: bool = False
 
     @property
-    def _global_cmd(self) -> tuple[str, ...]:
+    def _global_write_cmd(self) -> tuple[str, ...]:
         if self.changes_enabled is True:
             return GlobalCmd.live_run.value
         else:
             return GlobalCmd.dry_run.value
 
-    def pretty_cmd(self, global_args: tuple[str, ...]) -> str:
-        filtered_cmd = _get_filtered_cmd(self._global_cmd + global_args)
+    def pretty_read_cmd(self, global_args: tuple[str, ...]) -> str:
+        filtered_cmd = _get_filtered_cmd(GlobalCmd.live_run.value + global_args)
+        return f"[$text-primary]{filtered_cmd}[/]"
+
+    def pretty_write_cmd(self, global_args: tuple[str, ...]) -> str:
+        filtered_cmd = _get_filtered_cmd(self._global_write_cmd + global_args)
         return f"[$text-primary]{filtered_cmd}[/]"
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
-        read_global_cmd = tuple(arg for arg in self._global_cmd if arg != "--dry-run")
-        cmd_without_path_arg = read_global_cmd + read_cmd.value
+        cmd_without_path_arg = GlobalCmd.live_run.value + read_cmd.value
         cmd_to_run = cmd_without_path_arg
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
                 source_path_str = _run_chezmoi_cmd(
-                    self._global_cmd + ReadCmd.source_path.value + (path_str,),
+                    GlobalCmd.live_run.value + ReadCmd.source_path.value + (path_str,),
                     read_cmd=ReadCmd.source_path,
                 ).stdout.strip()
                 path_str = source_path_str
@@ -274,7 +277,11 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        command: tuple[str, ...] = self._global_cmd + write_cmd.value
+        if self.changes_enabled is True:
+            global_cmd = GlobalCmd.live_run.value
+        else:
+            global_cmd = GlobalCmd.dry_run.value
+        command: tuple[str, ...] = global_cmd + write_cmd.value
 
         cmd_without_path_arg = command
         cmd_to_run = command

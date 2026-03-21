@@ -78,7 +78,7 @@ class OperateInfo(Static, AppType):
             else ""
         )
         info_lines.append(
-            CMD.run_cmd.pretty_cmd(
+            CMD.run_cmd.pretty_write_cmd(
                 global_args=(*button.btn_enum.write_cmd.value, path_arg)
             )
         )
