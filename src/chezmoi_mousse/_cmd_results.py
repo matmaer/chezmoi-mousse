@@ -129,40 +129,8 @@ class CachedData:
         self.sets: PathSets = PathSets()
 
     @property
-    def _apply_status_dirs(self) -> dict[Path, StatusCode]:
-        if self.status_dirs is None:
-            return {}
-        return {
-            Path(line[3:]): StatusCode(line[0])
-            for line in self.status_dirs.std_out.splitlines()
-        }
-
-    @property
-    def _apply_status_files(self) -> dict[Path, StatusCode]:
-        if self.status_files is None:
-            return {}
-        return {
-            Path(line[3:]): StatusCode(line[0])
-            for line in self.status_files.std_out.splitlines()
-        }
-
-    @property
-    def _re_add_status_dirs(self) -> dict[Path, StatusCode]:
-        if self.status_dirs is None:
-            return {}
-        return {
-            Path(line[3:]): StatusCode(line[1])
-            for line in self.status_dirs.std_out.splitlines()
-        }
-
-    @property
-    def _re_add_status_files(self) -> dict[Path, StatusCode]:
-        if self.status_files is None:
-            return {}
-        return {
-            Path(line[3:]): StatusCode(line[1])
-            for line in self.status_files.std_out.splitlines()
-        }
+    def no_status_paths(self) -> bool:
+        return self.verify is not None and self.verify.exit_code == 0
 
     @property
     def _dir_status_pairs(self) -> dict[Path, str]:
@@ -186,9 +154,17 @@ class CachedData:
     def status_pairs(self) -> dict[Path, str]:
         return self._dir_status_pairs | self._file_status_pairs
 
-    @property
-    def no_status_paths(self) -> bool:
-        return self.verify is not None and self.verify.exit_code == 0
+    def _get_status_dirs(self, canvas_name: str) -> dict[Path, StatusCode]:
+        if self.status_dirs is None:
+            return {}
+        index = 0 if canvas_name == TabLabel.apply else 1
+        return {k: StatusCode(v[index]) for k, v in self._dir_status_pairs.items()}
+
+    def _get_status_files(self, canvas_name: str) -> dict[Path, StatusCode]:
+        if self.status_files is None:
+            return {}
+        index = 0 if canvas_name == TabLabel.apply else 1
+        return {k: StatusCode(v[index]) for k, v in self._file_status_pairs.items()}
 
     def get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
         return {
@@ -198,10 +174,9 @@ class CachedData:
         }
 
     def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
-        if canvas_name == TabLabel.apply:
-            paths_dict = self._apply_status_dirs | self._apply_status_files
-        else:
-            paths_dict = self._re_add_status_dirs | self._re_add_status_files
+        paths_dict = self._get_status_dirs(canvas_name) | self._get_status_files(
+            canvas_name
+        )
         status = paths_dict.get(path, StatusCode.Space)
         if (
             path in self.sets.x_dirs_with_status_children
@@ -212,35 +187,37 @@ class CachedData:
         return status
 
     def get_status_files_in(
-        self, dir_path: Path, canvas_name: str, recursive: bool = False
+        self, dir_path: Path, canvas_name: str, recursive: bool
     ) -> dict[Path, StatusCode]:
-        if canvas_name == TabLabel.apply:
-            status_files = self._apply_status_files
-        else:
-            status_files = self._re_add_status_files
+        status_files = self._get_status_files(canvas_name)
         if recursive:
             return {p: s for p, s in status_files.items() if p.is_relative_to(dir_path)}
         return {p: s for p, s in status_files.items() if p.parent == dir_path}
 
-    def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
-        def get_all_status_dirs_in(
-            dir_path: Path, canvas_name: str
-        ) -> dict[Path, StatusCode]:
-            if canvas_name == TabLabel.apply:
-                status_dirs = self._apply_status_dirs
-            else:
-                status_dirs = self._re_add_status_dirs
-            return {
-                p: s
-                for p, s in status_dirs.items()
-                if p.is_relative_to(dir_path) and len(p.relative_to(dir_path).parts) > 1
-            }
+    def _get_status_dirs_in(
+        self, dir_path: Path, canvas_name: str, recursive: bool
+    ) -> dict[Path, StatusCode]:
+        status_dirs = self._get_status_dirs(canvas_name)
+        if recursive:
+            return {p: s for p, s in status_dirs.items() if p.is_relative_to(dir_path)}
+        return {p: s for p, s in status_dirs.items() if p.parent == dir_path}
 
-        if canvas_name == TabLabel.apply:
-            status_dirs = self._apply_status_dirs
-        else:
-            status_dirs = self._re_add_status_dirs
-        tree_status_dirs_in: dict[Path, StatusCode] = {}
+    def _get_tree_status_dirs_in(
+        self, dir_path: Path, canvas_name: str
+    ) -> dict[Path, StatusCode]:
+        status_dirs = self._get_status_dirs(canvas_name)
+        return {
+            p: s
+            for p, s in status_dirs.items()
+            if p.parent == dir_path and p in self.sets.x_dirs_with_status_children
+        }
+
+    def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
+
+        status_dirs = self._get_status_dirs(canvas_name)
+        tree_status_dirs_in: dict[Path, StatusCode] = self._get_tree_status_dirs_in(
+            dir_path, canvas_name
+        )
         tree_x_dirs_in: dict[Path, StatusCode] = {}
         for sub_dir in CMD.cache.sets.get_sub_dirs_in(dir_path):
             if (
@@ -259,26 +236,21 @@ class CachedData:
             all_status_files_in=self.get_status_files_in(
                 dir_path, canvas_name, recursive=True
             ),
-            all_status_dirs_in=get_all_status_dirs_in(dir_path, canvas_name),
+            all_status_dirs_in=self._get_status_dirs_in(
+                dir_path, canvas_name, recursive=True
+            ),
             tree_status_dirs_in=dict(sorted(tree_status_dirs_in.items())),
             tree_x_dirs_in=dict(sorted(tree_x_dirs_in.items())),
         )
 
     def update_path_sets(self) -> None:
-
-        def managed_dir_paths() -> set[Path]:
-            if self.managed_dirs is None:
+        def parse_paths_from_result(result: CommandResult | None) -> set[Path]:
+            if result is None:
                 return set()
-            return {Path(line) for line in self.managed_dirs.std_out.splitlines()}
+            return {Path(line) for line in result.std_out.splitlines()}
 
-        def managed_file_paths() -> set[Path]:
-            if self.managed_files is None:
-                return set()
-            return {Path(line) for line in self.managed_files.std_out.splitlines()}
-
-        self.sets.managed_dirs = managed_dir_paths()
-
-        self.sets.managed_files = set(managed_file_paths())
+        self.sets.managed_dirs = parse_paths_from_result(self.managed_dirs)
+        self.sets.managed_files = parse_paths_from_result(self.managed_files)
         self.sets.managed_dirs_plus_dest_dir = {self.dest_dir} | self.sets.managed_dirs
         self.sets.status_dirs = set(self._dir_status_pairs.keys())
         self.sets.status_files = set(self._file_status_pairs.keys())

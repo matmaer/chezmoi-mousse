@@ -78,7 +78,7 @@ class ListTree(TreeBase):
         self.root.expand()
         for dir_path in CMD.cache.sets.x_dirs_with_status_children:
             for file_path in CMD.cache.get_status_files_in(
-                dir_path, self.ids.canvas_name
+                dir_path, self.ids.canvas_name, recursive=True
             ):
                 # only add files as leaves, if they were not added already.
                 if not any(
@@ -142,7 +142,7 @@ class ManagedTree(TreeBase):
             child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
             self._populate_node(child_node, sub_dir)
         for file_path, _ in CMD.cache.get_status_files_in(
-            dir_path, self.ids.canvas_name
+            dir_path, self.ids.canvas_name, recursive=False
         ).items():
             tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
 
