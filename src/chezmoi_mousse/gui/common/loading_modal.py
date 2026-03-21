@@ -11,50 +11,51 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse import CMD, AppType, OpBtnEnum, ReadCmd
+from chezmoi_mousse import CMD, AppType, OpBtnEnum
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import CommandResult, ReadCmd
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
-# not needed for anything else than showing log messages briefly for humans
-MIN_WAIT_TIME = 0.4
+
+type MinWaitReturn = Callable[..., Awaitable[CommandResult | None]]
 
 
-def min_wait(
-    func: "Callable[..., Awaitable[None]]",
-) -> "Callable[..., Awaitable[CommandResult | None]]":
+def min_wait(func: "Callable[..., Awaitable[None]]") -> MinWaitReturn:
+    # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
     async def wrapper(self: "LoadingModal", *args: "OpBtnEnum") -> None:
+        min_wait_time = 0.4
         start_time = time.monotonic()
         await func(self, *args)
         elapsed = time.monotonic() - start_time
-        if elapsed < MIN_WAIT_TIME:
-            await sleep(MIN_WAIT_TIME - elapsed)
+        if elapsed < min_wait_time:
+            await sleep(min_wait_time - elapsed)
 
     return wrapper
 
 
 class LoadingLabel(StrEnum):
-    update_config_tab = "Update Config tab"
+    loading = "Loading"  # the initial label
+    log_cmd_results = "Logging command results"
     parse_dump_config = "Parse dump-config output"
     purge_cache = "Purge cached data"
-    update_trees = "Update Trees"
-    log_cmd_results = "Logging command results"
     update_changed_and_cached = "Update changed paths and cached dir nodes"
+    update_config_tab = "Update Config tab"
+    update_trees = "Update Trees"
 
     @property
     def with_color(self) -> str:
-        return f"[$text-primary bold]{self.value}[/]"
+        return f"[$text-primary]{self.value}[/]"
 
 
 class LoadingModal(ModalScreen[None], AppType):
 
-    label_text: reactive[str | None] = reactive(None)
+    label_text: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self, btn_enum: OpBtnEnum | None) -> None:
         super().__init__()
@@ -62,7 +63,7 @@ class LoadingModal(ModalScreen[None], AppType):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
-            yield Label()
+            yield Label(LoadingLabel.loading.with_color)
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
@@ -80,9 +81,9 @@ class LoadingModal(ModalScreen[None], AppType):
 
     @work(thread=True)
     @min_wait
-    async def run_read_command(self, read_cmd: ReadCmd) -> None:
+    async def run_read_command(self, read_cmd: "ReadCmd") -> None:
         pretty_cmd = CMD.run_cmd.review_cmd(global_args=read_cmd.value)
-        self.label_text = f"Running {pretty_cmd}"
+        self.label_text = pretty_cmd
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cache, f"{read_cmd.name}", cmd_result)
         CMD.loading_modal_results.append(cmd_result)
@@ -94,7 +95,7 @@ class LoadingModal(ModalScreen[None], AppType):
         if btn_enum in self.app.run_btn_enums:
             path_arg = str(btn_enum.path_arg) if btn_enum.path_arg is not None else ""
             for_review_cmd = (*btn_enum.write_cmd.value, path_arg)
-        self.label_text = f"Running {CMD.run_cmd.review_cmd(for_review_cmd)})"
+        self.label_text = CMD.run_cmd.review_cmd(for_review_cmd)
         cmd_result: CommandResult = CMD.run_cmd.perform(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )

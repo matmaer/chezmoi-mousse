@@ -279,11 +279,11 @@ OpFeedBack {
 LoadingModal {
   align: center middle;
   &>VerticalGroup {
-    border: $warning-darken-3;
-    max-width: 90%;
+    border: round $warning-darken-2;
+    min-width: 70;
     width: auto;
     &>Label {
-      width: 1fr;
+      width: 100%;
     }
     &>LoadingIndicator {
       height: auto;
