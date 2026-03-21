@@ -8,7 +8,7 @@
 >
 > Write operations are partially implemented, next priority is supporting `chezmoi init`.
 >
-> There could be some bugs left in the current state, this project is work in progress, feedback welcome.
+> There could be some bugs left in the current state, this project is work in progress, please share any issues on the [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page
 
 Graphical user interface in the terminal for [chezmoi](https://github.com/twpayne/chezmoi), see the [chezmoi docs](https://www.chezmoi.io/).
 
@@ -96,7 +96,7 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 > [!NOTE]
 > The lists for `Write Operations` and `Read Operations` below are a limited subset of available chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented,
 >
-> See `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
+> See `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page.
 
 ### Write Operations
 
