@@ -220,7 +220,6 @@ class MainScreen(Screen[None], AppType):
             ]
             await self._log_all_cmd_results(cmd_results).wait()
             await self._update_config_tab().wait()
-            self.loading_modal.dismiss()
         elif btn_enum in self.app.run_btn_enums:
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.operate_info.update_write_cmd_info().wait()
@@ -228,27 +227,23 @@ class MainScreen(Screen[None], AppType):
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_mounted().wait()
-            self.loading_modal.dismiss()
         elif btn_enum == OpBtnEnum.refresh_tree:
             for read_cmd in self.READ_CMDS:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_mounted().wait()
-            self.loading_modal.dismiss()
         elif btn_enum == OpBtnEnum.reload:
             if len(CMD.changed_paths) == 0:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
                 )
-                self.loading_modal.dismiss()
             else:
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
                 await self._log_all_cmd_results(CMD.loading_modal_results).wait()
-                self.loading_modal.dismiss()
-        else:
-            raise NotImplementedError(f"Button enum {btn_enum} not implemented")
+
+        self.loading_modal.dismiss()
 
     #####################
     # UI update workers #
