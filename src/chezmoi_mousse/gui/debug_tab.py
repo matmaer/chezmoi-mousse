@@ -41,18 +41,20 @@ class DebugTab(Horizontal, AppType):
 
     def compose(self) -> ComposeResult:
         yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
-        with Vertical():
-            with ContentSwitcher(
+        with (
+            Vertical(),
+            ContentSwitcher(
                 initial=IDS.debug.static.debug_test_paths,
                 classes=Tcss.debug_content_switcher,
-            ):
-                yield Static(id=IDS.debug.static.debug_test_paths)
-                yield DebugLog()
-                yield RichLog(
-                    id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
-                )
-                yield RichLog(id=IDS.debug.logger.memory, markup=True)
-            yield OperateButtons(IDS.debug)
+            ),
+        ):
+            yield Static(id=IDS.debug.static.debug_test_paths)
+            yield DebugLog()
+            yield RichLog(
+                id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
+            )
+            yield RichLog(id=IDS.debug.logger.memory, markup=True)
+        yield OperateButtons(IDS.debug)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
