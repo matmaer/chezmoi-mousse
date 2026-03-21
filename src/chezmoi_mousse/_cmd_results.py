@@ -22,65 +22,6 @@ type ParsedJson = dict[str, Any]
 
 
 @dataclass(slots=True)
-class DirNode:
-    dir_path: Path
-    has_status_paths: bool
-    all_status_files_in: dict[Path, StatusCode]
-    all_status_dirs_in: dict[Path, StatusCode]
-    tree_status_dirs_in: dict[Path, StatusCode]
-    tree_x_dirs_in: dict[Path, StatusCode]
-
-    @property
-    def dir_widgets(self) -> list[Static | Label]:
-        # Populate dir_widgets for the destDir
-        widgets: list[Static | Label] = []
-        if self.dir_path == CMD.cache.dest_dir:
-            widgets.append(
-                Label("Destination directory", classes=Tcss.main_section_label)
-            )
-            if CMD.cache.no_status_paths is True:
-                widgets.append(
-                    Static(
-                        "No managed paths or paths with a status are in the chezmoi "
-                        "repository. Switch to the Add tab to add paths.",
-                        classes=Tcss.added,
-                    )
-                )
-            elif self.has_status_paths is True:
-                text = "No diffs are available because no paths have a status."
-                widgets.append(Static(text, classes=Tcss.info))
-                text = "<- Select an unchanged path."
-                widgets.append(Static(text, classes=Tcss.added))
-                text = (
-                    "Switch to the Contents tab to view the contents of the selected "
-                    "path.\n"
-                    "Switch to the Git-Log tab to view the git log output for the "
-                    "selected path."
-                )
-                widgets.append(Static(text, classes=Tcss.info))
-            else:
-                text = "<- Select a file or directory in the tree to view its diff."
-                widgets.append(Static(text, classes=Tcss.added))
-                text = "This is the destination directory, it has no diff output."
-                widgets.append(Static(text, classes=Tcss.info))
-        if self.all_status_dirs_in:
-            widgets.append(
-                Label(
-                    "Contains directories with a status", classes=Tcss.sub_section_label
-                )
-            )
-            for path, status in self.all_status_dirs_in.items():
-                widgets.append(Static(f"{status.color_tag}{path}[/]"))
-        if self.all_status_files_in:
-            widgets.append(
-                Label("Contains files with a status", classes=Tcss.sub_section_label)
-            )
-            for path, status in self.all_status_files_in.items():
-                widgets.append(Static(f"{status.color_tag}{path}[/]"))
-        return widgets
-
-
-@dataclass(slots=True)
 class PathSets:
     managed_paths: set[Path] = field(default_factory=lambda: set())
     status_paths: set[Path] = field(default_factory=lambda: set())
@@ -91,7 +32,7 @@ class PathSets:
     status_files: set[Path] = field(default_factory=lambda: set())
     x_files: set[Path] = field(default_factory=lambda: set())
     x_dirs: set[Path] = field(default_factory=lambda: set())
-    x_dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
+    n_dirs: set[Path] = field(default_factory=lambda: set())
 
     def get_sub_dirs_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.managed_dirs if p.parent == dir_path}
@@ -117,10 +58,7 @@ class CachedData:
         self.template_data: CommandResult | None = None
         self.verify: CommandResult | None = None
 
-        # dir node caches
-        self.re_add_dir_nodes: dict[Path, DirNode] = {}
-        self.apply_dir_nodes: dict[Path, DirNode] = {}
-
+        # parsed config cache
         self.dest_dir: Path = Path().home()
         self.git_auto_commit: bool = False
         self.git_auto_push: bool = False
@@ -137,8 +75,7 @@ class CachedData:
         if self.status_dirs is None:
             return {}
         return {
-            Path(line[3:]): line[:2]
-            for line in list(self.status_dirs.std_out.splitlines())
+            Path(line[3:]): line[:2] for line in self.status_dirs.std_out.splitlines()
         }
 
     @property
@@ -146,8 +83,7 @@ class CachedData:
         if self.status_files is None:
             return {}
         return {
-            Path(line[3:]): line[:2]
-            for line in list(self.status_files.std_out.splitlines())
+            Path(line[3:]): line[:2] for line in self.status_files.std_out.splitlines()
         }
 
     @property
@@ -173,13 +109,20 @@ class CachedData:
             if path.parent == dir_path and path not in self.sets.status_files
         }
 
+    def get_x_dirs_in(self, dir_path: Path) -> dict[Path, StatusCode]:
+        return {
+            path: StatusCode.Space
+            for path in self.sets.managed_dirs
+            if path.parent == dir_path and path not in self.sets.status_files
+        }
+
     def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
         paths_dict = self._get_status_dirs(canvas_name) | self._get_status_files(
             canvas_name
         )
         status = paths_dict.get(path, StatusCode.Space)
         if (
-            path in self.sets.x_dirs_with_status_children
+            path in self.sets.n_dirs
             and status == StatusCode.Space
             or path == self.dest_dir
         ):
@@ -194,7 +137,7 @@ class CachedData:
             return {p: s for p, s in status_files.items() if p.is_relative_to(dir_path)}
         return {p: s for p, s in status_files.items() if p.parent == dir_path}
 
-    def _get_status_dirs_in(
+    def get_status_dirs_in(
         self, dir_path: Path, canvas_name: str, recursive: bool
     ) -> dict[Path, StatusCode]:
         status_dirs = self._get_status_dirs(canvas_name)
@@ -202,46 +145,68 @@ class CachedData:
             return {p: s for p, s in status_dirs.items() if p.is_relative_to(dir_path)}
         return {p: s for p, s in status_dirs.items() if p.parent == dir_path}
 
-    def _get_tree_status_dirs_in(
-        self, dir_path: Path, canvas_name: str
-    ) -> dict[Path, StatusCode]:
+    # get_n_dirs is only used to build the ManagedTree, it never needs to be recursive
+    def get_n_dirs_in(self, dir_path: Path, canvas_name: str) -> dict[Path, StatusCode]:
         status_dirs = self._get_status_dirs(canvas_name)
         return {
             p: s
             for p, s in status_dirs.items()
-            if p.parent == dir_path and p in self.sets.x_dirs_with_status_children
+            if p.parent == dir_path and p in self.sets.n_dirs
         }
 
-    def get_dir_node(self, dir_path: Path, canvas_name: str) -> DirNode:
-
-        status_dirs = self._get_status_dirs(canvas_name)
-        tree_status_dirs_in: dict[Path, StatusCode] = self._get_tree_status_dirs_in(
-            dir_path, canvas_name
+    def get_dir_widgets(self, dir_path: Path, canvas_name: str) -> list[Static | Label]:
+        has_status_paths = self.sets.has_status_paths(dir_path)
+        all_status_files_in = self.get_status_files_in(
+            dir_path, canvas_name, recursive=True
         )
-        tree_x_dirs_in: dict[Path, StatusCode] = {}
-        for sub_dir in CMD.cache.sets.get_sub_dirs_in(dir_path):
-            if (
-                sub_dir in self.sets.status_dirs
-                or sub_dir in self.sets.x_dirs_with_status_children
-            ):
-                tree_status_dirs_in[sub_dir] = status_dirs.get(
-                    sub_dir, StatusCode.Space
+        all_status_dirs_in = self.get_status_dirs_in(
+            dir_path, canvas_name, recursive=True
+        )
+        widgets: list[Static | Label] = []
+        if dir_path == CMD.cache.dest_dir:
+            widgets.append(
+                Label("Destination directory", classes=Tcss.main_section_label)
+            )
+            if CMD.cache.no_status_paths is True:
+                widgets.append(
+                    Static(
+                        "No managed paths or paths with a status are in the chezmoi "
+                        "repository. Switch to the Add tab to add paths.",
+                        classes=Tcss.added,
+                    )
                 )
+            elif has_status_paths is True:
+                text = "No diffs are available because no paths have a status."
+                widgets.append(Static(text, classes=Tcss.info))
+                text = "<- Select an unchanged path."
+                widgets.append(Static(text, classes=Tcss.added))
+                text = (
+                    "Switch to the Contents tab to view the contents of the selected "
+                    "path.\n"
+                    "Switch to the Git-Log tab to view the git log output for the "
+                    "selected path."
+                )
+                widgets.append(Static(text, classes=Tcss.info))
             else:
-                tree_x_dirs_in[sub_dir] = StatusCode.Space
-
-        return DirNode(
-            dir_path=dir_path,
-            has_status_paths=self.sets.has_status_paths(dir_path),
-            all_status_files_in=self.get_status_files_in(
-                dir_path, canvas_name, recursive=True
-            ),
-            all_status_dirs_in=self._get_status_dirs_in(
-                dir_path, canvas_name, recursive=True
-            ),
-            tree_status_dirs_in=dict(sorted(tree_status_dirs_in.items())),
-            tree_x_dirs_in=dict(sorted(tree_x_dirs_in.items())),
-        )
+                text = "<- Select a file or directory in the tree to view its diff."
+                widgets.append(Static(text, classes=Tcss.added))
+                text = "This is the destination directory, it has no diff output."
+                widgets.append(Static(text, classes=Tcss.info))
+        if all_status_dirs_in:
+            widgets.append(
+                Label(
+                    "Contains directories with a status", classes=Tcss.sub_section_label
+                )
+            )
+            for path, status in all_status_dirs_in.items():
+                widgets.append(Static(f"{status.color_tag}{path}[/]"))
+        if all_status_files_in:
+            widgets.append(
+                Label("Contains files with a status", classes=Tcss.sub_section_label)
+            )
+            for path, status in all_status_files_in.items():
+                widgets.append(Static(f"{status.color_tag}{path}[/]"))
+        return widgets
 
     def update_path_sets(self) -> None:
         def parse_paths_from_result(result: CommandResult | None) -> set[Path]:
@@ -263,12 +228,13 @@ class CachedData:
         self.sets.x_files = {
             f for f in self.sets.managed_files if f not in self.sets.status_files
         }
-        self.sets.x_dirs_with_status_children = {
+        self.sets.n_dirs = {
             dir_path
             for dir_path in self.sets.x_dirs
             if any(
                 status_path.is_relative_to(dir_path)
                 for status_path in self.sets.status_paths
+                if dir_path not in self.sets.status_dirs
             )
         }
 

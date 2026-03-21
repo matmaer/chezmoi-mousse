@@ -364,7 +364,7 @@ class MainScreen(Screen[None], AppType):
                     self.query_one(btn_id_q, Button).disabled = False
                 self.query_one(ids.tab_operation_btn_q, Button).disabled = bool(
                     msg.path not in CMD.cache.sets.status_dirs
-                    and msg.path not in CMD.cache.sets.x_dirs_with_status_children
+                    and msg.path not in CMD.cache.sets.x_dirs
                 )
 
     ########################

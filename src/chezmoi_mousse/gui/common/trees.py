@@ -76,17 +76,11 @@ class ListTree(TreeBase):
         self.clear()
         self.root.data = CMD.cache.dest_dir
         self.root.expand()
-        for dir_path in CMD.cache.sets.x_dirs_with_status_children:
-            for file_path in CMD.cache.get_status_files_in(
-                dir_path, self.ids.canvas_name, recursive=True
-            ):
-                # only add files as leaves, if they were not added already.
-                if not any(
-                    child.data and child.data == file_path
-                    for child in self.root.children
-                ):
-                    colored_label = self.create_colored_label(file_path)
-                    self.root.add_leaf(colored_label, data=file_path)
+        all_status_files = CMD.cache.get_status_files_in(
+            CMD.cache.dest_dir, self.ids.canvas_name, recursive=True
+        )
+        for file_path in sorted(all_status_files.keys()):
+            self.root.add_leaf(self.create_colored_label(file_path), data=file_path)
         self.select_node(self.root)
 
     def get_all_nodes(self) -> list[TreeNode[Path]]:
@@ -137,8 +131,12 @@ class ManagedTree(TreeBase):
         self.select_node(self.root)
 
     def _populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
-        dir_node = CMD.cache.get_dir_node(dir_path, self.ids.canvas_name)
-        for sub_dir, _ in dir_node.tree_status_dirs_in.items():
+        status_dirs_in = CMD.cache.get_status_dirs_in(
+            dir_path, self.ids.canvas_name, recursive=False
+        )
+        n_dirs_in = CMD.cache.get_n_dirs_in(dir_path, self.ids.canvas_name)
+        status_dirs = {**status_dirs_in, **n_dirs_in}
+        for sub_dir, _ in status_dirs.items():
             child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
             self._populate_node(child_node, sub_dir)
         for file_path, _ in CMD.cache.get_status_files_in(
@@ -149,11 +147,10 @@ class ManagedTree(TreeBase):
     def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         if tree_node.data is None:
             return
-        dir_node = CMD.cache.get_dir_node(tree_node.data, self.ids.canvas_name)
         for x_file in CMD.cache.get_x_files_in(dir_path):
             tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
 
-        for x_sub_dir in dir_node.tree_x_dirs_in:
+        for x_sub_dir in CMD.cache.get_x_dirs_in(tree_node.data):
             new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
             if self.expand_all:
                 new_x_node.expand()
@@ -198,7 +195,7 @@ class ManagedTree(TreeBase):
             for tree_node in nodes_before_toggle:
                 if tree_node.data in CMD.cache.sets.x_files or (
                     tree_node.data in CMD.cache.sets.x_dirs
-                    and tree_node.data not in CMD.cache.sets.x_dirs_with_status_children
+                    and tree_node.data not in CMD.cache.sets.n_dirs
                 ):
                     with contextlib.suppress(Exception):
                         tree_node.remove()
