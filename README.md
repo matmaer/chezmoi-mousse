@@ -3,7 +3,8 @@
 [![Black](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=black&logo=black)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
-> **WARNING:** It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
+> [!WARNING]
+> It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
 >
 > Write operations are partially implemented, next priority is supporting 'chezmoi init'.
 >
