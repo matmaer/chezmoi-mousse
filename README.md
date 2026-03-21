@@ -4,7 +4,7 @@
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
 > [!WARNING]
-> It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case][use-case-section] and [Test][test-section] section.
+> It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case](#use-case) and [Test](#test) section.
 >
 > Write operations are partially implemented, next priority is supporting `chezmoi init`.
 >
@@ -20,7 +20,7 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 ## Use Case
 
 - Can be safely used to visualize your chezmoi repository, as no write operations are enabled by default.
-- To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer. This will enable commands changing your config files or the chezmoi state. Test first in a VM or container, see the [Test][test-section] section.
+- To enable operations, press `D`, `d` or click the `Toggle --dry-run` text in the footer. This will enable commands changing your config files or the chezmoi state. Test first in a VM or container, see the [Test](#test) section.
 - Run the app with your own user. Running the app with `sudo` or elevated permissions is **not needed** and **should be avoided**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
 - The current implementation has only been used or tested with `autocommit` enabled, feedback is welcome on the issues page.
 
@@ -94,9 +94,9 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 ## Available `chezmoi` commands
 
 > [!NOTE]
-> The lists for `Write Operations` and `Read Operations` below are a limited subset of available chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented,
+> The lists for [Write Operations](#write-operations) and [Read Operations](#read-operations) below are a limited subset of available chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented,
 >
-> See `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page.
+> See [Implemented configuration options](#implemented-configuration-options) below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page.
 
 ### Write Operations
 
@@ -345,6 +345,3 @@ warnings
 If the `chezmoi` command is not available, a screen will be shown with the value for `PATH` and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
 ![App screenshot](screenshots/command_not_found.png)
-
-[test-section]: #test
-[use-case-section]: #use-case
