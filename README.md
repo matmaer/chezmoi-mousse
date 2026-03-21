@@ -91,15 +91,15 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
   - [ ] [snap](https://snapcraft.io/)
   - [x] unpackaged
 
-## Available Chezmoi commands
+## Available `chezmoi` commands
 
 > [!NOTE]
-> The lists for `Write Operations` and `Read Operations` below are a limited subset of available chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented, missing commands could be out of scope or take a while.
+> The lists for `Write Operations` and `Read Operations` below are a limited subset of available chezmoi commands, run `chezmoi help` in your terminal to see all commands.  Commands below without a checkmark are being implemented,
+>
+> See `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
 
 ### Write Operations
 
-> [!NOTE]
-> See `Implemented configuration options` below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the Issues tab.
 
 - [x] `chezmoi add` directory
 - [x] `chezmoi add` file
