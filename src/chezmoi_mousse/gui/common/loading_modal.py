@@ -42,7 +42,6 @@ def min_wait(func: "Callable[..., Awaitable[None]]") -> MinWaitReturn:
 class LoadingLabel(StrEnum):
     loading = "Loading"  # the initial label
     log_cmd_results = "Logging command results"
-    parse_dump_config = "Parse dump-config output"
     purge_cache = "Purge cached data"
     update_changed_and_cached = "Update changed paths and cached dir nodes"
     update_config_tab = "Update Config tab"
