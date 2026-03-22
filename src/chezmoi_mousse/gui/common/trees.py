@@ -109,7 +109,7 @@ class ManagedTree(TreeBase):
         self.guide_depth: int = 3
         self.root.expand()
 
-    def create_root_node(self) -> TreeNode[Path]:
+    def _create_root_node(self) -> TreeNode[Path]:
         self.root.data = CMD.cache.dest_dir
         color = self.app.theme_variables["text-primary"]
         self.root.label = f"[{color} bold]{CMD.cache.dest_dir}[/]"
@@ -123,7 +123,7 @@ class ManagedTree(TreeBase):
         self.expanded_nodes.clear()
         self._x_nodes.clear()
         self.clear()
-        self.create_root_node()
+        self._create_root_node()
         self._populate_node(self.root)
         for node in self.get_all_nodes():
             if node in previous_expanded_nodes:
