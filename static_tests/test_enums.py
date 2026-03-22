@@ -14,12 +14,7 @@ type AstClassDefs = list[ast.ClassDef]
 MODULE_PATHS = get_module_paths()
 
 # Enums that are used dynamically so not is scope for static tests
-EXCLUDE_ENUMS = {
-    "PwMgrInfo",
-    "UnwantedDirs",
-    "UnwantedFileExtensions",
-    "UnwantedFileNames",
-}
+EXCLUDE_ENUMS = {"PwMgrInfo", "UnwantedDirs", "UnwantedFileExtensions", "KeyFileNames"}
 
 
 def is_enum_class(class_def: ast.ClassDef) -> bool:
