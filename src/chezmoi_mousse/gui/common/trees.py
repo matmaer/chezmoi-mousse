@@ -121,33 +121,34 @@ class ManagedTree(TreeBase):
         self.root.label = f"[{color} bold]{CMD.cache.dest_dir}[/]"
         self.root.expand()
         self.root.allow_expand = False
-        self._populate_node(self.root, CMD.cache.dest_dir)
+        self._populate_node(self.root)
         for node in self.get_all_nodes():
             if node.data in expanded_paths:
                 node.expand()
         self.select_node(self.root)
 
-    def _populate_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
-        status_dirs_in = CMD.cache.get_status_dirs_in(
-            dir_path, self.ids.canvas_name, recursive=False
-        )
-        n_dirs_in = CMD.cache.get_n_dirs_in(dir_path, self.ids.canvas_name)
-        status_dirs = {**status_dirs_in, **n_dirs_in}
-        for sub_dir, _ in status_dirs.items():
-            child_node = tree_node.add(self.create_colored_label(sub_dir), data=sub_dir)
-            self._populate_node(child_node, sub_dir)
-        for file_path, _ in CMD.cache.get_status_files_in(
-            dir_path, self.ids.canvas_name, recursive=False
-        ).items():
+    def _populate_node(self, tree_node: TreeNode[Path]) -> None:
+        if tree_node.data is None:
+            raise ValueError("tree_node.data is None in _populate_node")
+
+        n_dirs_in: set[Path] = CMD.cache.sets.n_dirs_in(tree_node.data)
+        status_dirs_in: set[Path] = CMD.cache.sets.status_dirs_in(tree_node.data)
+        dirs_to_add = sorted(n_dirs_in | status_dirs_in, key=lambda p: p.name)
+        for dir in dirs_to_add:
+            child_node = tree_node.add(self.create_colored_label(dir), data=dir)
+            self._populate_node(child_node)
+        for file_path in CMD.cache.sets.status_files_in(
+            tree_node.data, recursive=False
+        ):
             tree_node.add_leaf(self.create_colored_label(file_path), data=file_path)
 
     def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         if tree_node.data is None:
             return
-        for x_file in CMD.cache.sets.get_x_files_in(dir_path):
+        for x_file in sorted(CMD.cache.sets.x_files_in(dir_path)):
             tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
 
-        for x_sub_dir in CMD.cache.sets.get_x_dirs_in(tree_node.data):
+        for x_sub_dir in sorted(CMD.cache.sets.x_dirs_in(tree_node.data)):
             new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
             if self.expand_all:
                 new_x_node.expand()

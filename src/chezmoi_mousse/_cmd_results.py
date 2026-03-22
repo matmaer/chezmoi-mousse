@@ -41,34 +41,42 @@ class PathSets:
 
     def x_files_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
         if recursive:
-            return {
-                path
-                for path in self.managed_files
-                if path.is_relative_to(dir_path) and path not in self.status_files
-            }
-        return {
-            path
-            for path in self.managed_files
-            if path.parent == dir_path and path not in self.status_files
-        }
+            return {path for path in self.x_files if path.is_relative_to(dir_path)}
+        return {path for path in self.x_files if path.parent == dir_path}
+
+    def status_files_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
+        if recursive:
+            return {p for p in self.status_files if p.is_relative_to(dir_path)}
+        return {p for p in self.status_files if p.parent == dir_path}
 
     def x_dirs_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
         if recursive:
+            return {path for path in self.x_dirs if path.is_relative_to(dir_path)}
+        return {path for path in self.x_dirs if path.parent == dir_path}
+
+    def n_dirs_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
+        if recursive:
             return {
                 path
-                for path in self.managed_dirs
-                if path.is_relative_to(dir_path) and path not in self.status_files
+                for path in self.n_dirs
+                if path.is_relative_to(dir_path) and path not in self.status_dirs
             }
         return {
             path
-            for path in self.managed_dirs
-            if path.parent == dir_path and path not in self.status_files
+            for path in self.n_dirs
+            if path.parent == dir_path and path not in self.status_dirs
         }
+
+    def status_dirs_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
+        if recursive:
+            return {path for path in self.status_dirs if path.is_relative_to(dir_path)}
+        return {path for path in self.status_dirs if path.parent == dir_path}
 
 
 class CachedData:
     def __init__(self) -> None:
-        # command result caches (instance attributes so deepcopy snapshots work)
+
+        # all read command results
         self.cat_config: CommandResult | None = None
         self.doctor: CommandResult | None = None
         self.dump_config: CommandResult | None = None
@@ -129,34 +137,37 @@ class CachedData:
         paths_dict = self._get_status_dirs(canvas_name) | self._get_status_files(
             canvas_name
         )
-        return paths_dict[path]
+        return paths_dict.get(path, StatusCode.Space)
 
     def get_status_files_in(
         self, dir_path: Path, canvas_name: str, recursive: bool
     ) -> dict[Path, StatusCode]:
+        # Use the parsed status file dict to ensure key formats match
         status_files = self._get_status_files(canvas_name)
-        if recursive:
-            return {p: s for p, s in status_files.items() if p.is_relative_to(dir_path)}
-        return {p: s for p, s in status_files.items() if p.parent == dir_path}
+        results: dict[Path, StatusCode] = {}
+        for path, status in status_files.items():
+            if recursive:
+                if path.is_relative_to(dir_path):
+                    results[path] = status
+            elif path.parent == dir_path:
+                results[path] = status
+        return results
 
     def get_status_dirs_in(
         self, dir_path: Path, canvas_name: str, recursive: bool
     ) -> dict[Path, StatusCode]:
         status_dirs = self._get_status_dirs(canvas_name)
-        if recursive:
-            return {p: s for p, s in status_dirs.items() if p.is_relative_to(dir_path)}
-        return {p: s for p, s in status_dirs.items() if p.parent == dir_path}
-
-    # get_n_dirs is only used to build the ManagedTree, it never needs to be recursive
-    def get_n_dirs_in(self, dir_path: Path, canvas_name: str) -> dict[Path, StatusCode]:
-        status_dirs = self._get_status_dirs(canvas_name)
-        return {
-            p: s
-            for p, s in status_dirs.items()
-            if p.parent == dir_path and p in self.sets.n_dirs
-        }
+        results: dict[Path, StatusCode] = {}
+        for path, status in status_dirs.items():
+            if recursive:
+                if path.is_relative_to(dir_path):
+                    results[path] = status
+            elif path.parent == dir_path:
+                results[path] = status
+        return results
 
     def get_dir_widgets(self, dir_path: Path, canvas_name: str) -> list[Static | Label]:
+        widgets: list[Static | Label] = []
         has_status_paths = self.sets.has_status_paths(dir_path)
         all_status_files_in = self.get_status_files_in(
             dir_path, canvas_name, recursive=True
@@ -210,17 +221,20 @@ class CachedData:
                 widgets.append(Static(f"{status.color_tag}{path}[/]"))
         return widgets
 
-    def update_path_sets(self) -> None:
-        def parse_paths_from_result(result: CommandResult | None) -> set[Path]:
-            if result is None:
-                return set()
-            return {Path(line) for line in result.std_out.splitlines()}
+    def _parse_paths_from_result(self, result: CommandResult | None) -> set[Path]:
+        if result is None:
+            return set()
+        return {Path(line) for line in result.std_out.splitlines()}
 
-        self.sets.managed_dirs = parse_paths_from_result(self.managed_dirs)
-        self.sets.managed_files = parse_paths_from_result(self.managed_files)
+    def update_path_sets(self) -> None:
+
+        self.sets.managed_dirs = self._parse_paths_from_result(self.managed_dirs)
+        self.sets.managed_files = self._parse_paths_from_result(self.managed_files)
         self.sets.managed_dirs_plus_dest_dir = {self.dest_dir} | self.sets.managed_dirs
-        self.sets.status_dirs = set(self._dir_status_pairs.keys())
-        self.sets.status_files = set(self._file_status_pairs.keys())
+        parsed_status_dirs = set(self._dir_status_pairs.keys())
+        parsed_status_files = set(self._file_status_pairs.keys())
+        self.sets.status_dirs = self.sets.managed_dirs & parsed_status_dirs
+        self.sets.status_files = self.sets.managed_files & parsed_status_files
         # derived assignments
         self.sets.managed_paths = self.sets.managed_dirs | self.sets.managed_files
         self.sets.status_paths = self.sets.status_dirs | self.sets.status_files
