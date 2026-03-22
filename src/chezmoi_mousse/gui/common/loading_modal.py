@@ -66,12 +66,9 @@ class LoadingModal(ModalScreen[None], AppType):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
-        self.notify(f"in loading modal on mount for {self.btn_enum}")
         if self.btn_enum != OpBtnEnum.reload:
             CMD.changed_paths.clear()
         CMD.loading_modal_results.clear()
-        self.old_managed_paths: set[Path] = CMD.cache.sets.managed_paths.copy()
-        self.old_status_pairs: dict[Path, str] = CMD.cache.status_pairs.copy()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
@@ -106,14 +103,27 @@ class LoadingModal(ModalScreen[None], AppType):
     async def update_changed_paths(self) -> None:
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
+        self.old_managed_paths: set[Path] = CMD.cache.sets.managed_paths.copy()
+        self.old_status_paths: set[Path] = CMD.cache.sets.status_paths.copy()
+
+        CMD.cache.update_path_sets()
+
         # ^ symmetric difference: elements that exist in either set, but not in both
         # & intersection: elements that exist in both sets
         # | union: all elements that exist in either set
 
-        # Collect changed paths: Symmetric difference (added/removed) + Status changes
-        changed_paths = (self.old_managed_paths ^ CMD.cache.sets.managed_paths) | {
+        # Collect changed paths: Symmetric difference (added/removed) + per-path
+        # status status changes
+        new_managed = CMD.cache.sets.managed_paths
+        new_status = CMD.cache.sets.status_paths
+
+        removed = self.old_managed_paths - new_managed
+        added = new_managed - self.old_managed_paths
+        changed_status = {
             p
-            for p in self.old_managed_paths & CMD.cache.sets.managed_paths
-            if self.old_status_pairs.get(p) != CMD.cache.status_pairs.get(p)
+            for p in (self.old_managed_paths & new_managed)
+            if (p in self.old_status_paths) != (p in new_status)
         }
+
+        changed_paths = removed | added | changed_status
         CMD.changed_paths = sorted(changed_paths)
