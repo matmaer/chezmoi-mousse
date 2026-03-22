@@ -160,24 +160,24 @@ class ManagedTree(TreeBase):
         if tree_node.data is None:
             return
 
-        # Add files, avoiding duplicates
         for x_file in sorted(CMD.cache.sets.x_files_in(dir_path)):
-            if not any((child.data == x_file) for child in tree_node.children):
-                new_leaf = tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
-                # track so we only remove these later
-                self._x_nodes.append(new_leaf)
+            if any((node.data == x_file) for node in self.get_all_nodes()):
+                # already present somewhere in the tree, skip adding
+                continue
+            new_leaf = tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
+            # track so we only remove these later
+            self._x_nodes.append(new_leaf)
 
-        # Add sub-directories, avoiding duplicates
         for x_sub_dir in sorted(CMD.cache.sets.x_dirs_in(tree_node.data)):
-            if any((child.data == x_sub_dir) for child in tree_node.children):
-                # find existing node and recurse into it
-                existing = next(
-                    (c for c in tree_node.children if c.data == x_sub_dir), None
-                )
-                if existing is not None:
-                    if self.expand_all:
-                        existing.expand()
-                    self._populate_x_dir(existing, x_sub_dir)
+            # If the dir exists anywhere in the tree, recurse into that node instead
+            existing_global = next(
+                (n for n in self.get_all_nodes() if n.data == x_sub_dir), None
+            )
+            if existing_global is not None:
+                if self.expand_all:
+                    with contextlib.suppress(Exception):
+                        existing_global.expand()
+                self._populate_x_dir(existing_global, x_sub_dir)
                 continue
 
             new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
@@ -232,9 +232,10 @@ class ManagedTree(TreeBase):
     def watch_unchanged(self, unchanged: bool) -> None:
         if unchanged is True:
             for node in self.get_all_nodes():
-                if node.data is not None and node.data in (
-                    CMD.cache.sets.n_dirs | CMD.cache.sets.status_dirs
-                ):
+                if node.data is None:
+                    continue
+                # Populate x-nodes for the root and any directory nodes
+                if node is self.root or node.allow_expand is True:
                     self._populate_x_dir(node, node.data)
         elif unchanged is False:
             # Remove any previously added "x" nodes (files or dirs) that we tracked
