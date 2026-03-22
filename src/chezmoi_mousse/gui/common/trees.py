@@ -144,10 +144,10 @@ class ManagedTree(TreeBase):
     def _populate_x_node(self, tree_node: TreeNode[Path], dir_path: Path) -> None:
         if tree_node.data is None:
             return
-        for x_file in CMD.cache.get_x_files_in(dir_path):
+        for x_file in CMD.cache.sets.get_x_files_in(dir_path):
             tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
 
-        for x_sub_dir in CMD.cache.get_x_dirs_in(tree_node.data):
+        for x_sub_dir in CMD.cache.sets.get_x_dirs_in(tree_node.data):
             new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
             if self.expand_all:
                 new_x_node.expand()

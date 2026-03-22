@@ -34,13 +34,36 @@ class PathSets:
     x_dirs: set[Path] = field(default_factory=lambda: set())
     n_dirs: set[Path] = field(default_factory=lambda: set())
 
-    def get_sub_dirs_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.managed_dirs if p.parent == dir_path}
-
     def has_status_paths(self, dir_path: Path) -> bool:
         return any(
             p.is_relative_to(dir_path) for p in self.status_dirs | self.status_files
         )
+
+    def x_files_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
+        if recursive:
+            return {
+                path
+                for path in self.managed_files
+                if path.is_relative_to(dir_path) and path not in self.status_files
+            }
+        return {
+            path
+            for path in self.managed_files
+            if path.parent == dir_path and path not in self.status_files
+        }
+
+    def x_dirs_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
+        if recursive:
+            return {
+                path
+                for path in self.managed_dirs
+                if path.is_relative_to(dir_path) and path not in self.status_files
+            }
+        return {
+            path
+            for path in self.managed_dirs
+            if path.parent == dir_path and path not in self.status_files
+        }
 
 
 class CachedData:
@@ -102,32 +125,11 @@ class CachedData:
         index = 0 if canvas_name == TabLabel.apply else 1
         return {k: StatusCode(v[index]) for k, v in self._file_status_pairs.items()}
 
-    def get_x_files_in(self, dir_path: Path) -> dict[Path, StatusCode]:
-        return {
-            path: StatusCode.Space
-            for path in self.sets.managed_files
-            if path.parent == dir_path and path not in self.sets.status_files
-        }
-
-    def get_x_dirs_in(self, dir_path: Path) -> dict[Path, StatusCode]:
-        return {
-            path: StatusCode.Space
-            for path in self.sets.managed_dirs
-            if path.parent == dir_path and path not in self.sets.status_files
-        }
-
     def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
         paths_dict = self._get_status_dirs(canvas_name) | self._get_status_files(
             canvas_name
         )
-        status = paths_dict.get(path, StatusCode.Space)
-        if (
-            path in self.sets.n_dirs
-            and status == StatusCode.Space
-            or path == self.dest_dir
-        ):
-            return StatusCode.Nested
-        return status
+        return paths_dict[path]
 
     def get_status_files_in(
         self, dir_path: Path, canvas_name: str, recursive: bool
