@@ -188,12 +188,11 @@ class SectionLabel(StrEnum):
 
 
 class StatusCode(StrEnum):
-    # Real status codes from chezmoi
     Added = "A"
     Deleted = "D"
     Modified = "M"
+    Run = "R"
     Space = " "
-    Nested = "N"  # Fake status used for dirs without status but with status children
 
     @property
     def _theme_var_color_name(self) -> dict[str, str]:
@@ -201,8 +200,8 @@ class StatusCode(StrEnum):
             StatusCode.Added: "text-success",
             StatusCode.Deleted: "text-error",
             StatusCode.Modified: "text-warning",
+            StatusCode.Run: "text-error",  # choose error as it's not yet implemented
             StatusCode.Space: "text-muted",
-            StatusCode.Nested: "text-secondary",
         }
 
     @property

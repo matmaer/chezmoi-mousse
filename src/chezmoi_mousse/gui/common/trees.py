@@ -39,16 +39,13 @@ class TreeBase(Tree[Path], AppType):
         )
 
         # Get status code for the path
-        status = StatusCode.Space  # default status if not found
-        for dir_node in CMD.cache.sets.managed_dirs:
-            if CMD.cache.sets.has_status_paths(dir_node):
-                status = StatusCode.Nested
-                continue
-        else:
-            status = CMD.cache.get_path_status(path, self.ids.canvas_name)
+        status = CMD.cache.get_path_status(path, self.ids.canvas_name)
+        color_var = status.color_var
+        if status == StatusCode.Space and path in CMD.cache.sets.n_dirs:
+            color_var = "text-secondary"
 
         # Get color and create styled label
-        color = self.app.theme_var_to_hex(status.color_var)
+        color = self.app.theme_var_to_hex(color_var)
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{label_text}[/]"
 
