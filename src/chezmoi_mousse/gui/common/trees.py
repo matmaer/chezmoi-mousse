@@ -102,37 +102,31 @@ class ManagedTree(TreeBase):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(ids, tree_name=TreeName.managed_tree)
-        self.expanded_nodes: list[TreeNode[Path]] = []
-        self.collapsed_nodes: list[TreeNode[Path]] = []
-        # Track nodes added for "unchanged" (x) items so we can remove them safely
-        self._x_nodes: list[TreeNode[Path]] = []
+        self.expanded_nodes: set[TreeNode[Path]] = set()
+        self._x_nodes: set[TreeNode[Path]] = set()
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
         self.root.expand()
 
-    def populate_tree(self) -> None:
-        current_nodes = self.get_all_nodes()
-        expanded_paths = {
-            node.data
-            for node in current_nodes
-            if node.is_expanded and node.data is not None
-        }
-        # Reset tracked expanded/collapsed lists when rebuilding the tree
-        self.expanded_nodes = []
-        self.collapsed_nodes = []
-        # Reset tracked x-nodes when rebuilding the tree
-        self._x_nodes = []
-        self.clear()
+    def create_root_node(self) -> TreeNode[Path]:
         self.root.data = CMD.cache.dest_dir
         color = self.app.theme_variables["text-primary"]
         self.root.label = f"[{color} bold]{CMD.cache.dest_dir}[/]"
+        self.expanded_nodes.add(self.root)
         self.root.expand()
-        self.expanded_nodes.append(self.root)
-        self.root.allow_expand = False
+        self.root.allow_expand = False  # to prevent the root node from being collapsed
+        return self.root
+
+    def populate_tree(self) -> None:
+        previous_expanded_nodes = {self.root} | self.expanded_nodes.copy()
+        self.expanded_nodes.clear()
+        self._x_nodes.clear()
+        self.clear()
+        self.create_root_node()
         self._populate_node(self.root)
         for node in self.get_all_nodes():
-            if node.data in expanded_paths:
+            if node in previous_expanded_nodes:
                 node.expand()
         self.select_node(self.root)
 
@@ -166,23 +160,15 @@ class ManagedTree(TreeBase):
                 continue
             new_leaf = tree_node.add_leaf(f"[dim]{x_file.name}[/]", x_file)
             # track so we only remove these later
-            self._x_nodes.append(new_leaf)
+            self._x_nodes.add(new_leaf)
 
         for x_sub_dir in sorted(CMD.cache.sets.x_dirs_in(tree_node.data)):
             # If the dir exists anywhere in the tree, recurse into that node instead
-            existing_global = next(
-                (n for n in self.get_all_nodes() if n.data == x_sub_dir), None
-            )
-            if existing_global is not None:
-                if self.expand_all:
-                    with contextlib.suppress(Exception):
-                        existing_global.expand()
-                self._populate_x_dir(existing_global, x_sub_dir)
+            if any((node.data == x_sub_dir) for node in self.get_all_nodes()):
                 continue
-
             new_x_node = tree_node.add(f"[dim]{x_sub_dir.name}[/]", data=x_sub_dir)
             # track so we only remove these later
-            self._x_nodes.append(new_x_node)
+            self._x_nodes.add(new_x_node)
             if self.expand_all:
                 new_x_node.expand()
             self._populate_x_dir(new_x_node, x_sub_dir)
@@ -198,36 +184,34 @@ class ManagedTree(TreeBase):
         return all_nodes
 
     @property
-    def dir_nodes(self) -> list[TreeNode[Path]]:
-        return [node for node in self.get_all_nodes() if node.allow_expand is True]
-
-    @property
-    def file_nodes(self) -> list[TreeNode[Path]]:
-        return [node for node in self.get_all_nodes() if node.allow_expand is False]
+    def _dir_nodes(self) -> set[TreeNode[Path]]:
+        return {self.root} | {
+            node for node in self.get_all_nodes() if node.allow_expand is True
+        }
 
     @on(Tree.NodeCollapsed)
     def update_collapsed_nodes(self, event: Tree.NodeCollapsed[Path]) -> None:
+        if self.expand_all:
+            return
         if event.node in self.expanded_nodes:
             self.expanded_nodes.remove(event.node)
-        if event.node not in self.collapsed_nodes:
-            self.collapsed_nodes.append(event.node)
 
     @on(Tree.NodeExpanded)
     def update_expanded_nodes(self, event: Tree.NodeExpanded[Path]) -> None:
-        if event.node in self.collapsed_nodes:
-            self.collapsed_nodes.remove(event.node)
-        if event.node not in self.expanded_nodes:
-            self.expanded_nodes.append(event.node)
+        if self.expand_all:
+            return
+        self.expanded_nodes.add(event.node)
 
     def watch_expand_all(self, expand_all: bool) -> None:
-        if expand_all:
-            for node in self.dir_nodes:
+        if expand_all is True:
+            for node in self._dir_nodes:
                 with contextlib.suppress(Exception):
                     node.expand()
-        else:
-            for node in self.dir_nodes:
-                with contextlib.suppress(Exception):
-                    node.collapse()
+        elif expand_all is False:
+            for node in self._dir_nodes:
+                if node not in self.expanded_nodes:
+                    with contextlib.suppress(Exception):
+                        node.collapse()
 
     def watch_unchanged(self, unchanged: bool) -> None:
         if unchanged is True:
@@ -242,4 +226,4 @@ class ManagedTree(TreeBase):
             for node in list(self._x_nodes):
                 with contextlib.suppress(Exception):
                     node.remove()
-            self._x_nodes = []
+            self._x_nodes.clear()
