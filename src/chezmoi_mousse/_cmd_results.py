@@ -121,10 +121,6 @@ class CachedData:
             Path(line[3:]): line[:2] for line in self.status_files.std_out.splitlines()
         }
 
-    @property
-    def status_pairs(self) -> dict[Path, str]:
-        return self._dir_status_pairs | self._file_status_pairs
-
     def _get_status_dirs(self, canvas_name: str) -> dict[Path, StatusCode]:
         if self.status_dirs is None:
             return {}

@@ -134,19 +134,6 @@ class AppIds:
     def forget_destroy_review_btn_qids(self) -> set[str]:
         return {self.op_btn.forget_review_q, self.op_btn.destroy_review_q}
 
-    @property
-    def tab_operation_btn_q(self):
-        if self.canvas_name == TabLabel.add:
-            return f"#{self.op_btn.add_review}"
-        elif self.canvas_name == TabLabel.apply:
-            return f"#{self.op_btn.apply_review}"
-        elif self.canvas_name == TabLabel.re_add:
-            return f"#{self.op_btn.re_add_review}"
-        else:
-            raise ValueError(
-                f"Unexpected canvas_name {self.canvas_name} for tab_operation_btn_q"
-            )
-
 
 class ContainerIds:
     def __init__(self, ids: AppIds):
