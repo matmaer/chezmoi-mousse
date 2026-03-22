@@ -283,14 +283,9 @@ class SwitchEnum(Enum):
         ),
         disabled_tooltip=None,
     )
-    unmanaged_dirs = SwitchData(
-        label=SwitchLabel.unmanaged_dirs,
-        enabled_tooltip=(
-            "The default (disabled), only shows directories which already "
-            "contain managed files. This allows spotting new unmanaged files in "
-            "already managed directories. Enable to show all directories which contain "
-            "unmanaged files."
-        ),
+    managed_dirs = SwitchData(
+        label=SwitchLabel.managed_dirs,
+        enabled_tooltip=("If enabled, only already managed directories are shown."),
         disabled_tooltip=None,
     )
     unwanted = SwitchData(

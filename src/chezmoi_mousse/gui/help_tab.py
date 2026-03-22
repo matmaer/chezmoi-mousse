@@ -49,7 +49,7 @@ class HelpStrings(StrEnum):
     available_buttons = "Available Buttons"
     # Add tab
     add_tab_help = "Add Tab Help"
-    unmanaged_dirs_filter = f"{SwitchEnum.unmanaged_dirs.label} Filter"
+    managed_dirs_filter = f"{SwitchEnum.managed_dirs.label} Filter"
     unwanted_filter = f"{SwitchEnum.unwanted.label} Filter"
     # Apply tab
     apply_tab_help = "Apply Tab Help"
@@ -121,10 +121,8 @@ class AddTabHelp(Vertical):
 
         with ScrollableContainer():
             yield Label(HelpStrings.available_filters, classes=Tcss.main_section_label)
-            yield Label(
-                HelpStrings.unmanaged_dirs_filter, classes=Tcss.sub_section_label
-            )
-            yield Static(SwitchEnum.unmanaged_dirs.enabled_tooltip)
+            yield Label(HelpStrings.managed_dirs_filter, classes=Tcss.sub_section_label)
+            yield Static(SwitchEnum.managed_dirs.enabled_tooltip)
             yield Label(HelpStrings.unwanted_filter, classes=Tcss.sub_section_label)
             yield Static(SwitchEnum.unwanted.enabled_tooltip)
             yield Label(HelpStrings.available_buttons, classes=Tcss.sub_section_label)

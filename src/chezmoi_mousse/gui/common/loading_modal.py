@@ -66,6 +66,7 @@ class LoadingModal(ModalScreen[None], AppType):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
+        self.notify(f"in loading modal on mount for {self.btn_enum}")
         if self.btn_enum != OpBtnEnum.reload:
             CMD.changed_paths.clear()
         CMD.loading_modal_results.clear()

@@ -139,7 +139,7 @@ class SwitchLabel(StrEnum):
     expand_all = "Expand all dirs"
     init_repo = "Init existing repo"
     unchanged = "Show unchanged paths"
-    unmanaged_dirs = "Show unmanaged dirs"
+    managed_dirs = "Hide unmanaged dirs"
     unwanted = "Show unwanted paths"
 
 

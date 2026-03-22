@@ -164,7 +164,7 @@ class SwitchSlider(VerticalGroup):
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             self.switches = (SwitchEnum.unchanged, SwitchEnum.expand_all)
         else:  # for the AddTab
-            self.switches = (SwitchEnum.unmanaged_dirs, SwitchEnum.unwanted)
+            self.switches = (SwitchEnum.managed_dirs, SwitchEnum.unwanted)
         self.ids = ids
 
     def compose(self) -> ComposeResult:

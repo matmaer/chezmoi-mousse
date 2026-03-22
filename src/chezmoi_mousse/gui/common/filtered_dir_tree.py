@@ -16,8 +16,8 @@ class FilteredDirTree(DirectoryTree, AppType):
     ICON_NODE_EXPANDED = Chars.tree_expanded
     ICON_FILE = " "
 
-    unmanaged_dirs: reactive[bool] = reactive(False, init=False)
-    unwanted: reactive[bool] = reactive(False, init=False)
+    only_show_managed_dirs: reactive[bool] = reactive(False, init=False)
+    show_unwanted: reactive[bool] = reactive(False, init=False)
 
     def on_mount(self) -> None:
         self.guide_depth = 3
@@ -25,77 +25,67 @@ class FilteredDirTree(DirectoryTree, AppType):
         self.border_title = BorderTitle.dest_dir
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
-        show_unmanaged = bool(self.unmanaged_dirs)
-        show_unwanted = bool(self.unwanted)
 
-        def is_unwanted_file(fp: Path) -> bool:
-            return UnwantedFileNames.is_unwanted(
-                fp
-            ) or UnwantedFileExtensions.is_unwanted(fp)
-
-        def dir_matches(d: Path) -> bool:
-            if show_unwanted and UnwantedDirs.is_unwanted(d.name):
-                return True
+        def is_unwanted_file(file_path: Path) -> bool:
             if (
-                show_unmanaged
-                and self._has_unmanaged_paths_in(d)
-                and not UnwantedDirs.is_unwanted(d.name)
+                KeyFileNames.is_unwanted(file_path)
+                or file_path in CMD.cache.sets.managed_files
             ):
                 return True
-            return d in CMD.cache.sets.managed_dirs_plus_dest_dir
-
-        def file_matches(f: Path) -> bool:
-            if is_unwanted_file(f):
-                return show_unwanted
-            if not self._file_of_interest(f):
+            if file_path not in CMD.cache.sets.managed_files:
+                try:
+                    if file_path.stat().st_size > 1024 * 1024:  # 1 MiB
+                        return True
+                    # Now read only first KiB
+                    with Path.open(file_path, "rb") as f:
+                        chunk = f.read(1024)
+                    return b"\x00" in chunk
+                except OSError:
+                    return True
+            if not self.show_unwanted and UnwantedFileExtensions.is_unwanted(file_path):
+                return True
+            if self.show_unwanted:
                 return False
-            if show_unmanaged:
-                parent_ok = (
-                    f.parent in CMD.cache.sets.managed_dirs_plus_dest_dir
-                    or self._has_unmanaged_paths_in(f.parent)
-                )
-                return f not in CMD.cache.sets.managed_files and parent_ok
-            return f in CMD.cache.sets.managed_files
+            return False
+
+        def is_unwanted_dir(dir_path: Path) -> bool:
+            if (
+                self.only_show_managed_dirs
+                and dir_path not in CMD.cache.sets.managed_dirs_plus_dest_dir
+            ):
+                return True
+            if not self.show_unwanted and UnwantedDirs.is_unwanted(dir_path.name):
+                return True
+
+            def _has_unmanaged_paths_in(dir_path: Path) -> bool:
+                try:
+                    for p in dir_path.iterdir():
+                        if p.is_file():
+                            if (
+                                p not in CMD.cache.sets.managed_files
+                                and not KeyFileNames.is_unwanted(p)
+                            ):
+                                return True
+                        elif _has_unmanaged_paths_in(
+                            p
+                        ) and not UnwantedDirs.is_unwanted(p.name):
+                            return True
+                except (PermissionError, OSError):
+                    return True
+                return False
+
+            if not _has_unmanaged_paths_in(dir_path):
+                return True
+            if self.show_unwanted:
+                return False
+            return False
 
         return (
             p
             for p in paths
-            if (p.is_dir() and dir_matches(p)) or (p.is_file() and file_matches(p))
+            if (p.is_dir(follow_symlinks=False) and not is_unwanted_dir(p))
+            or (p.is_file(follow_symlinks=False) and not is_unwanted_file(p))
         )
-
-    def _file_of_interest(self, file_path: Path) -> bool:
-        if UnwantedFileNames.is_unwanted(
-            file_path
-        ) or UnwantedFileExtensions.is_unwanted(file_path):
-            return False
-        try:
-            if file_path.stat().st_size > 1000 * 1024:  # 1 MiB
-                return False
-            # Now read only first 8 KiB
-            with Path.open(file_path, "rb") as f:
-                chunk = f.read(8192)
-            return b"\x00" not in chunk
-        except OSError:
-            return False
-
-    def _has_unmanaged_paths_in(self, dir_path: Path) -> bool:
-        try:
-            for p in dir_path.iterdir():
-                if p.is_file():
-                    if (
-                        p not in CMD.cache.sets.managed_files
-                        and self._file_of_interest(p)
-                    ):
-                        return True
-                elif (
-                    p.is_dir(follow_symlinks=False)
-                    and self._has_unmanaged_paths_in(p)
-                    and not UnwantedDirs.is_unwanted(p.name)
-                ):
-                    return True
-            return False
-        except (PermissionError, OSError):
-            return False
 
 
 class UnwantedDirs(StrEnum):
@@ -177,7 +167,7 @@ class UnwantedFileExtensions(StrEnum):
 
     @classmethod
     def is_unwanted(cls, file_path: Path) -> bool:
-        if UnwantedFileNames.is_unwanted(file_path):
+        if KeyFileNames.is_unwanted(file_path):
             return True
         try:
             cls(file_path.suffix)
@@ -188,7 +178,7 @@ class UnwantedFileExtensions(StrEnum):
             return "cache" in file_path.name.lower()
 
 
-class UnwantedFileNames(StrEnum):
+class KeyFileNames(StrEnum):
     """As we don't support adding encrypted files yet, we are excluding them."""
 
     # Common private key files across platforms (generated by ssh-keygen)

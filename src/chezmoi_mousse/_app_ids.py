@@ -282,8 +282,8 @@ class SwitchIds:
         self.expand_all_q: str = f"#{self.expand_all}"
         self.unchanged: str = ids.switch_id(switch=SwitchEnum.unchanged)
         self.unchanged_q: str = f"#{self.unchanged}"
-        self.unmanaged_dirs: str = ids.switch_id(switch=SwitchEnum.unmanaged_dirs)
-        self.unmanaged_dirs_q: str = f"#{self.unmanaged_dirs}"
+        self.managed_dirs: str = ids.switch_id(switch=SwitchEnum.managed_dirs)
+        self.managed_dirs_q: str = f"#{self.managed_dirs}"
         self.unwanted: str = ids.switch_id(switch=SwitchEnum.unwanted)
         self.unwanted_q: str = f"#{self.unwanted}"
 
