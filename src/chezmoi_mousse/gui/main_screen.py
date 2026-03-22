@@ -335,9 +335,7 @@ class MainScreen(Screen[None], AppType):
             ids.container.right_side_q, ViewSwitcher
         ).query_exactly_one(Horizontal)
         tab_buttons.border_subtitle = (
-            f" {CMD.cache.dest_dir} "
-            if msg.path == CMD.cache.dest_dir
-            else f" {msg.path.name} "
+            f" {msg.path} " if msg.path == CMD.cache.dest_dir else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
         self.query_one(ids.container.diff_q, DiffView).show_path = msg.path
@@ -347,25 +345,25 @@ class MainScreen(Screen[None], AppType):
         self.query_one(ids.container.operate_buttons_q, OperateButtons).set_path_arg(
             msg.path
         )
-        # disable/enable review buttons for file nodes
-        if msg.path in CMD.cache.sets.managed_files:
-            has_status = msg.path in CMD.cache.sets.status_files
-            self.query_one(ids.tab_operation_btn_q, Button).disabled = not has_status
-            for btn_id_q in ids.forget_destroy_review_btn_qids:
-                self.query_one(btn_id_q, Button).disabled = not has_status
-        elif msg.path in CMD.cache.sets.managed_dirs_plus_dest_dir:
+
+        # Could occur at startup or after operations, when we aute select the root node.
+        if CMD.cache.sets.no_managed_paths is True:
+            for btn_id_q in ids.review_btn_ids:
+                self.query_one(btn_id_q, Button).disabled = True
+            return
+        # Enable/disable all review buttons
+        if CMD.cache.sets.contains_status_paths(msg.path) is True:
+            for btn_id_q in ids.review_btn_qids:
+                self.query_one(btn_id_q, Button).disabled = False
+        else:
+            for btn_id_q in ids.review_btn_qids:
+                self.query_one(btn_id_q, Button).disabled = True
+        # Enable/disable Forget and Destroy button
+        for btn_id_q in ids.forget_destroy_review_btn_qids:
             if msg.path == CMD.cache.dest_dir:
-                for btn_id_q in ids.forget_destroy_review_btn_qids:
-                    self.query_one(btn_id_q, Button).disabled = True
-                if CMD.cache.no_status_paths is True:
-                    self.query_one(ids.tab_operation_btn_q, Button).disabled = True
-            else:
-                for btn_id_q in ids.forget_destroy_review_btn_qids:
-                    self.query_one(btn_id_q, Button).disabled = False
-                self.query_one(ids.tab_operation_btn_q, Button).disabled = bool(
-                    msg.path not in CMD.cache.sets.status_dirs
-                    and msg.path not in CMD.cache.sets.x_dirs
-                )
+                self.query_one(btn_id_q, Button).disabled = True
+            elif CMD.cache.no_status_paths is False:
+                self.query_one(btn_id_q, Button).disabled = False
 
     ########################
     # Widget display logic #

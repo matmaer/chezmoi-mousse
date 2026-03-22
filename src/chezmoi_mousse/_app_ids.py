@@ -123,6 +123,14 @@ class AppIds:
         }
 
     @property
+    def review_btn_qids(self) -> set[str]:
+        return {
+            f"#{btn_id}"
+            for btn_id, btn_enum in self.op_btn_map.items()
+            if "Review" in btn_enum.label
+        }
+
+    @property
     def forget_destroy_review_btn_qids(self) -> set[str]:
         return {self.op_btn.forget_review_q, self.op_btn.destroy_review_q}
 
