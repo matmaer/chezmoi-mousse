@@ -179,6 +179,7 @@ class SectionLabel(StrEnum):
     init_new_repo = "Initialize New Chezmoi Repository"
     # init_clone_repo = "Initialize Existing Chezmoi Repository" # noqa: ERA001
     password_managers = "Password Manager Information"
+    paths_with_status = "Paths with Status"
     pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"
     project_link = "Project Link"
