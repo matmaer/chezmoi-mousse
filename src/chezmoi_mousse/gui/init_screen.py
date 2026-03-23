@@ -415,7 +415,6 @@ class InitChezmoi(Screen[None], AppType):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ids = IDS.init
         self.valid_arg: bool = False
         self.init_arg: str | None = None
         self.init_cmd = WriteCmd.init_new
@@ -424,22 +423,23 @@ class InitChezmoi(Screen[None], AppType):
         yield CustomHeader()
         yield HorizontalGroup(
             Label(SectionLabel.init_new_repo, classes=Tcss.main_section_label),
-            SwitchWithLabel(self.ids, switch_enum=SwitchEnum.init_repo_switch),
+            SwitchWithLabel(IDS.init, switch_enum=SwitchEnum.init_repo_switch),
         )
         yield InputInitCloneRepo()
-        yield Static(id=self.ids.static.init_info)
+        yield Static(id=IDS.init.static.init_info)
+        yield OperateButtons(IDS.init)
         yield Footer()
 
     def on_mount(self) -> None:
         self.operate_buttons = self.query_one(
-            self.ids.container.operate_buttons_q, OperateButtons
+            IDS.init.container.operate_buttons_q, OperateButtons
         )
-        self.init_info = self.query_one(self.ids.static.init_info_q, Static)
-        self._update_init_info()
+        self.init_info = self.query_one(IDS.init.static.init_info_q, Static)
         self.repo_input = self.query_one(
-            self.ids.container.repo_input_q, InputInitCloneRepo
+            IDS.init.container.repo_input_q, InputInitCloneRepo
         )
         self.repo_input.display = False
+        self._update_init_info()
 
     def _update_init_info(self) -> None:
         current_select = self.repo_input.query_exactly_one(Select[str]).value

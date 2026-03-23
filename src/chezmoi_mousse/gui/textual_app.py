@@ -113,8 +113,8 @@ class ChezmoiGUI(App[None]):
 
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
-        self.force_init_needed: bool = pretend_init_needed
-        self.init_needed: bool = bool(self.force_init_needed)
+        self.pretend_init_needed: bool = pretend_init_needed
+        self.init_needed: bool = bool(self.pretend_init_needed)
         self.init_cmd_result: CommandResult | None = None
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
@@ -131,6 +131,9 @@ class ChezmoiGUI(App[None]):
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
             # Chezmoi command not found, SplashScreen will return None
             self.push_screen(InstallHelpScreen())
+        elif self.pretend_init_needed is True:
+            self.pretend_init_needed = False
+            await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
         elif self.init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
             await self.push_screen(SplashScreen(), wait_for_dismiss=True)
@@ -185,6 +188,14 @@ class ChezmoiGUI(App[None]):
         if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
             return current_tab_widget.query_exactly_one(SwitchSlider)
         return None
+
+    @on(Button.Pressed)
+    def handle_init_reload_btn(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == OpBtnLabel.reload and isinstance(
+            self.screen, InitChezmoi
+        ):
+            self.notify("Not implemented")
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:

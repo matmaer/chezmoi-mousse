@@ -66,7 +66,7 @@ class OpBtnLabel(StrEnum):
     exit_app = "Exit App"
     forget_review = "Review Forget Path"
     forget_run = "Run Chezmoi Forget"
-    init_review = "Review Init Chezmoi"
+    init_review = "Review Chezmoi Init"
     init_run = "Run Chezmoi Init"
     log_memory = "Log Memory Usage"
     re_add_review = "Review Re-Add Path"

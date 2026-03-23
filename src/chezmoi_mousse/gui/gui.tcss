@@ -142,7 +142,7 @@ FlatLink {
 
 InitChezmoi {
   & OperateButtons {
-      margin-bottom: 1;
+      margin-bottom: 2;
   }
 }
 

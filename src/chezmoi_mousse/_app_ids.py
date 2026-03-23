@@ -62,9 +62,10 @@ class AppIds:
             return {
                 self.op_btn.init_review: OpBtnEnum.init_review,
                 self.op_btn.init_run: OpBtnEnum.init_run,
+                self.op_btn.reload: OpBtnEnum.reload,
                 self.op_btn.exit_app: OpBtnEnum.exit_app,
             }
-        elif self.canvas_name == TabLabel.debug:
+        if self.canvas_name == TabLabel.debug:
             return {
                 self.op_btn.create_paths: OpBtnEnum.create_paths,
                 self.op_btn.remove_paths: OpBtnEnum.remove_paths,

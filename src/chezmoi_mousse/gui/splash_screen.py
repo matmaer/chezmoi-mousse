@@ -167,7 +167,6 @@ class SplashScreen(Screen[None], AppType):
             and CMD.cache.status_files.completed_process.returncode != 0
         ):
             self.app.init_needed = True
-            self.app.force_init_needed = False
             # Run io workers for extra info when init is needed
             self._run_io_worker(ReadCmd.doctor)
             self._run_io_worker(ReadCmd.template_data)
