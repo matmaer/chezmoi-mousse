@@ -35,7 +35,7 @@ from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
 from .debug_tab import DebugTab
 from .help_tab import HelpTab
-from .init_screen import InitChezmoi
+from .init_tab import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
