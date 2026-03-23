@@ -55,7 +55,7 @@ class MainScreen(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
-        yield OpFeedBack()
+        yield OpFeedBack(ids=IDS.main_tabs)
 
         with Vertical(), TabbedContent():
             yield TabPane(TabLabel.apply, ApplyTab(), id=TabLabel.apply)

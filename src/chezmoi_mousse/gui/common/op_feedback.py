@@ -1,20 +1,17 @@
+from typing import TYPE_CHECKING
+
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import (
-    CMD,
-    IDS,
-    AppType,
-    OpBtnEnum,
-    OperateString,
-    OpInfoString,
-    Tcss,
-)
+from chezmoi_mousse import CMD, AppType, OpBtnEnum, OperateString, OpInfoString, Tcss
 
 from .actionables import OpButton
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import AppIds
 
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 
@@ -23,10 +20,8 @@ class OperateInfo(Static, AppType):
 
     changes_enabled: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self) -> None:
-        super().__init__(
-            id=IDS.main_tabs.static.operate_info, classes=Tcss.operate_info
-        )
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.static.operate_info, classes=Tcss.operate_info)
         self.current_button: OpButton | None = None
 
     def on_mount(self) -> None:
@@ -76,17 +71,18 @@ class OperateInfo(Static, AppType):
 
 class CommandOutput(ScrollableContainer):
 
-    def __init__(self) -> None:
-        super().__init__(id=IDS.main_tabs.container.command_output)
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.container.command_output)
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
         yield Label("Changed paths", classes=Tcss.main_section_label)
-        yield Static(id=IDS.main_tabs.static.changed_paths, classes=Tcss.info)
+        yield Static(id=self.ids.static.changed_paths, classes=Tcss.info)
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
         self.changed_paths_static = self.query_one(
-            IDS.main_tabs.static.changed_paths_q, Static
+            self.ids.static.changed_paths_q, Static
         )
 
     @work
@@ -109,12 +105,13 @@ class CommandOutput(ScrollableContainer):
 
 class OpFeedBack(Vertical):
 
-    def __init__(self) -> None:
-        super().__init__(id=IDS.main_tabs.container.op_feed_back)
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=ids.container.op_feed_back)
+        self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield OperateInfo()
-        yield CommandOutput()
+        yield OperateInfo(self.ids)
+        yield CommandOutput(self.ids)
 
     def on_mount(self) -> None:
         self.display = False
