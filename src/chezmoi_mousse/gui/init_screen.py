@@ -19,6 +19,7 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
+from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 
 __all__ = ["InitChezmoi"]
@@ -391,6 +392,7 @@ class InitChezmoi(Screen[None], AppType):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
+        yield OpFeedBack(ids=IDS.init)
         yield HorizontalGroup(
             Label(SectionLabel.init_new_repo, classes=Tcss.main_section_label),
             SwitchWithLabel(IDS.init, switch_enum=SwitchEnum.init_repo_switch),
@@ -410,6 +412,13 @@ class InitChezmoi(Screen[None], AppType):
             IDS.init.container.repo_input_q, InputInitCloneRepo
         )
         self._update_init_info()
+        self.op_feed_back = self.query_one(
+            IDS.init.container.op_feed_back_q, OpFeedBack
+        )
+        self.operate_info = self.query_one(IDS.init.static.operate_info_q, OperateInfo)
+        self.command_output = self.query_one(
+            IDS.init.container.command_output_q, CommandOutput
+        )
 
     def _update_init_info(self) -> None:
         current_select = self.repo_input.query_exactly_one(Select[str]).value
