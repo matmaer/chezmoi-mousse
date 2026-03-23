@@ -159,17 +159,12 @@ class SplashScreen(Screen[None], AppType):
 
     @work
     async def _chezmoi_found_workers(self) -> None:
-        worker = self._run_io_worker(ReadCmd.status_files)
-        # try to run chezmoi status to see if init is needed
-        await worker.wait()
         if self.app.chezmoi_init_needed is True:
             # Run io workers for extra info when init is needed
             self._run_io_worker(ReadCmd.doctor)
             self._run_io_worker(ReadCmd.template_data)
         else:
             for splash_cmd in SPLASH_COMMANDS:
-                if splash_cmd == ReadCmd.status_files:
-                    continue
                 self._run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
