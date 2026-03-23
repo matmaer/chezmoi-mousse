@@ -34,6 +34,7 @@ from .common.switchers import ViewSwitcher
 from .common.trees import ListTree, ManagedTree
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
+from .init_tab import InitTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
 
@@ -53,6 +54,7 @@ class MainScreen(Screen[None], AppType):
             yield TabPane(TabLabel.apply, ApplyTab(), id=TabLabel.apply)
             yield TabPane(TabLabel.re_add, ReAddTab(), id=TabLabel.re_add)
             yield TabPane(TabLabel.add, AddTab(), id=TabLabel.add)
+            yield TabPane(TabLabel.init, InitTab(), id=TabLabel.init)
             yield TabPane(TabLabel.logs, LogsTab(), id=TabLabel.logs)
             yield TabPane(TabLabel.config, ConfigTab(), id=TabLabel.config)
             yield TabPane(TabLabel.help, HelpTab(), id=TabLabel.help)

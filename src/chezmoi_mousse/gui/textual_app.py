@@ -35,7 +35,7 @@ from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
 from .debug_tab import DebugTab
 from .help_tab import HelpTab
-from .init_tab import InitChezmoi
+from .init_tab import InitTab
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
@@ -127,8 +127,6 @@ class ChezmoiGUI(App[None]):
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.chezmoi_found is False:
             self.push_screen(InstallHelpScreen())
-        elif self.chezmoi_init_needed is True:
-            await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
         else:
             self.push_screen(MainScreen())
 
@@ -150,7 +148,16 @@ class ChezmoiGUI(App[None]):
 
     def _get_tab_widget(
         self,
-    ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab | DebugTab:
+    ) -> (
+        ApplyTab
+        | ReAddTab
+        | AddTab
+        | InitTab
+        | LogsTab
+        | ConfigTab
+        | HelpTab
+        | DebugTab
+    ):
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_tab_widget called outside of MainScreen")
         tab_to_query = self.screen.query_exactly_one(TabbedContent).active
@@ -160,6 +167,8 @@ class ChezmoiGUI(App[None]):
             return self.screen.query_exactly_one(ReAddTab)
         elif tab_to_query == TabLabel.add:
             return self.screen.query_exactly_one(AddTab)
+        elif tab_to_query == TabLabel.init:
+            return self.screen.query_exactly_one(InitTab)
         elif tab_to_query == TabLabel.config:
             return self.screen.query_exactly_one(ConfigTab)
         elif tab_to_query == TabLabel.help:
@@ -182,9 +191,7 @@ class ChezmoiGUI(App[None]):
     @on(Button.Pressed)
     def handle_init_reload_btn(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == OpBtnLabel.reload and isinstance(
-            self.screen, InitChezmoi
-        ):
+        if event.button.label == OpBtnLabel.reload and isinstance(self.screen, InitTab):
             self.notify("Not implemented")
 
     @on(Button.Pressed)
@@ -356,7 +363,7 @@ class ChezmoiGUI(App[None]):
             return False
 
         if action == BindingAction.toggle_dry_run:
-            return isinstance(self.screen, (MainScreen, InitChezmoi))
+            return isinstance(self.screen, (MainScreen, InitTab))
 
         if action == BindingAction.toggle_maximized:
             if (
@@ -367,7 +374,7 @@ class ChezmoiGUI(App[None]):
                 is True
             ):
                 return False
-            if isinstance(self.screen, (InstallHelpScreen, InitChezmoi)):
+            if isinstance(self.screen, (InstallHelpScreen, InitTab)):
                 return False
 
         return True
