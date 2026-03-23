@@ -253,24 +253,28 @@ class GuessSSH(Validator):
         return None
 
 
-class InputURL(Input):
-    def __init__(self) -> None:
-        super().__init__(
+class InputURL(HorizontalGroup):
+
+    def compose(self) -> ComposeResult:
+        yield Input(
             placeholder="Enter a repo URL",
             validate_on=["submitted"],
             validators=URL(),
             classes=Tcss.input_field,
         )
+        yield FlatLink(LinkBtn.chezmoi_init)
 
 
-class InputSSH(Input):
-    def __init__(self) -> None:
-        super().__init__(
+class InputSSH(HorizontalGroup):
+
+    def compose(self) -> ComposeResult:
+        yield Input(
             placeholder="Enter an SSH address",
             validate_on=["submitted"],
             validators=SSHSCP(),
             classes=Tcss.input_field,
         )
+        yield FlatLink(LinkBtn.chezmoi_init)
 
 
 class InputGuessURL(HorizontalGroup):
@@ -431,6 +435,7 @@ class InitChezmoi(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.query_exactly_one(SwitchWithLabel).add_class(Tcss.single_switch)
         self.operate_buttons = self.query_one(
             IDS.init.container.operate_buttons_q, OperateButtons
         )
@@ -438,7 +443,6 @@ class InitChezmoi(Screen[None], AppType):
         self.repo_input = self.query_one(
             IDS.init.container.repo_input_q, InputInitCloneRepo
         )
-        self.repo_input.display = False
         self._update_init_info()
 
     def _update_init_info(self) -> None:

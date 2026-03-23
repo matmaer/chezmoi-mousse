@@ -54,8 +54,8 @@ class FlatLink(Link):
         self.link_enum = link_enum
 
     def on_mount(self) -> None:
-        if self.link_enum == LinkBtn.chezmoi_guess:
-            self.add_class(Tcss.guess_link)
+        if self.link_enum in (LinkBtn.chezmoi_guess, LinkBtn.chezmoi_init):
+            self.add_class(Tcss.init_docs_link)
 
 
 class FlatButtonsVertical(Vertical):
@@ -95,10 +95,11 @@ class OpButton(Button, AppType):
         elif btn_enum in (
             OpBtnEnum.add_run,
             OpBtnEnum.apply_run,
-            OpBtnEnum.re_add_run,
-            OpBtnEnum.forget_run,
-            OpBtnEnum.destroy_run,
             OpBtnEnum.cancel,
+            OpBtnEnum.destroy_run,
+            OpBtnEnum.forget_run,
+            OpBtnEnum.init_run,
+            OpBtnEnum.re_add_run,
             OpBtnEnum.reload,
         ):
             self.display = False

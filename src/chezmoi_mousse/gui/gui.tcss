@@ -39,6 +39,23 @@
   min-width: 78;
 }
 
+.single_switch {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  border-top: inner $surface-lighten-1;
+  border-bottom: inner $surface-lighten-1;
+  border-left: none;
+  color: $foreground-darken-1;
+  margin-left: 1;
+  padding: 0 1 0 2;
+  height: 3;
+  width: auto;
+  & Switch {
+    background: $surface-lighten-1;
+    background-tint: $surface-lighten-1;
+  }
+}
+
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -128,7 +145,7 @@ FlatLink {
     background-tint: $primary-muted;
     border: wide $primary-muted;
   }
-  &.guess_link {
+  &.init_docs_link {
     background: $panel;
     background-tint: $panel;
     border-top: wide $panel;
@@ -241,7 +258,7 @@ Label{
     border-bottom: wide $primary-muted;
     border-top: wide $primary-muted;
     color: $primary-lighten-3;
-    width: 100%;
+    width: 1fr;
   }
   &.limited_label {
     background-tint: $surface;
@@ -249,7 +266,7 @@ Label{
     border-bottom: wide $surface;
     border-top: wide $surface;
     color: $text-error;
-    width: 100%;
+    width: 1fr;
   }
   &.sub_section_label {
     background-tint: $panel;
@@ -257,7 +274,7 @@ Label{
     border-bottom: wide $panel;
     border-top: wide $panel;
     color: $text-success;
-    width: 100%;
+    width: 1fr;
   }
   &.main_section_label {
     background-tint: $surface-lighten-1;
@@ -265,7 +282,7 @@ Label{
     border-bottom: inner $surface-lighten-1;
     border-top: inner $surface-lighten-1;
     color: $text-accent;
-    width: 100%;
+    width: 1fr;
   }
 }
 
