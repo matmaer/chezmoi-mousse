@@ -2,23 +2,12 @@ import re
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, VerticalGroup
-from textual.reactive import reactive
+from textual.containers import HorizontalGroup
 from textual.screen import Screen
 from textual.validation import URL, Failure, ValidationResult, Validator
-from textual.widgets import (  # Button,
-    Collapsible,
-    Footer,
-    Input,
-    Label,
-    Pretty,
-    Select,
-    Static,
-    Switch,
-)
+from textual.widgets import Footer, Input, Label, Select, Static, Switch
 
 from chezmoi_mousse import (
-    CMD,
     IDS,
     AppType,
     LinkBtn,
@@ -30,7 +19,6 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
-from .common.doctor_data import DoctorTable
 from .common.screen_header import CustomHeader
 
 __all__ = ["InitChezmoi"]
@@ -391,28 +379,6 @@ class InputInitCloneRepo(HorizontalGroup, AppType):
                 self.notify("Invalid SSH SCP-style address entered.", severity="error")
         if init_cmd is None or valid_arg is None:
             raise ValueError("Failed to determine init clone command data.")
-
-
-class InitCollapsibles(VerticalGroup, AppType):
-
-    doctor_stdout: reactive[str | None] = reactive(None)
-
-    def compose(self) -> ComposeResult:
-        if CMD.cache.doctor is None:
-            raise ValueError("CMD.cache.doctor is None in OperateScreen")
-        elif CMD.cache.template_data is None:
-            raise ValueError("CMD.cache.template_data is None in OperateScreen")
-        yield Label(SectionLabel.pre_init_cmd_output, classes=Tcss.sub_section_label)
-        yield Collapsible(DoctorTable(), title="Doctor Output")
-        yield Collapsible(
-            Pretty(CMD.cache.template_data.completed_process.stdout),
-            title="Template Data Output",
-        )
-
-    def watch_doctor_stdout(self) -> None:
-        if self.doctor_stdout is not None:
-            doctor_table = self.query_exactly_one(DoctorTable)
-            doctor_table.doctor_std_out = self.doctor_stdout
 
 
 class InitChezmoi(Screen[None], AppType):

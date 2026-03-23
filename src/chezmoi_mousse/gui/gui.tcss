@@ -163,10 +163,6 @@ InitChezmoi {
   }
 }
 
-InitCollapsibles {
-  margin-top: 1;
-}
-
 InputInitCloneRepo {
   .input_select {
     background-tint: $panel;
