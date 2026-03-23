@@ -9,7 +9,15 @@ from textual.widgets import Collapsible, Label, Static
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
-__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
+__all__ = [
+    "ChezmoiCommand",
+    "CommandResult",
+    "GlobalCmd",
+    "ReadCmd",
+    "ReadVerb",
+    "WriteCmd",
+    "run_chezmoi_cmd",
+]
 
 
 class GlobalCmd(Enum):

@@ -12,9 +12,10 @@ if TYPE_CHECKING:
 
 
 def run_app():
-    if not Path.cwd().is_relative_to(Path.home()):
-        print("Run the app from your home directory or a subdirectory of it.")
-        return
+    if Path.cwd != Path.home() or not Path.cwd().is_relative_to(Path.home()):
+        raise RuntimeError(
+            "Current working directory is not a subdirectory of the home directory."
+        )
     chezmoi_found = (
         shutil.which(GlobalCmd.chezmoi.value[0]) is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
