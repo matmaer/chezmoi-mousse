@@ -348,7 +348,7 @@ class MainScreen(Screen[None], AppType):
 
         # Could occur at startup or after operations, when we aute select the root node.
         if CMD.cache.sets.no_managed_paths is True:
-            for btn_id_q in ids.review_btn_ids:
+            for btn_id_q in ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
             return
         # Enable/disable all review buttons
