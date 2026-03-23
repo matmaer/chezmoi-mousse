@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.app import ComposeResult
@@ -15,7 +15,6 @@ from chezmoi_mousse import (
     LogString,
     OpBtnEnum,
     OpBtnLabel,
-    ReadCmd,
     TabLabel,
 )
 
@@ -45,13 +44,6 @@ __all__ = ["MainScreen"]
 
 
 class MainScreen(Screen[None], AppType):
-
-    READ_CMDS: ClassVar[list[ReadCmd]] = [
-        ReadCmd.managed_dirs,
-        ReadCmd.managed_files,
-        ReadCmd.status_dirs,
-        ReadCmd.status_files,
-    ]
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
@@ -110,12 +102,12 @@ class MainScreen(Screen[None], AppType):
         elif btn_enum in self.app.run_btn_enums:
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.operate_info.update_write_cmd_info().wait()
-            for read_cmd in self.READ_CMDS:
+            for read_cmd in CMD.refresh_read_cmds:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_mounted().wait()
         elif btn_enum == OpBtnEnum.refresh_tree:
-            for read_cmd in self.READ_CMDS:
+            for read_cmd in CMD.refresh_read_cmds:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_mounted().wait()

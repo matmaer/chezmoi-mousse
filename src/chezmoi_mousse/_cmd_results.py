@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from textual.widgets import Label, Static
 
-from ._run_cmd import ChezmoiCommand
+from ._run_cmd import ChezmoiCommand, ReadCmd
 from ._str_enum_names import Tcss
 from ._str_enums import SectionLabel, StatusCode, TabLabel
 
@@ -270,6 +270,14 @@ class Commands:
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
     cache: CachedData = CachedData()
     loading_modal_results: list[CommandResult] = field(default_factory=lambda: [])
+    refresh_read_cmds: list[ReadCmd] = field(
+        default_factory=lambda: [
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ]
+    )
     changed_paths: list[Path] = field(default_factory=lambda: [])
 
 
