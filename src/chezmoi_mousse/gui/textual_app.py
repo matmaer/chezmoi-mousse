@@ -29,6 +29,7 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .common.op_feedback import OperateInfo
 from .common.screen_header import CustomHeader
 from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
@@ -37,7 +38,7 @@ from .help_tab import HelpTab
 from .init_screen import InitChezmoi
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
-from .main_screen import MainScreen, OperateInfo
+from .main_screen import MainScreen
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
 
