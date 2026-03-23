@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 def run_app():
-    if Path.cwd() != Path.home() or not Path.cwd().is_relative_to(Path.home()):
+    if Path.cwd() != Path.home() and not Path.cwd().is_relative_to(Path.home()):
         raise RuntimeError("Current working directory is not in the home directory.")
     chezmoi_found = (
         shutil.which(GlobalCmd.chezmoi.value[0]) is not None
