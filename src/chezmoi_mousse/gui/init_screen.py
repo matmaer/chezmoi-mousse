@@ -18,7 +18,7 @@ from chezmoi_mousse import (
     WriteCmd,
 )
 
-from .common.actionables import FlatLink, OperateButtons, SwitchWithLabel
+from .common.actionables import FlatLink, OpButton, OperateButtons, SwitchWithLabel
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 
@@ -430,6 +430,10 @@ class InitChezmoi(Screen[None], AppType):
             self.init_info.update(OperateString.guess_https)
         elif current_select == "guess ssh":
             self.init_info.update(OperateString.guess_ssh)
+
+    @on(OpButton.Pressed)
+    async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
+        self.notify(f"Operate button pressed: {event.button.label}")
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
