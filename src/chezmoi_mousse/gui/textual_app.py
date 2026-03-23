@@ -44,8 +44,6 @@ from .splash_screen import SplashScreen
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CommandResult
-
 __all__ = ["ChezmoiGUI"]
 
 
@@ -106,16 +104,14 @@ class ChezmoiGUI(App[None]):
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
     def __init__(
-        self, *, chezmoi_found: bool, dev_mode: bool, pretend_init_needed: bool
+        self, *, chezmoi_found: bool, dev_mode: bool, chezmoi_init_needed: bool
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
-        self.pretend_init_needed: bool = pretend_init_needed
-        self.init_needed: bool = bool(self.pretend_init_needed)
-        self.init_cmd_result: CommandResult | None = None
+        self.chezmoi_init_needed = chezmoi_init_needed
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
@@ -127,19 +123,12 @@ class ChezmoiGUI(App[None]):
 
     @work
     async def _run_splash_screen(self) -> None:
+        await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         if self.chezmoi_found is False:
-            await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-            # Chezmoi command not found, SplashScreen will return None
             self.push_screen(InstallHelpScreen())
-        elif self.pretend_init_needed is True:
-            self.pretend_init_needed = False
+        elif self.chezmoi_init_needed is True:
             await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
-        elif self.init_needed is True:
-            await self.push_screen(InitChezmoi(), wait_for_dismiss=True)
-            await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-            self.push_screen(MainScreen())
         else:
-            await self.push_screen(SplashScreen(), wait_for_dismiss=True)
             self.push_screen(MainScreen())
 
     ######################################################################

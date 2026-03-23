@@ -13,6 +13,7 @@ __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
 class GlobalCmd(Enum):
+    chezmoi = ("chezmoi",)
     default_args = (
         "--color=off",
         "--force",
@@ -25,7 +26,7 @@ class GlobalCmd(Enum):
         "--use-builtin-git=true",
         "--use-builtin-diff=true",
     )
-    live_run = ("chezmoi",) + default_args
+    live_run = chezmoi + default_args
     dry_run = live_run + ("--dry-run",)
 
 
@@ -85,6 +86,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     source_path = (ReadVerb.source_path.value,)
+    status = (ReadVerb.status.value,)
     status_dirs = (
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
@@ -131,7 +133,7 @@ def _get_filtered_cmd(cmd_args: tuple[str, ...]) -> str:
     return filtered_cmd
 
 
-def _run_chezmoi_cmd(
+def run_chezmoi_cmd(
     command: tuple[str, ...],
     read_cmd: ReadCmd | None = None,
     write_cmd: WriteCmd | None = None,
@@ -256,13 +258,13 @@ class ChezmoiCommand:
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
-                source_path_str = _run_chezmoi_cmd(
+                source_path_str = run_chezmoi_cmd(
                     GlobalCmd.live_run.value + ReadCmd.source_path.value + (path_str,),
                     read_cmd=ReadCmd.source_path,
                 ).stdout.strip()
                 path_str = source_path_str
             cmd_to_run += (path_str,)
-        result: CompletedProcess[str] = _run_chezmoi_cmd(cmd_to_run, read_cmd=read_cmd)
+        result: CompletedProcess[str] = run_chezmoi_cmd(cmd_to_run, read_cmd=read_cmd)
         command_result = CommandResult(
             completed_process=result,
             cmd_without_path_arg=cmd_without_path_arg,
@@ -292,9 +294,7 @@ class ChezmoiCommand:
         elif path_arg is not None:
             cmd_to_run += (str(path_arg),)
 
-        result: CompletedProcess[str] = _run_chezmoi_cmd(
-            cmd_to_run, write_cmd=write_cmd
-        )
+        result: CompletedProcess[str] = run_chezmoi_cmd(cmd_to_run, write_cmd=write_cmd)
         command_result = CommandResult(
             cmd_without_path_arg=cmd_without_path_arg,
             completed_process=result,

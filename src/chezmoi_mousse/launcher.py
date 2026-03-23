@@ -2,23 +2,41 @@ import os
 import shutil
 import traceback
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from ._run_cmd import GlobalCmd, ReadCmd, run_chezmoi_cmd
 from .gui.textual_app import ChezmoiGUI
+
+if TYPE_CHECKING:
+    from subprocess import CompletedProcess
 
 
 def run_app():
-
-    dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
+    if not Path.cwd().is_relative_to(Path.home()):
+        print("Run the app from your home directory or a subdirectory of it.")
+        return
     chezmoi_found = (
-        shutil.which("chezmoi") is not None
+        shutil.which(GlobalCmd.chezmoi.value[0]) is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
-    pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
+    chezmoi_init_needed = False
+    if chezmoi_found:
+        pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
+        if pretend_init_needed is False:
+            completed: CompletedProcess[str] = run_chezmoi_cmd(
+                command=GlobalCmd.live_run.value + ReadCmd.status.value,
+                read_cmd=ReadCmd.status,
+            )
+            if completed.returncode != 0:
+                chezmoi_init_needed = True
+        else:
+            chezmoi_init_needed = True
 
+    dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
     if dev_mode is True:
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
-        stack_trace_path = src_dir / "stack_trace.txt"
+        stack_trace_path = src_dir / "stack_trace.trace"
 
         def save_stacktrace():
             with Path.open(stack_trace_path, "a") as f:
@@ -28,7 +46,7 @@ def run_app():
             app = ChezmoiGUI(
                 chezmoi_found=chezmoi_found,
                 dev_mode=dev_mode,
-                pretend_init_needed=pretend_init_needed,
+                chezmoi_init_needed=chezmoi_init_needed,
             )
 
             # Patch app._handle_exception to save stacktrace during runtime
@@ -50,6 +68,6 @@ def run_app():
         app = ChezmoiGUI(
             chezmoi_found=chezmoi_found,
             dev_mode=dev_mode,
-            pretend_init_needed=pretend_init_needed,
+            chezmoi_init_needed=chezmoi_init_needed,
         )
         app.run()
