@@ -4,12 +4,7 @@ from dataclasses import dataclass, fields
 from enum import StrEnum
 from pathlib import Path
 
-import tomlkit
-from faker import Faker
-
 __all__ = ["TestPaths"]
-
-FAKER = Faker()
 
 
 class ProblemChars(StrEnum):
@@ -176,6 +171,12 @@ class AllTestPaths:
 class TestPaths:
     all_paths: AllTestPaths = AllTestPaths()
 
+    def __post_init__(self) -> None:
+        from faker import Faker
+
+        global FAKER
+        FAKER = Faker()
+
     def _create_dir_paths(self) -> list[str]:
         created_dirs: set[str] = set()
         for dir in self.all_paths.all_dirs_to_create:
@@ -245,6 +246,8 @@ class TestPaths:
         return [str(file_path)]
 
     def _create_toml_files(self) -> list[str]:
+        import tomlkit
+
         def get_fake_toml_string() -> str:
             doc = tomlkit.document()
             doc["title"] = FAKER.sentence(nb_words=6)

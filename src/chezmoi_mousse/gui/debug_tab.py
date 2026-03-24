@@ -21,8 +21,6 @@ from .common.loggers import DebugLog
 
 __all__ = ["DebugTab"]
 
-TEST_PATHS = TestPaths()
-
 
 class DebugTab(Horizontal, AppType):
 
@@ -57,6 +55,7 @@ class DebugTab(Horizontal, AppType):
         yield OperateButtons(IDS.debug)
 
     def on_mount(self) -> None:
+        self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.switcher.border_title = BorderTitle.test_paths
         self.test_paths_static = self.query_one(
@@ -73,7 +72,7 @@ class DebugTab(Horizontal, AppType):
 
     def _update_existing_test_paths(self) -> None:
         colored_paths: list[str] = []
-        for path in TEST_PATHS.list_existing_test_paths():
+        for path in self.test_paths.list_existing_test_paths():
             if path in CMD.cache.sets.managed_dirs:
                 colored_paths.append(f"[$text-accent bold]{path}[/]")
             elif path in CMD.cache.sets.managed_files:
@@ -142,13 +141,13 @@ class DebugTab(Horizontal, AppType):
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == OpBtnLabel.create_diffs:
-            result = TEST_PATHS.create_diffs()
+            result = self.test_paths.create_diffs()
             self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.create_paths:
-            result = TEST_PATHS.create_paths_on_disk()
+            result = self.test_paths.create_paths_on_disk()
             self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.remove_paths:
-            result = TEST_PATHS.remove_test_paths()
+            result = self.test_paths.remove_test_paths()
             self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.log_memory:
             self._update_existing_test_paths()
