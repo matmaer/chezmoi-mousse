@@ -17,7 +17,7 @@ from .common.filtered_dir_tree import FilteredDirTree
 __all__ = ["AddTab"]
 
 
-OUTPUT_LIMIT = 50
+OUTPUT_LIMIT = 40
 
 
 class AddTabContentsView(ContentsView):
