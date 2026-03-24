@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual.widgets import Label, Static
+from textual.widgets import Button, Label, Static
 
 from ._run_cmd import ChezmoiCommand, ReadCmd
 from ._str_enum_names import Tcss
@@ -16,10 +16,15 @@ if TYPE_CHECKING:
     from ._app_ids import AppIds
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CachedData", "ParsedJson"]
-
+__all__ = ["CMD", "CachedData", "DirContentBtn", "ParsedJson"]
 
 type ParsedJson = dict[str, Any]
+
+
+class DirContentBtn(Button):
+    def __init__(self, *, label: str, path: Path) -> None:
+        super().__init__(label=label)
+        self.path = path
 
 
 @dataclass(slots=True)
@@ -173,14 +178,16 @@ class CachedData:
         paths_dict = self._get_status_dirs(app_ids) | self._get_status_files(app_ids)
         return paths_dict.get(path, StatusCode.Space)
 
-    def get_dir_widgets(self, dir_path: Path, app_ids: AppIds) -> list[Static | Label]:
-        widgets: list[Static | Label] = []
+    def get_dir_widgets(
+        self, dir_path: Path, app_ids: AppIds
+    ) -> list[Static | Label | DirContentBtn]:
+        widgets: list[Static | Label | DirContentBtn] = []
         if dir_path == self.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
         if self.sets.no_managed_paths is True:
-            widgets: list[Static | Label] = [
+            widgets = [
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             ]
             widgets.append(
@@ -216,7 +223,11 @@ class CachedData:
                     )
                 )
                 for path, status in status_dirs_in:
-                    widgets.append(Static(f"{status.color_tag}{path}[/]"))
+                    widgets.append(
+                        DirContentBtn(
+                            label=f"{status.color_tag}{path}[/]", path=dir_path
+                        )
+                    )
             status_files_in = self.get_status_files_in(
                 dir_path, app_ids, recursive=True
             )
@@ -227,7 +238,11 @@ class CachedData:
                     )
                 )
                 for path, status in status_files_in.items():
-                    widgets.append(Static(f"{status.color_tag}{path}[/]"))
+                    widgets.append(
+                        DirContentBtn(
+                            label=f"{status.color_tag}{path}[/]", path=dir_path
+                        )
+                    )
         return widgets
 
     def _parse_paths_from_result(self, result: CommandResult | None) -> set[Path]:

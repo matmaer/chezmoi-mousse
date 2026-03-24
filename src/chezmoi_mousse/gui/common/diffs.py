@@ -6,7 +6,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, ReadCmd, TabLabel, Tcss
+from chezmoi_mousse import CMD, AppIds, AppType, DirContentBtn, ReadCmd, TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
 
@@ -44,8 +44,10 @@ class DiffView(Container, AppType):
         for container in self.query_children(ScrollableContainer):
             container.display = False
 
-    def _create_diff_widgets(self, path: "Path") -> list[Label | Static]:
-        widgets: list[Label | Static] = []
+    def _create_diff_widgets(
+        self, path: "Path"
+    ) -> list[Label | Static | DirContentBtn]:
+        widgets: list[Label | Static | DirContentBtn] = []
         if self.ids.canvas_name == TabLabel.apply:
             diff_result = CMD.run_cmd.read(ReadCmd.diff, path_arg=path)
         else:  # re-add tab
@@ -87,7 +89,7 @@ class DiffView(Container, AppType):
             container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True
         except NoMatches:
-            widgets: list[Label | Static] = []
+            widgets: list[Label | Static | DirContentBtn] = []
             if show_path == CMD.cache.dest_dir:
                 widgets = CMD.cache.get_dir_widgets(show_path, self.ids)
             elif show_path in CMD.cache.sets.managed_dirs:
