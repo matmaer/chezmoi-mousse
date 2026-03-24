@@ -188,6 +188,8 @@ class MainScreen(Screen[None], AppType):
     async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
         if not isinstance(event.button, OpButton):
             raise TypeError(f"Expected OpButton, got {type(event.button)}")
+        if self.query_exactly_one(TabbedContent).active == TabLabel.init:
+            return
         self._set_display(event.button)
         if event.button.btn_enum in self.app.review_btn_enums:
             self.operate_info.update_review_info(event.button)
