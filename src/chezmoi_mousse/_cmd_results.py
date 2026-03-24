@@ -293,6 +293,9 @@ class Commands:
         ]
     )
     changed_paths: list[Path] = field(default_factory=lambda: [])
+    added_paths: list[Path] = field(default_factory=lambda: [])
+    removed_paths: list[Path] = field(default_factory=lambda: [])
+    changed_status_paths: list[Path] = field(default_factory=lambda: [])
 
 
 CMD = Commands()

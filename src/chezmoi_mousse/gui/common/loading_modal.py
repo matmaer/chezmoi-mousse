@@ -126,4 +126,7 @@ class LoadingModal(ModalScreen[None], AppType):
         }
 
         changed_paths = removed | added | changed_status
+        CMD.added_paths = sorted(added)
+        CMD.removed_paths = sorted(removed)
+        CMD.changed_status_paths = sorted(changed_status)
         CMD.changed_paths = sorted(changed_paths)
