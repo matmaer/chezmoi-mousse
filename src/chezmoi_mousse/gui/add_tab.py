@@ -154,7 +154,8 @@ class AddTab(Horizontal, AppType):
         event.stop()
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
-
+        if event.node.data.path == CMD.cache.dest_dir:
+            self.dir_tree.root.expand()
         self.contents_view.show_path = event.node.data.path
         if event.node.data.path == CMD.cache.dest_dir:
             self.contents_view.border_title = f" {CMD.cache.dest_dir} "

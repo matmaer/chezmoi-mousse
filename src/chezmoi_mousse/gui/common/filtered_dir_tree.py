@@ -20,9 +20,9 @@ class FilteredDirTree(DirectoryTree, AppType):
     show_unwanted: reactive[bool] = reactive(False, init=False)
 
     def on_mount(self) -> None:
-        self.guide_depth = 3
-        self.show_root = False
+        self.guide_depth: int = 3
         self.border_title = BorderTitle.dest_dir
+        self.root.expand()
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
