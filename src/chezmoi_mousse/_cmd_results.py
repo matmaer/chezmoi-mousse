@@ -13,6 +13,7 @@ from ._str_enums import SectionLabel, StatusCode, TabLabel
 if TYPE_CHECKING:
     from typing import Any
 
+    from ._app_ids import AppIds
     from ._run_cmd import CommandResult
 
 __all__ = ["CMD", "CachedData", "ParsedJson"]
@@ -121,20 +122,20 @@ class CachedData:
             Path(line[3:]): line[:2] for line in self.status_files.std_out.splitlines()
         }
 
-    def _get_status_dirs(self, canvas_name: str) -> dict[Path, StatusCode]:
+    def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
         if self.status_dirs is None:
             return {}
-        ds_idx = 0 if canvas_name == TabLabel.apply else 1  # dir status index
+        ds_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # dir status index
         return {
             k: StatusCode(v[ds_idx])
             for k, v in self._dir_status_pairs.items()
             if v[ds_idx] != StatusCode.Space
         }
 
-    def _get_status_files(self, canvas_name: str) -> dict[Path, StatusCode]:
+    def _get_status_files(self, app_ids: AppIds) -> dict[Path, StatusCode]:
         if self.status_files is None:
             return {}
-        fs_idx = 0 if canvas_name == TabLabel.apply else 1  # file status index
+        fs_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # file status index
         return {
             k: StatusCode(v[fs_idx])
             for k, v in self._file_status_pairs.items()
@@ -142,10 +143,10 @@ class CachedData:
         }
 
     def get_status_files_in(
-        self, dir_path: Path, canvas_name: str, recursive: bool
+        self, dir_path: Path, app_ids: AppIds, recursive: bool
     ) -> dict[Path, StatusCode]:
         # Use the parsed status file dict to ensure key formats match
-        status_files = self._get_status_files(canvas_name)
+        status_files = self._get_status_files(app_ids)
         results: dict[Path, StatusCode] = {}
         for path, status in status_files.items():
             if recursive:
@@ -156,9 +157,9 @@ class CachedData:
         return results
 
     def _get_status_dirs_in(
-        self, dir_path: Path, canvas_name: str, recursive: bool
+        self, dir_path: Path, app_ids: AppIds, recursive: bool
     ) -> dict[Path, StatusCode]:
-        status_dirs = self._get_status_dirs(canvas_name)
+        status_dirs = self._get_status_dirs(app_ids)
         results: dict[Path, StatusCode] = {}
         for path, status in status_dirs.items():
             if recursive:
@@ -168,13 +169,11 @@ class CachedData:
                 results[path] = status
         return results
 
-    def get_path_status(self, path: Path, canvas_name: str) -> StatusCode:
-        paths_dict = self._get_status_dirs(canvas_name) | self._get_status_files(
-            canvas_name
-        )
+    def get_path_status(self, path: Path, app_ids: AppIds) -> StatusCode:
+        paths_dict = self._get_status_dirs(app_ids) | self._get_status_files(app_ids)
         return paths_dict.get(path, StatusCode.Space)
 
-    def get_dir_widgets(self, dir_path: Path, canvas_name: str) -> list[Static | Label]:
+    def get_dir_widgets(self, dir_path: Path, app_ids: AppIds) -> list[Static | Label]:
         widgets: list[Static | Label] = []
         if dir_path == self.dest_dir:
             widgets.append(
@@ -207,7 +206,7 @@ class CachedData:
 
         if self.sets.contains_status_paths(dir_path):
             status_dirs_in = self._get_status_dirs_in(
-                dir_path, canvas_name, recursive=True
+                dir_path, app_ids, recursive=True
             ).items()
             if status_dirs_in:
                 widgets.append(
@@ -219,7 +218,7 @@ class CachedData:
                 for path, status in status_dirs_in:
                     widgets.append(Static(f"{status.color_tag}{path}[/]"))
             status_files_in = self.get_status_files_in(
-                dir_path, canvas_name, recursive=True
+                dir_path, app_ids, recursive=True
             )
             if status_files_in:
                 widgets.append(

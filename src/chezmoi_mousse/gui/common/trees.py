@@ -39,7 +39,7 @@ class TreeBase(Tree[Path], AppType):
         )
 
         # Get status code for the path
-        status = CMD.cache.get_path_status(path, self.ids.canvas_name)
+        status = CMD.cache.get_path_status(path, self.ids)
         color_var = status.color_var
         if status == StatusCode.Space and path in CMD.cache.sets.n_dirs:
             color_var = "text-secondary"
@@ -74,7 +74,7 @@ class ListTree(TreeBase):
         self.root.data = CMD.cache.dest_dir
         self.root.expand()
         all_status_files = CMD.cache.get_status_files_in(
-            CMD.cache.dest_dir, self.ids.canvas_name, recursive=True
+            CMD.cache.dest_dir, self.ids, recursive=True
         )
         for file_path in sorted(all_status_files.keys()):
             self.root.add_leaf(self.create_colored_label(file_path), data=file_path)
