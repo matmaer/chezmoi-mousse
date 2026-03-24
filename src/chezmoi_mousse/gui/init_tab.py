@@ -10,6 +10,7 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     LinkBtn,
+    OpBtnLabel,
     OperateString,
     SectionLabel,
     SwitchEnum,
@@ -72,7 +73,9 @@ class InitTab(Vertical, AppType):
 
     @on(OpButton.Pressed)
     async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
-        self.notify(f"Operate button pressed: {event.button.label}")
+        if event.button.label in (OpBtnLabel.init_run, OpBtnLabel.init_review):
+            event.stop()
+            self.notify("Not yet implemented", severity="warning")
 
     @on(Switch.Changed)
     def handle_switch_state(self, event: Switch.Changed) -> None:
