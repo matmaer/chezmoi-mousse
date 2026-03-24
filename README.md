@@ -26,7 +26,13 @@ Commands are issued using [Python](https://www.python.org/) its [Subprocess mana
 
 ## Start
 
-> Don't run the python command in a `chezmoi cd` invoked shell, unless you want to test.
+> [!WARNING]
+> Don't run the python or uv command in a `chezmoi cd` invoked shell, unless you want to
+> test.
+
+> [!NOTE]
+> If the app doesn't start, please share it on the
+> [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page.
 
 On the command line, clone the repository:
 
@@ -40,9 +46,10 @@ The easiest way is to run the app with `uv`, [install uv](https://docs.astral.sh
 
 `uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
 
-If Python 3.13 with the latest `textual` version is available, and the module is in your `PYTHONPATH`, in the `src` directory, you can run:
+If Python 3.13 with `textual` is available in you env, in the `src` directory, you can run:
 
 `python -m chezmoi_mousse`
+
 
 ### App screenshot example
 
