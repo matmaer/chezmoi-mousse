@@ -157,12 +157,6 @@ FlatLink {
   }
 }
 
-InitChezmoi {
-  & OperateButtons {
-      margin-bottom: 2;
-  }
-}
-
 InputInitCloneRepo {
   .input_select {
     background-tint: $panel;
