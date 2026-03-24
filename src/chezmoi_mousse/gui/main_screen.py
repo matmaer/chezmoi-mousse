@@ -71,6 +71,12 @@ class MainScreen(Screen[None], AppType):
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
+        self.apply_list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
+        self.apply_managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
+        self.re_add_list_tree = self.query_one(IDS.re_add.tree.list_q, ListTree)
+        self.re_add_managed_tree = self.query_one(
+            IDS.re_add.tree.managed_q, ManagedTree
+        )
         self.op_feed_back = self.query_one(
             IDS.main_tabs.container.op_feed_back_q, OpFeedBack
         )
@@ -161,14 +167,10 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _update_trees(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees.with_color
-        apply_list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
-        apply_managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
-        re_add_list_tree = self.query_one(IDS.re_add.tree.list_q, ListTree)
-        re_add_managed_tree = self.query_one(IDS.re_add.tree.managed_q, ManagedTree)
-        apply_list_tree.populate_tree()
-        apply_managed_tree.populate_tree()
-        re_add_list_tree.populate_tree()
-        re_add_managed_tree.populate_tree()
+        self.apply_list_tree.populate_tree()
+        self.apply_managed_tree.populate_tree()
+        self.re_add_list_tree.populate_tree()
+        self.re_add_managed_tree.populate_tree()
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
