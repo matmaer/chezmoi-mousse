@@ -12,6 +12,7 @@ from chezmoi_mousse import (
     IDS,
     AppType,
     CommandResult,
+    DirContentBtn,
     LogString,
     OpBtnEnum,
     OpBtnLabel,
@@ -189,7 +190,9 @@ class MainScreen(Screen[None], AppType):
     @on(OpButton.Pressed)
     async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
         if not isinstance(event.button, OpButton):
-            raise TypeError(f"Expected OpButton, got {type(event.button)}")
+            return
+        else:
+            event.stop()
         if self.query_exactly_one(TabbedContent).active == TabLabel.init:
             return
         self._set_display(event.button)
@@ -249,6 +252,20 @@ class MainScreen(Screen[None], AppType):
                 self.query_one(btn_id_q, Button).disabled = True
             elif CMD.cache.no_status_paths is False:
                 self.query_one(btn_id_q, Button).disabled = False
+
+    @on(DirContentBtn.Pressed)
+    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
+        if not isinstance(event.button, DirContentBtn):
+            return
+        else:
+            event.stop()
+        self.notify(
+            f"DirContentBtn pressed {event.button.label} with path {event.button.path}"
+        )
+        for node in self.apply_managed_tree.current_nodes.dirs:
+            if node.data == event.button.path:
+                self.apply_managed_tree.select_node(node)
+                break
 
     ########################
     # Widget display logic #

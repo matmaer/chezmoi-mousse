@@ -224,9 +224,7 @@ class CachedData:
                 )
                 for path, status in status_dirs_in:
                     widgets.append(
-                        DirContentBtn(
-                            label=f"{status.color_tag}{path}[/]", path=dir_path
-                        )
+                        DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
                     )
             status_files_in = self.get_status_files_in(
                 dir_path, app_ids, recursive=True
@@ -239,9 +237,7 @@ class CachedData:
                 )
                 for path, status in status_files_in.items():
                     widgets.append(
-                        DirContentBtn(
-                            label=f"{status.color_tag}{path}[/]", path=dir_path
-                        )
+                        DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
                     )
         return widgets
 
