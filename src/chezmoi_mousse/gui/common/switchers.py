@@ -79,10 +79,11 @@ class ViewSwitcher(Vertical):
 
     @on(TabButton.Pressed)
     def switch_view(self, event: TabButton.Pressed) -> None:
-        event.stop()
-        if event.button.label == TabLabel.contents:
-            self.content_switcher.current = self.ids.container.contents
-        elif event.button.label == TabLabel.diff:
-            self.content_switcher.current = self.ids.container.diff
-        elif event.button.label == TabLabel.git_log:
-            self.content_switcher.current = self.ids.container.git_log
+        if isinstance(event.button, TabButton):
+            event.stop()
+            if event.button.label == TabLabel.contents:
+                self.content_switcher.current = self.ids.container.contents
+            elif event.button.label == TabLabel.diff:
+                self.content_switcher.current = self.ids.container.diff
+            elif event.button.label == TabLabel.git_log:
+                self.content_switcher.current = self.ids.container.git_log
