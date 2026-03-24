@@ -17,17 +17,14 @@ def run_app():
         shutil.which(GlobalCmd.chezmoi.value[0]) is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
-    chezmoi_init_needed = False
+    repo_found = False
     if chezmoi_found:
         completed: CompletedProcess[str] = run_chezmoi_cmd(
             command=GlobalCmd.live_run.value + ReadCmd.status.value,
             read_cmd=ReadCmd.status,
         )
-        if (
-            completed.returncode != 0
-            or os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
-        ):
-            chezmoi_init_needed = True
+        if completed.returncode != 0 or os.environ.get("PRETEND_REPO_NOT_FOUND") == "1":
+            repo_found = True
 
     if dev_mode is True:
         # Save stacktrace in case an exception occurs on App class init.
@@ -40,9 +37,7 @@ def run_app():
 
         try:
             app = ChezmoiGUI(
-                chezmoi_found=chezmoi_found,
-                dev_mode=dev_mode,
-                chezmoi_init_needed=chezmoi_init_needed,
+                chezmoi_found=chezmoi_found, dev_mode=dev_mode, repo_found=repo_found
             )
 
             # Patch app._handle_exception to save stacktrace during runtime
@@ -62,8 +57,6 @@ def run_app():
 
     else:
         app = ChezmoiGUI(
-            chezmoi_found=chezmoi_found,
-            dev_mode=dev_mode,
-            chezmoi_init_needed=chezmoi_init_needed,
+            chezmoi_found=chezmoi_found, dev_mode=dev_mode, repo_found=repo_found
         )
         app.run()

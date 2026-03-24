@@ -159,13 +159,8 @@ class SplashScreen(Screen[None], AppType):
 
     @work
     async def _chezmoi_found_workers(self) -> None:
-        if self.app.chezmoi_init_needed is True:
-            # Run io workers for extra info when init is needed
-            self._run_io_worker(ReadCmd.doctor)
-            self._run_io_worker(ReadCmd.template_data)
-        else:
-            for splash_cmd in SPLASH_COMMANDS:
-                self._run_io_worker(splash_cmd)
+        for splash_cmd in SPLASH_COMMANDS:
+            self._run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
@@ -176,12 +171,9 @@ class SplashScreen(Screen[None], AppType):
         suffix = "unknown"
         if cmd_result.exit_code == 0:
             suffix = "success" if splash_cmd != ReadCmd.verify else "matches"
-        elif cmd_result.exit_code == 1:
-            if splash_cmd == ReadCmd.verify:
-                suffix = "checked"
-            else:
-                suffix = f"exit code {cmd_result.exit_code}"
-                color = self.app.theme_variables["text-warning"]
+        else:
+            suffix = "checked"
+            color = self.app.theme_variables["text-warning"]
         padding = LOG_MSG_WIDTH - (len(filtered_cmd) + len(suffix))
         log_text = f"{filtered_cmd} {'.' * padding} {suffix}"
         self.app.call_from_thread(

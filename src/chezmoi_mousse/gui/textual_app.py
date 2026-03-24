@@ -105,14 +105,14 @@ class ChezmoiGUI(App[None]):
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
     def __init__(
-        self, *, chezmoi_found: bool, dev_mode: bool, chezmoi_init_needed: bool
+        self, *, chezmoi_found: bool, dev_mode: bool, repo_found: bool
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
         self.chezmoi_found: bool = chezmoi_found
         self.dev_mode: bool = dev_mode
-        self.chezmoi_init_needed = chezmoi_init_needed
+        self.repo_found: bool = repo_found
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
