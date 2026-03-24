@@ -12,26 +12,23 @@ if TYPE_CHECKING:
 
 
 def run_app():
-    if not Path.cwd().resolve().is_relative_to(Path.home().resolve()):
-        raise RuntimeError("Current working directory is not in the home directory.")
+    dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
     chezmoi_found = (
         shutil.which(GlobalCmd.chezmoi.value[0]) is not None
         and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
     )
     chezmoi_init_needed = False
     if chezmoi_found:
-        pretend_init_needed = os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
-        if pretend_init_needed is False:
-            completed: CompletedProcess[str] = run_chezmoi_cmd(
-                command=GlobalCmd.live_run.value + ReadCmd.status.value,
-                read_cmd=ReadCmd.status,
-            )
-            if completed.returncode != 0:
-                chezmoi_init_needed = True
-        else:
+        completed: CompletedProcess[str] = run_chezmoi_cmd(
+            command=GlobalCmd.live_run.value + ReadCmd.status.value,
+            read_cmd=ReadCmd.status,
+        )
+        if (
+            completed.returncode != 0
+            or os.environ.get("PRETEND_CHEZMOI_INIT_NEEDED") == "1"
+        ):
             chezmoi_init_needed = True
 
-    dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
     if dev_mode is True:
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
