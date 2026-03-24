@@ -128,7 +128,7 @@ class LogString(StrEnum):
     no_stdout = "No output on stdout"
     output_will_be_processed = "Command output will be processed"
     verify_exit_zero = "All targets match their target state, no diffs available"
-    verify_non_zero = "Not all targets match their target state, diffs aro available"
+    verify_non_zero = "Not all targets match their target state, diffs are available"
 
 
 class BindingDescription(StrEnum):
