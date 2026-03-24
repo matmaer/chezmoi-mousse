@@ -24,9 +24,7 @@ class TreeBase(Tree[Path], AppType):
 
     def __init__(self, ids: "AppIds", *, tree_name: TreeName) -> None:
         super().__init__(
-            label=f" {CMD.cache.dest_dir} ",
-            id=ids.tree_id(tree=tree_name),
-            classes=Tcss.tree_widget,
+            label="", id=ids.tree_id(tree=tree_name), classes=Tcss.tree_widget
         )
         self.ids = ids
         self.tree_name = tree_name
@@ -112,7 +110,7 @@ class ManagedTree(TreeBase):
     def _create_root_node(self) -> TreeNode[Path]:
         self.root.data = CMD.cache.dest_dir
         color = self.app.theme_variables["text-primary"]
-        self.root.label = f"[{color} bold]{CMD.cache.dest_dir}[/]"
+        self.root.label = f"[{color} bold]{CMD.cache.dest_dir.name}[/]"
         self.expanded_nodes.add(self.root)
         self.root.expand()
         self.root.allow_expand = False  # to prevent the root node from being collapsed
