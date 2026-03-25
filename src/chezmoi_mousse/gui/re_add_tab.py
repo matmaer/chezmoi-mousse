@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Switch
 
-from chezmoi_mousse import IDS, AppType, SwitchEnum, TabLabel
+from chezmoi_mousse import IDS, AppType, DirContentBtn, SwitchEnum, TabLabel
 
 from .common.actionables import OperateButtons, SwitchSlider, TabButton
 from .common.switchers import TreeSwitcher, ViewSwitcher
@@ -32,6 +32,12 @@ class ReAddTab(Container, AppType):
             self.managed_tree.unchanged = event.value
         elif event.switch.id == IDS.re_add.switch.expand_all:
             self.managed_tree.expand_all = event.value
+
+    @on(DirContentBtn.Pressed)
+    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
+        if isinstance(event.button, DirContentBtn):
+            event.stop()
+            self.managed_tree.select_node_by_path(event.button.path)
 
     @on(TabButton.Pressed)
     def enable_disable_expand_all(self, event: TabButton.Pressed) -> None:

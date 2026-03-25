@@ -22,6 +22,10 @@ class CurrentNodes(NamedTuple):
     files: set[TreeNode[Path]]
 
     @property
+    def all_nodes(self) -> set[TreeNode[Path]]:
+        return self.dirs | self.files
+
+    @property
     def expanded(self) -> set[TreeNode[Path]]:
         return {node for node in self.dirs if node.is_expanded}
 
@@ -151,6 +155,18 @@ class ManagedTree(TreeBase):
         # keep `self.current_nodes` in sync for callers that rely on it
         self.current_nodes = current
         return current
+
+    def select_node_by_path(self, path: Path) -> None:
+        for parent in reversed(path.parents):
+            for node in self.current_nodes.dirs:
+                if node.data == parent and node.is_expanded is False:
+                    node.expand()
+                    break
+        self.update_current_nodes()
+        for node in self.current_nodes.all_nodes:
+            if node.data == path:
+                self.select_node(node)
+                break
 
     def _insert_dir(
         self, parent_node: TreeNode[Path], dir_path: Path
