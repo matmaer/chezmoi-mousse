@@ -4,29 +4,43 @@ import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._run_cmd import GlobalCmd, ReadCmd, run_chezmoi_cmd
+from ._run_cmd import GlobalArgs, ReadCmd, run_chezmoi_cmd
 from .gui.textual_app import ChezmoiGUI
 
 if TYPE_CHECKING:
     from subprocess import CompletedProcess
 
+CHEZMOI = "chezmoi"
+
 
 def run_app():
-    dev_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
-    chezmoi_found = (
-        shutil.which(GlobalCmd.chezmoi.value[0]) is not None
-        and os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") != "1"
-    )
-    repo_found = False
-    if chezmoi_found:
+    chezmoi_bin = shutil.which(CHEZMOI)
+    if chezmoi_bin is not None:
         completed: CompletedProcess[str] = run_chezmoi_cmd(
-            command=GlobalCmd.live_run.value + ReadCmd.status.value,
-            read_cmd=ReadCmd.status,
+            command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.version.value,
+            cmd_timeout=1,
         )
-        if completed.returncode != 0 or os.environ.get("PRETEND_REPO_NOT_FOUND") == "1":
+        if completed.returncode != 0:
+            # If the command fails, we treat it as if chezmoi was not found.
+            chezmoi_bin = None
+    repo_found = None
+    if chezmoi_bin is not None:
+        completed: CompletedProcess[str] = run_chezmoi_cmd(
+            command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.status.value,
+            cmd_timeout=2,
+        )
+        if completed.returncode == 0:
             repo_found = True
 
-    if dev_mode is True:
+    dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
+    pretend_not_found = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
+    pretend_repo_not_found = os.environ.get("PRETEND_CHEZMOI_REPO_NOT_FOUND") == "1"
+
+    if dev_mode or pretend_not_found or pretend_repo_not_found:
+        if pretend_not_found:
+            chezmoi_bin = None
+        if pretend_repo_not_found:
+            repo_found = False
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
         stack_trace_path = src_dir / "stack_trace.trace"
@@ -37,7 +51,7 @@ def run_app():
 
         try:
             app = ChezmoiGUI(
-                chezmoi_found=chezmoi_found, dev_mode=dev_mode, repo_found=repo_found
+                chezmoi_bin=chezmoi_bin, dev_mode=True, repo_found=repo_found
             )
 
             # Patch app._handle_exception to save stacktrace during runtime
@@ -56,7 +70,5 @@ def run_app():
             raise
 
     else:
-        app = ChezmoiGUI(
-            chezmoi_found=chezmoi_found, dev_mode=dev_mode, repo_found=repo_found
-        )
+        app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, repo_found=repo_found)
         app.run()

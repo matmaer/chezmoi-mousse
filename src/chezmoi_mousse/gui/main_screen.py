@@ -99,7 +99,7 @@ class MainScreen(Screen[None], AppType):
         self.loading_modal = LoadingModal(btn_enum)
         await self.app.push_screen(self.loading_modal)
 
-        if btn_enum is None and self.app.chezmoi_found is True:
+        if btn_enum is None:
             await self._update_trees().wait()
             cmd_results = [
                 attr

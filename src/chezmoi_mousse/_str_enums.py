@@ -116,8 +116,6 @@ class Chars(StrEnum):
 
 class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
-    chezmoi_found = "Found chezmoi command"
-    chezmoi_not_found = "chezmoi command not found"
     debug_log_initialized = "Debug log initialized"
     dev_mode_enabled = "Dev mode enabled"
     doctor_errors_found = "One or more errors found"
@@ -127,6 +125,7 @@ class LogString(StrEnum):
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
     output_will_be_processed = "Command output will be processed"
+    using_chezmoi_bin = "Using chezmoi binary at:"
     verify_exit_zero = "All targets match their target state, no diffs available"
     verify_non_zero = "Not all targets match their target state, diffs are available"
 

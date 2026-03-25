@@ -141,7 +141,7 @@ class SplashScreen(Screen[None], AppType):
 
     def on_mount(self) -> None:
         self.splash_log = self.query_exactly_one(SplashLog)
-        if self.app.chezmoi_found is False:
+        if CMD.run_cmd.chezmoi_bin is None:
             self._install_help_workers()
         else:
             self._chezmoi_found_workers()
@@ -166,7 +166,6 @@ class SplashScreen(Screen[None], AppType):
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         cmd_result = CMD.run_cmd.read(splash_cmd)
         setattr(CMD.cache, f"{splash_cmd.name}", cmd_result)
-        filtered_cmd = cmd_result.full_cmd_filtered
         color = self.app.theme_variables["text-primary"]
         suffix = "unknown"
         if cmd_result.exit_code == 0:
@@ -174,11 +173,10 @@ class SplashScreen(Screen[None], AppType):
         else:
             suffix = "checked"
             color = self.app.theme_variables["text-warning"]
-        padding = LOG_MSG_WIDTH - (len(filtered_cmd) + len(suffix))
-        log_text = f"{filtered_cmd} {'.' * padding} {suffix}"
-        self.app.call_from_thread(
-            self.splash_log.write, f"[{color}]{log_text}[/{color}]"
-        )
+        short_cmd = cmd_result.short_cmd_no_path
+        padding = LOG_MSG_WIDTH - (len(short_cmd) + len(suffix))
+        log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
+        self.app.call_from_thread(self.splash_log.write, log_text)
         if splash_cmd == ReadCmd.dump_config:
             try:
                 parsed_cfg = json.loads(cmd_result.std_out)
@@ -186,21 +184,14 @@ class SplashScreen(Screen[None], AppType):
                 CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
                 CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
                 color = self.app.theme_variables["text-success"]
-                suffix = "parsed"
-            except (json.JSONDecodeError, KeyError, TypeError) as exc:
-                warning_color = self.app.theme_variables.get("text-warning", "yellow")
-                self.app.call_from_thread(
-                    self.splash_log.write,
-                    f"[{warning_color}]Parse chezmoi dump-config: "
-                    f"{exc}[/{warning_color}]",
-                )
+                suffix = "success"
+            except (json.JSONDecodeError, KeyError, TypeError):
                 color = self.app.theme_variables["text-error"]
                 suffix = "not parsed"
-            padding = LOG_MSG_WIDTH - (len(filtered_cmd) + len(suffix))
-            log_text = f"{filtered_cmd} {'.' * padding} {suffix}"
-            self.app.call_from_thread(
-                self.splash_log.write, f"[{color}]{log_text}[/{color}]"
-            )
+            command = "json loads dump_config"
+            padding = LOG_MSG_WIDTH - (len(command) + len(suffix))
+            log_text = f"[{color}]{command} {'.' * padding} {suffix}[/{color}]"
+            self.app.call_from_thread(self.splash_log.write, log_text)
 
     @work(thread=True, group="io_workers")
     def _get_install_screen_data(self) -> "ParsedJson":
@@ -272,7 +263,7 @@ class SplashScreen(Screen[None], AppType):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            if self.app.chezmoi_found is False:
+            if CMD.run_cmd.chezmoi_bin is None:
                 self.dismiss(None)
                 return
             CMD.cache.update_path_sets()

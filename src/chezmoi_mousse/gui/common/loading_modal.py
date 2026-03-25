@@ -79,7 +79,7 @@ class LoadingModal(ModalScreen[None], AppType):
     @work(thread=True)
     @min_wait
     async def run_read_command(self, read_cmd: "ReadCmd") -> None:
-        self.label_text = CMD.run_cmd.pretty_read_cmd(global_args=read_cmd.value)
+        self.label_text = CMD.run_cmd.review_cmd(verb_cmd=read_cmd)
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cache, f"{read_cmd.name}", cmd_result)
         CMD.loading_modal_results.append(cmd_result)
@@ -89,9 +89,8 @@ class LoadingModal(ModalScreen[None], AppType):
     async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
         if btn_enum.path_arg == CMD.cache.dest_dir:
             btn_enum.path_arg = None
-        path_arg = str(btn_enum.path_arg) if btn_enum.path_arg is not None else ""
-        self.label_text = CMD.run_cmd.pretty_write_cmd(
-            (*btn_enum.write_cmd.value, path_arg)
+        self.label_text = CMD.run_cmd.review_cmd(
+            verb_cmd=btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
         cmd_result: CommandResult = CMD.run_cmd.perform(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg

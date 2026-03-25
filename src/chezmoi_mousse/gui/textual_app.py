@@ -105,14 +105,18 @@ class ChezmoiGUI(App[None]):
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
     def __init__(
-        self, *, chezmoi_found: bool, dev_mode: bool, repo_found: bool
+        self,
+        *,
+        chezmoi_bin: str | None = None,
+        dev_mode: bool = False,
+        repo_found: bool | None = None,
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
-        self.chezmoi_found: bool = chezmoi_found
+        CMD.run_cmd.chezmoi_bin = chezmoi_bin
         self.dev_mode: bool = dev_mode
-        self.repo_found: bool = repo_found
+        self.repo_found: bool | None = repo_found
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
@@ -125,7 +129,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        if self.chezmoi_found is False:
+        if CMD.run_cmd.chezmoi_bin is None:
             self.push_screen(InstallHelpScreen())
         else:
             self.push_screen(MainScreen())

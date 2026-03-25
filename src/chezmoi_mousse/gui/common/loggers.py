@@ -87,10 +87,10 @@ class AppLog(RichLoggers):
 
     def on_mount(self) -> None:
         self.write_ready(LogString.app_log_initialized)
-        if self.app.chezmoi_found:
-            self.write_success(LogString.chezmoi_found)
-        else:
-            self.write_error(LogString.chezmoi_not_found)
+        if CMD.run_cmd.chezmoi_bin is not None:
+            self.write_success(
+                LogString.using_chezmoi_bin + f" {CMD.run_cmd.chezmoi_bin}"
+            )
         if self.app.dev_mode is True:
             self.write_warning(f"{Chars.warning_sign} {LogString.dev_mode_enabled}")
 
@@ -101,7 +101,7 @@ class AppLog(RichLoggers):
         else:
             rel_path = " "
 
-        log_text: list[str] = [f"{cmd_result.filtered_cmd_without_path_arg}{rel_path}|"]
+        log_text: list[str] = [f"{cmd_result.short_cmd_no_path}{rel_path}|"]
 
         if ReadVerb.verify.value in cmd_result.completed_process.args:
             if cmd_result.exit_code == 0:

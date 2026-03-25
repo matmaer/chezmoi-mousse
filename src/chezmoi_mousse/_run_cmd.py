@@ -12,17 +12,18 @@ from ._str_enums import Chars, LogString, SectionLabel
 __all__ = [
     "ChezmoiCommand",
     "CommandResult",
-    "GlobalCmd",
+    "GlobalArgs",
     "ReadCmd",
     "ReadVerb",
     "WriteCmd",
     "run_chezmoi_cmd",
 ]
 
+CHEZMOI = "chezmoi"
 
-class GlobalCmd(Enum):
-    chezmoi = ("chezmoi",)
-    default_args = (
+
+class GlobalArgs(Enum):
+    _default_args = (
         "--color=off",
         "--force",
         "--interactive=false",
@@ -34,8 +35,9 @@ class GlobalCmd(Enum):
         "--use-builtin-git=true",
         "--use-builtin-diff=true",
     )
-    live_run = chezmoi + default_args
-    dry_run = live_run + ("--dry-run",)
+    dry_run_arg = "--dry-run"
+    live_run = _default_args
+    dry_run = _default_args + (dry_run_arg,)
 
 
 class VerbArgs(Enum):
@@ -57,6 +59,7 @@ class VerbArgs(Enum):
     init_guess_ssh = ("--guess-repo-url=true", "--ssh")
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
+    version = "--version"
 
 
 class ReadVerb(Enum):
@@ -107,6 +110,7 @@ class ReadCmd(Enum):
     )
     template_data = (ReadVerb.data.value,)
     verify = (ReadVerb.verify.value,)
+    version = (VerbArgs.version.value,)
 
 
 class WriteVerb(Enum):
@@ -130,44 +134,30 @@ class WriteCmd(Enum):
     re_add = (WriteVerb.re_add.value,)
 
 
-def _get_filtered_cmd(cmd_args: tuple[str, ...]) -> str:
+def _filtered_verb_cmd(verb_cmd: tuple[str, ...]) -> str:
     filter_git_log_args = VerbArgs.git_log.value[2:]
     exclude = set(
-        GlobalCmd.default_args.value
-        + filter_git_log_args
+        filter_git_log_args
         + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
     )
-    filtered_cmd = " ".join([part for part in cmd_args if part and part not in exclude])
+    filtered_cmd = " ".join([part for part in verb_cmd if part and part not in exclude])
     return filtered_cmd
 
 
 def run_chezmoi_cmd(
-    command: tuple[str, ...],
-    read_cmd: ReadCmd | None = None,
-    write_cmd: WriteCmd | None = None,
+    command: tuple[str, ...], cmd_timeout: int
 ) -> CompletedProcess[str]:
-    if read_cmd == ReadCmd.doctor:
-        time_out = 4
-    elif read_cmd is not None:
-        time_out = 2
-    elif write_cmd is not None:
-        time_out = 7
-    else:
-        raise ValueError("Both read_cmd and write_cmd are None")
-    return run(command, capture_output=True, shell=False, text=True, timeout=time_out)
+    return run(
+        command, capture_output=True, shell=False, text=True, timeout=cmd_timeout
+    )
 
 
 @dataclass(slots=True)
 class CommandResult:
-    cmd_without_path_arg: tuple[str, ...]
+    short_global_cmd: str
+    short_verb_cmd: str
     completed_process: CompletedProcess[str]
     path_arg: Path | None
-    std_out: str = ""
-    std_err: str = ""
-
-    def __post_init__(self) -> None:
-        self.std_out = self._get_text(self.completed_process.stdout)
-        self.std_err = self._get_text(self.completed_process.stderr)
 
     def _get_text(self, output: str) -> str:
         def _line_has_text(line: str) -> bool:
@@ -195,17 +185,21 @@ class CommandResult:
         return self.completed_process.returncode
 
     @property
-    def full_cmd_filtered(self) -> str:
-        return _get_filtered_cmd(self.completed_process.args)
+    def std_out(self) -> str:
+        return self._get_text(self.completed_process.stdout)
+
+    @property
+    def _std_err(self) -> str:
+        return self._get_text(self.completed_process.stderr)
+
+    @property
+    def short_cmd_no_path(self) -> str:
+        return f"{self.short_global_cmd} {self.short_verb_cmd}"
 
     @property
     def exit_code_colored_cmd(self) -> str:
         cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
-        return f"{cmd_color}{self.full_cmd_filtered}[/]"
-
-    @property
-    def filtered_cmd_without_path_arg(self) -> str:
-        return _get_filtered_cmd(self.cmd_without_path_arg)
+        return f"{cmd_color}{self.short_global_cmd}{self.short_verb_cmd}[/]"
 
     @property
     def is_dry_run(self) -> bool:
@@ -217,7 +211,7 @@ class CommandResult:
         title = f"{pretty_time} {self.exit_code_colored_cmd}"
         dry_run_str = "(dry run)" if self.is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
-        curated_std_err = self.std_err or f"{LogString.no_stderr} {dry_run_str}"
+        curated_std_err = self._std_err or f"{LogString.no_stderr} {dry_run_str}"
         collapsible_contents: list[Label | Static] = []
         collapsible_contents.extend(
             [
@@ -244,38 +238,50 @@ class ChezmoiCommand:
 
     def __init__(self) -> None:
         self.changes_enabled: bool = False
+        self.chezmoi_bin: str | None = None
 
-    @property
-    def _global_write_cmd(self) -> tuple[str, ...]:
-        if self.changes_enabled is True:
-            return GlobalCmd.live_run.value
-        else:
-            return GlobalCmd.dry_run.value
+    def _short_global_cmd(self, dry_run: bool) -> str:
+        return f"{CHEZMOI} {GlobalArgs.dry_run_arg.value}" if dry_run else f"{CHEZMOI}"
 
-    def pretty_read_cmd(self, global_args: tuple[str, ...]) -> str:
-        filtered_cmd = _get_filtered_cmd(GlobalCmd.live_run.value + global_args)
-        return f"[$text-primary]{filtered_cmd}[/]"
-
-    def pretty_write_cmd(self, global_args: tuple[str, ...]) -> str:
-        filtered_cmd = _get_filtered_cmd(self._global_write_cmd + global_args)
-        return f"[$text-primary]{filtered_cmd}[/]"
+    def review_cmd(
+        self,
+        verb_cmd: ReadCmd | WriteCmd,
+        path_arg: Path | None = None,
+        init_args: str | None = None,
+    ) -> str:
+        review_cmd = f"{CHEZMOI}"
+        if isinstance(verb_cmd, WriteCmd) and self.changes_enabled:
+            review_cmd += f" {GlobalArgs.dry_run_arg.value}"
+        review_cmd += f" {_filtered_verb_cmd(verb_cmd.value)}"
+        if init_args is not None:
+            review_cmd += f" {init_args}"
+        elif path_arg is not None:
+            review_cmd += f" {path_arg}"
+        return f"[$text-primary]{review_cmd}[/]"
 
     def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
-        cmd_without_path_arg = GlobalCmd.live_run.value + read_cmd.value
-        cmd_to_run = cmd_without_path_arg
+        if self.chezmoi_bin is None:
+            raise ValueError("chezmoi_bin is not set")
+        global_cmd = (self.chezmoi_bin,) + GlobalArgs.live_run.value
+        verb_cmd = read_cmd.value
+        cmd_to_run = global_cmd + verb_cmd
+        time_out = 4 if read_cmd == ReadCmd.doctor else 2
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
                 source_path_str = run_chezmoi_cmd(
-                    GlobalCmd.live_run.value + ReadCmd.source_path.value + (path_str,),
-                    read_cmd=ReadCmd.source_path,
+                    global_cmd + ReadCmd.source_path.value + (path_str,),
+                    cmd_timeout=time_out,
                 ).stdout.strip()
                 path_str = source_path_str
             cmd_to_run += (path_str,)
-        result: CompletedProcess[str] = run_chezmoi_cmd(cmd_to_run, read_cmd=read_cmd)
+        result: CompletedProcess[str] = run_chezmoi_cmd(
+            cmd_to_run, cmd_timeout=time_out
+        )
         command_result = CommandResult(
+            short_global_cmd=self._short_global_cmd(dry_run=False),
             completed_process=result,
-            cmd_without_path_arg=cmd_without_path_arg,
+            short_verb_cmd=_filtered_verb_cmd(verb_cmd),
             path_arg=path_arg,
         )
         return command_result
@@ -287,24 +293,24 @@ class ChezmoiCommand:
         path_arg: Path | None = None,
         init_arg: str | None = None,
     ) -> CommandResult:
-        if self.changes_enabled is True:
-            global_cmd = GlobalCmd.live_run.value
-        else:
-            global_cmd = GlobalCmd.dry_run.value
+        if self.chezmoi_bin is None:
+            raise ValueError("chezmoi_bin is not set")
+        global_cmd = (
+            (self.chezmoi_bin,) + GlobalArgs.live_run.value
+            if self.changes_enabled
+            else (self.chezmoi_bin,) + GlobalArgs.dry_run.value
+        )
         command: tuple[str, ...] = global_cmd + write_cmd.value
-
-        cmd_without_path_arg = command
-        cmd_to_run = command
         if init_arg is not None:
             if write_cmd != WriteCmd.init_new:
                 raise ValueError("init_arg only valid with WriteCmd.init_new")
-            cmd_to_run += (init_arg,)
+            command += (init_arg,)
         elif path_arg is not None:
-            cmd_to_run += (str(path_arg),)
-
-        result: CompletedProcess[str] = run_chezmoi_cmd(cmd_to_run, write_cmd=write_cmd)
+            command += (str(path_arg),)
+        result: CompletedProcess[str] = run_chezmoi_cmd(command, cmd_timeout=7)
         command_result = CommandResult(
-            cmd_without_path_arg=cmd_without_path_arg,
+            short_global_cmd=self._short_global_cmd(dry_run=(not self.changes_enabled)),
+            short_verb_cmd=_filtered_verb_cmd(write_cmd.value),
             completed_process=result,
             path_arg=path_arg,
         )

@@ -30,14 +30,9 @@ class OperateInfo(Static, AppType):
     def update_review_info(self, button: OpButton) -> None:
         self.current_button = button
         info_lines: list[str] = []
-        path_arg = (
-            str(button.btn_enum.path_arg)
-            if button.btn_enum.path_arg is not None
-            else ""
-        )
         info_lines.append(
-            CMD.run_cmd.pretty_write_cmd(
-                global_args=(*button.btn_enum.write_cmd.value, path_arg)
+            CMD.run_cmd.review_cmd(
+                verb_cmd=button.btn_enum.write_cmd, path_arg=button.btn_enum.path_arg
             )
         )
         info_lines.append(button.btn_enum.op_info_string)
