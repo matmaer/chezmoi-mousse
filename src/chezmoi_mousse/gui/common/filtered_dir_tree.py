@@ -5,7 +5,7 @@ from pathlib import Path
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse import CMD, AppType, BorderTitle, Chars
+from chezmoi_mousse import CMD, AppType, Chars
 
 __all__ = ["FilteredDirTree"]
 
@@ -21,7 +21,7 @@ class FilteredDirTree(DirectoryTree, AppType):
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-        self.border_title = BorderTitle.dest_dir
+        self.border_title = " destDir tree "
         self.root.expand()
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:

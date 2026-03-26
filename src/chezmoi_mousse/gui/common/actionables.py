@@ -8,7 +8,6 @@ from textual.widgets import Button, Label, Link, Switch
 from chezmoi_mousse import (
     CMD,
     AppType,
-    BorderTitle,
     FlatBtnLabel,
     LinkBtn,
     OpBtnEnum,
@@ -201,12 +200,9 @@ class TabButtons(Horizontal):
 
     def on_mount(self) -> None:
         self.query(TabButton).first().add_class(Tcss.last_clicked_tab_btn)
-        self.border_subtitle = BorderTitle.dest_dir
 
     @on(TabButton.Pressed)
     def update_tcss_classes(self, event: TabButton.Pressed) -> None:
         for btn in self.query(TabButton).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
         event.button.add_class(Tcss.last_clicked_tab_btn)
-        if event.button.label == TabLabel.tree:
-            self.border_subtitle = BorderTitle.dest_dir

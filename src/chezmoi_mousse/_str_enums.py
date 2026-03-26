@@ -2,7 +2,6 @@ from enum import StrEnum
 
 __all__ = [
     "BindingDescription",
-    "BorderTitle",
     "Chars",
     "FlatBtnLabel",
     "LinkBtn",
@@ -72,29 +71,16 @@ class TabLabel(StrEnum):
     logs = "Logs"
     re_add = "Re-Add"
     # Tab buttons for content switcher within a main tab
-    app_log = "App"
-    cmd_log = "Chezmoi Commands"
+    app_log = "Application"
+    cmd_log = "Chezmoi-Commands"
     contents = "Contents"
     diff = "Diff"
     git_log = "Git-Log"
-    list = "List"
-    tree = "Tree"
 
 
 #########################
 # Other StrEnum classes #
 #########################
-
-
-class BorderTitle(StrEnum):
-    app_log = " Application Log "
-    cmd_log = " Chezmoi Commands Log "
-    debug_log = " Debug Log "
-    memory_usage = " Memory Usage "
-    dest_dir = " destDir "
-    dom_nodes = " DOM Nodes "
-    global_git_log = " Global Chezmoi Git Log "
-    test_paths = " Test Paths "
 
 
 class Chars(StrEnum):

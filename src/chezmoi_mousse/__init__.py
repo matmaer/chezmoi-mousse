@@ -19,7 +19,6 @@ from ._run_cmd import CommandResult, ReadCmd, ReadVerb, WriteCmd
 from ._str_enum_names import BindingAction, ScreenName, Tcss
 from ._str_enums import (
     BindingDescription,
-    BorderTitle,
     Chars,
     FlatBtnLabel,
     LinkBtn,
@@ -48,7 +47,6 @@ __all__ = [
     "AppType",
     "BindingAction",
     "BindingDescription",
-    "BorderTitle",
     "CachedData",
     "DirContentBtn",
     "Chars",

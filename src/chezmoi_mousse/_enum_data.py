@@ -256,7 +256,6 @@ class OpBtnEnum(Enum):
 class SwitchData:
     label: str
     enabled_tooltip: str
-    disabled_tooltip: str | None
 
 
 class SwitchEnum(Enum):
@@ -267,7 +266,6 @@ class SwitchEnum(Enum):
             "Initialize a new chezmoi repository, or clone an existing remote "
             "chezmoi repository."
         ),
-        disabled_tooltip=None,
     )
     expand_all = SwitchData(
         label=SwitchLabel.expand_all,
@@ -275,7 +273,6 @@ class SwitchEnum(Enum):
             "Expand all managed directories. Showing unchanged depending on the "
             '"show unchanged files" switch.'
         ),
-        disabled_tooltip="Switch to Tree to enable this switch.",
     )
     unchanged = SwitchData(
         label=SwitchLabel.unchanged,
@@ -283,12 +280,10 @@ class SwitchEnum(Enum):
             "Include unchanged paths which are not found in the "
             "'chezmoi status' output."
         ),
-        disabled_tooltip=None,
     )
     managed_dirs = SwitchData(
         label=SwitchLabel.managed_dirs,
         enabled_tooltip=("If enabled, only already managed directories are shown."),
-        disabled_tooltip=None,
     )
     unwanted = SwitchData(
         label=SwitchLabel.unwanted,
@@ -297,7 +292,6 @@ class SwitchEnum(Enum):
             "manager. These include cache, temporary, trash (recycle bin) and other "
             "similar files or directories."
         ),
-        disabled_tooltip=None,
     )
 
     @property
@@ -307,7 +301,3 @@ class SwitchEnum(Enum):
     @property
     def enabled_tooltip(self) -> str:
         return self.value.enabled_tooltip
-
-    @property
-    def disabled_tooltip(self) -> str | None:
-        return self.value.disabled_tooltip
