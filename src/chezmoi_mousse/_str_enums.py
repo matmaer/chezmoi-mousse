@@ -179,6 +179,7 @@ class OperateString(StrEnum):
 class SectionLabel(StrEnum):
     cat_config_output = "Cat Config Output"
     doctor_output = "Doctor Output"
+    full_cmd = "Full Command"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
     # init_clone_repo = "Initialize Existing Chezmoi Repository" # noqa: ERA001

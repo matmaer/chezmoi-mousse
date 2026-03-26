@@ -212,21 +212,25 @@ class CommandResult:
         dry_run_str = "(dry run)" if self.is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self._std_err or f"{LogString.no_stderr} {dry_run_str}"
-        collapsible_contents: list[Label | Static] = []
-        collapsible_contents.extend(
+        contents: list[Label | Static] = [
+            Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
+        ]
+        full_cmd = f"{' '.join(item for item in self.completed_process.args)}"
+        contents.extend([Label(full_cmd, classes=Tcss.full_cmd)])
+        contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
                 Static(f"{curated_std_out}", markup=False),
             ]
         )
-        collapsible_contents.extend(
+        contents.extend(
             [
                 Label(SectionLabel.stderr_output, classes=Tcss.sub_section_label),
                 Static(f"{curated_std_err}", markup=False),
             ]
         )
         return Collapsible(
-            *collapsible_contents,
+            *contents,
             title=title,
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,

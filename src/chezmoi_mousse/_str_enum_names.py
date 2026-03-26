@@ -62,6 +62,7 @@ class Tcss(StrEnum):
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
+    full_cmd = auto()
     info = auto()
     init_docs_link = auto()
     input_field = auto()
