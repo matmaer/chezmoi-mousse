@@ -28,12 +28,13 @@ __all__ = [
     "FlatButton",
     "FlatButtonsVertical",
     "FlatLink",
-    "TabButtons",
+    "OpBtnEnum",
     "OpButton",
     "OperateButtons",
-    "SwitchWithLabel",
     "SwitchSlider",
+    "SwitchWithLabel",
     "TabButton",
+    "TabButtons",
 ]
 
 

@@ -29,9 +29,9 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .common.managed_tree import TreeSwitcher
 from .common.op_feedback import OperateInfo
 from .common.screen_header import CustomHeader
-from .common.switchers import TreeSwitcher
 from .config_tab import ConfigTab
 from .debug_tab import DebugTab
 from .help_tab import HelpTab

@@ -58,11 +58,12 @@ class Tcss(StrEnum):
     changes_enabled_color = auto()
     context = auto()
     debug_content_switcher = auto()
+    dest_dir_tree_label = auto()
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
-    init_docs_link = auto()
     info = auto()
+    init_docs_link = auto()
     input_field = auto()
     input_select = auto()
     last_clicked_flat_btn = auto()
@@ -79,8 +80,8 @@ class Tcss(StrEnum):
     sub_section_label = auto()
     tab_button = auto()
     tab_left_vertical = auto()
-    tree_content_switcher = auto()
     tree_widget = auto()
+    tree_widgets = auto()
     unhandled = auto()
 
     # add a property to return the name with a dot prefix

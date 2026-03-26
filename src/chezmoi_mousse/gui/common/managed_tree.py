@@ -2,8 +2,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 from textual import on
+from textual.app import ComposeResult
+from textual.containers import Vertical
 from textual.reactive import reactive
-from textual.widgets import Tree
+from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabLabel, Tcss
@@ -11,9 +13,10 @@ from chezmoi_mousse import CMD, AppType, Chars, StatusCode, TabLabel, Tcss
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
+from .actionables import OpBtnEnum, OpButton
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
-__all__ = ["ManagedTree"]
+__all__ = ["ManagedTree", "TreeSwitcher"]
 
 
 class CurrentNodes(NamedTuple):
@@ -27,6 +30,33 @@ class CurrentNodes(NamedTuple):
     @property
     def x_files(self) -> set[TreeNode[Path]]:
         return {node for node in self.files if node.data in CMD.cache.sets.x_files}
+
+
+class TreeSwitcher(Vertical, AppType):
+
+    unchanged: reactive[bool] = reactive(False)
+    expand_all: reactive[bool] = reactive(False)
+
+    def __init__(self, ids: "AppIds"):
+        super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
+        self.ids = ids
+        self.old_expanded_nodes: list[TreeNode[Path]] = []
+
+    def compose(self) -> ComposeResult:
+        yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
+        yield ManagedTree(self.ids)
+        yield OpButton(
+            btn_enum=OpBtnEnum.refresh_tree,
+            btn_id=self.ids.op_btn.refresh_tree,
+            app_ids=self.ids,
+        )
+
+    def on_mount(self) -> None:
+        managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+        managed_tree.add_class(Tcss.tree_widgets)
+        refresh_btn = self.query_one(self.ids.op_btn.refresh_tree_q, OpButton)
+        refresh_btn.remove_class(Tcss.operate_button)
+        refresh_btn.add_class(Tcss.refresh_button)
 
 
 class ManagedTree(Tree[Path], AppType):

@@ -61,7 +61,7 @@
   width: auto;
   max-width: 35%;
   min-width: 18;
-  &>.tree_content_switcher {
+  &>.tree_widgets {
     height: 1fr;
     min-width: 18;
     width: auto;
@@ -246,6 +246,14 @@ Label{
   text-align: center;
   border-left: none;
   border-right: none;
+  &.dest_dir_tree_label {
+    background-tint: $background;
+    background: $background;
+    border-bottom: solid $primary;
+    border-top: none;
+    color: $primary-lighten-3;
+    width: 100%;
+  }
   &.flat_section_label {
     background-tint: $primary-muted;
     background: $primary-muted;
