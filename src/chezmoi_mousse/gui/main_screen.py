@@ -27,11 +27,11 @@ from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
 from .common.loading_modal import LoadingLabel, LoadingModal, min_wait
 from .common.loggers import AppLog, CmdLog
+from .common.managed_tree import ManagedTree
 from .common.messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg, LogCmdResultMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 from .common.switchers import ViewSwitcher
-from .common.trees import ManagedTree
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .init_tab import InitTab

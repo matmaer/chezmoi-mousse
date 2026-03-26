@@ -6,8 +6,8 @@ from textual.widgets import Switch
 from chezmoi_mousse import IDS, AppType, DirContentBtn, SwitchEnum, TabLabel
 
 from .common.actionables import OperateButtons, SwitchSlider, TabButton
+from .common.managed_tree import ManagedTree
 from .common.switchers import TreeSwitcher, ViewSwitcher
-from .common.trees import ManagedTree
 
 __all__ = ["ApplyTab"]
 

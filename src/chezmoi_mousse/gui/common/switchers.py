@@ -14,7 +14,7 @@ from .actionables import OpButton, TabButton, TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLogView
-from .trees import ManagedTree
+from .managed_tree import ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
