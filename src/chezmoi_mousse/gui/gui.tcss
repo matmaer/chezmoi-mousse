@@ -400,14 +400,6 @@ CollapsibleTitle {
   }
 }
 
-ContentSwitcher {
-  &.debug_content_switcher {
-    border-top: $primary;
-    border-title-align: center;
-    border-title-style: bold;
-  }
-}
-
 DataTable {
   &>.datatable--header {
     text-style: none;

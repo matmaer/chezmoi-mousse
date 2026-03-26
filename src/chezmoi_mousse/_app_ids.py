@@ -60,6 +60,7 @@ class AppIds:
             }
         if self.canvas_name == TabLabel.debug:
             return {
+                self.op_btn.list_test_paths: OpBtnEnum.list_test_paths,
                 self.op_btn.create_paths: OpBtnEnum.create_paths,
                 self.op_btn.remove_paths: OpBtnEnum.remove_paths,
                 self.op_btn.create_diffs: OpBtnEnum.create_diffs,
@@ -227,6 +228,10 @@ class OperateButtonIds:
             operation=OpBtnLabel.remove_paths
         )
         self.remove_paths_q: str = f"#{self.remove_paths}"
+        self.list_test_paths: str = ids.operate_button_id(
+            operation=OpBtnLabel.list_test_paths
+        )
+        self.list_test_paths_q: str = f"#{self.list_test_paths}"
         self.create_diffs: str = ids.operate_button_id(
             operation=OpBtnLabel.create_diffs
         )
@@ -279,6 +284,16 @@ class ViewIds:
         self.cat_config_q: str = f"#{self.cat_config}"
         self.ignored: str = ids.view_id(view=ViewName.git_ignored_view)
         self.ignored_q: str = f"#{self.ignored}"
+
+        # Debug tab
+        self.debug_log: str = ids.view_id(view=ViewName.debug_log_view)
+        self.debug_log_q: str = f"#{self.debug_log}"
+        self.dom_nodes: str = ids.view_id(view=ViewName.dom_nodes_view)
+        self.dom_nodes_q: str = f"#{self.dom_nodes}"
+        self.memory_usage: str = ids.view_id(view=ViewName.memory_usage_view)
+        self.memory_usage_q: str = f"#{self.memory_usage}"
+        self.test_paths: str = ids.view_id(view=ViewName.test_paths_view)
+        self.test_paths_q: str = f"#{self.test_paths}"
 
         # Views or shared across canvases
         self.pw_mgr_info: str = ids.view_id(view=ViewName.pw_mgr_info_view)

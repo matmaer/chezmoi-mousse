@@ -273,9 +273,12 @@ class TestPaths:
                 created_files.add(str(file))
         return sorted(created_files)
 
+    def get_existing_test_paths(self) -> list[Path]:
+        return sorted(p for p in self.all_paths.all_test_paths if p.exists())
+
     def create_paths_on_disk(self) -> list[str]:
         # record existing expected paths before creating anything
-        existing_before = set(self.list_existing_test_paths())
+        existing_before = set(self.get_existing_test_paths())
 
         # perform creations using existing helpers
         self._create_dir_paths()
@@ -299,11 +302,8 @@ class TestPaths:
 
         return ["[$text-primary bold]Created paths:[/]"] + sorted(created)
 
-    def list_existing_test_paths(self) -> list[Path]:
-        return sorted(p for p in self.all_paths.all_test_paths if p.exists())
-
     def remove_test_paths(self) -> list[str]:
-        existing_paths = self.list_existing_test_paths()
+        existing_paths = self.get_existing_test_paths()
         if not existing_paths:
             return ["[$text-warning bold]No test paths to remove.[/]"]
 
@@ -321,7 +321,7 @@ class TestPaths:
         return ["[$text-primary bold]Removed paths:[/]"] + removed_entries
 
     def create_diffs(self) -> str:
-        if not self.list_existing_test_paths():
+        if not self.get_existing_test_paths():
             return "[$text-warning bold]No test paths exist to modify.[/]"
         modified: set[str] = set()
 

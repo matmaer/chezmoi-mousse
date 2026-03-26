@@ -178,19 +178,21 @@ class OperateString(StrEnum):
 
 class SectionLabel(StrEnum):
     cat_config_output = "Cat Config Output"
+    debug_log = " Debug Log "
     doctor_output = "Doctor Output"
+    dom_nodes = " DOM Nodes "
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
     init_new_repo = "Initialize New Chezmoi Repository"
-    # init_clone_repo = "Initialize Existing Chezmoi Repository" # noqa: ERA001
+    memory_usage = " Memory Usage "
     password_managers = "Password Manager Information"
     paths_with_status = "Paths with Status"
-    pre_init_cmd_output = "Pre-init Command Outputs"
     project_description = "Project Description"
     project_link = "Project Link"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
+    test_paths = " Test Paths "
 
 
 class StatusCode(StrEnum):

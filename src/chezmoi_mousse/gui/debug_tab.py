@@ -3,15 +3,15 @@ from datetime import datetime
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, ContentSwitcher, RichLog, Static
+from textual.widgets import Button, ContentSwitcher, Label, RichLog, Static
 
 from chezmoi_mousse import (
     CMD,
     IDS,
     AppType,
-    BorderTitle,
     FlatBtnLabel,
     OpBtnLabel,
+    SectionLabel,
     Tcss,
     TestPaths,
 )
@@ -22,14 +22,33 @@ from .common.loggers import DebugLog
 __all__ = ["DebugTab"]
 
 
+class TestPathsView(Vertical):
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.test_paths, classes=Tcss.main_section_label)
+        yield Static(id=IDS.debug.static.debug_test_paths)
+
+
+class DebugLogView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.debug_log, classes=Tcss.main_section_label)
+        yield DebugLog()
+
+
+class DomNodesView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label)
+        yield RichLog(id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False)
+
+
+class MemoryUsageView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.memory_usage, classes=Tcss.main_section_label)
+        yield RichLog(id=IDS.debug.logger.memory, markup=True)
+
+
 class DebugTab(Horizontal, AppType):
 
-    FLAT_BTN_TUPLE: tuple[FlatBtnLabel, ...] = (
-        FlatBtnLabel.test_paths,
-        FlatBtnLabel.debug_log,
-        FlatBtnLabel.dom_nodes,
-        FlatBtnLabel.memory_usage,
-    )
     MiB = 1024 * 1024
     INTERVAL = 2
 
@@ -38,41 +57,60 @@ class DebugTab(Horizontal, AppType):
         self._previous_rss: float = 0.0
 
     def compose(self) -> ComposeResult:
-        yield FlatButtonsVertical(IDS.debug, buttons=self.FLAT_BTN_TUPLE)
-        with (
-            Vertical(),
-            ContentSwitcher(
-                initial=IDS.debug.static.debug_test_paths,
-                classes=Tcss.debug_content_switcher,
+        yield FlatButtonsVertical(
+            IDS.debug,
+            buttons=(
+                FlatBtnLabel.test_paths,
+                FlatBtnLabel.debug_log,
+                FlatBtnLabel.dom_nodes,
+                FlatBtnLabel.memory_usage,
             ),
-        ):
-            yield Static(id=IDS.debug.static.debug_test_paths)
-            yield DebugLog()
-            yield RichLog(
-                id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False
-            )
-            yield RichLog(id=IDS.debug.logger.memory, markup=True)
+        )
+        with Vertical(), ContentSwitcher(initial=IDS.debug.view.test_paths):
+            yield TestPathsView(id=IDS.debug.view.test_paths)
+            yield DebugLogView(id=IDS.debug.view.debug_log)
+            yield DomNodesView(id=IDS.debug.view.dom_nodes)
+            yield MemoryUsageView(id=IDS.debug.view.memory_usage)
         yield OperateButtons(IDS.debug)
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.switcher.border_title = BorderTitle.test_paths
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.memory_logger = self.query_one(IDS.debug.logger.memory_q, RichLog)
+        self.test_paths_static.update(self._list_existing_test_paths())
+        self.mem_log_op_btn = self.query_one(IDS.debug.op_btn.log_memory_q, Button)
+        self.list_test_paths_op_btn = self.query_one(
+            IDS.debug.op_btn.list_test_paths_q, Button
+        )
+        self.create_diffs_op_btn = self.query_one(
+            IDS.debug.op_btn.create_diffs_q, Button
+        )
+        self.create_paths_op_btn = self.query_one(
+            IDS.debug.op_btn.create_paths_q, Button
+        )
+        self.remove_paths_op_btn = self.query_one(
+            IDS.debug.op_btn.remove_paths_q, Button
+        )
+        self.test_paths_op_btns = [
+            self.list_test_paths_op_btn,
+            self.create_diffs_op_btn,
+            self.create_paths_op_btn,
+            self.remove_paths_op_btn,
+        ]
         self.app.call_later(self._log_dom_nodes)
-        self._update_existing_test_paths()
+
         import psutil
 
         self._process = psutil.Process()
         self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
 
-    def _update_existing_test_paths(self) -> None:
+    def _list_existing_test_paths(self) -> str:
         colored_paths: list[str] = []
-        for path in self.test_paths.list_existing_test_paths():
+        for path in self.test_paths.get_existing_test_paths():
             if path in CMD.cache.sets.managed_dirs:
                 colored_paths.append(f"[$text-accent bold]{path}[/]")
             elif path in CMD.cache.sets.managed_files:
@@ -81,12 +119,11 @@ class DebugTab(Horizontal, AppType):
                 colored_paths.append(f"[$text-disabled]{path}[/]")
 
         if colored_paths:
-            self.test_paths_static.update(
-                "[$text-primary bold]Existing test paths:[/]\n"
-                + "\n".join(colored_paths)
+            return "[$text-primary bold]Existing test paths:[/]\n" + "\n".join(
+                colored_paths
             )
         else:
-            self.test_paths_static.update("[$text-warning bold]No test paths exist.[/]")
+            return "[$text-warning bold]No test paths exist.[/]"
 
     def _write_to_memory_log(self, auto: bool = True) -> None:
         mem_info = self._process.memory_info()
@@ -111,44 +148,71 @@ class DebugTab(Horizontal, AppType):
             self.memory_logger.write(f"{time} {prefix} {rss_str} | {vms_str}")
 
     def _log_dom_nodes(self) -> None:
-        dom_items = list(self.app.walk_children(with_self=True, method="depth"))
-        self.dom_node_logger.write(f"DOMNode count: {len(dom_items)}\n")
-        nodes_with_id = [item for item in dom_items if item.id is not None]
-        nodes_without_id = [item for item in dom_items if item.id is None]
-        for item in sorted(nodes_with_id, key=str):
+        # App dom nodes
+        app_nodes = list(self.app.walk_children())
+        self.dom_node_logger.write(f"self.app DOMNode count: {len(app_nodes)}\n")
+        app_nodes_with_id = [item for item in app_nodes if item.id is not None]
+        app_nodes_without_id = [item for item in app_nodes if item.id is None]
+        self.dom_node_logger.write(f"DOMNodes with id: {len(app_nodes_with_id)}")
+        for item in sorted(app_nodes_with_id, key=str):
             self.dom_node_logger.write(f"{item}")
-        for item in sorted(nodes_without_id, key=str):
+        self.dom_node_logger.write(
+            f"\nDOMNodes without id: {len(app_nodes_without_id)}"
+        )
+        for item in sorted(app_nodes_without_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+        # Screen dom nodes
+        screen_nodes = list(self.screen.walk_children())
+        self.dom_node_logger.write(
+            f"\nself.screen DOMNode count: {len(screen_nodes)}\n"
+        )
+        screen_nodes_with_id = [item for item in screen_nodes if item.id is not None]
+        screen_nodes_without_id = [item for item in screen_nodes if item.id is None]
+        self.dom_node_logger.write(f"DOMNodes with id: {len(screen_nodes_with_id)}")
+        for item in sorted(screen_nodes_with_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+        self.dom_node_logger.write(
+            f"\nDOMNodes without id: {len(screen_nodes_without_id)}"
+        )
+        for item in sorted(screen_nodes_without_id, key=str):
             self.dom_node_logger.write(f"{item}")
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        self._update_existing_test_paths()
-        if event.button.label == FlatBtnLabel.debug_log:
-            self.switcher.current = IDS.logs.logger.debug
-            self.switcher.border_title = BorderTitle.debug_log
-        elif event.button.label == FlatBtnLabel.test_paths:
-            self.switcher.current = IDS.debug.static.debug_test_paths
-            self.switcher.border_title = BorderTitle.test_paths
+        if event.button.label == FlatBtnLabel.memory_usage:
+            self.mem_log_op_btn.display = True
+            for btn in self.test_paths_op_btns:
+                btn.display = False
+            self.switcher.current = IDS.debug.view.memory_usage
+        else:
+            self.mem_log_op_btn.display = False
+            for btn in self.test_paths_op_btns:
+                btn.display = True
+        if event.button.label == FlatBtnLabel.test_paths:
+            self.switcher.current = IDS.debug.view.test_paths
+        elif event.button.label == FlatBtnLabel.debug_log:
+            self.switcher.current = IDS.debug.view.debug_log
         elif event.button.label == FlatBtnLabel.dom_nodes:
-            self.switcher.current = IDS.debug.logger.dom_nodes
-            self.switcher.border_title = BorderTitle.dom_nodes
-        elif event.button.label == FlatBtnLabel.memory_usage:
-            self.switcher.current = IDS.debug.logger.memory
-            self.switcher.border_title = BorderTitle.memory_usage
+            self.switcher.current = IDS.debug.view.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == OpBtnLabel.create_diffs:
+        if event.button.label == OpBtnLabel.list_test_paths:
+            result = self._list_existing_test_paths()
+            self.test_paths_static.update(result)
+        elif event.button.label == OpBtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
+            CMD.cache.update_path_sets()
             self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
+            CMD.cache.update_path_sets()
             self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
+            CMD.cache.update_path_sets()
             self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.log_memory:
-            self._update_existing_test_paths()
             self._write_to_memory_log(auto=False)
