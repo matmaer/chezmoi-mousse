@@ -147,7 +147,7 @@ class CachedData:
             if v[fs_idx] != StatusCode.Space
         }
 
-    def get_status_files_in(
+    def _get_status_files_in(
         self, dir_path: Path, app_ids: AppIds, recursive: bool
     ) -> dict[Path, StatusCode]:
         # Use the parsed status file dict to ensure key formats match
@@ -226,7 +226,7 @@ class CachedData:
                     widgets.append(
                         DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
                     )
-            status_files_in = self.get_status_files_in(
+            status_files_in = self._get_status_files_in(
                 dir_path, app_ids, recursive=True
             )
             if status_files_in:

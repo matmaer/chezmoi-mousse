@@ -16,7 +16,7 @@ from ._app_ids import IDS, AppIds
 from ._cmd_results import CMD, CachedData, DirContentBtn, ParsedJson
 from ._enum_data import OpBtnEnum, OpBtnLabel, OpInfoString, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb, WriteCmd
-from ._str_enum_names import BindingAction, ScreenName, Tcss, TreeName
+from ._str_enum_names import BindingAction, ScreenName, Tcss
 from ._str_enums import (
     BindingDescription,
     BorderTitle,
@@ -70,7 +70,6 @@ __all__ = [
     "TabLabel",
     "Tcss",
     "TestPaths",
-    "TreeName",
     "WriteCmd",
 ]
 

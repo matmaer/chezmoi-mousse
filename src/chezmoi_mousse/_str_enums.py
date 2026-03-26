@@ -94,7 +94,6 @@ class BorderTitle(StrEnum):
     dest_dir = " destDir "
     dom_nodes = " DOM Nodes "
     global_git_log = " Global Chezmoi Git Log "
-    list_tree = dest_dir + "files "
     test_paths = " Test Paths "
 
 

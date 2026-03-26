@@ -205,5 +205,3 @@ class TabButtons(Horizontal):
         event.button.add_class(Tcss.last_clicked_tab_btn)
         if event.button.label == TabLabel.tree:
             self.border_subtitle = BorderTitle.dest_dir
-        elif event.button.label == TabLabel.list:
-            self.border_subtitle = BorderTitle.list_tree

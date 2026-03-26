@@ -31,7 +31,7 @@ from .common.messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg, LogCmdRes
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 from .common.switchers import ViewSwitcher
-from .common.trees import ListTree, ManagedTree
+from .common.trees import ManagedTree
 from .config_tab import ConfigTab
 from .help_tab import HelpTab
 from .init_tab import InitTab
@@ -71,11 +71,9 @@ class MainScreen(Screen[None], AppType):
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
-        self.apply_list_tree = self.query_one(IDS.apply.tree.list_q, ListTree)
-        self.apply_managed_tree = self.query_one(IDS.apply.tree.managed_q, ManagedTree)
-        self.re_add_list_tree = self.query_one(IDS.re_add.tree.list_q, ListTree)
+        self.apply_managed_tree = self.query_one(IDS.apply.managed_tree_q, ManagedTree)
         self.re_add_managed_tree = self.query_one(
-            IDS.re_add.tree.managed_q, ManagedTree
+            IDS.re_add.managed_tree_q, ManagedTree
         )
         self.op_feed_back = self.query_one(
             IDS.main_tabs.container.op_feed_back_q, OpFeedBack
@@ -167,9 +165,7 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _update_trees(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees.with_color
-        self.apply_list_tree.populate_tree()
         self.apply_managed_tree.populate_tree()
-        self.re_add_list_tree.populate_tree()
         self.re_add_managed_tree.populate_tree()
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)

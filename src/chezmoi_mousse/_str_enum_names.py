@@ -7,7 +7,6 @@ __all__ = [
     "ScreenName",
     "StaticName",
     "Tcss",
-    "TreeName",
     "ViewName",
 ]
 
@@ -88,11 +87,6 @@ class Tcss(StrEnum):
     @property
     def dot_prefix(self) -> str:
         return f".{self.value}"
-
-
-class TreeName(StrEnum):
-    list_tree = auto()
-    managed_tree = auto()
 
 
 class ViewName(StrEnum):

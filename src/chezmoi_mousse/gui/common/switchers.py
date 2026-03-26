@@ -14,7 +14,7 @@ from .actionables import OpButton, TabButton, TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLogView
-from .trees import ListTree, ManagedTree
+from .trees import ManagedTree
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -33,12 +33,11 @@ class TreeSwitcher(Vertical, AppType):
         self.old_expanded_nodes: list[TreeNode[Path]] = []
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(self.ids, (TabLabel.tree, TabLabel.list))
+        yield TabButtons(self.ids, (TabLabel.tree,))
         with ContentSwitcher(
-            initial=self.ids.tree.managed, classes=Tcss.tree_content_switcher
+            initial=self.ids.managed_tree, classes=Tcss.tree_content_switcher
         ):
             yield ManagedTree(self.ids)
-            yield ListTree(self.ids)
         yield OpButton(
             btn_enum=OpBtnEnum.refresh_tree,
             btn_id=self.ids.op_btn.refresh_tree,
@@ -54,9 +53,7 @@ class TreeSwitcher(Vertical, AppType):
     @on(TabButton.Pressed)
     def switch_view(self, event: TabButton.Pressed) -> None:
         if event.button.label == TabLabel.tree:
-            self.content_switcher.current = self.ids.tree.managed
-        elif event.button.label == TabLabel.list:
-            self.content_switcher.current = self.ids.tree.list
+            self.content_switcher.current = self.ids.managed_tree
 
 
 class ViewSwitcher(Vertical):

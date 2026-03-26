@@ -1,12 +1,5 @@
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from ._str_enum_names import (
-    ContainerName,
-    LogName,
-    ScreenName,
-    StaticName,
-    TreeName,
-    ViewName,
-)
+from ._str_enum_names import ContainerName, LogName, ScreenName, StaticName, ViewName
 from ._str_enums import FlatBtnLabel, TabLabel
 
 __all__ = ["IDS", "AppIds"]
@@ -18,6 +11,8 @@ class AppIds:
         "container",
         "label",
         "logger",
+        "managed_tree",
+        "managed_tree_q",
         "op_btn",
         "static",
         "switch",
@@ -29,10 +24,11 @@ class AppIds:
         self.canvas_name = canvas_name
         self.container = ContainerIds(self)
         self.logger = LoggerIds(self)
+        self.managed_tree = f"{self.canvas_name.name}_managed_tree"
+        self.managed_tree_q = f"#{self.managed_tree}"
         self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
         self.switch = SwitchIds(self)
-        self.tree = TreeIds(self)
         self.view = ViewIds(self)
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
@@ -49,9 +45,6 @@ class AppIds:
 
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
-
-    def tree_id(self, qid: str = "", *, tree: TreeName) -> str:
-        return f"{qid}{self.canvas_name.name}_{tree.name}"
 
     def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
         return f"{qid}{self.canvas_name.name}_{view.name}"
@@ -252,16 +245,6 @@ class StaticIds:
         self.init_info_q: str = f"#{self.init_info}"
         self.operate_info: str = ids.static_id(static=StaticName.operate_info)
         self.operate_info_q: str = f"#{self.operate_info}"
-
-
-class TreeIds:
-    """Tree widget their id's."""
-
-    def __init__(self, ids: AppIds):
-        self.list: str = ids.tree_id(tree=TreeName.list_tree)
-        self.list_q: str = f"#{self.list}"
-        self.managed: str = ids.tree_id(tree=TreeName.managed_tree)
-        self.managed_q: str = f"#{self.managed}"
 
 
 class SwitchIds:
