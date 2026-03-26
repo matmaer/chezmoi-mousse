@@ -80,14 +80,13 @@ class ManagedTree(Tree[Path], AppType):
         self.root.expand()
 
     def _create_colored_label(self, path: Path) -> str:
-        label_text = str(path.relative_to(CMD.cache.dest_dir))
         status = CMD.cache.get_path_status(path, self.ids)
         color_var = status.color_var
         if status == StatusCode.Space and path in CMD.cache.sets.n_dirs:
             color_var = "text-secondary"
         color = self.app.theme_var_to_hex(color_var)
         italic = " italic" if not path.exists() else ""
-        return f"[{color}{italic}]{label_text}[/]"
+        return f"[{color}{italic}]{path.name}[/]"
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
