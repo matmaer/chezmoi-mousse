@@ -164,7 +164,16 @@ class SplashScreen(Screen[None], AppType):
 
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
+        color = self.app.theme_variables["text-primary"]
+        if splash_cmd == ReadCmd.git_log and self.app.git_found is False:
+            suffix = "skipped"
+            short_cmd = ReadCmd.git_log.short_cmd
+            padding = LOG_MSG_WIDTH - (len(short_cmd) + len(suffix))
+            log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
+            self.app.call_from_thread(self.splash_log.write, log_text)
+            return
         cmd_result = CMD.run_cmd.read(splash_cmd)
+        short_cmd = cmd_result.short_cmd_no_path
         setattr(CMD.cache.cmd_results, f"{splash_cmd.name}", cmd_result)
         color = self.app.theme_variables["text-primary"]
         suffix = "unknown"
@@ -173,7 +182,6 @@ class SplashScreen(Screen[None], AppType):
         else:
             suffix = "checked"
             color = self.app.theme_variables["text-warning"]
-        short_cmd = cmd_result.short_cmd_no_path
         padding = LOG_MSG_WIDTH - (len(short_cmd) + len(suffix))
         log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
         self.app.call_from_thread(self.splash_log.write, log_text)

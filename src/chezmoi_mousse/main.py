@@ -15,6 +15,8 @@ CHEZMOI = "chezmoi"
 
 def run_app():
     chezmoi_bin = shutil.which(CHEZMOI)
+    git_bin = shutil.which("git")
+    git_found = git_bin is not None
     if chezmoi_bin is not None:
         completed: CompletedProcess[str] = run_chezmoi_cmd(
             command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.version.value,
@@ -51,7 +53,10 @@ def run_app():
 
         try:
             app = ChezmoiGUI(
-                chezmoi_bin=chezmoi_bin, dev_mode=True, repo_found=repo_found
+                chezmoi_bin=chezmoi_bin,
+                dev_mode=True,
+                repo_found=repo_found,
+                git_found=git_found,
             )
 
             # Patch app._handle_exception to save stacktrace during runtime
@@ -70,7 +75,9 @@ def run_app():
             raise
 
     else:
-        app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, repo_found=repo_found)
+        app = ChezmoiGUI(
+            chezmoi_bin=chezmoi_bin, repo_found=repo_found, git_found=git_found
+        )
         app.run()
 
 

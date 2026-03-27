@@ -112,6 +112,10 @@ class ReadCmd(Enum):
     verify = (ReadVerb.verify.value,)
     version = (VerbArgs.version.value,)
 
+    @property
+    def short_cmd(self) -> str:
+        return f"{CHEZMOI} {self.value[0]}"
+
 
 class WriteVerb(Enum):
     add = "add"
