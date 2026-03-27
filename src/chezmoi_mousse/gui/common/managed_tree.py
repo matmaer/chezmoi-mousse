@@ -101,17 +101,24 @@ class ManagedTree(Tree[Path], AppType):
         self.clear()
         self.current_nodes.dirs.clear()
         self.current_nodes.files.clear()
-        self.root.data = CMD.cache.dest_dir
-        color = self.app.theme_variables["text-primary"]
-        self.root.label = f"[{color} bold]{CMD.cache.dest_dir.name}[/]"
-        self.root.expand()
+        if self._first_time_populating:
+            self.root.data = CMD.cache.dest_dir
+            color = self.app.theme_variables["text-primary"]
+            self.root.label = f"[{color} bold]{CMD.cache.dest_dir.name}[/]"
+            self.root.expand()
         self.root.allow_expand = False  # to prevent the root node from being collapsed
         self._populate_root_node_recursive(self.root)
         if self._first_time_populating:
+            # expand all switch is false by default
             for node in self.current_nodes.dirs:
                 if node.data != CMD.cache.dest_dir:
                     node.collapse()
             self._first_time_populating = False
+        else:
+            if self.expand_all:
+                self.watch_expand_all(True)
+            if self.unchanged:
+                self.watch_unchanged(True)
         self.select_node(self.root)
 
     def _update_current_nodes(self) -> CurrentNodes:
