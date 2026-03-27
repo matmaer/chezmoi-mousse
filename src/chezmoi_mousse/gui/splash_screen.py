@@ -165,7 +165,7 @@ class SplashScreen(Screen[None], AppType):
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         cmd_result = CMD.run_cmd.read(splash_cmd)
-        setattr(CMD.cache, f"{splash_cmd.name}", cmd_result)
+        setattr(CMD.cache.cmd_results, f"{splash_cmd.name}", cmd_result)
         color = self.app.theme_variables["text-primary"]
         suffix = "unknown"
         if cmd_result.exit_code == 0:

@@ -81,7 +81,7 @@ class LoadingModal(ModalScreen[None], AppType):
     async def run_read_command(self, read_cmd: "ReadCmd") -> None:
         self.label_text = CMD.run_cmd.review_cmd(verb_cmd=read_cmd)
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
-        setattr(CMD.cache, f"{read_cmd.name}", cmd_result)
+        setattr(CMD.cache.cmd_results, f"{read_cmd.name}", cmd_result)
         CMD.loading_modal_results.append(cmd_result)
 
     @work(thread=True, exit_on_error=False)

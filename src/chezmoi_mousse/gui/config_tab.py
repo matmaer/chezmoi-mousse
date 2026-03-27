@@ -107,26 +107,28 @@ class ConfigTab(Horizontal, AppType):
         elif event.button.label == FlatBtnLabel.template_data:
             self.switcher.current = IDS.config.view.template_data
 
-    def watch_command_results(self, command_results: "CachedData") -> None:
+    def watch_command_results(self, cached: "CachedData") -> None:
         if (
-            command_results.cat_config is None
-            or command_results.doctor is None
-            or command_results.ignored is None
-            or command_results.template_data is None
+            cached.cmd_results.cat_config is None
+            or cached.cmd_results.doctor is None
+            or cached.cmd_results.ignored is None
+            or cached.cmd_results.template_data is None
         ):
             return
         self.switcher.query_one(
             IDS.config.view.template_data_q, TemplateDataView
-        ).template_data_stdout = command_results.template_data.completed_process.stdout
+        ).template_data_stdout = (
+            cached.cmd_results.template_data.completed_process.stdout
+        )
         self.switcher.query_one(
             IDS.config.view.ignored_q, IgnoredView
-        ).ignored_stdout = command_results.ignored.completed_process.stdout
+        ).ignored_stdout = cached.cmd_results.ignored.completed_process.stdout
         self.switcher.query_one(
             IDS.config.view.cat_config_q, CatConfigView
-        ).cat_config_stdout = command_results.cat_config.completed_process.stdout
+        ).cat_config_stdout = cached.cmd_results.cat_config.completed_process.stdout
         self.switcher.query_one(
             IDS.config.container.doctor_q, DoctorTableView
-        ).doctor_stdout = command_results.doctor.completed_process.stdout
+        ).doctor_stdout = cached.cmd_results.doctor.completed_process.stdout
         self.switcher.query_one(
             IDS.config.view.pw_mgr_info_q, PwMgrInfoView
-        ).populate_pw_mgr_info(command_results.doctor.completed_process.stdout)
+        ).populate_pw_mgr_info(cached.cmd_results.doctor.completed_process.stdout)

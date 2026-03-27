@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -83,21 +83,29 @@ class PathSets:
         return {path for path in self.status_dirs if path.parent == dir_path}
 
 
+@dataclass(slots=True)
+class CachedCmdResults:
+    cat_config: CommandResult | None = None
+    doctor: CommandResult | None = None
+    dump_config: CommandResult | None = None
+    git_log: CommandResult | None = None
+    ignored: CommandResult | None = None
+    managed_dirs: CommandResult | None = None
+    managed_files: CommandResult | None = None
+    status_dirs: CommandResult | None = None
+    status_files: CommandResult | None = None
+    template_data: CommandResult | None = None
+    verify: CommandResult | None = None
+
+    @property
+    def all(self) -> list[CommandResult | None]:
+        return [getattr(self, f.name) for f in fields(self)]
+
+
 class CachedData:
     def __init__(self) -> None:
 
-        # all read command results
-        self.cat_config: CommandResult | None = None
-        self.doctor: CommandResult | None = None
-        self.dump_config: CommandResult | None = None
-        self.git_log: CommandResult | None = None
-        self.ignored: CommandResult | None = None
-        self.managed_dirs: CommandResult | None = None
-        self.managed_files: CommandResult | None = None
-        self.status_dirs: CommandResult | None = None
-        self.status_files: CommandResult | None = None
-        self.template_data: CommandResult | None = None
-        self.verify: CommandResult | None = None
+        self.cmd_results = CachedCmdResults()
 
         # parsed config cache
         self.dest_dir: Path = Path().home()
@@ -109,26 +117,31 @@ class CachedData:
 
     @property
     def no_status_paths(self) -> bool:
-        return self.verify is not None and self.verify.exit_code == 0
+        return (
+            self.cmd_results.verify is not None
+            and self.cmd_results.verify.exit_code == 0
+        )
 
     @property
     def _dir_status_pairs(self) -> dict[Path, str]:
-        if self.status_dirs is None:
+        if self.cmd_results.status_dirs is None:
             return {}
         return {
-            Path(line[3:]): line[:2] for line in self.status_dirs.std_out.splitlines()
+            Path(line[3:]): line[:2]
+            for line in self.cmd_results.status_dirs.std_out.splitlines()
         }
 
     @property
     def _file_status_pairs(self) -> dict[Path, str]:
-        if self.status_files is None:
+        if self.cmd_results.status_files is None:
             return {}
         return {
-            Path(line[3:]): line[:2] for line in self.status_files.std_out.splitlines()
+            Path(line[3:]): line[:2]
+            for line in self.cmd_results.status_files.std_out.splitlines()
         }
 
     def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if self.status_dirs is None:
+        if self.cmd_results.status_dirs is None:
             return {}
         ds_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # dir status index
         return {
@@ -138,7 +151,7 @@ class CachedData:
         }
 
     def _get_status_files(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if self.status_files is None:
+        if self.cmd_results.status_files is None:
             return {}
         fs_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # file status index
         return {
@@ -248,8 +261,12 @@ class CachedData:
 
     def update_path_sets(self) -> None:
 
-        self.sets.managed_dirs = self._parse_paths_from_result(self.managed_dirs)
-        self.sets.managed_files = self._parse_paths_from_result(self.managed_files)
+        self.sets.managed_dirs = self._parse_paths_from_result(
+            self.cmd_results.managed_dirs
+        )
+        self.sets.managed_files = self._parse_paths_from_result(
+            self.cmd_results.managed_files
+        )
         self.sets.managed_dirs_plus_dest_dir = {self.dest_dir} | self.sets.managed_dirs
         parsed_status_dirs = set(self._dir_status_pairs.keys())
         parsed_status_files = set(self._file_status_pairs.keys())

@@ -98,12 +98,7 @@ class MainScreen(Screen[None], AppType):
 
         if btn_enum is None:
             await self._update_trees().wait()
-            cmd_results = [
-                attr
-                for attr in vars(CMD.cache).values()
-                if isinstance(attr, CommandResult)
-            ]
-            await self._log_all_cmd_results(cmd_results).wait()
+            await self._log_all_cmd_results(CMD.cache.cmd_results.all).wait()
             await self._update_config_tab().wait()
             self.loading_modal.dismiss()
             return
@@ -126,6 +121,7 @@ class MainScreen(Screen[None], AppType):
                     severity="warning",
                 )
             else:
+                self.notify("Changed managed paths found, refreshing data.")
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
         await self._log_all_cmd_results(CMD.loading_modal_results).wait()
