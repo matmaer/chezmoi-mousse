@@ -105,7 +105,9 @@ class MainScreen(Screen[None], AppType):
             ]
             await self._log_all_cmd_results(cmd_results).wait()
             await self._update_config_tab().wait()
-        elif btn_enum in self.app.run_btn_enums:
+            self.loading_modal.dismiss()
+            return
+        if btn_enum in self.app.run_btn_enums:
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.operate_info.update_write_cmd_info().wait()
             for read_cmd in CMD.refresh_read_cmds:
@@ -126,8 +128,7 @@ class MainScreen(Screen[None], AppType):
             else:
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
-                await self._log_all_cmd_results(CMD.loading_modal_results).wait()
-
+        await self._log_all_cmd_results(CMD.loading_modal_results).wait()
         self.loading_modal.dismiss()
 
     #####################
