@@ -122,7 +122,8 @@ class BindingDescription(StrEnum):
     maximize = "Maximize"
     minimize = "Minimize"
     show_filters = "Show filters"
-    toggle_dry_run = "Toggle --dry-run"
+    remove_dry_run = "Remove --dry-run"
+    add_dry_run = "Add --dry-run"
 
 
 class SwitchLabel(StrEnum):
