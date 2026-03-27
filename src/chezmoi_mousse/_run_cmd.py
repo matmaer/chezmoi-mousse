@@ -254,7 +254,7 @@ class ChezmoiCommand:
         init_args: str | None = None,
     ) -> str:
         review_cmd = f"{CHEZMOI}"
-        if isinstance(verb_cmd, WriteCmd) and self.changes_enabled:
+        if isinstance(verb_cmd, WriteCmd) and not self.changes_enabled:
             review_cmd += f" {GlobalArgs.dry_run_arg.value}"
         review_cmd += f" {_filtered_verb_cmd(verb_cmd.value)}"
         if init_args is not None:
