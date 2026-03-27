@@ -148,7 +148,7 @@ class ChezmoiGUI(App[None]):
     def path_to_qid(self, p: "Path") -> str:
         return f"#{self.path_to_id(p)}"
 
-    def theme_var_to_hex(self, theme_var: str) -> str:
+    def get_theme_var(self, theme_var: str) -> str:
         # "#FF0000" for debugging to spot missing conditions
         return self.theme_variables.get(theme_var, "#FF0000")
 

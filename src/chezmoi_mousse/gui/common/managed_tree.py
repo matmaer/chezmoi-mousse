@@ -84,7 +84,7 @@ class ManagedTree(Tree[Path], AppType):
         color_var = status.color_var
         if status == StatusCode.Space and path in CMD.cache.sets.n_dirs:
             color_var = "text-secondary"
-        color = self.app.theme_var_to_hex(color_var)
+        color = self.app.get_theme_var(color_var)
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{path.name}[/]"
 
