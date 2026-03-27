@@ -188,6 +188,8 @@ class ManagedTree(Tree[Path], AppType):
             for file_path in CMD.cache.sets.status_files_in(dir):
                 self._insert_file(child_node, file_path)
             self._populate_root_node_recursive(child_node)
+        for file_path in CMD.cache.sets.status_files_in(tree_node.data):
+            self._insert_file(tree_node, file_path)
         self._update_current_nodes()
 
     def _add_x_paths_to_root_recursive(self, tree_node: TreeNode[Path]) -> None:
