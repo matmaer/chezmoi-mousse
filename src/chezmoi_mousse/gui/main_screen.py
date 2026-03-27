@@ -5,7 +5,7 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Collapsible, Footer, TabbedContent, TabPane, Tabs
+from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -108,12 +108,12 @@ class MainScreen(Screen[None], AppType):
             for read_cmd in CMD.refresh_read_cmds:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
-            await self.command_output.update_mounted().wait()
+            await self.command_output.update_cmd_output().wait()
         elif btn_enum == OpBtnEnum.refresh_tree:
             for read_cmd in CMD.refresh_read_cmds:
                 await self.loading_modal.run_read_command(read_cmd).wait()
             await self.loading_modal.update_changed_paths().wait()
-            await self.command_output.update_mounted().wait()
+            await self.command_output.update_cmd_output().wait()
         elif btn_enum == OpBtnEnum.reload:
             if len(CMD.changed_paths) == 0:
                 self.notify(
@@ -189,12 +189,11 @@ class MainScreen(Screen[None], AppType):
             return
         self._set_display(event.button)
         if event.button.btn_enum in self.app.review_btn_enums:
+            self.command_output.reset_widgets()
             self.operate_info.update_review_info(event.button)
             return
         if event.button.btn_enum == OpBtnEnum.reload:
-            collapsibles = self.command_output.query(Collapsible).results()
-            for collapsible in collapsibles:
-                collapsible.remove()
+            self.command_output.reset_widgets()
             await self._push_loading_modal(OpBtnEnum.reload).wait()
         elif (
             event.button.btn_enum in self.app.run_btn_enums

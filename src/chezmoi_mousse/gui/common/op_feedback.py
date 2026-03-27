@@ -4,7 +4,7 @@ from textual import work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Label, Static
+from textual.widgets import Collapsible, Label, Static
 
 from chezmoi_mousse import CMD, AppType, OpBtnEnum, OperateString, OpInfoString, Tcss
 
@@ -72,28 +72,44 @@ class CommandOutput(ScrollableContainer):
 
     def compose(self) -> ComposeResult:
         yield Label("Changed paths", classes=Tcss.main_section_label)
-        yield Static(id=self.ids.static.changed_paths, classes=Tcss.info)
+        yield Label("Removed paths", classes=Tcss.sub_section_label)
+        yield Static(id=self.ids.static.removed_paths, classes=Tcss.info)
+        yield Label("Added paths", classes=Tcss.sub_section_label)
+        yield Static(id=self.ids.static.added_paths, classes=Tcss.info)
+        yield Label("Changed status paths", classes=Tcss.sub_section_label)
+        yield Static(id=self.ids.static.changed_status, classes=Tcss.info)
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self.changed_paths_static = self.query_one(
-            self.ids.static.changed_paths_q, Static
-        )
+        self.added_paths = self.query_one(self.ids.static.added_paths_q, Static)
+        self.removed_paths = self.query_one(self.ids.static.removed_paths_q, Static)
+        self.changed_status = self.query_one(self.ids.static.changed_status_q, Static)
+        self.reset_widgets()
 
     @work
-    async def update_mounted(self) -> None:
-        if not CMD.changed_paths:
-            dry_run = (
-                " (dry run)"
-                if any(
-                    cmd_result.is_dry_run for cmd_result in CMD.loading_modal_results
-                )
-                else ""
-            )
-            self.changed_paths_static.update(f"No paths changed.{dry_run}")
+    async def reset_widgets(self) -> None:
+        self.added_paths.update("")
+        self.removed_paths.update("")
+        self.changed_status.update("")
+        self.query_children(Collapsible).remove()
+
+    @work
+    async def update_cmd_output(self) -> None:
+        if CMD.added_paths:
+            self.added_paths.update("\n".join([str(p) for p in CMD.added_paths]))
         else:
-            changed_paths_strings = "\n".join(str(path) for path in CMD.changed_paths)
-            self.changed_paths_static.update(changed_paths_strings)
+            self.added_paths.update("No added paths")
+        if CMD.removed_paths:
+            self.removed_paths.update("\n".join([str(p) for p in CMD.removed_paths]))
+        else:
+            self.removed_paths.update("No removed paths")
+        if CMD.changed_status_paths:
+            self.changed_status.update(
+                "\n".join([str(p) for p in CMD.changed_status_paths])
+            )
+        else:
+            self.changed_status.update("No changed status paths")
+        # mount a collapsible for each command
         for cmd_result in CMD.loading_modal_results:
             self.mount(cmd_result.pretty_collapsible)
 

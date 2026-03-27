@@ -46,7 +46,9 @@ class ScreenName(StrEnum):
 
 
 class StaticName(StrEnum):
-    changed_paths = auto()
+    added_paths = auto()
+    removed_paths = auto()
+    changed_status = auto()
     debug_test_paths = auto()
     init_info = auto()
     operate_info = auto()

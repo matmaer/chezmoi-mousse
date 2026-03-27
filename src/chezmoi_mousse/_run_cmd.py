@@ -206,14 +206,14 @@ class CommandResult:
         return f"{cmd_color} {self.short_global_cmd} {self.short_verb_cmd}[/]"
 
     @property
-    def is_dry_run(self) -> bool:
-        return "--dry-run" in self.completed_process.args
+    def _is_dry_run(self) -> bool:
+        return GlobalArgs.dry_run_arg.value in self.completed_process.args
 
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
         pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
         title = f"{pretty_time} {self.exit_code_colored_cmd}"
-        dry_run_str = "(dry run)" if self.is_dry_run else ""
+        dry_run_str = "(dry run)" if self._is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self._std_err or f"{LogString.no_stderr} {dry_run_str}"
         contents: list[Label | Static] = [
