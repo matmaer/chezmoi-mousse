@@ -1,11 +1,78 @@
-"""Compatibility wrapper to allow running the package via a plain script name."""
+import os
+import shutil
+import traceback
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-from .launcher import run_app
+from ._run_cmd import GlobalArgs, ReadCmd, run_chezmoi_cmd
+from .gui.textual_app import ChezmoiGUI
+
+if TYPE_CHECKING:
+    from subprocess import CompletedProcess
+
+CHEZMOI = "chezmoi"
 
 
-def main() -> None:
-    run_app()
+def run_app():
+    chezmoi_bin = shutil.which(CHEZMOI)
+    if chezmoi_bin is not None:
+        completed: CompletedProcess[str] = run_chezmoi_cmd(
+            command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.version.value,
+            cmd_timeout=1,
+        )
+        if completed.returncode != 0:
+            # If the command fails, we treat it as if chezmoi was not found.
+            chezmoi_bin = None
+    repo_found = None
+    if chezmoi_bin is not None:
+        completed: CompletedProcess[str] = run_chezmoi_cmd(
+            command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.status.value,
+            cmd_timeout=2,
+        )
+        if completed.returncode == 0:
+            repo_found = True
+
+    dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
+    pretend_not_found = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
+    pretend_repo_not_found = os.environ.get("PRETEND_CHEZMOI_REPO_NOT_FOUND") == "1"
+
+    if dev_mode or pretend_not_found or pretend_repo_not_found:
+        if pretend_not_found:
+            chezmoi_bin = None
+        if pretend_repo_not_found:
+            repo_found = False
+        # Save stacktrace in case an exception occurs on App class init.
+        src_dir = Path(__file__).parent.parent
+        stack_trace_path = src_dir / "stack_trace.log"
+
+        def save_stacktrace():
+            with Path.open(stack_trace_path, "a") as f:
+                traceback.print_exc(file=f)
+
+        try:
+            app = ChezmoiGUI(
+                chezmoi_bin=chezmoi_bin, dev_mode=True, repo_found=repo_found
+            )
+
+            # Patch app._handle_exception to save stacktrace during runtime
+            original_handle_exception = app._handle_exception  # type: ignore[method-assign]
+
+            def patched_handle_exception(error: Exception):
+                save_stacktrace()
+                original_handle_exception(error)
+
+            # monkey patch
+            app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
+            app.run()
+
+        except Exception:
+            save_stacktrace()
+            raise
+
+    else:
+        app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, repo_found=repo_found)
+        app.run()
 
 
 if __name__ == "__main__":
-    main()
+    run_app()
