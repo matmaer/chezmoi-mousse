@@ -43,7 +43,7 @@ def run_app():
             repo_found = False
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
-        stack_trace_path = src_dir / "stack_trace.trace"
+        stack_trace_path = src_dir / "stack_trace.log"
 
         def save_stacktrace():
             with Path.open(stack_trace_path, "a") as f:
