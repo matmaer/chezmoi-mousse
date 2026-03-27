@@ -109,7 +109,6 @@ class LogString(StrEnum):
     doctor_warnings_found = "Only warnings found, probably safe to ignore"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
-    output_will_be_processed = "Command output will be processed"
     using_chezmoi_bin = "Using chezmoi binary at:"
     verify_exit_zero = "All targets match their target state, no diffs available"
     verify_non_zero = "Not all targets match their target state, diffs are available"

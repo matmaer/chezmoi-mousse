@@ -88,27 +88,24 @@ class AppLog(RichLoggers):
     def on_mount(self) -> None:
         self.write_ready(LogString.app_log_initialized)
         if CMD.run_cmd.chezmoi_bin is not None:
-            self.write_success(
-                LogString.using_chezmoi_bin + f" {CMD.run_cmd.chezmoi_bin}"
-            )
+            self.write_info(LogString.using_chezmoi_bin + f" {CMD.run_cmd.chezmoi_bin}")
         if self.app.dev_mode is True:
-            self.write_warning(f"{Chars.warning_sign} {LogString.dev_mode_enabled}")
+            self.write_warning(
+                f"{Chars.warning_sign} {LogString.dev_mode_enabled} "
+                f"{Chars.warning_sign} "
+            )
 
     def log_cmd_result(self, cmd_result: "CommandResult") -> None:
-        cmd_color = LogColor.cmd
-        if cmd_result.path_arg is not None:
-            rel_path = f" {cmd_result.path_arg.relative_to(CMD.cache.dest_dir)} "
-        else:
-            rel_path = " "
-
-        log_text: list[str] = [f"{cmd_result.short_cmd_no_path}{rel_path}|"]
+        cmd_color = LogColor.success if cmd_result.exit_code == 0 else LogColor.warning
+        log_text: list[str] = [f"{cmd_result.short_cmd_no_path}"]
 
         if ReadVerb.verify.value in cmd_result.completed_process.args:
             if cmd_result.exit_code == 0:
-                cmd_color = LogColor.success
                 log_text.append(LogString.verify_exit_zero)
+                cmd_color = LogColor.info
             else:
                 log_text.append(LogString.verify_non_zero)
+                cmd_color = LogColor.info
         elif ReadVerb.doctor.value in cmd_result.completed_process.args:
             output_lower = cmd_result.std_out.lower()
             if "error" in output_lower:
@@ -118,21 +115,12 @@ class AppLog(RichLoggers):
                 log_text.append(LogString.doctor_fails_found)
             elif "warning" in output_lower:
                 log_text.append(LogString.doctor_warnings_found)
+                cmd_color = LogColor.info
             else:
                 log_text.append(LogString.doctor_no_issue_found)
                 cmd_color = LogColor.success
-        elif cmd_result.exit_code == 0:
-            cmd_color = LogColor.success
-            if cmd_result.std_out == "":
-                log_text.append(LogString.no_stdout)
-            elif cmd_result.std_out != "":
-                log_text.append(LogString.output_will_be_processed)
-        elif cmd_result.exit_code != 0:
-            cmd_color = LogColor.warning
-            log_text.append(
-                f"Exit code: {cmd_result.exit_code}, see the 'Chezmoi Commands' "
-                "tab for details"
-            )
+        else:
+            return
         self.write_cmd(" ".join(log_text), cmd_color)
 
     def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
