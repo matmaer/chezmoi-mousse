@@ -21,7 +21,6 @@ __all__ = ["AppLog", "CmdLog", "DebugLog"]
 
 
 class LogColor(StrEnum):
-    cmd = "primary-lighten-3"
     dimmed = "text-muted"
     error = "text-error"
     info = "text-primary"
@@ -70,9 +69,6 @@ class RichLoggers(Loggers, RichLog):
 
     def write_ready(self, message: str) -> None:
         self.write(self.get_log_line(f"--- {message} ---", LogColor.ready))
-
-    def write_success(self, message: str) -> None:
-        self.write(self.get_log_line(message, LogColor.success))
 
     def write_warning(self, message: str) -> None:
         self.write(self.get_log_line(message, LogColor.warning))

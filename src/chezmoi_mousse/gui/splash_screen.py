@@ -172,22 +172,22 @@ class SplashScreen(Screen[None], AppType):
             log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
             self.app.call_from_thread(self.splash_log.write, log_text)
             return
-        cmd_result = CMD.run_cmd.read(splash_cmd)
-        short_cmd = cmd_result.short_cmd_no_path
-        setattr(CMD.cache.cmd_results, f"{splash_cmd.name}", cmd_result)
-        color = self.app.theme_variables["text-primary"]
+        result = CMD.run_cmd.read(splash_cmd)
+        setattr(CMD.cache.cmd_results, f"{splash_cmd.name}", result)
         suffix = "unknown"
-        if cmd_result.exit_code == 0:
+        if result.exit_code == 0:
             suffix = "success" if splash_cmd != ReadCmd.verify else "matches"
         else:
             suffix = "checked"
             color = self.app.theme_variables["text-warning"]
-        padding = LOG_MSG_WIDTH - (len(short_cmd) + len(suffix))
-        log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
+        padding = LOG_MSG_WIDTH - (len(result.short_cmd_no_path) + len(suffix))
+        log_text = (
+            f"[{color}]{result.short_cmd_no_path} {'.' * padding} {suffix}[/{color}]"
+        )
         self.app.call_from_thread(self.splash_log.write, log_text)
         if splash_cmd == ReadCmd.dump_config:
             try:
-                parsed_cfg = json.loads(cmd_result.std_out)
+                parsed_cfg = json.loads(result.std_out)
                 CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
                 CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
                 CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
