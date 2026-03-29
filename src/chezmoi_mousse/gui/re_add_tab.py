@@ -6,7 +6,7 @@ from textual.widgets import Switch
 from chezmoi_mousse import IDS, AppType, DirContentBtn
 
 from .common.actionables import OperateButtons, SwitchSlider
-from .common.managed_tree import ManagedTree, TreeSwitcher
+from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 __all__ = ["ReAddTab"]
@@ -16,7 +16,7 @@ class ReAddTab(Container, AppType):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield TreeSwitcher(IDS.re_add)
+            yield DestDirTree(IDS.re_add)
             yield Vertical(ViewSwitcher(IDS.re_add), OperateButtons(IDS.re_add))
         yield SwitchSlider(IDS.re_add)
 

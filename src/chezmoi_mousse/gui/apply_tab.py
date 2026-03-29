@@ -6,7 +6,7 @@ from textual.widgets import Switch
 from chezmoi_mousse import IDS, AppType, DirContentBtn
 
 from .common.actionables import OperateButtons, SwitchSlider
-from .common.managed_tree import ManagedTree, TreeSwitcher
+from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 __all__ = ["ApplyTab"]
@@ -16,7 +16,7 @@ class ApplyTab(Container, AppType):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield TreeSwitcher(IDS.apply)
+            yield DestDirTree(IDS.apply)
             yield Vertical(ViewSwitcher(IDS.apply), OperateButtons(IDS.apply))
         yield SwitchSlider(IDS.apply)
 

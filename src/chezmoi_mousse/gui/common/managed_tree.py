@@ -16,13 +16,10 @@ if TYPE_CHECKING:
 from .actionables import OpBtnEnum, OpButton
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
-__all__ = ["ManagedTree", "TreeSwitcher"]
+__all__ = ["ManagedTree", "DestDirTree"]
 
 
-class TreeSwitcher(Vertical, AppType):
-
-    unchanged: reactive[bool] = reactive(False)
-    expand_all: reactive[bool] = reactive(False)
+class DestDirTree(Vertical, AppType):
 
     def __init__(self, ids: "AppIds"):
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
@@ -39,8 +36,6 @@ class TreeSwitcher(Vertical, AppType):
         )
 
     def on_mount(self) -> None:
-        managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
-        managed_tree.add_class(Tcss.tree_widgets)
         refresh_btn = self.query_one(self.ids.op_btn.refresh_tree_q, OpButton)
         refresh_btn.remove_class(Tcss.operate_button)
         refresh_btn.add_class(Tcss.refresh_button)
@@ -55,7 +50,7 @@ class ManagedTree(Tree[Path], AppType):
     expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(label="", id=ids.managed_tree, classes=Tcss.tree_widget)
+        super().__init__(label="", id=ids.managed_tree, classes=Tcss.managed_tree)
         self.ids = ids
         self._current_nodes = self._get_current_nodes()
         self._first_time_populating = True

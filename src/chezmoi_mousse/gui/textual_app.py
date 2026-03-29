@@ -29,7 +29,7 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .common.managed_tree import TreeSwitcher
+from .common.managed_tree import DestDirTree
 from .common.op_feedback import OperateInfo
 from .common.screen_header import CustomHeader
 from .config_tab import ConfigTab
@@ -308,14 +308,14 @@ class ChezmoiGUI(App[None]):
 
         if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
-                IDS.apply.container.left_side_q, TreeSwitcher
+                IDS.apply.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
                 IDS.apply.container.operate_buttons_q
             )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
-                IDS.re_add.container.left_side_q, TreeSwitcher
+                IDS.re_add.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
                 IDS.re_add.container.operate_buttons_q

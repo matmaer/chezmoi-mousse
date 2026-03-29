@@ -61,16 +61,11 @@
   width: auto;
   max-width: 35%;
   min-width: 18;
-  &>.tree_widgets {
+  &>.managed_tree {
     height: 1fr;
     min-width: 18;
-    width: auto;
     max-width: 100%;
-    &>.tree_widget {
-      min-width: 18;
-      max-width: 100%;
-      width: auto;
-    }
+    width: auto;
   }
   &>.refresh_button {
     background-tint: $surface-lighten-1;

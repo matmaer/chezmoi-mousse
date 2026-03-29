@@ -72,6 +72,7 @@ class Tcss(StrEnum):
     last_clicked_tab_btn = auto()
     limited_label = auto()
     main_section_label = auto()
+    managed_tree = auto()
     operate_button = auto()
     operate_info = auto()
     pw_mgr_group = auto()
@@ -82,8 +83,6 @@ class Tcss(StrEnum):
     sub_section_label = auto()
     tab_button = auto()
     tab_left_vertical = auto()
-    tree_widget = auto()
-    tree_widgets = auto()
     unhandled = auto()
 
     # add a property to return the name with a dot prefix
