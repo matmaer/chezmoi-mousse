@@ -50,20 +50,10 @@ class PathSets:
             p.is_relative_to(dir_path) for p in self.status_dirs | self.status_files
         )
 
-    def x_files_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
-        if recursive:
-            return {path for path in self.x_files if path.is_relative_to(dir_path)}
-        return {path for path in self.x_files if path.parent == dir_path}
-
     def status_files_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
         if recursive:
             return {p for p in self.status_files if p.is_relative_to(dir_path)}
         return {p for p in self.status_files if p.parent == dir_path}
-
-    def x_dirs_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
-        if recursive:
-            return {path for path in self.x_dirs if path.is_relative_to(dir_path)}
-        return {path for path in self.x_dirs if path.parent == dir_path}
 
     def n_dirs_in(self, dir_path: Path, recursive: bool = False) -> set[Path]:
         if recursive:

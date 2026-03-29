@@ -25,7 +25,6 @@ from ._str_enums import (
     LogString,
     OperateString,
     SectionLabel,
-    StatusCode,
     TabLabel,
 )
 from ._test_paths import TestPaths
@@ -63,7 +62,6 @@ __all__ = [
     "ReadVerb",
     "ScreenName",
     "SectionLabel",
-    "StatusCode",
     "SwitchEnum",
     "TabLabel",
     "Tcss",
