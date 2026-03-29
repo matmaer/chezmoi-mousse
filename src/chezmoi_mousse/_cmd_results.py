@@ -39,6 +39,7 @@ class PathSets:
     x_files: set[Path] = field(default_factory=lambda: set())
     x_dirs: set[Path] = field(default_factory=lambda: set())
     n_dirs: set[Path] = field(default_factory=lambda: set())
+    tree_x_dirs: set[Path] = field(default_factory=lambda: set())
 
     @property
     def no_managed_paths(self) -> bool:
@@ -289,6 +290,9 @@ class CachedData:
                 for status_path in self.sets.status_paths
                 if dir_path not in self.sets.status_dirs
             )
+        }
+        self.sets.tree_x_dirs = {
+            d for d in self.sets.x_dirs if d not in self.sets.n_dirs
         }
 
 
