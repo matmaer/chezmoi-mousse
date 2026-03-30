@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 
 from textual import on
 from textual.app import ComposeResult
@@ -20,6 +21,16 @@ from .common.actionables import FlatButtonsVertical, OperateButtons
 from .common.loggers import DebugLog
 
 __all__ = ["DebugTab"]
+
+
+class TestPathColors(StrEnum):
+    managed_dir = "[$text-accent bold]"
+    status_dir = "[$text-warning bold]"
+    unmanaged_dir = "[$text-primary bold]"
+    managed_file = "[$text-accent]"
+    status_file = "[$text-warning]"
+    unmanaged_file = "[$text-primary]"
+    unhandled = "[$text-error bold]"
 
 
 class TestPathsView(Vertical):
@@ -79,9 +90,9 @@ class DebugTab(Horizontal, AppType):
         self.test_paths_static = self.query_one(
             IDS.debug.static.debug_test_paths_q, Static
         )
+        self.test_paths_static.update(self._list_existing_test_paths())
         self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
         self.memory_logger = self.query_one(IDS.debug.logger.memory_q, RichLog)
-        self.test_paths_static.update(self._list_existing_test_paths())
         self.mem_log_op_btn = self.query_one(IDS.debug.op_btn.log_memory_q, Button)
         self.list_test_paths_op_btn = self.query_one(
             IDS.debug.op_btn.list_test_paths_q, Button
@@ -112,16 +123,36 @@ class DebugTab(Horizontal, AppType):
         colored_paths: list[str] = []
         for path in self.test_paths.get_existing_test_paths():
             if path in CMD.cache.sets.managed_dirs:
-                colored_paths.append(f"[$text-accent bold]{path}[/]")
+                if path not in CMD.cache.sets.status_dirs:
+                    colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
+                elif path in CMD.cache.sets.managed_dirs:
+                    colored_paths.append(f"{TestPathColors.managed_dir}{path}[/]")
             elif path in CMD.cache.sets.managed_files:
-                colored_paths.append(f"[$text-accent]{path}[/]")
+                if path not in CMD.cache.sets.status_files:
+                    colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
+                elif path in CMD.cache.sets.managed_files:
+                    colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
             else:
-                colored_paths.append(f"[$text-disabled]{path}[/]")
+                if path.is_dir():
+                    colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
+                elif path.is_file():
+                    colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
 
         if colored_paths:
-            return "[$text-primary bold]Existing test paths:[/]\n" + "\n".join(
-                colored_paths
+            colored_paths.extend(
+                [
+                    "\n[bold]Color legend:[/]",
+                    f"{TestPathColors.managed_dir}Managed dir[/]",
+                    f"{TestPathColors.status_dir}Status dir[/]",
+                    f"{TestPathColors.unmanaged_dir}Unmanaged dir[/]",
+                    f"{TestPathColors.managed_file}Managed file[/]",
+                    f"{TestPathColors.status_file}Status file[/]",
+                    f"{TestPathColors.unmanaged_file}Unmanaged file[/]",
+                    f"{TestPathColors.unhandled}Unhandled condition[/]",
+                    "\n",
+                ]
             )
+            return "\n".join(colored_paths)
         else:
             return "[$text-warning bold]No test paths exist.[/]"
 
