@@ -143,6 +143,8 @@ class ManagedTree(Tree[Path], AppType):
         child_file_nodes = {
             n for n in parent.children if n.data in CMD.cache.sets.managed_files
         }
+        if file_path in {n.data for n in child_file_nodes}:
+            return
         node_label = self._create_colored_label(file_path)
         before_node = next(
             (node for node in child_file_nodes if node_label > str(node.data)), None
