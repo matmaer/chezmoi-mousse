@@ -1,3 +1,4 @@
+from collections import deque
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -57,24 +58,14 @@ class ManagedTree(Tree[Path], AppType):
         self._first_time_populating = True
         self._expanded_backup: set[TreeNode[Path]] = set()
 
-    def _get_nodes(
-        self, expanded: bool = False, x_nodes: bool = False
-    ) -> set[TreeNode[Path]]:
-        # BFS approach: collect visited nodes in `visited` while using `queue`
-        queue = [self.root]
+    def _get_nodes(self) -> set[TreeNode[Path]]:
+        # BFS approach using deque for O(1) pops from the left.
+        queue = deque([self.root])
         visited: list[TreeNode[Path]] = []
         while queue:
-            node = queue.pop(0)
+            node = queue.popleft()
             visited.append(node)
             queue.extend(node.children)
-        if expanded:
-            return {node for node in visited if node.is_expanded}
-        elif x_nodes:
-            return {
-                node
-                for node in visited
-                if node.data in CMD.cache.sets.tree_x_dirs | CMD.cache.sets.x_files
-            }
         return set(visited)
 
     def _create_colored_label(self, path: Path) -> str:
