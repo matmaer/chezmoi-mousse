@@ -1,4 +1,5 @@
 from collections import deque
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,6 +19,25 @@ from .actionables import OpBtnEnum, OpButton
 from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
+
+
+@dataclass
+class TreeNodesBackup:
+    all_nodes: set[TreeNode[Path]]
+
+    @property
+    def expanded(self) -> set[TreeNode[Path]]:
+        return {node for node in self.all_nodes if node.is_expanded}
+
+    @property
+    def tree_x_nodes(self) -> set[TreeNode[Path]]:
+        return {
+            node for node in self.all_nodes if node.data in CMD.cache.sets.tree_x_dirs
+        }
+
+    @property
+    def x_file_nodes(self) -> set[TreeNode[Path]]:
+        return {node for node in self.all_nodes if node.data in CMD.cache.sets.x_files}
 
 
 class DestDirTree(Vertical, AppType):
@@ -51,8 +71,9 @@ class ManagedTree(Tree[Path], AppType):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(label="", id=ids.managed_tree, classes=Tcss.managed_tree)
-        self.guide_depth: int = 3
         self.ids = ids
+        self.guide_depth: int = 3
+        self._nodes_backup = TreeNodesBackup(all_nodes=set())
 
     def on_mount(self) -> None:
         self._first_time_populating = True
