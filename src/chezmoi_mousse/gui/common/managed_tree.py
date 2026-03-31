@@ -121,6 +121,7 @@ class ManagedTree(Tree[Path], AppType):
                     and node.data in CMD.cache.sets.managed_dirs
                 ):
                     node.collapse()
+            self.select_node(self.root)
             self._first_time_populating = False
         self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
