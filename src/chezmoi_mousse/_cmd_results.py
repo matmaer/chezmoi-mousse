@@ -29,17 +29,33 @@ class DirContentBtn(Button):
 
 @dataclass(slots=True)
 class PathSets:
-    managed_paths: set[Path] = field(default_factory=lambda: set())
-    status_paths: set[Path] = field(default_factory=lambda: set())
     managed_dirs: set[Path] = field(default_factory=lambda: set())
-    managed_dirs_plus_dest_dir: set[Path] = field(default_factory=lambda: set())
     managed_files: set[Path] = field(default_factory=lambda: set())
     status_dirs: set[Path] = field(default_factory=lambda: set())
     status_files: set[Path] = field(default_factory=lambda: set())
-    x_files: set[Path] = field(default_factory=lambda: set())
-    x_dirs: set[Path] = field(default_factory=lambda: set())
+    # derived sets
+    managed_paths: set[Path] = field(default_factory=lambda: set())
     n_dirs: set[Path] = field(default_factory=lambda: set())
+    status_paths: set[Path] = field(default_factory=lambda: set())
     tree_x_dirs: set[Path] = field(default_factory=lambda: set())
+    x_dirs: set[Path] = field(default_factory=lambda: set())
+    x_files: set[Path] = field(default_factory=lambda: set())
+
+    def __post_init__(self) -> None:
+        self.managed_paths = self.managed_dirs | self.managed_files
+        self.status_paths = self.status_dirs | self.status_files
+        self.x_dirs = {d for d in self.managed_dirs if d not in self.status_dirs}
+        self.x_files = {f for f in self.managed_files if f not in self.status_files}
+        self.n_dirs = {
+            d
+            for d in self.x_dirs
+            if any(
+                sp.is_relative_to(d)
+                for sp in self.status_paths
+                if d not in self.status_dirs
+            )
+        }
+        self.tree_x_dirs = {d for d in self.x_dirs if d not in self.n_dirs}
 
     @property
     def no_managed_paths(self) -> bool:
@@ -102,7 +118,12 @@ class CachedData:
         self.git_auto_push: bool = False
 
         # cached for frequent lookups
-        self.sets: PathSets = PathSets()
+        self.sets: PathSets = PathSets(
+            managed_dirs=set(),
+            managed_files=set(),
+            status_dirs=set(),
+            status_files=set(),
+        )
 
     @property
     def no_status_paths(self) -> bool:
@@ -243,45 +264,23 @@ class CachedData:
                     )
         return widgets
 
-    def _parse_paths_from_result(self, result: CommandResult | None) -> set[Path]:
-        if result is None:
-            return set()
-        return {Path(line) for line in result.std_out.splitlines()}
-
     def update_path_sets(self) -> None:
+        def parse_managed_paths(result: CommandResult | None) -> set[Path]:
+            if result is None:
+                return set()
+            return {Path(line) for line in result.std_out.splitlines()}
 
-        self.sets.managed_dirs = self._parse_paths_from_result(
-            self.cmd_results.managed_dirs
+        def parse_status_paths(result: CommandResult | None) -> set[Path]:
+            if result is None:
+                return set()
+            return {Path(line[3:]) for line in result.std_out.splitlines()}
+
+        self.sets = PathSets(
+            managed_dirs=parse_managed_paths(self.cmd_results.managed_dirs),
+            managed_files=parse_managed_paths(self.cmd_results.managed_files),
+            status_dirs=parse_status_paths(self.cmd_results.status_dirs),
+            status_files=parse_status_paths(self.cmd_results.status_files),
         )
-        self.sets.managed_files = self._parse_paths_from_result(
-            self.cmd_results.managed_files
-        )
-        self.sets.managed_dirs_plus_dest_dir = {self.dest_dir} | self.sets.managed_dirs
-        parsed_status_dirs = set(self._dir_status_pairs.keys())
-        parsed_status_files = set(self._file_status_pairs.keys())
-        self.sets.status_dirs = self.sets.managed_dirs & parsed_status_dirs
-        self.sets.status_files = self.sets.managed_files & parsed_status_files
-        # derived assignments
-        self.sets.managed_paths = self.sets.managed_dirs | self.sets.managed_files
-        self.sets.status_paths = self.sets.status_dirs | self.sets.status_files
-        self.sets.x_dirs = {
-            d for d in self.sets.managed_dirs if d not in self.sets.status_dirs
-        }
-        self.sets.x_files = {
-            f for f in self.sets.managed_files if f not in self.sets.status_files
-        }
-        self.sets.n_dirs = {
-            dir_path
-            for dir_path in self.sets.x_dirs
-            if any(
-                status_path.is_relative_to(dir_path)
-                for status_path in self.sets.status_paths
-                if dir_path not in self.sets.status_dirs
-            )
-        }
-        self.sets.tree_x_dirs = {
-            d for d in self.sets.x_dirs if d not in self.sets.n_dirs
-        }
 
 
 @dataclass(slots=True)

@@ -51,7 +51,7 @@ class FilteredDirTree(DirectoryTree, AppType):
         def is_unwanted_dir(dir_path: Path) -> bool:
             if (
                 self.only_show_managed_dirs
-                and dir_path not in CMD.cache.sets.managed_dirs_plus_dest_dir
+                and dir_path not in {CMD.cache.dest_dir} | CMD.cache.sets.managed_dirs
             ):
                 return True
             if not self.show_unwanted and UnwantedDirs.is_unwanted(dir_path.name):
