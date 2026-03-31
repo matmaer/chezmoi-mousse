@@ -101,13 +101,16 @@ class ManagedTree(Tree[Path], AppType):
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{path.name}[/]"
 
-    def populate_tree(self) -> None:
-        self.clear()
+    def _config_root_node(self) -> None:
         self.root.data = CMD.cache.dest_dir
         color = self.app.theme_variables["text-primary"]
         self.root.label = f"[{color} bold]{CMD.cache.dest_dir.name}[/]"
         self.root.expand()
         self.root.allow_expand = False  # to prevent the root node from being collapsed
+
+    def populate_tree(self) -> None:
+        self.clear()
+        self._config_root_node()
         self._populate_root_node_recursive(self.root)
         if self._first_time_populating:
             # expand all switch is false by default
@@ -119,8 +122,7 @@ class ManagedTree(Tree[Path], AppType):
                 ):
                     node.collapse()
             self._first_time_populating = False
-        self._expanded_backup = self._get_nodes(expanded=True)
-        self.select_node(self.root)
+        self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
     def select_node_by_path(self, path: Path) -> None:
         current_nodes = self._get_nodes()
@@ -186,16 +188,10 @@ class ManagedTree(Tree[Path], AppType):
     #################################
 
     @on(Tree.NodeCollapsed)
-    def remove_from_expanded_backup(self, event: Tree.NodeCollapsed[Path]) -> None:
-        if not self.expand_all:
-            self._expanded_backup.discard(event.node)
-        if self.unchanged:
-            self.watch_unchanged(self.unchanged)
-
     @on(Tree.NodeExpanded)
-    def update_after_expand(self, event: Tree.NodeExpanded[Path]) -> None:
+    def update_nodes_backup(self) -> None:
         if not self.expand_all:
-            self._expanded_backup.add(event.node)
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
         if self.unchanged:
             self.watch_unchanged(self.unchanged)
 
@@ -210,18 +206,17 @@ class ManagedTree(Tree[Path], AppType):
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:
-            self._expanded_backup = self._get_nodes(expanded=True)
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
             self.root.expand_all()
         elif expand_all is False:
-            current_nodes = self._get_nodes()
-            for node in current_nodes:
-                if node not in self._expanded_backup:
+            for node in self._get_nodes():
+                if node not in self._nodes_backup.expanded:
                     node.collapse()
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
     def watch_unchanged(self, unchanged: bool) -> None:
-
         current_nodes = self._get_nodes()
-
+        self._nodes_backup = TreeNodesBackup(all_nodes=current_nodes)
         if unchanged is True:
             for path in CMD.cache.sets.tree_x_dirs:
                 parent_node = next(
@@ -236,5 +231,10 @@ class ManagedTree(Tree[Path], AppType):
                 if parent_node is not None:
                     self._insert_file(parent_node, path)
         elif unchanged is False:
-            for node in self._get_nodes(x_nodes=True):
+            current_x_nodes = {
+                n
+                for n in self._get_nodes()
+                if n.data in CMD.cache.sets.tree_x_dirs | CMD.cache.sets.x_files
+            }
+            for node in current_x_nodes:
                 node.remove()
