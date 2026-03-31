@@ -76,8 +76,8 @@ class ManagedTree(Tree[Path], AppType):
         self._nodes_backup = TreeNodesBackup(all_nodes=set())
 
     def on_mount(self) -> None:
+        self._config_root_node()
         self._first_time_populating = True
-        self._expanded_backup: set[TreeNode[Path]] = set()
 
     def _get_nodes(self) -> set[TreeNode[Path]]:
         # BFS approach using deque for O(1) pops from the left.
