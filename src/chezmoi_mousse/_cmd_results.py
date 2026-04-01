@@ -69,6 +69,9 @@ class PathSets:
     def status_files_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.status_files if p.parent == dir_path}
 
+    def managed_dirs_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.managed_dirs if p.parent == dir_path}
+
     def n_dirs_in(self, dir_path: Path) -> set[Path]:
         return {
             p for p in self.n_dirs if p.parent == dir_path and p not in self.status_dirs
@@ -76,6 +79,9 @@ class PathSets:
 
     def status_dirs_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.status_dirs if p.parent == dir_path}
+
+    def tree_x_dirs_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.tree_x_dirs if p.parent == dir_path}
 
 
 @dataclass(slots=True)
