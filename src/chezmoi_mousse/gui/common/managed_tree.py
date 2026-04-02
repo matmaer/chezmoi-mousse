@@ -1,5 +1,5 @@
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -24,20 +24,10 @@ __all__ = ["ManagedTree", "DestDirTree"]
 @dataclass
 class TreeNodesBackup:
     all_nodes: set[TreeNode[Path]]
+    expanded: set[TreeNode[Path]] = field(init=False)
 
-    @property
-    def expanded(self) -> set[TreeNode[Path]]:
-        return {node for node in self.all_nodes if node.is_expanded}
-
-    @property
-    def tree_x_nodes(self) -> set[TreeNode[Path]]:
-        return {
-            node for node in self.all_nodes if node.data in CMD.cache.sets.tree_x_dirs
-        }
-
-    @property
-    def x_file_nodes(self) -> set[TreeNode[Path]]:
-        return {node for node in self.all_nodes if node.data in CMD.cache.sets.x_files}
+    def __post_init__(self) -> None:
+        self.expanded = {node for node in self.all_nodes if node.is_expanded}
 
 
 class DestDirTree(Vertical, AppType):
@@ -79,15 +69,44 @@ class ManagedTree(Tree[Path], AppType):
         self._config_root_node()
         self._first_time_populating = True
 
+    def _config_root_node(self) -> None:
+        self.root.data = CMD.cache.dest_dir
+        color = self.app.theme_variables["text-primary"]
+        self.root.label = f"[{color} bold]{CMD.cache.dest_dir.name}[/]"
+        self.root.expand()
+        self.root.allow_expand = False  # to prevent the root node from being collapsed
+        self.select_node(self.root)
+
+    def _get_common_roots(self, dir_paths: set[Path]) -> set[Path]:
+        root = CMD.cache.dest_dir
+        grouped: dict[Path, Path] = {}
+
+        for path in dir_paths:
+            if path == root:
+                continue
+
+            top_level_ancestor = root / path.relative_to(root).parts[0]
+            grouped[top_level_ancestor] = (
+                top_level_ancestor if top_level_ancestor in grouped else path
+            )
+
+        return set(grouped.values())
+
     def _get_nodes(self) -> set[TreeNode[Path]]:
         # BFS approach using deque for O(1) pops from the left.
-        queue = deque([self.root])
+        queue = deque(self.root.children)  # Start with the root's children
         visited: list[TreeNode[Path]] = []
         while queue:
             node = queue.popleft()
             visited.append(node)
             queue.extend(node.children)
         return set(visited)
+
+    def _get_node_by_path(self, path: Path) -> TreeNode[Path] | None:
+        if path == CMD.cache.dest_dir:
+            return self.root
+        current_nodes = self._get_nodes()
+        return next((n for n in current_nodes if n.data == path), None)
 
     def _create_colored_label(self, path: Path) -> str:
         status = CMD.cache.get_path_status(path, self.ids)
@@ -101,88 +120,103 @@ class ManagedTree(Tree[Path], AppType):
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{path.name}[/]"
 
-    def _config_root_node(self) -> None:
-        self.root.data = CMD.cache.dest_dir
-        color = self.app.theme_variables["text-primary"]
-        self.root.label = f"[{color} bold]{CMD.cache.dest_dir.name}[/]"
-        self.root.expand()
-        self.root.allow_expand = False  # to prevent the root node from being collapsed
-
     def populate_tree(self) -> None:
         self.clear()
         self._config_root_node()
         self._populate_root_node_recursive(self.root)
         if self._first_time_populating:
             # expand all switch is false by default
-            current_nodes = self._get_nodes()
-            for node in current_nodes:
-                if (
-                    node.data != CMD.cache.dest_dir
-                    and node.data in CMD.cache.sets.managed_dirs
-                ):
-                    node.collapse()
-            self.select_node(self.root)
+            self.root.collapse_all()
+            self.root.expand()
             self._first_time_populating = False
         self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
-    def select_node_by_path(self, path: Path) -> None:
-        current_nodes = self._get_nodes()
-        current_dir_nodes = {
-            n for n in current_nodes if n.data in CMD.cache.sets.managed_dirs
-        }
-        for parent in reversed(path.parents):
-            for node in current_dir_nodes:
-                if node.data == parent and node.is_expanded is False:
-                    node.expand()
-                    break
-        for node in current_nodes:
-            if node.data == path:
-                self.select_node(node)
-                break
+    def show_requested_node(self, path: Path) -> None:
+        # Add potentially missing parent nodes or expand existing collapsed parent nodes
+        for parent_path in path.parents:
+            if (
+                parent_path in CMD.cache.dest_dir.parents
+                or parent_path == CMD.cache.dest_dir
+            ):
+                continue
+            existing_parent = self._get_node_by_path(parent_path)
+            if existing_parent is not None and existing_parent.is_collapsed is True:
+                existing_parent.expand()
+                continue
+            new_node = self._insert_node(parent_path)
+            if new_node is not None:
+                new_node.expand()
 
-    def _insert_dir(
-        self, parent: TreeNode[Path], dir_path: Path
-    ) -> TreeNode[Path] | None:
-        child_dir_nodes: list[TreeNode[Path]] = [
-            n for n in parent.children if n.data in CMD.cache.sets.managed_dirs
-        ]
-        if dir_path in {n.data for n in child_dir_nodes}:
+        existing_node = self._get_node_by_path(path)
+        if existing_node is not None:
+            self.select_node(existing_node)
+        else:
+            new_node = self._insert_node(path)
+            self.select_node(new_node)
+
+    def _insert_node(self, path: Path) -> TreeNode[Path] | None:
+        if path in CMD.cache.dest_dir.parents or path == CMD.cache.dest_dir:
             return None
-        node_label = self._create_colored_label(dir_path)
-        before_node = next(
-            (node for node in child_dir_nodes if node_label > str(node.data)), None
-        )
-        return parent.add(node_label, data=dir_path, before=before_node)
-
-    def _insert_file(self, parent: TreeNode[Path], file_path: Path) -> None:
-        child_file_nodes = {
-            n for n in parent.children if n.data in CMD.cache.sets.managed_files
-        }
-        if file_path in {n.data for n in child_file_nodes}:
-            return
-        node_label = self._create_colored_label(file_path)
-        before_node = next(
-            (node for node in child_file_nodes if node_label > str(node.data)), None
-        )
-        parent.add_leaf(node_label, data=file_path, before=before_node)
+        if self._get_node_by_path(path) is not None:
+            return None
+        parent_node = self._get_node_by_path(path.parent)
+        if parent_node is None:
+            raise ValueError(f"Parent node for {path} not found.")
+        node_label = self._create_colored_label(path)
+        if path in CMD.cache.sets.managed_dirs:
+            before_node = next(
+                (
+                    n
+                    for n in parent_node.children
+                    if n.allow_expand
+                    and n.data is not None
+                    and n.data.name.lower() > path.name.lower()
+                ),
+                None,
+            )
+            if before_node is None:
+                before_node = next(
+                    (n for n in parent_node.children if not n.allow_expand), None
+                )
+            return parent_node.add(node_label, data=path, before=before_node)
+        elif path in CMD.cache.sets.managed_files:
+            before_node = next(
+                (
+                    n
+                    for n in parent_node.children
+                    if not n.allow_expand
+                    and n.data is not None
+                    and n.data.name.lower() > path.name.lower()
+                ),
+                None,
+            )
+            return parent_node.add_leaf(node_label, data=path, before=before_node)
+        else:
+            return None
 
     def _populate_root_node_recursive(self, tree_node: TreeNode[Path]) -> None:
         if tree_node.data is None:
             raise ValueError("tree_node.data is None in _populate_node")
         n_dirs_in = CMD.cache.sets.n_dirs_in(tree_node.data)
         status_dirs_in = CMD.cache.sets.status_dirs_in(tree_node.data)
+        tree_x_dirs_in = CMD.cache.sets.tree_x_dirs_in(tree_node.data)
+        files_to_insert = CMD.cache.sets.status_files_in(tree_node.data)
+        x_files_in = CMD.cache.sets.x_files_in(tree_node.data)
 
-        for dir in sorted(n_dirs_in | status_dirs_in):
-            child_node = self._insert_dir(tree_node, dir)
+        dir_to_insert = n_dirs_in | status_dirs_in
+
+        if self.unchanged:
+            dir_to_insert |= tree_x_dirs_in
+            files_to_insert = files_to_insert | x_files_in
+
+        for dir in dir_to_insert:
+            child_node = self._insert_node(dir)
             if child_node is None:
                 continue
             self._populate_root_node_recursive(child_node)
 
-        # TODO: Double check if Python runs this code on all previous recursed function
-        # calls, which seems to be the case and what we want.
-        file_paths_in = sorted(CMD.cache.sets.status_files_in(tree_node.data))
-        for file_path in reversed(file_paths_in):
-            self._insert_file(tree_node, file_path)
+        for file_path in files_to_insert:
+            self._insert_node(file_path)
 
     #################################
     # Watchers and message handling #
@@ -193,8 +227,6 @@ class ManagedTree(Tree[Path], AppType):
     def update_nodes_backup(self) -> None:
         if not self.expand_all:
             self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
-        if self.unchanged:
-            self.watch_unchanged(self.unchanged)
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
@@ -210,32 +242,26 @@ class ManagedTree(Tree[Path], AppType):
             self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
             self.root.expand_all()
         elif expand_all is False:
-            for node in self._get_nodes():
+            current_nodes = self._get_nodes()
+            for node in current_nodes:
+                if node.data in CMD.cache.sets.managed_files:
+                    continue
                 if node not in self._nodes_backup.expanded:
                     node.collapse()
             self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
     def watch_unchanged(self, unchanged: bool) -> None:
-        current_nodes = self._get_nodes()
-        self._nodes_backup = TreeNodesBackup(all_nodes=current_nodes)
         if unchanged is True:
-            for path in CMD.cache.sets.tree_x_dirs:
-                parent_node = next(
-                    (n for n in current_nodes if n.data == path.parent), None
-                )
-                if parent_node is not None:
-                    self._insert_dir(parent_node, path)
-            for path in CMD.cache.sets.x_files:
-                parent_node = next(
-                    (n for n in current_nodes if n.data == path.parent), None
-                )
-                if parent_node is not None:
-                    self._insert_file(parent_node, path)
+            self._populate_root_node_recursive(self.root)
         elif unchanged is False:
-            current_x_nodes = {
-                n
-                for n in self._get_nodes()
-                if n.data in CMD.cache.sets.tree_x_dirs | CMD.cache.sets.x_files
-            }
-            for node in current_x_nodes:
-                node.remove()
+            x_dir_roots = self._get_common_roots(CMD.cache.sets.tree_x_dirs)
+            for dir_path in x_dir_roots:
+                node = self._get_node_by_path(dir_path)
+                if node is not None:
+                    node.remove()
+            for file_path in CMD.cache.sets.x_files:
+                node = self._get_node_by_path(file_path)
+                if node is not None:
+                    node.remove()
+        if self.expand_all:
+            self.root.expand_all()

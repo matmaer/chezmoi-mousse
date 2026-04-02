@@ -35,4 +35,4 @@ class ReAddTab(Container, AppType):
     def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
         if isinstance(event.button, DirContentBtn):
             event.stop()
-            self.managed_tree.select_node_by_path(event.button.path)
+            self.managed_tree.show_requested_node(event.button.path)

@@ -69,6 +69,9 @@ class PathSets:
     def status_files_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.status_files if p.parent == dir_path}
 
+    def x_files_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.x_files if p.parent == dir_path}
+
     def managed_dirs_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.managed_dirs if p.parent == dir_path}
 
