@@ -77,21 +77,6 @@ class ManagedTree(Tree[Path], AppType):
         self.root.allow_expand = False  # to prevent the root node from being collapsed
         self.select_node(self.root)
 
-    def _get_common_roots(self, dir_paths: set[Path]) -> set[Path]:
-        root = CMD.cache.dest_dir
-        grouped: dict[Path, Path] = {}
-
-        for path in dir_paths:
-            if path == root:
-                continue
-
-            top_level_ancestor = root / path.relative_to(root).parts[0]
-            grouped[top_level_ancestor] = (
-                top_level_ancestor if top_level_ancestor in grouped else path
-            )
-
-        return set(grouped.values())
-
     def _get_nodes(self) -> set[TreeNode[Path]]:
         # BFS approach using deque for O(1) pops from the left.
         queue = deque(self.root.children)  # Start with the root's children
@@ -254,8 +239,7 @@ class ManagedTree(Tree[Path], AppType):
         if unchanged is True:
             self._populate_root_node_recursive(self.root)
         elif unchanged is False:
-            x_dir_roots = self._get_common_roots(CMD.cache.sets.tree_x_dirs)
-            for dir_path in x_dir_roots:
+            for dir_path in CMD.cache.sets.tree_x_dir_roots:
                 node = self._get_node_by_path(dir_path)
                 if node is not None:
                     node.remove()
