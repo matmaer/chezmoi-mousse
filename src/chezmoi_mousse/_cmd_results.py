@@ -29,6 +29,7 @@ class DirContentBtn(Button):
 
 @dataclass(slots=True)
 class PathSets:
+    dest_dir: Path | None = None
     managed_dirs: set[Path] = field(default_factory=lambda: set())
     managed_files: set[Path] = field(default_factory=lambda: set())
     status_dirs: set[Path] = field(default_factory=lambda: set())
@@ -60,7 +61,9 @@ class PathSets:
         self.tree_x_dir_roots = self._get_common_x_dir_roots()
 
     def _get_common_x_dir_roots(self) -> set[Path]:
-        root = CMD.cache.dest_dir
+        if self.dest_dir is None:
+            return set()
+        root = self.dest_dir
         grouped: dict[Path, Path] = {}
 
         for path in self.tree_x_dirs:
@@ -88,9 +91,6 @@ class PathSets:
 
     def x_files_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.x_files if p.parent == dir_path}
-
-    def managed_dirs_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.managed_dirs if p.parent == dir_path}
 
     def n_dirs_in(self, dir_path: Path) -> set[Path]:
         return {
@@ -135,6 +135,7 @@ class CachedData:
 
         # cached for frequent lookups
         self.sets: PathSets = PathSets(
+            dest_dir=self.dest_dir,  # self.dest_dir is updated in the splash screen
             managed_dirs=set(),
             managed_files=set(),
             status_dirs=set(),
@@ -148,68 +149,52 @@ class CachedData:
             and self.cmd_results.verify.exit_code == 0
         )
 
-    @property
-    def _dir_status_pairs(self) -> dict[Path, str]:
-        if self.cmd_results.status_dirs is None:
-            return {}
-        return {
-            Path(line[3:]): line[:2]
-            for line in self.cmd_results.status_dirs.std_out.splitlines()
-        }
-
-    @property
-    def _file_status_pairs(self) -> dict[Path, str]:
-        if self.cmd_results.status_files is None:
-            return {}
-        return {
-            Path(line[3:]): line[:2]
-            for line in self.cmd_results.status_files.std_out.splitlines()
-        }
-
     def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
         if self.cmd_results.status_dirs is None:
             return {}
+        ds_pairs = {
+            Path(line[3:]): line[:2]
+            for line in self.cmd_results.status_dirs.std_out.splitlines()
+        }
         ds_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # dir status index
         return {
             k: StatusCode(v[ds_idx])
-            for k, v in self._dir_status_pairs.items()
+            for k, v in ds_pairs.items()
             if v[ds_idx] != StatusCode.Space
         }
 
     def _get_status_files(self, app_ids: AppIds) -> dict[Path, StatusCode]:
         if self.cmd_results.status_files is None:
             return {}
+        fs_pairs = {
+            Path(line[3:]): line[:2]
+            for line in self.cmd_results.status_files.std_out.splitlines()
+        }
         fs_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # file status index
         return {
             k: StatusCode(v[fs_idx])
-            for k, v in self._file_status_pairs.items()
+            for k, v in fs_pairs.items()
             if v[fs_idx] != StatusCode.Space
         }
 
-    def _get_status_files_in(
-        self, dir_path: Path, app_ids: AppIds, recursive: bool
+    def _get_status_files_descendants(
+        self, dir_path: Path, app_ids: AppIds
     ) -> dict[Path, StatusCode]:
-        # Use the parsed status file dict to ensure key formats match
         status_files = self._get_status_files(app_ids)
         results: dict[Path, StatusCode] = {}
         for path, status in status_files.items():
-            if recursive:
-                if path.is_relative_to(dir_path):
-                    results[path] = status
-            elif path.parent == dir_path:
+            if path.is_relative_to(dir_path):
                 results[path] = status
+
         return results
 
-    def _get_status_dirs_in(
-        self, dir_path: Path, app_ids: AppIds, recursive: bool
+    def _get_status_dir_descendants(
+        self, dir_path: Path, app_ids: AppIds
     ) -> dict[Path, StatusCode]:
         status_dirs = self._get_status_dirs(app_ids)
         results: dict[Path, StatusCode] = {}
         for path, status in status_dirs.items():
-            if recursive:
-                if path.is_relative_to(dir_path):
-                    results[path] = status
-            elif path.parent == dir_path:
+            if path.is_relative_to(dir_path):
                 results[path] = status
         return results
 
@@ -251,9 +236,7 @@ class CachedData:
             return widgets
 
         if self.sets.contains_status_paths(dir_path):
-            status_dirs_in = self._get_status_dirs_in(
-                dir_path, app_ids, recursive=True
-            ).items()
+            status_dirs_in = self._get_status_dir_descendants(dir_path, app_ids).items()
             if status_dirs_in:
                 widgets.append(
                     Label(
@@ -265,9 +248,7 @@ class CachedData:
                     widgets.append(
                         DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
                     )
-            status_files_in = self._get_status_files_in(
-                dir_path, app_ids, recursive=True
-            )
+            status_files_in = self._get_status_files_descendants(dir_path, app_ids)
             if status_files_in:
                 widgets.append(
                     Label(
@@ -292,6 +273,7 @@ class CachedData:
             return {Path(line[3:]) for line in result.std_out.splitlines()}
 
         self.sets = PathSets(
+            dest_dir=self.dest_dir,
             managed_dirs=parse_managed_paths(self.cmd_results.managed_dirs),
             managed_files=parse_managed_paths(self.cmd_results.managed_files),
             status_dirs=parse_status_paths(self.cmd_results.status_dirs),
