@@ -27,13 +27,13 @@ class FileNames(StrEnum):
     DEBUG_SCREEN = "debug_screen.svg"
 
 
-def take_startup_screenshot(app: ChezmoiGUI) -> None:
+def startup_screenshot(app: ChezmoiGUI) -> None:
     time.sleep(5)
     app.action_screenshot(filename=FileNames.STARTUP, path=SCREENSHOT_DIR)
     app.exit()
 
 
-def take_debug_screenshot(app: ChezmoiGUI) -> None:
+def debug_screenshot(app: ChezmoiGUI) -> None:
     def activate_debug_tab() -> None:
         app.screen.query_exactly_one(TabbedContent).active = TabLabel.debug
 
@@ -49,23 +49,15 @@ def run_app(*, dev_mode: bool) -> None:
         chezmoi_bin=CHEZMOI_BIN, dev_mode=dev_mode, git_found=True, repo_found=True
     )
     if dev_mode is True:
-        trigger_thread = threading.Thread(
-            target=take_debug_screenshot, args=(app,), daemon=True
-        )
+        thread = threading.Thread(target=debug_screenshot, args=(app,), daemon=True)
     else:
-        trigger_thread = threading.Thread(
-            target=take_startup_screenshot, args=(app,), daemon=True
-        )
-    trigger_thread.start()
+        thread = threading.Thread(target=startup_screenshot, args=(app,), daemon=True)
+    thread.start()
     app.run()
 
 
-def main() -> None:
+if __name__ == "__main__":
     os.chdir(SRC_DIR)
 
     run_app(dev_mode=False)
     run_app(dev_mode=True)
-
-
-if __name__ == "__main__":
-    main()
