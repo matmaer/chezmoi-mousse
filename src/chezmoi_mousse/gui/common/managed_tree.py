@@ -114,7 +114,12 @@ class ManagedTree(Tree[Path], AppType):
             self.root.collapse_all()
             self.root.expand()
             self._first_time_populating = False
-        self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            return
+        if self.expand_all is True:
+            self.root.expand_all()
+        else:
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
     def show_requested_node(self, path: Path) -> None:
         # Add potentially missing parent nodes or expand existing collapsed parent nodes
