@@ -203,7 +203,10 @@ class CommandResult:
     @property
     def exit_code_colored_cmd(self) -> str:
         cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
-        return f"{cmd_color} {self.short_global_cmd} {self.short_verb_cmd}[/]"
+        cmd_text = f"{self.short_global_cmd} {self.short_verb_cmd}"
+        if self.path_arg is not None:
+            cmd_text += f" {self.path_arg}"
+        return f"{cmd_color} {cmd_text}[/]"
 
     @property
     def _is_dry_run(self) -> bool:
