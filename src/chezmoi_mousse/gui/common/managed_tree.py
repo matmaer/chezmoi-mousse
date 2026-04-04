@@ -229,8 +229,6 @@ class ManagedTree(Tree[Path], AppType):
         elif expand_all is False:
             current_nodes = self._get_nodes()
             for node in current_nodes:
-                if node.data in CMD.cache.sets.managed_files:
-                    continue
                 if node not in self._nodes_backup.expanded:
                     node.collapse()
             self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
