@@ -124,19 +124,20 @@ class DebugTab(Horizontal, AppType):
         for path in self.test_paths.get_existing_test_paths():
             if path in CMD.cache.sets.managed_dirs:
                 if path not in CMD.cache.sets.status_dirs:
-                    colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
-                elif path in CMD.cache.sets.managed_dirs:
                     colored_paths.append(f"{TestPathColors.managed_dir}{path}[/]")
+                elif path in CMD.cache.sets.status_dirs:
+                    colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
             elif path in CMD.cache.sets.managed_files:
                 if path not in CMD.cache.sets.status_files:
-                    colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
-                elif path in CMD.cache.sets.managed_files:
                     colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
+                elif path in CMD.cache.sets.status_files:
+                    colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
+            elif path.is_dir():
+                colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
+            elif path.is_file():
+                colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
             else:
-                if path.is_dir():
-                    colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
-                elif path.is_file():
-                    colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
+                colored_paths.append(f"{TestPathColors.unhandled}{path}[/]")
 
         if colored_paths:
             colored_paths.extend(
