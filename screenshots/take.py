@@ -4,41 +4,67 @@ from the repo root.
 """
 
 import os
+import shutil
 import threading
 import time
+from enum import StrEnum
 from pathlib import Path
 
 from textual import messages
+from textual.widgets import TabbedContent
 
+from chezmoi_mousse import TabLabel
 from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 
+CHEZMOI_BIN = shutil.which("chezmoi")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = REPO_ROOT / "src"
+SCREENSHOT_DIR = str(REPO_ROOT / "screenshots")
 
-def trigger_screenshot_and_exit(app: ChezmoiGUI, screenshot_dir: Path) -> None:
-    def take_screenshot() -> None:
-        app.action_screenshot(filename="startup_screen.svg", path=str(screenshot_dir))
+
+class FileNames(StrEnum):
+    STARTUP = "startup.svg"
+    DEBUG_SCREEN = "debug_screen.svg"
+
+
+def take_startup_screenshot(app: ChezmoiGUI) -> None:
+    time.sleep(5)
+    app.action_screenshot(filename=FileNames.STARTUP, path=SCREENSHOT_DIR)
+    app.exit()
+
+
+def take_debug_screenshot(app: ChezmoiGUI) -> None:
+    def activate_debug_tab() -> None:
+        app.screen.query_exactly_one(TabbedContent).active = TabLabel.debug
 
     time.sleep(5)
-    app.post_message(messages.InvokeLater(take_screenshot))
-
+    app.post_message(messages.InvokeLater(activate_debug_tab))
     time.sleep(1)
-    app.post_message(messages.ExitApp())
+    app.action_screenshot(filename=FileNames.DEBUG_SCREEN, path=SCREENSHOT_DIR)
+    app.exit()
+
+
+def run_app(*, dev_mode: bool) -> None:
+    app = ChezmoiGUI(
+        chezmoi_bin=CHEZMOI_BIN, dev_mode=dev_mode, git_found=True, repo_found=True
+    )
+    if dev_mode is True:
+        trigger_thread = threading.Thread(
+            target=take_debug_screenshot, args=(app,), daemon=True
+        )
+    else:
+        trigger_thread = threading.Thread(
+            target=take_startup_screenshot, args=(app,), daemon=True
+        )
+    trigger_thread.start()
+    app.run()
 
 
 def main() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    src_dir = repo_root / "src"
-    screenshot_dir = repo_root / "screenshots"
+    os.chdir(SRC_DIR)
 
-    os.chdir(src_dir)
-
-    app = ChezmoiGUI(
-        chezmoi_bin="chezmoi", dev_mode=False, git_found=True, repo_found=True
-    )
-    trigger_thread = threading.Thread(
-        target=trigger_screenshot_and_exit, args=(app, screenshot_dir), daemon=True
-    )
-    trigger_thread.start()
-    app.run()
+    run_app(dev_mode=False)
+    run_app(dev_mode=True)
 
 
 if __name__ == "__main__":
