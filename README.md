@@ -347,8 +347,14 @@ verify
 warnings
 - :black_circle: warnings
 
-### Chezmoi not found screenshot
+## Chezmoi not found screenshot
 
 If the `chezmoi` command is not available, a screen will be shown with the value for `PATH` and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
 ![App screenshot](screenshots/command_not_found.png)
+
+## Textual themes
+
+Pick any textual theme to change the look, for example `tokyo-night`, see [Textual Themes](https://textual.textualize.io/guide/design/) to check out built in themes.
+
+![App screenshot](screenshots/theme_support.png)
