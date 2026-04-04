@@ -71,3 +71,4 @@ repos:
     rev: 0.11.3
     hooks:
       - id: uv-export
+        args: ["--no-dev"]
