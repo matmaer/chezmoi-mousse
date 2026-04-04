@@ -164,10 +164,13 @@ class MainScreen(Screen[None], AppType):
     async def _update_trees(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees.with_color
         self.apply_managed_tree.populate_tree()
+        self.apply_managed_tree.refresh()
         self.re_add_managed_tree.populate_tree()
+        self.re_add_managed_tree.refresh()
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
+        dir_tree.refresh()
         dir_tree.select_node(dir_tree.root)
 
     #####################
