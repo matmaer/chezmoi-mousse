@@ -5,6 +5,7 @@ import pytest
 from _test_utils import (
     ModuleData,
     get_all_module_data,
+    get_decorator_name,
     get_module_ast_class_defs,
     get_module_paths,
 )
@@ -15,15 +16,6 @@ type AstClassDefs = list[ast.ClassDef]
 
 
 def is_dataclass_class(class_def: ast.ClassDef) -> bool:
-    def get_decorator_name(decorator: ast.expr) -> str | None:
-        if isinstance(decorator, ast.Name):
-            return decorator.id
-        elif isinstance(decorator, ast.Attribute):
-            return decorator.attr
-        elif isinstance(decorator, ast.Call):
-            return get_decorator_name(decorator.func)
-        return None
-
     for decorator in class_def.decorator_list:
         if get_decorator_name(decorator) == "dataclass":
             return True

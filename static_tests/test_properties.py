@@ -10,6 +10,7 @@ import pytest
 from _test_utils import (
     ModuleData,
     get_all_module_data,
+    get_decorator_name,
     get_module_ast_class_defs,
     get_module_paths,
 )
@@ -40,16 +41,6 @@ class ClassData(NamedTuple):
     properties: list[PropertyData]  # all @property functions defined on class
 
 
-def _get_decorator_name(decorator: ast.expr) -> str | None:
-    if isinstance(decorator, ast.Name):
-        return decorator.id
-    if isinstance(decorator, ast.Attribute):
-        return decorator.attr
-    if isinstance(decorator, ast.Call):
-        return _get_decorator_name(decorator.func)
-    return None
-
-
 module_data_list: list[ModuleData] = get_all_module_data()
 
 all_class_data: list[ClassData] = []
@@ -59,7 +50,7 @@ for file_path in MODULE_PATHS:
         properties: list[PropertyData] = []
         for item in class_def.body:
             if isinstance(item, ast.FunctionDef) and any(
-                _get_decorator_name(decorator) == "property"
+                get_decorator_name(decorator) == "property"
                 for decorator in item.decorator_list
             ):
                 properties.append(PropertyData(name=item.name, lineno=item.lineno))

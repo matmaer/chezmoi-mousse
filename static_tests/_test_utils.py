@@ -83,3 +83,13 @@ def get_modules_importing_class(class_name: str) -> set[Path]:
                 modules.add(module_path)
                 break
     return modules
+
+
+def get_decorator_name(decorator: ast.expr) -> str | None:
+    if isinstance(decorator, ast.Name):
+        return decorator.id
+    elif isinstance(decorator, ast.Attribute):
+        return decorator.attr
+    elif isinstance(decorator, ast.Call):
+        return get_decorator_name(decorator.func)
+    return None
