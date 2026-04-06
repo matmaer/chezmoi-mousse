@@ -25,14 +25,6 @@ def run_app():
         if completed.returncode != 0:
             # If the command fails, we treat it as if chezmoi was not found.
             chezmoi_bin = None
-    repo_found = None
-    if chezmoi_bin is not None:
-        completed: CompletedProcess[str] = run_chezmoi_cmd(
-            command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.status.value,
-            cmd_timeout=2,
-        )
-        if completed.returncode == 0:
-            repo_found = True
 
     dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
     pretend_not_found = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
@@ -41,8 +33,6 @@ def run_app():
     if dev_mode or pretend_not_found or pretend_repo_not_found:
         if pretend_not_found:
             chezmoi_bin = None
-        if pretend_repo_not_found:
-            repo_found = False
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
         stack_trace_path = src_dir / "stack_trace.log"
@@ -53,10 +43,7 @@ def run_app():
 
         try:
             app = ChezmoiGUI(
-                chezmoi_bin=chezmoi_bin,
-                dev_mode=True,
-                repo_found=repo_found,
-                git_found=git_found,
+                chezmoi_bin=chezmoi_bin, dev_mode=True, git_found=git_found
             )
 
             # Patch app._handle_exception to save stacktrace during runtime
@@ -75,9 +62,7 @@ def run_app():
             raise
 
     else:
-        app = ChezmoiGUI(
-            chezmoi_bin=chezmoi_bin, repo_found=repo_found, git_found=git_found
-        )
+        app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, git_found=git_found)
         app.run()
 
 

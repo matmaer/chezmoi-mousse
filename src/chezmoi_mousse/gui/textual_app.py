@@ -110,7 +110,6 @@ class ChezmoiGUI(App[None]):
         chezmoi_bin: str | None = None,
         dev_mode: bool = False,
         git_found: bool = False,
-        repo_found: bool | None = None,
     ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -118,7 +117,6 @@ class ChezmoiGUI(App[None]):
         CMD.run_cmd.chezmoi_bin = chezmoi_bin
         self.dev_mode: bool = dev_mode
         self.git_found: bool = git_found
-        self.repo_found: bool | None = repo_found
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
 
