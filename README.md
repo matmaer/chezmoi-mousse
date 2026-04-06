@@ -219,6 +219,10 @@ ejson
 - :black_circle: ejson.keyDir
 
 git
+
+> [!NOTE]
+> Make sure the git command is available on your system.
+
 - :black_circle: git.autoAdd
 - :bulb: git.autoCommit
 - :bulb: git.autoPush
