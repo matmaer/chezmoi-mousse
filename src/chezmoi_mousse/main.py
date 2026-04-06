@@ -28,9 +28,8 @@ def run_app():
 
     dev_mode = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
     pretend_not_found = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
-    pretend_repo_not_found = os.environ.get("PRETEND_CHEZMOI_REPO_NOT_FOUND") == "1"
 
-    if dev_mode or pretend_not_found or pretend_repo_not_found:
+    if dev_mode or pretend_not_found:
         if pretend_not_found:
             chezmoi_bin = None
         # Save stacktrace in case an exception occurs on App class init.
