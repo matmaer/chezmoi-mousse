@@ -167,20 +167,7 @@ class AddTab(Horizontal, AppType):
         )
         operate_buttons.set_path_arg(event.node.data.path)
         if isinstance(event, DirectoryTree.DirectorySelected):
-            try:
-                sc_id_q = self.app.path_to_qid(event.node.data.path)
-                current_container = self.contents_view.query_one(
-                    sc_id_q, ScrollableContainer
-                )
-            except NoMatches:
-                return
-            if any(
-                Tcss.limited_label in getattr(label, "classes", ())
-                for label in list(current_container.query(Label))
-            ):
-                self.add_review_btn.disabled = True
-            else:
-                self.add_review_btn.disabled = False
+            self.add_review_btn.disabled = True
         else:  # isinstance(event, DirectoryTree.FileSelected):
             self.add_review_btn.disabled = False
 

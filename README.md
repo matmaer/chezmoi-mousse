@@ -92,7 +92,7 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 
 ### Write Operations
 
-- [x] `chezmoi add` directory
+- [ ] `chezmoi add` directory
 - [x] `chezmoi add` file
 - [ ] `chezmoi archive`
 - [x] `chezmoi apply` directory
