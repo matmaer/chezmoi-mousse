@@ -16,6 +16,9 @@ The rich visualization is made possible thanks to [textual](https://github.com/T
 
 Commands are issued using [Python](https://www.python.org/) its [Subprocess management](https://docs.python.org/3/library/subprocess.html).
 
+## Screenshots
+
+Check out the [Wiki Screenshots](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots)!
 
 ## Use Case
 
@@ -50,23 +53,6 @@ If Python 3.13 with `textual` is available in you env, in the `src` directory, y
 
 `python -m chezmoi_mousse`
 
-
-### App screenshot example
-
-![App screenshot](screenshots/app_sample_screenshot.png)
-
-### App log example
-
-![App screenshot](screenshots/app_log_example.png)
-
-### Operate review example
-
-![App screenshot](screenshots/operate_review_example.png)
-
-### Operate result example
-
-![App screenshot](screenshots/operate_result_example.png)
-
 ## Test
 
 To test the app without "real" dotfiles in a container or VM:
@@ -78,8 +64,7 @@ In the src directory of the cloned repository, you can run
 Then on the "Debug" tab, you can generate some files in the home directory, and offer the possibility to modify the generated files to have diffs.
 Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/master/#)
 
-![App screenshot](screenshots/debug_tab.png)
-
+See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#debug-tab)
 
 ### Platform packaging
 - [x] Windows
@@ -106,7 +91,6 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 > See [Implemented configuration options](#implemented-configuration-options) below, not all flags are implemented, however usage with default flag values should run without errors. If you find an issue, please share it on the [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page.
 
 ### Write Operations
-
 
 - [x] `chezmoi add` directory
 - [x] `chezmoi add` file
@@ -213,10 +197,6 @@ cd
 - :black_circle: cd.args
 - :black_circle: cd.command
 
-dashlane
-- :black_circle: dashlane.args
-- :black_circle: dashlane.command
-
 diff
 - :negative_squared_cross_mark: diff.args
 - :green_square: diff.command (`chezmoi --use-builtin-diff`)
@@ -225,12 +205,6 @@ diff
 - :negative_squared_cross_mark: diff.pagerArgs
 - :green_square: diff.reverse
 - :black_circle: diff.scriptContents
-
-doppler
-- :black_circle: doppler.args
-- :black_circle: doppler.command
-- :black_circle: doppler.config
-- :black_circle: doppler.project
 
 edit
 - :black_circle: edit.apply
@@ -285,30 +259,12 @@ keepassxc
 - :black_circle: keepassxc.mode
 - :black_circle: keepassxc.prompt
 
-keeper
-- :black_circle: keeper.args
-- :black_circle: keeper.command
-
-lastpass
-- :black_circle: lastpass.command
-
 merge
 - :black_circle: merge.args
 - :black_circle: merge.command
 
-onepassword
-- :black_circle: onepassword.cache
-- :black_circle: onepassword.command
-- :black_circle: onepassword.mode
-- :black_circle: onepassword.prompt
-
 pass
 - :black_circle: pass.command
-
-passhole
-- :black_circle: passhole.args
-- :black_circle: passhole.command
-- :black_circle: passhole.prompt
 
 pinentry
 - :black_circle: pinentry.args
@@ -347,14 +303,14 @@ verify
 warnings
 - :black_circle: warnings
 
-## Chezmoi not found screenshot
+## Chezmoi not found
 
 If the `chezmoi` command is not available, a screen will be shown with the value for `PATH` and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
 
-![App screenshot](screenshots/command_not_found.png)
+[Chezmoi command not found screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#chezmoi-command-not-found)
 
 ## Textual themes
 
 Pick any textual theme to change the look, for example `tokyo-night`, see [Textual Themes](https://textual.textualize.io/guide/design/) to check out built in themes.
 
-![App screenshot](screenshots/theme_support.png)
+[Textual themes example](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#textual-themes)
