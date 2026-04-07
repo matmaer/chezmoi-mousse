@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 class MainString(StrEnum):
     CHEZMOI = "chezmoi"
     CHEZMOI_MOUSSE_DEV = auto()
+    CHEZMOI_SUBSHELL = auto()
     GIT = "git"
     GIT_NOT_FOUND = (
         "'git' command not found. Install git as this app provides no safeguards when "
@@ -32,7 +33,7 @@ class MainString(StrEnum):
 def run_app():
     if shutil.which(MainString.GIT) is None:
         print(MainString.GIT_NOT_FOUND)
-    if os.environ.get("CHEZMOI_SUBSHELL") == "1":
+    if os.environ.get(MainString.CHEZMOI_SUBSHELL) == "1":
         print(MainString.IN_SUBSHELL)
         return
 
