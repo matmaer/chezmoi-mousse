@@ -1,7 +1,6 @@
 import os
 import shutil
 import traceback
-from enum import StrEnum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,35 +11,35 @@ if TYPE_CHECKING:
     from subprocess import CompletedProcess
 
 
-class MainString(StrEnum):
-    CHEZMOI = "chezmoi"
-    GIT = "git"
-    GIT_NOT_FOUND = (
-        "'git' command not found. Install git as this app provides no safeguards when "
-        "git is not available."
-    )
-    IN_SUBSHELL = (
-        "You are in a 'chezmoi subshell', likely because you issued "
-        "'chezmoi cd' earlier on. Exit the chezmoi subshell before running the "
-        "app, e.g. press Ctrl+D, or exit and start a new terminal."
-    )
-    STACK_TRACE_FILE = "stack_trace.log"
+CHEZMOI = "chezmoi"
+GIT = "git"
+GIT_NOT_FOUND = (
+    "'git' command not found. Install git as this app provides no safeguards when "
+    "git is not available."
+)
+IN_SUBSHELL = (
+    "You are in a 'chezmoi subshell', likely because you issued "
+    "'chezmoi cd' earlier on. Exit the chezmoi subshell before running the "
+    "app, e.g. press Ctrl+D, or exit and start a new terminal."
+)
+STACK_TRACE_FILE = "stack_trace.log"
 
-    # Env var related
-    CHEZMOI_MOUSSE_DEV = auto()
-    CHEZMOI_SUBSHELL = auto()
-    PRETEND_CHEZMOI_NOT_FOUND = auto()
+# Env var related
+CHEZMOI_MOUSSE_DEV = "CHEZMOI_MOUSSE_DEV"
+CHEZMOI_SUBSHELL = "CHEZMOI_SUBSHELL"
+PRETEND_CHEZMOI_NOT_FOUND = "PRETEND_CHEZMOI_NOT_FOUND"
 
 
 def run_app():
-    if shutil.which(MainString.GIT) is None:
-        print(MainString.GIT_NOT_FOUND)
+    git_bin = shutil.which(GIT)
+    if git_bin is None:
+        print(GIT_NOT_FOUND)
         return
-    if os.environ.get(MainString.CHEZMOI_SUBSHELL) == "1":
-        print(MainString.IN_SUBSHELL)
+    if os.environ.get(CHEZMOI_SUBSHELL) == "1":
+        print(IN_SUBSHELL)
         return
 
-    chezmoi_bin = shutil.which(MainString.CHEZMOI)
+    chezmoi_bin = shutil.which(CHEZMOI)
     if chezmoi_bin is not None:
         completed: CompletedProcess[str] = run_chezmoi_cmd(
             command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.version.value,
@@ -50,15 +49,15 @@ def run_app():
             # If the command fails, we aussume chezmoi was not found.
             chezmoi_bin = None
 
-    dev_mode = os.environ.get(MainString.CHEZMOI_MOUSSE_DEV) == "1"
-    pretend_not_found = os.environ.get(MainString.PRETEND_CHEZMOI_NOT_FOUND) == "1"
+    dev_mode = os.environ.get(CHEZMOI_MOUSSE_DEV) == "1"
+    pretend_not_found = os.environ.get(PRETEND_CHEZMOI_NOT_FOUND) == "1"
 
     if dev_mode or pretend_not_found:
         if pretend_not_found:
             chezmoi_bin = None
         # Save stacktrace in case an exception occurs on App class init.
         src_dir = Path(__file__).parent.parent
-        stack_trace_path = src_dir / MainString.STACK_TRACE_FILE
+        stack_trace_path = src_dir / STACK_TRACE_FILE
 
         def save_stacktrace():
             with Path.open(stack_trace_path, "a") as f:
