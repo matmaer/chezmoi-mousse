@@ -14,6 +14,11 @@ CHEZMOI = "chezmoi"
 
 
 def run_app():
+    if shutil.which("git") is None:
+        print(
+            "'git' command not found. Install git as this app provides no safeguards "
+            "when git is not available."
+        )
     if os.environ.get("CHEZMOI_SUBSHELL") == "1":
         print(
             "You are in a 'chezmoi subshell', likely because you issued "
@@ -23,8 +28,6 @@ def run_app():
         return
 
     chezmoi_bin = shutil.which(CHEZMOI)
-    git_bin = shutil.which("git")
-    git_found = git_bin is not None
     if chezmoi_bin is not None:
         completed: CompletedProcess[str] = run_chezmoi_cmd(
             command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.version.value,
@@ -49,9 +52,7 @@ def run_app():
                 traceback.print_exc(file=f)
 
         try:
-            app = ChezmoiGUI(
-                chezmoi_bin=chezmoi_bin, dev_mode=True, git_found=git_found
-            )
+            app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, dev_mode=True)
 
             # Patch app._handle_exception to save stacktrace during runtime
             original_handle_exception = app._handle_exception  # type: ignore[method-assign]
@@ -69,7 +70,7 @@ def run_app():
             raise
 
     else:
-        app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, git_found=git_found)
+        app = ChezmoiGUI(chezmoi_bin=chezmoi_bin)
         app.run()
 
 
