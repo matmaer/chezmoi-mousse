@@ -302,7 +302,7 @@ vault
 - :black_circle: vault.command
 
 verify
-- :black_circle: verify.exclude
+- :negative_squared_cross_mark: verify.exclude
 
 warnings
 - :black_circle: warnings
