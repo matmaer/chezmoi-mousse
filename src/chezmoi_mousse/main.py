@@ -35,6 +35,7 @@ class MainString(StrEnum):
 def run_app():
     if shutil.which(MainString.GIT) is None:
         print(MainString.GIT_NOT_FOUND)
+        return
     if os.environ.get(MainString.CHEZMOI_SUBSHELL) == "1":
         print(MainString.IN_SUBSHELL)
         return
