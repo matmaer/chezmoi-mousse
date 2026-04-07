@@ -14,8 +14,6 @@ if TYPE_CHECKING:
 
 class MainString(StrEnum):
     CHEZMOI = "chezmoi"
-    CHEZMOI_MOUSSE_DEV = auto()
-    CHEZMOI_SUBSHELL = auto()
     GIT = "git"
     GIT_NOT_FOUND = (
         "'git' command not found. Install git as this app provides no safeguards when "
@@ -26,8 +24,12 @@ class MainString(StrEnum):
         "'chezmoi cd' earlier on. Exit the chezmoi subshell before running the "
         "app, e.g. press Ctrl+D, or exit and start a new terminal."
     )
-    PRETEND_CHEZMOI_NOT_FOUND = auto()
     STACK_TRACE_FILE = "stack_trace.log"
+
+    # Env var related
+    CHEZMOI_MOUSSE_DEV = auto()
+    CHEZMOI_SUBSHELL = auto()
+    PRETEND_CHEZMOI_NOT_FOUND = auto()
 
 
 def run_app():
