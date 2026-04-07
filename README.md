@@ -29,12 +29,8 @@ Check out the [Wiki Screenshots](https://github.com/matmaer/chezmoi-mousse/wiki/
 
 ## Start
 
-> [!WARNING]
-> Don't run the python or uv command in a `chezmoi cd` invoked shell, unless you want to
-> test.
-
 > [!NOTE]
-> If the app doesn't start, please share it on the
+> If you encounter any issue, please share it on the
 > [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page.
 
 On the command line, clone the repository:
@@ -194,8 +190,10 @@ bitwardenSecrets
 - :black_circle: bitwardenSecrets.command
 
 cd
-- :black_circle: cd.args
-- :black_circle: cd.command
+> [!NOTE]
+> App exits and informs when launched from a chezmoi subshell.
+- :negative_squared_cross_mark: cd.args
+- :negative_squared_cross_mark: cd.command
 
 diff
 - :negative_squared_cross_mark: diff.args

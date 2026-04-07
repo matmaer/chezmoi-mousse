@@ -14,6 +14,14 @@ CHEZMOI = "chezmoi"
 
 
 def run_app():
+    if os.environ.get("CHEZMOI_SUBSHELL") == "1":
+        print(
+            "You are in a 'chezmoi subshell', likely because you issued "
+            "'chezmoi cd' earlier on. Exit the chezmoi subshell before running the "
+            "app, e.g. press Ctrl+D, or exit and start a new terminal."
+        )
+        return
+
     chezmoi_bin = shutil.which(CHEZMOI)
     git_bin = shutil.which("git")
     git_found = git_bin is not None
