@@ -194,7 +194,7 @@ cd
 - :negative_squared_cross_mark: cd.command
 
 diff
-- :negative_squared_cross_mark: diff.args
+- :negative_squared_cross_mark: diff.args (Start a discussion if you have a use case)
 - :green_square: diff.command (`chezmoi --use-builtin-diff`)
 - :black_circle: diff.exclude
 - :green_square: diff.pager (`chezmoi --no-pager --use-builtin-diff`)
@@ -215,17 +215,13 @@ ejson
 - :black_circle: ejson.keyDir
 
 git
-
-> [!NOTE]
-> Make sure the git command is available on your system.
-
 - :black_circle: git.autoAdd
 - :bulb: git.autoCommit
 - :bulb: git.autoPush
 - :green_circle: git.command (`chezmoi git -- <git_command>` is used to run `git`)
 - :green_circle: git.commitMessageTemplate
 - :green_circle: git.commitMessageTemplateFile
-- :black_circle: git.lfs
+- :negative_squared_cross_mark: git.lfs (Start a discussion if you have a use case)
 
 gitHub
 - :black_circle: gitHub.refreshPeriod
