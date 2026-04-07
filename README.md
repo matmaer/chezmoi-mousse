@@ -190,8 +190,6 @@ bitwardenSecrets
 - :black_circle: bitwardenSecrets.command
 
 cd
-> [!NOTE]
-> App exits and informs when launched from a chezmoi subshell.
 - :negative_squared_cross_mark: cd.args
 - :negative_squared_cross_mark: cd.command
 
