@@ -154,7 +154,7 @@ Top level
 - :green_circle: umask
 - :black_circle: useBuiltinAge
 - :green_square: useBuiltinGit (`--use-builtin-git=true`)
-- :green_square: verbose (all commands run with the `--verbose` flag)
+- :negative_squared_cross_mark: verbose (outputs are parsed without verbose flag)
 - :black_circle: workingTree
 
 add
