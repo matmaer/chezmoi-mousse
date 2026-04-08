@@ -113,6 +113,7 @@ class ChezmoiGUI(App[None]):
         self.dev_mode: bool = dev_mode
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
+        self.startup_completed = False
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)

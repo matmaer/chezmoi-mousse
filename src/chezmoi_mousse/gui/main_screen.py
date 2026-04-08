@@ -83,23 +83,27 @@ class MainScreen(Screen[None], AppType):
             IDS.main_tabs.container.command_output_q, CommandOutput
         )
         self.command_output.display = False
-        self._push_loading_modal(None)
+        self._first_time_startup()
 
     ###########################################
     # Push modal methods with their callbacks #
     ###########################################
 
     @work
-    async def _push_loading_modal(self, btn_enum: OpBtnEnum | None) -> None:
+    async def _first_time_startup(self) -> None:
+        self.loading_modal = LoadingModal(None)
+        await self.app.push_screen(self.loading_modal)
+        await self._update_trees().wait()
+        await self._log_all_cmd_results(CMD.cache.cmd_results.all).wait()
+        await self._update_config_tab().wait()
+        self.loading_modal.dismiss()
+        self.app.startup_completed = True
+
+    @work
+    async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
         self.loading_modal = LoadingModal(btn_enum)
         await self.app.push_screen(self.loading_modal)
 
-        if btn_enum is None:
-            await self._update_trees().wait()
-            await self._log_all_cmd_results(CMD.cache.cmd_results.all).wait()
-            await self._update_config_tab().wait()
-            self.loading_modal.dismiss()
-            return
         if btn_enum in self.app.run_btn_enums:
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.operate_info.update_write_cmd_info().wait()
