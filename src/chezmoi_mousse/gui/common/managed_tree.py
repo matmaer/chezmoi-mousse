@@ -242,7 +242,7 @@ class ManagedTree(Tree[Path], AppType):
         if unchanged is True:
             self._populate_root_node_recursive(self.root)
         elif unchanged is False:
-            for dir_path in CMD.cache.sets.tree_x_dir_roots:
+            for dir_path in CMD.cache.sets.tree_x_dirs:
                 node = self._get_node_by_path(dir_path)
                 if node is not None:
                     node.remove()

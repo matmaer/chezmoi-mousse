@@ -38,7 +38,6 @@ class PathSets:
     managed_paths: set[Path] = field(default_factory=lambda: set())
     n_dirs: set[Path] = field(default_factory=lambda: set())
     status_paths: set[Path] = field(default_factory=lambda: set())
-    tree_x_dir_roots: set[Path] = field(default_factory=lambda: set())
     tree_x_dirs: set[Path] = field(default_factory=lambda: set())
     x_dirs: set[Path] = field(default_factory=lambda: set())
     x_files: set[Path] = field(default_factory=lambda: set())
@@ -58,24 +57,6 @@ class PathSets:
             )
         }
         self.tree_x_dirs = {d for d in self.x_dirs if d not in self.n_dirs}
-        self.tree_x_dir_roots = self._get_common_x_dir_roots()
-
-    def _get_common_x_dir_roots(self) -> set[Path]:
-        if self.dest_dir is None:
-            return set()
-        root = self.dest_dir
-        grouped: dict[Path, Path] = {}
-
-        for path in self.tree_x_dirs:
-            if path == root:
-                continue
-
-            top_level_ancestor = root / path.relative_to(root).parts[0]
-            grouped[top_level_ancestor] = (
-                top_level_ancestor if top_level_ancestor in grouped else path
-            )
-
-        return set(grouped.values())
 
     @property
     def no_managed_paths(self) -> bool:
