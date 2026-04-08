@@ -259,21 +259,18 @@ class MainScreen(Screen[None], AppType):
             for b in op_button_group.query_children().results()
             if isinstance(b, OpButton)
         ]
-        cancel_btn = self.query_one(button.app_ids.op_btn.cancel_q, OpButton)
         reload_btn = self.query_one(button.app_ids.op_btn.reload_q, OpButton)
         run_buttons = [b for b in op_buttons if b.id in button.app_ids.run_btn_ids]
         review_buttons = [
             b for b in op_buttons if b.id in button.app_ids.review_btn_ids
         ]
-        if button.id in (button.app_ids.op_btn.cancel, button.app_ids.op_btn.reload):
-            cancel_btn.display = False
+        if button.id == button.app_ids.op_btn.reload:
             reload_btn.display = False
             for btn in run_buttons:
                 btn.display = False
             for btn in review_buttons:
                 btn.display = True
         elif button in review_buttons:
-            cancel_btn.display = True
             for btn in review_buttons:
                 btn.display = False
             for btn in run_buttons:
@@ -286,11 +283,9 @@ class MainScreen(Screen[None], AppType):
             )
             btn_widget.display = True
         elif button in run_buttons:
-            cancel_btn.display = False
             reload_btn.display = True
             button.disabled = True
         elif button.btn_enum == OpBtnEnum.refresh_tree:
-            cancel_btn.display = False
             reload_btn.display = True
             for btn in review_buttons:
                 btn.display = False

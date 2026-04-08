@@ -51,7 +51,6 @@ class OpBtnLabel(StrEnum):
     add_run = "Run Chezmoi Add"
     apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
-    cancel = "Cancel"
     create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"

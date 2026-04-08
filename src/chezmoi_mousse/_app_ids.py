@@ -185,8 +185,6 @@ class OperateButtonIds:
         self.re_add_run: str = ids.op_btn_id(operation=OpBtnLabel.re_add_run)
         self.re_add_run_q: str = f"#{self.re_add_run}"
 
-        self.cancel: str = ids.op_btn_id(operation=OpBtnLabel.cancel)
-        self.cancel_q: str = f"#{self.cancel}"
         self.refresh_tree: str = ids.op_btn_id(operation=OpBtnLabel.refresh_tree)
         self.refresh_tree_q: str = f"#{self.refresh_tree}"
         self.reload: str = ids.op_btn_id(operation=OpBtnLabel.reload)
