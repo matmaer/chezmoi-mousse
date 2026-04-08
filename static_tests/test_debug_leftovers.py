@@ -28,19 +28,24 @@ class DebugStatementVisitor(ast.NodeVisitor):
     # This method is called for EVERY function call in the code
     def visit_Call(self, node: ast.Call) -> None:
         class_name = self.class_stack[-1] if self.class_stack else None
-
-        # Check for print() calls
-        if (
-            isinstance(node.func, ast.Name)
-            and node.func.id == "print"
-            or isinstance(node.func, ast.Attribute)
-            and (
+        # Determine if this is a print() or debug_log() call.
+        is_print = isinstance(node.func, ast.Name) and node.func.id == "print"
+        is_debug_log = isinstance(node.func, ast.Attribute) and (
+            (
                 isinstance(node.func.value, ast.Name)
                 and node.func.value.id == "debug_log"
-                or isinstance(node.func.value, ast.Attribute)
+            )
+            or (
+                isinstance(node.func.value, ast.Attribute)
                 and node.func.value.attr == "debug_log"
             )
-        ):
+        )
+
+        # Ignore print() calls located in main.py (allowed there).
+        if is_print and self.file_path.name == "main.py":
+            return
+
+        if is_print or is_debug_log:
             self.debug_statements.append(
                 DebugStatement(self.file_path, class_name, node.lineno)
             )
