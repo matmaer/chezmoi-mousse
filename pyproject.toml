@@ -8,6 +8,13 @@ dependencies = [
     "textual>=8.2.3",
 ]
 
+[project.license]
+file = "LICENSE"
+
+[[project.authors]]
+name = "matmaer"
+email = "matmaer@proton.me"
+
 [project.urls]
 Repository = "https://github.com/matmaer/chezmoi-mousse"
 
