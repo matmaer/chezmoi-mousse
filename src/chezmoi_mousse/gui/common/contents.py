@@ -77,17 +77,14 @@ class ContentsView(Container, AppType):
                 with Path.open(file_path, encoding="utf-8") as f:
                     f_contents = f.read(truncate_size)
                 if f_contents.strip() == "":
-                    file_contents = ContentsView.ContentStr.empty_or_only_whitespace
-                elif file_size > truncate_size:
-                    file_contents = (
+                    return ContentsView.ContentStr.empty_or_only_whitespace
+                if file_size > truncate_size:
+                    return (
                         f_contents + f"\n--- {ContentsView.ContentStr.truncated} "
                         f"{truncate_size / 1024} KiB ---"
                     )
                 else:
-                    file_contents = (
-                        "Nothing to read." if f_contents == "" else f_contents
-                    )
-                return file_contents
+                    return f_contents
 
             except (UnicodeDecodeError, PermissionError, OSError) as e:
                 return _handle_exception(e)

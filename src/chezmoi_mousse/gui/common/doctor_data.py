@@ -58,8 +58,8 @@ class DoctorTable(DataTable[Text], AppType):
                 ]
                 self.add_row(*new_row)
             else:
-                row = [Text(cell_text) for cell_text in row]
-                self.add_row(*row)
+                text_row = [Text(cell_text) for cell_text in row]
+                self.add_row(*text_row)
 
 
 class InfoStrings(StrEnum):

@@ -67,8 +67,11 @@ class OpBtnLabel(StrEnum):
 
     @property
     def normalized_label(self) -> str:
-        return self.value.translate(
-            str.maketrans({" ": "_", "-": "_", "(": "", ")": ""})
+        return (
+            self.value.replace(" ", "_")
+            .replace("-", "_")
+            .replace("(", "")
+            .replace(")", "")
         ).lower()
 
 

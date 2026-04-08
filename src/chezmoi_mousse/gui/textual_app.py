@@ -261,7 +261,7 @@ class ChezmoiGUI(App[None]):
         if not isinstance(self.screen, MainScreen):
             return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
-        left_side = None
+        left_side: DestDirTree | Vertical | FlatButtonsVertical | None = None
         operation_buttons = None
         switch_slider: SwitchSlider | None = self.get_switch_slider_widget()
         view_switcher_buttons = None

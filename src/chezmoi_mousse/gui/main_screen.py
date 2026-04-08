@@ -297,6 +297,7 @@ class MainScreen(Screen[None], AppType):
         left_side.display = display
 
     def _get_set_right_side_display(self, ids: "AppIds", display: bool) -> None:
+        right_side: Vertical | ContentsView | None = None
         if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
             right_side = self.query_one(ids.container.right_side_q, Vertical)
         elif ids.canvas_name == TabLabel.add:
