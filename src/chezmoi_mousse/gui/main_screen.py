@@ -107,13 +107,11 @@ class MainScreen(Screen[None], AppType):
         if btn_enum in self.app.run_btn_enums:
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.operate_info.update_write_cmd_info().wait()
-            for read_cmd in CMD.refresh_read_cmds:
-                await self.loading_modal.run_read_command(read_cmd).wait()
+            await self.loading_modal.run_all_read_cmds().wait()
             await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_cmd_output().wait()
         elif btn_enum == OpBtnEnum.refresh_tree:
-            for read_cmd in CMD.refresh_read_cmds:
-                await self.loading_modal.run_read_command(read_cmd).wait()
+            await self.loading_modal.run_all_read_cmds().wait()
             await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()

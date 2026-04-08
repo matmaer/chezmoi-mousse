@@ -76,9 +76,14 @@ class LoadingModal(ModalScreen[None], AppType):
         label = self.query_exactly_one(Label)
         label.update(label_text)
 
+    @work
+    async def run_all_read_cmds(self) -> None:
+        for read_cmd in CMD.refresh_read_cmds:
+            await self._run_read_command(read_cmd).wait()
+
     @work(thread=True)
     @min_wait
-    async def run_read_command(self, read_cmd: "ReadCmd") -> None:
+    async def _run_read_command(self, read_cmd: "ReadCmd") -> None:
         self.label_text = CMD.run_cmd.review_cmd(verb_cmd=read_cmd)
         cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
         setattr(CMD.cache.cmd_results, f"{read_cmd.name}", cmd_result)
