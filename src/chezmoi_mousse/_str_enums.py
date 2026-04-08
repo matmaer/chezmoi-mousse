@@ -64,7 +64,6 @@ class TabLabel(StrEnum):
     config = "Config"
     debug = "Debug"
     help = "Help"
-    init = "Init"
     logs = "Logs"
     re_add = "Re-Add"
     # Tab buttons for content switcher within a main tab

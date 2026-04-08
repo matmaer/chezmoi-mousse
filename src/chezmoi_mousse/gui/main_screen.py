@@ -191,8 +191,6 @@ class MainScreen(Screen[None], AppType):
             return
         else:
             event.stop()
-        if self.query_exactly_one(TabbedContent).active == TabLabel.init:
-            return
         self._set_display(event.button)
         if event.button.btn_enum in self.app.review_btn_enums:
             self.command_output.reset_widgets()
@@ -321,7 +319,7 @@ class MainScreen(Screen[None], AppType):
 
     def _set_display(self, button: OpButton) -> None:
         self._get_set_button_display(button)
-        if button.btn_enum in (OpBtnEnum.cancel, OpBtnEnum.reload):
+        if button.btn_enum == OpBtnEnum.reload:
             self._get_set_left_side_display(button.app_ids, True)
             self._get_set_right_side_display(button.app_ids, True)
             self._get_set_switch_slider_display(True)

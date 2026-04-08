@@ -51,11 +51,6 @@ class AppIds:
 
     @property
     def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
-        if self.canvas_name == ScreenName.init:
-            return {
-                self.op_btn.reload: OpBtnEnum.reload,
-                self.op_btn.exit_app: OpBtnEnum.exit_app,
-            }
         if self.canvas_name == TabLabel.debug:
             return {
                 self.op_btn.list_test_paths: OpBtnEnum.list_test_paths,
@@ -64,10 +59,7 @@ class AppIds:
                 self.op_btn.create_diffs: OpBtnEnum.create_diffs,
                 self.op_btn.log_memory: OpBtnEnum.log_memory,
             }
-        _common_buttons = {
-            self.op_btn.cancel: OpBtnEnum.cancel,
-            self.op_btn.reload: OpBtnEnum.reload,
-        }
+        _common_buttons = {self.op_btn.reload: OpBtnEnum.reload}
         if self.canvas_name == TabLabel.add:
             return {
                 self.op_btn.add_review: OpBtnEnum.add_review,
@@ -195,8 +187,6 @@ class OperateButtonIds:
 
         self.cancel: str = ids.op_btn_id(operation=OpBtnLabel.cancel)
         self.cancel_q: str = f"#{self.cancel}"
-        self.exit_app: str = ids.op_btn_id(operation=OpBtnLabel.exit_app)
-        self.exit_app_q: str = f"#{self.exit_app}"
         self.refresh_tree: str = ids.op_btn_id(operation=OpBtnLabel.refresh_tree)
         self.refresh_tree_q: str = f"#{self.refresh_tree}"
         self.reload: str = ids.op_btn_id(operation=OpBtnLabel.reload)
@@ -287,7 +277,6 @@ class CanvasIds:
         self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
         self.main_tabs = AppIds(ScreenName.main_tabs)
-        self.init = AppIds(ScreenName.init)
         # TabPanes
         self.add = AppIds(TabLabel.add)
         self.apply = AppIds(TabLabel.apply)

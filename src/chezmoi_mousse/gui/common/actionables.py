@@ -11,7 +11,6 @@ from chezmoi_mousse import (
     FlatBtnLabel,
     LinkBtn,
     OpBtnEnum,
-    ScreenName,
     SwitchEnum,
     TabLabel,
     Tcss,
@@ -92,7 +91,6 @@ class OpButton(Button, AppType):
             in (
                 OpBtnEnum.add_run,
                 OpBtnEnum.apply_run,
-                OpBtnEnum.cancel,
                 OpBtnEnum.destroy_run,
                 OpBtnEnum.forget_run,
                 OpBtnEnum.re_add_run,
@@ -113,13 +111,9 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
 
     def on_mount(self) -> None:
-        if (
-            self.ids.canvas_name == TabLabel.debug
-            or self.ids.canvas_name == ScreenName.init
-        ):
-            # we never toggle display on these tabs
+        if self.ids.canvas_name == TabLabel.debug:
+            # we never toggle display on the debug tab
             return
-        self.cancel_btn = self.query_one(self.ids.op_btn.cancel_q, OpButton)
         self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabLabel.apply:

@@ -56,7 +56,6 @@ class OpBtnLabel(StrEnum):
     create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"
     destroy_run = "Run Chezmoi Destroy"
-    exit_app = "Exit App"
     forget_review = "Review Forget Path"
     forget_run = "Run Chezmoi Forget"
     list_test_paths = "List Test Paths"
@@ -86,10 +85,8 @@ class OpBtnData:
 
 class OpBtnEnum(Enum):
 
-    cancel = OpBtnData(label=OpBtnLabel.cancel)
     create_diffs = OpBtnData(label=OpBtnLabel.create_diffs)
     create_paths = OpBtnData(label=OpBtnLabel.create_paths)
-    exit_app = OpBtnData(label=OpBtnLabel.exit_app)
     list_test_paths = OpBtnData(label=OpBtnLabel.list_test_paths)
     log_memory = OpBtnData(label=OpBtnLabel.log_memory)
     refresh_tree = OpBtnData(label=OpBtnLabel.refresh_tree)

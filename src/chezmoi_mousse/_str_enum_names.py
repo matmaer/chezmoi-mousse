@@ -39,7 +39,6 @@ class LogName(StrEnum):
 
 
 class ScreenName(StrEnum):
-    init = auto()
     install_help = auto()
     main_tabs = auto()
     splash = auto()

@@ -16,7 +16,7 @@ from ._app_ids import IDS, AppIds
 from ._cmd_results import CMD, CachedData, DirContentBtn, ParsedJson
 from ._enum_data import OpBtnEnum, OpBtnLabel, OpInfoString, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb
-from ._str_enum_names import BindingAction, ScreenName, Tcss
+from ._str_enum_names import BindingAction, Tcss
 from ._str_enums import (
     BindingDescription,
     Chars,
@@ -60,7 +60,6 @@ __all__ = [
     "ParsedJson",
     "ReadCmd",
     "ReadVerb",
-    "ScreenName",
     "SectionLabel",
     "SwitchEnum",
     "TabLabel",

@@ -13,7 +13,7 @@ from textual.binding import Binding
 from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import Button, TabbedContent, Tabs
+from textual.widgets import TabbedContent, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -22,7 +22,6 @@ from chezmoi_mousse import (
     BindingDescription,
     Chars,
     OpBtnEnum,
-    OpBtnLabel,
     TabLabel,
 )
 
@@ -175,12 +174,6 @@ class ChezmoiGUI(App[None]):
         if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
             return current_tab_widget.query_exactly_one(SwitchSlider)
         return None
-
-    @on(Button.Pressed)
-    def handle_exit_app_button(self, event: Button.Pressed) -> None:
-        if event.button.label == OpBtnLabel.exit_app:
-            self.exit()
-            return
 
     ##################
     # Action Methods #
