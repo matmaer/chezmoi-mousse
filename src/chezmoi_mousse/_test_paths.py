@@ -2,6 +2,7 @@ import random
 import shutil
 from dataclasses import dataclass, fields
 from enum import StrEnum
+from functools import cached_property
 from pathlib import Path
 
 __all__ = ["TestPaths"]
@@ -167,15 +168,16 @@ class AllTestPaths:
         return sorted(collected)
 
 
-@dataclass(slots=True, kw_only=True)
 class TestPaths:
-    all_paths: AllTestPaths = AllTestPaths()
 
-    def __post_init__(self) -> None:
+    def __init__(self) -> None:
+        self.all_paths: AllTestPaths = AllTestPaths()
+
+    @cached_property
+    def faker(self):
         from faker import Faker
 
-        global FAKER
-        FAKER = Faker()
+        return Faker()
 
     def _create_dir_paths(self) -> list[str]:
         created_dirs: set[str] = set()
@@ -189,7 +191,7 @@ class TestPaths:
         file_path = self.all_paths.binary_file_path
         if file_path.exists():
             return []
-        content = FAKER.binary(length=2048)
+        content = self.faker.binary(length=2048)
         with Path.open(file_path, "wb") as f:
             f.write(content)
         return [str(file_path)]
@@ -198,7 +200,7 @@ class TestPaths:
         file_path = self.all_paths.large_file_path
         if file_path.exists():
             return []
-        content = FAKER.text(max_nb_chars=700000)
+        content = self.faker.text(max_nb_chars=700000)
         with Path.open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         return [str(file_path)]
@@ -215,7 +217,7 @@ class TestPaths:
         if file_path.exists():
             return []
         parts: list[str] = []
-        parts.append(FAKER.sentence(nb_words=6))
+        parts.append(self.faker.sentence(nb_words=6))
         parts.append(
             "".join(random.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60))
         )
@@ -234,11 +236,11 @@ class TestPaths:
         )
         parts.append(
             ProblemChars.BIDI_RLO
-            + FAKER.word()
+            + self.faker.word()
             + " .ext"
             + ProblemChars.BIDI_PDF
             + ProblemChars.ZWS
-            + FAKER.word()
+            + self.faker.word()
         )
         parts.append("A" + ProblemChars.ZWJ + "B" + ProblemChars.ZWJ + "C")
         with Path.open(file_path, "w", encoding="utf-8") as f:
@@ -250,15 +252,17 @@ class TestPaths:
 
         def get_fake_toml_string() -> str:
             doc = tomlkit.document()
-            doc["title"] = FAKER.sentence(nb_words=6)
-            doc["version"] = FAKER.pyfloat(left_digits=1, right_digits=2, positive=True)
-            doc["debug"] = FAKER.boolean()
-            doc["hosts"] = [FAKER.hostname() for _ in range(10)]
-            doc["ports"] = [FAKER.port_number() for _ in range(10)]
+            doc["title"] = self.faker.sentence(nb_words=6)
+            doc["version"] = self.faker.pyfloat(
+                left_digits=1, right_digits=2, positive=True
+            )
+            doc["debug"] = self.faker.boolean()
+            doc["hosts"] = [self.faker.hostname() for _ in range(10)]
+            doc["ports"] = [self.faker.port_number() for _ in range(10)]
             some_table = tomlkit.table()
-            some_table["id"] = FAKER.uuid4()
-            some_table["date"] = FAKER.date_time().isoformat()
-            some_table["text"] = FAKER.paragraph(nb_sentences=12)
+            some_table["id"] = self.faker.uuid4()
+            some_table["date"] = self.faker.date_time().isoformat()
+            some_table["text"] = self.faker.paragraph(nb_sentences=12)
             doc["some_table"] = some_table
             return doc.as_string()
 
