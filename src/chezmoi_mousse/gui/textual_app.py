@@ -35,7 +35,6 @@ from .common.screen_header import CustomHeader
 from .config_tab import ConfigTab
 from .debug_tab import DebugTab
 from .help_tab import HelpTab
-from .init_tab import InitTab
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
@@ -147,16 +146,7 @@ class ChezmoiGUI(App[None]):
 
     def _get_tab_widget(
         self,
-    ) -> (
-        ApplyTab
-        | ReAddTab
-        | AddTab
-        | InitTab
-        | LogsTab
-        | ConfigTab
-        | HelpTab
-        | DebugTab
-    ):
+    ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab | DebugTab:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_tab_widget called outside of MainScreen")
         tab_to_query = self.screen.query_exactly_one(TabbedContent).active
@@ -166,8 +156,6 @@ class ChezmoiGUI(App[None]):
             return self.screen.query_exactly_one(ReAddTab)
         elif tab_to_query == TabLabel.add:
             return self.screen.query_exactly_one(AddTab)
-        elif tab_to_query == TabLabel.init:
-            return self.screen.query_exactly_one(InitTab)
         elif tab_to_query == TabLabel.config:
             return self.screen.query_exactly_one(ConfigTab)
         elif tab_to_query == TabLabel.help:
@@ -186,12 +174,6 @@ class ChezmoiGUI(App[None]):
         if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
             return current_tab_widget.query_exactly_one(SwitchSlider)
         return None
-
-    @on(Button.Pressed)
-    def handle_init_reload_btn(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == OpBtnLabel.reload and isinstance(self.screen, InitTab):
-            self.notify("Not implemented")
 
     @on(Button.Pressed)
     def handle_exit_app_button(self, event: Button.Pressed) -> None:
@@ -370,20 +352,14 @@ class ChezmoiGUI(App[None]):
                 return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)
             return False
 
-        if action == BindingAction.toggle_dry_run:
-            return isinstance(self.screen, (MainScreen, InitTab))
-
         if action == BindingAction.toggle_maximized:
-            if (
+            return not (
                 isinstance(self.screen, MainScreen)
                 and self.screen.query_one(
                     IDS.main_tabs.container.op_feed_back_q, Vertical
                 ).display
                 is True
-            ):
-                return False
-            if isinstance(self.screen, (InstallHelpScreen, InitTab)):
-                return False
+            )
 
         return True
 

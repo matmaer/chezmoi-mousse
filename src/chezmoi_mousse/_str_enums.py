@@ -43,7 +43,6 @@ class LinkBtn(StrEnum):
     chezmoi_guess = (
         "https://www.chezmoi.io/reference/commands/init/#-g-guess-repo-url-bool"
     )
-    chezmoi_init = "https://www.chezmoi.io/reference/commands/init/"
     chezmoi_install = "https://www.chezmoi.io/install/"
     chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
 
@@ -53,9 +52,7 @@ class LinkBtn(StrEnum):
 
     @property
     def link_text(self) -> str:
-        if self.value == LinkBtn.chezmoi_init.value:
-            return "init docs"
-        elif self.value == LinkBtn.chezmoi_guess.value:
+        if self.value == LinkBtn.chezmoi_guess.value:
             return "guess docs"
         return self.value.replace("https://", "").replace("www.", "").rstrip("/")
 
@@ -127,7 +124,6 @@ class BindingDescription(StrEnum):
 
 class SwitchLabel(StrEnum):
     expand_all = "Expand all dirs"
-    init_repo = "Init existing repo"
     unchanged = "Show unchanged paths"
     managed_dirs = "Hide unmanaged dirs"
     unwanted = "Show unwanted paths"
@@ -144,22 +140,6 @@ class OperateString(StrEnum):
         "files will be pushed to the remote."
         f"{Chars.warning_sign}[/]"
     )
-    # Init screen info strings
-    guess_https = "Let chezmoi guess the best URL to clone from."
-    guess_ssh = "Let chezmoi guess the best ssh scp-style address to clone from."
-    https_url = (
-        "Enter a complete URL, e.g., "
-        "[$text-primary]https://github.com/user/repo.git[/]. "
-        "If you have a PAT, make sure to include it in the URL, for example: "
-        "[$text-primary]https://username:ghp_123456789abcdef@github.com/"
-        "username/my-dotfiles.git[/] and delete the PAT after use."
-    )
-    ssh_select = (
-        "Enter an SSH SCP-style URL, e.g., "
-        "[$text_primary]git@github.com:user/repo.git[/]. If the repository is"
-        "private, make sure you have your SSH key pair set up before using "
-        "this option."
-    )
 
 
 class SectionLabel(StrEnum):
@@ -169,7 +149,6 @@ class SectionLabel(StrEnum):
     dom_nodes = " DOM Nodes "
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
-    init_new_repo = "Initialize New Chezmoi Repository"
     memory_usage = " Memory Usage "
     password_managers = "Password Manager Information"
     paths_with_status = "Paths with Status"

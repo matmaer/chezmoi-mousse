@@ -4,9 +4,9 @@
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
 > [!WARNING]
-> It's safe to use the app to visualize your `chezmoi` repository but before running any write operations, see the [Use Case](#use-case) and [Test](#test) section.
+> It's safe to use the app to visualize your `chezmoi` repository, before running write operations, see the [Use Case](#use-case) and [Test](#test) section.
 >
-> Write operations are partially implemented, next priority is supporting `chezmoi init`.
+> Write operations are partially implemented, next priority is packaging the app.
 >
 > There could be some bugs left in the current state, this project is work in progress, please share any issues on the [Issues](https://github.com/matmaer/chezmoi-mousse/issues) page
 
@@ -22,7 +22,8 @@ Check out the [Wiki Screenshots](https://github.com/matmaer/chezmoi-mousse/wiki/
 
 ## Use Case
 
-- Can be safely used to visualize your chezmoi repository, as no write operations are enabled by default.
+- You have an initilazed or existing chezmoi repository.
+- Can be safely used to visualize any chezmoi repository, as no write operations are enabled by default.
 - To enable operations, press `D`, `d` or click the `Remove --dry-run` or `Add --dry-run` text in the footer. This will enable/disable commands changing your files or the chezmoi state. Test first in a VM or container, see the [Test](#test) section.
 - Run the app with your own user. Running the app with `sudo` or elevated permissions is **not needed** and **should be avoided**. Chezmoi [explicitly](https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#can-i-use-chezmoi-to-manage-files-outside-my-home-directory) discourages operating outside of your home directory.
 - The current implementation has only been used or tested with `autocommit` enabled, feedback is welcome on the issues page.

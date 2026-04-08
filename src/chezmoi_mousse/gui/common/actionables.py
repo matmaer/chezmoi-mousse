@@ -31,7 +31,6 @@ __all__ = [
     "OpButton",
     "OperateButtons",
     "SwitchSlider",
-    "SwitchWithLabel",
     "TabButton",
     "TabButtons",
 ]
@@ -52,10 +51,6 @@ class FlatLink(Link):
     def __init__(self, link_enum: LinkBtn) -> None:
         super().__init__(text=link_enum.link_text, url=link_enum.link_url)
         self.link_enum = link_enum
-
-    def on_mount(self) -> None:
-        if self.link_enum in (LinkBtn.chezmoi_guess, LinkBtn.chezmoi_init):
-            self.add_class(Tcss.init_docs_link)
 
 
 class FlatButtonsVertical(Vertical):
@@ -100,7 +95,6 @@ class OpButton(Button, AppType):
                 OpBtnEnum.cancel,
                 OpBtnEnum.destroy_run,
                 OpBtnEnum.forget_run,
-                OpBtnEnum.init_run,
                 OpBtnEnum.re_add_run,
                 OpBtnEnum.reload,
             )

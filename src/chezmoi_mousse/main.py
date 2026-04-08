@@ -33,10 +33,10 @@ PRETEND_CHEZMOI_NOT_FOUND = "PRETEND_CHEZMOI_NOT_FOUND"
 def run_app():
     git_bin = shutil.which(GIT)
     if git_bin is None:
-        print(GIT_NOT_FOUND)
+        print(GIT_NOT_FOUND)  # pytest-cov: ignore
         return
     if os.environ.get(CHEZMOI_SUBSHELL) == "1":
-        print(IN_SUBSHELL)
+        print(IN_SUBSHELL)  # pytest-cov: ignore
         return
 
     chezmoi_bin = shutil.which(CHEZMOI)

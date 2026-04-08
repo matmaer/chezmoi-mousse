@@ -54,9 +54,6 @@ class VerbArgs(Enum):
     )
     include_dirs = "--include=dirs"
     include_files = "--include=files"
-    init_do_not_guess = "--guess-repo-url=false"
-    init_guess_https = "--guess-repo-url=true"
-    init_guess_ssh = ("--guess-repo-url=true", "--ssh")
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
     version = "--version"
@@ -97,7 +94,6 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     source_path = (ReadVerb.source_path.value,)
-    status = (ReadVerb.status.value,)
     status_dirs = (
         ReadVerb.status.value,
         VerbArgs.path_style_absolute.value,
@@ -112,17 +108,12 @@ class ReadCmd(Enum):
     verify = (ReadVerb.verify.value,)
     version = (VerbArgs.version.value,)
 
-    @property
-    def short_cmd(self) -> str:
-        return f"{CHEZMOI} {self.value[0]}"
-
 
 class WriteVerb(Enum):
     add = "add"
     apply = "apply"
     destroy = "destroy"
     forget = "forget"
-    init = "init"
     re_add = "re-add"
 
 
@@ -131,10 +122,6 @@ class WriteCmd(Enum):
     apply = (WriteVerb.apply.value,)
     destroy = (WriteVerb.destroy.value,)
     forget = (WriteVerb.forget.value,)
-    init_guess_https = (WriteVerb.init.value, VerbArgs.init_guess_https.value)
-    init_guess_ssh = (WriteVerb.init.value,) + VerbArgs.init_guess_ssh.value
-    init_new = (WriteVerb.init.value,)
-    init_no_guess = (WriteVerb.init.value, VerbArgs.init_do_not_guess.value)
     re_add = (WriteVerb.re_add.value,)
 
 
@@ -298,11 +285,7 @@ class ChezmoiCommand:
         return command_result
 
     def perform(
-        self,
-        write_cmd: WriteCmd,
-        *,
-        path_arg: Path | None = None,
-        init_arg: str | None = None,
+        self, write_cmd: WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
         if self.chezmoi_bin is None:
             raise ValueError("chezmoi_bin is not set")
@@ -312,11 +295,7 @@ class ChezmoiCommand:
             else (self.chezmoi_bin,) + GlobalArgs.dry_run.value
         )
         command: tuple[str, ...] = global_cmd + write_cmd.value
-        if init_arg is not None:
-            if write_cmd != WriteCmd.init_new:
-                raise ValueError("init_arg only valid with WriteCmd.init_new")
-            command += (init_arg,)
-        elif path_arg is not None:
+        if path_arg is not None:
             command += (str(path_arg),)
         result: CompletedProcess[str] = run_chezmoi_cmd(command, cmd_timeout=7)
         command_result = CommandResult(

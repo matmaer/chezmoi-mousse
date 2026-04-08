@@ -39,23 +39,6 @@
   min-width: 78;
 }
 
-.single_switch {
-  background-tint: $surface-lighten-1;
-  background: $surface-lighten-1;
-  border-top: inner $surface-lighten-1;
-  border-bottom: inner $surface-lighten-1;
-  border-left: none;
-  color: $foreground-darken-1;
-  margin-left: 1;
-  padding: 0 1 0 2;
-  height: 3;
-  width: auto;
-  & Switch {
-    background: $surface-lighten-1;
-    background-tint: $surface-lighten-1;
-  }
-}
-
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -143,84 +126,6 @@ FlatLink {
     background: $primary-muted;
     background-tint: $primary-muted;
     border: wide $primary-muted;
-  }
-  &.init_docs_link {
-    background: $panel;
-    background-tint: $panel;
-    border-top: wide $panel;
-    border-bottom: wide $panel;
-    border-right: wide $panel;
-    border-left: none;
-    width: auto;
-    padding: 0 0 0 1;
-  }
-}
-
-InputInitCloneRepo {
-  .input_select {
-    background-tint: $panel;
-    background: $panel;
-    border: wide $panel;
-    height: 3;
-    width: auto;
-    & > SelectOverlay {
-      width: auto;
-      &:focus {
-        background: $panel;
-        background-tint: $panel;
-      }
-    }
-    &.-expanded {
-      & > SelectOverlay {
-        display: block;
-        border: round $accent;
-        padding: 0;
-      }
-    }
-    SelectCurrent {
-      border: none;
-      background-tint: $panel;
-      background: $panel;
-      padding: 0;
-      width: auto;
-      Static#label {
-        width: auto;
-      }
-      .arrow {
-        color: $accent;
-      }
-    }
-  }
-  .input_field {
-    border: wide $panel;
-    border-left: none;
-    width: 1fr;
-    &:focus {
-      border-left: none;
-      border: wide $panel-lighten-1;
-    }
-    &>.input--cursor {
-      color: green;
-      text-style: none;
-    }
-    &>.input--selection {
-      color: $text-success;
-    }
-    &>.input--placeholder, &>.input--suggestion {
-      color: $text-disabled;
-    }
-    &.-invalid {
-      border: wide $error 30%;
-    }
-    &.-invalid:focus {
-      border: wide $error 50%;
-    }
-    &.-valid {
-      border: wide $success 30%;
-    }
-    &.-valid:focus {
-      border: wide $success 50%;
-    }
   }
 }
 

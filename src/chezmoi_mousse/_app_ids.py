@@ -53,8 +53,6 @@ class AppIds:
     def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
         if self.canvas_name == ScreenName.init:
             return {
-                self.op_btn.init_review: OpBtnEnum.init_review,
-                self.op_btn.init_run: OpBtnEnum.init_run,
                 self.op_btn.reload: OpBtnEnum.reload,
                 self.op_btn.exit_app: OpBtnEnum.exit_app,
             }
@@ -189,11 +187,6 @@ class OperateButtonIds:
         self.forget_review_q: str = f"#{self.forget_review}"
         self.forget_run: str = ids.op_btn_id(operation=OpBtnLabel.forget_run)
         self.forget_run_q: str = f"#{self.forget_run}"
-
-        self.init_review: str = ids.op_btn_id(operation=OpBtnLabel.init_review)
-        self.init_review_q: str = f"#{self.init_review}"
-        self.init_run: str = ids.op_btn_id(operation=OpBtnLabel.init_run)
-        self.init_run_q: str = f"#{self.init_run}"
 
         self.re_add_review: str = ids.op_btn_id(operation=OpBtnLabel.re_add_review)
         self.re_add_review_q: str = f"#{self.re_add_review}"

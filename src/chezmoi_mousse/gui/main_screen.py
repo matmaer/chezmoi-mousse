@@ -58,9 +58,7 @@ class MainScreen(Screen[None], AppType):
             yield TabPane(TabLabel.help, HelpTab(), id=TabLabel.help)
             if self.app.dev_mode is True:
                 from .debug_tab import DebugTab
-                from .init_tab import InitTab
 
-                yield TabPane(TabLabel.init, InitTab(), id=TabLabel.init)
                 yield TabPane(TabLabel.debug, DebugTab(), id=TabLabel.debug)
         yield Footer()
 

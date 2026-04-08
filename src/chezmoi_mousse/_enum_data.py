@@ -44,13 +44,6 @@ class OpInfoString(StrEnum):
         " will be recursed in.[/]"
     )
     re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-    init_new_info = (
-        "Ready to initialize a new chezmoi repository. Toggle the "
-        "[$foreground-darken-1 on $surface-lighten-1] "
-        f"{SwitchLabel.init_repo} [/]"
-        "switch to initialize by cloning an existing Github repository."
-    )
-    init_subtitle = "initialize chezmoi repository"
 
 
 class OpBtnLabel(StrEnum):
@@ -66,8 +59,6 @@ class OpBtnLabel(StrEnum):
     exit_app = "Exit App"
     forget_review = "Review Forget Path"
     forget_run = "Run Chezmoi Forget"
-    init_review = "Review Chezmoi Init"
-    init_run = "Run Chezmoi Init"
     list_test_paths = "List Test Paths"
     log_memory = "Log Memory Usage"
     re_add_review = "Review Re-Add Path"
@@ -171,19 +162,6 @@ class OpBtnEnum(Enum):
         op_info_string=OpInfoString.re_add_path_info,
         op_info_title=OpInfoString.run_completed,
     )
-    init_review = OpBtnData(
-        label=OpBtnLabel.init_review,
-        write_cmd=WriteCmd.init_new,
-        op_info_string=OpInfoString.init_new_info,
-        op_info_subtitle=OpInfoString.init_subtitle,
-        op_info_title=OpInfoString.ready_to_run,
-    )
-    init_run = OpBtnData(
-        label=OpBtnLabel.init_run,
-        write_cmd=WriteCmd.init_new,
-        op_info_string=OpInfoString.init_new_info,
-        op_info_title=OpInfoString.run_completed,
-    )
 
     # Allow access to dataclass attributes directly from the Enum member,
     # without needing to go through the value attribute
@@ -260,13 +238,6 @@ class SwitchData:
 
 class SwitchEnum(Enum):
 
-    init_repo_switch = SwitchData(
-        label=SwitchLabel.init_repo,
-        enabled_tooltip=(
-            "Initialize a new chezmoi repository, or clone an existing remote "
-            "chezmoi repository."
-        ),
-    )
     expand_all = SwitchData(
         label=SwitchLabel.expand_all,
         enabled_tooltip=(
