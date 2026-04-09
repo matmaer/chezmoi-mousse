@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -149,7 +150,10 @@ class MainScreen(Screen[None], AppType):
         contents_views = self.query(ContentsView).results()
         diff_views = self.query(DiffView).results()
         git_log_views = self.query(GitLogView).results()
-        for view in chain(diff_views, contents_views, git_log_views):
+        all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
+            diff_views, contents_views, git_log_views
+        )
+        for view in all_views:
             view.remove_children()
             view.mounted.clear()
 
