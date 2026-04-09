@@ -64,8 +64,6 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.review_btn_enums: set[OpBtnEnum] = OpBtnEnum.review_btn_enums()
-        self.run_btn_enums: set[OpBtnEnum] = OpBtnEnum.run_btn_enums()
         self.run_cmd_results: list[CommandResult] = []
         if CMD.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
@@ -106,7 +104,7 @@ class MainScreen(Screen[None], AppType):
         self.loading_modal = LoadingModal(btn_enum)
         await self.app.push_screen(self.loading_modal)
 
-        if btn_enum in self.run_btn_enums:
+        if btn_enum in OpBtnEnum.run_btn_enums():
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.operate_info.update_write_cmd_info().wait()
             await self.loading_modal.run_all_read_cmds().wait()
@@ -195,7 +193,7 @@ class MainScreen(Screen[None], AppType):
         else:
             event.stop()
         self._set_display(event.button)
-        if event.button.btn_enum in self.review_btn_enums:
+        if event.button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.reset_widgets()
             self.operate_info.update_review_info(event.button)
             return
@@ -203,7 +201,7 @@ class MainScreen(Screen[None], AppType):
             self.command_output.reset_widgets()
             await self._push_loading_modal(OpBtnEnum.reload).wait()
         elif (
-            event.button.btn_enum in self.run_btn_enums
+            event.button.btn_enum in OpBtnEnum.run_btn_enums()
             or event.button.btn_enum == OpBtnEnum.refresh_tree
         ):
             await self._push_loading_modal(event.button.btn_enum).wait()
@@ -339,11 +337,11 @@ class MainScreen(Screen[None], AppType):
         self.main_tabs.display = False
         set_left_side_display(False)
         set_switch_slider_display(False)
-        if button.btn_enum in self.review_btn_enums:
+        if button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.display = False
             self.operate_info.display = True
             set_right_side_display(True)
-        elif button.btn_enum in self.run_btn_enums:
+        elif button.btn_enum in OpBtnEnum.run_btn_enums():
             self.command_output.display = True
             self.operate_info.display = True
             set_right_side_display(False)
