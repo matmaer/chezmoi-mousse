@@ -63,6 +63,7 @@ class MainScreen(Screen[None], AppType):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.review_btn_enums: set[OpBtnEnum] = OpBtnEnum.review_btn_enums()
         self.run_cmd_results: list[CommandResult] = []
         if CMD.dev_mode is True:
             self.notify(LogString.dev_mode_enabled)
@@ -190,7 +191,7 @@ class MainScreen(Screen[None], AppType):
         else:
             event.stop()
         self._set_display(event.button)
-        if event.button.btn_enum in self.app.review_btn_enums:
+        if event.button.btn_enum in self.review_btn_enums:
             self.command_output.reset_widgets()
             self.operate_info.update_review_info(event.button)
             return
@@ -326,7 +327,7 @@ class MainScreen(Screen[None], AppType):
         self.main_tabs.display = False
         self._get_set_left_side_display(button.app_ids, False)
         self._get_set_switch_slider_display(False)
-        if button.btn_enum in self.app.review_btn_enums:
+        if button.btn_enum in self.review_btn_enums:
             self.command_output.display = False
             self.operate_info.display = True
             self._get_set_right_side_display(button.app_ids, True)
