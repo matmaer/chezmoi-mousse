@@ -6,7 +6,7 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import CMD, AppType, OpBtnEnum, OperateString, OpInfoString, Tcss
+from chezmoi_mousse import CMD, OpBtnEnum, OperateString, OpInfoString, Tcss
 
 from .actionables import OpButton
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 
 
-class OperateInfo(Static, AppType):
+class OperateInfo(Static):
 
     changes_enabled: reactive[bool] = reactive(False, init=False)
 

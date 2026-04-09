@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Switch
 
-from chezmoi_mousse import IDS, AppType, DirContentBtn
+from chezmoi_mousse import IDS, DirContentBtn
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.managed_tree import DestDirTree, ManagedTree
@@ -12,7 +12,7 @@ from .common.switchers import ViewSwitcher
 __all__ = ["ReAddTab"]
 
 
-class ReAddTab(Container, AppType):
+class ReAddTab(Container):
 
     def compose(self) -> ComposeResult:
         with Horizontal():

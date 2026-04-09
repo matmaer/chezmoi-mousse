@@ -73,7 +73,7 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class OpButton(Button, AppType):
+class OpButton(Button):
 
     def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: "AppIds") -> None:
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)

@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Button, ContentSwitcher
 
-from chezmoi_mousse import IDS, AppType, TabLabel
+from chezmoi_mousse import IDS, TabLabel
 
 from .common.actionables import TabButtons
 from .common.loggers import AppLog, CmdLog
@@ -11,7 +11,7 @@ from .common.loggers import AppLog, CmdLog
 __all__ = ["LogsTab"]
 
 
-class LogsTab(Vertical, AppType):
+class LogsTab(Vertical):
 
     def compose(self) -> ComposeResult:
         yield TabButtons(IDS.logs, (TabLabel.cmd_log, TabLabel.app_log))

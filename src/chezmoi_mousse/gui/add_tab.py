@@ -8,7 +8,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, Tcss, Utils
+from chezmoi_mousse import CMD, IDS, OpBtnEnum, Tcss, Utils
 
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -117,7 +117,7 @@ class AddTabContentsView(ContentsView):
         self.current_path = show_path
 
 
-class AddTab(Horizontal, AppType):
+class AddTab(Horizontal):
 
     def compose(self) -> ComposeResult:
         yield Vertical(

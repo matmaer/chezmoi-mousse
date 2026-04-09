@@ -3,7 +3,7 @@ from enum import StrEnum
 from textual.reactive import reactive
 from textual.widgets import Header, Static
 
-from chezmoi_mousse import AppType, Chars, Tcss
+from chezmoi_mousse import Chars, Tcss
 
 __all__ = ["CustomHeader", "HeaderTitle"]
 
@@ -14,7 +14,7 @@ class HeaderTitle(StrEnum):
     install_help = "- c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  -"
 
 
-class CustomHeader(Header, AppType):
+class CustomHeader(Header):
 
     changes_enabled: reactive[bool] = reactive(False)
 

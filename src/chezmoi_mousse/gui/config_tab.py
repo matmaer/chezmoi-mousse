@@ -7,7 +7,7 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
 
-from chezmoi_mousse import IDS, AppType, FlatBtnLabel, SectionLabel, Tcss
+from chezmoi_mousse import IDS, FlatBtnLabel, SectionLabel, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 __all__ = ["ConfigTab"]
 
 
-class CatConfigView(Vertical, AppType):
+class CatConfigView(Vertical):
 
     cat_config_stdout: reactive[str | None] = reactive(None, init=False)
 
@@ -42,7 +42,7 @@ class IgnoredView(Vertical):
         pretty.update(ignored_stdout.splitlines())
 
 
-class DoctorTableView(Vertical, AppType):
+class DoctorTableView(Vertical):
 
     doctor_stdout: reactive[str | None] = reactive(None, init=False)
 
@@ -55,7 +55,7 @@ class DoctorTableView(Vertical, AppType):
         doctor_table.doctor_std_out = doctor_stdout
 
 
-class TemplateDataView(Vertical, AppType):
+class TemplateDataView(Vertical):
 
     template_data_stdout: reactive[str | None] = reactive(None, init=False)
 
@@ -68,7 +68,7 @@ class TemplateDataView(Vertical, AppType):
         pretty.update(json.loads(template_data_stdout))
 
 
-class ConfigTab(Horizontal, AppType):
+class ConfigTab(Horizontal):
 
     command_results: reactive["CachedData | None"] = reactive(None, init=False)
 
