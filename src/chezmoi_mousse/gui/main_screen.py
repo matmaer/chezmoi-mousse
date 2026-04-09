@@ -39,7 +39,7 @@ from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["MainScreen"]
 
@@ -299,30 +299,37 @@ class MainScreen(Screen[None], AppType):
                 btn.display = False
             reload_btn.display = True
 
-    def _get_set_left_side_display(self, ids: "AppIds", display: bool) -> None:
-        left_side = self.query_one(ids.container.left_side_q, Vertical)
-        left_side.display = display
-
-    def _get_set_right_side_display(self, ids: "AppIds", display: bool) -> None:
-        right_side: Vertical | ContentsView | None = None
-        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
-            right_side = self.query_one(ids.container.right_side_q, Vertical)
-        elif ids.canvas_name == TabLabel.add:
-            right_side = self.query_one(ids.container.contents_q, ContentsView)
-        else:
-            raise NotImplementedError(f"Not implemented for {ids.canvas_name}")
-        right_side.display = display
-
-    def _get_set_switch_slider_display(self, ids: "AppIds", display: bool) -> None:
-        switch_slider = self.query_one(ids.switch_slider_q, SwitchSlider)
-        switch_slider.display = display
-
     def _set_display(self, button: OpButton) -> None:
+
+        def set_left_side_display(display: bool) -> None:
+            left_side = self.query_one(button.app_ids.container.left_side_q, Vertical)
+            left_side.display = display
+
+        def set_right_side_display(display: bool) -> None:
+            right_side: Vertical | ContentsView | None = None
+            if button.app_ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
+                right_side = self.query_one(
+                    button.app_ids.container.right_side_q, Vertical
+                )
+            elif button.app_ids.canvas_name == TabLabel.add:
+                right_side = self.query_one(
+                    button.app_ids.container.contents_q, ContentsView
+                )
+            else:
+                raise NotImplementedError(
+                    f"Not implemented for {button.app_ids.canvas_name}"
+                )
+            right_side.display = display
+
+        def set_switch_slider_display(display: bool) -> None:
+            switch_slider = self.query_one(button.app_ids.switch_slider_q, SwitchSlider)
+            switch_slider.display = display
+
         self._get_set_button_display(button)
         if button.btn_enum in (OpBtnEnum.reload, OpBtnEnum.cancel):
-            self._get_set_left_side_display(button.app_ids, True)
-            self._get_set_right_side_display(button.app_ids, True)
-            self._get_set_switch_slider_display(button.app_ids, True)
+            set_left_side_display(True)
+            set_right_side_display(True)
+            set_switch_slider_display(True)
             self.main_tabs.display = True
             self.op_feed_back.display = False
             self.command_output.display = False
@@ -330,17 +337,17 @@ class MainScreen(Screen[None], AppType):
             return
         self.op_feed_back.display = True
         self.main_tabs.display = False
-        self._get_set_left_side_display(button.app_ids, False)
-        self._get_set_switch_slider_display(button.app_ids, False)
+        set_left_side_display(False)
+        set_switch_slider_display(False)
         if button.btn_enum in self.review_btn_enums:
             self.command_output.display = False
             self.operate_info.display = True
-            self._get_set_right_side_display(button.app_ids, True)
+            set_right_side_display(True)
         elif button.btn_enum in self.run_btn_enums:
             self.command_output.display = True
             self.operate_info.display = True
-            self._get_set_right_side_display(button.app_ids, False)
+            set_right_side_display(False)
         elif button.btn_enum == OpBtnEnum.refresh_tree:
             self.command_output.display = True
             self.operate_info.display = False
-            self._get_set_right_side_display(button.app_ids, False)
+            set_right_side_display(False)
