@@ -124,13 +124,6 @@ class OperateButtons(HorizontalGroup):
             self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = bool(
                 CMD.cache.no_status_paths
             )
-        all_buttons: list[OpButton] = [
-            b for b in self.query_children().results() if isinstance(b, OpButton)
-        ]
-        self.run_buttons = [b for b in all_buttons if b.id in self.ids.run_btn_ids]
-        self.review_buttons = [
-            b for b in all_buttons if b.id in self.ids.review_btn_ids
-        ]
 
     def set_path_arg(self, path: "Path") -> None:
         for btn_enum in self.ids.op_btn_map.values():
