@@ -85,7 +85,7 @@ class AppLog(RichLoggers):
         self.write_ready(LogString.app_log_initialized)
         if CMD.run_cmd.chezmoi_bin is not None:
             self.write_info(LogString.using_chezmoi_bin + f" {CMD.run_cmd.chezmoi_bin}")
-        if self.app.dev_mode is True:
+        if CMD.dev_mode is True:
             self.write_warning(
                 f"{Chars.warning_sign} {LogString.dev_mode_enabled} "
                 f"{Chars.warning_sign} "

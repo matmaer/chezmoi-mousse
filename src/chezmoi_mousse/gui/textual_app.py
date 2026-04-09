@@ -104,7 +104,7 @@ class ChezmoiGUI(App[None]):
         super().__init__()
 
         CMD.run_cmd.chezmoi_bin = chezmoi_bin
-        self.dev_mode: bool = dev_mode
+        CMD.dev_mode = dev_mode
         self.review_btn_enums = OpBtnEnum.review_btn_enums()
         self.run_btn_enums = OpBtnEnum.run_btn_enums()
         self.startup_completed = False
