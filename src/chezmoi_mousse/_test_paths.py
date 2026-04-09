@@ -174,7 +174,7 @@ class TestPaths:
         self.all_paths: AllTestPaths = AllTestPaths()
 
     @cached_property
-    def faker(self):
+    def _faker(self):
         from faker import Faker
 
         return Faker()
@@ -191,7 +191,7 @@ class TestPaths:
         file_path = self.all_paths.binary_file_path
         if file_path.exists():
             return []
-        content = self.faker.binary(length=2048)
+        content = self._faker.binary(length=2048)
         with Path.open(file_path, "wb") as f:
             f.write(content)
         return [str(file_path)]
@@ -200,7 +200,7 @@ class TestPaths:
         file_path = self.all_paths.large_file_path
         if file_path.exists():
             return []
-        content = self.faker.text(max_nb_chars=700000)
+        content = self._faker.text(max_nb_chars=700000)
         with Path.open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         return [str(file_path)]
@@ -217,7 +217,7 @@ class TestPaths:
         if file_path.exists():
             return []
         parts: list[str] = []
-        parts.append(self.faker.sentence(nb_words=6))
+        parts.append(self._faker.sentence(nb_words=6))
         parts.append(
             "".join(random.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60))
         )
@@ -236,11 +236,11 @@ class TestPaths:
         )
         parts.append(
             ProblemChars.BIDI_RLO
-            + self.faker.word()
+            + self._faker.word()
             + " .ext"
             + ProblemChars.BIDI_PDF
             + ProblemChars.ZWS
-            + self.faker.word()
+            + self._faker.word()
         )
         parts.append("A" + ProblemChars.ZWJ + "B" + ProblemChars.ZWJ + "C")
         with Path.open(file_path, "w", encoding="utf-8") as f:
@@ -252,17 +252,17 @@ class TestPaths:
 
         def get_fake_toml_string() -> str:
             doc = tomlkit.document()
-            doc["title"] = self.faker.sentence(nb_words=6)
-            doc["version"] = self.faker.pyfloat(
+            doc["title"] = self._faker.sentence(nb_words=6)
+            doc["version"] = self._faker.pyfloat(
                 left_digits=1, right_digits=2, positive=True
             )
-            doc["debug"] = self.faker.boolean()
-            doc["hosts"] = [self.faker.hostname() for _ in range(10)]
-            doc["ports"] = [self.faker.port_number() for _ in range(10)]
+            doc["debug"] = self._faker.boolean()
+            doc["hosts"] = [self._faker.hostname() for _ in range(10)]
+            doc["ports"] = [self._faker.port_number() for _ in range(10)]
             some_table = tomlkit.table()
-            some_table["id"] = self.faker.uuid4()
-            some_table["date"] = self.faker.date_time().isoformat()
-            some_table["text"] = self.faker.paragraph(nb_sentences=12)
+            some_table["id"] = self._faker.uuid4()
+            some_table["date"] = self._faker.date_time().isoformat()
+            some_table["text"] = self._faker.paragraph(nb_sentences=12)
             doc["some_table"] = some_table
             return doc.as_string()
 
