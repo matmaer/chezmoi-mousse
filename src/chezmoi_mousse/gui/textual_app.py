@@ -143,7 +143,7 @@ class ChezmoiGUI(App[None]):
         else:
             raise ValueError(f"Unknown active_tab on MainScreen: {tab_to_query}")
 
-    def get_switch_slider_widget(self) -> SwitchSlider | None:
+    def _get_switch_slider_widget(self) -> SwitchSlider | None:
         if not isinstance(self.screen, MainScreen):
             return None
         current_tab_widget = self._get_tab_widget()
@@ -164,7 +164,7 @@ class ChezmoiGUI(App[None]):
             TabLabel.re_add,
             TabLabel.add,
         ):
-            slider: SwitchSlider | None = self.get_switch_slider_widget()
+            slider: SwitchSlider | None = self._get_switch_slider_widget()
             if slider is None:
                 return
             slider_visible = slider.has_class("-visible")
@@ -218,7 +218,7 @@ class ChezmoiGUI(App[None]):
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        slider: SwitchSlider | None = self.get_switch_slider_widget()
+        slider: SwitchSlider | None = self._get_switch_slider_widget()
         if slider is None:
             return
         slider_visible = slider.has_class("-visible")
@@ -239,7 +239,7 @@ class ChezmoiGUI(App[None]):
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         left_side: DestDirTree | Vertical | FlatButtonsVertical | None = None
         operation_buttons = None
-        switch_slider: SwitchSlider | None = self.get_switch_slider_widget()
+        switch_slider: SwitchSlider | None = self._get_switch_slider_widget()
         view_switcher_buttons = None
 
         header = self.screen.query_exactly_one(CustomHeader)
@@ -311,7 +311,7 @@ class ChezmoiGUI(App[None]):
         if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, MainScreen):
                 header = self.screen.query_exactly_one(CustomHeader)
-                switch_slider = self.get_switch_slider_widget()
+                switch_slider = self._get_switch_slider_widget()
                 if (
                     switch_slider is None
                     or header.display is False

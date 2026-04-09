@@ -307,17 +307,16 @@ class MainScreen(Screen[None], AppType):
             raise NotImplementedError(f"Not implemented for {ids.canvas_name}")
         right_side.display = display
 
-    def _get_set_switch_slider_display(self, display: bool) -> None:
-        switch_slider: SwitchSlider | None = self.app.get_switch_slider_widget()
-        if switch_slider is not None:
-            switch_slider.display = display
+    def _get_set_switch_slider_display(self, ids: "AppIds", display: bool) -> None:
+        switch_slider = self.query_one(ids.switch_slider_q, SwitchSlider)
+        switch_slider.display = display
 
     def _set_display(self, button: OpButton) -> None:
         self._get_set_button_display(button)
         if button.btn_enum == OpBtnEnum.reload:
             self._get_set_left_side_display(button.app_ids, True)
             self._get_set_right_side_display(button.app_ids, True)
-            self._get_set_switch_slider_display(True)
+            self._get_set_switch_slider_display(button.app_ids, True)
             self.main_tabs.display = True
             self.op_feed_back.display = False
             self.command_output.display = False
@@ -326,7 +325,7 @@ class MainScreen(Screen[None], AppType):
         self.op_feed_back.display = True
         self.main_tabs.display = False
         self._get_set_left_side_display(button.app_ids, False)
-        self._get_set_switch_slider_display(False)
+        self._get_set_switch_slider_display(button.app_ids, False)
         if button.btn_enum in self.review_btn_enums:
             self.command_output.display = False
             self.operate_info.display = True
