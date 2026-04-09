@@ -13,15 +13,7 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, Tabs
 
-from chezmoi_mousse import (
-    CMD,
-    IDS,
-    BindingAction,
-    BindingDescription,
-    Chars,
-    OpBtnEnum,
-    TabLabel,
-)
+from chezmoi_mousse import CMD, IDS, BindingAction, BindingDescription, Chars, TabLabel
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -105,7 +97,6 @@ class ChezmoiGUI(App[None]):
 
         CMD.run_cmd.chezmoi_bin = chezmoi_bin
         CMD.dev_mode = dev_mode
-        self.run_btn_enums = OpBtnEnum.run_btn_enums()
         self.startup_completed = False
 
     def on_mount(self) -> None:
