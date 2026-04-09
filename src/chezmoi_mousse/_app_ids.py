@@ -16,6 +16,8 @@ class AppIds:
         "op_btn",
         "static",
         "switch",
+        "switch_slider",
+        "switch_slider_q",
         "tree",
         "view",
     )
@@ -29,6 +31,8 @@ class AppIds:
         self.op_btn = OperateButtonIds(self)
         self.static = StaticIds(self)
         self.switch = SwitchIds(self)
+        self.switch_slider = f"{self.canvas_name.name}_switch_slider"
+        self.switch_slider_q = f"#{self.switch_slider}"
         self.view = ViewIds(self)
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
