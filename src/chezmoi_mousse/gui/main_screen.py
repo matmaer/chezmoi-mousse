@@ -145,11 +145,10 @@ class MainScreen(Screen[None], AppType):
     @min_wait
     async def _purge_views_cache(self) -> None:
         self.loading_modal.label_text = LoadingLabel.purge_cache.with_color
-        contents_views = self.query(ContentsView).results()
-        diff_views = self.query(DiffView).results()
-        git_log_views = self.query(GitLogView).results()
         all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
-            diff_views, contents_views, git_log_views
+            self.query(DiffView).results(),
+            self.query(ContentsView).results(),
+            self.query(GitLogView).results(),
         )
         for view in all_views:
             view.remove_children()
