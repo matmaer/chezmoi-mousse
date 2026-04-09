@@ -231,20 +231,20 @@ class DebugTab(Horizontal, AppType):
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
+        if event.button.label == OpBtnLabel.log_memory:
+            self._write_to_memory_log(auto=False)
+            return
+        result: str | list[str] = ""
         if event.button.label == OpBtnLabel.list_test_paths:
             result = self._list_existing_test_paths()
-            self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
-            CMD.cache.update_path_sets()
-            self.test_paths_static.update(result)
         elif event.button.label == OpBtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
-            CMD.cache.update_path_sets()
-            self.test_paths_static.update("\n".join(result))
         elif event.button.label == OpBtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
-            CMD.cache.update_path_sets()
+        CMD.cache.update_path_sets()
+        if isinstance(result, str):
+            self.test_paths_static.update(result)
+        else:
             self.test_paths_static.update("\n".join(result))
-        elif event.button.label == OpBtnLabel.log_memory:
-            self._write_to_memory_log(auto=False)
