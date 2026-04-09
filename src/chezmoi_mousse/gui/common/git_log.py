@@ -6,7 +6,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppType, ReadCmd
+from chezmoi_mousse import CMD, AppType, ReadCmd, Utils
 
 from .messages import LogCmdResultMsg
 
@@ -56,14 +56,14 @@ class GitLogView(Container, AppType):
                 add_row_with_style(columns, row_color["error"])
             else:
                 data_table.add_row(*columns)
-        return ScrollableContainer(data_table, id=self.app.path_to_id(path))
+        return ScrollableContainer(data_table, id=Utils.path_to_id(path))
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
         self.hide_all_containers()
-        sc_id = self.app.path_to_id(show_path)
-        sc_id_q = self.app.path_to_qid(show_path)
+        sc_id = Utils.path_to_id(show_path)
+        sc_id_q = Utils.path_to_qid(show_path)
         try:
             container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True

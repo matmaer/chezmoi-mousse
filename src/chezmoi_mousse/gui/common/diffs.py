@@ -6,7 +6,16 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppIds, AppType, DirContentBtn, ReadCmd, TabLabel, Tcss
+from chezmoi_mousse import (
+    CMD,
+    AppIds,
+    AppType,
+    DirContentBtn,
+    ReadCmd,
+    TabLabel,
+    Tcss,
+    Utils,
+)
 
 from .messages import LogCmdResultMsg
 
@@ -83,8 +92,8 @@ class DiffView(Container, AppType):
         if show_path is None:
             return
         self.hide_all_containers()
-        sc_id = self.app.path_to_id(show_path)
-        sc_id_q = self.app.path_to_qid(show_path)
+        sc_id = Utils.path_to_id(show_path)
+        sc_id_q = Utils.path_to_qid(show_path)
         try:
             container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True

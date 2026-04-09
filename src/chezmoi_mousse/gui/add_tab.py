@@ -8,7 +8,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, Tcss
+from chezmoi_mousse import CMD, IDS, AppType, OpBtnEnum, Tcss, Utils
 
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -100,8 +100,8 @@ class AddTabContentsView(ContentsView):
         if show_path is None:
             return
         self.hide_all_containers()
-        sc_id = self.app.path_to_id(show_path)
-        sc_id_q = self.app.path_to_qid(show_path)
+        sc_id = Utils.path_to_id(show_path)
+        sc_id_q = Utils.path_to_qid(show_path)
         try:
             container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True

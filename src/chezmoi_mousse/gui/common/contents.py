@@ -9,7 +9,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss
+from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss, Utils
 
 from .messages import LogCmdResultMsg
 
@@ -51,7 +51,7 @@ class ContentsView(Container, AppType):
         widgets.append(
             Static("<- Click a file to see its contents.", classes=Tcss.added)
         )
-        return ScrollableContainer(*widgets, id=self.app.path_to_id(dir_path))
+        return ScrollableContainer(*widgets, id=Utils.path_to_id(dir_path))
 
     def _create_file_container(self, file_path: Path) -> ScrollableContainer:
         widgets: list[Label | Static] = []
@@ -93,14 +93,14 @@ class ContentsView(Container, AppType):
         text_obj = Text(file_contents)
         ReprHighlighter().highlight(text_obj)
         widgets.append(Static(text_obj))
-        return ScrollableContainer(*widgets, id=self.app.path_to_id(file_path))
+        return ScrollableContainer(*widgets, id=Utils.path_to_id(file_path))
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
         self.hide_all_containers()
-        sc_id = self.app.path_to_id(show_path)
-        sc_id_q = self.app.path_to_qid(show_path)
+        sc_id = Utils.path_to_id(show_path)
+        sc_id_q = Utils.path_to_qid(show_path)
         try:
             container = self.query_one(sc_id_q, ScrollableContainer)
             container.display = True

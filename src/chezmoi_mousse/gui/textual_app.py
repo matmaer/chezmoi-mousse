@@ -1,8 +1,6 @@
 import dataclasses
-import os
-import zlib
 from math import ceil
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 from rich.color import Color
 from rich.segment import Segment, Segments
@@ -39,9 +37,6 @@ from .logs_tab import LogsTab
 from .main_screen import MainScreen
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 __all__ = ["ChezmoiGUI"]
 
@@ -131,14 +126,6 @@ class ChezmoiGUI(App[None]):
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
-
-    def path_to_id(self, p: "Path") -> str:
-        b = os.fsencode(os.fspath(p))  # safe, uses fs encoding + surrogateescape
-        crc = zlib.crc32(b) & 0xFFFFFFFF  # 0xFFFFFFFF to ensure unsigned 32-bit integer
-        return "p_" + str(crc)
-
-    def path_to_qid(self, p: "Path") -> str:
-        return f"#{self.path_to_id(p)}"
 
     def get_theme_var(self, theme_var: str) -> str:
         # "#FF0000" for debugging to spot missing conditions
