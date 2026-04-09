@@ -96,12 +96,10 @@ class ManagedTree(Tree[Path], AppType):
     def _create_colored_label(self, path: Path) -> str:
         status = CMD.cache.get_path_status(path, self.ids)
         color = "dim"
-        color_var = status.color_var
         if path in CMD.cache.sets.n_dirs:
-            color_var = "text-secondary"
-            color = self.app.get_theme_var(color_var)
+            color = self.app.theme_variables.get("text-secondary", "#FF0000")
         elif path in CMD.cache.sets.status_dirs | CMD.cache.sets.status_files:
-            color = self.app.get_theme_var(color_var)
+            color = self.app.theme_variables.get(status.color_var, "#FF0000")
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{path.name}[/]"
 

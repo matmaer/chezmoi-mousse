@@ -116,10 +116,6 @@ class ChezmoiGUI(App[None]):
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
 
-    def get_theme_var(self, theme_var: str) -> str:
-        # "#FF0000" for debugging to spot missing conditions
-        return self.theme_variables.get(theme_var, "#FF0000")
-
     def _get_tab_widget(
         self,
     ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab | DebugTab:
