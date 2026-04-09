@@ -295,11 +295,9 @@ class MainScreen(Screen[None], AppType):
             reload_btn.display = True
             button.disabled = True
         elif button.btn_enum == OpBtnEnum.refresh_tree:
+            for btn in op_buttons:
+                btn.display = False
             reload_btn.display = True
-            for btn in review_buttons:
-                btn.display = False
-            for btn in run_buttons:
-                btn.display = False
 
     def _get_set_left_side_display(self, ids: "AppIds", display: bool) -> None:
         left_side = self.query_one(ids.container.left_side_q, Vertical)
