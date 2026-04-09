@@ -63,7 +63,10 @@ class AppIds:
                 self.op_btn.create_diffs: OpBtnEnum.create_diffs,
                 self.op_btn.log_memory: OpBtnEnum.log_memory,
             }
-        _common_buttons = {self.op_btn.reload: OpBtnEnum.reload}
+        _common_buttons = {
+            self.op_btn.cancel: OpBtnEnum.cancel,
+            self.op_btn.reload: OpBtnEnum.reload,
+        }
         if self.canvas_name == TabLabel.add:
             return {
                 self.op_btn.add_review: OpBtnEnum.add_review,
@@ -173,6 +176,9 @@ class OperateButtonIds:
         self.apply_review_q: str = f"#{self.apply_review}"
         self.apply_run: str = ids.op_btn_id(operation=OpBtnLabel.apply_run)
         self.apply_run_q: str = f"#{self.apply_run}"
+
+        self.cancel: str = ids.op_btn_id(operation=OpBtnLabel.cancel)
+        self.cancel_q: str = f"#{self.cancel}"
 
         self.destroy_review: str = ids.op_btn_id(operation=OpBtnLabel.destroy_review)
         self.destroy_review_q: str = f"#{self.destroy_review}"

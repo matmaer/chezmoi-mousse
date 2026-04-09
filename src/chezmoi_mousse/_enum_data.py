@@ -51,6 +51,7 @@ class OpBtnLabel(StrEnum):
     add_run = "Run Chezmoi Add"
     apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
+    cancel = "Cancel"
     create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"
@@ -87,6 +88,7 @@ class OpBtnData:
 
 class OpBtnEnum(Enum):
 
+    cancel = OpBtnData(label=OpBtnLabel.cancel)
     create_diffs = OpBtnData(label=OpBtnLabel.create_diffs)
     create_paths = OpBtnData(label=OpBtnLabel.create_paths)
     list_test_paths = OpBtnData(label=OpBtnLabel.list_test_paths)

@@ -265,12 +265,14 @@ class MainScreen(Screen[None], AppType):
             if isinstance(b, OpButton)
         ]
         reload_btn = self.query_one(button.app_ids.op_btn.reload_q, OpButton)
+        cancel_btn = self.query_one(button.app_ids.op_btn.cancel_q, OpButton)
         run_buttons = [b for b in op_buttons if b.id in button.app_ids.run_btn_ids]
         review_buttons = [
             b for b in op_buttons if b.id in button.app_ids.review_btn_ids
         ]
-        if button.id == button.app_ids.op_btn.reload:
+        if button.id in (button.app_ids.op_btn.reload, button.app_ids.op_btn.cancel):
             reload_btn.display = False
+            cancel_btn.display = False
             for btn in run_buttons:
                 btn.display = False
             for btn in review_buttons:
@@ -287,7 +289,9 @@ class MainScreen(Screen[None], AppType):
                 b for b in run_buttons if b.btn_enum == run_btn_enum
             )
             btn_widget.display = True
+            cancel_btn.display = True
         elif button in run_buttons:
+            cancel_btn.display = False
             reload_btn.display = True
             button.disabled = True
         elif button.btn_enum == OpBtnEnum.refresh_tree:
@@ -317,7 +321,7 @@ class MainScreen(Screen[None], AppType):
 
     def _set_display(self, button: OpButton) -> None:
         self._get_set_button_display(button)
-        if button.btn_enum == OpBtnEnum.reload:
+        if button.btn_enum in (OpBtnEnum.reload, OpBtnEnum.cancel):
             self._get_set_left_side_display(button.app_ids, True)
             self._get_set_right_side_display(button.app_ids, True)
             self._get_set_switch_slider_display(button.app_ids, True)

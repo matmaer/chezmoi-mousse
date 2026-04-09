@@ -95,6 +95,7 @@ class OpButton(Button):
                 OpBtnEnum.forget_run,
                 OpBtnEnum.re_add_run,
                 OpBtnEnum.reload,
+                OpBtnEnum.cancel,
             )
             or btn_id == self.app_ids.op_btn.log_memory
         ):
@@ -114,7 +115,6 @@ class OperateButtons(HorizontalGroup):
         if self.ids.canvas_name == TabLabel.debug:
             # we never toggle display on the debug tab
             return
-        self.reload_btn = self.query_one(self.ids.op_btn.reload_q, OpButton)
         # disable apply review button if no_status_paths is true
         if self.ids.canvas_name == TabLabel.apply:
             self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = bool(
