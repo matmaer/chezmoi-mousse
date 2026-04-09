@@ -280,6 +280,7 @@ class Commands:
     removed_paths: list[Path] = field(default_factory=lambda: [])
     changed_status_paths: list[Path] = field(default_factory=lambda: [])
     dev_mode: bool = False
+    startup_completed: bool = False
 
 
 CMD = Commands()

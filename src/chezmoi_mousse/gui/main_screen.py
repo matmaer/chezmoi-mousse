@@ -99,7 +99,7 @@ class MainScreen(Screen[None], AppType):
         await self._log_all_cmd_results(CMD.cache.cmd_results.all).wait()
         await self._update_config_tab().wait()
         self.loading_modal.dismiss()
-        self.app.startup_completed = True
+        CMD.startup_completed = True
 
     @work
     async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:

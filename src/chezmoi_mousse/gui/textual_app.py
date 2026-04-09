@@ -97,7 +97,6 @@ class ChezmoiGUI(App[None]):
 
         CMD.run_cmd.chezmoi_bin = chezmoi_bin
         CMD.dev_mode = dev_mode
-        self.startup_completed = False
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
