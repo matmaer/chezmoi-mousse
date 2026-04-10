@@ -4,6 +4,7 @@ import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from ._constants import CHEZMOI, GIT
 from ._run_cmd import GlobalArgs, ReadCmd, run_chezmoi_cmd
 from .gui.textual_app import ChezmoiGUI
 
@@ -11,8 +12,6 @@ if TYPE_CHECKING:
     from subprocess import CompletedProcess
 
 
-CHEZMOI = "chezmoi"
-GIT = "git"
 GIT_NOT_FOUND = (
     "'git' command not found. Install git as this app provides no safeguards when "
     "git is not available."

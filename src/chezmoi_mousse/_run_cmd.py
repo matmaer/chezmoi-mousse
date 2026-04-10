@@ -6,6 +6,7 @@ from subprocess import CompletedProcess, run
 
 from textual.widgets import Collapsible, Label, Static
 
+from ._constants import CHEZMOI, GIT
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
@@ -18,8 +19,6 @@ __all__ = [
     "WriteCmd",
     "run_chezmoi_cmd",
 ]
-
-CHEZMOI = "chezmoi"
 
 
 class GlobalArgs(Enum):
@@ -66,7 +65,7 @@ class ReadVerb(Enum):
     diff = "diff"
     doctor = "doctor"
     dump_config = "dump-config"
-    git = "git"
+    git = GIT
     ignored = "ignored"
     managed = "managed"
     source_path = "source-path"

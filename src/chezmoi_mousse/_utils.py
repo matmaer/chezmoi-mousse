@@ -8,6 +8,8 @@ if TYPE_CHECKING:
 
     from pathlib import Path
 
+__all__ = ["Utils"]
+
 
 class Utils:
 
