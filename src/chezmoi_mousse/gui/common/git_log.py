@@ -6,7 +6,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, Utils
+from chezmoi_mousse import CMD, ReadCmd, Utils
 
 from .messages import LogCmdResultMsg
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 __all__ = ["GitLogView"]
 
 
-class GitLogView(Container, AppType):
+class GitLogView(Container):
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 

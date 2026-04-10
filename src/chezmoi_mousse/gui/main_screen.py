@@ -11,7 +11,6 @@ from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
 from chezmoi_mousse import (
     CMD,
     IDS,
-    AppType,
     CommandResult,
     LogString,
     OpBtnEnum,
@@ -44,7 +43,7 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
-class MainScreen(Screen[None], AppType):
+class MainScreen(Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()

@@ -9,7 +9,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import CMD, IDS, AppType, Chars, LogString, ReadVerb
+from chezmoi_mousse import CMD, IDS, Chars, LogString, ReadVerb
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -29,7 +29,7 @@ class LogColor(StrEnum):
     warning = "text-warning"
 
 
-class RichLoggers(RichLog, AppType):
+class RichLoggers(RichLog):
 
     def _get_log_line(self, msg: str, color: LogColor) -> str:
         log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -147,7 +147,6 @@ class DebugLog(RichLoggers):
             "builtins.object",
             "textual.dom.DOMNode",
             "textual.message_pump.MessagePump",
-            "chezmoi_mousse.id_typing.AppType",
         }
 
         pretty_mro = " -> ".join(

@@ -35,12 +35,6 @@ if TYPE_CHECKING:
 
     from pathlib import Path
 
-    from .gui.textual_app import ChezmoiGUI
-
-
-class AppType:
-    app: ChezmoiGUI
-
 
 class Utils:
 
@@ -60,7 +54,6 @@ __all__ = [
     "CMD",
     "IDS",
     "AppIds",
-    "AppType",
     "BindingAction",
     "BindingDescription",
     "CachedData",

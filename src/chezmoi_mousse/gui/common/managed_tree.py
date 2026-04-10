@@ -10,7 +10,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, AppType, Chars, TabLabel, Tcss
+from chezmoi_mousse import CMD, Chars, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -51,7 +51,7 @@ class DestDirTree(Vertical):
         refresh_btn.add_class(Tcss.refresh_button)
 
 
-class ManagedTree(Tree[Path], AppType):
+class ManagedTree(Tree[Path]):
 
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded

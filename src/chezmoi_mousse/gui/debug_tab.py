@@ -9,7 +9,6 @@ from textual.widgets import Button, ContentSwitcher, Label, RichLog, Static
 from chezmoi_mousse import (
     CMD,
     IDS,
-    AppType,
     FlatBtnLabel,
     OpBtnLabel,
     SectionLabel,
@@ -58,7 +57,7 @@ class MemoryUsageView(Vertical):
         yield RichLog(id=IDS.debug.logger.memory, markup=True)
 
 
-class DebugTab(Horizontal, AppType):
+class DebugTab(Horizontal):
 
     MiB = 1024 * 1024
     INTERVAL = 2

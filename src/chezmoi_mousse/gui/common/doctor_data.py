@@ -7,12 +7,12 @@ from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import AppType, Chars, SectionLabel, Tcss
+from chezmoi_mousse import Chars, SectionLabel, Tcss
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 
-class DoctorTable(DataTable[Text], AppType):
+class DoctorTable(DataTable[Text]):
 
     def __init__(self) -> None:
         super().__init__(cursor_type="row")

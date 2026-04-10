@@ -17,7 +17,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CMD, AppType, ReadCmd
+from chezmoi_mousse import CMD, ReadCmd
 
 from .install_help import InstallHelpScreen
 
@@ -119,7 +119,7 @@ class SplashLog(RichLog):
         self.styles.margin = 2
 
 
-class SplashScreen(Screen[None], AppType):
+class SplashScreen(Screen[None]):
 
     def __init__(self) -> None:
         super().__init__()
