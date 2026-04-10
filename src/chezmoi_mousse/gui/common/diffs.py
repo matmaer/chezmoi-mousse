@@ -6,16 +6,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import (
-    CMD,
-    AppIds,
-    AppType,
-    DirContentBtn,
-    ReadCmd,
-    TabLabel,
-    Tcss,
-    Utils,
-)
+from chezmoi_mousse import CMD, AppIds, DirContentBtn, ReadCmd, TabLabel, Tcss, Utils
 
 from .messages import LogCmdResultMsg
 
@@ -39,7 +30,7 @@ DIFF_TCSS = {
 }
 
 
-class DiffView(Container, AppType):
+class DiffView(Container):
 
     show_path: reactive["Path | None"] = reactive(None, init=False)
 

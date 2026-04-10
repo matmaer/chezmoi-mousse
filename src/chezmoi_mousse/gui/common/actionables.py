@@ -7,7 +7,6 @@ from textual.widgets import Button, Label, Link, Switch
 
 from chezmoi_mousse import (
     CMD,
-    AppType,
     FlatBtnLabel,
     LinkBtn,
     OpBtnEnum,
@@ -161,7 +160,7 @@ class SwitchSlider(VerticalGroup):
         self.query_children(HorizontalGroup).last().styles.padding = 0
 
 
-class TabButton(Button, AppType):
+class TabButton(Button):
 
     def __init__(self, *, app_ids: "AppIds", label: TabLabel) -> None:
         super().__init__(classes=Tcss.tab_button, label=label)

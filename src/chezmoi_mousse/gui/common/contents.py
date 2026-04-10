@@ -9,7 +9,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppType, ReadCmd, Tcss, Utils
+from chezmoi_mousse import CMD, ReadCmd, Tcss, Utils
 
 from .messages import LogCmdResultMsg
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ["ContentsView"]
 
 
-class ContentsView(Container, AppType):
+class ContentsView(Container):
 
     class ContentStr(StrEnum):
         cannot_decode = "Path cannot be decoded as UTF-8:"

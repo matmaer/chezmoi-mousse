@@ -5,12 +5,12 @@ from pathlib import Path
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse import CMD, AppType, Chars
+from chezmoi_mousse import CMD, Chars
 
 __all__ = ["FilteredDirTree"]
 
 
-class FilteredDirTree(DirectoryTree, AppType):
+class FilteredDirTree(DirectoryTree):
 
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded

@@ -6,7 +6,7 @@ from textual.containers import Horizontal, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Collapsible, Footer, Label, Pretty, Tree
 
-from chezmoi_mousse import IDS, AppType, Chars, FlatBtnLabel, LinkBtn, ParsedJson, Tcss
+from chezmoi_mousse import IDS, Chars, FlatBtnLabel, LinkBtn, ParsedJson, Tcss
 
 from .common.actionables import FlatButton, FlatLink
 from .common.screen_header import CustomHeader, HeaderTitle
@@ -29,7 +29,7 @@ class CommandsTree(Tree[ParsedJson]):
         super().__init__(label=InstallHelpStrings.install_chezmoi)
 
 
-class InstallHelpScreen(Screen[None], AppType):
+class InstallHelpScreen(Screen[None]):
 
     install_help_data: "ParsedJson | None" = None
 
@@ -74,10 +74,6 @@ class InstallHelpScreen(Screen[None], AppType):
             help_tree.root.add(label=k, data=v)
         for child in help_tree.root.children:
             if child.data is None:
-                self.app.notify(
-                    f"InstallHelpScreen: TreeNode data is None for {child.label}",
-                    severity="error",
-                )
                 continue
             for key, value in child.data.items():
                 new_child = child.add(label=key)
