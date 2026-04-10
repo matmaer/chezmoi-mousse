@@ -242,18 +242,13 @@ class ChezmoiCommand:
         return f"{CHEZMOI} {GlobalArgs.dry_run_arg.value}" if dry_run else f"{CHEZMOI}"
 
     def review_cmd(
-        self,
-        verb_cmd: ReadCmd | WriteCmd,
-        path_arg: Path | None = None,
-        init_args: str | None = None,
+        self, verb_cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
     ) -> str:
         review_cmd = f"{CHEZMOI}"
         if isinstance(verb_cmd, WriteCmd) and not self.changes_enabled:
             review_cmd += f" {GlobalArgs.dry_run_arg.value}"
         review_cmd += f" {_filtered_verb_cmd(verb_cmd.value)}"
-        if init_args is not None:
-            review_cmd += f" {init_args}"
-        elif path_arg is not None:
+        if path_arg is not None:
             review_cmd += f" {path_arg}"
         return f"[$text-primary]{review_cmd}[/]"
 
