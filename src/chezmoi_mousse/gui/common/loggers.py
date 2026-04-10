@@ -21,7 +21,6 @@ __all__ = ["AppLog", "CmdLog", "DebugLog"]
 
 
 class LogColor(StrEnum):
-    dimmed = "text-muted"
     error = "text-error"
     info = "text-primary"
     ready = "accent-darken-2"
