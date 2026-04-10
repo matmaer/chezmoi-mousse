@@ -251,7 +251,7 @@ wheels = [
 [[package]]
 name = "chezmoi-mousse"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "textual" },
 ]
@@ -261,6 +261,7 @@ dev = [
     { name = "black" },
     { name = "docformatter" },
     { name = "faker" },
+    { name = "flit-core" },
     { name = "graphviz" },
     { name = "ipython" },
     { name = "memray" },
@@ -292,6 +293,7 @@ dev = [
     { name = "black" },
     { name = "docformatter" },
     { name = "faker" },
+    { name = "flit-core", specifier = ">=3.12.0" },
     { name = "graphviz" },
     { name = "ipython" },
     { name = "memray" },
@@ -442,6 +444,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/b8/00651a0f559862f3bb7d6f7477b192afe3f583cc5e26403b44e59a55ab34/filelock-3.25.2.tar.gz", hash = "sha256:b64ece2b38f4ca29dd3e810287aa8c48182bbecd1ae6e9ae126c9b35f1382694", size = 40480, upload-time = "2026-03-11T20:45:38.487Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a4/a5/842ae8f0c08b61d6484b52f99a03510a3a72d23141942d216ebe81fefbce/filelock-3.25.2-py3-none-any.whl", hash = "sha256:ca8afb0da15f229774c9ad1b455ed96e85a81373065fb10446672f64444ddf70", size = 26759, upload-time = "2026-03-11T20:45:37.437Z" },
+]
+
+[[package]]
+name = "flit-core"
+version = "3.12.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/59/b6fc2188dfc7ea4f936cd12b49d707f66a1cb7a1d2c16172963534db741b/flit_core-3.12.0.tar.gz", hash = "sha256:18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2", size = 53690, upload-time = "2025-03-25T08:03:23.969Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f2/65/b6ba90634c984a4fcc02c7e3afe523fef500c4980fec67cc27536ee50acf/flit_core-3.12.0-py3-none-any.whl", hash = "sha256:e7a0304069ea895172e3c7bb703292e992c5d1555dd1233ab7b5621b5b69e62c", size = 45594, upload-time = "2025-03-25T08:03:20.772Z" },
 ]
 
 [[package]]
