@@ -29,49 +29,37 @@ class LogColor(StrEnum):
     warning = "text-warning"
 
 
-class Loggers(AppType):
+class RichLoggers(RichLog, AppType):
 
-    @property
-    def _log_time(self) -> str:
-        return f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
-
-    def get_log_line(self, msg: str, color: LogColor) -> str:
+    def _get_log_line(self, msg: str, color: LogColor) -> str:
+        log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
         msg_color = self.app.theme_variables[color.value]
-        return f"{self._log_time} [{msg_color}]{msg}[/]"
+        return f"{log_time} [{msg_color}]{msg}[/]"
 
-    def get_dimmed_lines(self, message: str) -> str:
-        if message.strip() == "":
-            return ""
+    def write_cmd(self, message: str, color: LogColor) -> None:
+        self.write(self._get_log_line(message, color))
+
+    def write_dimmed(self, message: str) -> None:
         lines: list[str] = message.splitlines()
         color = self.app.theme_variables[LogColor.dimmed]
         for line in lines:
             if line.strip() != "":
                 escaped_line = escape(line)
                 lines.append(f"[{color}]{escaped_line}[/]")
-        return "  \n".join(lines)
-
-
-class RichLoggers(Loggers, RichLog):
-
-    def write_cmd(self, message: str, color: LogColor) -> None:
-        self.write(self.get_log_line(message, color))
-
-    def write_dimmed(self, message: str) -> None:
-        if message.strip() == "":
-            return
-        self.write(self.get_dimmed_lines(message))
+        message = "  \n".join(lines)
+        self.write(message)
 
     def write_error(self, message: str) -> None:
-        self.write(self.get_log_line(message, LogColor.error))
+        self.write(self._get_log_line(message, LogColor.error))
 
     def write_info(self, message: str) -> None:
-        self.write(self.get_log_line(message, LogColor.info))
+        self.write(self._get_log_line(message, LogColor.info))
 
     def write_ready(self, message: str) -> None:
-        self.write(self.get_log_line(f"--- {message} ---", LogColor.ready))
+        self.write(self._get_log_line(f"--- {message} ---", LogColor.ready))
 
     def write_warning(self, message: str) -> None:
-        self.write(self.get_log_line(message, LogColor.warning))
+        self.write(self._get_log_line(message, LogColor.warning))
 
 
 class AppLog(RichLoggers):
