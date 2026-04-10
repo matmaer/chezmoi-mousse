@@ -217,7 +217,7 @@ class PwMgrInfo(Enum):
         raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
 
 
-class PwCollapsible(Collapsible, AppType):
+class PwCollapsible(Collapsible):
 
     def __init__(self, pw_mgr_data: PwMgrData) -> None:
         self.pw_mgr_data = pw_mgr_data

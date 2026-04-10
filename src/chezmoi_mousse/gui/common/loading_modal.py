@@ -11,7 +11,7 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse import CMD, AppType, OpBtnEnum
+from chezmoi_mousse import CMD, OpBtnEnum
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -52,7 +52,7 @@ class LoadingLabel(StrEnum):
         return f"[$text-primary]{self.value}[/]"
 
 
-class LoadingModal(ModalScreen[None], AppType):
+class LoadingModal(ModalScreen[None]):
 
     label_text: reactive[str | None] = reactive(None, init=False)
 

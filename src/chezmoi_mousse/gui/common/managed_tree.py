@@ -30,7 +30,7 @@ class TreeNodesBackup:
         self.expanded = {node for node in self.all_nodes if node.is_expanded}
 
 
-class DestDirTree(Vertical, AppType):
+class DestDirTree(Vertical):
 
     def __init__(self, ids: "AppIds"):
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
