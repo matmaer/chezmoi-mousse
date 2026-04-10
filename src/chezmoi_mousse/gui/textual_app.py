@@ -11,9 +11,17 @@ from textual.binding import Binding
 from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import TabbedContent, Tabs
+from textual.widgets import Button, TabbedContent, Tabs
 
-from chezmoi_mousse import CMD, IDS, BindingAction, BindingDescription, Chars, TabLabel
+from chezmoi_mousse import (
+    CMD,
+    IDS,
+    BindingAction,
+    BindingDescription,
+    Chars,
+    FlatBtnLabel,
+    TabLabel,
+)
 
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
@@ -115,6 +123,12 @@ class ChezmoiGUI(App[None]):
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
     ######################################################################
+
+    @on(Button.Pressed)
+    def handle_exit_app_button(self, event: Button.Pressed) -> None:
+        if event.button.label == FlatBtnLabel.exit_app:
+            self.exit()
+            return
 
     def _get_tab_widget(
         self,
