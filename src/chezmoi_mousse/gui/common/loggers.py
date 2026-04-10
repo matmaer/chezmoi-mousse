@@ -39,15 +39,6 @@ class RichLoggers(RichLog, AppType):
     def write_cmd(self, message: str, color: LogColor) -> None:
         self.write(self._get_log_line(message, color))
 
-    def write_dimmed(self, message: str) -> None:
-        lines: list[str] = message.splitlines()
-        for line in lines:
-            if line.strip() != "":
-                escaped_line = escape(line)
-                lines.append(f"[dim]{escaped_line}[/]")
-        message = "  \n".join(lines)
-        self.write(message)
-
     def write_error(self, message: str) -> None:
         self.write(self._get_log_line(message, LogColor.error))
 
@@ -137,6 +128,15 @@ class DebugLog(RichLoggers):
 
     def on_mount(self) -> None:
         self.write_ready(LogString.debug_log_initialized)
+
+    def write_dimmed(self, message: str) -> None:
+        lines: list[str] = message.splitlines()
+        for line in lines:
+            if line.strip() != "":
+                escaped_line = escape(line)
+                lines.append(f"[dim]{escaped_line}[/]")
+        message = "  \n".join(lines)
+        self.write(message)
 
     def mro(self, mro: tuple[type, ...]) -> None:
         """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
