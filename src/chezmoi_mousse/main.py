@@ -1,16 +1,12 @@
+import asyncio
 import os
 import shutil
 import traceback
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from ._constants import CHEZMOI, GIT
-from ._run_cmd import GlobalArgs, ReadCmd, run_chezmoi_cmd
+from ._pilot_test import test_app_with_pilot
 from .gui.textual_app import ChezmoiGUI
-
-if TYPE_CHECKING:
-    from subprocess import CompletedProcess
-
 
 GIT_NOT_FOUND = (
     "'git' command not found. Install git as this app provides no safeguards when "
@@ -24,6 +20,7 @@ IN_SUBSHELL = (
 STACK_TRACE_FILE = "stack_trace.log"
 
 # Env var related
+CHEZMOI_MOUSSE_PILOT_MODE = "CHEZMOI_MOUSSE_PILOT_MODE"
 CHEZMOI_MOUSSE_DEV = "CHEZMOI_MOUSSE_DEV"
 CHEZMOI_SUBSHELL = "CHEZMOI_SUBSHELL"
 PRETEND_CHEZMOI_NOT_FOUND = "PRETEND_CHEZMOI_NOT_FOUND"
@@ -39,19 +36,11 @@ def run_app():
         return
 
     chezmoi_bin = shutil.which(CHEZMOI)
-    if chezmoi_bin is not None:
-        completed: CompletedProcess[str] = run_chezmoi_cmd(
-            command=(chezmoi_bin,) + GlobalArgs.live_run.value + ReadCmd.version.value,
-            cmd_timeout=1,
-        )
-        if completed.returncode != 0:
-            # If the command fails, we aussume chezmoi was not found.
-            chezmoi_bin = None
-
     dev_mode = os.environ.get(CHEZMOI_MOUSSE_DEV) == "1"
     pretend_not_found = os.environ.get(PRETEND_CHEZMOI_NOT_FOUND) == "1"
+    pilot_mode = os.environ.get(CHEZMOI_MOUSSE_PILOT_MODE) == "1"
 
-    if dev_mode or pretend_not_found:
+    if dev_mode or pretend_not_found or pilot_mode:
         if pretend_not_found:
             chezmoi_bin = None
         # Save stacktrace in case an exception occurs on App class init.
@@ -74,6 +63,10 @@ def run_app():
 
             # monkey patch
             app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
+
+            if pilot_mode:
+                asyncio.run(test_app_with_pilot(app))
+                return
             app.run()
 
         except Exception:
