@@ -284,7 +284,7 @@ class CanvasIds:
         # Screens
         self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
-        self.main_tabs = AppIds(ScreenName.main_tabs)
+        self.main = AppIds(ScreenName.main)
         # TabPanes
         self.add = AppIds(TabLabel.add)
         self.apply = AppIds(TabLabel.apply)

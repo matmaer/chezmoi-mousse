@@ -222,7 +222,7 @@ class ChezmoiGUI(App[None]):
             CMD.run_cmd.changes_enabled
         )
         self.screen.query_one(
-            IDS.main_tabs.static.operate_info_q, OperateInfo
+            IDS.main.static.operate_info_q, OperateInfo
         ).changes_enabled = CMD.run_cmd.changes_enabled
 
     def action_toggle_switch_slider(self) -> None:
@@ -336,7 +336,7 @@ class ChezmoiGUI(App[None]):
             return not (
                 isinstance(self.screen, MainScreen)
                 and self.screen.query_one(
-                    IDS.main_tabs.container.op_feed_back_q, Vertical
+                    IDS.main.container.op_feed_back_q, Vertical
                 ).display
                 is True
             )

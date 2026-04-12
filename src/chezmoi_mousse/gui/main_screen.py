@@ -47,7 +47,7 @@ class MainScreen(Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
-        yield OpFeedBack(ids=IDS.main_tabs)
+        yield OpFeedBack(ids=IDS.main)
 
         with Vertical(), TabbedContent():
             yield TabPane(TabLabel.apply, ApplyTab(), id=TabLabel.apply)
@@ -74,13 +74,11 @@ class MainScreen(Screen[None]):
             IDS.re_add.managed_tree_q, ManagedTree
         )
         self.op_feed_back = self.query_one(
-            IDS.main_tabs.container.op_feed_back_q, OpFeedBack
+            IDS.main.container.op_feed_back_q, OpFeedBack
         )
-        self.operate_info = self.query_one(
-            IDS.main_tabs.static.operate_info_q, OperateInfo
-        )
+        self.operate_info = self.query_one(IDS.main.static.operate_info_q, OperateInfo)
         self.command_output = self.query_one(
-            IDS.main_tabs.container.command_output_q, CommandOutput
+            IDS.main.container.command_output_q, CommandOutput
         )
         self.command_output.display = False
         self._first_time_startup()
