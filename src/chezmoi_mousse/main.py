@@ -4,9 +4,9 @@ import shutil
 import traceback
 from pathlib import Path
 
-from ._constants import CHEZMOI, GIT
-from ._pilot_test import test_app_with_pilot
-from .gui.textual_app import ChezmoiGUI
+from chezmoi_mousse._constants import CHEZMOI, GIT
+from chezmoi_mousse._pilot_test import test_app_with_pilot
+from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 
 GIT_NOT_FOUND = (
     "'git' command not found. Install git as this app provides no safeguards when "
