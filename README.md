@@ -56,7 +56,7 @@ To test the app without "real" dotfiles in a container or VM:
 
 In the src directory of the cloned repository, you can run
 
-`CHEZMOI_MOUSSE_DEV=1 uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
+`CHEZMOI_MOUSSE_DEV=1 uv run --python 3.13 --with textual -m chezmoi_mousse`
 
 Then on the "Debug" tab, you can generate some files in the home directory, and offer the possibility to modify the generated files to have diffs.
 Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/master/#)
