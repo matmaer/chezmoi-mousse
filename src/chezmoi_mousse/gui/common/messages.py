@@ -10,7 +10,12 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
 
 
-__all__ = ["LogCmdResultMsg", "CurrentApplyNodeMsg", "CurrentReAddNodeMsg"]
+__all__ = [
+    "LogCmdResultMsg",
+    "CurrentApplyNodeMsg",
+    "CurrentReAddNodeMsg",
+    "ReadyToUseMsg",
+]
 
 
 class LogCmdResultMsg(Message):
@@ -29,3 +34,6 @@ class CurrentReAddNodeMsg(Message):
     def __init__(self, path: Path) -> None:
         self.path = path
         super().__init__()
+
+
+class ReadyToUseMsg(Message): ...

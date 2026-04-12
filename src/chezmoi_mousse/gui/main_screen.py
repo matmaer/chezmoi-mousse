@@ -28,7 +28,12 @@ from .common.git_log import GitLogView
 from .common.loading_modal import LoadingLabel, LoadingModal, min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
-from .common.messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg, LogCmdResultMsg
+from .common.messages import (
+    CurrentApplyNodeMsg,
+    CurrentReAddNodeMsg,
+    LogCmdResultMsg,
+    ReadyToUseMsg,
+)
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 from .common.switchers import ViewSwitcher
@@ -95,6 +100,7 @@ class MainScreen(Screen[None]):
         await self._log_all_cmd_results(CMD.cache.cmd_results.all).wait()
         await self._update_config_tab().wait()
         self.loading_modal.dismiss()
+        self.post_message(ReadyToUseMsg())
 
     @work
     async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
