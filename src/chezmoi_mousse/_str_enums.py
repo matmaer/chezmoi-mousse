@@ -74,7 +74,7 @@ class TabLabel(StrEnum):
     git_log = "Git-Log"
 
     @classmethod
-    def main_tab_labels(cls) -> tuple["TabLabel", ...]:
+    def main_tabs(cls) -> tuple["TabLabel", ...]:
         return (
             cls.apply,
             cls.re_add,
