@@ -10,15 +10,7 @@ from ._constants import CHEZMOI, GIT
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
-__all__ = [
-    "ChezmoiCommand",
-    "CommandResult",
-    "GlobalArgs",
-    "ReadCmd",
-    "ReadVerb",
-    "WriteCmd",
-    "run_chezmoi_cmd",
-]
+__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
 class GlobalArgs(Enum):
@@ -55,7 +47,6 @@ class VerbArgs(Enum):
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
     reverse = "--reverse"
-    version = "--version"
 
 
 class ReadVerb(Enum):
@@ -105,7 +96,6 @@ class ReadCmd(Enum):
     )
     template_data = (ReadVerb.data.value,)
     verify = (ReadVerb.verify.value,)
-    version = (VerbArgs.version.value,)
 
 
 class WriteVerb(Enum):
