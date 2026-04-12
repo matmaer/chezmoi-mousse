@@ -73,6 +73,22 @@ class TabLabel(StrEnum):
     diff = "Diff"
     git_log = "Git-Log"
 
+    @classmethod
+    def main_tab_labels(cls) -> tuple["TabLabel", ...]:
+        return (
+            cls.apply,
+            cls.re_add,
+            cls.add,
+            cls.logs,
+            cls.config,
+            cls.help,
+            cls.debug,
+        )
+
+    @classmethod
+    def operate_tabs(cls) -> tuple["TabLabel", ...]:
+        return (cls.apply, cls.re_add, cls.add)
+
 
 #########################
 # Other StrEnum classes #

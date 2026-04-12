@@ -5,7 +5,7 @@ import traceback
 from pathlib import Path
 
 from chezmoi_mousse._constants import CHEZMOI, GIT
-from chezmoi_mousse._pilot_test import test_app_with_pilot
+from chezmoi_mousse._pilot_mode import test_app_with_pilot
 from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 
 GIT_NOT_FOUND = (
