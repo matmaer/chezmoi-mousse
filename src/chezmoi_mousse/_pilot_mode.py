@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 from textual.pilot import Pilot
 from textual.widget import Widget
-from textual.widgets import Switch, TabbedContent, TabPane
+from textual.widgets import Button, Switch, TabbedContent, TabPane
 
 from ._str_enums import TabLabel
 from .gui.common.actionables import SwitchSlider
@@ -37,6 +37,19 @@ async def click_and_wait(pilot: Pilot[None], widget: Widget) -> None:
 async def press_and_wait(pilot: Pilot[None], key: str) -> None:
     await pilot.press(key)
     await pilot_chill(pilot)
+
+
+async def refresh_trees(pilot: Pilot[None], active_pane: TabPane | None) -> None:
+    if active_pane is None:
+        raise ValueError("No active pane")
+    buttons = active_pane.query(Button).results()
+    refresh_tree_btn = next(
+        (btn for btn in buttons if "Refresh" in str(btn.label)), None
+    )
+    if refresh_tree_btn is None:
+        raise ValueError("No refresh tree button found")
+    else:
+        pilot.app.notify(f"Found refresh tree button: {refresh_tree_btn}")
 
 
 async def toggle_binding(pilot: Pilot[None], key: str):
@@ -99,6 +112,7 @@ async def test_app_with_pilot(app: ChezmoiGUI):
                 await toggle_binding(pilot, "D")
                 await toggle_binding(pilot, "F")
                 await toggle_switches(pilot, tabbed_content.active_pane)
+                await refresh_trees(pilot, tabbed_content.active_pane)
         tab = tabbed_content.get_tab(TabLabel.apply)
         await click_and_wait(pilot, tab)
         await pilot.exit(None)
