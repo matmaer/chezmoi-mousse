@@ -114,18 +114,14 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
 
     def on_mount(self) -> None:
-        if self.ids.canvas_name == TabLabel.debug:
-            # we never toggle display on the debug tab
-            return
-        # disable apply review button if no_status_paths is true
+        # disable apply and re-add review button if no_status_paths is true
         if self.ids.canvas_name == TabLabel.apply:
-            self.query_one(self.ids.op_btn.apply_review_q, OpButton).disabled = bool(
-                CMD.cache.no_status_paths
-            )
+            review_btn = self.query_one(self.ids.op_btn.apply_review_q, OpButton)
         elif self.ids.canvas_name == TabLabel.re_add:
-            self.query_one(self.ids.op_btn.re_add_review_q, OpButton).disabled = bool(
-                CMD.cache.no_status_paths
-            )
+            review_btn = self.query_one(self.ids.op_btn.re_add_review_q, OpButton)
+        else:
+            return
+        review_btn.disabled = CMD.cache.no_status_paths
 
     def set_path_arg(self, path: "Path") -> None:
         for btn_enum in self.ids.op_btn_map.values():
