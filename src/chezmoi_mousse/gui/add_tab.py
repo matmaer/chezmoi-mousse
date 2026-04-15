@@ -94,7 +94,7 @@ class AddTabContentsView(ContentsView):
 
         if not unmanaged_dirs and not unmanaged_files:
             widgets.append(Static("No unmanaged paths in this directory."))
-        return ScrollableContainer(*widgets)
+        return ScrollableContainer(*widgets, id=Utils.path_to_id(dir_path))
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
