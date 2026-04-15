@@ -87,8 +87,6 @@ class Tcss(StrEnum):
 
 
 class ViewName(StrEnum):
-    add_help_view = auto()
-    apply_help_view = auto()
     cat_config_view = auto()
     debug_log_view = auto()
     diagram_view = auto()
@@ -96,6 +94,5 @@ class ViewName(StrEnum):
     git_ignored_view = auto()
     memory_usage_view = auto()
     pw_mgr_info_view = auto()
-    re_add_help_view = auto()
     template_data_view = auto()
     test_paths_view = auto()

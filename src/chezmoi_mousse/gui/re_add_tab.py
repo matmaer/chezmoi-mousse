@@ -1,7 +1,7 @@
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Switch
+from textual.containers import Horizontal, Vertical
+from textual.widgets import Switch, TabPane
 
 from chezmoi_mousse import IDS, DirContentBtn
 
@@ -12,7 +12,7 @@ from .common.switchers import ViewSwitcher
 __all__ = ["ReAddTab"]
 
 
-class ReAddTab(Container):
+class ReAddTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal():

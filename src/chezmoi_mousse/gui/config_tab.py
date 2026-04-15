@@ -5,7 +5,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static
+from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static, TabPane
 
 from chezmoi_mousse import IDS, FlatBtnLabel, SectionLabel, Tcss
 
@@ -42,6 +42,13 @@ class IgnoredView(Vertical):
         pretty.update(ignored_stdout.splitlines())
 
 
+class DiagramView(Vertical):
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.diagram, classes=Tcss.main_section_label)
+        yield Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram)
+
+
 class DoctorTableView(Vertical):
 
     doctor_stdout: reactive[str | None] = reactive(None, init=False)
@@ -68,27 +75,30 @@ class TemplateDataView(Vertical):
         pretty.update(json.loads(template_data_stdout))
 
 
-class ConfigTab(Horizontal):
+class ConfigTab(TabPane):
 
     command_results: reactive["CachedData | None"] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
-        yield FlatButtonsVertical(
-            IDS.config,
-            buttons=(
-                FlatBtnLabel.doctor,
-                FlatBtnLabel.pw_mgr_info,
-                FlatBtnLabel.cat_config,
-                FlatBtnLabel.ignored,
-                FlatBtnLabel.template_data,
-            ),
-        )
-        with ContentSwitcher(initial=IDS.config.container.doctor):
-            yield DoctorTableView(id=IDS.config.container.doctor)
-            yield PwMgrInfoView(id=IDS.config.view.pw_mgr_info)
-            yield CatConfigView(id=IDS.config.view.cat_config)
-            yield IgnoredView(id=IDS.config.view.ignored)
-            yield TemplateDataView(id=IDS.config.view.template_data)
+        with Horizontal():
+            yield FlatButtonsVertical(
+                IDS.config,
+                buttons=(
+                    FlatBtnLabel.doctor,
+                    FlatBtnLabel.pw_mgr_info,
+                    FlatBtnLabel.cat_config,
+                    FlatBtnLabel.ignored,
+                    FlatBtnLabel.template_data,
+                    FlatBtnLabel.diagram,
+                ),
+            )
+            with ContentSwitcher(initial=IDS.config.container.doctor):
+                yield DoctorTableView(id=IDS.config.container.doctor)
+                yield PwMgrInfoView(id=IDS.config.view.pw_mgr_info)
+                yield CatConfigView(id=IDS.config.view.cat_config)
+                yield IgnoredView(id=IDS.config.view.ignored)
+                yield TemplateDataView(id=IDS.config.view.template_data)
+                yield DiagramView(id=IDS.config.view.diagram)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
@@ -106,6 +116,8 @@ class ConfigTab(Horizontal):
             self.switcher.current = IDS.config.view.ignored
         elif event.button.label == FlatBtnLabel.template_data:
             self.switcher.current = IDS.config.view.template_data
+        elif event.button.label == FlatBtnLabel.diagram:
+            self.switcher.current = IDS.config.view.diagram
 
     def watch_command_results(self, cached: "CachedData") -> None:
         if (
@@ -132,3 +144,34 @@ class ConfigTab(Horizontal):
         self.switcher.query_one(
             IDS.config.view.pw_mgr_info_q, PwMgrInfoView
         ).populate_pw_mgr_info(cached.cmd_results.doctor.completed_process.stdout)
+
+
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Add Tab       │    autoCommit     │     git push      │
+       │   Re-Add Tab      │──────────────────>│──────────────────>│
+       │──────────────────>│                   │                   │
+       │                   │                autopush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
+       │<──────────────────│<──────────────────────────────────────│
+       │                   │                   │                   │
+       │     Diff View     │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
+       │                   │                   │                   │
+       │                   │    chezmoi init & chezmoi git pull    │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │        chezmoi init --one-shot & chezmoi init --apply     │
+       │<──────────────────────────────────────────────────────────│
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────────────────┴───────┐    ┌──────┴───────┐
+│ destination  │    │    target state / source state   │    │  git remote  │
+└──────────────┘    └──────────────────────────────────┘    └──────────────┘
+"""

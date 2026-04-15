@@ -1,7 +1,7 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import Button, ContentSwitcher
+from textual.widgets import Button, ContentSwitcher, TabPane
 
 from chezmoi_mousse import IDS, TabLabel
 
@@ -11,13 +11,14 @@ from .common.loggers import AppLog, CmdLog
 __all__ = ["LogsTab"]
 
 
-class LogsTab(Vertical):
+class LogsTab(TabPane):
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(IDS.logs, (TabLabel.cmd_log, TabLabel.app_log))
-        with ContentSwitcher(initial=IDS.logs.logger.cmd):
-            yield CmdLog()
-            yield AppLog()
+        with Vertical():
+            yield TabButtons(IDS.logs, (TabLabel.cmd_log, TabLabel.app_log))
+            with ContentSwitcher(initial=IDS.logs.logger.cmd):
+                yield CmdLog()
+                yield AppLog()
 
     def on_mount(self) -> None:
         self.tab_buttons = self.query_exactly_one(TabButtons)

@@ -246,13 +246,6 @@ class ViewIds:
 
     def __init__(self, ids: AppIds):
 
-        # Help tab
-        self.add_help: str = ids.view_id(view=ViewName.add_help_view)
-        self.add_help_q: str = f"#{self.add_help}"
-        self.apply_help: str = ids.view_id(view=ViewName.apply_help_view)
-        self.apply_help_q: str = f"#{self.apply_help}"
-        self.re_add_help: str = ids.view_id(view=ViewName.re_add_help_view)
-        self.re_add_help_q: str = f"#{self.re_add_help}"
         self.diagram: str = ids.view_id(view=ViewName.diagram_view)
         self.diagram_q: str = f"#{self.diagram}"
 
@@ -290,7 +283,6 @@ class CanvasIds:
         self.apply = AppIds(TabLabel.apply)
         self.config = AppIds(TabLabel.config)
         self.debug = AppIds(TabLabel.debug)
-        self.help = AppIds(TabLabel.help)
         self.logs = AppIds(TabLabel.logs)
         self.re_add = AppIds(TabLabel.re_add)
 

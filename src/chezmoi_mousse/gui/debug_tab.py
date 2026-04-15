@@ -4,7 +4,7 @@ from enum import StrEnum
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, ContentSwitcher, Label, RichLog, Static
+from textual.widgets import Button, ContentSwitcher, Label, RichLog, Static, TabPane
 
 from chezmoi_mousse import (
     CMD,
@@ -57,30 +57,29 @@ class MemoryUsageView(Vertical):
         yield RichLog(id=IDS.debug.logger.memory, markup=True)
 
 
-class DebugTab(Horizontal):
+class DebugTab(TabPane):
 
     MiB = 1024 * 1024
     INTERVAL = 2
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._previous_rss: float = 0.0
+    _previous_rss: float = 0.0
 
     def compose(self) -> ComposeResult:
-        yield FlatButtonsVertical(
-            IDS.debug,
-            buttons=(
-                FlatBtnLabel.test_paths,
-                FlatBtnLabel.debug_log,
-                FlatBtnLabel.dom_nodes,
-                FlatBtnLabel.memory_usage,
-            ),
-        )
-        with Vertical(), ContentSwitcher(initial=IDS.debug.view.test_paths):
-            yield TestPathsView(id=IDS.debug.view.test_paths)
-            yield DebugLogView(id=IDS.debug.view.debug_log)
-            yield DomNodesView(id=IDS.debug.view.dom_nodes)
-            yield MemoryUsageView(id=IDS.debug.view.memory_usage)
+        with Horizontal():
+            yield FlatButtonsVertical(
+                IDS.debug,
+                buttons=(
+                    FlatBtnLabel.test_paths,
+                    FlatBtnLabel.debug_log,
+                    FlatBtnLabel.dom_nodes,
+                    FlatBtnLabel.memory_usage,
+                ),
+            )
+            with Vertical(), ContentSwitcher(initial=IDS.debug.view.test_paths):
+                yield TestPathsView(id=IDS.debug.view.test_paths)
+                yield DebugLogView(id=IDS.debug.view.debug_log)
+                yield DomNodesView(id=IDS.debug.view.dom_nodes)
+                yield MemoryUsageView(id=IDS.debug.view.memory_usage)
         yield OperateButtons(IDS.debug)
 
     def on_mount(self) -> None:

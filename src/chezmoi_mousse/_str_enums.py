@@ -19,8 +19,6 @@ __all__ = [
 
 
 class FlatBtnLabel(StrEnum):
-    add_help = "Add Help"
-    apply_help = "Apply Help"
     cat_config = "Cat Config"
     debug_log = "Debug Log"
     diagram = "Diagram"
@@ -29,22 +27,13 @@ class FlatBtnLabel(StrEnum):
     exit_app = "Exit App"
     ignored = "Ignored"
     pw_mgr_info = "Password Managers"
-    re_add_help = "Re-Add Help"
     template_data = "Template Data"
     test_paths = "Test Paths"
     memory_usage = "Memory Usage"
 
 
 class LinkBtn(StrEnum):
-    chezmoi_add = "https://www.chezmoi.io/reference/commands/add/"
-    chezmoi_apply = "https://www.chezmoi.io/reference/commands/apply/"
-    chezmoi_destroy = "https://www.chezmoi.io/reference/commands/destroy/"
-    chezmoi_forget = "https://www.chezmoi.io/reference/commands/forget/"
-    chezmoi_guess = (
-        "https://www.chezmoi.io/reference/commands/init/#-g-guess-repo-url-bool"
-    )
     chezmoi_install = "https://www.chezmoi.io/install/"
-    chezmoi_re_add = "https://www.chezmoi.io/reference/commands/re-add/"
 
     @property
     def link_url(self) -> str:
@@ -52,8 +41,6 @@ class LinkBtn(StrEnum):
 
     @property
     def link_text(self) -> str:
-        if self.value == LinkBtn.chezmoi_guess.value:
-            return "guess docs"
         return self.value.replace("https://", "").replace("www.", "").rstrip("/")
 
 
@@ -63,7 +50,6 @@ class TabLabel(StrEnum):
     apply = "Apply"
     config = "Config"
     debug = "Debug"
-    help = "Help"
     logs = "Logs"
     re_add = "Re-Add"
     # Tab buttons for content switcher within a main tab
@@ -75,15 +61,7 @@ class TabLabel(StrEnum):
 
     @classmethod
     def main_tabs(cls) -> tuple["TabLabel", ...]:
-        return (
-            cls.apply,
-            cls.re_add,
-            cls.add,
-            cls.logs,
-            cls.config,
-            cls.help,
-            cls.debug,
-        )
+        return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
 
     @classmethod
     def operate_tabs(cls) -> tuple["TabLabel", ...]:
@@ -160,6 +138,7 @@ class OperateString(StrEnum):
 class SectionLabel(StrEnum):
     cat_config_output = "Cat Config Output"
     debug_log = " Debug Log "
+    diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
     dom_nodes = " DOM Nodes "
     full_cmd = "Full Command"

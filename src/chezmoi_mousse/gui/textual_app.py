@@ -31,7 +31,6 @@ from .common.op_feedback import OperateInfo
 from .common.screen_header import CustomHeader
 from .config_tab import ConfigTab
 from .debug_tab import DebugTab
-from .help_tab import HelpTab
 from .install_help import InstallHelpScreen
 from .logs_tab import LogsTab
 from .main_screen import MainScreen
@@ -132,7 +131,7 @@ class ChezmoiGUI(App[None]):
 
     def _get_tab_widget(
         self,
-    ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | HelpTab | DebugTab:
+    ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | DebugTab:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_tab_widget called outside of MainScreen")
         tab_to_query = self.screen.query_exactly_one(TabbedContent).active
@@ -144,8 +143,6 @@ class ChezmoiGUI(App[None]):
             return self.screen.query_exactly_one(AddTab)
         elif tab_to_query == TabLabel.config:
             return self.screen.query_exactly_one(ConfigTab)
-        elif tab_to_query == TabLabel.help:
-            return self.screen.query_exactly_one(HelpTab)
         elif tab_to_query == TabLabel.logs:
             return self.screen.query_exactly_one(LogsTab)
         elif tab_to_query == TabLabel.debug:
@@ -286,10 +283,6 @@ class ChezmoiGUI(App[None]):
         elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
                 IDS.config.container.left_side_q, FlatButtonsVertical
-            )
-        elif active_tab == TabLabel.help:
-            left_side = self.screen.query_one(
-                IDS.help.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabLabel.debug:
             left_side = self.screen.query_one(

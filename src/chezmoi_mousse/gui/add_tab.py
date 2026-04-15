@@ -5,7 +5,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import DirectoryTree, Label, Static, Switch
+from textual.widgets import DirectoryTree, Label, Static, Switch, TabPane
 
 from chezmoi_mousse import CMD, IDS, OpBtnEnum, Tcss
 
@@ -108,22 +108,23 @@ class AddTabContentsView(ContentsView):
         self.mount(container)
 
 
-class AddTab(Horizontal):
+class AddTab(TabPane):
 
     def compose(self) -> ComposeResult:
-        yield Vertical(
-            FilteredDirTree(CMD.cache.dest_dir),
-            OpButton(
-                btn_enum=OpBtnEnum.refresh_tree,
-                btn_id=IDS.add.op_btn.refresh_tree,
-                app_ids=IDS.add,
-            ),
-            id=IDS.add.container.left_side,
-            classes=Tcss.tab_left_vertical,
-        )
-        with Vertical():
-            yield AddTabContentsView(IDS.add)
-            yield OperateButtons(IDS.add)
+        with Horizontal():
+            yield Vertical(
+                FilteredDirTree(CMD.cache.dest_dir),
+                OpButton(
+                    btn_enum=OpBtnEnum.refresh_tree,
+                    btn_id=IDS.add.op_btn.refresh_tree,
+                    app_ids=IDS.add,
+                ),
+                id=IDS.add.container.left_side,
+                classes=Tcss.tab_left_vertical,
+            )
+            with Vertical():
+                yield AddTabContentsView(IDS.add)
+                yield OperateButtons(IDS.add)
         yield SwitchSlider(IDS.add)
 
     def on_mount(self) -> None:

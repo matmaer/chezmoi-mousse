@@ -6,7 +6,7 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, TabbedContent, TabPane, Tabs
+from textual.widgets import Button, Footer, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -38,7 +38,6 @@ from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 from .common.switchers import ViewSwitcher
 from .config_tab import ConfigTab
-from .help_tab import HelpTab
 from .logs_tab import LogsTab
 from .re_add_tab import ReAddTab
 
@@ -55,16 +54,15 @@ class MainScreen(Screen[None]):
         yield OpFeedBack(ids=IDS.main)
 
         with Vertical(), TabbedContent():
-            yield TabPane(TabLabel.apply, ApplyTab(), id=TabLabel.apply)
-            yield TabPane(TabLabel.re_add, ReAddTab(), id=TabLabel.re_add)
-            yield TabPane(TabLabel.add, AddTab(), id=TabLabel.add)
-            yield TabPane(TabLabel.logs, LogsTab(), id=TabLabel.logs)
-            yield TabPane(TabLabel.config, ConfigTab(), id=TabLabel.config)
-            yield TabPane(TabLabel.help, HelpTab(), id=TabLabel.help)
+            yield ApplyTab(id=TabLabel.apply, title=TabLabel.apply)
+            yield ReAddTab(id=TabLabel.re_add, title=TabLabel.re_add)
+            yield AddTab(id=TabLabel.add, title=TabLabel.add)
+            yield LogsTab(id=TabLabel.logs, title=TabLabel.logs)
+            yield ConfigTab(id=TabLabel.config, title=TabLabel.config)
             if CMD.dev_mode is True:
                 from .debug_tab import DebugTab
 
-                yield TabPane(TabLabel.debug, DebugTab(), id=TabLabel.debug)
+                yield DebugTab(id=TabLabel.debug, title=TabLabel.debug)
         yield Footer()
 
     def on_mount(self) -> None:
