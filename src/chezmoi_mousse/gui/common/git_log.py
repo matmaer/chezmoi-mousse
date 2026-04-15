@@ -2,11 +2,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
-from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, ReadCmd, Utils
+from chezmoi_mousse import CMD, ReadCmd
 
 from .messages import LogCmdResultMsg
 
@@ -22,15 +21,9 @@ class GitLogView(Container):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.git_log)
-        self.mounted: dict[Path, str] = {}
-        self.current_path: Path | None = None
-
-    def hide_all_containers(self) -> None:
-        for container in self.query_children(ScrollableContainer):
-            container.display = False
 
     def _create_datatable_container(
-        self, git_log_lines: list[str], path: Path
+        self, git_log_lines: list[str]
     ) -> ScrollableContainer:
         data_table = DataTable[str](cursor_type="row")
 
@@ -56,33 +49,25 @@ class GitLogView(Container):
                 add_row_with_style(columns, row_color["error"])
             else:
                 data_table.add_row(*columns)
-        return ScrollableContainer(data_table, id=Utils.path_to_id(path))
+        return ScrollableContainer(data_table)
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        self.hide_all_containers()
-        sc_id = Utils.path_to_id(show_path)
-        sc_id_q = Utils.path_to_qid(show_path)
-        try:
-            container = self.query_one(sc_id_q, ScrollableContainer)
-            container.display = True
-        except NoMatches:
-            if show_path == CMD.cache.dest_dir:
-                if (
-                    CMD.cache.cmd_results.git_log is None
-                    or not CMD.cache.cmd_results.git_log.std_out
-                ):
-                    git_log_lines = ["No commits;No git log entries available yet."]
-                else:
-                    git_log_lines = CMD.cache.cmd_results.git_log.std_out.splitlines()
-                container = self._create_datatable_container(git_log_lines, show_path)
+        self.remove_children()
+        if show_path == CMD.cache.dest_dir:
+            if (
+                CMD.cache.cmd_results.git_log is None
+                or not CMD.cache.cmd_results.git_log.std_out
+            ):
+                git_log_lines = ["No commits;No git log entries available yet."]
             else:
-                cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
-                self.post_message(LogCmdResultMsg(cmd_result))
-                container = self._create_datatable_container(
-                    cmd_result.std_out.splitlines(), show_path
-                )
-            self.mount(container)
-            self.mounted[show_path] = sc_id
-        self.current_path = show_path
+                git_log_lines = CMD.cache.cmd_results.git_log.std_out.splitlines()
+            container = self._create_datatable_container(git_log_lines)
+        else:
+            cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
+            self.post_message(LogCmdResultMsg(cmd_result))
+            container = self._create_datatable_container(
+                cmd_result.std_out.splitlines()
+            )
+        self.mount(container)

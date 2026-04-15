@@ -151,7 +151,6 @@ class MainScreen(Screen[None]):
         )
         for view in all_views:
             view.remove_children()
-            view.mounted.clear()
 
     @work
     @min_wait

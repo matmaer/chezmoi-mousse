@@ -5,11 +5,10 @@ from typing import TYPE_CHECKING
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 from textual.containers import Container, ScrollableContainer
-from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, ReadCmd, Tcss, Utils
+from chezmoi_mousse import CMD, ReadCmd, Tcss
 
 from .messages import LogCmdResultMsg
 
@@ -32,12 +31,6 @@ class ContentsView(Container):
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.contents)
-        self.mounted: dict[Path, str] = {}
-        self.current_path: Path | None = None
-
-    def hide_all_containers(self) -> None:
-        for container in self.query_children(ScrollableContainer):
-            container.display = False
 
     def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
@@ -51,7 +44,7 @@ class ContentsView(Container):
         widgets.append(
             Static("<- Click a file to see its contents.", classes=Tcss.added)
         )
-        return ScrollableContainer(*widgets, id=Utils.path_to_id(dir_path))
+        return ScrollableContainer(*widgets)
 
     def _create_file_container(self, file_path: Path) -> ScrollableContainer:
         widgets: list[Label | Static] = []
@@ -93,22 +86,15 @@ class ContentsView(Container):
         text_obj = Text(file_contents)
         ReprHighlighter().highlight(text_obj)
         widgets.append(Static(text_obj))
-        return ScrollableContainer(*widgets, id=Utils.path_to_id(file_path))
+        return ScrollableContainer(*widgets)
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        self.hide_all_containers()
-        sc_id = Utils.path_to_id(show_path)
-        sc_id_q = Utils.path_to_qid(show_path)
-        try:
-            container = self.query_one(sc_id_q, ScrollableContainer)
-            container.display = True
-        except NoMatches:
-            if show_path in {CMD.cache.dest_dir} | CMD.cache.sets.managed_dirs:
-                container = self._create_managed_dir_container(show_path)
-            else:
-                container = self._create_file_container(show_path)
-            self.mount(container)
-            self.mounted[show_path] = sc_id
+        self.remove_children()
+        if show_path in {CMD.cache.dest_dir} | CMD.cache.sets.managed_dirs:
+            container = self._create_managed_dir_container(show_path)
+        else:
+            container = self._create_file_container(show_path)
+        self.mount(container)
         self.current_path = show_path

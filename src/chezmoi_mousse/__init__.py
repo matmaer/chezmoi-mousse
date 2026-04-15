@@ -27,7 +27,6 @@ from ._str_enums import (
     TabLabel,
 )
 from ._test_paths import TestPaths
-from ._utils import Utils
 
 __all__ = [
     "__version__",
@@ -54,7 +53,6 @@ __all__ = [
     "TabLabel",
     "Tcss",
     "TestPaths",
-    "Utils",
 ]
 
 try:

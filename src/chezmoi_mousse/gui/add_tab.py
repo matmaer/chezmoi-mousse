@@ -4,11 +4,10 @@ from pathlib import Path
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
-from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree, Label, Static, Switch
 
-from chezmoi_mousse import CMD, IDS, OpBtnEnum, Tcss, Utils
+from chezmoi_mousse import CMD, IDS, OpBtnEnum, Tcss
 
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
@@ -94,27 +93,19 @@ class AddTabContentsView(ContentsView):
 
         if not unmanaged_dirs and not unmanaged_files:
             widgets.append(Static("No unmanaged paths in this directory."))
-        return ScrollableContainer(*widgets, id=Utils.path_to_id(dir_path))
+        return ScrollableContainer(*widgets)
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        self.hide_all_containers()
-        sc_id = Utils.path_to_id(show_path)
-        sc_id_q = Utils.path_to_qid(show_path)
-        try:
-            container = self.query_one(sc_id_q, ScrollableContainer)
-            container.display = True
-        except NoMatches as e:
-            if show_path == CMD.cache.dest_dir or show_path.is_dir():
-                container = self._create_add_dir_container(show_path)
-            elif show_path.is_file():
-                container = self._create_file_container(show_path)
-            else:
-                raise ValueError(f"{show_path} does not exist") from e
-            self.mount(container)
-            self.mounted[show_path] = sc_id
-        self.current_path = show_path
+        self.remove_children()
+        if show_path == CMD.cache.dest_dir or show_path.is_dir():
+            container = self._create_add_dir_container(show_path)
+        elif show_path.is_file():
+            container = self._create_file_container(show_path)
+        else:
+            raise ValueError(f"{show_path} does not exist")
+        self.mount(container)
 
 
 class AddTab(Horizontal):

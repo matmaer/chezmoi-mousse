@@ -2,11 +2,10 @@ from itertools import groupby
 from typing import TYPE_CHECKING
 
 from textual.containers import Container, ScrollableContainer
-from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, AppIds, DirContentBtn, ReadCmd, TabLabel, Tcss, Utils
+from chezmoi_mousse import CMD, AppIds, DirContentBtn, ReadCmd, TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
 
@@ -37,12 +36,6 @@ class DiffView(Container):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.diff)
         self.ids = ids
-        self.mounted: dict[Path, str] = {}
-        self.current_path: Path | None = None
-
-    def hide_all_containers(self) -> None:
-        for container in self.query_children(ScrollableContainer):
-            container.display = False
 
     def _create_diff_widgets(
         self, path: "Path"
@@ -82,38 +75,23 @@ class DiffView(Container):
     def watch_show_path(self, show_path: "Path | None") -> None:
         if show_path is None:
             return
-        self.hide_all_containers()
-        sc_id = Utils.path_to_id(show_path)
-        sc_id_q = Utils.path_to_qid(show_path)
-        try:
-            container = self.query_one(sc_id_q, ScrollableContainer)
-            container.display = True
-        except NoMatches:
-            widgets: list[Label | Static | DirContentBtn] = []
-            if show_path == CMD.cache.dest_dir:
-                widgets = CMD.cache.get_dir_widgets(show_path, self.ids)
-            elif show_path in CMD.cache.sets.managed_dirs:
-                if show_path in CMD.cache.sets.status_dirs:
-                    widgets = self._create_diff_widgets(show_path)
-                else:
-                    widgets = CMD.cache.get_dir_widgets(show_path, self.ids)
-            elif show_path in CMD.cache.sets.managed_files:
-                if show_path in CMD.cache.sets.status_files:
-                    widgets = self._create_diff_widgets(show_path)
-                else:
-                    widgets.append(
-                        Label("Managed file", classes=Tcss.main_section_label)
-                    )
-                    widgets.append(
-                        Label(str(show_path), classes=Tcss.sub_section_label)
-                    )
-                    widgets.append(
-                        Static("This file has no status.", classes=Tcss.context)
-                    )
+        self.remove_children()
+        widgets: list[Label | Static | DirContentBtn] = []
+        if show_path == CMD.cache.dest_dir:
+            widgets = CMD.cache.get_dir_widgets(show_path, self.ids)
+        elif show_path in CMD.cache.sets.managed_dirs:
+            if show_path in CMD.cache.sets.status_dirs:
+                widgets = self._create_diff_widgets(show_path)
             else:
-                widgets.append(Static("Nothing to show."))
-            container = ScrollableContainer(*widgets, id=sc_id)
-            self.mount(container)
-            self.mounted[show_path] = sc_id
-
-        self.current_path = show_path
+                widgets = CMD.cache.get_dir_widgets(show_path, self.ids)
+        elif show_path in CMD.cache.sets.managed_files:
+            if show_path in CMD.cache.sets.status_files:
+                widgets = self._create_diff_widgets(show_path)
+            else:
+                widgets.append(Label("Managed file", classes=Tcss.main_section_label))
+                widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
+                widgets.append(Static("This file has no status.", classes=Tcss.context))
+        else:
+            widgets.append(Static("Nothing to show."))
+        container = ScrollableContainer(*widgets)
+        self.mount(container)
