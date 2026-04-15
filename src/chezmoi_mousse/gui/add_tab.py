@@ -21,7 +21,7 @@ OUTPUT_LIMIT = 40
 
 class AddTabContentsView(ContentsView):
 
-    show_path: reactive["Path | None"] = reactive(None)
+    show_path: reactive["Path | None"] = reactive(None, init=False)
 
     def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
@@ -145,8 +145,6 @@ class AddTab(Horizontal):
         event.stop()
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
-        if event.node.data.path == CMD.cache.dest_dir:
-            self.dir_tree.root.expand()
         self.contents_view.show_path = event.node.data.path
         if event.node.data.path == CMD.cache.dest_dir:
             self.contents_view.border_title = f" {CMD.cache.dest_dir} "

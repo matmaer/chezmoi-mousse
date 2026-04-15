@@ -22,7 +22,6 @@ class FilteredDirTree(DirectoryTree):
     def on_mount(self) -> None:
         self.guide_depth: int = 3
         self.border_title = " destDir tree "
-        self.root.expand()
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 

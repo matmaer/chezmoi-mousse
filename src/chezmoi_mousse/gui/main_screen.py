@@ -171,7 +171,6 @@ class MainScreen(Screen[None]):
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
         dir_tree.refresh()
-        dir_tree.select_node(dir_tree.root)
 
     #####################
     # Message handling  #
