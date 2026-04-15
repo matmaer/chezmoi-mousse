@@ -177,12 +177,13 @@ class CommandResult:
         return f"{self.short_global_cmd} {self.short_verb_cmd}"
 
     @property
-    def exit_code_colored_cmd(self) -> str:
+    def _exit_code_colored_cmd(self) -> str:
         cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
         cmd_text = f"{self.short_global_cmd} {self.short_verb_cmd}"
+        cmd_return = f"[dim]returncode {self.exit_code}[/]"
         if self.path_arg is not None:
             cmd_text += f" {self.path_arg}"
-        return f"{cmd_color} {cmd_text}[/]"
+        return f"{cmd_color} {cmd_text}[/] {cmd_return}"
 
     @property
     def _is_dry_run(self) -> bool:
@@ -191,7 +192,7 @@ class CommandResult:
     @property
     def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
         pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
-        title = f"{pretty_time} {self.exit_code_colored_cmd}"
+        title = f"{pretty_time} {self._exit_code_colored_cmd}"
         dry_run_str = "(dry run)" if self._is_dry_run else ""
         curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = self._std_err or f"{LogString.no_stderr} {dry_run_str}"

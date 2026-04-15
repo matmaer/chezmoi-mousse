@@ -109,13 +109,9 @@ class MainScreen(Screen[None]):
 
         if btn_enum in OpBtnEnum.run_btn_enums():
             await self.loading_modal.run_write_command(btn_enum).wait()
-            await self.operate_info.update_write_cmd_info().wait()
-            await self.loading_modal.run_all_read_cmds().wait()
-            await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_cmd_output().wait()
         elif btn_enum == OpBtnEnum.refresh_tree:
             await self.loading_modal.run_all_read_cmds().wait()
-            await self.loading_modal.update_changed_paths().wait()
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()
         elif btn_enum == OpBtnEnum.reload:
@@ -255,51 +251,53 @@ class MainScreen(Screen[None]):
     # Widget display logic #
     ########################
 
-    def _get_set_button_display(self, button: OpButton) -> None:
-        op_button_group = self.query_one(
-            button.app_ids.container.operate_buttons_q, OperateButtons
-        )
-        op_buttons: list[OpButton] = [
-            b
-            for b in op_button_group.query_children().results()
-            if isinstance(b, OpButton)
-        ]
-        reload_btn = self.query_one(button.app_ids.op_btn.reload_q, OpButton)
-        cancel_btn = self.query_one(button.app_ids.op_btn.cancel_q, OpButton)
-        run_buttons = [b for b in op_buttons if b.id in button.app_ids.run_btn_ids]
-        review_buttons = [
-            b for b in op_buttons if b.id in button.app_ids.review_btn_ids
-        ]
-        if button.id in (button.app_ids.op_btn.reload, button.app_ids.op_btn.cancel):
-            reload_btn.display = False
-            cancel_btn.display = False
-            for btn in run_buttons:
-                btn.display = False
-            for btn in review_buttons:
-                btn.display = True
-        elif button in review_buttons:
-            for btn in review_buttons:
-                btn.display = False
-            for btn in run_buttons:
-                btn.disabled = False
-            run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(button.label)))
-            # now lookup the button widget in self.run_buttons with the
-            # corresponding enum
-            btn_widget: OpButton = next(
-                b for b in run_buttons if b.btn_enum == run_btn_enum
-            )
-            btn_widget.display = True
-            cancel_btn.display = True
-        elif button in run_buttons:
-            cancel_btn.display = False
-            reload_btn.display = True
-            button.disabled = True
-        elif button.btn_enum == OpBtnEnum.refresh_tree:
-            for btn in op_buttons:
-                btn.display = False
-            reload_btn.display = True
-
     def _set_display(self, button: OpButton) -> None:
+        def set_button_display(button: OpButton) -> None:
+            op_button_group = self.query_one(
+                button.app_ids.container.operate_buttons_q, OperateButtons
+            )
+            op_buttons: list[OpButton] = [
+                b
+                for b in op_button_group.query_children().results()
+                if isinstance(b, OpButton)
+            ]
+            reload_btn = self.query_one(button.app_ids.op_btn.reload_q, OpButton)
+            cancel_btn = self.query_one(button.app_ids.op_btn.cancel_q, OpButton)
+            run_buttons = [b for b in op_buttons if b.id in button.app_ids.run_btn_ids]
+            review_buttons = [
+                b for b in op_buttons if b.id in button.app_ids.review_btn_ids
+            ]
+            if button.id in (
+                button.app_ids.op_btn.reload,
+                button.app_ids.op_btn.cancel,
+            ):
+                reload_btn.display = False
+                cancel_btn.display = False
+                for btn in run_buttons:
+                    btn.display = False
+                for btn in review_buttons:
+                    btn.display = True
+            elif button in review_buttons:
+                for btn in review_buttons:
+                    btn.display = False
+                for btn in run_buttons:
+                    btn.disabled = False
+                run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(button.label)))
+                # now lookup the button widget in self.run_buttons with the
+                # corresponding enum
+                btn_widget: OpButton = next(
+                    b for b in run_buttons if b.btn_enum == run_btn_enum
+                )
+                btn_widget.display = True
+                cancel_btn.display = True
+            elif button in run_buttons:
+                cancel_btn.display = False
+                reload_btn.display = True
+                button.disabled = True
+            elif button.btn_enum == OpBtnEnum.refresh_tree:
+                for btn in op_buttons:
+                    btn.display = False
+                reload_btn.display = True
 
         def set_left_side_display(display: bool) -> None:
             left_side = self.query_one(button.app_ids.container.left_side_q, Vertical)
@@ -323,7 +321,7 @@ class MainScreen(Screen[None]):
                 )
             right_side.display = display
 
-        self._get_set_button_display(button)
+        set_button_display(button)
         if button.btn_enum in (OpBtnEnum.reload, OpBtnEnum.cancel):
             set_left_side_display(True)
             set_right_side_display(True)
@@ -339,11 +337,10 @@ class MainScreen(Screen[None]):
             self.command_output.display = False
             self.operate_info.display = True
             set_right_side_display(True)
-        elif button.btn_enum in OpBtnEnum.run_btn_enums():
-            self.command_output.display = True
-            self.operate_info.display = True
-            set_right_side_display(False)
-        elif button.btn_enum == OpBtnEnum.refresh_tree:
+        elif (
+            button.btn_enum in OpBtnEnum.run_btn_enums()
+            or button.btn_enum == OpBtnEnum.refresh_tree
+        ):
             self.command_output.display = True
             self.operate_info.display = False
             set_right_side_display(False)

@@ -8,7 +8,7 @@ from ._str_enums import SwitchLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ["OpBtnEnum", "OpBtnLabel", "OpInfoString", "SwitchEnum"]
+__all__ = ["OpBtnEnum", "OpBtnLabel", "SwitchEnum"]
 
 
 class OpInfoString(StrEnum):
@@ -24,7 +24,6 @@ class OpInfoString(StrEnum):
         "directory, it will be recursed in.[/]"
     )
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
-    command_completed = "Command completed"
     destroy_path_info = (
         "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
         "SURE YOU HAVE A BACKUP![/]"

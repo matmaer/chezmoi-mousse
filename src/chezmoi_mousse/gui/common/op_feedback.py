@@ -6,7 +6,7 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import CMD, OpBtnEnum, OperateString, OpInfoString, Tcss
+from chezmoi_mousse import CMD, OpBtnEnum, OperateString, Tcss
 
 from .actionables import OpButton
 
@@ -49,15 +49,6 @@ class OperateInfo(Static):
         self.border_title = button.btn_enum.op_info_title
         self.border_subtitle = button.btn_enum.op_info_subtitle
 
-    @work
-    async def update_write_cmd_info(self) -> None:
-        self.update(
-            f"{CMD.loading_modal_results[0].exit_code_colored_cmd}\n"
-            f"Exit code {CMD.loading_modal_results[0].exit_code}"
-        )
-        self.border_title = OpInfoString.command_completed
-        self.border_subtitle = None
-
     def watch_changes_enabled(self) -> None:
         if not self.display or self.current_button is None:
             return
@@ -71,11 +62,10 @@ class CommandOutput(ScrollableContainer):
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield Label("Changed paths", classes=Tcss.main_section_label)
-        yield Label("Removed paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.ids.static.removed_paths, classes=Tcss.info)
         yield Label("Added paths", classes=Tcss.sub_section_label)
         yield Static(id=self.ids.static.added_paths, classes=Tcss.info)
+        yield Label("Removed paths", classes=Tcss.sub_section_label)
+        yield Static(id=self.ids.static.removed_paths, classes=Tcss.info)
         yield Label("Changed status paths", classes=Tcss.sub_section_label)
         yield Static(id=self.ids.static.changed_status, classes=Tcss.info)
         yield Label("Command output", classes=Tcss.main_section_label)

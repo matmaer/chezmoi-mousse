@@ -80,6 +80,12 @@ class LoadingModal(ModalScreen[None]):
     async def run_all_read_cmds(self) -> None:
         for read_cmd in CMD.refresh_read_cmds:
             await self._run_read_command(read_cmd).wait()
+        await self._update_changed_paths().wait()
+
+    @work
+    async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
+        await self._run_write_command(btn_enum).wait()
+        await self.run_all_read_cmds().wait()
 
     @work(thread=True)
     @min_wait
@@ -91,7 +97,7 @@ class LoadingModal(ModalScreen[None]):
 
     @work(thread=True, exit_on_error=False)
     @min_wait
-    async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
+    async def _run_write_command(self, btn_enum: "OpBtnEnum") -> None:
         if btn_enum.path_arg == CMD.cache.dest_dir:
             btn_enum.path_arg = None
         self.label_text = CMD.run_cmd.review_cmd(
@@ -104,7 +110,7 @@ class LoadingModal(ModalScreen[None]):
 
     @work(thread=True)
     @min_wait
-    async def update_changed_paths(self) -> None:
+    async def _update_changed_paths(self) -> None:
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
         self.old_managed_paths: set[Path] = CMD.cache.sets.managed_paths.copy()
