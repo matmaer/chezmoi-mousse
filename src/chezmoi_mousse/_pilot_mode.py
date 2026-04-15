@@ -10,11 +10,14 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from textual.pilot import Pilot
-from textual.widgets import TabbedContent
+from textual.widgets import Switch, TabbedContent, TabPane
 
 from ._str_enums import TabLabel
+from .gui.common.actionables import SwitchSlider
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from textual.message import Message
 
     from .gui.textual_app import ChezmoiGUI
@@ -28,6 +31,14 @@ async def pilot_chill(pilot: Pilot[None]):
     await pilot.pause(0.05)
 
 
+async def click_tab(
+    pilot: Pilot[None], label: TabLabel, tabbed_content: TabbedContent
+) -> None:
+    tab = tabbed_content.get_tab(label)
+    await pilot.click(tab)
+    await pilot_chill(pilot)
+
+
 async def test_binding(pilot: Pilot[None], key: str):
     await pilot.press(key)
     await pilot_chill(pilot)
@@ -35,12 +46,16 @@ async def test_binding(pilot: Pilot[None], key: str):
     await pilot_chill(pilot)
 
 
-async def click_tab(
-    pilot: Pilot[None], label: TabLabel, tabbed_content: TabbedContent
-) -> None:
-    tab = tabbed_content.get_tab(label)
-    await pilot.click(tab)
-    await pilot_chill(pilot)
+async def test_switch_slider(pilot: Pilot[None], active_pane: TabPane | None) -> None:
+    if active_pane is None:
+        raise ValueError("No active pane")
+    switch_slider = active_pane.query_exactly_one(SwitchSlider)
+    switches: Iterable[Switch] = switch_slider.query(Switch)
+    for switch in switches:
+        await pilot.click(switch)
+        await pilot_chill(pilot)
+        await pilot.click(switch)
+        await pilot_chill(pilot)
 
 
 async def test_app_with_pilot(app: ChezmoiGUI):
@@ -60,10 +75,10 @@ async def test_app_with_pilot(app: ChezmoiGUI):
         for label in TabLabel.main_tabs():
             await click_tab(pilot, label, tabbed_content)
             await test_binding(pilot, "M")
-        for label in TabLabel.operate_tabs():
-            await click_tab(pilot, label, tabbed_content)
-            await test_binding(pilot, "D")
-            await test_binding(pilot, "F")
+            if label in TabLabel.operate_tabs():
+                await test_binding(pilot, "D")
+                await test_binding(pilot, "F")
+                await test_switch_slider(pilot, tabbed_content.active_pane)
         await click_tab(pilot, TabLabel.apply, tabbed_content)
         await pilot_chill(pilot)
         await pilot.exit(None)
