@@ -79,7 +79,10 @@ class OpButton(Button):
         self.btn_enum: OpBtnEnum = btn_enum
         self.btn_id: str = btn_id
         self.app_ids = app_ids
-        if btn_enum in (
+        if btn_enum == OpBtnEnum.refresh_tree:
+            self.remove_class(Tcss.operate_button)
+            self.add_class(Tcss.refresh_button)
+        elif btn_enum in (
             OpBtnEnum.destroy_review,
             OpBtnEnum.forget_review,
             OpBtnEnum.add_review,

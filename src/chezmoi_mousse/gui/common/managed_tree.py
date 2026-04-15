@@ -45,11 +45,6 @@ class DestDirTree(Vertical):
             app_ids=self.ids,
         )
 
-    def on_mount(self) -> None:
-        refresh_btn = self.query_one(self.ids.op_btn.refresh_tree_q, OpButton)
-        refresh_btn.remove_class(Tcss.operate_button)
-        refresh_btn.add_class(Tcss.refresh_button)
-
 
 class ManagedTree(Tree[Path]):
 
