@@ -132,6 +132,7 @@ class AddTab(Horizontal):
             IDS.add.container.contents_q, AddTabContentsView
         )
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
+        self.contents_view.show_path = CMD.cache.dest_dir
         self.add_review_btn = self.query_one(IDS.add.op_btn.add_review_q, OpButton)
 
     @on(DirectoryTree.FileSelected)
