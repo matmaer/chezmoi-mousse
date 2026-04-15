@@ -304,6 +304,8 @@ class MainScreen(Screen[None]):
         def set_left_side_display(display: bool) -> None:
             left_side = self.query_one(button.app_ids.container.left_side_q, Vertical)
             left_side.display = display
+            switch_slider = self.query_one(button.app_ids.switch_slider_q, SwitchSlider)
+            switch_slider.display = display
 
         def set_right_side_display(display: bool) -> None:
             right_side: Vertical | ContentsView | None = None
@@ -321,15 +323,10 @@ class MainScreen(Screen[None]):
                 )
             right_side.display = display
 
-        def set_switch_slider_display(display: bool) -> None:
-            switch_slider = self.query_one(button.app_ids.switch_slider_q, SwitchSlider)
-            switch_slider.display = display
-
         self._get_set_button_display(button)
         if button.btn_enum in (OpBtnEnum.reload, OpBtnEnum.cancel):
             set_left_side_display(True)
             set_right_side_display(True)
-            set_switch_slider_display(True)
             self.main_tabs.display = True
             self.op_feed_back.display = False
             self.command_output.display = False
@@ -338,7 +335,6 @@ class MainScreen(Screen[None]):
         self.op_feed_back.display = True
         self.main_tabs.display = False
         set_left_side_display(False)
-        set_switch_slider_display(False)
         if button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.display = False
             self.operate_info.display = True
