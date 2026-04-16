@@ -11,10 +11,11 @@ from typing import TYPE_CHECKING
 
 from textual.pilot import Pilot
 from textual.widget import Widget
-from textual.widgets import Button, Switch, TabbedContent, TabPane
+from textual.widgets import Switch, TabbedContent, TabPane
 
 from ._str_enums import TabLabel
-from .gui.common.actionables import SwitchSlider
+from .gui.common.actionables import FlatButton, OpButton, SwitchSlider, TabButton
+from .gui.common.loading_modal import LoadingModal
 
 if TYPE_CHECKING:
     from textual.message import Message
@@ -26,7 +27,9 @@ from .gui.common.messages import ReadyToUseMsg
 
 async def pilot_chill(pilot: Pilot[None]):
     await pilot.wait_for_scheduled_animations()
-    await pilot.pause(0.05)
+    while isinstance(pilot.app.screen, LoadingModal):
+        await pilot.pause(0.1)
+    await pilot.pause(0.1)
 
 
 async def click_and_wait(pilot: Pilot[None], widget: Widget) -> None:
@@ -39,17 +42,16 @@ async def press_and_wait(pilot: Pilot[None], key: str) -> None:
     await pilot_chill(pilot)
 
 
-async def refresh_trees(pilot: Pilot[None], active_pane: TabPane | None) -> None:
-    if active_pane is None:
-        raise ValueError("No active pane")
-    buttons = active_pane.query(Button).results()
+async def refresh_trees(pilot: Pilot[None], active_pane: TabPane) -> None:
+    buttons = active_pane.query(OpButton).results()
     refresh_tree_btn = next(
         (btn for btn in buttons if "Refresh" in str(btn.label)), None
     )
-    if refresh_tree_btn is None:
+    reload_button = next((btn for btn in buttons if "Reload" in str(btn.label)), None)
+    if refresh_tree_btn is None or reload_button is None:
         raise ValueError("No refresh tree button found")
-    else:
-        pilot.app.notify(f"Found refresh tree button: {refresh_tree_btn}")
+    await click_and_wait(pilot, refresh_tree_btn)
+    await click_and_wait(pilot, reload_button)
 
 
 async def toggle_binding(pilot: Pilot[None], key: str):
@@ -57,37 +59,26 @@ async def toggle_binding(pilot: Pilot[None], key: str):
     await press_and_wait(pilot, key)
 
 
-async def toggle_switches(pilot: Pilot[None], active_pane: TabPane | None) -> None:
-    if active_pane is None:
-        raise ValueError("No active pane")
+async def toggle_switches(pilot: Pilot[None], active_pane: TabPane) -> None:
     switch_slider = active_pane.query_exactly_one(SwitchSlider)
     switches: tuple[Switch, ...] = tuple(switch_slider.query(Switch))
 
-    async def set_state(state: tuple[bool, ...]) -> None:
+    states = list(product((False, True), repeat=len(switches)))[1:]
+    rev_states = list(reversed(states))
+
+    for state in states + rev_states:
         for switch, target in zip(switches, state, strict=True):
             if switch.value != target:
                 await click_and_wait(pilot, switch)
 
-    states = list(product((False, True), repeat=len(switches)))
 
-    # We have to cover all transitions as we add and remove nodes in the Tree widgets,
-    # so we build the complete directed graph excluding self-loops (A → A) when nothing
-    # changes. Every other (prev → next) edge exists once.
-    # Hierholzer's algorithm finds an Eulerian circuit covering all edges
-    # exactly once, so every meaningful ordered transition should be covered.
-    graph = {state: [s for s in states if s != state] for state in states}
-    stack = [states[0]]
-    circuit: list[tuple[bool, ...]] = []
-    while stack:
-        v = stack[-1]
-        if graph[v]:
-            stack.append(graph[v].pop())
-        else:
-            circuit.append(stack.pop())
-    circuit.reverse()
-
-    for state in circuit[1:-1]:
-        await set_state(state)
+async def click_content_switcher_buttons(pilot: Pilot[None], tab_pane: TabPane) -> None:
+    tab_buttons = tuple(tab_pane.query(TabButton).results())
+    for tab_button in tab_buttons[1:]:
+        await click_and_wait(pilot, tab_button)
+    flat_buttons = tuple(tab_pane.query(FlatButton).results())
+    for flat_button in flat_buttons[1:]:
+        await click_and_wait(pilot, flat_button)
 
 
 async def test_app_with_pilot(app: ChezmoiGUI):
@@ -108,11 +99,16 @@ async def test_app_with_pilot(app: ChezmoiGUI):
             tab = tabbed_content.get_tab(label)
             await click_and_wait(pilot, tab)
             await toggle_binding(pilot, "M")
+            tab_pane = tabbed_content.active_pane
+            if tab_pane is None:
+                raise ValueError("No active pane")
+            if label != TabLabel.add:
+                await click_content_switcher_buttons(pilot, tab_pane)
             if label in TabLabel.operate_tabs():
                 await toggle_binding(pilot, "D")
                 await toggle_binding(pilot, "F")
-                await toggle_switches(pilot, tabbed_content.active_pane)
-                await refresh_trees(pilot, tabbed_content.active_pane)
+                await toggle_switches(pilot, tab_pane)
+                await refresh_trees(pilot, tab_pane)
         tab = tabbed_content.get_tab(TabLabel.apply)
         await click_and_wait(pilot, tab)
         await pilot.exit(None)
