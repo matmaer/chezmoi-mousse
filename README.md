@@ -44,6 +44,9 @@ If Python 3.13 with `textual` is available in you env, in the `src` directory, y
 
 `python -m chezmoi_mousse`
 
+> [!NOTE]
+> Navigate to the "Config" tab and check the output from `chezmoi doctor`
+
 ## Test
 
 To test the app without "real" dotfiles in a container or VM:
@@ -141,11 +144,11 @@ Top level
 - :green_square: pager (`--no-pager`, app limits output)
 - :green_square: pagerArgs
 - :black_circle: persistentState
-- :green_square: progress (`--progress=false`, app will implement spinner)
+- :green_square: progress (`--progress=false`, app shows progress)
 - :black_circle: scriptEnv
 - :black_circle: scriptTempDir
 - :green_circle: sourceDir
-- :green_circle: tempDir
+- :green_circle: tempDir (check the Config tab `chezmoi doctor` output for any issue)
 - :green_circle: umask
 - :black_circle: useBuiltinAge
 - :green_square: useBuiltinGit (`--use-builtin-git=true`)
@@ -191,10 +194,10 @@ cd
 diff
 - :negative_squared_cross_mark: diff.args (Start a discussion if you have a use case)
 - :green_square: diff.command (`chezmoi --use-builtin-diff`)
-- :black_circle: diff.exclude
+- :negative_squared_cross_mark: diff.exclude (diffs are shown for a selected path)
 - :green_square: diff.pager (`chezmoi --no-pager --use-builtin-diff`)
 - :negative_squared_cross_mark: diff.pagerArgs
-- :green_square: diff.reverse
+- :green_square: diff.reverse (`--reverse` flag is used to show diffs on the ReAdd tab)
 - :black_circle: diff.scriptContents
 
 edit
