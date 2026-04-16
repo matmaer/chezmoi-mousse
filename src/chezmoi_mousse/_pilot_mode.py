@@ -45,26 +45,21 @@ async def press_and_wait(pilot: Pilot[None], key: str) -> None:
     await pilot_chill(pilot)
 
 
-async def refresh_trees(pilot: Pilot[None], active_pane: TabPane) -> None:
-    if active_pane.id not in (TabLabel.apply, TabLabel.re_add, TabLabel.add):
-        return
-    buttons = active_pane.query(OpButton).results()
-    refresh_tree_btn = next(
-        (btn for btn in buttons if "Refresh" in str(btn.label)), None
-    )
-    reload_button = next((btn for btn in buttons if "Reload" in str(btn.label)), None)
-    if refresh_tree_btn is None or reload_button is None:
-        raise ValueError("No refresh tree button found")
-    await click_and_wait(pilot, refresh_tree_btn)
-    await click_and_wait(pilot, reload_button)
-
-
 async def toggle_binding(pilot: Pilot[None], key: str):
     await press_and_wait(pilot, key)
     await press_and_wait(pilot, key)
 
 
-async def toggle_tab_bindings(pilot: Pilot[None], tab_pane: TabPane): ...
+async def refresh_trees(pilot: Pilot[None], active_pane: TabPane) -> None:
+    if active_pane.id not in (TabLabel.apply, TabLabel.re_add, TabLabel.add):
+        return
+    op_buttons = active_pane.query(OpButton).results()
+    refresh_tree_btn = next((b for b in op_buttons if "Refresh" in str(b.label)), None)
+    reload_button = next((b for b in op_buttons if "Reload" in str(b.label)), None)
+    if refresh_tree_btn is None or reload_button is None:
+        raise ValueError("Operate buttons not found")
+    await click_and_wait(pilot, refresh_tree_btn)
+    await click_and_wait(pilot, reload_button)
 
 
 async def toggle_switches(pilot: Pilot[None], active_pane: TabPane) -> None:
