@@ -27,8 +27,7 @@ PRETEND_CHEZMOI_NOT_FOUND = "PRETEND_CHEZMOI_NOT_FOUND"
 
 
 def run_app():
-    git_bin = shutil.which(GIT)
-    if git_bin is None:
+    if shutil.which(GIT) is None:
         print(GIT_NOT_FOUND)  # pytest-cov: ignore
         return
     if os.environ.get(CHEZMOI_SUBSHELL) == "1":
@@ -41,17 +40,14 @@ def run_app():
     pilot_mode = os.environ.get(CHEZMOI_MOUSSE_PILOT_MODE) == "1"
 
     if dev_mode or pretend_not_found or pilot_mode:
-        if pretend_not_found:
-            chezmoi_bin = None
-        # Save stacktrace in case an exception occurs on App class init.
-        src_dir = Path(__file__).parent.parent
-        stack_trace_path = src_dir / STACK_TRACE_FILE
 
         def save_stacktrace():
-            with Path.open(stack_trace_path, "a") as f:
+            with Path.open(Path(__file__).parent.parent / STACK_TRACE_FILE, "a") as f:
                 traceback.print_exc(file=f)
 
         try:
+            if pretend_not_found:
+                chezmoi_bin = None
             app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, dev_mode=True)
 
             # Patch app._handle_exception to save stacktrace during runtime
@@ -70,6 +66,7 @@ def run_app():
             app.run()
 
         except Exception:
+            # Save stacktrace in case an exception occurs on App class init.
             save_stacktrace()
             raise
 
