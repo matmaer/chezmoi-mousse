@@ -11,7 +11,7 @@ from textual.binding import Binding
 from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
-from textual.widgets import Button, TabbedContent, Tabs
+from textual.widgets import Button, TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -29,10 +29,7 @@ from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.managed_tree import DestDirTree
 from .common.op_feedback import OperateInfo
 from .common.screen_header import CustomHeader
-from .config_tab import ConfigTab
-from .debug_tab import DebugTab
 from .install_help import InstallHelpScreen
-from .logs_tab import LogsTab
 from .main_screen import MainScreen
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
@@ -129,26 +126,13 @@ class ChezmoiGUI(App[None]):
             self.exit()
             return
 
-    def _get_tab_widget(
-        self,
-    ) -> ApplyTab | ReAddTab | AddTab | LogsTab | ConfigTab | DebugTab:
+    def _get_tab_widget(self) -> TabPane:
         if not isinstance(self.screen, MainScreen):
             raise ValueError("get_tab_widget called outside of MainScreen")
-        tab_to_query = self.screen.query_exactly_one(TabbedContent).active
-        if tab_to_query == TabLabel.apply:
-            return self.screen.query_exactly_one(ApplyTab)
-        elif tab_to_query == TabLabel.re_add:
-            return self.screen.query_exactly_one(ReAddTab)
-        elif tab_to_query == TabLabel.add:
-            return self.screen.query_exactly_one(AddTab)
-        elif tab_to_query == TabLabel.config:
-            return self.screen.query_exactly_one(ConfigTab)
-        elif tab_to_query == TabLabel.logs:
-            return self.screen.query_exactly_one(LogsTab)
-        elif tab_to_query == TabLabel.debug:
-            return self.screen.query_exactly_one(DebugTab)
-        else:
-            raise ValueError(f"Unknown active_tab on MainScreen: {tab_to_query}")
+        tab_pane = self.screen.query_exactly_one(TabbedContent).active_pane
+        if tab_pane is None:
+            raise ValueError("No active pane found in TabbedContent")
+        return tab_pane
 
     def _get_switch_slider_widget(self) -> SwitchSlider | None:
         if not isinstance(self.screen, MainScreen):
