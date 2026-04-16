@@ -96,6 +96,7 @@ class PwMgrData:
     doctor_check: str
     link: str
     info: str
+    dr_message: str = "doctor message not set"
 
 
 class PwMgrInfo(Enum):
@@ -238,7 +239,9 @@ class PwCollapsible(Collapsible):
                 classes=Tcss.pw_mgr_group,
             ),
             title=(
-                f"[$text-primary]Doctor check: " f"{self.pw_mgr_data.doctor_check}[/]"
+                f"[$text-primary]Doctor check: "
+                f"{self.pw_mgr_data.doctor_check}[/] "
+                f"[dim]({self.pw_mgr_data.dr_message})[/]"
             ),
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
@@ -260,6 +263,7 @@ class PwMgrInfoView(Vertical):
             if row[1] not in PwMgrInfo.all_pw_mgr_commands():
                 continue
             pw_mgr_data = PwMgrInfo.get_member_from_doctor_check(row[1])
+            pw_mgr_data.dr_message = row[2]  # contains the doctor message
             pw_mgr_data_list.append(pw_mgr_data)
 
         for item in pw_mgr_data_list:
