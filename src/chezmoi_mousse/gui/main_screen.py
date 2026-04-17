@@ -54,11 +54,11 @@ class MainScreen(Screen[None]):
         yield OpFeedBack(ids=IDS.main)
 
         with Vertical(), TabbedContent():
-            yield ApplyTab(id=TabLabel.apply, title=TabLabel.apply)
-            yield ReAddTab(id=TabLabel.re_add, title=TabLabel.re_add)
-            yield AddTab(id=TabLabel.add, title=TabLabel.add)
-            yield LogsTab(id=TabLabel.logs, title=TabLabel.logs)
-            yield ConfigTab(id=TabLabel.config, title=TabLabel.config)
+            yield ApplyTab(IDS.apply)
+            yield ReAddTab(IDS.re_add)
+            yield AddTab(IDS.add)
+            yield LogsTab(IDS.logs)
+            yield ConfigTab(IDS.config)
             if CMD.dev_mode is True:
                 from .debug_tab import DebugTab
 

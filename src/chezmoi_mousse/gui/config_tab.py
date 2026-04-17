@@ -7,7 +7,7 @@ from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Label, Pretty, Static, TabPane
 
-from chezmoi_mousse import IDS, FlatBtnLabel, SectionLabel, Tcss
+from chezmoi_mousse import AppIds, FlatBtnLabel, SectionLabel, TabLabel, Tcss
 
 from .common.actionables import FlatButtonsVertical
 from .common.doctor_data import DoctorTable, PwMgrInfoView
@@ -79,10 +79,14 @@ class ConfigTab(TabPane):
 
     command_results: reactive["CachedData | None"] = reactive(None, init=False)
 
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.config, title=TabLabel.config)
+        self.ids = ids
+
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
-                IDS.config,
+                self.ids,
                 buttons=(
                     FlatBtnLabel.doctor,
                     FlatBtnLabel.pw_mgr_info,
@@ -92,13 +96,13 @@ class ConfigTab(TabPane):
                     FlatBtnLabel.diagram,
                 ),
             )
-            with ContentSwitcher(initial=IDS.config.container.doctor):
-                yield DoctorTableView(id=IDS.config.container.doctor)
-                yield PwMgrInfoView(id=IDS.config.view.pw_mgr_info)
-                yield CatConfigView(id=IDS.config.view.cat_config)
-                yield IgnoredView(id=IDS.config.view.ignored)
-                yield TemplateDataView(id=IDS.config.view.template_data)
-                yield DiagramView(id=IDS.config.view.diagram)
+            with ContentSwitcher(initial=self.ids.container.doctor):
+                yield DoctorTableView(id=self.ids.container.doctor)
+                yield PwMgrInfoView(id=self.ids.view.pw_mgr_info)
+                yield CatConfigView(id=self.ids.view.cat_config)
+                yield IgnoredView(id=self.ids.view.ignored)
+                yield TemplateDataView(id=self.ids.view.template_data)
+                yield DiagramView(id=self.ids.view.diagram)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
@@ -107,17 +111,17 @@ class ConfigTab(TabPane):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == FlatBtnLabel.doctor:
-            self.switcher.current = IDS.config.container.doctor
+            self.switcher.current = self.ids.container.doctor
         if event.button.label == FlatBtnLabel.pw_mgr_info:
-            self.switcher.current = IDS.config.view.pw_mgr_info
+            self.switcher.current = self.ids.view.pw_mgr_info
         elif event.button.label == FlatBtnLabel.cat_config:
-            self.switcher.current = IDS.config.view.cat_config
+            self.switcher.current = self.ids.view.cat_config
         elif event.button.label == FlatBtnLabel.ignored:
-            self.switcher.current = IDS.config.view.ignored
+            self.switcher.current = self.ids.view.ignored
         elif event.button.label == FlatBtnLabel.template_data:
-            self.switcher.current = IDS.config.view.template_data
+            self.switcher.current = self.ids.view.template_data
         elif event.button.label == FlatBtnLabel.diagram:
-            self.switcher.current = IDS.config.view.diagram
+            self.switcher.current = self.ids.view.diagram
 
     def watch_command_results(self, cached: "CachedData") -> None:
         if (
@@ -128,21 +132,21 @@ class ConfigTab(TabPane):
         ):
             return
         self.switcher.query_one(
-            IDS.config.view.template_data_q, TemplateDataView
+            self.ids.view.template_data_q, TemplateDataView
         ).template_data_stdout = (
             cached.cmd_results.template_data.completed_process.stdout
         )
+        self.switcher.query_one(self.ids.view.ignored_q, IgnoredView).ignored_stdout = (
+            cached.cmd_results.ignored.completed_process.stdout
+        )
         self.switcher.query_one(
-            IDS.config.view.ignored_q, IgnoredView
-        ).ignored_stdout = cached.cmd_results.ignored.completed_process.stdout
-        self.switcher.query_one(
-            IDS.config.view.cat_config_q, CatConfigView
+            self.ids.view.cat_config_q, CatConfigView
         ).cat_config_stdout = cached.cmd_results.cat_config.completed_process.stdout
         self.switcher.query_one(
-            IDS.config.container.doctor_q, DoctorTableView
+            self.ids.container.doctor_q, DoctorTableView
         ).doctor_stdout = cached.cmd_results.doctor.completed_process.stdout
         self.switcher.query_one(
-            IDS.config.view.pw_mgr_info_q, PwMgrInfoView
+            self.ids.view.pw_mgr_info_q, PwMgrInfoView
         ).populate_pw_mgr_info(cached.cmd_results.doctor.completed_process.stdout)
 
 

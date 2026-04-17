@@ -3,7 +3,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Switch, TabPane
 
-from chezmoi_mousse import IDS, DirContentBtn
+from chezmoi_mousse import AppIds, DirContentBtn, TabLabel
 
 from .common.actionables import OperateButtons, SwitchSlider
 from .common.managed_tree import DestDirTree, ManagedTree
@@ -14,21 +14,25 @@ __all__ = ["ApplyTab"]
 
 class ApplyTab(TabPane):
 
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.apply, title=TabLabel.apply)
+        self.ids = ids
+
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield DestDirTree(IDS.apply)
-            yield Vertical(ViewSwitcher(IDS.apply), OperateButtons(IDS.apply))
-        yield SwitchSlider(IDS.apply)
+            yield DestDirTree(self.ids)
+            yield Vertical(ViewSwitcher(self.ids), OperateButtons(self.ids))
+        yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
-        self.managed_tree = self.query_one(IDS.apply.managed_tree_q, ManagedTree)
+        self.managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == IDS.apply.switch.unchanged:
+        if event.switch.id == self.ids.switch.unchanged:
             self.managed_tree.unchanged = event.value
-        elif event.switch.id == IDS.apply.switch.expand_all:
+        elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value
 
     @on(DirContentBtn.Pressed)
