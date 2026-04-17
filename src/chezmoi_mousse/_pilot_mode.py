@@ -16,9 +16,12 @@ from textual.widgets import Switch, TabbedContent, TabPane
 
 from ._cmd_results import DirContentBtn
 from ._str_enums import TabLabel
+from .gui.add_tab import AddTab
+from .gui.apply_tab import ApplyTab
 from .gui.common.actionables import FlatButton, OpButton, SwitchSlider, TabButton
 from .gui.common.diffs import DiffView
 from .gui.common.loading_modal import LoadingModal
+from .gui.re_add_tab import ReAddTab
 
 if TYPE_CHECKING:
     from textual.message import Message
@@ -51,13 +54,12 @@ async def toggle_binding(pilot: Pilot[None], key: str):
 
 
 async def refresh_trees(pilot: Pilot[None], active_pane: TabPane) -> None:
-    if active_pane.id not in (TabLabel.apply, TabLabel.re_add, TabLabel.add):
+    if not isinstance(active_pane, (ApplyTab, ReAddTab, AddTab)):
         return
-    op_buttons = active_pane.query(OpButton).results()
-    refresh_tree_btn = next((b for b in op_buttons if "Refresh" in str(b.label)), None)
-    reload_button = next((b for b in op_buttons if "Reload" in str(b.label)), None)
-    if refresh_tree_btn is None or reload_button is None:
-        raise ValueError("Operate buttons not found")
+    refresh_tree_btn = active_pane.query_one(
+        active_pane.ids.op_btn.refresh_tree_q, OpButton
+    )
+    reload_button = active_pane.query_one(active_pane.ids.op_btn.reload_q, OpButton)
     await click_and_wait(pilot, refresh_tree_btn)
     await click_and_wait(pilot, reload_button)
 
