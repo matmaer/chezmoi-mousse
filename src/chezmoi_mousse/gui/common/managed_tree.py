@@ -10,13 +10,13 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, Chars, TabLabel, Tcss
+from chezmoi_mousse import CMD, Chars, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 from .actionables import OpBtnEnum, OpButton
-from .messages import CurrentApplyNodeMsg, CurrentReAddNodeMsg
+from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
 
@@ -215,10 +215,7 @@ class ManagedTree(Tree[Path]):
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is None:
             raise ValueError("event.node.data is None in send_node_context")
-        if self.ids.canvas_name == TabLabel.apply:
-            self.post_message(CurrentApplyNodeMsg(event.node.data))
-        elif self.ids.canvas_name == TabLabel.re_add:
-            self.post_message(CurrentReAddNodeMsg(event.node.data))
+        self.post_message(CurrentNodeMsg(path=event.node.data, ids=self.ids))
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:

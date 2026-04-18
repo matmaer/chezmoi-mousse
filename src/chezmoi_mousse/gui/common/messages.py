@@ -7,15 +7,10 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import AppIds, CommandResult
 
 
-__all__ = [
-    "LogCmdResultMsg",
-    "CurrentApplyNodeMsg",
-    "CurrentReAddNodeMsg",
-    "ReadyToUseMsg",
-]
+__all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReadyToUseMsg"]
 
 
 class LogCmdResultMsg(Message):
@@ -24,14 +19,9 @@ class LogCmdResultMsg(Message):
         super().__init__()
 
 
-class CurrentApplyNodeMsg(Message):
-    def __init__(self, path: Path) -> None:
-        self.path = path
-        super().__init__()
-
-
-class CurrentReAddNodeMsg(Message):
-    def __init__(self, path: Path) -> None:
+class CurrentNodeMsg(Message):
+    def __init__(self, path: Path, ids: AppIds) -> None:
+        self.ids = ids
         self.path = path
         super().__init__()
 

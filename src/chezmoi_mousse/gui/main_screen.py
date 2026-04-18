@@ -28,12 +28,7 @@ from .common.git_log import GitLogView
 from .common.loading_modal import LoadingLabel, LoadingModal, min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
-from .common.messages import (
-    CurrentApplyNodeMsg,
-    CurrentReAddNodeMsg,
-    LogCmdResultMsg,
-    ReadyToUseMsg,
-)
+from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReadyToUseMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.screen_header import CustomHeader
 from .common.switchers import ViewSwitcher
@@ -200,44 +195,40 @@ class MainScreen(Screen[None]):
         ):
             await self._push_loading_modal(event.button.btn_enum).wait()
 
-    @on(CurrentReAddNodeMsg)
-    @on(CurrentApplyNodeMsg)
-    def handle_new_tree_node_selected(
-        self, msg: CurrentApplyNodeMsg | CurrentReAddNodeMsg
-    ) -> None:
+    @on(CurrentNodeMsg)
+    def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
-        ids = IDS.apply if isinstance(msg, CurrentApplyNodeMsg) else IDS.re_add
 
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         tab_buttons = self.query_one(
-            ids.container.right_side_q, ViewSwitcher
+            msg.ids.container.right_side_q, ViewSwitcher
         ).query_exactly_one(Horizontal)
         tab_buttons.border_subtitle = (
             f" {msg.path} " if msg.path == CMD.cache.dest_dir else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
-        self.query_one(ids.container.diff_q, DiffView).show_path = msg.path
-        self.query_one(ids.container.contents_q, ContentsView).show_path = msg.path
-        self.query_one(ids.container.git_log_q, GitLogView).show_path = msg.path
+        self.query_one(msg.ids.container.diff_q, DiffView).show_path = msg.path
+        self.query_one(msg.ids.container.contents_q, ContentsView).show_path = msg.path
+        self.query_one(msg.ids.container.git_log_q, GitLogView).show_path = msg.path
         # Set path_arg for the btn_enums for subsequent operations
-        self.query_one(ids.container.operate_buttons_q, OperateButtons).set_path_arg(
-            msg.path
-        )
+        self.query_one(
+            msg.ids.container.operate_buttons_q, OperateButtons
+        ).set_path_arg(msg.path)
 
         # Could occur at startup or after operations, when we aute select the root node.
         if CMD.cache.sets.no_managed_paths is True:
-            for btn_id_q in ids.review_btn_qids:
+            for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
             return
         # Enable/disable all review buttons
         if CMD.cache.sets.contains_status_paths(msg.path) is True:
-            for btn_id_q in ids.review_btn_qids:
+            for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
-            for btn_id_q in ids.review_btn_qids:
+            for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
         # Enable/disable Forget and Destroy button
-        for btn_id_q in ids.forget_destroy_review_btn_qids:
+        for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
             if msg.path == CMD.cache.dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
             elif CMD.cache.no_status_paths is False:
