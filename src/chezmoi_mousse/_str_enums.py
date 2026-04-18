@@ -63,10 +63,6 @@ class TabLabel(StrEnum):
     def main_tabs(cls) -> tuple["TabLabel", ...]:
         return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
 
-    @classmethod
-    def operate_tabs(cls) -> tuple["TabLabel", ...]:
-        return (cls.apply, cls.re_add, cls.add)
-
 
 #########################
 # Other StrEnum classes #
