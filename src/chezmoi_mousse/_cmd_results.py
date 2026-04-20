@@ -199,7 +199,7 @@ class CachedData:
                 )
             )
             return widgets
-        elif self.sets.no_managed_paths is False and self.sets.no_status_paths is True:
+        elif self.sets.no_status_paths is True:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )
