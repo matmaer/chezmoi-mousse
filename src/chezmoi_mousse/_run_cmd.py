@@ -61,6 +61,7 @@ class ReadVerb(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
+    unmanaged = "unmanaged"
 
 
 class ReadCmd(Enum):
@@ -94,6 +95,16 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     template_data = (ReadVerb.data.value,)
+    unmanaged_dirs = (
+        ReadVerb.unmanaged.value,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_dirs.value,
+    )
+    unmanaged_files = (
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
+        ReadVerb.unmanaged.value,
+    )
 
 
 class WriteVerb(Enum):
