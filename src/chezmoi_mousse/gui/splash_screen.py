@@ -44,7 +44,6 @@ SPLASH_COMMANDS: list[ReadCmd] = [
     ReadCmd.status_dirs,
     ReadCmd.status_files,
     ReadCmd.template_data,
-    ReadCmd.verify,
 ]
 
 SPLASH_LOGO = """\
@@ -169,7 +168,7 @@ class SplashScreen(Screen[None]):
         setattr(CMD.cache.cmd_results, f"{splash_cmd.name}", result)
         suffix = "unknown"
         if result.exit_code == 0:
-            suffix = "success" if splash_cmd != ReadCmd.verify else "matches"
+            suffix = "success"
         else:
             suffix = "checked"
             color = self.app.theme_variables["text-warning"]

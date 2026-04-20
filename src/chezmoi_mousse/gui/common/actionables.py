@@ -121,7 +121,7 @@ class OperateButtons(HorizontalGroup):
             review_btn = self.query_one(self.ids.op_btn.re_add_review_q, OpButton)
         else:
             return
-        review_btn.disabled = CMD.cache.no_status_paths
+        review_btn.disabled = CMD.cache.sets.no_status_paths
 
     def set_path_arg(self, path: "Path") -> None:
         for btn_enum in self.ids.op_btn_map.values():

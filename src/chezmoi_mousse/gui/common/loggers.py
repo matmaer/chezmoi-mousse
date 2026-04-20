@@ -71,15 +71,7 @@ class AppLog(RichLoggers):
     def log_cmd_result(self, cmd_result: "CommandResult") -> None:
         cmd_color = LogColor.success if cmd_result.exit_code == 0 else LogColor.warning
         log_text: list[str] = [f"{cmd_result.short_cmd_no_path}"]
-
-        if ReadVerb.verify.value in cmd_result.completed_process.args:
-            if cmd_result.exit_code == 0:
-                log_text.append(LogString.verify_exit_zero)
-                cmd_color = LogColor.info
-            else:
-                log_text.append(LogString.verify_non_zero)
-                cmd_color = LogColor.info
-        elif ReadVerb.doctor.value in cmd_result.completed_process.args:
+        if ReadVerb.doctor.value in cmd_result.completed_process.args:
             output_lower = cmd_result.std_out.lower()
             if "error" in output_lower:
                 cmd_color = LogColor.error

@@ -231,7 +231,7 @@ class MainScreen(Screen[None]):
         for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
             if msg.path == CMD.cache.dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
-            elif CMD.cache.no_status_paths is False:
+            elif CMD.cache.sets.no_status_paths is False:
                 self.query_one(btn_id_q, Button).disabled = False
 
     ########################

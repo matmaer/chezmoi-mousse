@@ -61,7 +61,6 @@ class ReadVerb(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
-    verify = "verify"
 
 
 class ReadCmd(Enum):
@@ -95,7 +94,6 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     template_data = (ReadVerb.data.value,)
-    verify = (ReadVerb.verify.value,)
 
 
 class WriteVerb(Enum):

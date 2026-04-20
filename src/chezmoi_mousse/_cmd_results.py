@@ -62,6 +62,10 @@ class PathSets:
     def no_managed_paths(self) -> bool:
         return bool(not self.managed_dirs and not self.managed_files)
 
+    @property
+    def no_status_paths(self) -> bool:
+        return bool(not self.status_dirs and not self.status_files)
+
     def contains_status_paths(self, dir_path: Path) -> bool:
         return any(
             p.is_relative_to(dir_path) for p in self.status_dirs | self.status_files
@@ -97,7 +101,6 @@ class CachedCmdResults:
     status_dirs: CommandResult | None = None
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
-    verify: CommandResult | None = None
 
     @property
     def all(self) -> list[CommandResult | None]:
@@ -121,13 +124,6 @@ class CachedData:
             managed_files=set(),
             status_dirs=set(),
             status_files=set(),
-        )
-
-    @property
-    def no_status_paths(self) -> bool:
-        return (
-            self.cmd_results.verify is not None
-            and self.cmd_results.verify.exit_code == 0
         )
 
     def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
@@ -203,7 +199,7 @@ class CachedData:
                 )
             )
             return widgets
-        elif self.sets.no_managed_paths is False and self.no_status_paths is True:
+        elif self.sets.no_managed_paths is False and self.sets.no_status_paths is True:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )

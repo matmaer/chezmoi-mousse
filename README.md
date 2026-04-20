@@ -118,7 +118,6 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 - [x] `chezmoi source-dir`
 - [x] `chezmoi status`
 - [x] `chezmoi unmanaged`
-- [x] `chezmoi verify`
 
 ### Implemented configuration options
 
