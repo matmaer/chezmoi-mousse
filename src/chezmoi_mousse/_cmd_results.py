@@ -162,7 +162,6 @@ class CachedData:
         for path, status in status_files.items():
             if path.is_relative_to(dir_path):
                 results[path] = status
-
         return results
 
     def _get_status_dir_descendants(
