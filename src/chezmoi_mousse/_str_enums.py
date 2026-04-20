@@ -96,8 +96,6 @@ class LogString(StrEnum):
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
     using_chezmoi_bin = "Using chezmoi binary at:"
-    verify_exit_zero = "All targets match their target state, no diffs available"
-    verify_non_zero = "Not all targets match their target state, diffs are available"
 
 
 class BindingDescription(StrEnum):
