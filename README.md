@@ -222,7 +222,7 @@ git
 - :negative_squared_cross_mark: git.lfs (Start a discussion if you have a use case)
 
 gitHub
-- :black_circle: gitHub.refreshPeriod
+- :green_circle: gitHub.refreshPeriod
 
 gopass
 - :black_circle: gopass.command
