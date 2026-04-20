@@ -1,11 +1,7 @@
-import os
-from pathlib import Path
-
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
-from textual.reactive import reactive
-from textual.widgets import DirectoryTree, Label, Static, Switch, TabPane
+from textual.containers import Horizontal, Vertical
+from textual.widgets import DirectoryTree, Switch, TabPane
 
 from chezmoi_mousse import CMD, AppIds, OpBtnEnum, TabLabel, Tcss
 
@@ -14,98 +10,6 @@ from .common.contents import ContentsView
 from .common.filtered_dir_tree import FilteredDirTree
 
 __all__ = ["AddTab"]
-
-
-OUTPUT_LIMIT = 40
-
-
-class AddTabContentsView(ContentsView):
-
-    show_path: reactive["Path | None"] = reactive(None, init=False)
-
-    def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
-        widgets: list[Static | Label] = []
-        if dir_path == CMD.cache.dest_dir:
-            widgets.append(
-                Label("Destination directory", classes=Tcss.main_section_label)
-            )
-            widgets.append(
-                Static("<- Click a path to see its contents.", classes=Tcss.added)
-            )
-        unmanaged_dirs: list[str] = []
-        unmanaged_files: list[str] = []
-
-        limited_dirs = False
-        limited_files = False
-
-        for root, dirs, _ in os.walk(dir_path):
-            root_path = Path(root)
-
-            for name in dirs:
-                path = root_path / name
-                if path not in CMD.cache.sets.managed_dirs:
-                    unmanaged_dirs.append(str(path.relative_to(CMD.cache.dest_dir)))
-                    if len(unmanaged_dirs) >= OUTPUT_LIMIT:
-                        limited_dirs = True
-                        break
-            if limited_dirs:
-                break
-
-        for root, _, files in os.walk(dir_path):
-            root_path = Path(root)
-            for name in files:
-                path = root_path / name
-                if path not in CMD.cache.sets.managed_files:
-                    unmanaged_files.append(str(path.relative_to(CMD.cache.dest_dir)))
-                    if len(unmanaged_files) >= OUTPUT_LIMIT:
-                        limited_files = True
-                        break
-            if limited_files:
-                break
-
-        unmanaged_dirs.sort()
-        unmanaged_files.sort()
-
-        if unmanaged_dirs:
-            widgets.append(
-                Label("Contains unmanaged directories", classes=Tcss.sub_section_label)
-            )
-            widgets.append(Static("\n".join(unmanaged_dirs), classes=Tcss.info))
-            if limited_dirs:
-                widgets.append(
-                    Label(
-                        f"Limited output to {OUTPUT_LIMIT} unmanaged directories",
-                        classes=Tcss.limited_label,
-                    )
-                )
-        if unmanaged_files:
-            widgets.append(
-                Label("Contains unmanaged files", classes=Tcss.sub_section_label)
-            )
-            widgets.append(Static("\n".join(unmanaged_files), classes=Tcss.info))
-            if limited_files:
-                widgets.append(
-                    Label(
-                        f"Limited output to {OUTPUT_LIMIT} unmanaged files",
-                        classes=Tcss.limited_label,
-                    )
-                )
-
-        if not unmanaged_dirs and not unmanaged_files:
-            widgets.append(Static("No unmanaged paths in this directory."))
-        return ScrollableContainer(*widgets)
-
-    def watch_show_path(self, show_path: Path | None) -> None:
-        if show_path is None:
-            return
-        self.remove_children()
-        if show_path == CMD.cache.dest_dir or show_path.is_dir():
-            container = self._create_add_dir_container(show_path)
-        elif show_path.is_file():
-            container = self._create_file_container(show_path)
-        else:
-            raise ValueError(f"{show_path} does not exist")
-        self.mount(container)
 
 
 class AddTab(TabPane):
@@ -127,15 +31,13 @@ class AddTab(TabPane):
                 classes=Tcss.tab_left_vertical,
             )
             with Vertical():
-                yield AddTabContentsView(self.ids)
+                yield ContentsView(self.ids)
                 yield OperateButtons(self.ids)
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.contents_view = self.query_one(
-            self.ids.container.contents_q, AddTabContentsView
-        )
+        self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
         self.contents_view.show_path = CMD.cache.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
