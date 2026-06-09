@@ -10,7 +10,7 @@ import random
 from itertools import product
 from typing import TYPE_CHECKING
 
-from textual.pilot import Pilot
+from textual.pilot import OutOfBounds, Pilot
 from textual.widget import Widget
 from textual.widgets import Switch, TabbedContent, TabPane
 
@@ -39,8 +39,13 @@ async def pilot_chill(pilot: Pilot[None]):
 
 
 async def click_and_wait(pilot: Pilot[None], widget: Widget) -> None:
-    await pilot.click(widget)
-    await pilot_chill(pilot)
+    try:
+        await pilot.click(widget)
+        await pilot_chill(pilot)
+    except OutOfBounds:
+        pilot.app.notify(f"widget {widget} not in view", severity="error")
+        await pilot_chill(pilot)
+        return
 
 
 async def press_and_wait(pilot: Pilot[None], key: str) -> None:
