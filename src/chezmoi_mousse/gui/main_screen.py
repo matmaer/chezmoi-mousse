@@ -6,7 +6,7 @@ from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Button, Footer, TabbedContent, Tabs
+from textual.widgets import Button, Footer, Switch, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     CMD,
@@ -198,6 +198,18 @@ class MainScreen(Screen[None]):
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
+
+        # Flick the 'Show unchanged paths' switch if needed
+        unchanged_switch = self.query_one(msg.ids.switch.unchanged_q, Switch)
+        if (
+            unchanged_switch.value is False
+            and msg.path in CMD.cache.sets.x_files
+            or (
+                msg.path in CMD.cache.sets.x_dirs
+                and msg.path not in CMD.cache.sets.n_dirs
+            )
+        ):
+            unchanged_switch.value = True
 
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         tab_buttons = self.query_one(

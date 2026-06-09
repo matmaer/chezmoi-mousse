@@ -164,6 +164,20 @@ class CachedData:
                 results[path] = status
         return results
 
+    def _get_unchanged_file_paths_in(self, dir_path: Path) -> list[Path]:
+        results: set[Path] = set()
+        for path in CMD.cache.sets.x_files:
+            if path.is_relative_to(dir_path):
+                results.add(path)
+        return sorted(results)
+
+    def _get_unchanged_dir_paths_in(self, dir_path: Path) -> list[Path]:
+        results: set[Path] = set()
+        for path in CMD.cache.sets.x_dirs:
+            if path != dir_path and path.is_relative_to(dir_path):
+                results.add(path)
+        return sorted(results)
+
     def _get_status_dir_descendants(
         self, dir_path: Path, app_ids: AppIds
     ) -> dict[Path, StatusCode]:
@@ -235,6 +249,22 @@ class CachedData:
                     widgets.append(
                         DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
                     )
+
+        unchanged_dirs = self._get_unchanged_dir_paths_in(dir_path)
+        if unchanged_dirs:
+            widgets.append(
+                Label("Contains unchanged directories", classes=Tcss.sub_section_label)
+            )
+            for path in unchanged_dirs:
+                widgets.append(DirContentBtn(label=f"[dim]{path}[/]", path=path))
+
+        unchanged_files = self._get_unchanged_file_paths_in(dir_path)
+        if unchanged_files:
+            widgets.append(
+                Label("Contains unchanged files", classes=Tcss.sub_section_label)
+            )
+            for path in unchanged_files:
+                widgets.append(DirContentBtn(label=f"[dim]{path}[/]", path=path))
         return widgets
 
     def update_path_sets(self) -> None:
