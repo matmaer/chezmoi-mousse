@@ -11,7 +11,6 @@ from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 DEV_MODE = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
 PILOT_MODE = os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
 PRETEND_NOT_FOUND = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
-chezmoi_bin = shutil.which("chezmoi")
 
 
 def _save_stacktrace():
