@@ -4,70 +4,53 @@ import shutil
 import traceback
 from pathlib import Path
 
-from chezmoi_mousse._constants import CHEZMOI, GIT
 from chezmoi_mousse._pilot_mode import test_app_with_pilot
 from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 
-GIT_NOT_FOUND = (
-    "'git' command not found. Install git as this app provides no safeguards when "
-    "git is not available."
-)
-IN_SUBSHELL = (
-    "You are in a 'chezmoi subshell', likely because you issued "
-    "'chezmoi cd' earlier on. Exit the chezmoi subshell before running the "
-    "app, e.g. press Ctrl+D, or exit and start a new terminal."
-)
-STACK_TRACE_FILE = "stack_trace.log"
+# startup env var names for dev
+DEV_MODE = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
+PILOT_MODE = os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
+PRETEND_NOT_FOUND = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
+chezmoi_bin = shutil.which("chezmoi")
 
-# Env var related
-CHEZMOI_MOUSSE_PILOT_MODE = "CHEZMOI_MOUSSE_PILOT_MODE"
-CHEZMOI_MOUSSE_DEV = "CHEZMOI_MOUSSE_DEV"
-CHEZMOI_SUBSHELL = "CHEZMOI_SUBSHELL"
-PRETEND_CHEZMOI_NOT_FOUND = "PRETEND_CHEZMOI_NOT_FOUND"
+
+def _save_stacktrace():
+    with Path.open(Path(__file__).parent / "stacktrace.log", "a") as f:
+        traceback.print_exc(file=f)
 
 
 def run_app():
-    if shutil.which(GIT) is None:
-        print(GIT_NOT_FOUND)  # pytest-cov: ignore
+    if os.environ.get("CHEZMOI_SUBSHELL") == "1":
+        print(
+            (
+                "You are in a 'chezmoi subshell', likely because you issued ",
+                "'chezmoi cd' earlier on. Exit the chezmoi subshell before running ",
+                "the app, e.g. press Ctrl+D, or exit and start a new terminal.",
+            )
+        )
         return
-    if os.environ.get(CHEZMOI_SUBSHELL) == "1":
-        print(IN_SUBSHELL)  # pytest-cov: ignore
+    if shutil.which("git") is None:
+        print("git command not found")
         return
 
-    chezmoi_bin = shutil.which(CHEZMOI)
-    dev_mode = os.environ.get(CHEZMOI_MOUSSE_DEV) == "1"
-    pretend_not_found = os.environ.get(PRETEND_CHEZMOI_NOT_FOUND) == "1"
-    pilot_mode = os.environ.get(CHEZMOI_MOUSSE_PILOT_MODE) == "1"
+    chezmoi_bin = shutil.which("chezmoi") if not PRETEND_NOT_FOUND else None
 
-    if dev_mode or pretend_not_found or pilot_mode:
+    if DEV_MODE or PRETEND_NOT_FOUND or PILOT_MODE:
 
-        def save_stacktrace():
-            with Path.open(Path(__file__).parent.parent / STACK_TRACE_FILE, "a") as f:
-                traceback.print_exc(file=f)
+        class DevChezmoiGUI(ChezmoiGUI):
+
+            CSS_PATH = str(Path("gui", "gui.tcss"))
+
+            def _handle_exception(self, error: Exception) -> None:
+                _save_stacktrace()
+                super()._handle_exception(error)
 
         try:
-            if pretend_not_found:
-                chezmoi_bin = None
-            app = ChezmoiGUI(chezmoi_bin=chezmoi_bin, dev_mode=True)
-
-            # Patch app._handle_exception to save stacktrace during runtime
-            original_handle_exception = app._handle_exception  # type: ignore[method-assign]
-
-            def patched_handle_exception(error: Exception):
-                save_stacktrace()
-                original_handle_exception(error)
-
-            # monkey patch
-            app._handle_exception = patched_handle_exception  # type: ignore[method-assign]
-
-            if pilot_mode:
-                asyncio.run(test_app_with_pilot(app))
-                return
-            app.run()
+            app = DevChezmoiGUI(chezmoi_bin=chezmoi_bin, dev_mode=True)
+            app.run() if not PILOT_MODE else asyncio.run(test_app_with_pilot(app))
 
         except Exception:
-            # Save stacktrace in case an exception occurs on App class init.
-            save_stacktrace()
+            _save_stacktrace()
             raise
 
     else:

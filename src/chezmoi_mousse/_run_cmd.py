@@ -6,7 +6,6 @@ from subprocess import CompletedProcess, run
 
 from textual.widgets import Collapsible, Label, Static
 
-from ._constants import CHEZMOI, GIT
 from ._str_enum_names import Tcss
 from ._str_enums import Chars, LogString, SectionLabel
 
@@ -56,7 +55,7 @@ class ReadVerb(Enum):
     diff = "diff"
     doctor = "doctor"
     dump_config = "dump-config"
-    git = GIT
+    git = "git"
     ignored = "ignored"
     managed = "managed"
     source_path = "source-path"
@@ -238,12 +237,12 @@ class ChezmoiCommand:
         self.chezmoi_bin: str | None = None
 
     def _short_global_cmd(self, dry_run: bool) -> str:
-        return f"{CHEZMOI} {GlobalArgs.dry_run_arg.value}" if dry_run else f"{CHEZMOI}"
+        return f"chezmoi {GlobalArgs.dry_run_arg.value}" if dry_run else "chezmoi"
 
     def review_cmd(
         self, verb_cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
     ) -> str:
-        review_cmd = f"{CHEZMOI}"
+        review_cmd = "chezmoi"
         if isinstance(verb_cmd, WriteCmd) and not self.changes_enabled:
             review_cmd += f" {GlobalArgs.dry_run_arg.value}"
         review_cmd += f" {_filtered_verb_cmd(verb_cmd.value)}"

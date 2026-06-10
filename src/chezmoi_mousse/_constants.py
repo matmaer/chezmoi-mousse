@@ -1,2 +1,0 @@
-CHEZMOI = "chezmoi"
-GIT = "git"
