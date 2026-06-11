@@ -11,10 +11,13 @@ from chezmoi_mousse.gui.textual_app import ChezmoiGUI
 DEV_MODE = os.environ.get("CHEZMOI_MOUSSE_DEV") == "1"
 PILOT_MODE = os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
 PRETEND_NOT_FOUND = os.environ.get("PRETEND_CHEZMOI_NOT_FOUND") == "1"
+STACKTRACE_PATH = Path(__file__).parent / "stacktrace.log"
+if STACKTRACE_PATH.exists():
+    STACKTRACE_PATH.unlink()
 
 
 def _save_stacktrace():
-    with Path.open(Path(__file__).parent / "stacktrace.log", "a") as f:
+    with Path.open(STACKTRACE_PATH, "a") as f:
         traceback.print_exc(file=f)
 
 
