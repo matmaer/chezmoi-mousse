@@ -124,10 +124,13 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 **Legend:**
 
 - :green_circle: Follow user configuration or chezmoi defaults
-- :green_square: Providing flags for the `chezmoi` command, managed by this app.
+- :green_square: Providing **flags** for the `chezmoi` command, managed by this app.
 - :negative_squared_cross_mark: Not in scope
 - :bulb: Follows user config with warning
 - :black_circle: Under development, help wanted or to be documented
+
+> [!NOTE] `chezmoi` command **flags** can override your local config file.
+> See the [_run_cmd.py](https://github.com/matmaer/chezmoi-mousse/blob/main/src/chezmoi_mousse/_run_cmd.py) file for the exact flags in use.
 
 Top level
 
@@ -138,7 +141,7 @@ Top level
 - :black_circle: encryption
 - :black_circle: env
 - :green_circle: format
-- :green_square: interactive (`--interactive=false`, app provides safeguards)
+- :green_square: interactive (`--interactive=false`, app provides safeguards but overrides user config!)
 - :negative_squared_cross_mark: mode (`--mode=file`, only file mode is supported)
 - :green_square: pager (`--no-pager`, app limits output)
 - :green_square: pagerArgs
