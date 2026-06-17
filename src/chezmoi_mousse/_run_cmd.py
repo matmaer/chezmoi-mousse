@@ -60,7 +60,6 @@ class ReadVerb(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
-    unmanaged = "unmanaged"
 
 
 class ReadCmd(Enum):
@@ -69,7 +68,7 @@ class ReadCmd(Enum):
     diff = (ReadVerb.diff.value,)
     diff_reverse = (ReadVerb.diff.value, VerbArgs.reverse.value)
     doctor = (ReadVerb.doctor.value,)
-    dump_config = (VerbArgs.format_json.value, ReadVerb.dump_config.value)
+    dump_config = (ReadVerb.dump_config.value, VerbArgs.format_json.value)
     git_log = (ReadVerb.git.value,) + VerbArgs.git_log.value
     ignored = (ReadVerb.ignored.value,)
     managed_dirs = (
@@ -94,16 +93,6 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     template_data = (ReadVerb.data.value,)
-    unmanaged_dirs = (
-        ReadVerb.unmanaged.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_dirs.value,
-    )
-    unmanaged_files = (
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
-        ReadVerb.unmanaged.value,
-    )
 
 
 class WriteVerb(Enum):
