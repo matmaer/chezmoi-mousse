@@ -81,9 +81,6 @@ class TemplateStr(StrEnum):
 
 class AnimatedFade(Static):
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def on_mount(self) -> None:
         self.styles.height = FADE_HEIGHT
         self.styles.width = FADE_WIDTH
@@ -109,21 +106,15 @@ class AnimatedFade(Static):
 
 
 class SplashLog(RichLog):
-    def __init__(self) -> None:
-        super().__init__(markup=True)
 
     def on_mount(self) -> None:
         self.styles.height = len(SPLASH_COMMANDS) + 1  # +1 for parse dump-config log
         self.styles.width = "auto"
         self.styles.margin = 2
+        self.markup = True
 
 
 class SplashScreen(Screen[None]):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.splash_log: SplashLog  # set in on_mount
-        self.set_interval(interval=2, callback=self._all_workers_finished)
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method
@@ -139,11 +130,13 @@ class SplashScreen(Screen[None]):
             yield Center(SplashLog())
 
     def on_mount(self) -> None:
+        self.set_interval(interval=2, callback=self._all_workers_finished)
         self.splash_log = self.query_exactly_one(SplashLog)
         if CMD.run_cmd.chezmoi_bin is None:
             self._install_help_workers()
         else:
-            self._chezmoi_found_workers()
+            for splash_cmd in SPLASH_COMMANDS:
+                self._run_io_worker(splash_cmd)
 
     @work(group="io_worker")
     async def _install_help_workers(self) -> None:
@@ -153,13 +146,8 @@ class SplashScreen(Screen[None]):
         padding = LOG_MSG_WIDTH - (len(cmd_text) + len(suffix))
         self.splash_log.write(f"{cmd_text} {'.' * padding} {suffix}")
         install_help_worker = self._get_install_screen_data()
-        await install_help_worker.wait()
-        InstallHelpScreen.install_help_data = install_help_worker.result
-
-    @work
-    async def _chezmoi_found_workers(self) -> None:
-        for splash_cmd in SPLASH_COMMANDS:
-            self._run_io_worker(splash_cmd)
+        result = await install_help_worker.wait()
+        InstallHelpScreen.install_help_data = result
 
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
