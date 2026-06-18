@@ -1,9 +1,6 @@
 import json
-import urllib.request
 from collections import deque
-from enum import StrEnum
 from pathlib import Path
-from typing import TYPE_CHECKING, TypedDict
 
 from rich.segment import Segment
 from rich.style import Style
@@ -19,18 +16,7 @@ from textual.worker import WorkerState
 
 from chezmoi_mousse import CMD, ReadCmd
 
-from .install_help import InstallHelpScreen
-
-if TYPE_CHECKING:
-    from chezmoi_mousse import ParsedJson
-
 __all__ = ["SplashScreen"]
-
-
-class Node(TypedDict):
-    text: str
-    indent: int
-    children: list["Node"]
 
 
 SPLASH_COMMANDS: list[ReadCmd] = [
@@ -64,19 +50,6 @@ SPLASH = SPLASH_LOGO.replace("===", "=\u200b=\u200b=").splitlines()
 FADE_HEIGHT = len(SPLASH)
 FADE_WIDTH = len(max(SPLASH, key=len))
 LOG_MSG_WIDTH = 44
-
-
-class TemplateStr(StrEnum):
-    """Strings to process the install help and latest chezmoi release."""
-
-    cross_platform = "chezmoi is available in many cross-platform package managers"
-    chezmoi_install_doc_url = "https://raw.githubusercontent.com/twpayne/chezmoi/refs/heads/master/assets/chezmoi.io/docs/install.md.tmpl"
-    chezmoi_latest_release_url = (
-        "https://api.github.com/repos/twpayne/chezmoi/releases/latest"
-    )
-    more_packages = "For more packages, see"
-    os_install = "Install chezmoi with your package manager with a single command"
-    version_tag = "{{ $version }}"
 
 
 class AnimatedFade(Static):
@@ -132,22 +105,8 @@ class SplashScreen(Screen[None]):
     def on_mount(self) -> None:
         self.set_interval(interval=2, callback=self._all_workers_finished)
         self.splash_log = self.query_exactly_one(SplashLog)
-        if CMD.run_cmd.chezmoi_bin is None:
-            self._install_help_workers()
-        else:
-            for splash_cmd in SPLASH_COMMANDS:
-                self._run_io_worker(splash_cmd)
-
-    @work(group="io_worker")
-    async def _install_help_workers(self) -> None:
-        self.splash_log.styles.height = 1
-        cmd_text = "chezmoi command"
-        suffix = "not found"
-        padding = LOG_MSG_WIDTH - (len(cmd_text) + len(suffix))
-        self.splash_log.write(f"{cmd_text} {'.' * padding} {suffix}")
-        install_help_worker = self._get_install_screen_data()
-        result = await install_help_worker.wait()
-        InstallHelpScreen.install_help_data = result
+        for splash_cmd in SPLASH_COMMANDS:
+            self._run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
@@ -180,70 +139,6 @@ class SplashScreen(Screen[None]):
             padding = LOG_MSG_WIDTH - (len(command) + len(suffix))
             log_text = f"[{color}]{command} {'.' * padding} {suffix}[/{color}]"
             self.app.call_from_thread(self.splash_log.write, log_text)
-
-    @work(thread=True, group="io_workers")
-    def _get_install_screen_data(self) -> "ParsedJson":
-        def get_index(seq: list[str], prefix: str) -> int:
-            return next(i for i, line in enumerate(seq) if line.startswith(prefix))
-
-        with urllib.request.urlopen(TemplateStr.chezmoi_latest_release_url) as response:
-            latest_version = json.load(response).get("tag_name")
-
-        req = urllib.request.Request(
-            TemplateStr.chezmoi_install_doc_url, headers={"User-Agent": "python-urllib"}
-        )
-        with urllib.request.urlopen(req, timeout=2) as response:
-            content_list = [
-                line
-                for line in response.read().decode("utf-8").splitlines()
-                if line.strip() and not line.strip().startswith("```")
-            ]
-
-        replacements: list[tuple[str, str]] = [
-            (TemplateStr.version_tag, latest_version),
-            ('"', ""),
-            ("=== ", ""),
-        ]
-        for old, new in replacements:
-            content_list = [line.replace(old, new) for line in content_list]
-
-        first_idx = get_index(content_list, TemplateStr.os_install)
-        last_idx = get_index(content_list, TemplateStr.more_packages)
-        content_list = content_list[first_idx:last_idx]
-
-        split_idx = get_index(content_list, TemplateStr.cross_platform)
-
-        result = content_list[1:split_idx]
-        result.append("Cross-Platform")
-        result.extend(f"    {line}" for line in content_list[split_idx + 1 :])
-
-        freebsd_idx = next(
-            i for i, line in enumerate(result) if line.startswith("FreeBSD")
-        )
-        result.insert(freebsd_idx, "Unix-like systems")
-        end = min(freebsd_idx + 5, len(result))
-        for i in range(freebsd_idx + 1, end):
-            result[i] = f"    {result[i]}"
-
-        root_node: Node = {"text": "", "indent": -1, "children": []}
-        stack: list[Node] = [root_node]
-
-        for line in result:
-            indent = len(line) - len(line.lstrip(" "))
-            while stack and indent <= stack[-1]["indent"]:
-                stack.pop()
-            node: Node = {"text": line.strip(), "indent": indent, "children": []}
-            stack[-1]["children"].append(node)
-            stack.append(node)
-
-        def collapse(node: Node) -> "ParsedJson | str":
-            if not node["children"]:
-                return node["text"]
-            if len(node["children"]) == 1:
-                return collapse(node["children"][0])
-            return {child["text"]: collapse(child) for child in node["children"]}
-
-        return {child["text"]: collapse(child) for child in root_node["children"]}
 
     def _all_workers_finished(self) -> None:
         if all(

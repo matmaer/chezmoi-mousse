@@ -299,14 +299,12 @@ verify
 warnings
 - :black_circle: warnings
 
-## Chezmoi not found
-
-If the `chezmoi` command is not available, a screen will be shown with the value for `PATH` and a link to [chezmoi.io/install](https://chezmoi.io/install), along with parsed install commands from the [chezmoi repository](https://github.com/twpayne/chezmoi/blob/master/assets/chezmoi.io/docs/install.md.tmpl) which uses the excellent [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) framework.
-
-[Chezmoi command not found screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#chezmoi-command-not-found)
-
 ## Textual themes
 
 Pick any textual theme to change the look, for example `tokyo-night`, see [Textual Themes](https://textual.textualize.io/guide/design/) to check out built in themes.
 
 [Textual themes example](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#textual-themes)
+
+## Chezmoi or Git command not found
+
+If the `chezmoi` or `git` command is not found by `shutil.which`, the app wil not start and only print a simple message to the terminal.

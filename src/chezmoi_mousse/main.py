@@ -22,6 +22,22 @@ def _save_stacktrace():
 
 
 def run_app():
+    not_found_info: list[str] = []
+
+    chezmoi_bin = shutil.which("chezmoi")
+
+    if chezmoi_bin is None:
+        not_found_info.append(
+            "Command not found: 'chezmoi', see https://chezmoi.io/install/"
+        )
+    if shutil.which("git") is None:
+        not_found_info.append(
+            "Command not found: 'git', see https://git-scm.com/install/"
+        )
+    if not_found_info:
+        print("\n".join(not_found_info))
+        return
+
     if os.environ.get("CHEZMOI_SUBSHELL") == "1":
         print(
             (
@@ -31,13 +47,10 @@ def run_app():
             )
         )
         return
-    if shutil.which("git") is None:
-        print("git command not found")
-        return
 
-    chezmoi_bin = shutil.which("chezmoi") if not PRETEND_NOT_FOUND else None
+    chezmoi_bin = str(chezmoi_bin)
 
-    if DEV_MODE or PRETEND_NOT_FOUND or PILOT_MODE:
+    if DEV_MODE or PILOT_MODE:
 
         class DevChezmoiGUI(ChezmoiGUI):
 

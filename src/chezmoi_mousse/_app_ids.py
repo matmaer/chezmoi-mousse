@@ -275,7 +275,6 @@ class ViewIds:
 class CanvasIds:
     def __init__(self) -> None:
         # Screens
-        self.install_help = AppIds(ScreenName.install_help)
         self.splash = AppIds(ScreenName.splash)
         self.main = AppIds(ScreenName.main)
         # TabPanes

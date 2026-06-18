@@ -29,7 +29,6 @@ from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.managed_tree import DestDirTree
 from .common.op_feedback import OperateInfo
 from .common.screen_header import CustomHeader
-from .install_help import InstallHelpScreen
 from .main_screen import MainScreen
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
@@ -93,9 +92,7 @@ class ChezmoiGUI(App[None]):
 
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
-    def __init__(
-        self, *, chezmoi_bin: str | None = None, dev_mode: bool = False
-    ) -> None:
+    def __init__(self, *, chezmoi_bin: str, dev_mode: bool = False) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
@@ -111,10 +108,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        if CMD.run_cmd.chezmoi_bin is None:
-            self.push_screen(InstallHelpScreen())
-        else:
-            self.push_screen(MainScreen())
+        self.push_screen(MainScreen())
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #

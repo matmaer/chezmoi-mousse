@@ -5,13 +5,12 @@ from textual.widgets import Header, Static
 
 from chezmoi_mousse import Chars, Tcss
 
-__all__ = ["CustomHeader", "HeaderTitle"]
+__all__ = ["CustomHeader"]
 
 
 class HeaderTitle(StrEnum):
     dry_run_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
     live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
-    install_help = "- c h e z m o i  m o u s s e  --  i n s t a l l  h e l p  -"
 
 
 class CustomHeader(Header):

@@ -4,7 +4,6 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "FlatBtnLabel",
-    "LinkBtn",
     "LogString",
     "OperateString",
     "SectionLabel",
@@ -30,18 +29,6 @@ class FlatBtnLabel(StrEnum):
     template_data = "Template Data"
     test_paths = "Test Paths"
     memory_usage = "Memory Usage"
-
-
-class LinkBtn(StrEnum):
-    chezmoi_install = "https://www.chezmoi.io/install/"
-
-    @property
-    def link_url(self) -> str:
-        return self.value
-
-    @property
-    def link_text(self) -> str:
-        return self.value.replace("https://", "").replace("www.", "").rstrip("/")
 
 
 class TabLabel(StrEnum):

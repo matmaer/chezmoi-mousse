@@ -3,17 +3,9 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
-from textual.widgets import Button, Label, Link, Switch
+from textual.widgets import Button, Label, Switch
 
-from chezmoi_mousse import (
-    CMD,
-    FlatBtnLabel,
-    LinkBtn,
-    OpBtnEnum,
-    SwitchEnum,
-    TabLabel,
-    Tcss,
-)
+from chezmoi_mousse import CMD, FlatBtnLabel, OpBtnEnum, SwitchEnum, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -24,7 +16,6 @@ if TYPE_CHECKING:
 __all__ = [
     "FlatButton",
     "FlatButtonsVertical",
-    "FlatLink",
     "OpBtnEnum",
     "OpButton",
     "OperateButtons",
@@ -43,12 +34,6 @@ class FlatButton(Button):
             label=btn_enum,
             variant="primary",
         )
-
-
-class FlatLink(Link):
-    def __init__(self, link_enum: LinkBtn) -> None:
-        super().__init__(text=link_enum.link_text, url=link_enum.link_url)
-        self.link_enum = link_enum
 
 
 class FlatButtonsVertical(Vertical):

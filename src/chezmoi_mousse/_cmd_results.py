@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from ._app_ids import AppIds
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CachedData", "DirContentBtn", "ParsedJson"]
+__all__ = ["CMD", "CachedData", "DirContentBtn"]
 
 type ParsedJson = dict[str, Any]
 

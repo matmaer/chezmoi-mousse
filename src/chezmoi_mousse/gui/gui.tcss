@@ -109,38 +109,6 @@ FlatButtonsVertical {
   width: auto;
 }
 
-FlatLink {
-  background-tint: $primary-muted;
-  background: $primary-muted;
-  border-bottom: wide $primary-muted;
-  border-left: none;
-  border-right: none;
-  border-top: wide $primary-muted;
-  color: $text-primary;
-  content-align: center middle;
-  padding: 0 1;
-  text-style: bold;
-  width: 100%;
-  &:hover {
-    color: $text-accent;
-    background: $primary-muted;
-    background-tint: $primary-muted;
-    border: wide $primary-muted;
-  }
-}
-
-InstallHelpScreen {
-  & VerticalGroup {
-    margin-left: 1;
-    width: 22;
-  }
-  & Tree {
-    border: $success;
-    max-width: 100vw;
-    color: $primary-lighten-3;
-  }
-}
-
 OpFeedBack {
   height: auto;
   &>ScrollableContainer {
