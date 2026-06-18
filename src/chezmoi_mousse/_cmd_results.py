@@ -29,7 +29,6 @@ class DirContentBtn(Button):
 
 @dataclass(slots=True)
 class PathSets:
-    dest_dir: Path | None = None
     managed_dirs: set[Path] = field(default_factory=lambda: set())
     managed_files: set[Path] = field(default_factory=lambda: set())
     status_dirs: set[Path] = field(default_factory=lambda: set())
@@ -119,7 +118,6 @@ class CachedData:
 
         # cached for frequent lookups
         self.sets: PathSets = PathSets(
-            dest_dir=self.dest_dir,  # self.dest_dir is updated in the splash screen
             managed_dirs=set(),
             managed_files=set(),
             status_dirs=set(),
@@ -279,7 +277,6 @@ class CachedData:
             return {Path(line[3:]) for line in result.std_out.splitlines()}
 
         self.sets = PathSets(
-            dest_dir=self.dest_dir,
             managed_dirs=parse_managed_paths(self.cmd_results.managed_dirs),
             managed_files=parse_managed_paths(self.cmd_results.managed_files),
             status_dirs=parse_status_paths(self.cmd_results.status_dirs),
