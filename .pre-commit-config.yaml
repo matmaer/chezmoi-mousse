@@ -72,3 +72,15 @@ repos:
     hooks:
       - id: uv-export
         args: ["--no-dev"]
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        language: python
+        description: "housekeeping: pytest static tests"
+        entry: "env PYTHONPATH=src uv run pytest static_tests"
+        args: [static_tests]
+        always_run: true
+        pass_filenames: false
+        types: [python]
