@@ -111,24 +111,6 @@ class WriteCmd(Enum):
     re_add = (WriteVerb.re_add.value,)
 
 
-def _filtered_verb_cmd(verb_cmd: tuple[str, ...]) -> str:
-    filter_git_log_args = VerbArgs.git_log.value[2:]
-    exclude = set(
-        filter_git_log_args
-        + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
-    )
-    filtered_cmd = " ".join([part for part in verb_cmd if part and part not in exclude])
-    return filtered_cmd
-
-
-def run_chezmoi_cmd(
-    command: tuple[str, ...], cmd_timeout: int
-) -> CompletedProcess[str]:
-    return run(
-        command, capture_output=True, shell=False, text=True, timeout=cmd_timeout
-    )
-
-
 @dataclass(slots=True)
 class CommandResult:
     short_global_cmd: str
@@ -228,13 +210,31 @@ class ChezmoiCommand:
     def _short_global_cmd(self, dry_run: bool) -> str:
         return f"chezmoi {GlobalArgs.dry_run_arg.value}" if dry_run else "chezmoi"
 
+    def _filtered_verb_cmd(self, verb_cmd: tuple[str, ...]) -> str:
+        filter_git_log_args = VerbArgs.git_log.value[2:]
+        exclude = set(
+            filter_git_log_args
+            + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
+        )
+        filtered_cmd = " ".join(
+            [part for part in verb_cmd if part and part not in exclude]
+        )
+        return filtered_cmd
+
+    def _run_chezmoi_cmd(
+        self, command: tuple[str, ...], cmd_timeout: int
+    ) -> CompletedProcess[str]:
+        return run(
+            command, capture_output=True, shell=False, text=True, timeout=cmd_timeout
+        )
+
     def review_cmd(
         self, verb_cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
     ) -> str:
         review_cmd = "chezmoi"
         if isinstance(verb_cmd, WriteCmd) and not self.changes_enabled:
             review_cmd += f" {GlobalArgs.dry_run_arg.value}"
-        review_cmd += f" {_filtered_verb_cmd(verb_cmd.value)}"
+        review_cmd += f" {self._filtered_verb_cmd(verb_cmd.value)}"
         if path_arg is not None:
             review_cmd += f" {path_arg}"
         return f"[$text-primary]{review_cmd}[/]"
@@ -249,19 +249,19 @@ class ChezmoiCommand:
         if path_arg is not None:
             path_str = str(path_arg)
             if read_cmd == ReadCmd.git_log:
-                source_path_str = run_chezmoi_cmd(
+                source_path_str = self._run_chezmoi_cmd(
                     global_cmd + ReadCmd.source_path.value + (path_str,),
                     cmd_timeout=time_out,
                 ).stdout.strip()
                 path_str = source_path_str
             cmd_to_run += (path_str,)
-        result: CompletedProcess[str] = run_chezmoi_cmd(
+        result: CompletedProcess[str] = self._run_chezmoi_cmd(
             cmd_to_run, cmd_timeout=time_out
         )
         command_result = CommandResult(
             short_global_cmd=self._short_global_cmd(dry_run=False),
             completed_process=result,
-            short_verb_cmd=_filtered_verb_cmd(verb_cmd),
+            short_verb_cmd=self._filtered_verb_cmd(verb_cmd),
             path_arg=path_arg,
         )
         return command_result
@@ -279,10 +279,10 @@ class ChezmoiCommand:
         command: tuple[str, ...] = global_cmd + write_cmd.value
         if path_arg is not None:
             command += (str(path_arg),)
-        result: CompletedProcess[str] = run_chezmoi_cmd(command, cmd_timeout=7)
+        result: CompletedProcess[str] = self._run_chezmoi_cmd(command, cmd_timeout=7)
         command_result = CommandResult(
             short_global_cmd=self._short_global_cmd(dry_run=(not self.changes_enabled)),
-            short_verb_cmd=_filtered_verb_cmd(write_cmd.value),
+            short_verb_cmd=self._filtered_verb_cmd(write_cmd.value),
             completed_process=result,
             path_arg=path_arg,
         )
