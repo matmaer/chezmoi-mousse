@@ -54,7 +54,7 @@ class MainScreen(Screen[None]):
             yield AddTab(IDS.add)
             yield LogsTab(IDS.logs)
             yield ConfigTab(IDS.config)
-            if CMD.dev_mode is True:
+            if self.app.pre_run_logic.debug_mode is True:
                 from .debug_tab import DebugTab
 
                 yield DebugTab(id=TabLabel.debug, title=TabLabel.debug)
@@ -62,8 +62,8 @@ class MainScreen(Screen[None]):
 
     def on_mount(self) -> None:
         self.run_cmd_results: list[CommandResult] = []
-        if CMD.dev_mode is True:
-            self.notify(LogString.dev_mode_enabled)
+        if self.app.pre_run_logic.debug_mode is True:
+            self.notify(LogString.debug_tab_enabled)
         self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
         self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
