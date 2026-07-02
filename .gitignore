@@ -80,3 +80,8 @@ Thumbs.db
 *.lock
 *.py[cod]
 *$py.class
+
+# PyInstaller artifacts
+build/
+dist/
+*.spec
