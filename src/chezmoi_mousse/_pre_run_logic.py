@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+__all__ = ["PreRunLogic"]
+
 
 @dataclass(frozen=True)
 class VarTruth:
