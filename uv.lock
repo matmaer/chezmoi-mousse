@@ -323,6 +323,7 @@ dev = [
     { name = "graphviz" },
     { name = "ipython" },
     { name = "mypy" },
+    { name = "nuitka" },
     { name = "pre-commit" },
     { name = "psutil" },
     { name = "pydeps" },
@@ -353,6 +354,7 @@ dev = [
     { name = "graphviz" },
     { name = "ipython" },
     { name = "mypy" },
+    { name = "nuitka", specifier = ">=4.1.3" },
     { name = "pre-commit" },
     { name = "psutil" },
     { name = "pydeps" },
@@ -1128,6 +1130,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/24/bf/d1bda4f6168e0b2e9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/88/b2/d0896bdcdc8d28a7fc5717c305f1a861c26e18c05047949fb371034d98bd/nodeenv-1.10.0-py2.py3-none-any.whl", hash = "sha256:5bb13e3eed2923615535339b3c620e76779af4cb4c6a90deccc9e36b274d3827", size = 23438, upload-time = "2025-12-20T14:08:52.782Z" },
 ]
+
+[[package]]
+name = "nuitka"
+version = "4.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/d8/bdb7febea4b4fe5d3d6fe2610f946771f03e792e05a5e8ec00b62c00b265/nuitka-4.1.3.tar.gz", hash = "sha256:838ff8899dc2f0b652d4fcf6c5d7466cb7ad5abcb005668ac622d1e40f4d8a8d", size = 4565475, upload-time = "2026-06-21T10:48:04.369Z" }
 
 [[package]]
 name = "packaging"
