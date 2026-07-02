@@ -34,6 +34,7 @@ dev = [
     "pre-commit",
     "psutil",
     "pydeps",
+    "pyinstaller>=6.21.0",
     "pyright>=1.1.411",
     "pytest",
     "pytest-asyncio",
