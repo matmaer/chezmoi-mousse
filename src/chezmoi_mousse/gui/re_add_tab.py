@@ -3,9 +3,9 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Switch, TabPane
 
-from chezmoi_mousse import AppIds, DirContentBtn, TabLabel
+from chezmoi_mousse import AppIds, TabLabel
 
-from .common.actionables import OperateButtons, SwitchSlider
+from .common.actionables import DirContentBtn, OperateButtons, SwitchSlider
 from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 

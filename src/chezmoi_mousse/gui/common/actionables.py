@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "DirContentBtn",
     "FlatButton",
     "FlatButtonsVertical",
     "OpBtnEnum",
@@ -23,6 +24,12 @@ __all__ = [
     "TabButton",
     "TabButtons",
 ]
+
+
+class DirContentBtn(Button):
+    def __init__(self, *, label: str, path: "Path") -> None:
+        super().__init__(label=label)
+        self.path = path
 
 
 class FlatButton(Button):

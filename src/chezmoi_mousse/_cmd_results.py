@@ -4,11 +4,8 @@ from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual.widgets import Button, Label, Static
-
 from ._run_cmd import ChezmoiCommand, ReadCmd
-from ._str_enum_names import Tcss
-from ._str_enums import SectionLabel, StatusCode, TabLabel
+from ._str_enums import StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from typing import Any
@@ -16,15 +13,9 @@ if TYPE_CHECKING:
     from ._app_ids import AppIds
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CachedData", "DirContentBtn"]
+__all__ = ["CMD", "CachedData"]
 
 type ParsedJson = dict[str, Any]
-
-
-class DirContentBtn(Button):
-    def __init__(self, *, label: str, path: Path) -> None:
-        super().__init__(label=label)
-        self.path = path
 
 
 @dataclass(slots=True)
@@ -152,118 +143,9 @@ class CachedData:
             if v[fs_idx] != StatusCode.Space
         }
 
-    def _get_status_files_descendants(
-        self, dir_path: Path, app_ids: AppIds
-    ) -> dict[Path, StatusCode]:
-        status_files = self._get_status_files(app_ids)
-        results: dict[Path, StatusCode] = {}
-        for path, status in status_files.items():
-            if path.is_relative_to(dir_path):
-                results[path] = status
-        return results
-
-    def _get_unchanged_file_paths_in(self, dir_path: Path) -> list[Path]:
-        results: set[Path] = set()
-        for path in self.sets.x_files:
-            if path.is_relative_to(dir_path):
-                results.add(path)
-        return sorted(results)
-
-    def _get_unchanged_dir_paths_in(self, dir_path: Path) -> list[Path]:
-        results: set[Path] = set()
-        for path in self.sets.x_dirs:
-            if path != dir_path and path.is_relative_to(dir_path):
-                results.add(path)
-        return sorted(results)
-
-    def _get_status_dir_descendants(
-        self, dir_path: Path, app_ids: AppIds
-    ) -> dict[Path, StatusCode]:
-        status_dirs = self._get_status_dirs(app_ids)
-        results: dict[Path, StatusCode] = {}
-        for path, status in status_dirs.items():
-            if path.is_relative_to(dir_path):
-                results[path] = status
-        return results
-
     def get_path_status(self, path: Path, app_ids: AppIds) -> StatusCode:
         paths_dict = self._get_status_dirs(app_ids) | self._get_status_files(app_ids)
         return paths_dict.get(path, StatusCode.Space)
-
-    def get_dir_widgets(
-        self, dir_path: Path, app_ids: AppIds
-    ) -> list[Static | Label | DirContentBtn]:
-        widgets: list[Static | Label | DirContentBtn] = []
-        if dir_path == self.dest_dir:
-            widgets.append(
-                Label("Destination directory", classes=Tcss.main_section_label)
-            )
-        if self.sets.no_managed_paths is True:
-            widgets = [
-                Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
-            ]
-            widgets.append(
-                Static(
-                    "No managed paths are in the chezmoi repository, "
-                    "switch to the Add tab to add some paths.",
-                    classes=Tcss.added,
-                )
-            )
-            return widgets
-        elif self.sets.no_status_paths is True:
-            widgets.append(
-                Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
-            )
-            widgets.append(
-                Static(
-                    "No diffs are available because no paths have a status. Toggle "
-                    "the 'Show unchanged paths' switch to view all managed paths.",
-                    classes=Tcss.info,
-                )
-            )
-            return widgets
-
-        if self.sets.contains_status_paths(dir_path):
-            status_dirs_in = self._get_status_dir_descendants(dir_path, app_ids).items()
-            if status_dirs_in:
-                widgets.append(
-                    Label(
-                        "Contains directories with a status",
-                        classes=Tcss.sub_section_label,
-                    )
-                )
-                for path, status in status_dirs_in:
-                    widgets.append(
-                        DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
-                    )
-            status_files_in = self._get_status_files_descendants(dir_path, app_ids)
-            if status_files_in:
-                widgets.append(
-                    Label(
-                        "Contains files with a status", classes=Tcss.sub_section_label
-                    )
-                )
-                for path, status in status_files_in.items():
-                    widgets.append(
-                        DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
-                    )
-
-        unchanged_dirs = self._get_unchanged_dir_paths_in(dir_path)
-        if unchanged_dirs:
-            widgets.append(
-                Label("Contains unchanged directories", classes=Tcss.sub_section_label)
-            )
-            for path in unchanged_dirs:
-                widgets.append(DirContentBtn(label=f"[dim]{path}[/]", path=path))
-
-        unchanged_files = self._get_unchanged_file_paths_in(dir_path)
-        if unchanged_files:
-            widgets.append(
-                Label("Contains unchanged files", classes=Tcss.sub_section_label)
-            )
-            for path in unchanged_files:
-                widgets.append(DirContentBtn(label=f"[dim]{path}[/]", path=path))
-        return widgets
 
     def update_path_sets(self) -> None:
         def parse_managed_paths(result: CommandResult | None) -> set[Path]:
