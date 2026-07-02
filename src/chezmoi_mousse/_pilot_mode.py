@@ -15,8 +15,6 @@ from textual.widget import Widget
 from textual.widgets import Switch, TabbedContent, TabPane
 
 from ._str_enums import TabLabel
-from .gui.add_tab import AddTab
-from .gui.apply_tab import ApplyTab
 from .gui.common.actionables import (
     DirContentBtn,
     FlatButton,
@@ -26,7 +24,7 @@ from .gui.common.actionables import (
 )
 from .gui.common.diffs import DiffView
 from .gui.common.loading_modal import LoadingModal
-from .gui.re_add_tab import ReAddTab
+from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
     from textual.message import Message

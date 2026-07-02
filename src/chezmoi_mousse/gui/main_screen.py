@@ -21,8 +21,6 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from .add_tab import AddTab
-from .apply_tab import ApplyTab
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
 from .common.app_type_mixin import ChezmoiAppType
 from .common.contents import ContentsView
@@ -35,9 +33,7 @@ from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReadyToUseMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.switchers import ViewSwitcher
-from .config_tab import ConfigTab
-from .logs_tab import LogsTab
-from .re_add_tab import ReAddTab
+from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
@@ -78,7 +74,7 @@ class MainScreen(ChezmoiAppType, Screen[None]):
             yield LogsTab(IDS.logs)
             yield ConfigTab(IDS.config)
             if self.app.pre_run_logic.debug_mode is True:
-                from .debug_tab import DebugTab
+                from .tab_panes import DebugTab
 
                 yield DebugTab(id=TabLabel.debug, title=TabLabel.debug)
         yield Footer()

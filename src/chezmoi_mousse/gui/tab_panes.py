@@ -1,0 +1,595 @@
+import json
+from datetime import datetime
+from enum import StrEnum
+from typing import TYPE_CHECKING
+
+from textual import on
+from textual.app import ComposeResult
+from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.reactive import reactive
+from textual.widgets import (
+    Button,
+    ContentSwitcher,
+    DirectoryTree,
+    Label,
+    Pretty,
+    RichLog,
+    Static,
+    Switch,
+    TabPane,
+)
+
+from chezmoi_mousse import (
+    CMD,
+    IDS,
+    AppIds,
+    FlatBtnLabel,
+    OpBtnEnum,
+    OpBtnLabel,
+    SectionLabel,
+    TabLabel,
+    Tcss,
+    TestPaths,
+)
+
+from .common.actionables import (
+    DirContentBtn,
+    FlatButtonsVertical,
+    OpButton,
+    OperateButtons,
+    SwitchSlider,
+    TabButtons,
+)
+from .common.app_type_mixin import ChezmoiAppType
+from .common.contents import ContentsView
+from .common.doctor_data import DoctorTable, PwMgrInfoView
+from .common.filtered_dir_tree import FilteredDirTree
+from .common.loggers import AppLog, CmdLog, DebugLog
+from .common.managed_tree import DestDirTree, ManagedTree
+from .common.switchers import ViewSwitcher
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import CachedData
+
+__all__ = ["AddTab", "ApplyTab", "DebugTab", "LogsTab", "ReAddTab"]
+
+
+class AddTab(TabPane):
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.add, title=TabLabel.add)
+        self.ids = ids
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield Vertical(
+                FilteredDirTree(CMD.cache.dest_dir),
+                OpButton(
+                    btn_enum=OpBtnEnum.refresh_tree,
+                    btn_id=self.ids.op_btn.refresh_tree,
+                    app_ids=self.ids,
+                ),
+                id=self.ids.container.left_side,
+                classes=Tcss.tab_left_vertical,
+            )
+            with Vertical():
+                yield ContentsView(self.ids)
+                yield OperateButtons(self.ids)
+        yield SwitchSlider(self.ids)
+
+    def on_mount(self) -> None:
+        self.dir_tree = self.query_exactly_one(FilteredDirTree)
+        self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
+        self.contents_view.border_title = f" {CMD.cache.dest_dir} "
+        self.contents_view.show_path = CMD.cache.dest_dir
+        self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
+
+    @on(DirectoryTree.FileSelected)
+    @on(DirectoryTree.DirectorySelected)
+    def update_contents_view(
+        self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
+    ) -> None:
+        event.stop()
+        if event.node.data is None:
+            raise ValueError("event.node.data is None in update_contents_view")
+        self.contents_view.show_path = event.node.data.path
+        if event.node.data.path == CMD.cache.dest_dir:
+            self.contents_view.border_title = f" {CMD.cache.dest_dir} "
+        else:
+            self.contents_view.border_title = f" {event.node.data.path.name} "
+        # Set path_arg for the btn_enums in OperateMode
+        operate_buttons = self.query_one(
+            self.ids.container.operate_buttons_q, OperateButtons
+        )
+        operate_buttons.set_path_arg(event.node.data.path)
+        if isinstance(event, DirectoryTree.DirectorySelected):
+            self.add_review_btn.disabled = True
+        else:  # isinstance(event, DirectoryTree.FileSelected):
+            self.add_review_btn.disabled = False
+
+    @on(Switch.Changed)
+    def handle_filter_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == self.ids.switch.managed_dirs:
+            self.dir_tree.only_show_managed_dirs = event.value
+        elif event.switch.id == self.ids.switch.unwanted:
+            self.dir_tree.show_unwanted = event.value
+        self.dir_tree.reload()
+
+
+class ApplyTab(TabPane):
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.apply, title=TabLabel.apply)
+        self.ids = ids
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield DestDirTree(self.ids)
+            yield Vertical(ViewSwitcher(self.ids), OperateButtons(self.ids))
+        yield SwitchSlider(self.ids)
+
+    def on_mount(self) -> None:
+        self.managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+
+    @on(Switch.Changed)
+    def handle_tree_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == self.ids.switch.unchanged:
+            self.managed_tree.unchanged = event.value
+        elif event.switch.id == self.ids.switch.expand_all:
+            self.managed_tree.expand_all = event.value
+
+    @on(DirContentBtn.Pressed)
+    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
+        if isinstance(event.button, DirContentBtn):
+            event.stop()
+            self.managed_tree.show_requested_node(event.button.path)
+
+
+__all__ = ["ConfigTab"]
+
+
+class CatConfigView(Vertical):
+
+    cat_config_stdout: reactive[str | None] = reactive(None, init=False)
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
+
+    def watch_cat_config_stdout(self, cat_config_stdout: str) -> None:
+        self.mount(Static(cat_config_stdout))
+
+
+class IgnoredView(Vertical):
+
+    ignored_stdout: reactive[str | None] = reactive(None, init=False)
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
+        yield ScrollableContainer(Pretty(()))
+
+    def watch_ignored_stdout(self, ignored_stdout: str) -> None:
+        pretty = self.query_exactly_one(Pretty)
+        pretty.update(ignored_stdout.splitlines())
+
+
+class DiagramView(Vertical):
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.diagram, classes=Tcss.main_section_label)
+        yield Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram)
+
+
+class DoctorTableView(Vertical):
+
+    doctor_stdout: reactive[str | None] = reactive(None, init=False)
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
+        yield DoctorTable()
+
+    def watch_doctor_stdout(self, doctor_stdout: str) -> None:
+        doctor_table = self.query_exactly_one(DoctorTable)
+        doctor_table.doctor_std_out = doctor_stdout
+
+
+class TemplateDataView(Vertical):
+
+    template_data_stdout: reactive[str | None] = reactive(None, init=False)
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
+        yield Pretty("No template data output yet.")
+
+    def watch_template_data_stdout(self, template_data_stdout: str) -> None:
+        pretty = self.query_exactly_one(Pretty)
+        pretty.update(json.loads(template_data_stdout))
+
+
+class ConfigTab(TabPane):
+
+    command_results: reactive["CachedData | None"] = reactive(None, init=False)
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.config, title=TabLabel.config)
+        self.ids = ids
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield FlatButtonsVertical(
+                self.ids,
+                buttons=(
+                    FlatBtnLabel.doctor,
+                    FlatBtnLabel.pw_mgr_info,
+                    FlatBtnLabel.cat_config,
+                    FlatBtnLabel.ignored,
+                    FlatBtnLabel.template_data,
+                    FlatBtnLabel.diagram,
+                ),
+            )
+            with ContentSwitcher(initial=self.ids.container.doctor):
+                yield DoctorTableView(id=self.ids.container.doctor)
+                yield PwMgrInfoView(id=self.ids.view.pw_mgr_info)
+                yield CatConfigView(id=self.ids.view.cat_config)
+                yield IgnoredView(id=self.ids.view.ignored)
+                yield TemplateDataView(id=self.ids.view.template_data)
+                yield DiagramView(id=self.ids.view.diagram)
+
+    def on_mount(self) -> None:
+        self.switcher = self.query_exactly_one(ContentSwitcher)
+
+    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == FlatBtnLabel.doctor:
+            self.switcher.current = self.ids.container.doctor
+        if event.button.label == FlatBtnLabel.pw_mgr_info:
+            self.switcher.current = self.ids.view.pw_mgr_info
+        elif event.button.label == FlatBtnLabel.cat_config:
+            self.switcher.current = self.ids.view.cat_config
+        elif event.button.label == FlatBtnLabel.ignored:
+            self.switcher.current = self.ids.view.ignored
+        elif event.button.label == FlatBtnLabel.template_data:
+            self.switcher.current = self.ids.view.template_data
+        elif event.button.label == FlatBtnLabel.diagram:
+            self.switcher.current = self.ids.view.diagram
+
+    def watch_command_results(self, cached: "CachedData") -> None:
+        if (
+            cached.cmd_results.cat_config is None
+            or cached.cmd_results.doctor is None
+            or cached.cmd_results.ignored is None
+            or cached.cmd_results.template_data is None
+        ):
+            return
+        self.switcher.query_one(
+            self.ids.view.template_data_q, TemplateDataView
+        ).template_data_stdout = (
+            cached.cmd_results.template_data.completed_process.stdout
+        )
+        self.switcher.query_one(self.ids.view.ignored_q, IgnoredView).ignored_stdout = (
+            cached.cmd_results.ignored.completed_process.stdout
+        )
+        self.switcher.query_one(
+            self.ids.view.cat_config_q, CatConfigView
+        ).cat_config_stdout = cached.cmd_results.cat_config.completed_process.stdout
+        self.switcher.query_one(
+            self.ids.container.doctor_q, DoctorTableView
+        ).doctor_stdout = cached.cmd_results.doctor.completed_process.stdout
+        self.switcher.query_one(
+            self.ids.view.pw_mgr_info_q, PwMgrInfoView
+        ).populate_pw_mgr_info(cached.cmd_results.doctor.completed_process.stdout)
+
+
+FLOW_DIAGRAM = """\
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Add Tab       │    autoCommit     │     git push      │
+       │   Re-Add Tab      │──────────────────>│──────────────────>│
+       │──────────────────>│                   │                   │
+       │                   │                autopush               │
+       │                   │──────────────────────────────────────>│
+       │                   │                   │                   │
+       │                   │                   │                   │
+       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
+       │<──────────────────│<──────────────────────────────────────│
+       │                   │                   │                   │
+       │     Diff View     │                   │                   │
+       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
+       │                   │                   │                   │
+       │                   │    chezmoi init & chezmoi git pull    │
+       │                   │<──────────────────────────────────────│
+       │                   │                   │                   │
+       │        chezmoi init --one-shot & chezmoi init --apply     │
+       │<──────────────────────────────────────────────────────────│
+       │                   │                   │                   │
+┌──────┴───────┐    ┌──────┴───────────────────┴───────┐    ┌──────┴───────┐
+│ destination  │    │    target state / source state   │    │  git remote  │
+└──────────────┘    └──────────────────────────────────┘    └──────────────┘
+"""
+
+
+class TestPathColors(StrEnum):
+    managed_dir = "[$text-accent bold]"
+    status_dir = "[$text-warning bold]"
+    unmanaged_dir = "[$text-primary bold]"
+    managed_file = "[$text-accent]"
+    status_file = "[$text-warning]"
+    unmanaged_file = "[$text-primary]"
+    unhandled = "[$text-error bold]"
+
+
+class TestPathsView(Vertical):
+
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.test_paths, classes=Tcss.main_section_label)
+        yield Static(id=IDS.debug.static.debug_test_paths)
+
+
+class DebugLogView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.debug_log, classes=Tcss.main_section_label)
+        yield DebugLog()
+
+
+class DomNodesView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label)
+        yield RichLog(id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False)
+
+
+class MemoryUsageView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield Label(SectionLabel.memory_usage, classes=Tcss.main_section_label)
+        yield RichLog(id=IDS.debug.logger.memory, markup=True)
+
+
+class DebugTab(ChezmoiAppType, TabPane):
+
+    MiB = 1024 * 1024
+    INTERVAL = 2
+
+    _previous_rss: float = 0.0
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield FlatButtonsVertical(
+                IDS.debug,
+                buttons=(
+                    FlatBtnLabel.test_paths,
+                    FlatBtnLabel.debug_log,
+                    FlatBtnLabel.dom_nodes,
+                    FlatBtnLabel.memory_usage,
+                ),
+            )
+            with Vertical(), ContentSwitcher(initial=IDS.debug.view.test_paths):
+                yield TestPathsView(id=IDS.debug.view.test_paths)
+                yield DebugLogView(id=IDS.debug.view.debug_log)
+                yield DomNodesView(id=IDS.debug.view.dom_nodes)
+                yield MemoryUsageView(id=IDS.debug.view.memory_usage)
+        yield OperateButtons(IDS.debug)
+
+    def on_mount(self) -> None:
+        self.test_paths = TestPaths()
+        self.switcher = self.query_exactly_one(ContentSwitcher)
+        self.test_paths_static = self.query_one(
+            IDS.debug.static.debug_test_paths_q, Static
+        )
+        self.test_paths_static.update(self._list_existing_test_paths())
+        self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
+        self.memory_logger = self.query_one(IDS.debug.logger.memory_q, RichLog)
+        self.mem_log_op_btn = self.query_one(IDS.debug.op_btn.log_memory_q, Button)
+        self.list_test_paths_op_btn = self.query_one(
+            IDS.debug.op_btn.list_test_paths_q, Button
+        )
+        self.create_diffs_op_btn = self.query_one(
+            IDS.debug.op_btn.create_diffs_q, Button
+        )
+        self.create_paths_op_btn = self.query_one(
+            IDS.debug.op_btn.create_paths_q, Button
+        )
+        self.remove_paths_op_btn = self.query_one(
+            IDS.debug.op_btn.remove_paths_q, Button
+        )
+        self.test_paths_op_btns = [
+            self.list_test_paths_op_btn,
+            self.create_diffs_op_btn,
+            self.create_paths_op_btn,
+            self.remove_paths_op_btn,
+        ]
+        self.app.call_later(self._log_dom_nodes)
+
+        import psutil
+
+        self._process = psutil.Process()
+        self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
+
+    def _list_existing_test_paths(self) -> str:
+        colored_paths: list[str] = []
+        for path in self.test_paths.get_existing_test_paths():
+            if path in CMD.cache.sets.managed_dirs:
+                if path not in CMD.cache.sets.status_dirs:
+                    colored_paths.append(f"{TestPathColors.managed_dir}{path}[/]")
+                elif path in CMD.cache.sets.status_dirs:
+                    colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
+            elif path in CMD.cache.sets.managed_files:
+                if path not in CMD.cache.sets.status_files:
+                    colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
+                elif path in CMD.cache.sets.status_files:
+                    colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
+            elif path.is_dir():
+                colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
+            elif path.is_file():
+                colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
+            else:
+                colored_paths.append(f"{TestPathColors.unhandled}{path}[/]")
+
+        if colored_paths:
+            colored_paths.extend(
+                [
+                    "\n[bold]Color legend:[/]",
+                    f"{TestPathColors.managed_dir}Managed dir[/]",
+                    f"{TestPathColors.status_dir}Status dir[/]",
+                    f"{TestPathColors.unmanaged_dir}Unmanaged dir[/]",
+                    f"{TestPathColors.managed_file}Managed file[/]",
+                    f"{TestPathColors.status_file}Status file[/]",
+                    f"{TestPathColors.unmanaged_file}Unmanaged file[/]",
+                    f"{TestPathColors.unhandled}Unhandled condition[/]",
+                    "\n",
+                ]
+            )
+            return "\n".join(colored_paths)
+        else:
+            return "[$text-warning bold]No test paths exist.[/]"
+
+    def _write_to_memory_log(self, auto: bool = True) -> None:
+        mem_info = self._process.memory_info()
+        time = f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
+        rss = mem_info.rss / self.MiB
+        vms = mem_info.vms / self.MiB
+        pc2_increase = rss > self._previous_rss * 1.02
+        pc2_decrease = rss < self._previous_rss * 0.98
+        pc2_change = pc2_increase or pc2_decrease
+        self._previous_rss = rss
+        now_prefix = "Current memory usage log:"
+        pc2_prefix = "Auto log 2 percent delta:"
+        color = (
+            "[cyan bold]"
+            if pc2_increase
+            else "[green bold]" if pc2_decrease else "[yellow bold]"
+        )
+        rss_str = f"{color}{rss:3.0f}[/] MiB rss"
+        vms_str = f"{color}{vms:4.0f}[/] MiB vms"
+        prefix = pc2_prefix if auto else now_prefix
+        if pc2_change and auto or not auto:
+            self.memory_logger.write(f"{time} {prefix} {rss_str} | {vms_str}")
+
+    def _log_dom_nodes(self) -> None:
+        # App dom nodes
+        app_nodes = list(self.app.walk_children())
+        self.dom_node_logger.write(f"self.app DOMNode count: {len(app_nodes)}\n")
+        app_nodes_with_id = [item for item in app_nodes if item.id is not None]
+        app_nodes_without_id = [item for item in app_nodes if item.id is None]
+        self.dom_node_logger.write(f"DOMNodes with id: {len(app_nodes_with_id)}")
+        for item in sorted(app_nodes_with_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+        self.dom_node_logger.write(
+            f"\nDOMNodes without id: {len(app_nodes_without_id)}"
+        )
+        for item in sorted(app_nodes_without_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+        # Screen dom nodes
+        screen_nodes = list(self.screen.walk_children())
+        self.dom_node_logger.write(
+            f"\nself.screen DOMNode count: {len(screen_nodes)}\n"
+        )
+        screen_nodes_with_id = [item for item in screen_nodes if item.id is not None]
+        screen_nodes_without_id = [item for item in screen_nodes if item.id is None]
+        self.dom_node_logger.write(f"DOMNodes with id: {len(screen_nodes_with_id)}")
+        for item in sorted(screen_nodes_with_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+        self.dom_node_logger.write(
+            f"\nDOMNodes without id: {len(screen_nodes_without_id)}"
+        )
+        for item in sorted(screen_nodes_without_id, key=str):
+            self.dom_node_logger.write(f"{item}")
+
+    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == FlatBtnLabel.memory_usage:
+            self.mem_log_op_btn.display = True
+            for btn in self.test_paths_op_btns:
+                btn.display = False
+            self.switcher.current = IDS.debug.view.memory_usage
+        else:
+            self.mem_log_op_btn.display = False
+            for btn in self.test_paths_op_btns:
+                btn.display = True
+        if event.button.label == FlatBtnLabel.test_paths:
+            self.switcher.current = IDS.debug.view.test_paths
+        elif event.button.label == FlatBtnLabel.debug_log:
+            self.switcher.current = IDS.debug.view.debug_log
+        elif event.button.label == FlatBtnLabel.dom_nodes:
+            self.switcher.current = IDS.debug.view.dom_nodes
+
+    @on(Button.Pressed)
+    def handle_operate_buttons(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == OpBtnLabel.log_memory:
+            self._write_to_memory_log(auto=False)
+            return
+        result: str | list[str] = ""
+        if event.button.label == OpBtnLabel.list_test_paths:
+            result = self._list_existing_test_paths()
+        elif event.button.label == OpBtnLabel.create_diffs:
+            result = self.test_paths.create_diffs()
+        elif event.button.label == OpBtnLabel.create_paths:
+            result = self.test_paths.create_paths_on_disk()
+        elif event.button.label == OpBtnLabel.remove_paths:
+            result = self.test_paths.remove_test_paths()
+        CMD.cache.update_path_sets()
+        if isinstance(result, str):
+            self.test_paths_static.update(result)
+        else:
+            self.test_paths_static.update("\n".join(result))
+
+
+class LogsTab(TabPane):
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.logs, title=TabLabel.logs)
+        self.ids = ids
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield TabButtons(self.ids, (TabLabel.cmd_log, TabLabel.app_log))
+            with ContentSwitcher(initial=self.ids.logger.cmd):
+                yield CmdLog()
+                yield AppLog()
+
+    def on_mount(self) -> None:
+        self.tab_buttons = self.query_exactly_one(TabButtons)
+        self.switcher = self.query_exactly_one(ContentSwitcher)
+
+    @on(Button.Pressed)
+    def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == TabLabel.app_log:
+            self.switcher.current = self.ids.logger.app
+        elif event.button.label == TabLabel.cmd_log:
+            self.switcher.current = self.ids.logger.cmd
+
+
+class ReAddTab(TabPane):
+
+    def __init__(self, ids: "AppIds") -> None:
+        super().__init__(id=TabLabel.re_add, title=TabLabel.re_add)
+        self.ids = ids
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield DestDirTree(self.ids)
+            yield Vertical(ViewSwitcher(self.ids), OperateButtons(self.ids))
+        yield SwitchSlider(self.ids)
+
+    def on_mount(self) -> None:
+        self.managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+
+    @on(Switch.Changed)
+    def handle_tree_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        if event.switch.id == self.ids.switch.unchanged:
+            self.managed_tree.unchanged = event.value
+        elif event.switch.id == self.ids.switch.expand_all:
+            self.managed_tree.expand_all = event.value
+
+    @on(DirContentBtn.Pressed)
+    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
+        if isinstance(event.button, DirContentBtn):
+            event.stop()
+            self.managed_tree.show_requested_node(event.button.path)

@@ -17,14 +17,12 @@ from ._app_ids import IDS
 from ._cmd_results import CMD
 from ._pre_run_logic import PreRunLogic
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
-from .gui.add_tab import AddTab
-from .gui.apply_tab import ApplyTab
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .gui.common.managed_tree import DestDirTree
 from .gui.common.op_feedback import OperateInfo
 from .gui.main_screen import CustomHeader, MainScreen
-from .gui.re_add_tab import ReAddTab
 from .gui.splash_screen import SplashScreen
+from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
     from ._pre_run_logic import PreRunLogic
