@@ -26,7 +26,7 @@ from .gui.re_add_tab import ReAddTab
 if TYPE_CHECKING:
     from textual.message import Message
 
-    from .textual_app import ChezmoiGUI
+    from ._textual_app import ChezmoiGUI
 
 from .gui.common.messages import ReadyToUseMsg
 
