@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
 
 from .actionables import OpBtnEnum, OpButton
+from .app_type_mixin import ChezmoiAppType
 from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
@@ -46,7 +47,7 @@ class DestDirTree(Vertical):
         )
 
 
-class ManagedTree(Tree[Path]):
+class ManagedTree(ChezmoiAppType, Tree[Path]):
 
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded

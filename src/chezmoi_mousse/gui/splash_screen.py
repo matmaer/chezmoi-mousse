@@ -16,6 +16,8 @@ from textual.worker import WorkerState
 
 from chezmoi_mousse import CMD, ReadCmd
 
+from .common.app_type_mixin import ChezmoiAppType
+
 __all__ = ["SplashScreen"]
 
 
@@ -87,7 +89,7 @@ class SplashLog(RichLog):
         self.markup = True
 
 
-class SplashScreen(Screen[None]):
+class SplashScreen(ChezmoiAppType, Screen[None]):
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method

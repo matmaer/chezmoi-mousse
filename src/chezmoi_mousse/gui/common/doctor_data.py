@@ -9,10 +9,12 @@ from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
 from chezmoi_mousse import Chars, SectionLabel, Tcss
 
+from .app_type_mixin import ChezmoiAppType
+
 __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 
-class DoctorTable(DataTable[Text]):
+class DoctorTable(ChezmoiAppType, DataTable[Text]):
 
     def __init__(self) -> None:
         super().__init__(cursor_type="row")

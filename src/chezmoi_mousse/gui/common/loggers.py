@@ -11,6 +11,8 @@ from textual.widgets import RichLog
 
 from chezmoi_mousse import CMD, IDS, Chars, LogString, ReadVerb
 
+from .app_type_mixin import ChezmoiAppType
+
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
@@ -28,7 +30,7 @@ class LogColor(StrEnum):
     warning = "text-warning"
 
 
-class RichLoggers(RichLog):
+class RichLoggers(ChezmoiAppType, RichLog):
 
     def _get_log_line(self, msg: str, color: LogColor) -> str:
         log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"

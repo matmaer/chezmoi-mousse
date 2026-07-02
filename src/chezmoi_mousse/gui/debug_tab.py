@@ -17,6 +17,7 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import FlatButtonsVertical, OperateButtons
+from .common.app_type_mixin import ChezmoiAppType
 from .common.loggers import DebugLog
 
 __all__ = ["DebugTab"]
@@ -57,7 +58,7 @@ class MemoryUsageView(Vertical):
         yield RichLog(id=IDS.debug.logger.memory, markup=True)
 
 
-class DebugTab(TabPane):
+class DebugTab(ChezmoiAppType, TabPane):
 
     MiB = 1024 * 1024
     INTERVAL = 2

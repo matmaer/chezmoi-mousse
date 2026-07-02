@@ -7,6 +7,7 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import CMD, ReadCmd
 
+from .app_type_mixin import ChezmoiAppType
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 __all__ = ["GitLogView"]
 
 
-class GitLogView(Container):
+class GitLogView(ChezmoiAppType, Container):
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 

@@ -21,6 +21,7 @@ from chezmoi_mousse import (
 from .add_tab import AddTab
 from .apply_tab import ApplyTab
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
+from .common.app_type_mixin import ChezmoiAppType
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
 __all__ = ["MainScreen"]
 
 
-class MainScreen(Screen[None]):
+class MainScreen(ChezmoiAppType, Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
