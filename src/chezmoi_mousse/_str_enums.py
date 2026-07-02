@@ -23,7 +23,6 @@ class FlatBtnLabel(StrEnum):
     diagram = "Diagram"
     doctor = "Doctor"
     dom_nodes = "DOM Nodes"
-    exit_app = "Exit App"
     ignored = "Ignored"
     pw_mgr_info = "Password Managers"
     template_data = "Template Data"
