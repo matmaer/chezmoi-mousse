@@ -51,7 +51,7 @@ from .common.switchers import ViewSwitcher
 if TYPE_CHECKING:
     from chezmoi_mousse import CachedData
 
-__all__ = ["AddTab", "ApplyTab", "DebugTab", "LogsTab", "ReAddTab"]
+__all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
 
 class AddTab(TabPane):
@@ -145,9 +145,6 @@ class ApplyTab(TabPane):
         if isinstance(event.button, DirContentBtn):
             event.stop()
             self.managed_tree.show_requested_node(event.button.path)
-
-
-__all__ = ["ConfigTab"]
 
 
 class CatConfigView(Vertical):

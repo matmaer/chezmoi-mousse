@@ -38,7 +38,7 @@ from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
 
-__all__ = ["MainScreen"]
+__all__ = ["MainScreen", "CustomHeader"]
 
 
 class CustomHeader(Header):
