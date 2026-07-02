@@ -164,14 +164,14 @@ class CachedData:
 
     def _get_unchanged_file_paths_in(self, dir_path: Path) -> list[Path]:
         results: set[Path] = set()
-        for path in CMD.cache.sets.x_files:
+        for path in self.sets.x_files:
             if path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
 
     def _get_unchanged_dir_paths_in(self, dir_path: Path) -> list[Path]:
         results: set[Path] = set()
-        for path in CMD.cache.sets.x_dirs:
+        for path in self.sets.x_dirs:
             if path != dir_path and path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
