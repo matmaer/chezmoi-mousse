@@ -81,7 +81,3 @@ Thumbs.db
 *.py[cod]
 *$py.class
 
-# PyInstaller artifacts
-build/
-dist/
-*.spec
