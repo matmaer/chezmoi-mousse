@@ -14,11 +14,16 @@ from textual.pilot import OutOfBounds, Pilot
 from textual.widget import Widget
 from textual.widgets import Switch, TabbedContent, TabPane
 
-from ._cmd_results import DirContentBtn
 from ._str_enums import TabLabel
 from .gui.add_tab import AddTab
 from .gui.apply_tab import ApplyTab
-from .gui.common.actionables import FlatButton, OpButton, SwitchSlider, TabButton
+from .gui.common.actionables import (
+    DirContentBtn,
+    FlatButton,
+    OpButton,
+    SwitchSlider,
+    TabButton,
+)
 from .gui.common.diffs import DiffView
 from .gui.common.loading_modal import LoadingModal
 from .gui.re_add_tab import ReAddTab
