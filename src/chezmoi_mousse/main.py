@@ -2,7 +2,7 @@ import asyncio
 
 from chezmoi_mousse._pilot_mode import test_app_with_pilot
 from chezmoi_mousse._pre_run_logic import PreRunLogic
-from chezmoi_mousse.gui.textual_app import ChezmoiGUI
+from chezmoi_mousse.textual_app import ChezmoiGUI
 
 
 def run_app():

@@ -15,15 +15,15 @@ from textual.widgets import TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import CMD, IDS, BindingAction, BindingDescription, Chars, TabLabel
 
-from .add_tab import AddTab
-from .apply_tab import ApplyTab
-from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .common.managed_tree import DestDirTree
-from .common.op_feedback import OperateInfo
-from .common.screen_header import CustomHeader
-from .main_screen import MainScreen
-from .re_add_tab import ReAddTab
-from .splash_screen import SplashScreen
+from .gui.add_tab import AddTab
+from .gui.apply_tab import ApplyTab
+from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .gui.common.managed_tree import DestDirTree
+from .gui.common.op_feedback import OperateInfo
+from .gui.common.screen_header import CustomHeader
+from .gui.main_screen import MainScreen
+from .gui.re_add_tab import ReAddTab
+from .gui.splash_screen import SplashScreen
 
 if TYPE_CHECKING:
     from chezmoi_mousse import PreRunLogic
