@@ -15,7 +15,7 @@ from chezmoi_mousse import Tcss
 
 CLASS_NAME = "Tcss"
 CLASSES_KEYWORD = "classes"
-GUI_DOT_TCSS_PATH = Path("src", "chezmoi_mousse", "gui", "gui.tcss")
+GUI_DOT_TCSS_PATH = Path("src", "chezmoi_mousse", "gui.tcss")
 HARDCODED = "hardcoded tcss class"
 
 EXCLUDE_TCSS_CLASSES = ["-visible"]
