@@ -1,8 +1,8 @@
 import asyncio
 
-from chezmoi_mousse._pilot_mode import test_app_with_pilot
-from chezmoi_mousse._pre_run_logic import PreRunLogic
-from chezmoi_mousse._textual_app import ChezmoiGUI
+from ._pilot_mode import test_app_with_pilot
+from ._pre_run_logic import PreRunLogic
+from ._textual_app import ChezmoiGUI
 
 
 def run_app():
