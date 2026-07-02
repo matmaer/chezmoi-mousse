@@ -5,17 +5,20 @@ from typing import TYPE_CHECKING
 from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
+from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Switch, TabbedContent, Tabs
+from textual.widgets import Button, Footer, Header, Static, Switch, TabbedContent, Tabs
 
 from chezmoi_mousse import (
     CMD,
     IDS,
+    Chars,
     CommandResult,
     LogString,
     OpBtnEnum,
     OpBtnLabel,
     TabLabel,
+    Tcss,
 )
 
 from .add_tab import AddTab
@@ -31,7 +34,6 @@ from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReadyToUseMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
-from .common.screen_header import CustomHeader
 from .common.switchers import ViewSwitcher
 from .config_tab import ConfigTab
 from .logs_tab import LogsTab
@@ -41,6 +43,26 @@ if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
 
 __all__ = ["MainScreen"]
+
+
+class CustomHeader(Header):
+
+    changes_enabled: reactive[bool] = reactive(False)
+    dry_run_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
+    live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
+
+    def on_mount(self) -> None:
+        self.icon = Chars.burger
+
+    def watch_changes_enabled(self, changes_enabled: bool) -> None:
+        if changes_enabled is False:
+            self.screen.title = self.dry_run_mode
+            header_title = self.query_exactly_one("HeaderTitle", Static)
+            header_title.remove_class(Tcss.changes_enabled_color)
+            return
+        self.screen.title = self.live_mode
+        header_title = self.query_exactly_one("HeaderTitle", Static)
+        header_title.add_class(Tcss.changes_enabled_color)
 
 
 class MainScreen(ChezmoiAppType, Screen[None]):

@@ -22,8 +22,7 @@ from .gui.apply_tab import ApplyTab
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .gui.common.managed_tree import DestDirTree
 from .gui.common.op_feedback import OperateInfo
-from .gui.common.screen_header import CustomHeader
-from .gui.main_screen import MainScreen
+from .gui.main_screen import CustomHeader, MainScreen
 from .gui.re_add_tab import ReAddTab
 from .gui.splash_screen import SplashScreen
 
