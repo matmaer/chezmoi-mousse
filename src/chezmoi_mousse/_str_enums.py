@@ -75,7 +75,7 @@ class Chars(StrEnum):
 class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
-    dev_mode_enabled = "Dev mode enabled"
+    debug_tab_enabled = "Debug tab enabled"
     doctor_errors_found = "One or more errors found"
     doctor_fails_found = "One or more tests failed"
     doctor_no_issue_found = "No warnings, failed or error entries found"

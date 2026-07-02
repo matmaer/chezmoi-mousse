@@ -1,6 +1,6 @@
 import dataclasses
 from math import ceil
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
 from rich.segment import Segment, Segments
@@ -32,6 +32,9 @@ from .common.screen_header import CustomHeader
 from .main_screen import MainScreen
 from .re_add_tab import ReAddTab
 from .splash_screen import SplashScreen
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import PreRunLogic
 
 __all__ = ["ChezmoiGUI"]
 
@@ -92,12 +95,16 @@ class ChezmoiGUI(App[None]):
 
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
-    def __init__(self, *, chezmoi_bin: str, dev_mode: bool = False) -> None:
+    def __init__(self, *, pre_run_logic: "PreRunLogic") -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
+        self.pre_run_logic = pre_run_logic
+        CMD.run_cmd.chezmoi_bin = pre_run_logic.chezmoi_bin
         super().__init__()
 
-        CMD.run_cmd.chezmoi_bin = chezmoi_bin
-        CMD.dev_mode = dev_mode
+    def _handle_exception(self, error: Exception) -> None:
+        if self.pre_run_logic.debug_mode:
+            self.pre_run_logic.save_stacktrace()
+        super()._handle_exception(error)
 
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_light)
