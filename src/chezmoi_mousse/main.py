@@ -1,13 +1,13 @@
 import asyncio
 
 from ._pilot_mode import test_app_with_pilot
-from ._pre_run_logic import PreRunLogic
+from ._pre_app_run import PreAppRun
 from ._textual_app import ChezmoiGUI
 
 
 def run_app():
 
-    pre_run_logic = PreRunLogic()
+    pre_run_logic = PreAppRun()
 
     try:
         app = ChezmoiGUI(pre_run_logic=pre_run_logic)

@@ -15,7 +15,7 @@ from textual.widgets import TabbedContent, TabPane, Tabs
 
 from ._app_ids import IDS
 from ._cmd_results import CMD
-from ._pre_run_logic import PreRunLogic
+from ._pre_app_run import PreAppRun
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .gui.common.managed_tree import DestDirTree
@@ -25,7 +25,7 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
-    from ._pre_run_logic import PreRunLogic
+    from ._pre_app_run import PreAppRun
 
 
 __all__ = ["ChezmoiGUI"]
@@ -87,7 +87,7 @@ class ChezmoiGUI(App[None]):
 
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
-    def __init__(self, *, pre_run_logic: "PreRunLogic") -> None:
+    def __init__(self, *, pre_run_logic: "PreAppRun") -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.pre_run_logic = pre_run_logic
         CMD.run_cmd.chezmoi_bin = pre_run_logic.chezmoi_bin
