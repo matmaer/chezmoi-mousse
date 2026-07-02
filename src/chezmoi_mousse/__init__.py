@@ -9,8 +9,6 @@
 
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError, version
-
 from ._app_ids import IDS, AppIds
 from ._cmd_results import CMD, CachedData
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
@@ -27,7 +25,6 @@ from ._str_enums import (
 from ._test_paths import TestPaths
 
 __all__ = [
-    "__version__",
     "CMD",
     "IDS",
     "AppIds",
@@ -48,8 +45,3 @@ __all__ = [
     "Tcss",
     "TestPaths",
 ]
-
-try:
-    __version__ = version("chezmoi-mousse")
-except PackageNotFoundError:
-    __version__ = "dev"
