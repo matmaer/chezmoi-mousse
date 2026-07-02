@@ -6,8 +6,7 @@ from subprocess import CompletedProcess, run
 
 from textual.widgets import Collapsible, Label, Static
 
-from ._str_enum_names import Tcss
-from ._str_enums import Chars, LogString, SectionLabel
+from ._str_enums import Chars, LogString, SectionLabel, Tcss
 
 __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
@@ -22,8 +21,8 @@ class GlobalArgs(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
-        "--use-builtin-git=true",
         "--use-builtin-diff=true",
+        "--use-builtin-git=true",
     )
     dry_run_arg = "--dry-run"
     live_run = _default_args

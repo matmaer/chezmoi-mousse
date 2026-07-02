@@ -14,8 +14,7 @@ from importlib.metadata import PackageNotFoundError, version
 from ._app_ids import IDS, AppIds
 from ._cmd_results import CMD, CachedData
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from ._run_cmd import CommandResult, ReadCmd, ReadVerb
-from ._str_enum_names import Tcss
+from ._run_cmd import CommandResult, ReadCmd, ReadVerb, Tcss
 from ._str_enums import (
     Chars,
     FlatBtnLabel,

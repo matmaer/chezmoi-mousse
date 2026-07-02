@@ -1,6 +1,13 @@
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from ._str_enum_names import ContainerName, LogName, ScreenName, StaticName, ViewName
-from ._str_enums import FlatBtnLabel, TabLabel
+from ._str_enums import (
+    ContainerName,
+    FlatBtnLabel,
+    LogName,
+    ScreenName,
+    StaticName,
+    TabLabel,
+    ViewName,
+)
 
 __all__ = ["IDS", "AppIds"]
 
@@ -11,13 +18,13 @@ class AppIds:
         "container",
         "label",
         "logger",
-        "managed_tree",
         "managed_tree_q",
+        "managed_tree",
         "op_btn",
         "static",
-        "switch",
-        "switch_slider",
         "switch_slider_q",
+        "switch_slider",
+        "switch",
         "tree",
         "view",
     )

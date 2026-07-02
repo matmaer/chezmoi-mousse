@@ -1,20 +1,109 @@
-from enum import StrEnum
+from enum import StrEnum, auto
 
 __all__ = [
+    "BindingAction",
     "BindingDescription",
     "Chars",
+    "ContainerName",
     "FlatBtnLabel",
+    "LogName",
     "LogString",
     "OperateString",
+    "ScreenName",
     "SectionLabel",
+    "StaticName",
     "StatusCode",
     "SwitchLabel",
     "TabLabel",
+    "Tcss",
+    "ViewName",
 ]
 
-#########################################
-# StrEnum classes for buttons and links #
-#########################################
+
+class BindingAction(StrEnum):
+    toggle_dry_run = auto()
+    toggle_maximized = auto()
+    toggle_switch_slider = auto()
+
+
+class ContainerName(StrEnum):
+    command_output = auto()
+    contents = auto()
+    diff = auto()
+    doctor = auto()
+    git_log = auto()
+    left_side = auto()
+    op_feed_back = auto()
+    operate_buttons = auto()
+    repo_input = auto()
+    right_side = auto()
+
+
+class LogName(StrEnum):
+    app_logger = auto()
+    cmd_logger = auto()
+    debug_logger = auto()
+    dom_node_logger = auto()
+    memory_usage_logger = auto()
+
+
+class ScreenName(StrEnum):
+    main = auto()
+    splash = auto()
+
+
+class StaticName(StrEnum):
+    added_paths = auto()
+    removed_paths = auto()
+    changed_status = auto()
+    debug_test_paths = auto()
+    init_info = auto()
+    operate_info = auto()
+
+
+class Tcss(StrEnum):
+    added = auto()
+    changed = auto()
+    changes_enabled_color = auto()
+    context = auto()
+    dest_dir_tree_label = auto()
+    flat_button = auto()
+    flat_section_label = auto()
+    flow_diagram = auto()
+    full_cmd = auto()
+    info = auto()
+    last_clicked_flat_btn = auto()
+    last_clicked_tab_btn = auto()
+    limited_label = auto()
+    main_section_label = auto()
+    managed_tree = auto()
+    operate_button = auto()
+    operate_info = auto()
+    pw_mgr_group = auto()
+    refresh_button = auto()
+    removed = auto()
+    single_button_vertical = auto()
+    sub_section_label = auto()
+    tab_button = auto()
+    tab_left_vertical = auto()
+    unhandled = auto()
+
+    # add a property to return the name with a dot prefix
+    @property
+    def dot_prefix(self) -> str:
+        return f".{self.value}"
+
+
+class ViewName(StrEnum):
+    cat_config_view = auto()
+    debug_log_view = auto()
+    diagram_view = auto()
+    dom_nodes_view = auto()
+    git_ignored_view = auto()
+    memory_usage_view = auto()
+    pw_mgr_info_view = auto()
+    template_data_view = auto()
+    test_paths_view = auto()
 
 
 class FlatBtnLabel(StrEnum):
@@ -48,11 +137,6 @@ class TabLabel(StrEnum):
     @classmethod
     def main_tabs(cls) -> tuple["TabLabel", ...]:
         return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
-
-
-#########################
-# Other StrEnum classes #
-#########################
 
 
 class Chars(StrEnum):

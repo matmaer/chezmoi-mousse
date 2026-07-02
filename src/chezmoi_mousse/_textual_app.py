@@ -16,8 +16,7 @@ from textual.widgets import TabbedContent, TabPane, Tabs
 from ._app_ids import IDS
 from ._cmd_results import CMD
 from ._pre_run_logic import PreRunLogic
-from ._str_enum_names import BindingAction
-from ._str_enums import BindingDescription, Chars, TabLabel
+from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
 from .gui.add_tab import AddTab
 from .gui.apply_tab import ApplyTab
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
