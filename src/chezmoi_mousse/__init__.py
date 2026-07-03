@@ -22,7 +22,7 @@ from ._str_enums import (
     StatusCode,
     TabLabel,
 )
-from ._test_paths import TestPaths
+from .debug._test_paths import TestPaths
 
 __all__ = [
     "CMD",

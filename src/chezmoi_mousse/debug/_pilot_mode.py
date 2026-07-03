@@ -14,24 +14,24 @@ from textual.pilot import OutOfBounds, Pilot
 from textual.widget import Widget
 from textual.widgets import Switch, TabbedContent, TabPane
 
-from ._str_enums import TabLabel
-from .gui.common.actionables import (
+from .._str_enums import TabLabel
+from ..gui.common.actionables import (
     DirContentBtn,
     FlatButton,
     OpButton,
     SwitchSlider,
     TabButton,
 )
-from .gui.common.diffs import DiffView
-from .gui.common.loading_modal import LoadingModal
-from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
+from ..gui.common.diffs import DiffView
+from ..gui.common.loading_modal import LoadingModal
+from ..gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
     from textual.message import Message
 
-    from ._textual_app import ChezmoiGUI
+    from .._textual_app import ChezmoiGUI
 
-from .gui.common.messages import ReadyToUseMsg
+from ..gui.common.messages import ReadyToUseMsg
 
 
 async def pilot_chill(pilot: Pilot[None]):
