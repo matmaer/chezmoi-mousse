@@ -1,0 +1,47 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers when you tag a release like v1.0.0
+
+jobs:
+  release:
+    name: Build and Publish Nuitka Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python "3.13"
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install system dependencies for Nuitka
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache patchelf gcc
+
+      - name: Install Python dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Compile Executable with Nuitka
+        run: uv run nuitka src/chezmoi_mousse
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: chezmoi-mousse
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
