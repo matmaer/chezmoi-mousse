@@ -23,7 +23,12 @@ def get_module_paths() -> list[Path]:
 
 @cache
 def get_gui_module_paths() -> list[Path]:
-    return [Path.cwd() / p for p in get_module_paths() if "gui" in p.parts]
+    all_modules = get_module_paths()
+    gui_paths = [p for p in all_modules if "gui" in p.parts]
+    debug_paths = [p for p in all_modules if "debug" in p.parts]
+    app_path = [p for p in all_modules if "_textual_app.py" in p.parts]
+
+    return [Path.cwd() / p for p in (gui_paths + debug_paths + app_path)]
 
 
 @cache
