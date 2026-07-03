@@ -18,7 +18,7 @@ class ProblemChars(StrEnum):
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class PileNames:
+class FileNames:
     BINARY = "_test_file_binary.bin"
     LARGE = "_test_file_large.txt"
     PYTHON_FILE = "_test_file.py"
@@ -55,7 +55,7 @@ class AllTestPaths:
     )
 
     # file names
-    file_names = PileNames()
+    file_names = FileNames()
 
     @property
     def all_dirs_to_create(self) -> list[Path]:
