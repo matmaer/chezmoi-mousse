@@ -28,13 +28,22 @@ Check out the [Wiki Screenshots](https://github.com/matmaer/chezmoi-mousse/wiki/
 
 ## Start
 
-On the command line, clone the repository:
 
-`git clone https://github.com/matmaer/chezmoi-mousse.git`
+### Pre build binary for Linux
 
-Change directory into the `src` directory of the cloned repository.
+https://github.com/matmaer/chezmoi-mousse/releases/latest
 
-`cd chezmoi-mousse` and `cd src`
+```shell
+wget https://github.com/matmaer/chezmoi-mousse/releases/latest/download/chezmoi-mousse
+chmod +x chezmoi-mousse
+./chezmoi-mousse
+```
+
+### Run from source all platforms
+
+Clone the repository: `git clone https://github.com/matmaer/chezmoi-mousse.git`
+
+Change directory: `cd chezmoi-mousse` and `cd src`
 
 The easiest way is to run the app with `uv`, [install uv](https://docs.astral.sh/uv/getting-started/installation/) on your platform. Then in the chezmoi-mousse src directory, run:
 
@@ -53,7 +62,7 @@ To test the app without "real" dotfiles in a container or VM:
 
 In the src directory of the cloned repository, you can run
 
-`CHEZMOI_MOUSSE_DEV=1 uv run --python 3.13 --with textual -m chezmoi_mousse`
+`CHEZMOI_MOUSSE_DEBUG_MODE=1 uv run --python 3.13 --with textual -m chezmoi_mousse`
 
 Then on the "Debug" tab, you can generate some files in the home directory, and offer the possibility to modify the generated files to have diffs.
 Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/master/#)
@@ -61,21 +70,21 @@ Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/
 See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#debug-tab)
 
 ### Platform packaging
-- [x] Windows
+- Apple
   - [ ] app store
-  - [ ] signed executable
-  - [x] unpackaged
-- [x] Apple
-  - [ ] app store
-  - [ ] signed executable
-  - [x] unpackaged
-- [x] Linux
+  - [ ] single executable file
+  - [x] run from source
+- Linux
   - [ ] [AppImage](https://appimage.org/)
-  - [ ] briefcase
   - [ ] [flatpak](https://flatpak.org/)
-  - [ ] public key list signed executable
   - [ ] [snap](https://snapcraft.io/)
-  - [x] unpackaged
+  - [x] [single executable file](https://github.com/matmaer/chezmoi-mousse/releases/latest)
+  - [x] run from source
+- Windows
+  - [ ] app store
+  - [ ] single executable file
+  - [x] run from source
+)
 
 ## Available `chezmoi` commands
 
@@ -101,7 +110,6 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 - [ ] `chezmoi init` new repository
 - [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
-- [x] `chezmoi re-add` directory
 - [x] `chezmoi re-add` file
 
 ### Read Operations
@@ -117,7 +125,7 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 - [x] `chezmoi managed`
 - [x] `chezmoi source-dir`
 - [x] `chezmoi status`
-- [x] `chezmoi unmanaged`
+- [ ] `chezmoi unmanaged`
 
 ### Implemented configuration options
 
@@ -132,7 +140,7 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 > [!NOTE] `chezmoi` command **flags** can override your local config file.
 > See the [_run_cmd.py](https://github.com/matmaer/chezmoi-mousse/blob/main/src/chezmoi_mousse/_run_cmd.py) file for the exact flags in use.
 
-Top level
+### Top level
 
 - :green_circle: cacheDir
 - :green_square: color (`--no-color`, app manages color)
@@ -279,6 +287,7 @@ status
 - :green_square: status.exclude
 
 template
+- [x] `chezmoi re-add` directory
 - :black_circle: template.options
 
 textconv
