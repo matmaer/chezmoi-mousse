@@ -93,6 +93,30 @@ class ReadCmd(Enum):
     )
     template_data = (ReadVerb.data.value,)
 
+    @classmethod
+    def splash_commands(cls) -> list["ReadCmd"]:
+        return [
+            ReadCmd.cat_config,
+            ReadCmd.doctor,
+            ReadCmd.dump_config,
+            ReadCmd.git_log,
+            ReadCmd.ignored,
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.template_data,
+        ]
+
+    @classmethod
+    def managed_status_commands(cls) -> list["ReadCmd"]:
+        return [
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ]
+
 
 class WriteVerb(Enum):
     add = "add"

@@ -20,20 +20,6 @@ from .common.app_type_mixin import ChezmoiAppType
 
 __all__ = ["SplashScreen"]
 
-
-SPLASH_COMMANDS: list[ReadCmd] = [
-    ReadCmd.cat_config,
-    ReadCmd.doctor,
-    ReadCmd.dump_config,
-    ReadCmd.git_log,
-    ReadCmd.ignored,
-    ReadCmd.managed_dirs,
-    ReadCmd.managed_files,
-    ReadCmd.status_dirs,
-    ReadCmd.status_files,
-    ReadCmd.template_data,
-]
-
 SPLASH_LOGO = """\
  _______________________________ ___________________._
 |       |   |   |    ___|___    |    '    |       |   |
@@ -83,7 +69,9 @@ class AnimatedFade(Static):
 class SplashLog(RichLog):
 
     def on_mount(self) -> None:
-        self.styles.height = len(SPLASH_COMMANDS) + 1  # +1 for parse dump-config log
+        self.styles.height = (
+            len(ReadCmd.splash_commands()) + 1
+        )  # +1 for parse dump-config log
         self.styles.width = "auto"
         self.styles.margin = 2
         self.markup = True
@@ -107,7 +95,7 @@ class SplashScreen(ChezmoiAppType, Screen[None]):
     def on_mount(self) -> None:
         self.set_interval(interval=2, callback=self._all_workers_finished)
         self.splash_log = self.query_exactly_one(SplashLog)
-        for splash_cmd in SPLASH_COMMANDS:
+        for splash_cmd in ReadCmd.splash_commands():
             self._run_io_worker(splash_cmd)
 
     @work(thread=True, group="io_workers")

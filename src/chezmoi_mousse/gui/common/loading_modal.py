@@ -11,13 +11,13 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse import CMD, OpBtnEnum
+from chezmoi_mousse import CMD, OpBtnEnum, ReadCmd
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import CommandResult, ReadCmd
+    from chezmoi_mousse import CommandResult
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
@@ -78,7 +78,7 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_all_read_cmds(self) -> None:
-        for read_cmd in CMD.refresh_read_cmds:
+        for read_cmd in ReadCmd.managed_status_commands():
             await self._run_read_command(read_cmd).wait()
         await self._update_changed_paths().wait()
 

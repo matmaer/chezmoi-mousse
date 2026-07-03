@@ -4,7 +4,7 @@ from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from ._run_cmd import ChezmoiCommand, ReadCmd
+from ._run_cmd import ChezmoiCommand
 from ._str_enums import StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -171,14 +171,6 @@ class Commands:
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
     cache: CachedData = CachedData()
     loading_modal_results: list[CommandResult] = field(default_factory=lambda: [])
-    refresh_read_cmds: list[ReadCmd] = field(
-        default_factory=lambda: [
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ]
-    )
     changed_paths: list[Path] = field(default_factory=lambda: [])
     added_paths: list[Path] = field(default_factory=lambda: [])
     removed_paths: list[Path] = field(default_factory=lambda: [])
