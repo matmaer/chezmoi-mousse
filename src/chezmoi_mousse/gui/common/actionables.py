@@ -33,26 +33,26 @@ class DirContentBtn(Button):
 
 
 class FlatButton(Button):
-    def __init__(self, ids: "AppIds", *, btn_enum: FlatBtnLabel) -> None:
+    def __init__(self, ids: "AppIds", *, btn_label: FlatBtnLabel) -> None:
         super().__init__(
             classes=Tcss.flat_button,
             flat=True,
-            id=ids.flat_button_id(btn=btn_enum),
-            label=btn_enum,
+            id=ids.flat_button_id(btn=btn_label),
+            label=btn_label,
             variant="primary",
         )
 
 
 class FlatButtonsVertical(Vertical):
 
-    def __init__(self, ids: "AppIds", *, buttons: tuple[FlatBtnLabel, ...]) -> None:
+    def __init__(self, ids: "AppIds", *, labels: tuple[FlatBtnLabel, ...]) -> None:
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
         self.ids = ids
-        self.buttons: tuple[FlatBtnLabel, ...] = buttons
+        self.labels: tuple[FlatBtnLabel, ...] = labels
 
     def compose(self) -> ComposeResult:
-        for btn_enum in self.buttons:
-            yield FlatButton(self.ids, btn_enum=btn_enum)
+        for label in self.labels:
+            yield FlatButton(self.ids, btn_label=label)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
