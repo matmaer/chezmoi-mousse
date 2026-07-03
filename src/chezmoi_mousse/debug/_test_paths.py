@@ -171,7 +171,7 @@ class AllTestPaths:
 class TestPaths:
 
     def __init__(self) -> None:
-        self.all_paths: AllTestPaths = AllTestPaths()
+        self.all_paths = AllTestPaths()
 
     @cached_property
     def _faker(self):
