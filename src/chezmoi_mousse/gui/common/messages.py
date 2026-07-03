@@ -26,4 +26,7 @@ class CurrentNodeMsg(Message):
         super().__init__()
 
 
-class ReadyToUseMsg(Message): ...
+class ReadyToUseMsg(Message):
+    """Message only used needed to correctly run in pilot mode."""
+
+    pass
