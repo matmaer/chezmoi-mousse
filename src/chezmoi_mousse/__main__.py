@@ -6,7 +6,7 @@
 # nuitka-project: --include-data-file=src/chezmoi_mousse/gui.tcss=chezmoi_mousse/gui.tcss
 # nuitka-project: --include-package-data=textual
 
-from .main import run_app
+from chezmoi_mousse.main import run_app
 
 if __name__ == "__main__":
     run_app()
