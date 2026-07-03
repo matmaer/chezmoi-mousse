@@ -88,4 +88,4 @@ class PreAppRun:
         if VarTruth.pretend_fail:
             lines.extend(start_info)
         if len(lines) > 0:
-            return "\n".join(lines)
+            return "\n".join(lines) + "\n" + InfoStr.FEEDBACK
