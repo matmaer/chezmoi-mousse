@@ -15,7 +15,6 @@ class AppIds:
     __slots__ = (
         "canvas_name",
         "container",
-        "label",
         "managed_tree_q",
         "managed_tree",
         "op_btn",
@@ -24,7 +23,6 @@ class AppIds:
         "switch_slider_q",
         "switch_slider",
         "switch",
-        "tree",
     )
 
     def __init__(self, canvas_name: TabLabel | ScreenName) -> None:
