@@ -6,7 +6,7 @@ __all__ = [
     "Chars",
     "ContainerName",
     "FlatBtnLabel",
-    "LogName",
+    "RichLogName",
     "LogString",
     "OperateString",
     "ScreenName",
@@ -16,7 +16,6 @@ __all__ = [
     "SwitchLabel",
     "TabLabel",
     "Tcss",
-    "ViewName",
 ]
 
 
@@ -27,19 +26,27 @@ class BindingAction(StrEnum):
 
 
 class ContainerName(StrEnum):
+    cat_config = auto()
     command_output = auto()
     contents = auto()
+    debug_log = auto()
+    diagram = auto()
     diff = auto()
     doctor = auto()
+    dom_nodes = auto()
+    git_ignored = auto()
     git_log = auto()
     left_side = auto()
+    memory_usage = auto()
     op_feed_back = auto()
     operate_buttons = auto()
-    repo_input = auto()
+    pw_mgr_info = auto()
     right_side = auto()
+    template_data = auto()
+    test_paths = auto()
 
 
-class LogName(StrEnum):
+class RichLogName(StrEnum):
     app_logger = auto()
     cmd_logger = auto()
     debug_logger = auto()
@@ -92,18 +99,6 @@ class Tcss(StrEnum):
     @property
     def dot_prefix(self) -> str:
         return f".{self.value}"
-
-
-class ViewName(StrEnum):
-    cat_config_view = auto()
-    debug_log_view = auto()
-    diagram_view = auto()
-    dom_nodes_view = auto()
-    git_ignored_view = auto()
-    memory_usage_view = auto()
-    pw_mgr_info_view = auto()
-    template_data_view = auto()
-    test_paths_view = auto()
 
 
 class FlatBtnLabel(StrEnum):

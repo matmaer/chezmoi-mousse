@@ -13,7 +13,6 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
-from ._app_ids import IDS
 from ._cmd_results import CMD
 from ._pre_app_run import PreAppRun
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
@@ -25,6 +24,7 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
+    from ._app_ids import CanvasIds
     from ._pre_app_run import PreAppRun
 
 
@@ -85,11 +85,10 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS: ClassVar = {"main_screen": MainScreen}
-
-    def __init__(self, *, pre_run_logic: "PreAppRun") -> None:
+    def __init__(self, *, pre_run_logic: "PreAppRun", ids: "CanvasIds") -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.pre_run_logic = pre_run_logic
+        self.ids = ids
         CMD.run_cmd.chezmoi_bin = pre_run_logic.chezmoi_bin
         super().__init__()
 
@@ -107,7 +106,7 @@ class ChezmoiGUI(App[None]):
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        self.push_screen(MainScreen())
+        self.push_screen(MainScreen(ids=self.ids))
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
@@ -190,7 +189,7 @@ class ChezmoiGUI(App[None]):
             CMD.run_cmd.changes_enabled
         )
         self.screen.query_one(
-            IDS.main.static.operate_info_q, OperateInfo
+            self.ids.main.static.operate_info_q, OperateInfo
         ).changes_enabled = CMD.run_cmd.changes_enabled
 
     def action_toggle_switch_slider(self) -> None:
@@ -231,33 +230,35 @@ class ChezmoiGUI(App[None]):
 
         if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
-                IDS.apply.container.left_side_q, DestDirTree
+                self.ids.apply.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                IDS.apply.container.operate_buttons_q
+                self.ids.apply.container.operate_buttons_q
             )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
-                IDS.re_add.container.left_side_q, DestDirTree
+                self.ids.re_add.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                IDS.re_add.container.operate_buttons_q
+                self.ids.re_add.container.operate_buttons_q
             )
         elif active_tab == TabLabel.add:
-            left_side = self.screen.query_one(IDS.add.container.left_side_q, Vertical)
+            left_side = self.screen.query_one(
+                self.ids.add.container.left_side_q, Vertical
+            )
             operation_buttons = self.screen.query_one(
-                IDS.add.container.operate_buttons_q
+                self.ids.add.container.operate_buttons_q
             )
         elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
-                IDS.config.container.left_side_q, FlatButtonsVertical
+                self.ids.config.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabLabel.debug:
             left_side = self.screen.query_one(
-                IDS.debug.container.left_side_q, FlatButtonsVertical
+                self.ids.debug.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:
@@ -300,7 +301,7 @@ class ChezmoiGUI(App[None]):
             return not (
                 isinstance(self.screen, MainScreen)
                 and self.screen.query_one(
-                    IDS.main.container.op_feed_back_q, Vertical
+                    self.ids.main.container.op_feed_back_q, Vertical
                 ).display
                 is True
             )

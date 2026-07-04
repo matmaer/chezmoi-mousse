@@ -21,7 +21,6 @@ from textual.widgets import (
 
 from chezmoi_mousse import (
     CMD,
-    IDS,
     AppIds,
     FlatBtnLabel,
     OpBtnEnum,
@@ -216,7 +215,7 @@ class ConfigTab(TabPane):
         with Horizontal():
             yield FlatButtonsVertical(
                 self.ids,
-                buttons=(
+                labels=(
                     FlatBtnLabel.doctor,
                     FlatBtnLabel.pw_mgr_info,
                     FlatBtnLabel.cat_config,
@@ -227,11 +226,11 @@ class ConfigTab(TabPane):
             )
             with ContentSwitcher(initial=self.ids.container.doctor):
                 yield DoctorTableView(id=self.ids.container.doctor)
-                yield PwMgrInfoView(id=self.ids.view.pw_mgr_info)
-                yield CatConfigView(id=self.ids.view.cat_config)
-                yield IgnoredView(id=self.ids.view.ignored)
-                yield TemplateDataView(id=self.ids.view.template_data)
-                yield DiagramView(id=self.ids.view.diagram)
+                yield PwMgrInfoView(id=self.ids.container.pw_mgr_info)
+                yield CatConfigView(id=self.ids.container.cat_config)
+                yield IgnoredView(id=self.ids.container.ignored)
+                yield TemplateDataView(id=self.ids.container.template_data)
+                yield DiagramView(id=self.ids.container.diagram)
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
@@ -242,15 +241,15 @@ class ConfigTab(TabPane):
         if event.button.label == FlatBtnLabel.doctor:
             self.switcher.current = self.ids.container.doctor
         if event.button.label == FlatBtnLabel.pw_mgr_info:
-            self.switcher.current = self.ids.view.pw_mgr_info
+            self.switcher.current = self.ids.container.pw_mgr_info
         elif event.button.label == FlatBtnLabel.cat_config:
-            self.switcher.current = self.ids.view.cat_config
+            self.switcher.current = self.ids.container.cat_config
         elif event.button.label == FlatBtnLabel.ignored:
-            self.switcher.current = self.ids.view.ignored
+            self.switcher.current = self.ids.container.ignored
         elif event.button.label == FlatBtnLabel.template_data:
-            self.switcher.current = self.ids.view.template_data
+            self.switcher.current = self.ids.container.template_data
         elif event.button.label == FlatBtnLabel.diagram:
-            self.switcher.current = self.ids.view.diagram
+            self.switcher.current = self.ids.container.diagram
 
     def watch_command_results(self, cached: "CachedData") -> None:
         if (
@@ -261,21 +260,21 @@ class ConfigTab(TabPane):
         ):
             return
         self.switcher.query_one(
-            self.ids.view.template_data_q, TemplateDataView
+            self.ids.container.template_data_q, TemplateDataView
         ).template_data_stdout = (
             cached.cmd_results.template_data.completed_process.stdout
         )
-        self.switcher.query_one(self.ids.view.ignored_q, IgnoredView).ignored_stdout = (
-            cached.cmd_results.ignored.completed_process.stdout
-        )
         self.switcher.query_one(
-            self.ids.view.cat_config_q, CatConfigView
+            self.ids.container.ignored_q, IgnoredView
+        ).ignored_stdout = cached.cmd_results.ignored.completed_process.stdout
+        self.switcher.query_one(
+            self.ids.container.cat_config_q, CatConfigView
         ).cat_config_stdout = cached.cmd_results.cat_config.completed_process.stdout
         self.switcher.query_one(
             self.ids.container.doctor_q, DoctorTableView
         ).doctor_stdout = cached.cmd_results.doctor.completed_process.stdout
         self.switcher.query_one(
-            self.ids.view.pw_mgr_info_q, PwMgrInfoView
+            self.ids.container.pw_mgr_info_q, PwMgrInfoView
         ).populate_pw_mgr_info(cached.cmd_results.doctor.completed_process.stdout)
 
 
@@ -320,29 +319,31 @@ class TestPathColors(StrEnum):
     unhandled = "[$text-error bold]"
 
 
-class TestPathsView(Vertical):
+class TestPathsView(ChezmoiAppType, Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.test_paths, classes=Tcss.main_section_label)
-        yield Static(id=IDS.debug.static.debug_test_paths)
+        yield Static(id=self.app.ids.debug.static.debug_test_paths)
 
 
-class DebugLogView(Vertical):
+class DebugLogView(ChezmoiAppType, Vertical):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.debug_log, classes=Tcss.main_section_label)
-        yield DebugLog()
+        yield DebugLog(ids=self.app.ids.debug)
 
 
-class DomNodesView(Vertical):
+class DomNodesView(ChezmoiAppType, Vertical):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label)
-        yield RichLog(id=IDS.debug.logger.dom_nodes, highlight=True, auto_scroll=False)
+        yield RichLog(
+            id=self.app.ids.debug.richlog.dom_nodes, highlight=True, auto_scroll=False
+        )
 
 
-class MemoryUsageView(Vertical):
+class MemoryUsageView(ChezmoiAppType, Vertical):
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.memory_usage, classes=Tcss.main_section_label)
-        yield RichLog(id=IDS.debug.logger.memory, markup=True)
+        yield RichLog(id=self.app.ids.debug.richlog.memory, markup=True)
 
 
 class DebugTab(ChezmoiAppType, TabPane):
@@ -352,45 +353,55 @@ class DebugTab(ChezmoiAppType, TabPane):
 
     _previous_rss: float = 0.0
 
+    def __init__(self, ids: "AppIds"):
+        super().__init__(id=TabLabel.debug, title=TabLabel.debug)
+        self.ids = ids
+
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
-                IDS.debug,
-                buttons=(
+                self.ids,
+                labels=(
                     FlatBtnLabel.test_paths,
                     FlatBtnLabel.debug_log,
                     FlatBtnLabel.dom_nodes,
                     FlatBtnLabel.memory_usage,
                 ),
             )
-            with Vertical(), ContentSwitcher(initial=IDS.debug.view.test_paths):
-                yield TestPathsView(id=IDS.debug.view.test_paths)
-                yield DebugLogView(id=IDS.debug.view.debug_log)
-                yield DomNodesView(id=IDS.debug.view.dom_nodes)
-                yield MemoryUsageView(id=IDS.debug.view.memory_usage)
-        yield OperateButtons(IDS.debug)
+            with Vertical(), ContentSwitcher(initial=self.ids.container.test_paths):
+                yield TestPathsView(id=self.ids.container.test_paths)
+                yield DebugLogView(id=self.ids.container.debug_log)
+                yield DomNodesView(id=self.ids.container.dom_nodes)
+                yield MemoryUsageView(id=self.ids.container.memory_usage)
+        yield OperateButtons(self.ids)
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.test_paths_static = self.query_one(
-            IDS.debug.static.debug_test_paths_q, Static
+            self.app.ids.debug.static.debug_test_paths_q, Static
         )
         self.test_paths_static.update(self._list_existing_test_paths())
-        self.dom_node_logger = self.query_one(IDS.debug.logger.dom_nodes_q, RichLog)
-        self.memory_logger = self.query_one(IDS.debug.logger.memory_q, RichLog)
-        self.mem_log_op_btn = self.query_one(IDS.debug.op_btn.log_memory_q, Button)
+        self.dom_node_logger = self.query_one(
+            self.app.ids.debug.richlog.dom_nodes_q, RichLog
+        )
+        self.memory_logger = self.query_one(
+            self.app.ids.debug.richlog.memory_q, RichLog
+        )
+        self.mem_log_op_btn = self.query_one(
+            self.app.ids.debug.op_btn.log_memory_q, Button
+        )
         self.list_test_paths_op_btn = self.query_one(
-            IDS.debug.op_btn.list_test_paths_q, Button
+            self.app.ids.debug.op_btn.list_test_paths_q, Button
         )
         self.create_diffs_op_btn = self.query_one(
-            IDS.debug.op_btn.create_diffs_q, Button
+            self.app.ids.debug.op_btn.create_diffs_q, Button
         )
         self.create_paths_op_btn = self.query_one(
-            IDS.debug.op_btn.create_paths_q, Button
+            self.app.ids.debug.op_btn.create_paths_q, Button
         )
         self.remove_paths_op_btn = self.query_one(
-            IDS.debug.op_btn.remove_paths_q, Button
+            self.app.ids.debug.op_btn.remove_paths_q, Button
         )
         self.test_paths_op_btns = [
             self.list_test_paths_op_btn,
@@ -502,17 +513,17 @@ class DebugTab(ChezmoiAppType, TabPane):
             self.mem_log_op_btn.display = True
             for btn in self.test_paths_op_btns:
                 btn.display = False
-            self.switcher.current = IDS.debug.view.memory_usage
+            self.switcher.current = self.app.ids.debug.container.memory_usage
         else:
             self.mem_log_op_btn.display = False
             for btn in self.test_paths_op_btns:
                 btn.display = True
         if event.button.label == FlatBtnLabel.test_paths:
-            self.switcher.current = IDS.debug.view.test_paths
+            self.switcher.current = self.app.ids.debug.container.test_paths
         elif event.button.label == FlatBtnLabel.debug_log:
-            self.switcher.current = IDS.debug.view.debug_log
+            self.switcher.current = self.app.ids.debug.container.debug_log
         elif event.button.label == FlatBtnLabel.dom_nodes:
-            self.switcher.current = IDS.debug.view.dom_nodes
+            self.switcher.current = self.app.ids.debug.container.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
@@ -545,7 +556,7 @@ class LogsTab(TabPane):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield TabButtons(self.ids, (TabLabel.cmd_log, TabLabel.app_log))
-            with ContentSwitcher(initial=self.ids.logger.cmd):
+            with ContentSwitcher(initial=self.ids.richlog.cmd):
                 yield CmdLog()
                 yield AppLog()
 
@@ -557,9 +568,9 @@ class LogsTab(TabPane):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == TabLabel.app_log:
-            self.switcher.current = self.ids.logger.app
+            self.switcher.current = self.ids.richlog.app
         elif event.button.label == TabLabel.cmd_log:
-            self.switcher.current = self.ids.logger.cmd
+            self.switcher.current = self.ids.richlog.cmd
 
 
 class ReAddTab(TabPane):

@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from ._app_ids import IDS, AppIds
+from ._app_ids import AppIds, CanvasIds
 from ._cmd_results import CMD, CachedData
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb, Tcss
@@ -26,8 +26,8 @@ from .debug._test_paths import TestPaths
 
 __all__ = [
     "CMD",
-    "IDS",
     "AppIds",
+    "CanvasIds",
     "CachedData",
     "Chars",
     "CommandResult",

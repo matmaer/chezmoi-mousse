@@ -9,7 +9,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import RichLog
 
-from chezmoi_mousse import CMD, IDS, Chars, LogString, ReadVerb
+from chezmoi_mousse import CMD, Chars, LogString, ReadVerb
 
 from .app_type_mixin import ChezmoiAppType
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import AppIds, CommandResult
 
 __all__ = ["AppLog", "CmdLog", "DebugLog"]
 
@@ -58,7 +58,7 @@ class AppLog(RichLoggers):
     cmd_result: reactive["CommandResult | None"] = reactive(None)
 
     def __init__(self) -> None:
-        super().__init__(id=IDS.logs.logger.app, markup=True, max_lines=10000)
+        super().__init__(id=self.app.ids.logs.richlog.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
         self.write_ready(LogString.app_log_initialized)
@@ -96,10 +96,10 @@ class AppLog(RichLoggers):
         self.log_cmd_result(cmd_result)
 
 
-class CmdLog(ScrollableContainer):
+class CmdLog(ChezmoiAppType, ScrollableContainer):
 
     def __init__(self) -> None:
-        super().__init__(id=IDS.logs.logger.cmd)
+        super().__init__(id=self.app.ids.logs.richlog.cmd)
 
     cmd_result: reactive["CommandResult | None"] = reactive(None)
 
@@ -114,10 +114,8 @@ class CmdLog(ScrollableContainer):
 
 class DebugLog(RichLoggers):
 
-    def __init__(self) -> None:
-        super().__init__(
-            id=IDS.logs.logger.debug, markup=True, max_lines=10000, wrap=True
-        )
+    def __init__(self, *, ids: "AppIds") -> None:
+        super().__init__(id=ids.richlog.debug, markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
         self.write_ready(LogString.debug_log_initialized)

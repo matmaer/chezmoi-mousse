@@ -11,7 +11,6 @@ from textual.widgets import Button, Footer, Header, Static, Switch, TabbedConten
 
 from chezmoi_mousse import (
     CMD,
-    IDS,
     Chars,
     CommandResult,
     LogString,
@@ -33,10 +32,10 @@ from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReadyToUseMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.switchers import ViewSwitcher
-from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
+from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import CanvasIds, CommandResult
 
 __all__ = ["MainScreen", "CustomHeader"]
 
@@ -63,39 +62,45 @@ class CustomHeader(Header):
 
 class MainScreen(ChezmoiAppType, Screen[None]):
 
+    def __init__(self, *, ids: "CanvasIds") -> None:
+        super().__init__()
+        self.ids = ids
+
     def compose(self) -> ComposeResult:
         yield CustomHeader()
-        yield OpFeedBack(ids=IDS.main)
+        yield OpFeedBack(ids=self.ids.main)
 
         with Vertical(), TabbedContent():
-            yield ApplyTab(IDS.apply)
-            yield ReAddTab(IDS.re_add)
-            yield AddTab(IDS.add)
-            yield LogsTab(IDS.logs)
-            yield ConfigTab(IDS.config)
+            yield ApplyTab(self.ids.apply)
+            yield ReAddTab(self.ids.re_add)
+            yield AddTab(self.ids.add)
+            yield LogsTab(self.ids.logs)
+            yield ConfigTab(self.ids.config)
             if self.app.pre_run_logic.debug_mode is True:
-                from .tab_panes import DebugTab
-
-                yield DebugTab(id=TabLabel.debug, title=TabLabel.debug)
+                yield DebugTab(self.ids.debug)
         yield Footer()
 
     def on_mount(self) -> None:
         self.run_cmd_results: list[CommandResult] = []
         if self.app.pre_run_logic.debug_mode is True:
             self.notify(LogString.debug_tab_enabled)
-        self.app_log = self.query_one(IDS.logs.logger.app_q, AppLog)
-        self.cmd_log = self.query_one(IDS.logs.logger.cmd_q, CmdLog)
+        self.app_log = self.query_one(self.ids.logs.richlog.app_q, AppLog)
+        self.cmd_log = self.query_one(self.ids.logs.richlog.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
-        self.apply_managed_tree = self.query_one(IDS.apply.managed_tree_q, ManagedTree)
+        self.apply_managed_tree = self.query_one(
+            self.ids.apply.managed_tree_q, ManagedTree
+        )
         self.re_add_managed_tree = self.query_one(
-            IDS.re_add.managed_tree_q, ManagedTree
+            self.ids.re_add.managed_tree_q, ManagedTree
         )
         self.op_feed_back = self.query_one(
-            IDS.main.container.op_feed_back_q, OpFeedBack
+            self.ids.main.container.op_feed_back_q, OpFeedBack
         )
-        self.operate_info = self.query_one(IDS.main.static.operate_info_q, OperateInfo)
+        self.operate_info = self.query_one(
+            self.ids.main.static.operate_info_q, OperateInfo
+        )
         self.command_output = self.query_one(
-            IDS.main.container.command_output_q, CommandOutput
+            self.ids.main.container.command_output_q, CommandOutput
         )
         self.command_output.display = False
         self._first_time_startup()

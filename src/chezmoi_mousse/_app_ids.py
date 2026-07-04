@@ -2,14 +2,13 @@ from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._str_enums import (
     ContainerName,
     FlatBtnLabel,
-    LogName,
+    RichLogName,
     ScreenName,
     StaticName,
     TabLabel,
-    ViewName,
 )
 
-__all__ = ["IDS", "AppIds"]
+__all__ = ["AppIds", "CanvasIds"]
 
 
 class AppIds:
@@ -17,22 +16,21 @@ class AppIds:
         "canvas_name",
         "container",
         "label",
-        "logger",
         "managed_tree_q",
         "managed_tree",
         "op_btn",
+        "richlog",
         "static",
         "switch_slider_q",
         "switch_slider",
         "switch",
         "tree",
-        "view",
     )
 
     def __init__(self, canvas_name: TabLabel | ScreenName) -> None:
         self.canvas_name = canvas_name
         self.container = ContainerIds(self)
-        self.logger = LoggerIds(self)
+        self.richlog = RichLogIds(self)
         self.managed_tree = f"{self.canvas_name.name}_managed_tree"
         self.managed_tree_q = f"#{self.managed_tree}"
         self.op_btn = OperateButtonIds(self)
@@ -40,7 +38,6 @@ class AppIds:
         self.switch = SwitchIds(self)
         self.switch_slider = f"{self.canvas_name.name}_switch_slider"
         self.switch_slider_q = f"#{self.switch_slider}"
-        self.view = ViewIds(self)
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.canvas_name.name}_{name.name}"
@@ -57,8 +54,8 @@ class AppIds:
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
 
-    def view_id(self, qid: str = "", *, view: ViewName | LogName) -> str:
-        return f"{qid}{self.canvas_name.name}_{view.name}"
+    def richlog_id(self, qid: str = "", *, richlog: RichLogName) -> str:
+        return f"{qid}{self.canvas_name.name}_{richlog.name}"
 
     @property
     def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
@@ -136,39 +133,55 @@ class AppIds:
 
 class ContainerIds:
     def __init__(self, ids: AppIds):
+        self.cat_config: str = ids.container_id(name=ContainerName.cat_config)
+        self.cat_config_q: str = f"#{self.cat_config}"
         self.contents: str = ids.container_id(name=ContainerName.contents)
         self.contents_q: str = f"#{self.contents}"
         self.command_output: str = ids.container_id(name=ContainerName.command_output)
         self.command_output_q: str = f"#{self.command_output}"
+        self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
+        self.debug_log_q: str = f"#{self.debug_log}"
+        self.diagram: str = ids.container_id(name=ContainerName.diagram)
+        self.diagram_q: str = f"#{self.diagram}"
         self.diff: str = ids.container_id(name=ContainerName.diff)
         self.diff_q: str = f"#{self.diff}"
         self.doctor: str = ids.container_id(name=ContainerName.doctor)
         self.doctor_q: str = f"#{self.doctor}"
+        self.dom_nodes: str = ids.container_id(name=ContainerName.dom_nodes)
+        self.dom_nodes_q: str = f"#{self.dom_nodes}"
         self.git_log: str = ids.container_id(name=ContainerName.git_log)
         self.git_log_q: str = f"#{self.git_log}"
+        self.ignored: str = ids.container_id(name=ContainerName.git_ignored)
+        self.ignored_q: str = f"#{self.ignored}"
         self.left_side: str = ids.container_id(name=ContainerName.left_side)
         self.left_side_q: str = f"#{self.left_side}"
+        self.memory_usage: str = ids.container_id(name=ContainerName.memory_usage)
+        self.memory_usage_q: str = f"#{self.memory_usage}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
         self.op_feed_back: str = ids.container_id(name=ContainerName.op_feed_back)
         self.op_feed_back_q: str = f"#{self.op_feed_back}"
-        self.repo_input: str = ids.container_id(name=ContainerName.repo_input)
-        self.repo_input_q: str = f"#{self.repo_input}"
+        self.pw_mgr_info: str = ids.container_id(name=ContainerName.pw_mgr_info)
+        self.pw_mgr_info_q: str = f"#{self.pw_mgr_info}"
         self.right_side: str = ids.container_id(name=ContainerName.right_side)
         self.right_side_q: str = f"#{self.right_side}"
+        self.template_data: str = ids.container_id(name=ContainerName.template_data)
+        self.template_data_q: str = f"#{self.template_data}"
+        self.test_paths: str = ids.container_id(name=ContainerName.test_paths)
+        self.test_paths_q: str = f"#{self.test_paths}"
 
 
-class LoggerIds:
+class RichLogIds:
     def __init__(self, ids: AppIds):
-        self.app: str = ids.view_id(view=LogName.app_logger)
+        self.app: str = ids.richlog_id(richlog=RichLogName.app_logger)
         self.app_q: str = f"#{self.app}"
-        self.cmd: str = ids.view_id(view=LogName.cmd_logger)
+        self.cmd: str = ids.richlog_id(richlog=RichLogName.cmd_logger)
         self.cmd_q: str = f"#{self.cmd}"
-        self.debug: str = ids.view_id(view=LogName.debug_logger)
+        self.debug: str = ids.richlog_id(richlog=RichLogName.debug_logger)
         self.debug_q: str = f"#{self.debug}"
-        self.dom_nodes: str = ids.view_id(view=LogName.dom_node_logger)
+        self.dom_nodes: str = ids.richlog_id(richlog=RichLogName.dom_node_logger)
         self.dom_nodes_q: str = f"#{self.dom_nodes}"
-        self.memory: str = ids.view_id(view=LogName.memory_usage_logger)
+        self.memory: str = ids.richlog_id(richlog=RichLogName.memory_usage_logger)
         self.memory_q: str = f"#{self.memory}"
 
 
@@ -248,37 +261,6 @@ class SwitchIds:
         self.unwanted_q: str = f"#{self.unwanted}"
 
 
-class ViewIds:
-    """View Container id's used by ContentSwitcher classes."""
-
-    def __init__(self, ids: AppIds):
-
-        self.diagram: str = ids.view_id(view=ViewName.diagram_view)
-        self.diagram_q: str = f"#{self.diagram}"
-
-        # Config tab
-        self.cat_config: str = ids.view_id(view=ViewName.cat_config_view)
-        self.cat_config_q: str = f"#{self.cat_config}"
-        self.ignored: str = ids.view_id(view=ViewName.git_ignored_view)
-        self.ignored_q: str = f"#{self.ignored}"
-
-        # Debug tab
-        self.debug_log: str = ids.view_id(view=ViewName.debug_log_view)
-        self.debug_log_q: str = f"#{self.debug_log}"
-        self.dom_nodes: str = ids.view_id(view=ViewName.dom_nodes_view)
-        self.dom_nodes_q: str = f"#{self.dom_nodes}"
-        self.memory_usage: str = ids.view_id(view=ViewName.memory_usage_view)
-        self.memory_usage_q: str = f"#{self.memory_usage}"
-        self.test_paths: str = ids.view_id(view=ViewName.test_paths_view)
-        self.test_paths_q: str = f"#{self.test_paths}"
-
-        # Views or shared across canvases
-        self.pw_mgr_info: str = ids.view_id(view=ViewName.pw_mgr_info_view)
-        self.pw_mgr_info_q: str = f"#{self.pw_mgr_info}"
-        self.template_data: str = ids.view_id(view=ViewName.template_data_view)
-        self.template_data_q: str = f"#{self.template_data}"
-
-
 class CanvasIds:
     def __init__(self) -> None:
         # Screens
@@ -291,6 +273,3 @@ class CanvasIds:
         self.debug = AppIds(TabLabel.debug)
         self.logs = AppIds(TabLabel.logs)
         self.re_add = AppIds(TabLabel.re_add)
-
-
-IDS = CanvasIds()
