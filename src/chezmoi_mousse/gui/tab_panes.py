@@ -509,7 +509,7 @@ class DebugTab(ChezmoiAppType, TabPane):
         elif event.button.label == FlatBtnLabel.dom_nodes:
             self.switcher.current = self.ids.container.dom_nodes
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == OpBtnLabel.log_memory:
