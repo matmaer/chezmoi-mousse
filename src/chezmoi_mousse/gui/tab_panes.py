@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+import psutil
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
@@ -319,33 +320,6 @@ class TestPathColors(StrEnum):
     unhandled = "[$text-error bold]"
 
 
-class TestPathsView(ChezmoiAppType, Vertical):
-
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.test_paths, classes=Tcss.main_section_label)
-        yield Static(id=self.app.ids.debug.static.debug_test_paths)
-
-
-class DebugLogView(ChezmoiAppType, Vertical):
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.debug_log, classes=Tcss.main_section_label)
-        yield DebugLog(ids=self.app.ids.debug)
-
-
-class DomNodesView(ChezmoiAppType, Vertical):
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label)
-        yield RichLog(
-            id=self.app.ids.debug.richlog.dom_nodes, highlight=True, auto_scroll=False
-        )
-
-
-class MemoryUsageView(ChezmoiAppType, Vertical):
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.memory_usage, classes=Tcss.main_section_label)
-        yield RichLog(id=self.app.ids.debug.richlog.memory, markup=True)
-
-
 class DebugTab(ChezmoiAppType, TabPane):
 
     MiB = 1024 * 1024
@@ -368,40 +342,52 @@ class DebugTab(ChezmoiAppType, TabPane):
                     FlatBtnLabel.memory_usage,
                 ),
             )
-            with Vertical(), ContentSwitcher(initial=self.ids.container.test_paths):
-                yield TestPathsView(id=self.ids.container.test_paths)
-                yield DebugLogView(id=self.ids.container.debug_log)
-                yield DomNodesView(id=self.ids.container.dom_nodes)
-                yield MemoryUsageView(id=self.ids.container.memory_usage)
+            with ContentSwitcher(initial=self.ids.container.test_paths):
+                yield Vertical(
+                    Label(SectionLabel.test_paths, classes=Tcss.main_section_label),
+                    Static(id=self.ids.static.debug_test_paths),
+                    id=self.ids.container.test_paths,
+                )
+                yield Vertical(
+                    Label(SectionLabel.debug_log, classes=Tcss.main_section_label),
+                    DebugLog(ids=self.ids),
+                    id=self.ids.container.debug_log,
+                )
+                yield Vertical(
+                    Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label),
+                    RichLog(
+                        id=self.ids.richlog.dom_nodes, highlight=True, auto_scroll=False
+                    ),
+                    id=self.ids.container.dom_nodes,
+                )
+                yield Vertical(
+                    Label(SectionLabel.memory_usage, classes=Tcss.main_section_label),
+                    RichLog(id=self.ids.richlog.memory, markup=True),
+                    id=self.ids.container.memory_usage,
+                )
         yield OperateButtons(self.ids)
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.test_paths_static = self.query_one(
-            self.app.ids.debug.static.debug_test_paths_q, Static
+            self.ids.static.debug_test_paths_q, Static
         )
         self.test_paths_static.update(self._list_existing_test_paths())
-        self.dom_node_logger = self.query_one(
-            self.app.ids.debug.richlog.dom_nodes_q, RichLog
-        )
-        self.memory_logger = self.query_one(
-            self.app.ids.debug.richlog.memory_q, RichLog
-        )
-        self.mem_log_op_btn = self.query_one(
-            self.app.ids.debug.op_btn.log_memory_q, Button
-        )
+        self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
+        self.memory_logger = self.query_one(self.ids.richlog.memory_q, RichLog)
+        self.mem_log_op_btn = self.query_one(self.ids.op_btn.log_memory_q, Button)
         self.list_test_paths_op_btn = self.query_one(
-            self.app.ids.debug.op_btn.list_test_paths_q, Button
+            self.ids.op_btn.list_test_paths_q, Button
         )
         self.create_diffs_op_btn = self.query_one(
-            self.app.ids.debug.op_btn.create_diffs_q, Button
+            self.ids.op_btn.create_diffs_q, Button
         )
         self.create_paths_op_btn = self.query_one(
-            self.app.ids.debug.op_btn.create_paths_q, Button
+            self.ids.op_btn.create_paths_q, Button
         )
         self.remove_paths_op_btn = self.query_one(
-            self.app.ids.debug.op_btn.remove_paths_q, Button
+            self.ids.op_btn.remove_paths_q, Button
         )
         self.test_paths_op_btns = [
             self.list_test_paths_op_btn,
@@ -410,8 +396,6 @@ class DebugTab(ChezmoiAppType, TabPane):
             self.remove_paths_op_btn,
         ]
         self.app.call_later(self._log_dom_nodes)
-
-        import psutil
 
         self._process = psutil.Process()
         self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
@@ -513,17 +497,17 @@ class DebugTab(ChezmoiAppType, TabPane):
             self.mem_log_op_btn.display = True
             for btn in self.test_paths_op_btns:
                 btn.display = False
-            self.switcher.current = self.app.ids.debug.container.memory_usage
+            self.switcher.current = self.ids.container.memory_usage
         else:
             self.mem_log_op_btn.display = False
             for btn in self.test_paths_op_btns:
                 btn.display = True
         if event.button.label == FlatBtnLabel.test_paths:
-            self.switcher.current = self.app.ids.debug.container.test_paths
+            self.switcher.current = self.ids.container.test_paths
         elif event.button.label == FlatBtnLabel.debug_log:
-            self.switcher.current = self.app.ids.debug.container.debug_log
+            self.switcher.current = self.ids.container.debug_log
         elif event.button.label == FlatBtnLabel.dom_nodes:
-            self.switcher.current = self.app.ids.debug.container.dom_nodes
+            self.switcher.current = self.ids.container.dom_nodes
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
