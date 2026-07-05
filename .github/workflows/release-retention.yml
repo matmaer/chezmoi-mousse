@@ -1,0 +1,45 @@
+name: Release Retention Cleanup
+
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Keep Latest Three Releases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Delete older releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releases = await github.paginate(
+              github.rest.repos.listReleases,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100,
+              },
+            );
+
+            if (releases.length <= 3) {
+              core.info(`Found ${releases.length} release(s); nothing to delete.`);
+              return;
+            }
+
+            const releasesToDelete = releases.slice(3);
+
+            for (const release of releasesToDelete) {
+              core.info(`Deleting release ${release.name ?? release.tag_name} (${release.id})`);
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.id,
+              });
+            }
+
+            core.info(`Deleted ${releasesToDelete.length} older release(s).`);
