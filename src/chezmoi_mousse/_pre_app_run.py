@@ -17,7 +17,7 @@ class VarTruth:
     pretend_fail: bool = os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
 
 
-class InfoStr(StrEnum):
+class NoRunInfo(StrEnum):
     _CHEZMOI_FOUND = "'chezmoi' command found: "
     _GIT_FOUND = "'git' command found: "
     CHEZMOI_NOT_FOUND = "'chezmoi' command not found, see https://chezmoi.io/install/"
@@ -63,30 +63,30 @@ class PreAppRun:
         error_info: list[str] = []
         start_info: list[str] = []
         if self.git_bin is None:
-            error_info.append(InfoStr.GIT_NOT_FOUND)
+            error_info.append(NoRunInfo.GIT_NOT_FOUND)
         else:
-            start_info.append(InfoStr.git_found(self.git_bin))
+            start_info.append(NoRunInfo.git_found(self.git_bin))
 
         if self.chezmoi_bin is None:
-            error_info.append(InfoStr.CHEZMOI_NOT_FOUND)
+            error_info.append(NoRunInfo.CHEZMOI_NOT_FOUND)
         else:
-            start_info.append(InfoStr.chezmoi_found(self.chezmoi_bin))
+            start_info.append(NoRunInfo.chezmoi_found(self.chezmoi_bin))
 
         if VarTruth.chezmoi_subshell:
-            error_info.append(InfoStr.IN_SUBSHELL)
+            error_info.append(NoRunInfo.IN_SUBSHELL)
         else:
-            start_info.append(InfoStr.NOT_IN_SUBSHELL)
+            start_info.append(NoRunInfo.NOT_IN_SUBSHELL)
 
         if VarTruth.pretend_fail:
-            error_info.append(InfoStr.PRETEND_FAIL)
+            error_info.append(NoRunInfo.PRETEND_FAIL)
         else:
-            start_info.append(InfoStr.NO_PRETEND_FAIL)
+            start_info.append(NoRunInfo.NO_PRETEND_FAIL)
         lines: list[str] = []
         if error_info or VarTruth.pretend_fail:
-            lines.append(InfoStr.NO_APP_RUN)
+            lines.append(NoRunInfo.NO_APP_RUN)
             lines.extend(error_info)
         if VarTruth.pretend_fail:
             lines.extend(start_info)
         if len(lines) > 0:
-            return "\n".join(lines) + "\n" + InfoStr.FEEDBACK
+            return "\n".join(lines) + "\n" + NoRunInfo.FEEDBACK
         return None
