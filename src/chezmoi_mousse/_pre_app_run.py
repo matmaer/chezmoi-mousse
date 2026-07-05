@@ -10,12 +10,10 @@ from ._str_enums import NoRunInfo
 __all__ = ["PreAppRun"]
 
 
-@dataclass(frozen=True)
-class VarTruth:
-    chezmoi_subshell: bool = os.environ.get("CHEZMOI_SUBSHELL") == "1"
-    debug_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEBUG_MODE") == "1"
-    pilot_mode: bool = os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
-    pretend_fail: bool = os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
+chezmoi_subshell: bool = os.environ.get("CHEZMOI_SUBSHELL") == "1"
+debug_mode: bool = os.environ.get("CHEZMOI_MOUSSE_DEBUG_MODE") == "1"
+pilot_mode: bool = os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
+pretend_fail: bool = os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
 
 
 @dataclass(frozen=True)
@@ -24,8 +22,8 @@ class PreAppRun:
     chezmoi_bin: str | None = shutil.which("chezmoi")
     git_bin: str | None = shutil.which("git")
     stacktrace_path: Path = Path(__file__).parent / "stacktrace.log"
-    debug_mode = VarTruth.debug_mode
-    pilot_mode = VarTruth.pilot_mode
+    debug_mode = debug_mode
+    pilot_mode = pilot_mode
 
     def __post_init__(self) -> None:
         if self.stacktrace_path.exists():
@@ -52,20 +50,20 @@ class PreAppRun:
         else:
             start_info.append(NoRunInfo.chezmoi_found(self.chezmoi_bin))
 
-        if VarTruth.chezmoi_subshell:
+        if chezmoi_subshell:
             error_info.append(NoRunInfo.IN_SUBSHELL)
         else:
             start_info.append(NoRunInfo.NOT_IN_SUBSHELL)
 
-        if VarTruth.pretend_fail:
+        if pretend_fail:
             error_info.append(NoRunInfo.PRETEND_FAIL)
         else:
             start_info.append(NoRunInfo.NO_PRETEND_FAIL)
         lines: list[str] = []
-        if error_info or VarTruth.pretend_fail:
+        if error_info or pretend_fail:
             lines.append(NoRunInfo.NO_APP_RUN)
             lines.extend(error_info)
-        if VarTruth.pretend_fail:
+        if pretend_fail:
             lines.extend(start_info)
         if len(lines) > 0:
             return "\n".join(lines) + "\n" + NoRunInfo.FEEDBACK
