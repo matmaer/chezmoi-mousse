@@ -1,13 +1,16 @@
 name: Build and Release
 
 on:
-  push:
-    tags:
-      - 'v*' # Triggers when you tag a release like v1.0.0
+  workflow_run:
+    workflows:
+      - Lint (ruff + pylint + black)
+    types:
+      - completed
 
 jobs:
   release:
     name: Build and Publish Nuitka Release
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -33,15 +38,65 @@ jobs:
           sudo apt-get install -y ccache patchelf gcc
 
       - name: Install Python dependencies
-        run: uv sync --no-dev
+        run: uv sync --no-dev --locked
+
+      - name: Restore build caches (ccache + Nuitka)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ccache
+            ~/.cache/Nuitka
+            ~/.cache/nuitka
+          key: ${{ runner.os }}-nuitka-build-cache-${{ hashFiles('pyproject.toml', 'uv.lock', '.github/workflows/release.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-nuitka-build-cache-
 
       - name: Compile Executable with Nuitka
-        run: uv run --with nuitka nuitka --remove-output src/chezmoi_mousse
+        env:
+          CC: ccache gcc
+          CXX: ccache g++
+          CCACHE_DIR: ~/.ccache
+          CCACHE_MAXSIZE: 200M
+          CCACHE_COMPRESS: "true"
+        run: uv run --no-dev --locked --with nuitka nuitka --remove-output --output-filename=chezmoi-mousse-${{ github.event.workflow_run.head_branch }} src/chezmoi_mousse
+
+      - name: Show ccache stats
+        run: ccache --show-stats || ccache -s || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
-          files: chezmoi-mousse
+          tag_name: ${{ github.event.workflow_run.head_branch }}
+          files: chezmoi-mousse-${{ github.event.workflow_run.head_branch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete older releases(keep latest 3)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releases = await github.paginate(
+              github.rest.repos.listReleases,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              },
+            );
+
+            if (releases.length <= 3) {
+              core.info(`Found ${releases.length} release(s); nothing to delete.`);
+              return;
+            }
+
+            const releasesToDelete = releases.slice(3);
+
+            for (const release of releasesToDelete) {
+              core.info(`Deleting release ${release.name ?? release.tag_name} (${release.id})`);
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.id,
+              });
+            }
+
+            core.info(`Deleted ${releasesToDelete.length} older release(s).`);
