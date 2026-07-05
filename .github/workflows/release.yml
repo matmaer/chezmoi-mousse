@@ -33,10 +33,10 @@ jobs:
           sudo apt-get install -y ccache patchelf gcc
 
       - name: Install Python dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --no-dev
 
       - name: Compile Executable with Nuitka
-        run: uv run nuitka src/chezmoi_mousse
+        run: uv run --with nuitka nuitka --remove-output src/chezmoi_mousse
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
