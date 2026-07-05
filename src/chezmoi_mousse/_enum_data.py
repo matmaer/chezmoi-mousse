@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from ._run_cmd import Chars, WriteCmd
 from ._str_enums import SwitchLabel
@@ -230,8 +230,7 @@ class OpBtnEnum(Enum):
         }
 
 
-@dataclass(frozen=True, slots=True)
-class SwitchData:
+class SwitchData(NamedTuple):
     label: str
     enabled_tooltip: str
 
@@ -242,7 +241,7 @@ class SwitchEnum(Enum):
         label=SwitchLabel.expand_all,
         enabled_tooltip=(
             "Expand all managed directories. Showing unchanged depending on the "
-            '"show unchanged files" switch.'
+            f'"{SwitchLabel.unchanged}" switch.'
         ),
     )
     unchanged = SwitchData(
