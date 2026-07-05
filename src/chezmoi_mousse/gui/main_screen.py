@@ -154,8 +154,8 @@ class MainScreen(ChezmoiAppType, Screen[None]):
         self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
         for cmd_result in to_log:
             if cmd_result is not None:
-                self.app_log.log_cmd_result(cmd_result)
-                self.cmd_log.log_cmd_result(cmd_result)
+                self.app_log.cmd_result = cmd_result
+                self.cmd_log.cmd_result = cmd_result
 
     @work
     @min_wait
@@ -196,8 +196,8 @@ class MainScreen(ChezmoiAppType, Screen[None]):
     @on(LogCmdResultMsg)
     def _log_cmd_results(self, msg: LogCmdResultMsg) -> None:
         msg.stop()
-        self.app_log.log_cmd_result(msg.cmd_result)
-        self.cmd_log.log_cmd_result(msg.cmd_result)
+        self.app_log.cmd_result = msg.cmd_result
+        self.cmd_log.cmd_result = msg.cmd_result
 
     @on(OpButton.Pressed)
     async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:

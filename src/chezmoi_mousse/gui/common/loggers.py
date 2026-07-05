@@ -75,6 +75,19 @@ class CmdResultCollapsible(Collapsible):
         return contents
 
 
+class CmdLog(ChezmoiAppType, ScrollableContainer):
+
+    def __init__(self) -> None:
+        super().__init__(id=self.app.ids.logs.richlog.cmd)
+
+    cmd_result: reactive["CommandResult | None"] = reactive(None)
+
+    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
+        if cmd_result is None:
+            return
+        self.mount(CmdResultCollapsible(cmd_result=cmd_result))
+
+
 class RichLoggers(ChezmoiAppType, RichLog):
 
     def _get_log_line(self, msg: str, color: LogColor) -> str:
@@ -115,7 +128,9 @@ class AppLog(RichLoggers):
                 f"{Chars.warning_sign} "
             )
 
-    def log_cmd_result(self, cmd_result: "CommandResult") -> None:
+    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
+        if cmd_result is None:
+            return
         cmd_color = LogColor.success if cmd_result.exit_code == 0 else LogColor.warning
         log_text: list[str] = [f"{cmd_result.short_cmd_no_path}"]
         if ReadVerb.doctor.value in cmd_result.completed_process.args:
@@ -134,27 +149,6 @@ class AppLog(RichLoggers):
         else:
             return
         self.write_cmd(" ".join(log_text), cmd_color)
-
-    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
-        if cmd_result is None:
-            return
-        self.log_cmd_result(cmd_result)
-
-
-class CmdLog(ChezmoiAppType, ScrollableContainer):
-
-    def __init__(self) -> None:
-        super().__init__(id=self.app.ids.logs.richlog.cmd)
-
-    cmd_result: reactive["CommandResult | None"] = reactive(None)
-
-    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
-        if cmd_result is None:
-            return
-        self.log_cmd_result(cmd_result)
-
-    def log_cmd_result(self, cmd_result: "CommandResult") -> None:
-        self.mount(CmdResultCollapsible(cmd_result=cmd_result))
 
 
 class DebugLog(RichLoggers):
