@@ -9,6 +9,7 @@ from textual.widgets import Collapsible, Label, Static
 from chezmoi_mousse import CMD, OpBtnEnum, OperateString, Tcss
 
 from .actionables import OpButton
+from .loggers import CmdResultCollapsible
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds
@@ -100,8 +101,8 @@ class CommandOutput(ScrollableContainer):
         else:
             self.changed_status.update("No changed status paths")
         # mount a collapsible for each command
-        for cmd_result in CMD.loading_modal_results:
-            self.mount(cmd_result.pretty_collapsible)
+        for result in CMD.loading_modal_results:
+            self.mount(CmdResultCollapsible(cmd_result=result))
 
 
 class OpFeedBack(Vertical):

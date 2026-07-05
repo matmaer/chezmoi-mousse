@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, NamedTuple
 
-from ._run_cmd import Chars, WriteCmd
-from ._str_enums import SwitchLabel
+from ._run_cmd import WriteCmd
+from ._str_enums import Chars, SwitchLabel
 
 if TYPE_CHECKING:
     from pathlib import Path

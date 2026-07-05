@@ -12,7 +12,7 @@ from __future__ import annotations
 from ._app_ids import AppIds, CanvasIds
 from ._cmd_results import CMD, CachedData
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from ._run_cmd import CommandResult, ReadCmd, ReadVerb, Tcss
+from ._run_cmd import CommandResult, ReadCmd, ReadVerb
 from ._str_enums import (
     Chars,
     FlatBtnLabel,
@@ -21,6 +21,7 @@ from ._str_enums import (
     SectionLabel,
     StatusCode,
     TabLabel,
+    Tcss,
 )
 from .debug._test_paths import TestPaths
 

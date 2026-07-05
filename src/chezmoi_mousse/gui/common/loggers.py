@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import RichLog
+from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse import CMD, Chars, LogString, ReadVerb
+from chezmoi_mousse import CMD, Chars, LogString, ReadVerb, SectionLabel, Tcss
 
 from .app_type_mixin import ChezmoiAppType
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse import AppIds, CommandResult
 
-__all__ = ["AppLog", "CmdLog", "DebugLog"]
+__all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
 
 
 class LogColor(StrEnum):
@@ -28,6 +28,51 @@ class LogColor(StrEnum):
     ready = "accent-darken-2"
     success = "text-success"
     warning = "text-warning"
+
+
+class CmdResultCollapsible(Collapsible):
+
+    def __init__(self, *, cmd_result: "CommandResult"):
+        collapsible_contents = self._collapsible_contents(cmd_result)
+        colored_title = self._exit_code_colored_cmd(cmd_result)
+        super().__init__(
+            *collapsible_contents,
+            title=colored_title,
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+        )
+
+    def _exit_code_colored_cmd(self, result: "CommandResult") -> str:
+        pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
+        cmd_color = LogColor.success if result.exit_code == 0 else LogColor.warning
+        cmd_text = f"{result.short_global_cmd} {result.short_verb_cmd}"
+        cmd_return = f"[dim]returncode {result.exit_code}[/]"
+        if result.path_arg is not None:
+            cmd_text += f" {result.path_arg}"
+        return f"{pretty_time} [${cmd_color}]{cmd_text}[/] {cmd_return}"
+
+    def _collapsible_contents(self, result: "CommandResult") -> list[Label | Static]:
+        dry_run_str = "(dry run)" if result.is_dry_run else ""
+        curated_std_out = result.std_out or f"{LogString.no_stdout} {dry_run_str}"
+        curated_std_err = result.std_err or f"{LogString.no_stderr} {dry_run_str}"
+        contents: list[Label | Static] = [
+            Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
+        ]
+        full_cmd = f"{' '.join(item for item in result.completed_process.args)}"
+        contents.extend([Label(full_cmd, classes=Tcss.full_cmd)])
+        contents.extend(
+            [
+                Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
+                Static(f"{curated_std_out}", markup=False),
+            ]
+        )
+        contents.extend(
+            [
+                Label(SectionLabel.stderr_output, classes=Tcss.sub_section_label),
+                Static(f"{curated_std_err}", markup=False),
+            ]
+        )
+        return contents
 
 
 class RichLoggers(ChezmoiAppType, RichLog):
@@ -109,7 +154,7 @@ class CmdLog(ChezmoiAppType, ScrollableContainer):
         self.log_cmd_result(cmd_result)
 
     def log_cmd_result(self, cmd_result: "CommandResult") -> None:
-        self.mount(cmd_result.pretty_collapsible)
+        self.mount(CmdResultCollapsible(cmd_result=cmd_result))
 
 
 class DebugLog(RichLoggers):

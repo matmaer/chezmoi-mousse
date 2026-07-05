@@ -1,12 +1,7 @@
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
-
-from textual.widgets import Collapsible, Label, Static
-
-from ._str_enums import Chars, LogString, SectionLabel, Tcss
 
 __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
@@ -171,7 +166,7 @@ class CommandResult:
         return self._get_text(self.completed_process.stdout)
 
     @property
-    def _std_err(self) -> str:
+    def std_err(self) -> str:
         return self._get_text(self.completed_process.stderr)
 
     @property
@@ -179,49 +174,8 @@ class CommandResult:
         return f"{self.short_global_cmd} {self.short_verb_cmd}"
 
     @property
-    def _exit_code_colored_cmd(self) -> str:
-        cmd_color = "[$text-success]" if self.exit_code == 0 else "[$text-warning]"
-        cmd_text = f"{self.short_global_cmd} {self.short_verb_cmd}"
-        cmd_return = f"[dim]returncode {self.exit_code}[/]"
-        if self.path_arg is not None:
-            cmd_text += f" {self.path_arg}"
-        return f"{cmd_color} {cmd_text}[/] {cmd_return}"
-
-    @property
-    def _is_dry_run(self) -> bool:
+    def is_dry_run(self) -> bool:
         return GlobalArgs.dry_run_arg.value in self.completed_process.args
-
-    @property
-    def pretty_collapsible(self, collapsed: bool = True) -> Collapsible:
-        pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
-        title = f"{pretty_time} {self._exit_code_colored_cmd}"
-        dry_run_str = "(dry run)" if self._is_dry_run else ""
-        curated_std_out = self.std_out or f"{LogString.no_stdout} {dry_run_str}"
-        curated_std_err = self._std_err or f"{LogString.no_stderr} {dry_run_str}"
-        contents: list[Label | Static] = [
-            Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
-        ]
-        full_cmd = f"{' '.join(item for item in self.completed_process.args)}"
-        contents.extend([Label(full_cmd, classes=Tcss.full_cmd)])
-        contents.extend(
-            [
-                Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
-                Static(f"{curated_std_out}", markup=False),
-            ]
-        )
-        contents.extend(
-            [
-                Label(SectionLabel.stderr_output, classes=Tcss.sub_section_label),
-                Static(f"{curated_std_err}", markup=False),
-            ]
-        )
-        return Collapsible(
-            *contents,
-            title=title,
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
-            collapsed=collapsed,
-        )
 
 
 class ChezmoiCommand:
