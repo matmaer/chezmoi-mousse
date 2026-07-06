@@ -3,7 +3,7 @@ name: Build and Release
 on:
   workflow_run:
     workflows:
-      - Lint (ruff + pylint + black)
+      - Lint (ruff + black)
     types:
       - completed
 
