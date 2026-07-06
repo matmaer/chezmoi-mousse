@@ -1,28 +1,23 @@
 name: Build and Release
 
 on:
-  workflow_run:
-    workflows:
-      - Lint (ruff + black)
-    types:
-      - completed
+  push:
+    tags:
+      - 'v*' # Triggers when you tag a release like v1.0.0
 
 jobs:
   release:
     name: Build and Publish Nuitka Release
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+        uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
           enable-cache: true
@@ -38,36 +33,15 @@ jobs:
           sudo apt-get install -y ccache patchelf gcc
 
       - name: Install Python dependencies
-        run: uv sync --no-dev --locked
-
-      - name: Restore build caches (ccache + Nuitka)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.ccache
-            ~/.cache/Nuitka
-            ~/.cache/nuitka
-          key: ${{ runner.os }}-nuitka-build-cache-${{ hashFiles('pyproject.toml', 'uv.lock', '.github/workflows/release.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-nuitka-build-cache-
+        run: uv sync --no-dev
 
       - name: Compile Executable with Nuitka
-        env:
-          CC: ccache gcc
-          CXX: ccache g++
-          CCACHE_DIR: ~/.ccache
-          CCACHE_MAXSIZE: 200M
-          CCACHE_COMPRESS: "true"
-        run: uv run --no-dev --locked --with nuitka nuitka --remove-output --output-filename=chezmoi-mousse-${{ github.event.workflow_run.head_branch }} src/chezmoi_mousse
-
-      - name: Show ccache stats
-        run: ccache --show-stats || ccache -s || true
+        run: uv run --no-dev --with nuitka nuitka --remove-output --output-filename=chezmoi-mousse-${{ github.ref_name }} src/chezmoi_mousse
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.workflow_run.head_branch }}
-          files: chezmoi-mousse-${{ github.event.workflow_run.head_branch }}
+          files: chezmoi-mousse-${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -80,6 +54,7 @@ jobs:
               {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
+                per_page: 100,
               },
             );
 
