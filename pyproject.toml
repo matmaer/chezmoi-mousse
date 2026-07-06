@@ -5,12 +5,8 @@ description = "Visual interface in the terminal for the chezmoi dotfile manager,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual>=8.2.7",
+    "textual>=8.2.8",
 ]
-
-[build-system]
-requires = ["flit_core>=3.8"]
-build-backend = "flit_core.buildapi"
 
 [project.license]
 file = "LICENSE"
@@ -27,7 +23,6 @@ dev = [
     "black",
     "docformatter",
     "faker",
-    "flit-core>=3.12.0",
     "graphviz",
     "ipython",
     "mypy",
@@ -39,7 +34,6 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "pytest-env",
-    "pytest-textual-snapshot",
     "pytest-timeout",
     "ruff",
     "snakeviz",
@@ -63,6 +57,11 @@ truncation_limit_chars = 0
 truncation_limit_lines = 0
 env = ["CI=1"]
 
+[tool.docformatter]
+recursive = true
+wrap-summaries = 88
+wrap-descriptions = 88
+
 [tool.black]
 skip-magic-trailing-comma = true
 target-version = ["py313"]
@@ -70,6 +69,7 @@ target-version = ["py313"]
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+fix = true
 
 [tool.ruff.lint]
 select = [
