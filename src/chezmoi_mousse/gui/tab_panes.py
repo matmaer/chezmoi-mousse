@@ -3,7 +3,6 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-import psutil
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
@@ -396,6 +395,8 @@ class DebugTab(ChezmoiAppType, TabPane):
             self.remove_paths_op_btn,
         ]
         self.app.call_later(self._log_dom_nodes)
+
+        import psutil
 
         self._process = psutil.Process()
         self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
