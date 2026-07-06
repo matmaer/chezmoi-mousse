@@ -29,7 +29,7 @@ from ..gui.tab_panes import AddTab, ApplyTab, ReAddTab
 if TYPE_CHECKING:
     from textual.message import Message
 
-    from .._textual_app import ChezmoiGUI
+    from ..textual_app import ChezmoiGUI
 
 from ..gui.common.messages import ReadyToUseMsg
 

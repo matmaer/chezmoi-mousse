@@ -2,8 +2,8 @@ import asyncio
 
 from ._app_ids import CanvasIds
 from ._pre_app_run import PreAppRun
-from ._textual_app import ChezmoiGUI
 from .debug._pilot_mode import test_app_with_pilot
+from .textual_app import ChezmoiGUI
 
 
 def run_app():
