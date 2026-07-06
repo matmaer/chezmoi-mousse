@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from ._app_ids import AppIds, CanvasIds
 from ._cmd_results import CMD, CachedData
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
@@ -25,12 +27,16 @@ from ._str_enums import (
 )
 from .debug._test_paths import TestPaths
 
+if TYPE_CHECKING:
+    from .textual_app import ChezmoiGUI
+
 __all__ = [
     "CMD",
     "AppIds",
     "CanvasIds",
     "CachedData",
     "Chars",
+    "ChezmoiGUI",
     "CommandResult",
     "FlatBtnLabel",
     "LogString",

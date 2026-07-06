@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
@@ -13,10 +13,9 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse import CMD, Chars, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, ChezmoiGUI
 
 from .actionables import OpBtnEnum, OpButton
-from .app_type_mixin import ChezmoiAppType
 from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
@@ -47,7 +46,10 @@ class DestDirTree(Vertical):
         )
 
 
-class ManagedTree(ChezmoiAppType, Tree[Path]):
+class ManagedTree(Tree[Path]):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded

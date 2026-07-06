@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
@@ -39,7 +39,6 @@ from .common.actionables import (
     SwitchSlider,
     TabButtons,
 )
-from .common.app_type_mixin import ChezmoiAppType
 from .common.contents import ContentsView
 from .common.doctor_data import DoctorTable, PwMgrInfoView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -48,7 +47,7 @@ from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CachedData
+    from chezmoi_mousse import CachedData, ChezmoiGUI
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
@@ -319,12 +318,15 @@ class TestPathColors(StrEnum):
     unhandled = "[$text-error bold]"
 
 
-class DebugTab(ChezmoiAppType, TabPane):
+class DebugTab(TabPane):
 
     MiB = 1024 * 1024
     INTERVAL = 2
 
     _previous_rss: float = 0.0
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def __init__(self, ids: "AppIds"):
         super().__init__(id=TabLabel.debug, title=TabLabel.debug)

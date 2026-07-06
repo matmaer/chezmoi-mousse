@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
+from typing import TYPE_CHECKING
 
 from rich.text import Text
+from textual import getters
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
@@ -9,12 +11,17 @@ from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
 from chezmoi_mousse import Chars, SectionLabel, Tcss
 
-from .app_type_mixin import ChezmoiAppType
+if TYPE_CHECKING:
+    from chezmoi_mousse import ChezmoiGUI
+
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
 
 
-class DoctorTable(ChezmoiAppType, DataTable[Text]):
+class DoctorTable(DataTable[Text]):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def __init__(self) -> None:
         super().__init__(cursor_type="row")

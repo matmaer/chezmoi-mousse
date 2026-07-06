@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from itertools import chain
 from typing import TYPE_CHECKING
 
-from textual import on, work
+from textual import getters, on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
@@ -21,7 +21,6 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import OpButton, OperateButtons, SwitchSlider
-from .common.app_type_mixin import ChezmoiAppType
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -35,7 +34,7 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, CommandResult
+    from chezmoi_mousse import CanvasIds, ChezmoiGUI, CommandResult
 
 __all__ = ["MainScreen", "CustomHeader"]
 
@@ -60,7 +59,10 @@ class CustomHeader(Header):
         header_title.add_class(Tcss.changes_enabled_color)
 
 
-class MainScreen(ChezmoiAppType, Screen[None]):
+class MainScreen(Screen[None]):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def __init__(self, *, ids: "CanvasIds") -> None:
         super().__init__()
@@ -76,13 +78,13 @@ class MainScreen(ChezmoiAppType, Screen[None]):
             yield AddTab(self.ids.add)
             yield LogsTab(self.ids.logs)
             yield ConfigTab(self.ids.config)
-            if self.app.pre_run_logic.debug_mode is True:
+            if self.app.debug_mode is True:
                 yield DebugTab(self.ids.debug)
         yield Footer()
 
     def on_mount(self) -> None:
         self.run_cmd_results: list[CommandResult] = []
-        if self.app.pre_run_logic.debug_mode is True:
+        if self.app.debug_mode is True:
             self.notify(LogString.debug_tab_enabled)
         self.app_log = self.query_one(self.ids.logs.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(self.ids.logs.richlog.cmd_q, CmdLog)

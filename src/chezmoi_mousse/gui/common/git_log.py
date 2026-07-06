@@ -1,22 +1,25 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from textual import getters
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse import CMD, ReadCmd
 
-from .app_type_mixin import ChezmoiAppType
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, ChezmoiGUI
 
 __all__ = ["GitLogView"]
 
 
-class GitLogView(ChezmoiAppType, Container):
+class GitLogView(Container):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 

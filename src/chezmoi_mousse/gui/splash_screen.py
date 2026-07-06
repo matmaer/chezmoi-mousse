@@ -1,10 +1,11 @@
 import json
 from collections import deque
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import events, work
+from textual import events, getters, work
 from textual.app import ComposeResult
 from textual.color import Gradient
 from textual.containers import Center, Middle
@@ -16,7 +17,8 @@ from textual.worker import WorkerState
 
 from chezmoi_mousse import CMD, ReadCmd
 
-from .common.app_type_mixin import ChezmoiAppType
+if TYPE_CHECKING:
+    from chezmoi_mousse import ChezmoiGUI
 
 __all__ = ["SplashScreen"]
 
@@ -77,7 +79,10 @@ class SplashLog(RichLog):
         self.markup = True
 
 
-class SplashScreen(ChezmoiAppType, Screen[None]):
+class SplashScreen(Screen[None]):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method

@@ -5,19 +5,18 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
+from textual import getters
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
 from chezmoi_mousse import CMD, Chars, LogString, ReadVerb, SectionLabel, Tcss
 
-from .app_type_mixin import ChezmoiAppType
-
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse import AppIds, ChezmoiGUI, CommandResult
 
 __all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
 
@@ -75,7 +74,10 @@ class CmdResultCollapsible(Collapsible):
         return contents
 
 
-class CmdLog(ChezmoiAppType, ScrollableContainer):
+class CmdLog(ScrollableContainer):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def __init__(self) -> None:
         super().__init__(id=self.app.ids.logs.richlog.cmd)
@@ -88,7 +90,10 @@ class CmdLog(ChezmoiAppType, ScrollableContainer):
         self.mount(CmdResultCollapsible(cmd_result=cmd_result))
 
 
-class RichLoggers(ChezmoiAppType, RichLog):
+class RichLoggers(RichLog):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def _get_log_line(self, msg: str, color: LogColor) -> str:
         log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -122,7 +127,7 @@ class AppLog(RichLoggers):
         self.write_ready(LogString.app_log_initialized)
         if CMD.run_cmd.chezmoi_bin is not None:
             self.write_info(LogString.using_chezmoi_bin + f" {CMD.run_cmd.chezmoi_bin}")
-        if self.app.pre_run_logic.debug_mode is True:
+        if self.app.debug_mode is True:
             self.write_warning(
                 f"{Chars.warning_sign} {LogString.debug_tab_enabled} "
                 f"{Chars.warning_sign} "

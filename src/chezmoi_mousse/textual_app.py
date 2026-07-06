@@ -103,6 +103,10 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
+    @property
+    def debug_mode(self) -> bool:
+        return self.pre_run_logic.debug_mode
+
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
