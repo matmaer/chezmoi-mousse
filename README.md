@@ -1,4 +1,4 @@
-[![Python 3.13+](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=Python%203.13%2B&logo=python)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
+![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fmatmaer%2Fchezmoi-mousse%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)
 [![Framework: Textual](https://img.shields.io/badge/framework-Textual-5967FF?logo=textual)](https://www.textualize.io/)
 [![Black](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=black&logo=black)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
