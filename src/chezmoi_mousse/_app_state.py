@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ._str_enums import NoRunInfo
 
-__all__ = ["PreAppRun"]
+__all__ = ["AppState"]
 
 
 chezmoi_subshell: bool = os.environ.get("CHEZMOI_SUBSHELL") == "1"
@@ -17,7 +17,7 @@ pretend_fail: bool = os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
 
 
 @dataclass(frozen=True)
-class PreAppRun:
+class AppState:
 
     chezmoi_bin: str | None = shutil.which("chezmoi")
     git_bin: str | None = shutil.which("git")

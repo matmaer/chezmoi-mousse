@@ -13,8 +13,8 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
+from ._app_state import AppState
 from ._cmd_results import CMD
-from ._pre_app_run import PreAppRun
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .gui.common.managed_tree import DestDirTree
@@ -25,7 +25,7 @@ from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
     from ._app_ids import CanvasIds
-    from ._pre_app_run import PreAppRun
+    from ._app_state import AppState
 
 
 __all__ = ["ChezmoiGUI"]
@@ -85,7 +85,7 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    def __init__(self, *, pre_run_logic: "PreAppRun", ids: "CanvasIds") -> None:
+    def __init__(self, *, pre_run_logic: "AppState", ids: "CanvasIds") -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.pre_run_logic = pre_run_logic
         self.ids = ids

@@ -1,14 +1,14 @@
 import asyncio
 
 from ._app_ids import CanvasIds
-from ._pre_app_run import PreAppRun
+from ._app_state import AppState
 from .debug._pilot_mode import test_app_with_pilot
 from .textual_app import ChezmoiGUI
 
 
 def run_app():
 
-    pre_run_logic = PreAppRun()
+    pre_run_logic = AppState()
     ids = CanvasIds()
 
     try:
