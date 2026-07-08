@@ -1,7 +1,8 @@
 import ast
 
 import pytest
-from _test_utils import MODULE_DIR, ast_parse, get_file_paths
+
+from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 # For DebugLog it's normal not all methods are in use.
 # CustomScrollBarRender is a monkey patch for the textual ScrollBarRender

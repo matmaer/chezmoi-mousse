@@ -3,9 +3,9 @@ import re
 from pathlib import Path
 
 import pytest
-from _test_utils import MODULE_DIR, ast_parse, get_file_paths
 
 from chezmoi_mousse import Tcss
+from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 with Path.open(Path("src", "chezmoi_mousse", "gui.tcss")) as f:
     tcss_lines = [
