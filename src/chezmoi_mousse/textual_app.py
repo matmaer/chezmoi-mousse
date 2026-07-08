@@ -23,6 +23,7 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
+    from ._app_ids import StaticIds
     from ._custom_app_attr import CustomAppAttribute
 
 
@@ -101,14 +102,22 @@ class ChezmoiGUI(App[None]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
-    @property
-    def debug_mode(self) -> bool:
-        return self.custom_app_attr.custom_env_vars.debug_mode
-
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen(ids=self.ids))
+
+    #################################################################
+    # Convenience shortcuts for the self.custom_app_attr attributes #
+    #################################################################
+
+    @property
+    def debug_mode(self) -> bool:
+        return self.custom_app_attr.custom_env_vars.debug_mode
+
+    @property
+    def main_static_id(self) -> "StaticIds":
+        return self.ids.main.static
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #

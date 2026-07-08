@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from textual import work
+from textual import getters, work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
@@ -12,7 +12,7 @@ from .actionables import OpButton
 from .loggers import CmdResultCollapsible
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import ChezmoiGUI
 
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 
@@ -55,23 +55,26 @@ class OperateInfo(Static):
 
 class CommandOutput(ScrollableContainer):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
-        self.ids = ids
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGUI)
 
     def compose(self) -> ComposeResult:
         yield Label("Added paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.ids.static.added_paths, classes=Tcss.info)
+        yield Static(id=self.app.main_static_id.added_paths, classes=Tcss.info)
         yield Label("Removed paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.ids.static.removed_paths, classes=Tcss.info)
+        yield Static(id=self.app.main_static_id.removed_paths, classes=Tcss.info)
         yield Label("Changed status paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.ids.static.changed_status, classes=Tcss.info)
+        yield Static(id=self.app.main_static_id.changed_status, classes=Tcss.info)
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self.added_paths = self.query_one(self.ids.static.added_paths_q, Static)
-        self.removed_paths = self.query_one(self.ids.static.removed_paths_q, Static)
-        self.changed_status = self.query_one(self.ids.static.changed_status_q, Static)
+        self.added_paths = self.query_one(self.app.main_static_id.added_paths_q, Static)
+        self.removed_paths = self.query_one(
+            self.app.main_static_id.removed_paths_q, Static
+        )
+        self.changed_status = self.query_one(
+            self.app.main_static_id.changed_status_q, Static
+        )
         self.reset_widgets()
 
     @work
@@ -104,13 +107,9 @@ class CommandOutput(ScrollableContainer):
 
 class OpFeedBack(Vertical):
 
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__()
-        self.ids = ids
-
     def compose(self) -> ComposeResult:
         yield OperateInfo(classes=Tcss.operate_info)
-        yield CommandOutput(self.ids)
+        yield CommandOutput()
 
     def on_mount(self) -> None:
         self.display = False

@@ -70,7 +70,7 @@ class MainScreen(Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
-        yield OpFeedBack(ids=self.ids.main)
+        yield OpFeedBack()
 
         with Vertical(), TabbedContent():
             yield ApplyTab(self.ids.apply)
