@@ -135,8 +135,6 @@ class ContainerIds:
         self.cat_config_q: str = f"#{self.cat_config}"
         self.contents: str = ids.container_id(name=ContainerName.contents)
         self.contents_q: str = f"#{self.contents}"
-        self.command_output: str = ids.container_id(name=ContainerName.command_output)
-        self.command_output_q: str = f"#{self.command_output}"
         self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
         self.debug_log_q: str = f"#{self.debug_log}"
         self.diagram: str = ids.container_id(name=ContainerName.diagram)
@@ -157,8 +155,6 @@ class ContainerIds:
         self.memory_usage_q: str = f"#{self.memory_usage}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
-        self.op_feed_back: str = ids.container_id(name=ContainerName.op_feed_back)
-        self.op_feed_back_q: str = f"#{self.op_feed_back}"
         self.pw_mgr_info: str = ids.container_id(name=ContainerName.pw_mgr_info)
         self.pw_mgr_info_q: str = f"#{self.pw_mgr_info}"
         self.right_side: str = ids.container_id(name=ContainerName.right_side)
@@ -243,8 +239,6 @@ class StaticIds:
         self.debug_test_paths_q: str = f"#{self.debug_test_paths}"
         self.init_info: str = ids.static_id(static=StaticName.init_info)
         self.init_info_q: str = f"#{self.init_info}"
-        self.operate_info: str = ids.static_id(static=StaticName.operate_info)
-        self.operate_info_q: str = f"#{self.operate_info}"
 
 
 class SwitchIds:

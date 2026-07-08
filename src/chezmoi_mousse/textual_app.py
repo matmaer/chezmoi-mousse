@@ -17,7 +17,7 @@ from ._cmd_results import CMD
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .gui.common.managed_tree import DestDirTree
-from .gui.common.op_feedback import OperateInfo
+from .gui.common.op_feedback import OperateInfo, OpFeedBack
 from .gui.main_screen import CustomHeader, MainScreen
 from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
@@ -190,9 +190,9 @@ class ChezmoiGUI(App[None]):
         self.screen.query_exactly_one(CustomHeader).changes_enabled = (
             CMD.run_cmd.changes_enabled
         )
-        self.screen.query_one(
-            self.ids.main.static.operate_info_q, OperateInfo
-        ).changes_enabled = CMD.run_cmd.changes_enabled
+        self.screen.query_exactly_one(OperateInfo).changes_enabled = (
+            CMD.run_cmd.changes_enabled
+        )
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -302,10 +302,7 @@ class ChezmoiGUI(App[None]):
         if action == BindingAction.toggle_maximized:
             return not (
                 isinstance(self.screen, MainScreen)
-                and self.screen.query_one(
-                    self.ids.main.container.op_feed_back_q, Vertical
-                ).display
-                is True
+                and self.screen.query_exactly_one(OpFeedBack).display is True
             )
 
         return True

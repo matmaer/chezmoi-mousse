@@ -20,10 +20,7 @@ __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 class OperateInfo(Static):
 
     changes_enabled: reactive[bool] = reactive(False, init=False)
-
-    def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.static.operate_info, classes=Tcss.operate_info)
-        self.current_button: OpButton | None = None
+    current_button: OpButton | None = None
 
     def on_mount(self) -> None:
         self.display = False
@@ -59,7 +56,7 @@ class OperateInfo(Static):
 class CommandOutput(ScrollableContainer):
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.command_output)
+        super().__init__()
         self.ids = ids
 
     def compose(self) -> ComposeResult:
@@ -108,11 +105,11 @@ class CommandOutput(ScrollableContainer):
 class OpFeedBack(Vertical):
 
     def __init__(self, ids: "AppIds") -> None:
-        super().__init__(id=ids.container.op_feed_back)
+        super().__init__()
         self.ids = ids
 
     def compose(self) -> ComposeResult:
-        yield OperateInfo(self.ids)
+        yield OperateInfo(classes=Tcss.operate_info)
         yield CommandOutput(self.ids)
 
     def on_mount(self) -> None:

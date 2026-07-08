@@ -95,15 +95,9 @@ class MainScreen(Screen[None]):
         self.re_add_managed_tree = self.query_one(
             self.ids.re_add.managed_tree_q, ManagedTree
         )
-        self.op_feed_back = self.query_one(
-            self.ids.main.container.op_feed_back_q, OpFeedBack
-        )
-        self.operate_info = self.query_one(
-            self.ids.main.static.operate_info_q, OperateInfo
-        )
-        self.command_output = self.query_one(
-            self.ids.main.container.command_output_q, CommandOutput
-        )
+        self.op_feed_back = self.query_exactly_one(OpFeedBack)
+        self.operate_info = self.query_exactly_one(OperateInfo)
+        self.command_output = self.query_exactly_one(CommandOutput)
         self.command_output.display = False
         self._first_time_startup()
 

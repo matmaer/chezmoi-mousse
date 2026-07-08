@@ -49,7 +49,6 @@ class BindingAction(StrEnum):
 
 class ContainerName(StrEnum):
     cat_config = auto()
-    command_output = auto()
     contents = auto()
     debug_log = auto()
     diagram = auto()
@@ -60,7 +59,6 @@ class ContainerName(StrEnum):
     git_log = auto()
     left_side = auto()
     memory_usage = auto()
-    op_feed_back = auto()
     operate_buttons = auto()
     pw_mgr_info = auto()
     right_side = auto()
@@ -86,7 +84,6 @@ class StaticName(StrEnum):
     changed_status = auto()
     debug_test_paths = auto()
     init_info = auto()
-    operate_info = auto()
 
 
 class Tcss(StrEnum):
