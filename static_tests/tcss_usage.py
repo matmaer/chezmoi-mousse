@@ -1,149 +1,186 @@
 import ast
 import re
 from pathlib import Path
-from typing import NamedTuple
 
 import pytest
-from _test_utils import (
-    ast_parse,
-    get_gui_module_paths,
-    get_module_ast_class_defs,
-    get_modules_importing_class,
-)
+from _test_utils import MODULE_DIR, ast_parse, get_file_paths
 
 from chezmoi_mousse import Tcss
 
-CLASS_NAME = "Tcss"
-CLASSES_KEYWORD = "classes"
-GUI_DOT_TCSS_PATH = Path("src", "chezmoi_mousse", "gui.tcss")
-HARDCODED = "hardcoded tcss class"
+with Path.open(Path("src", "chezmoi_mousse", "gui.tcss")) as f:
+    tcss_lines = [
+        line for line in f.read().splitlines() if not line.startswith(("/", "#"))
+    ]
+    tcss_content = "\n".join(tcss_lines)
 
 EXCLUDE_TCSS_CLASSES = ["-visible"]
 
-
-class HardcodedTcssData(NamedTuple):
-    module_path: str
-    line_number: int
-    code: str
+EXCLUDE_TYPE_SELECTORS = {
+    # TODO: don't use type selectors if the classes are not present our code
+    # in that case, find another selector solution
+    "CheckBox",
+    "CollapsibleTitle",
+    "Contents",
+    "SelectCurrent",
+    "SelectOverlay",
+    "Tab",
+    "Toast",
+}
 
 
 def extract_tcss_classes() -> list[str]:
     pattern = r"\.[^a-z]*[a-z][a-z_]*(?=.*_)[a-z_]*(?=\s|,|$)"
-    with Path.open(GUI_DOT_TCSS_PATH) as f:
-        content = f.read()
-        matches = re.findall(pattern, content)
-    return matches
-
-
-def test_not_in_use() -> None:
-    tcss_classes = extract_tcss_classes()
-    tcss_enum_members = [member.value for member in Tcss]
-
-    orphaned: list[str] = []
-    for tcss_class in tcss_classes:
-        # allow matching either the bare member value or the dot-prefixed form
-        stripped_class = tcss_class.lstrip(".")
-        # Skip excluded classes
-        if stripped_class in EXCLUDE_TCSS_CLASSES:
-            continue
-        if stripped_class not in tcss_enum_members:
-            orphaned.append(tcss_class)
-
-    if orphaned:
-        pytest.fail(f"Tcss classes not in Tcss enum:\n{chr(10).join(orphaned)}")
-
-
-def _check_file_for_hardcoded(py_file: Path) -> list[HardcodedTcssData]:
-    hardcoded_results: list[HardcodedTcssData] = []
-    for node in ast.walk(ast_parse(py_file)):
-        if not isinstance(node, ast.Call):
-            # tcss classes are always set in ast.Call nodes
-            continue
-
-        for keyword in node.keywords:
-            if keyword.arg == CLASSES_KEYWORD and not isinstance(
-                keyword.value, ast.Attribute
-            ):  # classes= keyword is used
-                code_str = ast.unparse(keyword.value)
-                # Extract the actual string value if it's a string constant
-                string_value = None
-                if isinstance(keyword.value, ast.Constant) and isinstance(
-                    keyword.value.value, str
-                ):
-                    string_value = keyword.value.value
-
-                # Skip excluded hardcoded classes
-                if string_value not in EXCLUDE_TCSS_CLASSES:
-                    hardcoded_results.append(
-                        HardcodedTcssData(
-                            module_path=str(py_file),
-                            line_number=keyword.lineno,
-                            code=code_str,
-                        )
-                    )
-    return hardcoded_results
-
-
-@pytest.mark.parametrize(
-    "py_file", get_modules_importing_class(class_name=CLASS_NAME), ids=lambda p: p.name
-)
-def test_no_hardcoded(py_file: Path) -> None:
-    hardcoded = _check_file_for_hardcoded(py_file)
-    if hardcoded:
-        failures = "\n".join(
-            f"{d.module_path}:{d.line_number} has {HARDCODED}: {d.code}"
-            for d in hardcoded
-        )
-        pytest.fail(failures)
+    return re.findall(pattern, tcss_content)
 
 
 def extract_type_selectors() -> set[str]:
     pattern = r"\b(?=[A-Z][A-Za-z]*[a-z])[A-Z][A-Za-z]*\b"
-    with Path.open(GUI_DOT_TCSS_PATH) as f:
-        content = f.read()
     matches: set[str] = set()
-    for line in content.splitlines():
-        if line.startswith("/"):
-            continue
+    for line in tcss_lines:
         matches.update(re.findall(pattern, line))
     return matches
 
 
-def _get_module_class_imports(module_path: Path) -> set[str]:
-    imports: set[str] = set()
-    for node in ast.walk(ast_parse(module_path)):
-        if isinstance(node, (ast.ImportFrom)):
+def imports_from_textual(tree: ast.AST) -> bool:
+    return any(
+        (
+            isinstance(node, ast.Import)
+            and any(
+                alias.name == "textual" or alias.name.startswith("textual.")
+                for alias in node.names
+            )
+        )
+        or (
+            isinstance(node, ast.ImportFrom)
+            and (
+                node.module == "textual"
+                or (node.module and node.module.startswith("textual."))
+            )
+        )
+        for node in ast.walk(tree)
+    )
+
+
+class TcssHousekeepingVisitor(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.current_file: str = ""
+        self.is_gui_file: bool = False
+        self.imports_tcss: bool = False
+
+        # Only track definitions/imports that happen inside GUI/debug/app files
+        self.gui_eligible_classes: set[str] = set()
+
+        # Tracking for hardcoded tcss string violations: "file:line" -> code_str
+        self.hardcoded_violations: dict[str, str] = {}
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        # Track if this file is actively using the Tcss enum
+        if (
+            node.module == "chezmoi_mousse"
+            or node.level > 0
+            and any(alias.name == "Tcss" for alias in node.names)
+        ):
+            self.imports_tcss = True
+
+        # Gather CamelCase imports to find orphaned type-selectors in the tcss file
+        if self.is_gui_file:
             for alias in node.names:
-                # only consider imports with some uppercase letters, like classes have
                 if alias.name.casefold() != alias.name:
-                    imports.add(alias.name)
-    return imports
+                    self.gui_eligible_classes.add(alias.name)
+
+        self.generic_visit(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        if self.is_gui_file:
+            self.gui_eligible_classes.add(node.name)
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        if self.imports_tcss:
+            # Check for: classes="hardcoded-string" keyword arguments
+            for keyword in node.keywords:
+                if keyword.arg == "classes":
+                    self._check_expression_for_hardcoded(keyword.value)
+
+            # Check for: some_object.add_class("hardcoded-string")
+            if (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr == "add_class"
+                and node.args
+            ):
+                self._check_expression_for_hardcoded(node.args[0])
+
+        self.generic_visit(node)
+
+    def _check_expression_for_hardcoded(self, expr: ast.expr) -> None:
+        if not isinstance(expr, ast.Attribute):
+            if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
+                if expr.value not in EXCLUDE_TCSS_CLASSES:
+                    loc = f"{self.current_file}:{expr.lineno}"
+                    self.hardcoded_violations[loc] = ast.unparse(expr)
+            else:
+                # Catch complex dynamic expressions or f-strings that aren't safe
+                # Attribute lookups
+                loc = f"{self.current_file}:{expr.lineno}"
+                self.hardcoded_violations[loc] = ast.unparse(expr)
 
 
-def test_no_orphaned_type_selectors() -> None:
+def test_tcss() -> None:
+
+    visitor = TcssHousekeepingVisitor()
+
+    for file_path in get_file_paths():
+        visitor.current_file = str(file_path.relative_to(MODULE_DIR))
+        # Reset file-specific flags context before walking
+        visitor.imports_tcss = False
+
+        # Prepare new visit
+        tree = ast_parse(file_path)
+        # A file is a GUI file if it imports 'textual' or from 'textual.*'
+        visitor.is_gui_file = imports_from_textual(tree)
+        visitor.visit(tree)
+
+    # Gather data from the external gui.tcss file
     type_selectors = extract_type_selectors()
-    names_to_check_against: set[str] = set()
-    module_paths = get_gui_module_paths()
-    exclude = {
-        "CheckBox",
-        "CollapsibleTitle",
-        "Contents",
-        "SelectCurrent",
-        "SelectOverlay",
-        "Tab",
-        "Toast",
-        "Valid",
-    }
 
-    for module_path in module_paths:
-        for class_def in get_module_ast_class_defs(module_path):
-            if class_def.name not in exclude:
-                names_to_check_against.add(class_def.name)
-        for import_name in _get_module_class_imports(module_path):
-            if import_name not in exclude:
-                names_to_check_against.add(import_name)
+    # Create a Tcss enum member set
+    tcss_enum_members = {member.value for member in Tcss}
 
-    orphaned = type_selectors - names_to_check_against - exclude
+    errors: list[str] = []
 
-    if orphaned:
-        pytest.fail(f"Type selectors not in use:\n{'\n'.join(orphaned)}")
+    # Check orphaned TCSS classes (Not in Tcss StrEnum)
+    orphaned_classes: list[str] = []
+    for tcss_class in extract_tcss_classes():
+        stripped = tcss_class.lstrip(".")
+        if stripped in EXCLUDE_TCSS_CLASSES:
+            continue
+        if stripped not in tcss_enum_members:
+            orphaned_classes.append(tcss_class)
+
+    if orphaned_classes:
+        errors.append(
+            "\nTCSS classes not defined in Tcss Enum:\n" + ", ".join(orphaned_classes)
+        )
+
+    # Check hardcoded TCSS usage violations
+    if visitor.hardcoded_violations:
+        violations_report = [
+            f"- {loc} has hardcoded tcss class: {code}"
+            for loc, code in visitor.hardcoded_violations.items()
+        ]
+        errors.append(
+            "\nHardcoded TCSS assignments detected:\n" + ", ".join(violations_report)
+        )
+
+    # Check orphaned TCSS type selectors
+    orphaned_selectors = (
+        type_selectors - visitor.gui_eligible_classes - EXCLUDE_TYPE_SELECTORS
+    )
+    if orphaned_selectors:
+        errors.append(
+            "\nTCSS Type selectors not matching any Python Class:\n"
+            + ", ".join(orphaned_selectors)
+        )
+
+    if errors:
+        pytest.fail("\n".join(errors))
