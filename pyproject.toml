@@ -1,6 +1,6 @@
 [project]
 name = "chezmoi-mousse"
-version = "0.1.0"
+version = "0.2.3"
 description = "Visual interface in the terminal for the chezmoi dotfile manager, with a wink to the mouse."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -51,7 +51,7 @@ config = ".pre-commit-config.yaml"
 addopts = "--color=auto --tb=no -s --no-header -p no:cacheprovider --timeout=15"
 testpaths = ["static_tests"]
 pythonpath = ["src"]
-python_files = ["[!_]*.py"]
+python_files = ["*.py"]
 asyncio_mode = "auto"
 truncation_limit_chars = 0
 truncation_limit_lines = 0
