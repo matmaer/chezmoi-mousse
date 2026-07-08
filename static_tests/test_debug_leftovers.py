@@ -1,35 +1,30 @@
 import ast
-from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from _test_utils import get_module_ast_tree, get_module_paths
 
 
-@dataclass
-class DebugStatement:
-    file_path: Path
-    class_name: str | None
-    line_number: int
+class DebugStatementDetector(ast.NodeVisitor):
 
-
-class DebugStatementVisitor(ast.NodeVisitor):
-
-    def __init__(self, file_path: Path) -> None:
-        self.file_path = file_path
-        self.debug_statements: list[DebugStatement] = []
+    def __init__(self) -> None:
+        self.current_file: str = ""
         self.class_stack: list[str] = []
+        # Store leaks as tuples: (file_path_str, class_or_module, line_number)
+        self.debug_statements: list[tuple[str, str, int]] = []
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self.class_stack.append(node.name)
         self.generic_visit(node)
         self.class_stack.pop()
 
-    # This method is called for EVERY function call in the code
     def visit_Call(self, node: ast.Call) -> None:
-        class_name = self.class_stack[-1] if self.class_stack else None
-        # Determine if this is a print() or debug_log() call.
+        # Determine context (class name or "module")
+        context = self.class_stack[-1] if self.class_stack else "module"
+
+        # Check for print(...)
         is_print = isinstance(node.func, ast.Name) and node.func.id == "print"
+
+        # Check for debug_log(...) or obj.debug_log(...)
         is_debug_log = isinstance(node.func, ast.Attribute) and (
             (
                 isinstance(node.func.value, ast.Name)
@@ -40,26 +35,30 @@ class DebugStatementVisitor(ast.NodeVisitor):
                 and node.func.value.attr == "debug_log"
             )
         )
-        # Ignore print() calls located in main.py (allowed there).
-        if is_print and self.file_path.name == "main.py":
+
+        # Skip print statements inside main.py entirely
+        if is_print and Path(self.current_file).name == "main.py":
             return
 
         if is_print or is_debug_log:
-            self.debug_statements.append(
-                DebugStatement(self.file_path, class_name, node.lineno)
-            )
+            self.debug_statements.append((self.current_file, context, node.lineno))
+
+        self.generic_visit(node)
 
 
-@pytest.mark.parametrize("py_file", get_module_paths(), ids=lambda p: p.name)
-def test_leftovers(py_file: Path) -> None:
-    visitor = DebugStatementVisitor(py_file)
-    visitor.visit(get_module_ast_tree(py_file))
+def test_leftovers() -> None:
+    detector = DebugStatementDetector()
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
 
-    if visitor.debug_statements:
+    for file_path in py_files:
+        detector.current_file = str(file_path.relative_to(src_dir.parent))
+        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+        detector.visit(tree)
+
+    if detector.debug_statements:
         messages: list[str] = []
-        for result in visitor.debug_statements:
-            class_part = result.class_name if result.class_name else "module"
-            messages.append(
-                f"{result.file_path.name}: {class_part}: line {result.line_number}"
-            )
+        for file, context, line in detector.debug_statements:
+            messages.append(f"{file}: {context}: line {line}")
+
         pytest.fail("Debug statements found:\n" + "\n".join(messages))
