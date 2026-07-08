@@ -2,7 +2,6 @@ import ast
 from pathlib import Path
 
 import pytest
-from _test_utils import get_module_ast_class_defs, get_module_paths
 
 
 def find_duplicate_assignments_in_class(
@@ -61,21 +60,31 @@ def find_duplicate_assignments_in_class(
     return assignments
 
 
-@pytest.mark.parametrize("file_path", get_module_paths(), ids=lambda p: p.name)
-def test_duplicate_assignments(file_path: Path) -> None:
+def test_duplicate_assignments() -> None:
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
     failures: list[str] = []
-    for class_def in get_module_ast_class_defs(file_path):
-        assignments = find_duplicate_assignments_in_class(class_def)
-        dup_lines = [
-            line_num
-            for line_numbers in assignments.values()
-            if len(line_numbers) > 1
-            for line_num in line_numbers
-        ]
-        if dup_lines:
-            failures.append(
-                f"{class_def.name} (line {class_def.lineno}) has duplicate assignments "
-                f"at lines: {sorted(set(dup_lines))}"
-            )
+
+    for file_path in py_files:
+        relative_path = file_path.relative_to(src_dir.parent)
+        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+
+        # Walk the AST to find all class definitions within the file
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                assignments = find_duplicate_assignments_in_class(node)
+                dup_lines = [
+                    line_num
+                    for line_numbers in assignments.values()
+                    if len(line_numbers) > 1
+                    for line_num in line_numbers
+                ]
+                if dup_lines:
+                    sorted_lines = sorted(set(dup_lines))
+                    failures.append(
+                        f"{relative_path}: {node.name} (line {node.lineno}) "
+                        f"has duplicate assignments at lines: {sorted_lines}"
+                    )
+
     if failures:
-        pytest.fail("\n".join(failures))
+        pytest.fail("Duplicate assignments found:\n" + "\n".join(failures))
