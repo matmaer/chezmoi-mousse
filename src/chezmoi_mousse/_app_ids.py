@@ -8,7 +8,7 @@ from ._str_enums import (
     TabLabel,
 )
 
-__all__ = ["AppIds", "CanvasIds"]
+__all__ = ["AppIds"]
 
 
 class AppIds:
@@ -257,17 +257,3 @@ class SwitchIds:
         self.managed_dirs_q: str = f"#{self.managed_dirs}"
         self.unwanted: str = ids.switch_id(switch=SwitchEnum.unwanted)
         self.unwanted_q: str = f"#{self.unwanted}"
-
-
-class CanvasIds:
-    def __init__(self) -> None:
-        # Screens
-        self.splash = AppIds(ScreenName.splash)
-        self.main = AppIds(ScreenName.main)
-        # TabPanes
-        self.add = AppIds(TabLabel.add)
-        self.apply = AppIds(TabLabel.apply)
-        self.config = AppIds(TabLabel.config)
-        self.debug = AppIds(TabLabel.debug)
-        self.logs = AppIds(TabLabel.logs)
-        self.re_add = AppIds(TabLabel.re_add)

@@ -23,7 +23,6 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
-    from ._app_ids import CanvasIds
     from ._custom_app_attr import CustomAppAttribute
 
 
@@ -84,12 +83,10 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    def __init__(
-        self, *, custom_app_attr: "CustomAppAttribute", ids: "CanvasIds"
-    ) -> None:
+    def __init__(self, *, custom_app_attr: "CustomAppAttribute") -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.custom_app_attr = custom_app_attr
-        self.ids = ids
+        self.ids = custom_app_attr.canvas_ids
         CMD.run_cmd.chezmoi_bin = custom_app_attr.chezmoi_bin
         super().__init__()
 

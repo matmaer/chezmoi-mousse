@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
 
-from ._str_enums import NoRunInfo
+from ._app_ids import AppIds
+from ._str_enums import NoRunInfo, ScreenName, TabLabel
 
 __all__ = ["CustomAppAttribute"]
 
@@ -18,6 +19,19 @@ class CustomEnvVars(NamedTuple):
     pretend_fail: bool = os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
 
 
+class CanvasIds(NamedTuple):
+    # Screens
+    splash = AppIds(ScreenName.splash)
+    main = AppIds(ScreenName.main)
+    # TabPanes
+    add = AppIds(TabLabel.add)
+    apply = AppIds(TabLabel.apply)
+    config = AppIds(TabLabel.config)
+    debug = AppIds(TabLabel.debug)
+    logs = AppIds(TabLabel.logs)
+    re_add = AppIds(TabLabel.re_add)
+
+
 @dataclass(frozen=True)
 class CustomAppAttribute:
 
@@ -25,6 +39,7 @@ class CustomAppAttribute:
     chezmoi_bin: str | None = shutil.which("chezmoi")
     git_bin: str | None = shutil.which("git")
     stacktrace_path: Path = Path(__file__).parent / "stacktrace.log"
+    canvas_ids: CanvasIds = CanvasIds()
 
     def __post_init__(self) -> None:
         if self.stacktrace_path.exists():
