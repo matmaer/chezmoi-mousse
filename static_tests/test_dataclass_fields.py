@@ -20,7 +20,8 @@ def is_dataclass(class_def: ast.ClassDef) -> bool:
 class UnusedFieldDetector(ast.NodeVisitor):
     def __init__(self) -> None:
         self.current_file: str = ""
-        # self.defined_fields to store {"ClassName.field_name": (file_path, lineno)}
+        self.current_file_path: Path | None = None
+        # Map "ClassName.field_name" to (file_path, lineno)
         self.defined_fields: dict[str, tuple[str, int]] = {}
         self.used_field_names: set[str] = set()
 
@@ -33,7 +34,7 @@ class UnusedFieldDetector(ast.NodeVisitor):
                     field_key = f"{node.name}.{item.target.id}"
                     self.defined_fields[field_key] = (self.current_file, item.lineno)
 
-        # 3. Continue walking the tree to find usages inside this class's methods
+        # Continue walking the tree to find usages inside this class's methods
         self.generic_visit(node)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
