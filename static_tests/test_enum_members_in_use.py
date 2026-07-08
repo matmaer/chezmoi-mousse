@@ -19,9 +19,11 @@ def is_enum_class(class_def: ast.ClassDef) -> bool:
 class UnusedEnumMemberDetector(ast.NodeVisitor):
     def __init__(self) -> None:
         self.current_file: str = ""
+
         # Map of "EnumName.MEMBER_NAME" -> (file_path, lineno)
         self.defined_members: dict[str, tuple[str, int]] = {}
         self.used_member_names: set[str] = set()
+
         # Track the active Enum class context for internal references
         self.current_enum_class: str | None = None
 
@@ -41,8 +43,10 @@ class UnusedEnumMemberDetector(ast.NodeVisitor):
             # Set the context before walking the internal body nodes
             old_enum_context = self.current_enum_class
             self.current_enum_class = node.name
+
             # Walk the body to catch internal ast.Name references
             self.generic_visit(node)
+
             # Restore the context when leaving the class
             self.current_enum_class = old_enum_context
         else:
@@ -87,12 +91,12 @@ class UnusedEnumMemberDetector(ast.NodeVisitor):
 
 def test_enum_members() -> None:
     detector = UnusedEnumMemberDetector()
-    src_directory = Path(__file__).parent.parent / "src"
-    python_files = list(src_directory.rglob("*.py"))
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
 
     # Collect definitions and usages across the codebase
-    for file_path in python_files:
-        detector.current_file = str(file_path.relative_to(src_directory.parent))
+    for file_path in py_files:
+        detector.current_file = str(file_path.relative_to(src_dir.parent))
         tree = ast.parse(file_path.read_text(encoding="utf-8"))
         detector.visit(tree)
 

@@ -86,13 +86,13 @@ class AllVariableDetector(ast.NodeVisitor):
 
 def test_all_variable_usage() -> None:
     detector = AllVariableDetector()
-    src_directory = Path(__file__).parent.parent / "src"
-    python_files = list(src_directory.rglob("*.py"))
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
 
     # Map file paths to package-relative module dotted names
     file_to_module: dict[Path, str] = {}
-    for file_path in python_files:
-        rel_parts = file_path.relative_to(src_directory).with_suffix("").parts
+    for file_path in py_files:
+        rel_parts = file_path.relative_to(src_dir).with_suffix("").parts
         if rel_parts[-1] == "__init__":
             module_name = ".".join(rel_parts[:-1])
         else:
@@ -101,7 +101,7 @@ def test_all_variable_usage() -> None:
         if module_name:
             file_to_module[file_path] = module_name
 
-    # Step 1: Scan all files to gather structural definitions and cross-references
+    # Scan all files to gather structural definitions and cross-references
     for file_path, module_name in file_to_module.items():
         detector.current_module = module_name
         tree = ast.parse(file_path.read_text(encoding="utf-8"))

@@ -21,6 +21,7 @@ class UnusedFieldDetector(ast.NodeVisitor):
     def __init__(self) -> None:
         self.current_file: str = ""
         self.current_file_path: Path | None = None
+
         # Map "ClassName.field_name" to (file_path, lineno)
         self.defined_fields: dict[str, tuple[str, int]] = {}
         self.used_field_names: set[str] = set()
@@ -55,12 +56,12 @@ def test_dataclass_fields() -> None:
     # call only ever knows about the single file it is currently walking.
 
     detector = UnusedFieldDetector()
-    src_directory = Path(__file__).parent.parent / "src"
-    python_files = list(src_directory.rglob("*.py"))
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
 
     # Collect all data across modules
-    for file_path in python_files:
-        detector.current_file = str(file_path.relative_to(src_directory.parent))
+    for file_path in py_files:
+        detector.current_file = str(file_path.relative_to(src_dir.parent))
         tree = ast.parse(file_path.read_text(encoding="utf-8"))
         detector.visit(tree)
 

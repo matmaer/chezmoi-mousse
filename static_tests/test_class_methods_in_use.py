@@ -34,13 +34,10 @@ class UnusedMethodDetector(ast.NodeVisitor):
 
         for item in node.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                name = item.name
-
                 if item.name.startswith("__") and item.name.endswith("__"):
                     continue  # skip dunders
 
-                # Skip textual related methods, as they are in use by textual
-                if name.startswith(
+                if item.name.startswith(  # Skip textual related methods
                     (
                         "action_",
                         "check_action",
@@ -86,7 +83,7 @@ class UnusedMethodDetector(ast.NodeVisitor):
                 if has_on_decorator:
                     continue
 
-                self.defined_methods[(node.name, name)] = (
+                self.defined_methods[(node.name, item.name)] = (
                     self.current_file,
                     item.lineno,
                     is_property,
@@ -110,12 +107,12 @@ class UnusedMethodDetector(ast.NodeVisitor):
 
 def test_class_methods() -> None:
     detector = UnusedMethodDetector()
-    src_directory = Path(__file__).parent.parent / "src"
-    python_files = list(src_directory.rglob("*.py"))
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
 
     # Collect definitions and usages across the codebase
-    for file_path in python_files:
-        detector.current_file = str(file_path.relative_to(src_directory.parent))
+    for file_path in py_files:
+        detector.current_file = str(file_path.relative_to(src_dir.parent))
         tree = ast.parse(file_path.read_text(encoding="utf-8"))
         detector.visit(tree)
 

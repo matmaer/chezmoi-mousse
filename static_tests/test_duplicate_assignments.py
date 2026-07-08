@@ -28,6 +28,7 @@ def find_duplicate_assignments_in_class(
                 ):
                     attr_name = target.attr
                     is_instance_var = True
+
                 # Check for x = value assignments
                 elif isinstance(target, ast.Name):
                     attr_name = target.id

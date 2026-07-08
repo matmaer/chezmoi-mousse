@@ -12,8 +12,10 @@ class SlotsUsageDetector(ast.NodeVisitor):
 
         # Map of (class_name, slot_name) -> (file_path, lineno)
         self.defined_slots: dict[tuple[str, str], tuple[str, int]] = {}
+
         # Set of (class_name, slot_name) that are assigned to self inside class methods
         self.assigned_inside: set[tuple[str, str]] = set()
+
         # Map of slot_name -> set of class_names where it is accessed/assigned
         # (None represents global scope)
         self.slot_usages: dict[str, set[str | None]] = {}
@@ -93,12 +95,12 @@ class SlotsUsageDetector(ast.NodeVisitor):
 
 def test_slots_usage() -> None:
     detector = SlotsUsageDetector()
-    src_directory = Path(__file__).parent.parent / "src"
-    python_files = list(src_directory.rglob("*.py"))
+    src_dir = Path(__file__).parent.parent / "src"
+    py_files = list(src_dir.rglob("*.py"))
 
     # Collect definitions and usages across the codebase
-    for file_path in python_files:
-        detector.current_file = str(file_path.relative_to(src_directory.parent))
+    for file_path in py_files:
+        detector.current_file = str(file_path.relative_to(src_dir.parent))
         tree = ast.parse(file_path.read_text(encoding="utf-8"))
         detector.visit(tree)
 
@@ -113,12 +115,14 @@ def test_slots_usage() -> None:
         usages = detector.slot_usages.get(slot_name, set())
         outside_usages = usages - {class_name}
         is_assigned_internally = (class_name, slot_name) in detector.assigned_inside
+
         # To see if it was assigned from outside, we would need complex object-type
         # tracking, but because any external usage (Load or Store) qualifies the slot as
         # "in use", we consider it safely covered under 'outside_usages' if it's
         # interacted with outside.
         if not is_assigned_internally and not outside_usages:
             unassigned_slots.append(info_str)
+
         # Check if the slot is ever used outside of its own class
         # (either reading or writing to it)
         if not outside_usages:

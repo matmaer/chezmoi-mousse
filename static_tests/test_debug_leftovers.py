@@ -40,7 +40,6 @@ class DebugStatementVisitor(ast.NodeVisitor):
                 and node.func.value.attr == "debug_log"
             )
         )
-
         # Ignore print() calls located in main.py (allowed there).
         if is_print and self.file_path.name == "main.py":
             return
