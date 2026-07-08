@@ -78,7 +78,6 @@ class RichLogName(StrEnum):
 
 class ScreenName(StrEnum):
     main = auto()
-    splash = auto()
 
 
 class StaticName(StrEnum):

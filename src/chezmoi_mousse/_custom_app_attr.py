@@ -21,7 +21,6 @@ class CustomEnvVars(NamedTuple):
 
 class CanvasIds(NamedTuple):
     # Screens
-    splash = AppIds(ScreenName.splash)
     main = AppIds(ScreenName.main)
     # TabPanes
     add = AppIds(TabLabel.add)
