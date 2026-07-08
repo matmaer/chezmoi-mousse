@@ -5,12 +5,19 @@ import ast
 from functools import cache
 from pathlib import Path
 
-BASE_DIR = Path("src", "chezmoi_mousse")
+# This will return relative paths when calling rglob() on it,
+MODULE_DIR = Path("src", "chezmoi_mousse")
 
 
 @cache
 def get_module_paths() -> list[Path]:
-    return list(BASE_DIR.glob("**/*.py"))
+    # This works because pytest sets the cwd to the project root.
+    return list(MODULE_DIR.rglob("*.py"))
+
+
+@cache
+def ast_parse(py_file: Path) -> ast.AST:
+    return ast.parse(py_file.read_text())
 
 
 @cache
@@ -24,14 +31,9 @@ def get_gui_module_paths() -> list[Path]:
 
 
 @cache
-def get_module_ast_tree(module_path: Path) -> ast.AST:
-    return ast.parse(module_path.read_text())
-
-
-@cache
 def get_module_ast_class_defs(module_path: Path) -> list[ast.ClassDef]:
     class_defs: list[ast.ClassDef] = []
-    for node in ast.walk(get_module_ast_tree(module_path)):
+    for node in ast.walk(ast_parse(module_path)):
         if isinstance(node, ast.ClassDef):
             class_defs.append(node)
     return class_defs
@@ -41,7 +43,7 @@ def get_module_ast_class_defs(module_path: Path) -> list[ast.ClassDef]:
 def get_modules_importing_class(class_name: str) -> set[Path]:
     modules: set[Path] = set()
     for module_path in get_module_paths():
-        for node in ast.walk(get_module_ast_tree(module_path)):
+        for node in ast.walk(ast_parse(module_path)):
             if isinstance(node, ast.ImportFrom) and class_name in (
                 alias.name for alias in node.names
             ):

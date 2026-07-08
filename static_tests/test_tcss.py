@@ -5,9 +5,9 @@ from typing import NamedTuple
 
 import pytest
 from _test_utils import (
+    ast_parse,
     get_gui_module_paths,
     get_module_ast_class_defs,
-    get_module_ast_tree,
     get_modules_importing_class,
 )
 
@@ -55,7 +55,7 @@ def test_not_in_use() -> None:
 
 def _check_file_for_hardcoded(py_file: Path) -> list[HardcodedTcssData]:
     hardcoded_results: list[HardcodedTcssData] = []
-    for node in ast.walk(get_module_ast_tree(py_file)):
+    for node in ast.walk(ast_parse(py_file)):
         if not isinstance(node, ast.Call):
             # tcss classes are always set in ast.Call nodes
             continue
@@ -111,7 +111,7 @@ def extract_type_selectors() -> set[str]:
 
 def _get_module_class_imports(module_path: Path) -> set[str]:
     imports: set[str] = set()
-    for node in ast.walk(get_module_ast_tree(module_path)):
+    for node in ast.walk(ast_parse(module_path)):
         if isinstance(node, (ast.ImportFrom)):
             for alias in node.names:
                 # only consider imports with some uppercase letters, like classes have
