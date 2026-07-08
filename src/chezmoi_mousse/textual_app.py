@@ -13,7 +13,6 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
-from ._app_state import AppState
 from ._cmd_results import CMD
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
@@ -25,7 +24,7 @@ from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
     from ._app_ids import CanvasIds
-    from ._app_state import AppState
+    from ._custom_app_attr import CustomAppAttribute
 
 
 __all__ = ["ChezmoiGUI"]
@@ -85,16 +84,18 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    def __init__(self, *, pre_run_logic: "AppState", ids: "CanvasIds") -> None:
+    def __init__(
+        self, *, custom_app_attr: "CustomAppAttribute", ids: "CanvasIds"
+    ) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.pre_run_logic = pre_run_logic
+        self.custom_app_attr = custom_app_attr
         self.ids = ids
-        CMD.run_cmd.chezmoi_bin = pre_run_logic.chezmoi_bin
+        CMD.run_cmd.chezmoi_bin = custom_app_attr.chezmoi_bin
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        if self.pre_run_logic.debug_mode:
-            self.pre_run_logic.save_stacktrace()
+        if self.custom_app_attr.custom_env_vars.debug_mode:
+            self.custom_app_attr.save_stacktrace()
         super()._handle_exception(error)
 
     def on_mount(self) -> None:
@@ -105,7 +106,7 @@ class ChezmoiGUI(App[None]):
 
     @property
     def debug_mode(self) -> bool:
-        return self.pre_run_logic.debug_mode
+        return self.custom_app_attr.custom_env_vars.debug_mode
 
     @work
     async def _run_splash_screen(self) -> None:

@@ -1,7 +1,7 @@
 import asyncio
 
 from ._app_ids import CanvasIds
-from ._app_state import AppState
+from ._custom_app_attr import CustomAppAttribute
 from .debug._pilot_mode import test_app_with_pilot
 from .textual_app import ChezmoiGUI
 
@@ -10,22 +10,22 @@ __all__ = ["run_app"]
 
 def run_app():
 
-    pre_run_logic = AppState()
+    custom_app_attr = CustomAppAttribute()
     ids = CanvasIds()
 
     try:
-        app = ChezmoiGUI(pre_run_logic=pre_run_logic, ids=ids)
+        app = ChezmoiGUI(custom_app_attr=custom_app_attr, ids=ids)
     except Exception:
-        pre_run_logic.save_stacktrace()
+        custom_app_attr.save_stacktrace()
         raise
 
     try:
-        if pre_run_logic.pilot_mode:
+        if custom_app_attr.custom_env_vars.pilot_mode:
             asyncio.run(test_app_with_pilot(app))
         else:
             app.run()
     except Exception:
-        pre_run_logic.save_stacktrace()
+        custom_app_attr.save_stacktrace()
         raise
 
 
