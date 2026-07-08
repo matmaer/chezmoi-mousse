@@ -1,7 +1,4 @@
-"""Module for testing the application by interfacing programmatically.
-
-This is work in progress and only contains very basic tests for now.
-"""
+"""Module for testing the application by interfacing programmatically."""
 
 from __future__ import annotations
 
@@ -32,6 +29,8 @@ if TYPE_CHECKING:
     from ..textual_app import ChezmoiGUI
 
 from ..gui.common.messages import ReadyToUseMsg
+
+__all__ = ["test_app_with_pilot"]
 
 
 async def pilot_chill(pilot: Pilot[None]):

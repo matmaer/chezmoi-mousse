@@ -5,6 +5,8 @@ from ._app_state import AppState
 from .debug._pilot_mode import test_app_with_pilot
 from .textual_app import ChezmoiGUI
 
+__all__ = ["run_app"]
+
 
 def run_app():
 

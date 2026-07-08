@@ -17,7 +17,6 @@ __all__ = [
     "DirContentBtn",
     "FlatButton",
     "FlatButtonsVertical",
-    "OpBtnEnum",
     "OpButton",
     "OperateButtons",
     "SwitchSlider",

@@ -10,12 +10,12 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import CMD, Chars, Tcss
+from chezmoi_mousse import CMD, Chars, OpBtnEnum, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse import AppIds, ChezmoiGUI
 
-from .actionables import OpBtnEnum, OpButton
+from .actionables import OpButton
 from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
