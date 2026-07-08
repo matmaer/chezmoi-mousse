@@ -4,13 +4,8 @@ import pytest
 
 from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
-EXCLUDE_ENUMS = {"UnwantedDirs", "UnwantedFileExtensions", "KeyFileNames"}
-
 
 def is_enum_class(class_def: ast.ClassDef) -> bool:
-    # Todo: change the module where these are being used not to use enums.
-    if class_def.name in EXCLUDE_ENUMS:
-        return False
     for base in class_def.bases:
         if isinstance(base, ast.Name) and base.id in ("Enum", "StrEnum"):
             return True
