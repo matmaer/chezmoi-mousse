@@ -48,14 +48,21 @@ dev = [
 config = ".pre-commit-config.yaml"
 
 [tool.pytest.ini_options]
-addopts = "--color=auto --tb=no -s --no-header -p no:cacheprovider --timeout=15"
+addopts = [
+    "--color=auto",
+    "--tb=no",                # Hide long stack traces
+    "--capture=no",           # Don't capture stdout (allow prints)
+    "--no-header",            # Hide boilerplate intro
+    "-p", "no:cacheprovider", # Disable .pytest_cache generation
+    "--timeout=15"            # Fail tests taking longer than 15s
+]
 testpaths = ["static_tests"]
 pythonpath = ["src"]
-python_files = ["*.py"]
-asyncio_mode = "auto"
-truncation_limit_chars = 0
-truncation_limit_lines = 0
-env = ["CI=1"]
+# discovered test files, all .py files except starting with underscore
+python_files = ["[!_]*.py"]
+# limit pytest output in the terminal
+truncation_limit_chars = 4000
+truncation_limit_lines = 100
 
 [tool.docformatter]
 recursive = true
