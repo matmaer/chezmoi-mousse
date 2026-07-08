@@ -1,7 +1,7 @@
 import ast
-from pathlib import Path
 
 import pytest
+from _test_utils import MODULE_DIR, ast_parse, get_file_paths
 
 EXCLUDE_ENUMS = {"UnwantedDirs", "UnwantedFileExtensions", "KeyFileNames"}
 
@@ -91,13 +91,11 @@ class UnusedEnumMemberDetector(ast.NodeVisitor):
 
 def test_enum_members() -> None:
     detector = UnusedEnumMemberDetector()
-    src_dir = Path(__file__).parent.parent / "src"
-    py_files = list(src_dir.rglob("*.py"))
 
     # Collect definitions and usages across the codebase
-    for file_path in py_files:
-        detector.current_file = str(file_path.relative_to(src_dir.parent))
-        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+    for file_path in get_file_paths():
+        detector.current_file = str(file_path.relative_to(MODULE_DIR))
+        tree = ast_parse(file_path)
         detector.visit(tree)
 
     # Identify unused members

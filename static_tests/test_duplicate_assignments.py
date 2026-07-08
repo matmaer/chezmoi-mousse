@@ -1,7 +1,7 @@
 import ast
-from pathlib import Path
 
 import pytest
+from _test_utils import MODULE_DIR, ast_parse, get_file_paths
 
 
 def find_duplicate_assignments_in_class(
@@ -61,13 +61,12 @@ def find_duplicate_assignments_in_class(
 
 
 def test_duplicate_assignments() -> None:
-    src_dir = Path(__file__).parent.parent / "src"
-    py_files = list(src_dir.rglob("*.py"))
+
     failures: list[str] = []
 
-    for file_path in py_files:
-        relative_path = file_path.relative_to(src_dir.parent)
-        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+    for file_path in get_file_paths():
+        relative_path = file_path.relative_to(MODULE_DIR)
+        tree = ast_parse(file_path)
 
         # Walk the AST to find all class definitions within the file
         for node in ast.walk(tree):

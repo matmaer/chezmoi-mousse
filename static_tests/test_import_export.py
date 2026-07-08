@@ -2,6 +2,7 @@ import ast
 from pathlib import Path
 
 import pytest
+from _test_utils import MODULE_DIR, ast_parse, get_file_paths
 
 
 class AllVariableDetector(ast.NodeVisitor):
@@ -86,13 +87,11 @@ class AllVariableDetector(ast.NodeVisitor):
 
 def test_all_variable_usage() -> None:
     detector = AllVariableDetector()
-    src_dir = Path(__file__).parent.parent / "src"
-    py_files = list(src_dir.rglob("*.py"))
 
     # Map file paths to package-relative module dotted names
     file_to_module: dict[Path, str] = {}
-    for file_path in py_files:
-        rel_parts = file_path.relative_to(src_dir).with_suffix("").parts
+    for file_path in get_file_paths():
+        rel_parts = file_path.relative_to(MODULE_DIR).with_suffix("").parts
         if rel_parts[-1] == "__init__":
             module_name = ".".join(rel_parts[:-1])
         else:
@@ -104,7 +103,7 @@ def test_all_variable_usage() -> None:
     # Scan all files to gather structural definitions and cross-references
     for file_path, module_name in file_to_module.items():
         detector.current_module = module_name
-        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+        tree = ast_parse(file_path)
         detector.visit(tree)
 
     # Output Buckets
