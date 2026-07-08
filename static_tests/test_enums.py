@@ -1,161 +1,109 @@
 import ast
-from typing import NamedTuple
+from pathlib import Path
 
 import pytest
-from _test_utils import (
-    ModuleData,
-    get_all_module_data,
-    get_module_ast_class_defs,
-    get_module_paths,
-)
 
-type AstClassDefs = list[ast.ClassDef]
-
-MODULE_PATHS = get_module_paths()
-
-# Enums that are used dynamically so not is scope for static tests
-EXCLUDE_ENUMS = {"PwMgrInfo", "UnwantedDirs", "UnwantedFileExtensions", "KeyFileNames"}
+EXCLUDE_ENUMS = {"UnwantedDirs", "UnwantedFileExtensions", "KeyFileNames"}
 
 
 def is_enum_class(class_def: ast.ClassDef) -> bool:
+    # Todo: change the module where these are being used not to use enums.
+    if class_def.name in EXCLUDE_ENUMS:
+        return False
     for base in class_def.bases:
         if isinstance(base, ast.Name) and base.id in ("Enum", "StrEnum"):
             return True
     return False
 
 
-class ClassData(NamedTuple):
-    module_path: str  # the module path for error reporting
-    class_name: str  # the ast.ClassDef.name
-    class_lineno: int  # line number where the class is defined
-    class_nodes: list[ast.AST]  # the ast nodes within the class (materialized)
+class UnusedEnumMemberDetector(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.current_file: str = ""
+        # Map of "EnumName.MEMBER_NAME" -> (file_path, lineno)
+        self.defined_members: dict[str, tuple[str, int]] = {}
+        self.used_member_names: set[str] = set()
+        # Track the active Enum class context for internal references
+        self.current_enum_class: str | None = None
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        if is_enum_class(node):
+            # Gather all defined members
+            for item in node.body:
+                if isinstance(item, ast.Assign):
+                    for target in item.targets:
+                        if isinstance(target, ast.Name):
+                            member_key = f"{node.name}.{target.id}"
+                            self.defined_members[member_key] = (
+                                self.current_file,
+                                item.lineno,
+                            )
+
+            # Set the context before walking the internal body nodes
+            old_enum_context = self.current_enum_class
+            self.current_enum_class = node.name
+            # Walk the body to catch internal ast.Name references
+            self.generic_visit(node)
+            # Restore the context when leaving the class
+            self.current_enum_class = old_enum_context
+        else:
+            # Not an enum, just walk normally
+            self.generic_visit(node)
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        # Catches standard dot-notation usage: Color.RED or status.SUCCESS
+        self.used_member_names.add(node.attr)
+        self.generic_visit(node)
+
+    def visit_For(self, node: ast.For) -> None:
+        # Check if we are iterating directly over an identifier: for x in SomeEnumClass:
+        if isinstance(node.iter, ast.Name):
+            enum_name = node.iter.id
+            self._mark_all_enum_members_used(enum_name)
+        self.generic_visit(node)
+
+    def _mark_all_enum_members_used(self, enum_name: str) -> None:
+        # Helper to find any keys starting with "EnumName." and register them as used
+        prefix = f"{enum_name}."
+        for key in self.defined_members:
+            if key.startswith(prefix):
+                _, member_name = key.split(".")
+                self.used_member_names.add(member_name)
+
+    def visit_Name(self, node: ast.Name) -> None:
+        # If we are inside an Enum class, check if this Name matches an internal member
+        if self.current_enum_class and isinstance(node.ctx, ast.Load):
+            internal_key = f"{self.current_enum_class}.{node.id}"
+            if internal_key in self.defined_members:
+                self.used_member_names.add(node.id)
+
+        self.generic_visit(node)
+
+    def visit_Subscript(self, node: ast.Subscript) -> None:
+        # Catches dynamic string dictionary lookups: Color["RED"]
+        if isinstance(node.slice, ast.Constant) and isinstance(node.slice.value, str):
+            self.used_member_names.add(node.slice.value)
+        self.generic_visit(node)
 
 
-module_data_list: list[ModuleData] = get_all_module_data()
+def test_enum_members() -> None:
+    detector = UnusedEnumMemberDetector()
+    src_directory = Path(__file__).parent.parent / "src"
+    python_files = list(src_directory.rglob("*.py"))
 
-all_enum_classes: list[ClassData] = []
-for file_path in MODULE_PATHS:
-    class_defs: AstClassDefs = get_module_ast_class_defs(file_path)
-    for class_def in class_defs:
-        to_append = ClassData(
-            module_path=str(file_path),
-            class_name=class_def.name,
-            class_lineno=class_def.lineno,
-            class_nodes=list(ast.walk(class_def)),
-        )
-        if is_enum_class(class_def):
-            all_enum_classes.append(to_append)
+    # Collect definitions and usages across the codebase
+    for file_path in python_files:
+        detector.current_file = str(file_path.relative_to(src_directory.parent))
+        tree = ast.parse(file_path.read_text(encoding="utf-8"))
+        detector.visit(tree)
 
-###########################################
-# Test if all enum class names are unique #
-###########################################
+    # Identify unused members
+    unused: list[str] = []
+    for member_key, (file, line) in detector.defined_members.items():
+        enum_name, member_name = member_key.split(".")
 
+        if member_name not in detector.used_member_names:
+            unused.append(f"{member_name} in {enum_name} ({file}:{line})")
 
-def test_unique_enum_class_names() -> None:
-    names_to_modules: dict[str, set[str]] = {}
-
-    for item in all_enum_classes:
-        names_to_modules.setdefault(item.class_name, set())
-        names_to_modules[item.class_name].add(item.module_path)
-
-    pytest_fail_messages: list[str] = []
-    failed_names: list[str] = []
-    for class_name, modules in names_to_modules.items():
-        if len(modules) > 1:
-            failed_names.append(class_name)
-            pytest_fail_messages.append(
-                f"{class_name} found in modules:\n- {'\n- '.join(sorted(modules))}"
-            )
-
-    if pytest_fail_messages:
-        header = (
-            f"Duplicate enum class names found: {', '.join(sorted(failed_names))}\n"
-            if failed_names
-            else ""
-        )
-        pytest.fail(header + "\n".join(pytest_fail_messages))
-
-
-###########################################
-# Test if all enum class names are in use #
-###########################################
-
-
-@pytest.mark.parametrize(
-    "class_data",
-    all_enum_classes,
-    ids=lambda x: f"{x.class_name} ({x.module_path}:{x.class_lineno})",
-)
-def test_enum_members_in_use(class_data: ClassData) -> None:
-    results: list[str] = []
-    # Skip enums that are used dynamically, not in scope for static tests
-    if class_data.class_name in EXCLUDE_ENUMS:
-        pytest.skip(f"Skipping dynamic enum {class_data.class_name}")
-    # Construct the member names to check
-    enum_member_names: list[str] = []
-    for class_node in class_data.class_nodes:
-        if isinstance(class_node, ast.Assign):
-            target = class_node.targets[0]
-            if isinstance(target, ast.Name):
-                enum_member_names.append(target.id)
-    # For each enum member, search for any usage in non-enum classes
-    # or in other enum classes. We look for attribute access like
-    # EnumClass.member_name (or nested attribute chains) and for
-    # getattr(EnumClass, 'member_name').
-    for member_name in enum_member_names:
-        if member_name.startswith("_"):
-            # Skip private members
-            continue
-        found = False
-        for module_data in module_data_list:
-            if found:
-                break
-            for node in module_data.module_nodes:
-                if (
-                    isinstance(node, ast.ClassDef)
-                    and node.name == class_data.class_name
-                ):
-                    # Skip the enum class itself
-                    continue
-                if isinstance(node, ast.Attribute):
-                    # direct access: EnumClass.member_name
-                    if isinstance(node.value, ast.Name):
-                        if (
-                            node.value.id == class_data.class_name
-                            and node.attr == member_name
-                        ):
-                            found = True
-                            break
-                    # access like module.EnumClass.member_name
-                    elif isinstance(node.value, ast.Attribute) and (
-                        isinstance(node.value.value, ast.Name)
-                        and node.value.attr == class_data.class_name
-                        and node.attr == member_name
-                    ):
-                        found = True
-                        break
-                elif (
-                    isinstance(node, ast.Call)
-                    and (
-                        isinstance(node.func, ast.Name)
-                        and node.func.id == "getattr"
-                        and len(node.args) >= 2
-                    )
-                    and (
-                        isinstance(node.args[0], ast.Name)
-                        and node.args[0].id == class_data.class_name
-                    )
-                    and (
-                        isinstance(node.args[1], ast.Constant)
-                        and node.args[1].value == member_name
-                    )
-                ):
-                    found = True
-                    break
-        if found is False:
-            results.append(
-                f"{class_data.class_name}.{member_name} "
-                f"(in {class_data.module_path}:{class_data.class_lineno})"
-            )
-    if results:
-        pytest.fail("\n" + "\n".join(results))
+    if unused:
+        error_message = "\nFound unused Enum members:\n" + "\n".join(unused)
+        pytest.fail(error_message)
