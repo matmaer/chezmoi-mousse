@@ -86,6 +86,13 @@ AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 2;
 }
 
+AddedPaths, RemovedPaths, ChangedStatusPaths {
+    background-tint: $surface;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
+}
+
 CustomHeader {
   border-bottom: dashed $surface-lighten-3;
   color: $primary;

@@ -23,7 +23,6 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
-    from ._app_ids import StaticIds
     from ._custom_app_attr import CustomAppAttribute
 
 
@@ -114,10 +113,6 @@ class ChezmoiGUI(App[None]):
     @property
     def debug_mode(self) -> bool:
         return self.custom_app_attr.custom_env_vars.debug_mode
-
-    @property
-    def main_static_id(self) -> "StaticIds":
-        return self.ids.main.static
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #

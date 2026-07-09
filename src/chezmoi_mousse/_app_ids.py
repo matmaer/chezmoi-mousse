@@ -1,12 +1,5 @@
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from ._str_enums import (
-    ContainerName,
-    FlatBtnLabel,
-    RichLogName,
-    ScreenName,
-    StaticName,
-    TabLabel,
-)
+from ._str_enums import ContainerName, FlatBtnLabel, RichLogName, TabLabel
 
 __all__ = ["AppIds"]
 
@@ -19,20 +12,18 @@ class AppIds:
         "managed_tree",
         "op_btn",
         "richlog",
-        "static",
         "switch_slider_q",
         "switch_slider",
         "switch",
     )
 
-    def __init__(self, canvas_name: TabLabel | ScreenName) -> None:
+    def __init__(self, canvas_name: TabLabel) -> None:
         self.canvas_name = canvas_name
         self.container = ContainerIds(self)
         self.richlog = RichLogIds(self)
         self.managed_tree = f"{self.canvas_name.name}_managed_tree"
         self.managed_tree_q = f"#{self.managed_tree}"
         self.op_btn = OperateButtonIds(self)
-        self.static = StaticIds(self)
         self.switch = SwitchIds(self)
         self.switch_slider = f"{self.canvas_name.name}_switch_slider"
         self.switch_slider_q = f"#{self.switch_slider}"
@@ -45,9 +36,6 @@ class AppIds:
 
     def op_btn_id(self, qid: str = "", *, operation: OpBtnLabel) -> str:
         return f"{qid}{self.canvas_name.name}_{operation.normalized_label}_op_btn"
-
-    def static_id(self, qid: str = "", *, static: StaticName) -> str:
-        return f"{qid}{self.canvas_name.name}_{static.name}_static"
 
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
         return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
@@ -161,8 +149,8 @@ class ContainerIds:
         self.right_side_q: str = f"#{self.right_side}"
         self.template_data: str = ids.container_id(name=ContainerName.template_data)
         self.template_data_q: str = f"#{self.template_data}"
-        self.test_paths: str = ids.container_id(name=ContainerName.test_paths)
-        self.test_paths_q: str = f"#{self.test_paths}"
+        self.test_paths_view: str = ids.container_id(name=ContainerName.test_paths_view)
+        self.test_paths_view_q: str = f"#{self.test_paths_view}"
 
 
 class RichLogIds:
@@ -225,20 +213,6 @@ class OperateButtonIds:
         self.create_diffs_q: str = f"#{self.create_diffs}"
         self.log_memory: str = ids.op_btn_id(operation=OpBtnLabel.log_memory)
         self.log_memory_q: str = f"#{self.log_memory}"
-
-
-class StaticIds:
-    def __init__(self, ids: AppIds):
-        self.added_paths: str = ids.static_id(static=StaticName.added_paths)
-        self.added_paths_q: str = f"#{self.added_paths}"
-        self.removed_paths: str = ids.static_id(static=StaticName.removed_paths)
-        self.removed_paths_q: str = f"#{self.removed_paths}"
-        self.changed_status: str = ids.static_id(static=StaticName.changed_status)
-        self.changed_status_q: str = f"#{self.changed_status}"
-        self.debug_test_paths: str = ids.static_id(static=StaticName.debug_test_paths)
-        self.debug_test_paths_q: str = f"#{self.debug_test_paths}"
-        self.init_info: str = ids.static_id(static=StaticName.init_info)
-        self.init_info_q: str = f"#{self.init_info}"
 
 
 class SwitchIds:

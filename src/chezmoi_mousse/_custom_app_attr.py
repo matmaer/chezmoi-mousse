@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from ._app_ids import AppIds
-from ._str_enums import NoRunInfo, ScreenName, TabLabel
+from ._str_enums import NoRunInfo, TabLabel
 
 __all__ = ["CustomAppAttribute"]
 
@@ -20,9 +20,6 @@ class CustomEnvVars(NamedTuple):
 
 
 class CanvasIds(NamedTuple):
-    # Screens
-    main = AppIds(ScreenName.main)
-    # TabPanes
     add = AppIds(TabLabel.add)
     apply = AppIds(TabLabel.apply)
     config = AppIds(TabLabel.config)

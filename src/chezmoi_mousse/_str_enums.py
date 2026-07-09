@@ -10,9 +10,7 @@ __all__ = [
     "LogString",
     "NoRunInfo",
     "OperateString",
-    "ScreenName",
     "SectionLabel",
-    "StaticName",
     "StatusCode",
     "SwitchLabel",
     "TabLabel",
@@ -63,7 +61,7 @@ class ContainerName(StrEnum):
     pw_mgr_info = auto()
     right_side = auto()
     template_data = auto()
-    test_paths = auto()
+    test_paths_view = auto()
 
 
 class RichLogName(StrEnum):
@@ -72,18 +70,6 @@ class RichLogName(StrEnum):
     debug_logger = auto()
     dom_node_logger = auto()
     memory_usage_logger = auto()
-
-
-class ScreenName(StrEnum):
-    main = auto()
-
-
-class StaticName(StrEnum):
-    added_paths = auto()
-    removed_paths = auto()
-    changed_status = auto()
-    debug_test_paths = auto()
-    init_info = auto()
 
 
 class Tcss(StrEnum):

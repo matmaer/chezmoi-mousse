@@ -320,6 +320,8 @@ class TestPathColors(StrEnum):
 
 class DebugTab(TabPane):
 
+    class TestPathsView(Static): ...
+
     MiB = 1024 * 1024
     INTERVAL = 2
 
@@ -343,11 +345,11 @@ class DebugTab(TabPane):
                     FlatBtnLabel.memory_usage,
                 ),
             )
-            with ContentSwitcher(initial=self.ids.container.test_paths):
+            with ContentSwitcher(initial=self.ids.container.test_paths_view):
                 yield Vertical(
                     Label(SectionLabel.test_paths, classes=Tcss.main_section_label),
-                    Static(id=self.ids.static.debug_test_paths),
-                    id=self.ids.container.test_paths,
+                    self.TestPathsView(classes=Tcss.info),
+                    id=self.ids.container.test_paths_view,
                 )
                 yield Vertical(
                     Label(SectionLabel.debug_log, classes=Tcss.main_section_label),
@@ -371,9 +373,8 @@ class DebugTab(TabPane):
     def on_mount(self) -> None:
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.test_paths_static = self.query_one(
-            self.ids.static.debug_test_paths_q, Static
-        )
+        self.test_paths_view = self.query_one(self.ids.container.test_paths_view_q)
+        self.test_paths_static = self.query_exactly_one(self.TestPathsView)
         self.test_paths_static.update(self._list_existing_test_paths())
         self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
         self.memory_logger = self.query_one(self.ids.richlog.memory_q, RichLog)
@@ -506,7 +507,7 @@ class DebugTab(TabPane):
             for btn in self.test_paths_op_btns:
                 btn.display = True
         if event.button.label == FlatBtnLabel.test_paths:
-            self.switcher.current = self.ids.container.test_paths
+            self.switcher.current = self.test_paths_view.id
         elif event.button.label == FlatBtnLabel.debug_log:
             self.switcher.current = self.ids.container.debug_log
         elif event.button.label == FlatBtnLabel.dom_nodes:

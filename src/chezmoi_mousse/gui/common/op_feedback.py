@@ -55,26 +55,28 @@ class OperateInfo(Static):
 
 class CommandOutput(ScrollableContainer):
 
+    class AddedPaths(Static): ...
+
+    class RemovedPaths(Static): ...
+
+    class ChangedStatusPaths(Static): ...
+
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGUI)
 
     def compose(self) -> ComposeResult:
         yield Label("Added paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.app.main_static_id.added_paths, classes=Tcss.info)
+        yield self.AddedPaths(classes=Tcss.info)
         yield Label("Removed paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.app.main_static_id.removed_paths, classes=Tcss.info)
+        yield self.RemovedPaths(classes=Tcss.info)
         yield Label("Changed status paths", classes=Tcss.sub_section_label)
-        yield Static(id=self.app.main_static_id.changed_status, classes=Tcss.info)
+        yield self.ChangedStatusPaths(classes=Tcss.info)
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self.added_paths = self.query_one(self.app.main_static_id.added_paths_q, Static)
-        self.removed_paths = self.query_one(
-            self.app.main_static_id.removed_paths_q, Static
-        )
-        self.changed_status = self.query_one(
-            self.app.main_static_id.changed_status_q, Static
-        )
+        self.added_paths = self.query_exactly_one(self.AddedPaths)
+        self.removed_paths = self.query_exactly_one(self.RemovedPaths)
+        self.changed_status = self.query_exactly_one(self.ChangedStatusPaths)
         self.reset_widgets()
 
     @work
