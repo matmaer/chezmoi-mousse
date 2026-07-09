@@ -8,7 +8,7 @@ on:
 
 jobs:
   linting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     strategy:
       matrix:
         python-version: ["3.13"]
