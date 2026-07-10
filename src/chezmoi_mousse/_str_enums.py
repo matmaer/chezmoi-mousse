@@ -8,7 +8,6 @@ __all__ = [
     "FlatBtnLabel",
     "RichLogName",
     "LogString",
-    "NoRunInfo",
     "OperateString",
     "SectionLabel",
     "StatusCode",
@@ -16,27 +15,6 @@ __all__ = [
     "TabLabel",
     "Tcss",
 ]
-
-
-class NoRunInfo(StrEnum):
-    _CHEZMOI_FOUND = "'chezmoi' command found: "
-    _GIT_FOUND = "'git' command found: "
-    CHEZMOI_NOT_FOUND = "'chezmoi' command not found, see https://chezmoi.io/install/"
-    FEEDBACK = "Feedback welcome! https://github.com/matmaer/chezmoi-mousse/discussions"
-    GIT_NOT_FOUND = "'git' command not found, see https://git-scm.com/install/"
-    IN_SUBSHELL = "You are in a 'chezmoi subshell', exit the subshell to run the app."
-    NOT_IN_SUBSHELL = "Not in a 'chezmoi subshell' detected."
-    NO_APP_RUN = "Please check:"
-    PRETEND_FAIL = "Pretending the app cannot run."
-    NO_PRETEND_FAIL = "Not pretending that the app cannot run."
-
-    @classmethod
-    def git_found(cls, which: str) -> str:
-        return cls._GIT_FOUND + which
-
-    @classmethod
-    def chezmoi_found(cls, which: str) -> str:
-        return cls._CHEZMOI_FOUND + which
 
 
 class BindingAction(StrEnum):
