@@ -208,7 +208,7 @@ class TestPaths:
     def _create_python_file(self) -> list[str]:
         file_path = self.all_paths.python_file_path
         shutil.copyfile(
-            Path(__file__).resolve().parent / "_str_enum_names.py", file_path
+            Path(__file__).resolve().parent.parent / "_str_enums.py", file_path
         )
         return [str(file_path)]
 
@@ -348,13 +348,18 @@ class TestPaths:
                     file.unlink()
                     modified.add(f"[$text-error]{file}[/]")
                     continue
-                modified_content = (
-                    file.read_text(encoding="utf-8")
-                    .replace("title", "new_title")
-                    .replace("true", "false")
-                )
+                file_lines = file.read_text(encoding="utf-8").splitlines()
+                old_title = [line for line in file_lines if line.startswith("title")]
+                idx = file_lines.index(old_title[0])
+                new_title = f"title = {self._faker.sentence(nb_words=6)}"
+                file_lines[idx] = new_title
+                for line in file_lines:
+                    if "true" in line:
+                        line.replace("true", "false")
+                    elif "false" in line:
+                        line.replace("false", "true")
                 with Path.open(file, "w", encoding="utf-8") as f:
-                    f.write(modified_content)
+                    f.write("\n".join(file_lines))
                 modified.add(f"[$text-warning]{file}[/]")
 
         # Toggle between 0o750 and 0o755 for the dir with status
