@@ -176,8 +176,10 @@ class FilteredDirTree(DirectoryTree):
             or file_path.suffix in unwanted_suffixes
             or self._looks_like_cache(file_path)
             or self._looks_like_binary_file(file_path)
-            and not self._could_be_private_key(file_path)
+            and self._could_be_private_key(file_path)
         )
+
+    # TODO fix filtering, add unmanaged cmd and add switch to unhide already managed
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
 
