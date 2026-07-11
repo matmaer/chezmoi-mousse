@@ -54,6 +54,7 @@ class ReadVerb(Enum):
     managed = "managed"
     source_path = "source-path"
     status = "status"
+    unmanaged = "unmanaged"
 
 
 class ReadCmd(Enum):
@@ -87,6 +88,7 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     template_data = (ReadVerb.data.value,)
+    unmanaged_files = (ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value)
 
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
@@ -101,6 +103,7 @@ class ReadCmd(Enum):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
             ReadCmd.template_data,
+            ReadCmd.unmanaged_files,
         ]
 
     @classmethod
@@ -110,6 +113,7 @@ class ReadCmd(Enum):
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
             ReadCmd.status_files,
+            ReadCmd.unmanaged_files,
         ]
 
 
@@ -136,26 +140,34 @@ class CommandResult:
     completed_process: CompletedProcess[str]
     path_arg: Path | None
 
-    def _get_text(self, output: str) -> str:
-        def _line_has_text(line: str) -> bool:
-            return line != "" and not line.isspace()
+    def _has_no_text(self, input: str):
+        return not bool(input.strip())
 
-        if not _line_has_text(output):
+    def _get_text(self, output: str) -> str:
+        if self._has_no_text(output):
             return ""
         lines = output.splitlines()
         if len(lines) == 1:
-            return "" if not _line_has_text(lines[0]) else lines[0]
+            return "" if self._has_no_text(lines[0]) else lines[0]
         # Remove leading lines with no text
         start = 0
-        while start < len(lines) and not _line_has_text(lines[start]):
+        while start < len(lines) and self._has_no_text(lines[start]):
             start += 1
         # Remove trailing lines with no text
         end = len(lines)
-        while end > start and not _line_has_text(lines[end - 1]):
+        while end > start and self._has_no_text(lines[end - 1]):
             end -= 1
         if start == end:
-            return "" if not _line_has_text(lines[start]) else lines[start]
+            return "" if self._has_no_text(lines[start]) else lines[start]
         return "\n".join(lines[start:end])
+
+    @property
+    def empty_std_out(self) -> bool:
+        return self._has_no_text(self.completed_process.stdout)
+
+    @property
+    def empty_std_err(self) -> bool:
+        return self._has_no_text(self.completed_process.stderr)
 
     @property
     def exit_code(self) -> int:

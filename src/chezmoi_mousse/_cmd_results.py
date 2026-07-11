@@ -24,6 +24,7 @@ class PathSets:
     managed_files: set[Path] = field(default_factory=lambda: set())
     status_dirs: set[Path] = field(default_factory=lambda: set())
     status_files: set[Path] = field(default_factory=lambda: set())
+    unmanaged_files: set[Path] = field(default_factory=lambda: set())
     # derived sets
     managed_paths: set[Path] = field(default_factory=lambda: set())
     n_dirs: set[Path] = field(default_factory=lambda: set())
@@ -91,6 +92,7 @@ class CachedCmdResults:
     status_dirs: CommandResult | None = None
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
+    unmanaged_files: CommandResult | None = None
 
     @property
     def all(self) -> list[CommandResult | None]:
@@ -158,11 +160,17 @@ class CachedData:
                 return set()
             return {Path(line[3:]) for line in result.std_out.splitlines()}
 
+        def parse_unmanaged_files(result: CommandResult | None) -> set[Path]:
+            if result is None:
+                return set()
+            return {Path(line) for line in result.std_out.splitlines()}
+
         self.sets = PathSets(
             managed_dirs=parse_managed_paths(self.cmd_results.managed_dirs),
             managed_files=parse_managed_paths(self.cmd_results.managed_files),
             status_dirs=parse_status_paths(self.cmd_results.status_dirs),
             status_files=parse_status_paths(self.cmd_results.status_files),
+            unmanaged_files=parse_unmanaged_files(self.cmd_results.unmanaged_files),
         )
 
 
