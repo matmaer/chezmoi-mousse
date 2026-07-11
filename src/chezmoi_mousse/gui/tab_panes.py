@@ -191,6 +191,8 @@ class DoctorTableView(Vertical):
 
 class TemplateDataView(Vertical):
 
+    # TODO make scrollable
+
     template_data_stdout: reactive[str | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
