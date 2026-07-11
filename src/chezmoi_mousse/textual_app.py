@@ -1,5 +1,4 @@
 import dataclasses
-from math import ceil
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -317,7 +316,9 @@ class ChezmoiGUI(App[None]):
 ####################################################################################
 
 
-class CustomScrollBarRender(ScrollBarRender):  # noqa: N806
+class CustomScrollBarRender(ScrollBarRender):
+
+    HORIZONTAL_BARS: ClassVar[list[str]] = [Chars.lower_3_8ths_block] * 7 + [" "]
 
     @classmethod
     def render_bar(
@@ -328,101 +329,28 @@ class CustomScrollBarRender(ScrollBarRender):  # noqa: N806
         position: float = 0,
         thickness: int = 1,
         vertical: bool = True,
-        back_color: Color | None = None,
-        bar_color: Color | None = None,
+        back_color: Color = Color.parse("#555555"),  # noqa: B008
+        bar_color: Color = Color.parse("bright_magenta"),  # noqa: B008
     ) -> Segments:
-        if back_color is None:
-            back_color = Color.parse("#555555")
-        if bar_color is None:
-            bar_color = Color.parse("bright_magenta")
+        segments_object = super().render_bar(
+            size,
+            virtual_size,
+            window_size,
+            position,
+            thickness,
+            vertical,
+            back_color,
+            bar_color,
+        )
 
-        bars = cls.VERTICAL_BARS if vertical else cls.HORIZONTAL_BARS
+        if vertical:  # For a vertical, render with the original render_bar
+            return segments_object
 
-        back = back_color
-        bar = bar_color
+        segments = list(segments_object.segments)
 
-        len_bars = len(bars)
-        width_thickness = thickness if vertical else 1
+        for i, segment in enumerate(segments):
+            if segment.style and segment.style.reverse:
+                new_style = segment.style + Style(reverse=False)
+                segments[i] = Segment(Chars.lower_3_8ths_block, new_style)
 
-        _Segment = Segment  # noqa: N806
-        _Style = Style  # noqa: N806
-        blank = cls.BLANK_GLYPH * width_thickness
-
-        foreground_meta = {"@mouse.down": "grab"}
-        if window_size and size and virtual_size and size != virtual_size:
-            bar_ratio = virtual_size / size
-            thumb_size = max(1, window_size / bar_ratio)
-
-            position_ratio = position / (virtual_size - window_size)
-            position = (size - thumb_size) * position_ratio
-
-            start = int(position * len_bars)
-            end = start + ceil(thumb_size * len_bars)
-
-            start_index, start_bar = divmod(max(0, start), len_bars)
-            end_index, end_bar = divmod(max(0, end), len_bars)
-
-            upper = {"@mouse.up": "scroll_up"}
-            lower = {"@mouse.up": "scroll_down"}
-
-            upper_back_segment = Segment(blank, _Style(bgcolor=back, meta=upper))
-            lower_back_segment = Segment(blank, _Style(bgcolor=back, meta=lower))
-
-            segments = [upper_back_segment] * int(size)
-            segments[end_index:] = [lower_back_segment] * (size - end_index)
-            if vertical:
-                segments[start_index:end_index] = [
-                    _Segment(
-                        blank, _Style(color=bar, reverse=True, meta=foreground_meta)
-                    )
-                ] * (end_index - start_index)
-                if start_index < len(segments):
-                    bar_character = bars[len_bars - 1 - start_bar]
-                    if bar_character != " ":
-                        segments[start_index] = _Segment(
-                            bar_character * width_thickness,
-                            (
-                                _Style(bgcolor=back, color=bar, meta=foreground_meta)
-                                if vertical
-                                else _Style(
-                                    bgcolor=back,
-                                    color=bar,
-                                    meta=foreground_meta,
-                                    reverse=True,
-                                )
-                            ),
-                        )
-                if end_index < len(segments):
-                    bar_character = bars[len_bars - 1 - end_bar]
-                    if bar_character != " ":
-                        segments[end_index] = _Segment(
-                            bar_character * width_thickness,
-                            (
-                                _Style(
-                                    bgcolor=back,
-                                    color=bar,
-                                    meta=foreground_meta,
-                                    reverse=True,
-                                )
-                                if vertical
-                                else _Style(
-                                    bgcolor=back, color=bar, meta=foreground_meta
-                                )
-                            ),
-                        )
-            else:
-                segments = [
-                    _Segment(blank * width_thickness, _Style(bgcolor=back))
-                ] * int(size)
-                for i in range(start_index, end_index):
-                    segments[i] = _Segment(
-                        Chars.lower_3_8ths_block * width_thickness,
-                        _Style(bgcolor=back, color=bar, meta=foreground_meta),
-                    )
-        else:
-            style = _Style(bgcolor=back)
-            segments = [_Segment(blank, style=style)] * int(size)
-        if vertical:
-            return Segments(segments, new_lines=True)
-        else:
-            return Segments((segments + [_Segment.line()]) * thickness, new_lines=False)
+        return Segments(segments, new_lines=False)
