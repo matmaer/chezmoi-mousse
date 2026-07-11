@@ -117,19 +117,27 @@ class TabLabel(StrEnum):
 
 
 class Chars(StrEnum):
-    # bullet = "\u2022"  # BULLET # noqa: ERA001
     burger = "\u2261"  # IDENTICAL TO
-    # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
-    # gear = "\u2699"  # GEAR # noqa: ERA001
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
-    # Used for Tree widgets
-    tree_collapsed = f"{right_triangle} "
-    tree_expanded = f"{down_triangle} "
     warning_sign = "\u26a0"  # WARNING SIGN
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
+    # bullet = "\u2022"  # BULLET # noqa: ERA001
+    # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
+    # gear = "\u2699"  # GEAR # noqa: ERA001
+    # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
+    # heavy_line_left = "\u2578"  # BOX DRAWINGS HEAVY LEFT  # noqa: ERA001
+    # heavy_line_right = "\u257a"  # BOX DRAWINGS HEAVY RIGHT # noqa: ERA001
+    # quadrant_lower_left = "\u2596"  # Quadrant Lower Left # noqa: ERA001
+    # quadrant_lower_right = "\u2597"  # Quadrant Lower Rightbottom # noqa: ERA001
+    # quadrant_upper_left = "\u2598"  # Quadrant Upper Left # noqa: ERA001
+    # quadrant_upper_right = "\u259d"  # Quadrant Upper Right # noqa: ERA001
+
+    # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
+    tree_collapsed = f"{right_triangle} "
+    tree_expanded = f"{down_triangle} "
 
 
 class LogString(StrEnum):
