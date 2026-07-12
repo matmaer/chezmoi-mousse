@@ -30,8 +30,6 @@ if TYPE_CHECKING:
 
 from ..gui.common.messages import ReadyToUseMsg
 
-__all__ = ["test_app_with_pilot"]
-
 
 async def pilot_chill(pilot: Pilot[None]):
     await pilot.wait_for_scheduled_animations()
