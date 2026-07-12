@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 
 from ._app_ids import AppIds
 from ._cmd_results import CMD, CachedData
-from ._custom_app_attr import CanvasIds
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb
 from ._str_enums import (
@@ -26,6 +25,7 @@ from ._str_enums import (
     TabLabel,
     Tcss,
 )
+from .custom_app_attr import CanvasIds
 from .debug._test_paths import TestPaths
 
 if TYPE_CHECKING:

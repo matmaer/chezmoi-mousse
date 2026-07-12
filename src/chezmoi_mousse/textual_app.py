@@ -22,7 +22,7 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
-    from ._custom_app_attr import CustomAppAttribute
+    from .custom_app_attr import CustomAppAttribute
 
 
 __all__ = ["ChezmoiGUI"]

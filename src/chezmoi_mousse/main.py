@@ -2,9 +2,9 @@ import asyncio
 import sys
 from enum import StrEnum
 
-from ._custom_app_attr import CustomAppAttribute
-from .debug._pilot_mode import test_app_with_pilot
-from .textual_app import ChezmoiGUI
+from chezmoi_mousse.custom_app_attr import CustomAppAttribute
+from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
+from chezmoi_mousse.textual_app import ChezmoiGUI
 
 
 class NoRunInfo(StrEnum):
