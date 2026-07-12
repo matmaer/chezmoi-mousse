@@ -6,6 +6,12 @@
 /* TODO, check scrollbar-gutter: stable */
 # Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
 
+.add_tab_contents_view {
+  border-top: $primary;
+  border-title-align: center;
+  border-title-style: bold;
+}
+
 .flat_button{
   background-tint: $primary-muted;
   background: $primary-muted;
@@ -75,12 +81,6 @@
 /**********************/
 /* Type Selector tcss */
 /**********************/
-
-AddTab > Vertical > ContentsView {
-  border-top: $primary;
-  border-title-align: center;
-  border-title-style: bold;
-}
 
 AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 2;

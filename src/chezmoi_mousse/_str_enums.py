@@ -51,6 +51,7 @@ class RichLogName(StrEnum):
 
 
 class Tcss(StrEnum):
+    add_tab_contents_view = auto()
     added = auto()
     changed = auto()
     changes_enabled_color = auto()

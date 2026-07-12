@@ -78,6 +78,7 @@ class AddTab(TabPane):
     def on_mount(self) -> None:
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
+        self.contents_view.add_class(Tcss.add_tab_contents_view)
         self.contents_view.border_title = f" {CMD.cache.dest_dir} "
         self.contents_view.show_path = CMD.cache.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
