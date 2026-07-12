@@ -237,26 +237,33 @@ class SwitchData(NamedTuple):
 
 class SwitchEnum(Enum):
 
+    # Apply and Re-Add tab
+    show_unchanged = SwitchData(
+        label=SwitchLabel.show_unchanged,
+        enabled_tooltip=(
+            "Include unchanged paths, which are not found in the 'chezmoi status' "
+            "output."
+        ),
+    )
+    show_unmanaged_files = SwitchData(
+        label=SwitchLabel.show_unmanaged_files,
+        enabled_tooltip=("If enabled, also show unmanaged files."),
+    )
     expand_all = SwitchData(
-        label=SwitchLabel.expand_all,
-        enabled_tooltip=(
-            "Expand all managed directories. Showing unchanged depending on the "
-            f'"{SwitchLabel.unchanged}" switch.'
-        ),
+        label=SwitchLabel.expand_all, enabled_tooltip=("Expand all directories.")
     )
-    unchanged = SwitchData(
-        label=SwitchLabel.unchanged,
-        enabled_tooltip=(
-            "Include unchanged paths which are not found in the "
-            "'chezmoi status' output."
-        ),
+
+    # Add Tab
+    hide_unmanaged_dirs = SwitchData(
+        label=SwitchLabel.hide_unmanaged_dirs,
+        enabled_tooltip=("If enabled, hide unmanaged directories."),
     )
-    managed_dirs = SwitchData(
-        label=SwitchLabel.managed_dirs,
-        enabled_tooltip=("If enabled, only already managed directories are shown."),
+    show_managed = SwitchData(
+        label=SwitchLabel.show_managed,
+        enabled_tooltip=("If enabled, also show already managed paths."),
     )
-    unwanted = SwitchData(
-        label=SwitchLabel.unwanted,
+    show_unwanted = SwitchData(
+        label=SwitchLabel.show_unwanted,
         enabled_tooltip=(
             "Include files and directories considered as 'unwanted' for a dotfile "
             "manager. These include cache, temporary, trash (recycle bin) and other "

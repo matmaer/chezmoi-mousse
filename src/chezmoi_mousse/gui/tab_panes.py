@@ -108,9 +108,11 @@ class AddTab(TabPane):
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch.managed_dirs:
-            self.dir_tree.only_show_managed_dirs = event.value
-        elif event.switch.id == self.ids.switch.unwanted:
+        if event.switch.id == self.ids.switch.hide_unmanaged_dirs:
+            self.dir_tree.hide_unmanaged_dirs = event.value
+        elif event.switch.id == self.ids.switch.show_managed:
+            self.dir_tree.show_managed = event.value
+        elif event.switch.id == self.ids.switch.show_unwanted:
             self.dir_tree.show_unwanted = event.value
         self.dir_tree.reload()
 
@@ -133,8 +135,10 @@ class ApplyTab(TabPane):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch.unchanged:
-            self.managed_tree.unchanged = event.value
+        if event.switch.id == self.ids.switch.show_unchanged:
+            self.managed_tree.show_unchanged = event.value
+        elif event.switch.id == self.ids.switch.show_unmanaged_files:
+            self.managed_tree.show_unmanaged_files = event.value
         elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value
 
@@ -350,7 +354,7 @@ class DebugTab(TabPane):
             with ContentSwitcher(initial=self.ids.container.test_paths_view):
                 yield Vertical(
                     Label(SectionLabel.test_paths, classes=Tcss.main_section_label),
-                    self.TestPathsView(classes=Tcss.info),
+                    DebugTab.TestPathsView(classes=Tcss.info),
                     id=self.ids.container.test_paths_view,
                 )
                 yield Vertical(
@@ -376,7 +380,7 @@ class DebugTab(TabPane):
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.test_paths_view = self.query_one(self.ids.container.test_paths_view_q)
-        self.test_paths_static = self.query_exactly_one(self.TestPathsView)
+        self.test_paths_static = self.query_exactly_one(DebugTab.TestPathsView)
         self.test_paths_static.update(self._list_existing_test_paths())
         self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
         self.memory_logger = self.query_one(self.ids.richlog.memory_q, RichLog)
@@ -419,10 +423,11 @@ class DebugTab(TabPane):
                     colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
                 elif path in CMD.cache.sets.status_files:
                     colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
-            elif path.is_dir():
-                colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
-            elif path.is_file():
-                colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
+            elif path in CMD.cache.sets.unmanaged_paths:
+                if path.is_dir():
+                    colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
+                if path.is_file():
+                    colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
             else:
                 colored_paths.append(f"{TestPathColors.unhandled}{path}[/]")
 
@@ -581,8 +586,10 @@ class ReAddTab(TabPane):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch.unchanged:
-            self.managed_tree.unchanged = event.value
+        if event.switch.id == self.ids.switch.show_unchanged:
+            self.managed_tree.show_unchanged = event.value
+        elif event.switch.id == self.ids.switch.show_unmanaged_files:
+            self.managed_tree.show_unmanaged_files = event.value
         elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value
 

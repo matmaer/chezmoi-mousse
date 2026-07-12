@@ -6,8 +6,6 @@ from ._custom_app_attr import CustomAppAttribute
 from .debug._pilot_mode import test_app_with_pilot
 from .textual_app import ChezmoiGUI
 
-__all__ = ["run_app"]
-
 
 class NoRunInfo(StrEnum):
     _CHEZMOI_FOUND = "'chezmoi' command found: "

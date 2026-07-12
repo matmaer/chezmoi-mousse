@@ -220,7 +220,7 @@ class MainScreen(Screen[None]):
         msg.stop()
 
         # Flick the 'Show unchanged paths' switch if needed
-        unchanged_switch = self.query_one(msg.ids.switch.unchanged_q, Switch)
+        unchanged_switch = self.query_one(msg.ids.switch.show_unchanged_q, Switch)
         if (
             unchanged_switch.value is False
             and msg.path in CMD.cache.sets.x_files

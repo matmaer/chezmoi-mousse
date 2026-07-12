@@ -217,11 +217,27 @@ class OperateButtonIds:
 
 class SwitchIds:
     def __init__(self, ids: AppIds):
+
+        # Apply and Re-Add tab
+        self.show_unchanged: str = ids.switch_id(switch=SwitchEnum.show_unchanged)
+        self.show_unchanged_q: str = f"#{self.show_unchanged}"
+
+        self.show_unmanaged_files: str = ids.switch_id(
+            switch=SwitchEnum.show_unmanaged_files
+        )
+        self.show_unmanaged_files_q: str = f"#{self.show_unmanaged_files}"
+
         self.expand_all: str = ids.switch_id(switch=SwitchEnum.expand_all)
         self.expand_all_q: str = f"#{self.expand_all}"
-        self.unchanged: str = ids.switch_id(switch=SwitchEnum.unchanged)
-        self.unchanged_q: str = f"#{self.unchanged}"
-        self.managed_dirs: str = ids.switch_id(switch=SwitchEnum.managed_dirs)
-        self.managed_dirs_q: str = f"#{self.managed_dirs}"
-        self.unwanted: str = ids.switch_id(switch=SwitchEnum.unwanted)
-        self.unwanted_q: str = f"#{self.unwanted}"
+
+        # Add tab
+        self.hide_unmanaged_dirs: str = ids.switch_id(
+            switch=SwitchEnum.hide_unmanaged_dirs
+        )
+        self.hide_unmanaged_dirs_q: str = f"#{self.hide_unmanaged_dirs}"
+
+        self.show_managed: str = ids.switch_id(switch=SwitchEnum.show_managed)
+        self.show_managed_q: str = f"#{self.show_managed}"
+
+        self.show_unwanted: str = ids.switch_id(switch=SwitchEnum.show_unwanted)
+        self.show_unwanted_q: str = f"#{self.show_unwanted}"

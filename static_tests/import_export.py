@@ -5,6 +5,8 @@ import pytest
 
 from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
+__all__ = []
+
 
 class AllVariableDetector(ast.NodeVisitor):
     def __init__(self) -> None:

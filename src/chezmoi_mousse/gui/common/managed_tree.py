@@ -54,7 +54,8 @@ class ManagedTree(Tree[Path]):
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded
 
-    unchanged: reactive[bool] = reactive(False, init=False)
+    show_unchanged: reactive[bool] = reactive(False, init=False)
+    show_unmanaged_files: reactive[bool] = reactive(False, init=False)
     expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
@@ -191,7 +192,7 @@ class ManagedTree(Tree[Path]):
 
         dir_to_insert = n_dirs_in | status_dirs_in
 
-        if self.unchanged:
+        if self.show_unchanged:
             dir_to_insert |= tree_x_dirs_in
             files_to_insert = files_to_insert | x_files_in
 
@@ -220,21 +221,10 @@ class ManagedTree(Tree[Path]):
             raise ValueError("event.node.data is None in send_node_context")
         self.post_message(CurrentNodeMsg(path=event.node.data, ids=self.ids))
 
-    def watch_expand_all(self, expand_all: bool) -> None:
-        if expand_all is True:
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
-            self.root.expand_all()
-        elif expand_all is False:
-            current_nodes = self._get_nodes()
-            for node in current_nodes:
-                if node not in self._nodes_backup.expanded:
-                    node.collapse()
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
-
-    def watch_unchanged(self, unchanged: bool) -> None:
-        if unchanged is True:
+    def watch_show_unchanged(self, show_unchanged: bool) -> None:
+        if show_unchanged is True:
             self._populate_root_node_recursive(self.root)
-        elif unchanged is False:
+        elif show_unchanged is False:
             for dir_path in CMD.cache.sets.tree_x_dirs:
                 node = self._get_node_by_path(dir_path)
                 if node is not None:
@@ -245,3 +235,17 @@ class ManagedTree(Tree[Path]):
                     node.remove()
         if self.expand_all:
             self.root.expand_all()
+
+    def watch_show_unmanaged_files(self, show_unmanaged: bool) -> None:
+        self.notify(f"not yet implemented {show_unmanaged}")
+
+    def watch_expand_all(self, expand_all: bool) -> None:
+        if expand_all is True:
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self.root.expand_all()
+        elif expand_all is False:
+            current_nodes = self._get_nodes()
+            for node in current_nodes:
+                if node not in self._nodes_backup.expanded:
+                    node.collapse()
+            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())

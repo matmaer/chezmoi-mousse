@@ -165,10 +165,15 @@ class BindingDescription(StrEnum):
 
 
 class SwitchLabel(StrEnum):
+    # Apply and ReAdd Tab
+    show_unchanged = "Show unchanged paths"
+    show_unmanaged_files = "Show unmanaged files"
     expand_all = "Expand all dirs"
-    unchanged = "Show unchanged paths"
-    managed_dirs = "Hide unmanaged dirs"
-    unwanted = "Show unwanted paths"
+
+    # Add Tab
+    hide_unmanaged_dirs = "Hide unmanaged dirs"
+    show_managed = "Show managed paths"
+    show_unwanted = "Show unwanted paths"
 
 
 class OperateString(StrEnum):

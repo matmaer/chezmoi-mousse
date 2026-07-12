@@ -162,14 +162,6 @@ class CommandResult:
         return "\n".join(lines[start:end])
 
     @property
-    def empty_std_out(self) -> bool:
-        return self._has_no_text(self.completed_process.stdout)
-
-    @property
-    def empty_std_err(self) -> bool:
-        return self._has_no_text(self.completed_process.stderr)
-
-    @property
     def exit_code(self) -> int:
         return self.completed_process.returncode
 
