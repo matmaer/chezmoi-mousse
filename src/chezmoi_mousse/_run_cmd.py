@@ -103,7 +103,6 @@ class ReadCmd(Enum):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
             ReadCmd.template_data,
-            ReadCmd.unmanaged_files,
         ]
 
     @classmethod
@@ -113,7 +112,6 @@ class ReadCmd(Enum):
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
             ReadCmd.status_files,
-            ReadCmd.unmanaged_files,
         ]
 
 

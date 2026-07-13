@@ -24,34 +24,23 @@ class PathSets:
     managed_files: set[Path] = field(default_factory=lambda: set())
     status_dirs: set[Path] = field(default_factory=lambda: set())
     status_files: set[Path] = field(default_factory=lambda: set())
-    unmanaged_paths: set[Path] = field(default_factory=lambda: set())
     # derived sets
     managed_paths: set[Path] = field(default_factory=lambda: set())
-    unmanaged_dirs: set[Path] = field(default_factory=lambda: set())
-    unmanaged_files: set[Path] = field(default_factory=lambda: set())
-    n_dirs: set[Path] = field(default_factory=lambda: set())
     status_paths: set[Path] = field(default_factory=lambda: set())
-    tree_x_dirs: set[Path] = field(default_factory=lambda: set())
-    x_dirs: set[Path] = field(default_factory=lambda: set())
-    x_files: set[Path] = field(default_factory=lambda: set())
+    unchanged_files: set[Path] = field(default_factory=lambda: set())
+    unchanged_dirs: set[Path] = field(default_factory=lambda: set())
+    dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
 
     def __post_init__(self) -> None:
         self.managed_paths = self.managed_dirs | self.managed_files
-        self.unmanaged_dirs = {p for p in self.unmanaged_paths if p.is_dir()}
-        self.unmanaged_files = {p for p in self.unmanaged_paths if p.is_file()}
         self.status_paths = self.status_dirs | self.status_files
-        self.x_dirs = {d for d in self.managed_dirs if d not in self.status_dirs}
-        self.x_files = {f for f in self.managed_files if f not in self.status_files}
-        self.n_dirs = {
+        self.unchanged_files = self.managed_files - self.status_files
+        self.unchanged_dirs = self.managed_dirs - self.status_dirs
+        self.dirs_with_status_children = {
             d
-            for d in self.x_dirs
-            if any(
-                sp.is_relative_to(d)
-                for sp in self.status_paths
-                if d not in self.status_dirs
-            )
+            for d in self.managed_dirs
+            if any(sp.is_relative_to(d) for sp in self.status_paths)
         }
-        self.tree_x_dirs = {d for d in self.x_dirs if d not in self.n_dirs}
 
     @property
     def no_managed_paths(self) -> bool:
@@ -69,28 +58,14 @@ class PathSets:
     def status_files_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.status_files if p.parent == dir_path}
 
-    def x_files_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.x_files if p.parent == dir_path}
+    def unchanged_files_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.unchanged_files if p.parent == dir_path}
 
-    def n_dirs_in(self, dir_path: Path) -> set[Path]:
-        return {
-            p for p in self.n_dirs if p.parent == dir_path and p not in self.status_dirs
-        }
+    def dirs_with_status_children_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.dirs_with_status_children if p.parent == dir_path}
 
     def status_dirs_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.status_dirs if p.parent == dir_path}
-
-    def all_unmanaged_dirs_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.unmanaged_dirs if p.is_relative_to(dir_path)}
-
-    def all_unmanaged_files_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.unmanaged_files if p.is_relative_to(dir_path)}
-
-    def unmanaged_files_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.unmanaged_files if p.parent == dir_path}
-
-    def tree_x_dirs_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.tree_x_dirs if p.parent == dir_path}
 
 
 @dataclass(slots=True)
@@ -105,7 +80,6 @@ class CachedCmdResults:
     status_dirs: CommandResult | None = None
     status_files: CommandResult | None = None
     template_data: CommandResult | None = None
-    unmanaged_files: CommandResult | None = None
 
     @property
     def all(self) -> list[CommandResult | None]:
@@ -128,7 +102,6 @@ class CachedData:
             managed_files=set(),
             status_dirs=set(),
             status_files=set(),
-            unmanaged_paths=set(),
         )
 
     def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
@@ -174,17 +147,11 @@ class CachedData:
                 return set()
             return {Path(line[3:]) for line in result.std_out.splitlines()}
 
-        def parse_unmanaged_paths(result: CommandResult | None) -> set[Path]:
-            if result is None:
-                return set()
-            return {Path(line) for line in result.std_out.splitlines()}
-
         self.sets = PathSets(
             managed_dirs=parse_managed_paths(self.cmd_results.managed_dirs),
             managed_files=parse_managed_paths(self.cmd_results.managed_files),
             status_dirs=parse_status_paths(self.cmd_results.status_dirs),
             status_files=parse_status_paths(self.cmd_results.status_files),
-            unmanaged_paths=parse_unmanaged_paths(self.cmd_results.unmanaged_files),
         )
 
 

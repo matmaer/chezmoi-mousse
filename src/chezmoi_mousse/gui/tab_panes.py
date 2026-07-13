@@ -417,7 +417,7 @@ class DebugTab(TabPane):
                     colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
                 elif path in CMD.cache.sets.status_files:
                     colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
-            elif path in CMD.cache.sets.unmanaged_paths:
+            elif path not in CMD.cache.sets.managed_paths:
                 if path.is_dir():
                     colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
                 if path.is_file():
