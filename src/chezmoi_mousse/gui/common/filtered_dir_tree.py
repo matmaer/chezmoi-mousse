@@ -255,12 +255,6 @@ class FilteredDirTree(DirectoryTree):
         if dir_path not in CMD.cache.sets.managed_dirs:
             return not self.hide_unmanaged_dirs
 
-        if self._has_wanted_unmanaged_dirs(dir_path):
-            self.notify(f"has wanted unmanaged dirs {dir_path}")
-
-        if self._has_wanted_unmanaged_files(dir_path):
-            self.notify(f"has wanted unmanaged files {dir_path}")
-
         return True
 
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
