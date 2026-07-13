@@ -125,14 +125,14 @@ class DiffView(Container):
 
     def _get_unchanged_file_paths_in(self, dir_path: Path) -> list[Path]:
         results: set[Path] = set()
-        for path in CMD.cache.sets.x_files:
+        for path in CMD.cache.sets.unchanged_files:
             if path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
 
     def _get_unchanged_dir_paths_in(self, dir_path: Path) -> list[Path]:
         results: set[Path] = set()
-        for path in CMD.cache.sets.x_dirs:
+        for path in CMD.cache.sets.unchanged_dirs:
             if path != dir_path and path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
@@ -170,7 +170,7 @@ class DiffView(Container):
             )
             return widgets
 
-        if CMD.cache.sets.contains_status_paths(dir_path):
+        if dir_path in CMD.cache.sets.dirs_with_status_children:
             status_dirs_in = self._get_status_dir_descendants(dir_path, app_ids).items()
             if status_dirs_in:
                 widgets.append(
