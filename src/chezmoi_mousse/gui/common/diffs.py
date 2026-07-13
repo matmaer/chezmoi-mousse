@@ -236,14 +236,33 @@ class DiffView(Container):
                 widgets = self._create_diff_widgets(show_path)
             else:
                 widgets = self._get_dir_widgets(show_path, self.ids)
-        elif show_path in CMD.cache.sets.managed_files:
-            if show_path in CMD.cache.sets.status_files:
-                widgets = self._create_diff_widgets(show_path)
-            else:
-                widgets.append(Label("Managed file", classes=Tcss.main_section_label))
-                widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
-                widgets.append(Static("This file has no status.", classes=Tcss.context))
+        elif (
+            show_path in CMD.cache.sets.managed_files
+            and show_path in CMD.cache.sets.status_files
+        ):
+            widgets = self._create_diff_widgets(show_path)
+        elif show_path not in CMD.cache.sets.unmanaged_files:
+            widgets.append(Label("Managed file", classes=Tcss.main_section_label))
+            widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
+            widgets.append(Static("This file has no status.", classes=Tcss.context))
+        elif show_path in CMD.cache.sets.unmanaged_files:
+            widgets.append(Label("Unmanaged file", classes=Tcss.main_section_label))
+            widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
+            widgets.append(
+                Static(
+                    (
+                        "This file is not managed, switch to the add tab to add it to "
+                        "the chezmoi repository."
+                    ),
+                    classes=Tcss.context,
+                )
+            )
         else:
-            widgets.append(Static("Nothing to show."))
+            widgets.append(
+                Static(
+                    "Nothing to show, please file an issue here:\n"
+                    "https://github.com/matmaer/chezmoi-mousse/issues"
+                )
+            )
         container = ScrollableContainer(*widgets)
         self.mount(container)

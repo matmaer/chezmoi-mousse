@@ -13,6 +13,8 @@ from textual.widgets.tree import TreeNode
 from chezmoi_mousse import CMD, Chars, OpBtnEnum, Tcss
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from chezmoi_mousse import AppIds, ChezmoiGUI
 
 from .actionables import OpButton
@@ -120,19 +122,26 @@ class ManagedTree(Tree[Path]):
 
     def show_requested_node(self, path: Path) -> None:
         # Add potentially missing parent nodes or expand existing collapsed parent nodes
-        for parent_path in path.parents:
-            if (
-                parent_path in CMD.cache.dest_dir.parents
-                or parent_path == CMD.cache.dest_dir
-            ):
+
+        # reversed makes sure we start with the highest level path
+        all_parents: Iterable[Path] = reversed(path.parents)
+
+        for parent_path in all_parents:
+            if parent_path in CMD.cache.dest_dir.parents:
+                # the root node is destDir so it's parents never exist in the Tree
                 continue
+
+            # add and expand any missing parent paths and expand any existing parent if
+            # the node is collapsed
             existing_parent = self._get_node_by_path(parent_path)
-            if existing_parent is not None and existing_parent.is_collapsed is True:
-                existing_parent.expand()
+            if existing_parent is None:
+                new_node = self._insert_node(parent_path)
+                if new_node is not None:
+                    new_node.expand()
                 continue
-            new_node = self._insert_node(parent_path)
-            if new_node is not None:
-                new_node.expand()
+
+            elif existing_parent.is_collapsed is True:
+                existing_parent.expand()
 
         existing_node = self._get_node_by_path(path)
         if existing_node is not None:
@@ -142,13 +151,27 @@ class ManagedTree(Tree[Path]):
             self.select_node(new_node)
 
     def _insert_node(self, path: Path) -> TreeNode[Path] | None:
-        if path in CMD.cache.dest_dir.parents or path == CMD.cache.dest_dir:
-            return None
-        if self._get_node_by_path(path) is not None:
-            return None
+
+        if path in CMD.cache.dest_dir.parents:
+            msg = f"Trying to insert a parent node of the destDir root node: {path}"
+            raise ValueError(msg)
+
+        if path == CMD.cache.dest_dir:
+            msg = (
+                f"Trying to insert a node with path equal to the destDir "
+                f"{CMD.cache.dest_dir}which is the root node."
+            )
+            raise ValueError(msg)
+
+        node = self._get_node_by_path(path)
+        if node is not None:
+            # TODO: store and report these kind of conditions in debug mode
+            return node
+
         parent_node = self._get_node_by_path(path.parent)
         if parent_node is None:
             raise ValueError(f"Parent node for {path} not found.")
+
         node_label = self._create_colored_label(path)
         if path in CMD.cache.sets.managed_dirs:
             before_node = next(
@@ -189,12 +212,16 @@ class ManagedTree(Tree[Path]):
         tree_x_dirs_in = CMD.cache.sets.tree_x_dirs_in(tree_node.data)
         files_to_insert = CMD.cache.sets.status_files_in(tree_node.data)
         x_files_in = CMD.cache.sets.x_files_in(tree_node.data)
+        unmanaged_files_in = CMD.cache.sets.unmanaged_files_in(tree_node.data)
 
         dir_to_insert = n_dirs_in | status_dirs_in
 
         if self.show_unchanged:
             dir_to_insert |= tree_x_dirs_in
             files_to_insert = files_to_insert | x_files_in
+
+        if self.show_unmanaged_files:
+            files_to_insert |= unmanaged_files_in
 
         for dir in dir_to_insert:
             child_node = self._insert_node(dir)
@@ -217,9 +244,8 @@ class ManagedTree(Tree[Path]):
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
-        if event.node.data is None:
-            raise ValueError("event.node.data is None in send_node_context")
-        self.post_message(CurrentNodeMsg(path=event.node.data, ids=self.ids))
+        if event.node.data is not None:
+            self.post_message(CurrentNodeMsg(path=event.node.data, ids=self.ids))
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged is True:
@@ -237,7 +263,13 @@ class ManagedTree(Tree[Path]):
             self.root.expand_all()
 
     def watch_show_unmanaged_files(self, show_unmanaged: bool) -> None:
-        self.notify(f"not yet implemented {show_unmanaged}")
+        if show_unmanaged is True:
+            self._populate_root_node_recursive(self.root)
+        elif show_unmanaged is False:
+            for file_path in CMD.cache.sets.unmanaged_files:
+                node = self._get_node_by_path(file_path)
+                if node is not None:
+                    node.remove()
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:
