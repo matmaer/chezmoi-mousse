@@ -1,5 +1,5 @@
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -24,12 +24,12 @@ __all__ = ["ManagedTree", "DestDirTree"]
 
 
 @dataclass
-class TreeNodesBackup:
+class TreeState:
     all_nodes: set[TreeNode[Path]]
-    expanded: set[TreeNode[Path]] = field(init=False)
 
-    def __post_init__(self) -> None:
-        self.expanded = {node for node in self.all_nodes if node.is_expanded}
+    @property
+    def expanded_nodes(self) -> set[TreeNode[Path]]:
+        return {node for node in self.all_nodes if node.is_expanded}
 
 
 class DestDirTree(Vertical):
@@ -64,7 +64,7 @@ class ManagedTree(Tree[Path]):
         super().__init__(label="", id=ids.managed_tree, classes=Tcss.managed_tree)
         self.ids = ids
         self.guide_depth: int = 3
-        self._nodes_backup = TreeNodesBackup(all_nodes=set())
+        self._nodes_backup = TreeState(all_nodes=set())
 
     def on_mount(self) -> None:
         self._config_root_node()
@@ -116,12 +116,12 @@ class ManagedTree(Tree[Path]):
             self.root.collapse_all()
             self.root.expand()
             self._first_time_populating = False
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self._nodes_backup = TreeState(all_nodes=self._get_nodes())
             return
         if self.expand_all is True:
             self.root.expand_all()
         else:
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self._nodes_backup = TreeState(all_nodes=self._get_nodes())
 
     def _add_missing_parents(self, path: Path) -> None:
         # Add potentially missing parent nodes
@@ -257,7 +257,7 @@ class ManagedTree(Tree[Path]):
     @on(Tree.NodeExpanded)
     def update_nodes_backup(self) -> None:
         if not self.expand_all:
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self._nodes_backup = TreeState(all_nodes=self._get_nodes())
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
@@ -290,11 +290,11 @@ class ManagedTree(Tree[Path]):
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self._nodes_backup = TreeState(all_nodes=self._get_nodes())
             self.root.expand_all()
         elif expand_all is False:
             current_nodes = self._get_nodes()
             for node in current_nodes:
-                if node not in self._nodes_backup.expanded:
+                if node not in self._nodes_backup.expanded_nodes:
                     node.collapse()
-            self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
+            self._nodes_backup = TreeState(all_nodes=self._get_nodes())
