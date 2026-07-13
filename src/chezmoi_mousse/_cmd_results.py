@@ -86,6 +86,9 @@ class PathSets:
     def all_unmanaged_files_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.unmanaged_files if p.is_relative_to(dir_path)}
 
+    def unmanaged_files_in(self, dir_path: Path) -> set[Path]:
+        return {p for p in self.unmanaged_files if p.parent == dir_path}
+
     def tree_x_dirs_in(self, dir_path: Path) -> set[Path]:
         return {p for p in self.tree_x_dirs if p.parent == dir_path}
 
