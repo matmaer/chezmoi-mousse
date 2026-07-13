@@ -26,9 +26,10 @@ __all__ = [
 
 
 class DirContentBtn(Button):
-    def __init__(self, *, label: str, path: "Path") -> None:
+    def __init__(self, *, label: str, path: "Path", app_ids: "AppIds") -> None:
         super().__init__(label=label)
         self.path = path
+        self.app_ids = app_ids
 
 
 class FlatButton(Button):

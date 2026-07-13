@@ -20,7 +20,7 @@ from chezmoi_mousse import (
     Tcss,
 )
 
-from .common.actionables import OpButton, OperateButtons, SwitchSlider
+from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -215,21 +215,31 @@ class MainScreen(Screen[None]):
         ):
             await self._push_loading_modal(event.button.btn_enum).wait()
 
+    @on(DirContentBtn.Pressed)
+    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
+        if isinstance(event.button, DirContentBtn):
+            event.stop()
+            managed_tree = self.query_one(
+                event.button.app_ids.managed_tree_q, ManagedTree
+            )
+            # # Flick the 'Show unchanged paths' switch if needed
+            unchanged_switch = self.query_one(
+                event.button.app_ids.switch.show_unchanged_q, Switch
+            )
+            if (
+                unchanged_switch.value is False
+                and event.button.path in CMD.cache.sets.x_files
+                or (
+                    event.button.path in CMD.cache.sets.x_dirs
+                    and event.button.path not in CMD.cache.sets.n_dirs
+                )
+            ):
+                unchanged_switch.value = True
+            managed_tree.show_requested_node(event.button.path)
+
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
-
-        # Flick the 'Show unchanged paths' switch if needed
-        unchanged_switch = self.query_one(msg.ids.switch.show_unchanged_q, Switch)
-        if (
-            unchanged_switch.value is False
-            and msg.path in CMD.cache.sets.x_files
-            or (
-                msg.path in CMD.cache.sets.x_dirs
-                and msg.path not in CMD.cache.sets.n_dirs
-            )
-        ):
-            unchanged_switch.value = True
 
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         tab_buttons = self.query_one(

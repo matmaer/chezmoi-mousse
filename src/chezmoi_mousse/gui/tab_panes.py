@@ -32,7 +32,6 @@ from chezmoi_mousse import (
 )
 
 from .common.actionables import (
-    DirContentBtn,
     FlatButtonsVertical,
     OpButton,
     OperateButtons,
@@ -142,12 +141,6 @@ class ApplyTab(TabPane):
             self.managed_tree.show_unmanaged_files = event.value
         elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value
-
-    @on(DirContentBtn.Pressed)
-    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
-        if isinstance(event.button, DirContentBtn):
-            event.stop()
-            self.managed_tree.show_requested_node(event.button.path)
 
 
 class CatConfigView(Vertical):
@@ -593,9 +586,3 @@ class ReAddTab(TabPane):
             self.managed_tree.show_unmanaged_files = event.value
         elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value
-
-    @on(DirContentBtn.Pressed)
-    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
-        if isinstance(event.button, DirContentBtn):
-            event.stop()
-            self.managed_tree.show_requested_node(event.button.path)

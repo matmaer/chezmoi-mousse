@@ -181,7 +181,11 @@ class DiffView(Container):
                 )
                 for path, status in status_dirs_in:
                     widgets.append(
-                        DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
+                        DirContentBtn(
+                            label=f"{status.color_tag}{path}[/]",
+                            path=path,
+                            app_ids=self.ids,
+                        )
                     )
             status_files_in = self._get_status_files_descendants(dir_path, app_ids)
             if status_files_in:
@@ -192,7 +196,11 @@ class DiffView(Container):
                 )
                 for path, status in status_files_in.items():
                     widgets.append(
-                        DirContentBtn(label=f"{status.color_tag}{path}[/]", path=path)
+                        DirContentBtn(
+                            label=f"{status.color_tag}{path}[/]",
+                            path=path,
+                            app_ids=self.ids,
+                        )
                     )
 
         unchanged_dirs = self._get_unchanged_dir_paths_in(dir_path)
@@ -201,7 +209,9 @@ class DiffView(Container):
                 Label("Contains unchanged directories", classes=Tcss.sub_section_label)
             )
             for path in unchanged_dirs:
-                widgets.append(DirContentBtn(label=f"[dim]{path}[/]", path=path))
+                widgets.append(
+                    DirContentBtn(label=f"[dim]{path}[/]", path=path, app_ids=self.ids)
+                )
 
         unchanged_files = self._get_unchanged_file_paths_in(dir_path)
         if unchanged_files:
@@ -209,7 +219,9 @@ class DiffView(Container):
                 Label("Contains unchanged files", classes=Tcss.sub_section_label)
             )
             for path in unchanged_files:
-                widgets.append(DirContentBtn(label=f"[dim]{path}[/]", path=path))
+                widgets.append(
+                    DirContentBtn(label=f"[dim]{path}[/]", path=path, app_ids=self.ids)
+                )
         return widgets
 
     def watch_show_path(self, show_path: Path | None) -> None:
