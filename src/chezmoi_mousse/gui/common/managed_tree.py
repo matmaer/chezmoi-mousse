@@ -120,8 +120,18 @@ class ManagedTree(Tree[Path]):
         else:
             self._nodes_backup = TreeNodesBackup(all_nodes=self._get_nodes())
 
-    def show_requested_node(self, path: Path) -> None:
-        # Add potentially missing parent nodes or expand existing collapsed parent nodes
+    def _add_missing_parents(self, path: Path) -> None:
+        # Add potentially missing parent nodes
+
+        # Check if it's needed at all
+        if path.parent == CMD.cache.dest_dir:
+            if self.root.is_collapsed:
+                self.root.expand()
+        else:
+            parent_node = self._get_node_by_path(path.parent)
+            if parent_node is not None and parent_node.is_collapsed:
+                parent_node.expand()
+            return
 
         # reversed makes sure we start with the highest level path
         all_parents: Iterable[Path] = reversed(path.parents)
@@ -142,6 +152,10 @@ class ManagedTree(Tree[Path]):
 
             elif existing_parent.is_collapsed is True:
                 existing_parent.expand()
+
+    def show_requested_node(self, path: Path) -> None:
+
+        self._add_missing_parents(path)
 
         existing_node = self._get_node_by_path(path)
         if existing_node is not None:
