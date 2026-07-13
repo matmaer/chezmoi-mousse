@@ -101,6 +101,9 @@ class ManagedTree(Tree[Path]):
             color = self.app.theme_variables.get("text-secondary", "#FF0000")
         elif path in CMD.cache.sets.status_dirs | CMD.cache.sets.status_files:
             color = self.app.theme_variables.get(status.color_var, "#FF0000")
+        elif path in CMD.cache.sets.unmanaged_paths:
+            color = self.app.theme_variables.get("accent-darken-3", "#FF0000")
+
         italic = " italic" if not path.exists() else ""
         return f"[{color}{italic}]{path.name}[/]"
 
