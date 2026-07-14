@@ -26,7 +26,7 @@ from ..gui.tab_panes import AddTab, ApplyTab, ReAddTab
 if TYPE_CHECKING:
     from textual.message import Message
 
-    from ..textual_app import ChezmoiGUI
+    from ..textual_app import ChezmoiGui
 
 from ..gui.common.messages import ReadyToUseMsg
 
@@ -106,7 +106,7 @@ async def click_random_path_in_diff_view(pilot: Pilot[None], tab_pane: TabPane) 
     await click_and_wait(pilot, to_click)
 
 
-async def test_app_with_pilot(app: ChezmoiGUI):
+async def test_app_with_pilot(app: ChezmoiGui):
     ready_event = asyncio.Event()
 
     def message_hook(message: Message) -> None:

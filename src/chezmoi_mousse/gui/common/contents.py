@@ -5,16 +5,17 @@ from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
+from textual import getters
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import CMD, ReadCmd, TabLabel, Tcss
+from chezmoi_mousse import ReadCmd, TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, ChezmoiGui
 
 __all__ = ["ContentsView"]
 
@@ -22,6 +23,9 @@ OUTPUT_LIMIT = 40
 
 
 class ContentsView(Container):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     class ContentStr(StrEnum):
         cannot_decode = "Path cannot be decoded as UTF-8:"
@@ -38,7 +42,7 @@ class ContentsView(Container):
 
     def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
-        if dir_path == CMD.cache.dest_dir:
+        if dir_path == self.app.cm_gui.cfg.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
@@ -56,8 +60,10 @@ class ContentsView(Container):
 
             for name in dirs:
                 path = root_path / name
-                if path not in CMD.cache.sets.managed_dirs:
-                    unmanaged_dirs.append(str(path.relative_to(CMD.cache.dest_dir)))
+                if path not in self.app.cm_gui.cache.managed_dirs:
+                    unmanaged_dirs.append(
+                        str(path.relative_to(self.app.cm_gui.cfg.dest_dir))
+                    )
                     if len(unmanaged_dirs) >= OUTPUT_LIMIT:
                         limited_dirs = True
                         break
@@ -68,8 +74,10 @@ class ContentsView(Container):
             root_path = Path(root)
             for name in files:
                 path = root_path / name
-                if path not in CMD.cache.sets.managed_files:
-                    unmanaged_files.append(str(path.relative_to(CMD.cache.dest_dir)))
+                if path not in self.app.cm_gui.cache.managed_files:
+                    unmanaged_files.append(
+                        str(path.relative_to(self.app.cm_gui.cfg.dest_dir))
+                    )
                     if len(unmanaged_files) >= OUTPUT_LIMIT:
                         limited_files = True
                         break
@@ -110,7 +118,7 @@ class ContentsView(Container):
 
     def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
-        if dir_path == CMD.cache.dest_dir:
+        if dir_path == self.app.cm_gui.cfg.dest_dir:
             widgets.append(
                 Label("Destination Directory", classes=Tcss.main_section_label)
             )
@@ -137,7 +145,9 @@ class ContentsView(Container):
 
         def _read_file(file_path: Path) -> str:
             if not file_path.exists():
-                cmd_result = CMD.run_cmd.read(ReadCmd.cat, path_arg=file_path)
+                cmd_result = self.app.cm_gui.run_cmd.read(
+                    ReadCmd.cat, path_arg=file_path
+                )
                 self.post_message(LogCmdResultMsg(cmd_result))
                 return cmd_result.std_out
             try:
@@ -169,10 +179,13 @@ class ContentsView(Container):
             return
         self.remove_children()
         if self.ids.canvas_name == TabLabel.add and (
-            show_path in {CMD.cache.dest_dir} or show_path.is_dir()
+            show_path == self.app.cm_gui.cfg.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)
-        elif show_path in {CMD.cache.dest_dir} | CMD.cache.sets.managed_dirs:
+        elif (
+            show_path
+            in {self.app.cm_gui.cfg.dest_dir} | self.app.cm_gui.cache.managed_dirs
+        ):
             container = self._create_managed_dir_container(show_path)
         else:
             container = self._create_file_container(show_path)

@@ -1,11 +1,16 @@
 import os
 from collections.abc import Iterable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from textual import getters
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse import CMD, Chars
+from chezmoi_mousse import Chars
+
+if TYPE_CHECKING:
+    from chezmoi_mousse import ChezmoiGui
 
 __all__ = ["FilteredDirTree"]
 
@@ -192,6 +197,9 @@ class CheckDir:
 
 class FilteredDirTree(DirectoryTree):
 
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded
     ICON_FILE = " "
@@ -216,34 +224,16 @@ class FilteredDirTree(DirectoryTree):
             dir_path
         )
 
-    def _has_wanted_unmanaged_files(self, dir_path: Path) -> bool:
-        return bool(
-            {
-                p
-                for p in CMD.cache.sets.all_unmanaged_files_in(dir_path)
-                if not self._is_unwanted_file(p)
-            }
-        )
-
-    def _has_wanted_unmanaged_dirs(self, dir_path: Path) -> bool:
-        return bool(
-            {
-                p
-                for p in CMD.cache.sets.all_unmanaged_dirs_in(dir_path)
-                if not self._is_unwanted_dir(p)
-            }
-        )
-
     def _show_file(self, file_path: Path) -> bool:
 
         if CheckFile.is_sensitive(file_path):
             return False
 
-        if file_path in CMD.cache.sets.managed_files:
+        if file_path in self.app.cm_gui.cache.managed_files:
             return self.hide_unmanaged_dirs
 
         if (
-            file_path.parent not in CMD.cache.sets.managed_dirs
+            file_path.parent not in self.app.cm_gui.cache.managed_dirs
             and self.hide_unmanaged_dirs is True
         ):
             return False
@@ -252,7 +242,7 @@ class FilteredDirTree(DirectoryTree):
 
     def _show_dir(self, dir_path: Path) -> bool:
 
-        if dir_path not in CMD.cache.sets.managed_dirs:
+        if dir_path not in self.app.cm_gui.cache.managed_dirs:
             return not self.hide_unmanaged_dirs
 
         return True

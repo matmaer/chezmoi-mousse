@@ -6,7 +6,6 @@ __all__ = ["AppIds"]
 
 class AppIds:
     __slots__ = (
-        "canvas_name",
         "container",
         "managed_tree_q",
         "managed_tree",
@@ -15,37 +14,38 @@ class AppIds:
         "switch_slider_q",
         "switch_slider",
         "switch",
+        "tab_label",
     )
 
-    def __init__(self, canvas_name: TabLabel) -> None:
-        self.canvas_name = canvas_name
+    def __init__(self, tab_label: TabLabel) -> None:
+        self.tab_label = tab_label
         self.container = ContainerIds(self)
         self.richlog = RichLogIds(self)
-        self.managed_tree = f"{self.canvas_name.name}_managed_tree"
+        self.managed_tree = f"{self.tab_label.name}_managed_tree"
         self.managed_tree_q = f"#{self.managed_tree}"
         self.op_btn = OperateButtonIds(self)
         self.switch = SwitchIds(self)
-        self.switch_slider = f"{self.canvas_name.name}_switch_slider"
+        self.switch_slider = f"{self.tab_label.name}_switch_slider"
         self.switch_slider_q = f"#{self.switch_slider}"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
-        return f"{qid}{self.canvas_name.name}_{name.name}"
+        return f"{qid}{self.tab_label.name}_{name.name}"
 
     def flat_button_id(self, qid: str = "", *, btn: FlatBtnLabel) -> str:
-        return f"{qid}{self.canvas_name.name}_{btn.name}_flat_btn"
+        return f"{qid}{self.tab_label.name}_{btn.name}_flat_btn"
 
     def op_btn_id(self, qid: str = "", *, operation: OpBtnLabel) -> str:
-        return f"{qid}{self.canvas_name.name}_{operation.normalized_label}_op_btn"
+        return f"{qid}{self.tab_label.name}_{operation.normalized_label}_op_btn"
 
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
-        return f"{qid}{self.canvas_name.name}_{switch.name}_switch"
+        return f"{qid}{self.tab_label.name}_{switch.name}_switch"
 
     def richlog_id(self, qid: str = "", *, richlog: RichLogName) -> str:
-        return f"{qid}{self.canvas_name.name}_{richlog.name}"
+        return f"{qid}{self.tab_label.name}_{richlog.name}"
 
     @property
     def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
-        if self.canvas_name == TabLabel.debug:
+        if self.tab_label == TabLabel.debug:
             return {
                 self.op_btn.list_test_paths: OpBtnEnum.list_test_paths,
                 self.op_btn.create_paths: OpBtnEnum.create_paths,
@@ -57,7 +57,7 @@ class AppIds:
             self.op_btn.cancel: OpBtnEnum.cancel,
             self.op_btn.reload: OpBtnEnum.reload,
         }
-        if self.canvas_name == TabLabel.add:
+        if self.tab_label == TabLabel.add:
             return {
                 self.op_btn.add_review: OpBtnEnum.add_review,
                 self.op_btn.add_run: OpBtnEnum.add_run,
@@ -69,14 +69,14 @@ class AppIds:
             self.op_btn.forget_review: OpBtnEnum.forget_review,
             self.op_btn.forget_run: OpBtnEnum.forget_run,
         }
-        if self.canvas_name == TabLabel.apply:
+        if self.tab_label == TabLabel.apply:
             return {
                 self.op_btn.apply_review: OpBtnEnum.apply_review,
                 self.op_btn.apply_run: OpBtnEnum.apply_run,
                 **_forget_destroy_buttons,
                 **_common_buttons,
             }
-        elif self.canvas_name == TabLabel.re_add:
+        elif self.tab_label == TabLabel.re_add:
             return {
                 self.op_btn.re_add_review: OpBtnEnum.re_add_review,
                 self.op_btn.re_add_run: OpBtnEnum.re_add_run,
@@ -84,9 +84,7 @@ class AppIds:
                 **_common_buttons,
             }
         else:
-            raise ValueError(
-                f"Unexpected canvas_name {self.canvas_name} for op_btn_map"
-            )
+            raise ValueError(f"Unexpected tab_label {self.tab_label} for op_btn_map")
 
     @property
     def run_btn_ids(self) -> set[str]:

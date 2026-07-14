@@ -4,20 +4,20 @@ from enum import StrEnum
 from functools import wraps
 from typing import TYPE_CHECKING
 
-from textual import work
+from textual import getters, work
 from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse import CMD, OpBtnEnum, ReadCmd
+from chezmoi_mousse import OpBtnEnum, ReadCmd
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse import ChezmoiGui, CommandResult
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
@@ -54,6 +54,9 @@ class LoadingLabel(StrEnum):
 
 class LoadingModal(ModalScreen[None]):
 
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     label_text: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self, btn_enum: OpBtnEnum | None) -> None:
@@ -67,8 +70,8 @@ class LoadingModal(ModalScreen[None]):
 
     def on_mount(self) -> None:
         if self.btn_enum != OpBtnEnum.reload:
-            CMD.changed_paths.clear()
-        CMD.loading_modal_results.clear()
+            self.app.cm_gui.changed_paths.clear()
+        self.app.cm_gui.loading_modal_results.clear()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
@@ -90,33 +93,37 @@ class LoadingModal(ModalScreen[None]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: "ReadCmd") -> None:
-        self.label_text = CMD.run_cmd.review_cmd(verb_cmd=read_cmd)
-        cmd_result: CommandResult = CMD.run_cmd.read(read_cmd)
-        setattr(CMD.cache.cmd_results, f"{read_cmd.name}", cmd_result)
-        CMD.loading_modal_results.append(cmd_result)
+        self.label_text = self.app.cm_gui.run_cmd.review_cmd(verb_cmd=read_cmd)
+        cmd_result: CommandResult = self.app.cm_gui.run_cmd.read(read_cmd)
+        setattr(self.app.cm_gui.cmd_results, f"{read_cmd.name}", cmd_result)
+        self.app.cm_gui.loading_modal_results.append(cmd_result)
 
     @work(thread=True, exit_on_error=False)
     @min_wait
     async def _run_write_command(self, btn_enum: "OpBtnEnum") -> None:
-        if btn_enum.path_arg == CMD.cache.dest_dir:
+        if btn_enum.path_arg == self.app.cm_gui.cfg.dest_dir:
             btn_enum.path_arg = None
-        self.label_text = CMD.run_cmd.review_cmd(
+        self.label_text = self.app.cm_gui.run_cmd.review_cmd(
             verb_cmd=btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
-        cmd_result: CommandResult = CMD.run_cmd.perform(
+        cmd_result: CommandResult = self.app.cm_gui.run_cmd.perform(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
-        CMD.loading_modal_results.append(cmd_result)
+        self.app.cm_gui.loading_modal_results.append(cmd_result)
 
     @work(thread=True)
     @min_wait
     async def _update_changed_paths(self) -> None:
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
-        self.old_managed_paths: set[Path] = CMD.cache.sets.managed_paths.copy()
-        self.old_status_paths: set[Path] = CMD.cache.sets.status_paths.copy()
+        self.old_managed_paths: frozenset[Path] = (
+            self.app.cm_gui.cache.managed_paths.copy()
+        )
+        self.old_status_paths: frozenset[Path] = (
+            self.app.cm_gui.cache.status_paths.copy()
+        )
 
-        CMD.cache.update_path_sets()
+        self.app.cm_gui.update_cache()
 
         # ^ symmetric difference: elements that exist in either set, but not in both
         # & intersection: elements that exist in both sets
@@ -124,8 +131,8 @@ class LoadingModal(ModalScreen[None]):
 
         # Collect changed paths: Symmetric difference (added/removed) + per-path
         # status status changes
-        new_managed = CMD.cache.sets.managed_paths
-        new_status = CMD.cache.sets.status_paths
+        new_managed = self.app.cm_gui.cache.managed_paths
+        new_status = self.app.cm_gui.cache.status_paths
 
         removed = self.old_managed_paths - new_managed
         added = new_managed - self.old_managed_paths
@@ -135,7 +142,7 @@ class LoadingModal(ModalScreen[None]):
             if (p in self.old_status_paths) != (p in new_status)
         }
 
-        CMD.added_paths = sorted(added)
-        CMD.removed_paths = sorted(removed)
-        CMD.changed_status_paths = sorted(changed_status)
-        CMD.changed_paths = sorted(removed | added | changed_status)
+        self.app.cm_gui.added_paths = sorted(added)
+        self.app.cm_gui.removed_paths = sorted(removed)
+        self.app.cm_gui.changed_status_paths = sorted(changed_status)
+        self.app.cm_gui.changed_paths = sorted(removed | added | changed_status)

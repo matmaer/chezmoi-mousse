@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ._app_ids import AppIds
-from ._cmd_results import CMD, CachedData
+from ._cmd_results import CachedData
 from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from ._run_cmd import CommandResult, ReadCmd, ReadVerb
 from ._str_enums import (
@@ -20,30 +20,31 @@ from ._str_enums import (
     FlatBtnLabel,
     LogString,
     OperateString,
+    PathKind,
     SectionLabel,
     StatusCode,
     TabLabel,
     Tcss,
 )
-from .custom_app_attr import CanvasIds
+from .app_data import TabIds
 from .debug._test_paths import TestPaths
 
 if TYPE_CHECKING:
-    from .textual_app import ChezmoiGUI
+    from .textual_app import ChezmoiGui
 
 __all__ = [
-    "CMD",
     "AppIds",
-    "CanvasIds",
+    "TabIds",
     "CachedData",
     "Chars",
-    "ChezmoiGUI",
+    "ChezmoiGui",
     "CommandResult",
     "FlatBtnLabel",
     "LogString",
     "OpBtnEnum",
     "OpBtnLabel",
     "OperateString",
+    "PathKind",
     "ReadCmd",
     "ReadVerb",
     "SectionLabel",

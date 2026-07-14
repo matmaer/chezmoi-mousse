@@ -6,18 +6,21 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import CMD, OpBtnEnum, OperateString, Tcss
+from chezmoi_mousse import OpBtnEnum, OperateString, Tcss
 
 from .actionables import OpButton
 from .loggers import CmdResultCollapsible
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiGUI
+    from chezmoi_mousse import ChezmoiGui
 
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 
 
 class OperateInfo(Static):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     changes_enabled: reactive[bool] = reactive(False, init=False)
     current_button: OpButton | None = None
@@ -29,15 +32,15 @@ class OperateInfo(Static):
         self.current_button = button
         info_lines: list[str] = []
         info_lines.append(
-            CMD.run_cmd.review_cmd(
+            self.app.cm_gui.run_cmd.review_cmd(
                 verb_cmd=button.btn_enum.write_cmd, path_arg=button.btn_enum.path_arg
             )
         )
         info_lines.append(button.btn_enum.op_info_string)
         if button.btn_enum != OpBtnEnum.apply_review:
-            if CMD.cache.git_auto_commit is True:
+            if self.app.cm_gui.cfg.auto_commit is True:
                 info_lines.append(OperateString.auto_commit)
-            if CMD.cache.git_auto_push is True:
+            if self.app.cm_gui.cfg.auto_push is True:
                 info_lines.append(OperateString.auto_push)
         else:
             info_lines.append(
@@ -62,7 +65,7 @@ class CommandOutput(ScrollableContainer):
     class ChangedStatusPaths(Static): ...
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
         yield Label("Added paths", classes=Tcss.sub_section_label)
@@ -88,22 +91,26 @@ class CommandOutput(ScrollableContainer):
 
     @work
     async def update_cmd_output(self) -> None:
-        if CMD.added_paths:
-            self.added_paths.update("\n".join([str(p) for p in CMD.added_paths]))
+        if self.app.cm_gui.added_paths:
+            self.added_paths.update(
+                "\n".join([str(p) for p in self.app.cm_gui.added_paths])
+            )
         else:
             self.added_paths.update("No added paths")
-        if CMD.removed_paths:
-            self.removed_paths.update("\n".join([str(p) for p in CMD.removed_paths]))
+        if self.app.cm_gui.removed_paths:
+            self.removed_paths.update(
+                "\n".join([str(p) for p in self.app.cm_gui.removed_paths])
+            )
         else:
             self.removed_paths.update("No removed paths")
-        if CMD.changed_status_paths:
+        if self.app.cm_gui.changed_status_paths:
             self.changed_status.update(
-                "\n".join([str(p) for p in CMD.changed_status_paths])
+                "\n".join([str(p) for p in self.app.cm_gui.changed_status_paths])
             )
         else:
             self.changed_status.update("No changed status paths")
         # mount a collapsible for each command
-        for result in CMD.loading_modal_results:
+        for result in self.app.cm_gui.loading_modal_results:
             self.mount(CmdResultCollapsible(cmd_result=result))
 
 

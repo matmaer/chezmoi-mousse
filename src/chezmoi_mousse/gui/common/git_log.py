@@ -6,12 +6,12 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import CMD, ReadCmd
+from chezmoi_mousse import ReadCmd
 
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, ChezmoiGUI
+    from chezmoi_mousse import AppIds, ChezmoiGui
 
 __all__ = ["GitLogView"]
 
@@ -19,7 +19,7 @@ __all__ = ["GitLogView"]
 class GitLogView(Container):
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 
@@ -59,17 +59,19 @@ class GitLogView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if show_path == CMD.cache.dest_dir:
+        if show_path == self.app.cm_gui.cfg.dest_dir:
             if (
-                CMD.cache.cmd_results.git_log is None
-                or not CMD.cache.cmd_results.git_log.std_out
+                self.app.cm_gui.cmd_results.git_log is None
+                or not self.app.cm_gui.cmd_results.git_log.std_out
             ):
                 git_log_lines = ["No commits;No git log entries available yet."]
             else:
-                git_log_lines = CMD.cache.cmd_results.git_log.std_out.splitlines()
+                git_log_lines = self.app.cm_gui.cmd_results.git_log.std_out.splitlines()
             container = self._create_datatable_container(git_log_lines)
         else:
-            cmd_result = CMD.run_cmd.read(ReadCmd.git_log, path_arg=show_path)
+            cmd_result = self.app.cm_gui.run_cmd.read(
+                ReadCmd.git_log, path_arg=show_path
+            )
             self.post_message(LogCmdResultMsg(cmd_result))
             container = self._create_datatable_container(
                 cmd_result.std_out.splitlines()

@@ -19,9 +19,9 @@ __all__ = [
 
 
 class PathKind(StrEnum):
-    dirs = auto()
-    files = auto()
-    any = auto()
+    dir = auto()
+    file = auto()
+    both = auto()
 
 
 class BindingAction(StrEnum):

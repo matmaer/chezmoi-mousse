@@ -1,16 +1,16 @@
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, Label, Switch
 
-from chezmoi_mousse import CMD, FlatBtnLabel, OpBtnEnum, SwitchEnum, TabLabel, Tcss
+from chezmoi_mousse import FlatBtnLabel, OpBtnEnum, SwitchEnum, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds
+    from chezmoi_mousse import AppIds, ChezmoiGui
 
 
 __all__ = [
@@ -97,6 +97,10 @@ class OpButton(Button):
 
 
 class OperateButtons(HorizontalGroup):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.container.operate_buttons)
         self.ids = ids
@@ -106,14 +110,14 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
 
     def on_mount(self) -> None:
-        # disable apply and re-add review button if no_status_paths is true
+        # disable apply and re-add review button if unchanged_paths is true
         if self.ids.canvas_name == TabLabel.apply:
             review_btn = self.query_one(self.ids.op_btn.apply_review_q, OpButton)
         elif self.ids.canvas_name == TabLabel.re_add:
             review_btn = self.query_one(self.ids.op_btn.re_add_review_q, OpButton)
         else:
             return
-        review_btn.disabled = CMD.cache.sets.no_status_paths
+        review_btn.disabled = bool(self.app.cm_gui.cache.unchanged_paths)
 
     def set_path_arg(self, path: "Path") -> None:
         for btn_enum in self.ids.op_btn_map.values():

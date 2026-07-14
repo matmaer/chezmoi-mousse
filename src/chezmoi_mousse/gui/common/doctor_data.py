@@ -12,7 +12,7 @@ from textual.widgets import Collapsible, DataTable, Label, Link, Static
 from chezmoi_mousse import Chars, SectionLabel, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiGUI
+    from chezmoi_mousse import ChezmoiGui
 
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
@@ -21,7 +21,7 @@ __all__ = ["DoctorTable", "PwMgrInfoView"]
 class DoctorTable(DataTable[Text]):
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     def __init__(self) -> None:
         super().__init__(cursor_type="row")

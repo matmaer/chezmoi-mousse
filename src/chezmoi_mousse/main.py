@@ -2,9 +2,9 @@ import asyncio
 import sys
 from enum import StrEnum
 
-from chezmoi_mousse.custom_app_attr import CustomAppAttribute
+from chezmoi_mousse.app_data import AppData
 from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
-from chezmoi_mousse.textual_app import ChezmoiGUI
+from chezmoi_mousse.textual_app import ChezmoiGui
 
 
 class NoRunInfo(StrEnum):
@@ -28,7 +28,7 @@ class NoRunInfo(StrEnum):
         return cls._CHEZMOI_FOUND + which
 
 
-def _will_not_run_message(attr: "CustomAppAttribute") -> str | None:
+def _will_not_run_message(attr: "AppData") -> str | None:
     error_info: list[str] = []
     start_info: list[str] = []
     if attr.git_bin is None:
@@ -41,20 +41,20 @@ def _will_not_run_message(attr: "CustomAppAttribute") -> str | None:
     else:
         start_info.append(NoRunInfo.chezmoi_found(attr.chezmoi_bin))
 
-    if attr.custom_env_vars.chezmoi_subshell:
+    if attr.env_vars.chezmoi_subshell:
         error_info.append(NoRunInfo.IN_SUBSHELL)
     else:
         start_info.append(NoRunInfo.NOT_IN_SUBSHELL)
 
-    if attr.custom_env_vars.pretend_fail:
+    if attr.env_vars.pretend_fail:
         error_info.append(NoRunInfo.PRETEND_FAIL)
     else:
         start_info.append(NoRunInfo.NO_PRETEND_FAIL)
     lines: list[str] = []
-    if error_info or attr.custom_env_vars.pretend_fail:
+    if error_info or attr.env_vars.pretend_fail:
         lines.append(NoRunInfo.NO_APP_RUN)
         lines.extend(error_info)
-    if attr.custom_env_vars.pretend_fail:
+    if attr.env_vars.pretend_fail:
         lines.extend(start_info)
     if len(lines) > 0:
         return "\n".join(lines) + "\n" + NoRunInfo.FEEDBACK
@@ -63,26 +63,26 @@ def _will_not_run_message(attr: "CustomAppAttribute") -> str | None:
 
 def run_app():
 
-    custom_app_attr = CustomAppAttribute()
+    app_data = AppData()
 
-    wil_not_run_msg = _will_not_run_message(custom_app_attr)
+    wil_not_run_msg = _will_not_run_message(app_data)
 
     if wil_not_run_msg is not None:
         sys.exit(wil_not_run_msg)
 
     try:
-        app = ChezmoiGUI(custom_app_attr=custom_app_attr)
+        app = ChezmoiGui(cm_gui_app_data=app_data)
     except Exception:
-        custom_app_attr.save_stacktrace()
+        app_data.save_stacktrace()
         raise
 
     try:
-        if custom_app_attr.custom_env_vars.pilot_mode:
+        if app_data.env_vars.pilot_mode:
             asyncio.run(test_app_with_pilot(app))
         else:
             app.run()
     except Exception:
-        custom_app_attr.save_stacktrace()
+        app_data.save_stacktrace()
         raise
 
 

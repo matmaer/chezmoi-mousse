@@ -10,13 +10,13 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse import CMD, Chars, LogString, ReadVerb, SectionLabel, Tcss
+from chezmoi_mousse import Chars, LogString, ReadVerb, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse import AppIds, ChezmoiGUI, CommandResult
+    from chezmoi_mousse import AppIds, ChezmoiGui, CommandResult
 
 __all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
 
@@ -77,10 +77,10 @@ class CmdResultCollapsible(Collapsible):
 class CmdLog(ScrollableContainer):
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     def __init__(self) -> None:
-        super().__init__(id=self.app.ids.logs.richlog.cmd)
+        super().__init__(id=self.app.cm_gui.ids.logs.richlog.cmd)
 
     cmd_result: reactive["CommandResult | None"] = reactive(None)
 
@@ -93,7 +93,7 @@ class CmdLog(ScrollableContainer):
 class RichLoggers(RichLog):
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     def _get_log_line(self, msg: str, color: LogColor) -> str:
         log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
@@ -118,15 +118,21 @@ class RichLoggers(RichLog):
 
 class AppLog(RichLoggers):
 
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
     cmd_result: reactive["CommandResult | None"] = reactive(None)
 
     def __init__(self) -> None:
-        super().__init__(id=self.app.ids.logs.richlog.app, markup=True, max_lines=10000)
+        super().__init__(
+            id=self.app.cm_gui.ids.logs.richlog.app, markup=True, max_lines=10000
+        )
 
     def on_mount(self) -> None:
         self.write_ready(LogString.app_log_initialized)
-        if CMD.run_cmd.chezmoi_bin is not None:
-            self.write_info(LogString.using_chezmoi_bin + f" {CMD.run_cmd.chezmoi_bin}")
+        if self.app.cm_gui.run_cmd.chezmoi_bin is not None:
+            self.write_info(
+                LogString.using_chezmoi_bin + f" {self.app.cm_gui.chezmoi_bin}"
+            )
         if self.app.debug_mode is True:
             self.write_warning(
                 f"{Chars.warning_sign} {LogString.debug_tab_enabled} "

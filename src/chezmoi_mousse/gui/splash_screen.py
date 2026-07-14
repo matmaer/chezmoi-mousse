@@ -1,6 +1,4 @@
-import json
 from collections import deque
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -15,10 +13,10 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 from textual.worker import WorkerState
 
-from chezmoi_mousse import CMD, ReadCmd
+from chezmoi_mousse import ReadCmd
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiGUI
+    from chezmoi_mousse import ChezmoiGui
 
 __all__ = ["SplashScreen"]
 
@@ -82,7 +80,7 @@ class SplashLog(RichLog):
 class SplashScreen(Screen[None]):
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method
@@ -106,8 +104,8 @@ class SplashScreen(Screen[None]):
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         color = self.app.theme_variables["text-primary"]
-        result = CMD.run_cmd.read(splash_cmd)
-        setattr(CMD.cache.cmd_results, f"{splash_cmd.name}", result)
+        result = self.app.cm_gui.run_cmd.read(splash_cmd)
+        setattr(self.app.cm_gui.cmd_results, f"{splash_cmd.name}", result)
         suffix = "unknown"
         if result.exit_code == 0:
             suffix = "success"
@@ -119,21 +117,6 @@ class SplashScreen(Screen[None]):
             f"[{color}]{result.short_cmd_no_path} {'.' * padding} {suffix}[/{color}]"
         )
         self.app.call_from_thread(self.splash_log.write, log_text)
-        if splash_cmd == ReadCmd.dump_config:
-            try:
-                parsed_cfg = json.loads(result.std_out)
-                CMD.cache.dest_dir = Path(parsed_cfg["destDir"])
-                CMD.cache.git_auto_commit = parsed_cfg["git"]["autocommit"]
-                CMD.cache.git_auto_push = parsed_cfg["git"]["autopush"]
-                color = self.app.theme_variables["text-success"]
-                suffix = "success"
-            except (json.JSONDecodeError, KeyError, TypeError):
-                color = self.app.theme_variables["text-error"]
-                suffix = "not parsed"
-            command = "json loads dump_config"
-            padding = LOG_MSG_WIDTH - (len(command) + len(suffix))
-            log_text = f"[{color}]{command} {'.' * padding} {suffix}[/{color}]"
-            self.app.call_from_thread(self.splash_log.write, log_text)
 
     def _all_workers_finished(self) -> None:
         if all(
@@ -141,9 +124,6 @@ class SplashScreen(Screen[None]):
             for worker in self.workers
             if worker.group == "io_workers"
         ):
-            if CMD.run_cmd.chezmoi_bin is None:
-                self.dismiss(None)
-                return
-            CMD.cache.update_path_sets()
+            self.app.cm_gui.update_cache(update_cfg=True)
             if all(w for w in self.workers if w.is_finished):
                 self.dismiss()

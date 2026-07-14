@@ -12,7 +12,6 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
-from ._cmd_results import CMD
 from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .gui.common.managed_tree import DestDirTree
@@ -22,10 +21,10 @@ from .gui.splash_screen import SplashScreen
 from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
 
 if TYPE_CHECKING:
-    from .custom_app_attr import CustomAppAttribute
+    from .app_data import AppData, ChezmoiCommand
 
 
-__all__ = ["ChezmoiGUI"]
+__all__ = ["ChezmoiGui"]
 
 
 chezmoi_mousse_dark = Theme(
@@ -53,7 +52,7 @@ chezmoi_mousse_light = Theme(
 )
 
 
-class ChezmoiGUI(App[None]):
+class ChezmoiGui(App[None]):
 
     BINDINGS: ClassVar = [
         Binding(
@@ -82,16 +81,14 @@ class ChezmoiGUI(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    def __init__(self, *, custom_app_attr: "CustomAppAttribute") -> None:
+    def __init__(self, *, cm_gui_app_data: "AppData") -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.custom_app_attr = custom_app_attr
-        self.ids = custom_app_attr.canvas_ids
-        CMD.run_cmd.chezmoi_bin = custom_app_attr.chezmoi_bin
+        self.cm_gui = cm_gui_app_data
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        if self.custom_app_attr.custom_env_vars.debug_mode:
-            self.custom_app_attr.save_stacktrace()
+        if self.cm_gui.env_vars.debug_mode:
+            self.cm_gui.save_stacktrace()
         super()._handle_exception(error)
 
     def on_mount(self) -> None:
@@ -103,15 +100,19 @@ class ChezmoiGUI(App[None]):
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
-        self.push_screen(MainScreen(ids=self.ids))
+        self.push_screen(MainScreen())
 
     #################################################################
-    # Convenience shortcuts for the self.custom_app_attr attributes #
+    # Convenience shortcuts for the self.chezmoi_gui_attributes attributes #
     #################################################################
 
     @property
     def debug_mode(self) -> bool:
-        return self.custom_app_attr.custom_env_vars.debug_mode
+        return self.cm_gui.env_vars.debug_mode
+
+    @property
+    def run_cmd(self) -> "ChezmoiCommand":
+        return self.cm_gui.run_cmd
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
@@ -181,20 +182,20 @@ class ChezmoiGUI(App[None]):
     def action_toggle_dry_run(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        CMD.run_cmd.changes_enabled = not CMD.run_cmd.changes_enabled
+        self.cm_gui.run_cmd.changes_enabled = not self.cm_gui.run_cmd.changes_enabled
         new_description = (
             BindingDescription.remove_dry_run
-            if CMD.run_cmd.changes_enabled is False
+            if self.cm_gui.run_cmd.changes_enabled is False
             else BindingDescription.add_dry_run
         )
         self._update_binding_description(
             binding_action=BindingAction.toggle_dry_run, new_description=new_description
         )
         self.screen.query_exactly_one(CustomHeader).changes_enabled = (
-            CMD.run_cmd.changes_enabled
+            self.cm_gui.run_cmd.changes_enabled
         )
         self.screen.query_exactly_one(OperateInfo).changes_enabled = (
-            CMD.run_cmd.changes_enabled
+            self.cm_gui.run_cmd.changes_enabled
         )
 
     def action_toggle_switch_slider(self) -> None:
@@ -235,35 +236,35 @@ class ChezmoiGUI(App[None]):
 
         if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
-                self.ids.apply.container.left_side_q, DestDirTree
+                self.cm_gui.ids.apply.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.ids.apply.container.operate_buttons_q
+                self.cm_gui.ids.apply.container.operate_buttons_q
             )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
-                self.ids.re_add.container.left_side_q, DestDirTree
+                self.cm_gui.ids.re_add.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.ids.re_add.container.operate_buttons_q
+                self.cm_gui.ids.re_add.container.operate_buttons_q
             )
         elif active_tab == TabLabel.add:
             left_side = self.screen.query_one(
-                self.ids.add.container.left_side_q, Vertical
+                self.cm_gui.ids.add.container.left_side_q, Vertical
             )
             operation_buttons = self.screen.query_one(
-                self.ids.add.container.operate_buttons_q
+                self.cm_gui.ids.add.container.operate_buttons_q
             )
         elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
-                self.ids.config.container.left_side_q, FlatButtonsVertical
+                self.cm_gui.ids.config.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabLabel.debug:
             left_side = self.screen.query_one(
-                self.ids.debug.container.left_side_q, FlatButtonsVertical
+                self.cm_gui.ids.debug.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:
@@ -312,7 +313,7 @@ class ChezmoiGUI(App[None]):
 
 
 ####################################################################################
-# For monkey patching the textual ScrollBar.renderer method in ChezmoiGUI __init__ #
+# For monkey patching the textual ScrollBar.renderer method in ChezmoiGui __init__ #
 ####################################################################################
 
 

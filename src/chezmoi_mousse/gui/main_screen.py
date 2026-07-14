@@ -10,7 +10,6 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, Switch, TabbedContent, Tabs
 
 from chezmoi_mousse import (
-    CMD,
     Chars,
     CommandResult,
     LogString,
@@ -34,7 +33,7 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CanvasIds, ChezmoiGUI, CommandResult
+    from chezmoi_mousse import ChezmoiGui, CommandResult
 
 __all__ = ["MainScreen", "CustomHeader"]
 
@@ -62,11 +61,11 @@ class CustomHeader(Header):
 class MainScreen(Screen[None]):
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
-    def __init__(self, *, ids: "CanvasIds") -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.ids = ids
+        self.ids = self.app.cm_gui.ids
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
@@ -110,7 +109,7 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal(None)
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
-        await self._log_all_cmd_results(CMD.cache.cmd_results.all).wait()
+        await self._log_all_cmd_results(self.app.cm_gui.cmd_results.all).wait()
         await self._update_config_tab().wait()
         self.loading_modal.dismiss()
         self.post_message(ReadyToUseMsg())
@@ -128,7 +127,7 @@ class MainScreen(Screen[None]):
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()
         elif btn_enum == OpBtnEnum.reload:
-            if len(CMD.changed_paths) == 0:
+            if len(self.app.cm_gui.changed_paths) == 0:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
@@ -137,7 +136,7 @@ class MainScreen(Screen[None]):
                 self.notify("Changed managed paths found, refreshing data.")
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
-        await self._log_all_cmd_results(CMD.loading_modal_results).wait()
+        await self._log_all_cmd_results(self.app.cm_gui.loading_modal_results).wait()
         self.loading_modal.dismiss()
 
     #####################
@@ -170,7 +169,7 @@ class MainScreen(Screen[None]):
     async def _update_config_tab(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_config_tab.with_color
         config_tab = self.query_exactly_one(ConfigTab)
-        config_tab.command_results = CMD.cache
+        config_tab.command_results = self.app.cm_gui.cache
 
     @work
     @min_wait
@@ -228,11 +227,8 @@ class MainScreen(Screen[None]):
             )
             if (
                 unchanged_switch.value is False
-                and event.button.path in CMD.cache.sets.x_files
-                or (
-                    event.button.path in CMD.cache.sets.x_dirs
-                    and event.button.path not in CMD.cache.sets.n_dirs
-                )
+                and event.button.path in self.app.cm_gui.cache.managed_files
+                or (event.button.path in self.app.cm_gui.cache.unchanged_dirs)
             ):
                 unchanged_switch.value = True
             managed_tree.show_requested_node(event.button.path)
@@ -246,7 +242,9 @@ class MainScreen(Screen[None]):
             msg.ids.container.right_side_q, ViewSwitcher
         ).query_exactly_one(Horizontal)
         tab_buttons.border_subtitle = (
-            f" {msg.path} " if msg.path == CMD.cache.dest_dir else f" {msg.path.name} "
+            f" {msg.path} "
+            if msg.path == self.app.cm_gui.cfg.dest_dir
+            else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
         self.query_one(msg.ids.container.diff_q, DiffView).show_path = msg.path
@@ -258,12 +256,12 @@ class MainScreen(Screen[None]):
         ).set_path_arg(msg.path)
 
         # Could occur at startup or after operations, when we aute select the root node.
-        if CMD.cache.sets.no_managed_paths is True:
+        if self.app.cm_gui.cache.no_managed_paths is True:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
             return
         # Enable/disable all review buttons
-        if CMD.cache.sets.contains_status_paths(msg.path) is True:
+        if self.app.cm_gui.cache.contains_status_paths(msg.path) is True:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
@@ -271,9 +269,9 @@ class MainScreen(Screen[None]):
                 self.query_one(btn_id_q, Button).disabled = True
         # Enable/disable Forget and Destroy button
         for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
-            if msg.path == CMD.cache.dest_dir:
+            if msg.path == self.app.cm_gui.cfg.dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
-            elif CMD.cache.sets.no_status_paths is False:
+            elif not self.app.cm_gui.cache.unchanged_paths:
                 self.query_one(btn_id_q, Button).disabled = False
 
     ########################

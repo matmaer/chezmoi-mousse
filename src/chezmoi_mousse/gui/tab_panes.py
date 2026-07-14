@@ -20,7 +20,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import (
-    CMD,
     AppIds,
     FlatBtnLabel,
     OpBtnEnum,
@@ -46,12 +45,15 @@ from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CachedData, ChezmoiGUI
+    from chezmoi_mousse import CachedData, ChezmoiGui
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
 
 class AddTab(TabPane):
+
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=TabLabel.add, title=TabLabel.add)
@@ -60,7 +62,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(CMD.cache.dest_dir),
+                FilteredDirTree(self.app.cm_gui.cfg.dest_dir),
                 OpButton(
                     btn_enum=OpBtnEnum.refresh_tree,
                     btn_id=self.ids.op_btn.refresh_tree,
@@ -78,8 +80,8 @@ class AddTab(TabPane):
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.add_tab_contents_view)
-        self.contents_view.border_title = f" {CMD.cache.dest_dir} "
-        self.contents_view.show_path = CMD.cache.dest_dir
+        self.contents_view.border_title = f" {self.app.cm_gui.cfg.dest_dir} "
+        self.contents_view.show_path = self.app.cm_gui.cfg.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
 
     @on(DirectoryTree.FileSelected)
@@ -91,8 +93,8 @@ class AddTab(TabPane):
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
         self.contents_view.show_path = event.node.data.path
-        if event.node.data.path == CMD.cache.dest_dir:
-            self.contents_view.border_title = f" {CMD.cache.dest_dir} "
+        if event.node.data.path == self.app.cm_gui.cfg.dest_dir:
+            self.contents_view.border_title = f" {self.app.cm_gui.cfg.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
@@ -204,6 +206,9 @@ class TemplateDataView(Vertical):
 
 class ConfigTab(TabPane):
 
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     command_results: reactive["CachedData | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
@@ -239,7 +244,7 @@ class ConfigTab(TabPane):
         event.stop()
         if event.button.label == FlatBtnLabel.doctor:
             self.switcher.current = self.ids.container.doctor
-        if event.button.label == FlatBtnLabel.pw_mgr_info:
+        elif event.button.label == FlatBtnLabel.pw_mgr_info:
             self.switcher.current = self.ids.container.pw_mgr_info
         elif event.button.label == FlatBtnLabel.cat_config:
             self.switcher.current = self.ids.container.cat_config
@@ -250,31 +255,35 @@ class ConfigTab(TabPane):
         elif event.button.label == FlatBtnLabel.diagram:
             self.switcher.current = self.ids.container.diagram
 
-    def watch_command_results(self, cached: "CachedData") -> None:
+    def watch_command_results(self) -> None:
         if (
-            cached.cmd_results.cat_config is None
-            or cached.cmd_results.doctor is None
-            or cached.cmd_results.ignored is None
-            or cached.cmd_results.template_data is None
+            self.app.cm_gui.cmd_results.cat_config is None
+            or self.app.cm_gui.cmd_results.doctor is None
+            or self.app.cm_gui.cmd_results.ignored is None
+            or self.app.cm_gui.cmd_results.template_data is None
         ):
             return
         self.switcher.query_one(
             self.ids.container.template_data_q, TemplateDataView
         ).template_data_stdout = (
-            cached.cmd_results.template_data.completed_process.stdout
+            self.app.cm_gui.cmd_results.template_data.completed_process.stdout
         )
         self.switcher.query_one(
             self.ids.container.ignored_q, IgnoredView
-        ).ignored_stdout = cached.cmd_results.ignored.completed_process.stdout
+        ).ignored_stdout = self.app.cm_gui.cmd_results.ignored.completed_process.stdout
         self.switcher.query_one(
             self.ids.container.cat_config_q, CatConfigView
-        ).cat_config_stdout = cached.cmd_results.cat_config.completed_process.stdout
+        ).cat_config_stdout = (
+            self.app.cm_gui.cmd_results.cat_config.completed_process.stdout
+        )
         self.switcher.query_one(
             self.ids.container.doctor_q, DoctorTableView
-        ).doctor_stdout = cached.cmd_results.doctor.completed_process.stdout
+        ).doctor_stdout = self.app.cm_gui.cmd_results.doctor.completed_process.stdout
         self.switcher.query_one(
             self.ids.container.pw_mgr_info_q, PwMgrInfoView
-        ).populate_pw_mgr_info(cached.cmd_results.doctor.completed_process.stdout)
+        ).populate_pw_mgr_info(
+            self.app.cm_gui.cmd_results.doctor.completed_process.stdout
+        )
 
 
 FLOW_DIAGRAM = """\
@@ -320,6 +329,9 @@ class TestPathColors(StrEnum):
 
 class DebugTab(TabPane):
 
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     class TestPathsView(Static): ...
 
     MiB = 1024 * 1024
@@ -328,7 +340,7 @@ class DebugTab(TabPane):
     _previous_rss: float = 0.0
 
     if TYPE_CHECKING:
-        app = getters.app(ChezmoiGUI)
+        app = getters.app(ChezmoiGui)
 
     def __init__(self, ids: "AppIds"):
         super().__init__(id=TabLabel.debug, title=TabLabel.debug)
@@ -407,17 +419,17 @@ class DebugTab(TabPane):
     def _list_existing_test_paths(self) -> str:
         colored_paths: list[str] = []
         for path in self.test_paths.get_existing_test_paths():
-            if path in CMD.cache.sets.managed_dirs:
-                if path not in CMD.cache.sets.status_dirs:
+            if path in self.app.cm_gui.cache.managed_dirs:
+                if path not in self.app.cm_gui.cache.status_dirs:
                     colored_paths.append(f"{TestPathColors.managed_dir}{path}[/]")
-                elif path in CMD.cache.sets.status_dirs:
+                elif path in self.app.cm_gui.cache.status_dirs:
                     colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
-            elif path in CMD.cache.sets.managed_files:
-                if path not in CMD.cache.sets.status_files:
+            elif path in self.app.cm_gui.cache.managed_files:
+                if path not in self.app.cm_gui.cache.status_files:
                     colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
-                elif path in CMD.cache.sets.status_files:
+                elif path in self.app.cm_gui.cache.status_files:
                     colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
-            elif path not in CMD.cache.sets.managed_paths:
+            elif path not in self.app.cm_gui.cache.managed_paths:
                 if path.is_dir():
                     colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
                 if path.is_file():
@@ -523,13 +535,14 @@ class DebugTab(TabPane):
         result: str | list[str] = ""
         if event.button.label == OpBtnLabel.list_test_paths:
             result = self._list_existing_test_paths()
-        elif event.button.label == OpBtnLabel.create_diffs:
+            return
+        if event.button.label == OpBtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
         elif event.button.label == OpBtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
         elif event.button.label == OpBtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
-        CMD.cache.update_path_sets()
+        self.app.cm_gui.update_cache()
         if isinstance(result, str):
             self.test_paths_static.update(result)
         else:
