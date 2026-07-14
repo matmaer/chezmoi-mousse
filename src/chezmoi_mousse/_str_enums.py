@@ -9,12 +9,19 @@ __all__ = [
     "RichLogName",
     "LogString",
     "OperateString",
+    "PathKind",
     "SectionLabel",
     "StatusCode",
     "SwitchLabel",
     "TabLabel",
     "Tcss",
 ]
+
+
+class PathKind(StrEnum):
+    dirs = auto()
+    files = auto()
+    any = auto()
 
 
 class BindingAction(StrEnum):
