@@ -111,9 +111,9 @@ class OperateButtons(HorizontalGroup):
 
     def on_mount(self) -> None:
         # disable apply and re-add review button if unchanged_paths is true
-        if self.ids.canvas_name == TabLabel.apply:
+        if self.ids.tab_label == TabLabel.apply:
             review_btn = self.query_one(self.ids.op_btn.apply_review_q, OpButton)
-        elif self.ids.canvas_name == TabLabel.re_add:
+        elif self.ids.tab_label == TabLabel.re_add:
             review_btn = self.query_one(self.ids.op_btn.re_add_review_q, OpButton)
         else:
             return
@@ -141,7 +141,7 @@ class SwitchWithLabel(HorizontalGroup):
 class SwitchSlider(VerticalGroup):
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=ids.switch_slider, classes="-visible")
-        if ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
+        if ids.tab_label in (TabLabel.apply, TabLabel.re_add):
             self.switches = (
                 SwitchEnum.show_unchanged,
                 SwitchEnum.show_unmanaged_files,

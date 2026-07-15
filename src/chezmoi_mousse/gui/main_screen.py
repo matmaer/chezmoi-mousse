@@ -334,17 +334,17 @@ class MainScreen(Screen[None]):
 
         def set_right_side_display(display: bool) -> None:
             right_side: Vertical | ContentsView | None = None
-            if button.app_ids.canvas_name in (TabLabel.apply, TabLabel.re_add):
+            if button.app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
                 right_side = self.query_one(
                     button.app_ids.container.right_side_q, Vertical
                 )
-            elif button.app_ids.canvas_name == TabLabel.add:
+            elif button.app_ids.tab_label == TabLabel.add:
                 right_side = self.query_one(
                     button.app_ids.container.contents_q, ContentsView
                 )
             else:
                 raise NotImplementedError(
-                    f"Not implemented for {button.app_ids.canvas_name}"
+                    f"Not implemented for {button.app_ids.tab_label}"
                 )
             right_side.display = display
 

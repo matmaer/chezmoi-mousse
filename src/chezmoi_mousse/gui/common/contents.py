@@ -178,7 +178,7 @@ class ContentsView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if self.ids.canvas_name == TabLabel.add and (
+        if self.ids.tab_label == TabLabel.add and (
             show_path == self.app.cm_gui.cfg.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)
