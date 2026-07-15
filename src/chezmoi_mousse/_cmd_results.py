@@ -1,75 +1,33 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
+import json
+from dataclasses import dataclass, fields
+from functools import cache, cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ReadOnly, TypedDict
 
-from ._run_cmd import ChezmoiCommand
-from ._str_enums import StatusCode, TabLabel
+from ._str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from ._app_ids import AppIds
     from ._run_cmd import CommandResult
 
-__all__ = ["CMD", "CachedData"]
+__all__ = ["CachedData"]
 
 type ParsedJson = dict[str, Any]
 
 
-@dataclass(slots=True)
-class PathSets:
-    managed_dirs: set[Path] = field(default_factory=lambda: set())
-    managed_files: set[Path] = field(default_factory=lambda: set())
-    status_dirs: set[Path] = field(default_factory=lambda: set())
-    status_files: set[Path] = field(default_factory=lambda: set())
-    # derived sets
-    managed_paths: set[Path] = field(default_factory=lambda: set())
-    status_paths: set[Path] = field(default_factory=lambda: set())
-    unchanged_files: set[Path] = field(default_factory=lambda: set())
-    unchanged_dirs: set[Path] = field(default_factory=lambda: set())
-    dirs_with_status_children: set[Path] = field(default_factory=lambda: set())
-
-    def __post_init__(self) -> None:
-        self.managed_paths = self.managed_dirs | self.managed_files
-        self.status_paths = self.status_dirs | self.status_files
-        self.unchanged_files = self.managed_files - self.status_files
-        self.unchanged_dirs = self.managed_dirs - self.status_dirs
-        self.dirs_with_status_children = {
-            d
-            for d in self.managed_dirs
-            if any(sp.is_relative_to(d) for sp in self.status_paths)
-        }
-
-    @property
-    def no_managed_paths(self) -> bool:
-        return bool(not self.managed_dirs and not self.managed_files)
-
-    @property
-    def no_status_paths(self) -> bool:
-        return bool(not self.status_dirs and not self.status_files)
-
-    def contains_status_paths(self, dir_path: Path) -> bool:
-        return any(
-            p.is_relative_to(dir_path) for p in self.status_dirs | self.status_files
-        )
-
-    def status_files_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.status_files if p.parent == dir_path}
-
-    def unchanged_files_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.unchanged_files if p.parent == dir_path}
-
-    def dirs_with_status_children_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.dirs_with_status_children if p.parent == dir_path}
-
-    def status_dirs_in(self, dir_path: Path) -> set[Path]:
-        return {p for p in self.status_dirs if p.parent == dir_path}
+class PathStatus(TypedDict):
+    path: ReadOnly[Path]
+    status: ReadOnly[StatusCode]
 
 
-@dataclass(slots=True)
-class CachedCmdResults:
+@dataclass(kw_only=True)
+class CmdResults:
+    # we cannot use any @cache or @cached_property decorators here as we assign new
+    # values to the CommandResult fields after chezmoi operations
+
     cat_config: CommandResult | None = None
     doctor: CommandResult | None = None
     dump_config: CommandResult | None = None
@@ -85,85 +43,243 @@ class CachedCmdResults:
     def all(self) -> list[CommandResult | None]:
         return [getattr(self, f.name) for f in fields(self)]
 
+    @property
+    def managed_dirs_set(self) -> frozenset[Path]:
+        if self.managed_dirs is None or not self.managed_dirs.std_out:
+            return frozenset()
+        return frozenset(Path(line) for line in self.managed_dirs.std_out.splitlines())
 
+    @property
+    def managed_files_set(self) -> frozenset[Path]:
+        if self.managed_files is None or not self.managed_files.std_out:
+            return frozenset()
+        return frozenset(Path(line) for line in self.managed_files.std_out.splitlines())
+
+    @property
+    def managed_paths_set(self) -> frozenset[Path]:
+        return self.managed_dirs_set | self.managed_files_set
+
+    @property
+    def status_dirs_set(self) -> frozenset[Path]:
+        if self.status_dirs is None or not self.status_dirs.std_out:
+            return frozenset()
+        return frozenset(Path(line) for line in self.status_dirs.std_out.splitlines())
+
+    @property
+    def status_files_set(self) -> frozenset[Path]:
+        if self.status_files is None or not self.status_files.std_out:
+            return frozenset()
+        return frozenset(Path(line) for line in self.status_files.std_out.splitlines())
+
+    @property
+    def status_paths_set(self) -> frozenset[Path]:
+        return self.status_dirs_set | self.status_files_set
+
+    @property
+    def unchanged_dirs_set(self) -> frozenset[Path]:
+        return self.managed_dirs_set - self.status_dirs_set
+
+    @property
+    def unchanged_files_set(self) -> frozenset[Path]:
+        return self.managed_files_set - self.status_files_set
+
+    @property
+    def unchanged_paths_set(self) -> frozenset[Path]:
+        return self.unchanged_dirs_set | self.unchanged_files_set
+
+    @property
+    def apply_status_dirs(self) -> frozenset[tuple[Path, StatusCode]]:
+        if self.status_dirs is None or not self.status_dirs.std_out:
+            return frozenset()
+        return frozenset(
+            (Path(line[3:]), StatusCode(line[0]))
+            for line in self.status_dirs.std_out.splitlines()
+        )
+
+    @property
+    def apply_status_files(self) -> frozenset[tuple[Path, StatusCode]]:
+        if self.status_files is None or not self.status_files.std_out:
+            return frozenset()
+        return frozenset(
+            (Path(line[3:]), StatusCode(line[0]))
+            for line in self.status_files.std_out.splitlines()
+        )
+
+    @property
+    def apply_status_paths(self) -> frozenset[tuple[Path, StatusCode]]:
+        return self.apply_status_dirs | self.apply_status_files
+
+    @property
+    def state_status_dirs(self) -> frozenset[tuple[Path, StatusCode]]:
+        if self.status_dirs is None or not self.status_dirs.std_out:
+            return frozenset()
+        return frozenset(
+            (Path(line[3:]), StatusCode(line[1]))
+            for line in self.status_dirs.std_out.splitlines()
+        )
+
+    @property
+    def state_status_files(self) -> frozenset[tuple[Path, StatusCode]]:
+        if self.status_files is None or not self.status_files.std_out:
+            return frozenset()
+        return frozenset(
+            (Path(line[3:]), StatusCode(line[1]))
+            for line in self.status_files.std_out.splitlines()
+        )
+
+    @property
+    def state_status_paths(self) -> frozenset[tuple[Path, StatusCode]]:
+        return self.state_status_dirs | self.state_status_files
+
+    @property
+    def dir_status_lines(self) -> frozenset[str]:
+        if self.status_dirs is None or not self.status_dirs.std_out:
+            return frozenset()
+        return frozenset(self.status_dirs.std_out.splitlines())
+
+    @property
+    def file_status_lines(self) -> frozenset[str]:
+        if self.status_files is None or not self.status_files.std_out:
+            return frozenset()
+        return frozenset(self.status_files.std_out.splitlines())
+
+    @property
+    def path_status_lines(self) -> frozenset[str]:
+        return self.dir_status_lines | self.file_status_lines
+
+    @property
+    def parsed_config_dump(self) -> ParsedJson:
+        if self.dump_config is None or not self.dump_config.std_out:
+            return {}
+        return json.loads(self.dump_config.std_out)
+
+
+type ContextStatus = dict[PathKind, dict[Path, StatusCode]]
+
+
+@dataclass
 class CachedData:
-    def __init__(self) -> None:
+    # this class will be reinitialized after each chezmoi apply, re-add, forget,
+    # destroy or add operation
 
-        self.cmd_results = CachedCmdResults()
+    managed_dirs: frozenset[Path] = frozenset()
+    managed_files: frozenset[Path] = frozenset()
+    managed_paths: frozenset[Path] = frozenset()
 
-        # parsed config cache
-        self.dest_dir: Path = Path().home()
-        self.git_auto_commit: bool = False
-        self.git_auto_push: bool = False
+    # paths with any status in the first or second column or both
+    status_dirs: frozenset[Path] = frozenset()
+    status_files: frozenset[Path] = frozenset()
+    status_paths: frozenset[Path] = frozenset()
 
-        # cached for frequent lookups
-        self.sets: PathSets = PathSets(
-            managed_dirs=set(),
-            managed_files=set(),
-            status_dirs=set(),
-            status_files=set(),
-        )
+    # managed paths without any status at all, either in the first or second column
+    unchanged_dirs: frozenset[Path] = frozenset()
+    unchanged_files: frozenset[Path] = frozenset()
+    unchanged_paths: frozenset[Path] = frozenset()
 
-    def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if self.cmd_results.status_dirs is None:
-            return {}
-        ds_pairs = {
-            Path(line[3:]): line[:2]
-            for line in self.cmd_results.status_dirs.std_out.splitlines()
+    # lines from the chezmoi status output
+    dir_status_lines: frozenset[str] = frozenset()
+    file_status_lines: frozenset[str] = frozenset()
+    path_status_lines: frozenset[str] = frozenset()
+
+    @cached_property
+    def no_managed_paths(self) -> bool:
+        return bool(not self.managed_paths)
+
+    # we can safely cache these returns as we create a new new instance of CachedData
+    # after each chezmoi operation or manual refresh, cache is cleared post init.
+
+    @classmethod
+    @cache
+    def _get_status_dict(
+        cls, tab_label: TabLabel, path_kind: PathKind, dir_path: Path | None = None
+    ) -> dict[Path, StatusCode]:
+        if tab_label == TabLabel.apply:
+            column = 1
+        elif tab_label == TabLabel.re_add:
+            column = 0
+        else:
+            raise NotImplementedError(f"TabLabel not yet implemented: {tab_label}")
+        if path_kind == PathKind.dir:
+            pairs = {Path(line[3:]): line[:2] for line in cls.dir_status_lines}
+        elif path_kind == PathKind.file:
+            pairs = {Path(line[3:]): line[:2] for line in cls.file_status_lines}
+        elif path_kind == PathKind.both:
+            pairs = {Path(line[3:]): line[:2] for line in cls.path_status_lines}
+        else:
+            raise ValueError(f"Invalid PathKind value: {path_kind}")
+        all_status_paths = {
+            path: StatusCode(status[column])
+            for path, status in pairs.items()
+            if status[column] != StatusCode.Space
         }
-        ds_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # dir status index
-        return {
-            k: StatusCode(v[ds_idx])
-            for k, v in ds_pairs.items()
-            if v[ds_idx] != StatusCode.Space
-        }
+        if dir_path is None:
+            return all_status_paths
+        else:
+            return {
+                path: StatusCode(status[column])
+                for path, status in all_status_paths.items()
+                if path.is_relative_to(dir_path)
+            }
 
-    def _get_status_files(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if self.cmd_results.status_files is None:
-            return {}
-        fs_pairs = {
-            Path(line[3:]): line[:2]
-            for line in self.cmd_results.status_files.std_out.splitlines()
-        }
-        fs_idx = 0 if app_ids.canvas_name == TabLabel.apply else 1  # file status index
-        return {
-            k: StatusCode(v[fs_idx])
-            for k, v in fs_pairs.items()
-            if v[fs_idx] != StatusCode.Space
-        }
+    @classmethod
+    @cache
+    def get_path_status(cls, tab_label: TabLabel, path: Path) -> dict[Path, StatusCode]:
+        if path in cls.status_dirs:
+            path_kind = PathKind.dir
+        elif path in cls.status_files:
+            path_kind = PathKind.file
+        else:
+            path_kind = PathKind.both
+        return cls._get_status_dict(tab_label, path_kind)
 
-    def get_path_status(self, path: Path, app_ids: AppIds) -> StatusCode:
-        paths_dict = self._get_status_dirs(app_ids) | self._get_status_files(app_ids)
-        return paths_dict.get(path, StatusCode.Space)
+    @classmethod
+    @cache
+    def get_path_status_dict(cls, tab_label: TabLabel) -> dict[Path, StatusCode]:
+        return cls._get_status_dict(tab_label, PathKind.dir)
 
-    def update_path_sets(self) -> None:
-        def parse_managed_paths(result: CommandResult | None) -> set[Path]:
-            if result is None:
-                return set()
-            return {Path(line) for line in result.std_out.splitlines()}
+    @classmethod
+    @cache
+    def tab_status_dirs(cls, tab_label: TabLabel) -> dict[Path, StatusCode]:
+        return cls._get_status_dict(tab_label, PathKind.dir)
 
-        def parse_status_paths(result: CommandResult | None) -> set[Path]:
-            if result is None:
-                return set()
-            return {Path(line[3:]) for line in result.std_out.splitlines()}
+    @classmethod
+    @cache
+    def tab_status_files(cls, tab_label: TabLabel) -> dict[Path, StatusCode]:
+        return cls._get_status_dict(tab_label, PathKind.file)
 
-        self.sets = PathSets(
-            managed_dirs=parse_managed_paths(self.cmd_results.managed_dirs),
-            managed_files=parse_managed_paths(self.cmd_results.managed_files),
-            status_dirs=parse_status_paths(self.cmd_results.status_dirs),
-            status_files=parse_status_paths(self.cmd_results.status_files),
-        )
+    @classmethod
+    @cache
+    def tab_status_paths(cls, tab_label: TabLabel) -> dict[Path, StatusCode]:
+        return cls._get_status_dict(tab_label, PathKind.both)
 
+    @classmethod
+    @cache
+    def status_files_in(cls, tab_label: TabLabel) -> dict[Path, StatusCode]:
+        return cls._get_status_dict(tab_label, PathKind.file)
 
-@dataclass(slots=True)
-class Commands:
-    run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
-    cache: CachedData = CachedData()
-    loading_modal_results: list[CommandResult] = field(default_factory=lambda: [])
-    changed_paths: list[Path] = field(default_factory=lambda: [])
-    added_paths: list[Path] = field(default_factory=lambda: [])
-    removed_paths: list[Path] = field(default_factory=lambda: [])
-    changed_status_paths: list[Path] = field(default_factory=lambda: [])
+    @classmethod
+    @cache
+    def status_dirs_in(cls, dir_path: Path) -> set[Path]:
+        return {p for p in cls.status_dirs if p.parent == dir_path}
 
+    @classmethod
+    @cache
+    def has_status_descendants(cls, tab_label: TabLabel, dir_path: Path) -> bool:
+        if dir_path not in cls.managed_dirs:
+            raise ValueError(f"An unmanaged dir was received: {dir_path}")
+        return any(p.is_relative_to(dir_path) for p in cls.tab_status_paths(tab_label))
 
-CMD = Commands()
+    @classmethod
+    @cache
+    def _get_unchanged_in_by_context(cls, dir_path: Path) -> set[Path]:
+        return {p for p in cls.unchanged_dirs if p.parent == dir_path}
+
+    @classmethod
+    @cache
+    def unchanged_dirs_in(cls, dir_path: Path) -> set[Path]:
+        return {p for p in cls.unchanged_dirs if p.parent == dir_path}
+
+    @classmethod
+    @cache
+    def has_unchanged_paths(cls, dir_path: Path) -> bool:
+        return any(p for p in cls.unchanged_paths if p.is_relative_to(dir_path))

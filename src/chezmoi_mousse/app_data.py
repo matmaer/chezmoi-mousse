@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import NamedTuple
 
 from ._app_ids import AppIds
-from ._cmd_results import CachedData, CmdResults, CommandResult, ParsedJson
-from ._run_cmd import ChezmoiCommand
+from ._cmd_results import CachedData, CmdResults, ParsedJson
+from ._run_cmd import ChezmoiCommand, CommandResult
 from ._str_enums import TabLabel
 
 __all__ = ["AppData"]
@@ -62,7 +62,7 @@ class AppData:
     env_vars: AppEnvVars = field(default_factory=AppEnvVars)
     run_cmd: ChezmoiCommand = field(default_factory=ChezmoiCommand)
     cmd_results: CmdResults = field(default_factory=CmdResults)
-    cache: CachedData = CachedData.init_empty()
+    cache: CachedData = field(default_factory=CachedData)
     cfg: ParsedConfigDump = field(default_factory=ParsedConfigDump)
 
     # keep track of changes after an operation
@@ -75,6 +75,7 @@ class AppData:
     def __post_init__(self) -> None:
         if self.stacktrace_path.exists():
             self.stacktrace_path.unlink()
+        self.run_cmd.chezmoi_bin = self.chezmoi_bin
 
     def save_stacktrace(self):
         with Path.open(self.stacktrace_path, "a") as f:
@@ -96,4 +97,4 @@ class AppData:
             path_status_lines=self.cmd_results.path_status_lines,
         )
         if update_cfg:
-            self.cfg = ParsedConfigDump()
+            self.cfg = ParsedConfigDump(self.cmd_results.parsed_config_dump)
