@@ -261,7 +261,7 @@ class MainScreen(Screen[None]):
                 self.query_one(btn_id_q, Button).disabled = True
             return
         # Enable/disable all review buttons
-        if self.app.cm_gui.cache.contains_status_paths(msg.path) is True:
+        if self.app.cm_gui.cache.has_status_descendants(msg.path) is True:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
