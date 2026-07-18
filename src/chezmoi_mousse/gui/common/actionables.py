@@ -10,7 +10,7 @@ from chezmoi_mousse import FlatBtnLabel, OpBtnEnum, SwitchEnum, TabLabel, Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, ChezmoiGui
+    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
 
 
 __all__ = [
