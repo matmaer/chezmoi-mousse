@@ -12,7 +12,7 @@ from textual.widgets import Collapsible, DataTable, Label, Link, Static
 from chezmoi_mousse import Chars, SectionLabel, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiGui
+    from chezmoi_mousse.type_checking import ChezmoiGui
 
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
