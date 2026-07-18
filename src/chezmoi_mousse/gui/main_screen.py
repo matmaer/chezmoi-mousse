@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Iterator
 from itertools import chain
 from typing import TYPE_CHECKING
@@ -9,17 +11,14 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, Switch, TabbedContent, Tabs
 
-from chezmoi_mousse import (
-    Chars,
-    CommandResult,
-    LogString,
-    OpBtnEnum,
-    OpBtnLabel,
-    TabLabel,
-    Tcss,
+from chezmoi_mousse import Chars, OpBtnEnum, OpBtnLabel, TabLabel, Tcss
+from chezmoi_mousse.gui.common.actionables import (
+    DirContentBtn,
+    OpButton,
+    OperateButtons,
+    SwitchSlider,
 )
 
-from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -66,7 +65,7 @@ class MainScreen(Screen[None]):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ids = self.app.cm_gui.ids
+        self.ids = self.app.cm_attr.ids
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
@@ -78,14 +77,12 @@ class MainScreen(Screen[None]):
             yield AddTab(self.ids.add)
             yield LogsTab(self.ids.logs)
             yield ConfigTab(self.ids.config)
-            if self.app.debug_mode is True:
+            if self.app.cm_attr.debug_mode is True:
                 yield DebugTab(self.ids.debug)
         yield Footer()
 
     def on_mount(self) -> None:
         self.run_cmd_results: list[CommandResult] = []
-        if self.app.debug_mode is True:
-            self.notify(LogString.debug_tab_enabled)
         self.app_log = self.query_one(self.ids.logs.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(self.ids.logs.richlog.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
@@ -100,6 +97,7 @@ class MainScreen(Screen[None]):
         self.command_output = self.query_exactly_one(CommandOutput)
         self.command_output.display = False
         self._first_time_startup()
+        self.post_message(ReadyToUseMsg())
 
     ###########################################
     # Push modal methods with their callbacks #
@@ -110,10 +108,8 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal(None)
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
-        await self._log_all_cmd_results(self.app.cm_gui.cmd_results.all).wait()
-        await self._update_config_tab().wait()
+        await self._log_all_cmd_results().wait()
         self.loading_modal.dismiss()
-        self.post_message(ReadyToUseMsg())
 
     @work
     async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
@@ -128,7 +124,7 @@ class MainScreen(Screen[None]):
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()
         elif btn_enum == OpBtnEnum.reload:
-            if len(self.app.cm_gui.changed_paths) == 0:
+            if self.app.cm_attr.changes.none:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
@@ -137,7 +133,7 @@ class MainScreen(Screen[None]):
                 self.notify("Changed managed paths found, refreshing data.")
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
-        await self._log_all_cmd_results(self.app.cm_gui.loading_modal_results).wait()
+        await self._log_all_cmd_results(self.app.cm_attr.loading_modal_results).wait()
         self.loading_modal.dismiss()
 
     #####################
@@ -146,12 +142,11 @@ class MainScreen(Screen[None]):
 
     @work
     @min_wait
-    async def _log_all_cmd_results(self, to_log: list["CommandResult | None"]) -> None:
+    async def _log_all_cmd_results(self) -> None:
         self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
-        for cmd_result in to_log:
-            if cmd_result is not None:
-                self.app_log.cmd_result = cmd_result
-                self.cmd_log.cmd_result = cmd_result
+        for cmd_result in self.app.cm_attr.get_all_cmd_results():
+            self.app_log.cmd_result = cmd_result
+            self.cmd_log.cmd_result = cmd_result
 
     @work
     @min_wait
@@ -164,13 +159,6 @@ class MainScreen(Screen[None]):
         )
         for view in all_views:
             view.remove_children()
-
-    @work
-    @min_wait
-    async def _update_config_tab(self) -> None:
-        self.loading_modal.label_text = LoadingLabel.update_config_tab.with_color
-        config_tab = self.query_exactly_one(ConfigTab)
-        config_tab.command_results = self.app.cm_gui.cache
 
     @work
     @min_wait
@@ -228,8 +216,7 @@ class MainScreen(Screen[None]):
             )
             if (
                 unchanged_switch.value is False
-                and event.button.path in self.app.cm_gui.cache.managed_files
-                or (event.button.path in self.app.cm_gui.cache.unchanged_dirs)
+                and event.button.path in self.app.cm_attr.sets.managed_paths
             ):
                 unchanged_switch.value = True
             managed_tree.show_requested_node(event.button.path)
@@ -244,7 +231,7 @@ class MainScreen(Screen[None]):
         ).query_exactly_one(Horizontal)
         tab_buttons.border_subtitle = (
             f" {msg.path} "
-            if msg.path == self.app.cm_gui.cfg.dest_dir
+            if msg.path == self.app.cm_attr.cfg.dest_dir
             else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
@@ -257,12 +244,13 @@ class MainScreen(Screen[None]):
         ).set_path_arg(msg.path)
 
         # Could occur at startup or after operations, when we aute select the root node.
-        if self.app.cm_gui.cache.no_managed_paths is True:
+        if not self.app.cm_attr.sets.managed_paths:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
             return
+
         # Enable/disable all review buttons
-        if self.app.cm_gui.cache.has_status_descendants(msg.path) is True:
+        if self.app.cm_attr.sets.has_status_descendants is True:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
@@ -270,9 +258,9 @@ class MainScreen(Screen[None]):
                 self.query_one(btn_id_q, Button).disabled = True
         # Enable/disable Forget and Destroy button
         for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
-            if msg.path == self.app.cm_gui.cfg.dest_dir:
+            if msg.path == self.app.cm_attr.cfg.dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
-            elif not self.app.cm_gui.cache.unchanged_paths:
+            elif not self.app.cm_attr.sets.unchanged_paths:
                 self.query_one(btn_id_q, Button).disabled = False
 
     ########################

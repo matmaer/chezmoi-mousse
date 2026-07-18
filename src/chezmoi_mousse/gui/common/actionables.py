@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from textual import getters, on
@@ -26,14 +28,14 @@ __all__ = [
 
 
 class DirContentBtn(Button):
-    def __init__(self, *, label: str, path: "Path", app_ids: "AppIds") -> None:
+    def __init__(self, *, label: str, path: Path, app_ids: AppIds) -> None:
         super().__init__(label=label)
         self.path = path
         self.app_ids = app_ids
 
 
 class FlatButton(Button):
-    def __init__(self, ids: "AppIds", *, btn_label: FlatBtnLabel) -> None:
+    def __init__(self, ids: AppIds, *, btn_label: FlatBtnLabel) -> None:
         super().__init__(
             classes=Tcss.flat_button,
             flat=True,
@@ -45,7 +47,7 @@ class FlatButton(Button):
 
 class FlatButtonsVertical(Vertical):
 
-    def __init__(self, ids: "AppIds", *, labels: tuple[FlatBtnLabel, ...]) -> None:
+    def __init__(self, ids: AppIds, *, labels: tuple[FlatBtnLabel, ...]) -> None:
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
         self.ids = ids
         self.labels: tuple[FlatBtnLabel, ...] = labels
@@ -66,7 +68,7 @@ class FlatButtonsVertical(Vertical):
 
 class OpButton(Button):
 
-    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: "AppIds") -> None:
+    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: AppIds) -> None:
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
         self.btn_enum: OpBtnEnum = btn_enum
         self.btn_id: str = btn_id
@@ -101,7 +103,7 @@ class OperateButtons(HorizontalGroup):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.operate_buttons)
         self.ids = ids
 
@@ -117,16 +119,16 @@ class OperateButtons(HorizontalGroup):
             review_btn = self.query_one(self.ids.op_btn.re_add_review_q, OpButton)
         else:
             return
-        review_btn.disabled = bool(self.app.cm_gui.cache.unchanged_paths)
+        review_btn.disabled = bool(self.app.cm_attr.sets.unchanged_paths)
 
-    def set_path_arg(self, path: "Path") -> None:
+    def set_path_arg(self, path: Path) -> None:
         for btn_enum in self.ids.op_btn_map.values():
             btn_enum.path_arg = path
 
 
 class SwitchWithLabel(HorizontalGroup):
 
-    def __init__(self, ids: "AppIds", *, switch_enum: "SwitchEnum") -> None:
+    def __init__(self, ids: AppIds, *, switch_enum: SwitchEnum) -> None:
         super().__init__()
         self.switch_enum = switch_enum
         self.ids = ids
@@ -139,7 +141,7 @@ class SwitchWithLabel(HorizontalGroup):
 
 
 class SwitchSlider(VerticalGroup):
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.switch_slider, classes="-visible")
         if ids.tab_label in (TabLabel.apply, TabLabel.re_add):
             self.switches = (
@@ -165,13 +167,13 @@ class SwitchSlider(VerticalGroup):
 
 class TabButton(Button):
 
-    def __init__(self, *, app_ids: "AppIds", label: TabLabel) -> None:
+    def __init__(self, *, app_ids: AppIds, label: TabLabel) -> None:
         super().__init__(classes=Tcss.tab_button, label=label)
         self.app_ids = app_ids
 
 
 class TabButtons(Horizontal):
-    def __init__(self, ids: "AppIds", buttons: tuple[TabLabel, ...]):
+    def __init__(self, ids: AppIds, buttons: tuple[TabLabel, ...]):
         super().__init__()
         self.buttons = buttons
         self.ids = ids
