@@ -19,36 +19,16 @@ __all__ = ["CmAttributes"]
 
 @dataclass(frozen=True, kw_only=True)
 class CmdResults:
-    cat_config: CommandResult
-    doctor: CommandResult
-    dump_config: CommandResult
-    git_log: CommandResult
-    ignored: CommandResult
-    managed_dirs: CommandResult
-    managed_files: CommandResult
-    status_dirs: CommandResult
-    status_files: CommandResult
-    template_data: CommandResult
-
-    @classmethod
-    def managed_dirs_set(cls) -> frozenset[Path]:
-        return frozenset(Path(line) for line in cls.managed_dirs.std_out.splitlines())
-
-    @classmethod
-    def managed_files_set(cls) -> frozenset[Path]:
-        return frozenset(Path(line) for line in cls.managed_files.std_out.splitlines())
-
-    @classmethod
-    def status_dirs_set(cls) -> frozenset[Path]:
-        return frozenset(
-            Path(line[3:]) for line in cls.status_dirs.std_out.splitlines()
-        )
-
-    @classmethod
-    def status_files_set(cls) -> frozenset[Path]:
-        return frozenset(
-            Path(line[3:]) for line in cls.status_files.std_out.splitlines()
-        )
+    cat_config: CommandResult = field(default_factory=lambda: CommandResult())
+    doctor: CommandResult = field(default_factory=lambda: CommandResult())
+    dump_config: CommandResult = field(default_factory=lambda: CommandResult())
+    git_log: CommandResult = field(default_factory=lambda: CommandResult())
+    ignored: CommandResult = field(default_factory=lambda: CommandResult())
+    managed_dirs: CommandResult = field(default_factory=lambda: CommandResult())
+    managed_files: CommandResult = field(default_factory=lambda: CommandResult())
+    status_dirs: CommandResult = field(default_factory=lambda: CommandResult())
+    status_files: CommandResult = field(default_factory=lambda: CommandResult())
+    template_data: CommandResult = field(default_factory=lambda: CommandResult())
 
 
 @dataclass(frozen=True, slots=True)

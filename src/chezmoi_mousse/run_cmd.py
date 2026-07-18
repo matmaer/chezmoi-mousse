@@ -1,5 +1,5 @@
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
@@ -89,20 +89,6 @@ class ReadCmd(Enum):
     template_data = (ReadVerb.data.value,)
     unmanaged_files = (ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value)
 
-    @property
-    def filtered(self) -> str:
-        exclude: list[str] = [
-            VerbArgs.path_style_absolute.value,
-            VerbArgs.format_json.value,
-        ]
-        if self == ReadCmd.git_log:
-            exclude.extend(list(VerbArgs.git_log.value[2:]))
-        return " ".join([part for part in self.value if part and part not in exclude])
-
-    @property
-    def review_cmd(self) -> str:
-        return f"chezmoi {self.filtered}"
-
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
         return [
@@ -122,6 +108,13 @@ class ReadCmd(Enum):
     def json_output_commands(cls) -> list["ReadCmd"]:
         return [ReadCmd.dump_config, ReadCmd.template_data]
 
+    @property
+    def pretty_args(self) -> tuple[str, ...]:
+        exclude = (VerbArgs.path_style_absolute.value, VerbArgs.format_json.value)
+        if self == ReadCmd.git_log:
+            exclude += VerbArgs.git_log.value[2:]
+        return tuple(t for t in self.value if t not in exclude)
+
 
 class WriteVerb(Enum):
     add = "add"
@@ -139,19 +132,17 @@ class WriteCmd(Enum):
     re_add = (WriteVerb.re_add.value,)
 
     @property
-    def filtered(self) -> str:
-        return self.value[0]
-
-    @property
-    def review_cmd(self) -> str:
-        return f"chezmoi {self.value[0]}"
+    def pretty_args(self) -> tuple[str, ...]:
+        return self.value
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
-    completed_process: CompletedProcess[str]
-    path: Path | None
-    pretty_cmd: str
+    completed_process: CompletedProcess[str] = field(
+        default_factory=lambda: CompletedProcess(args=[], returncode=1)
+    )
+    path: Path | None = None
+    pretty_args: tuple[str, ...] | None = None
 
     @property
     def was_dry_run(self) -> bool:
@@ -159,7 +150,15 @@ class CommandResult:
 
     @property
     def full_cmd(self) -> str:
+        if not self.completed_process.args:
+            raise AttributeError("self.completed_process is empty.")
         return " ".join(self.completed_process.args)
+
+    @property
+    def pretty_cmd(self) -> str:
+        if self.pretty_args is None:
+            raise AttributeError("self.pretty_args is None.")
+        return "chezmoi " + " ".join(list(self.pretty_args))
 
     @property
     def returncode(self) -> int:
@@ -185,7 +184,7 @@ class ChezmoiCommand:
         *,
         chezmoi_args: tuple[str, ...],
         time_out: int,
-        filtered_args: str,
+        pretty_args: tuple[str, ...],
         path: Path | None = None,
     ) -> CommandResult:
         chezmoi_bin: str | None = shutil.which("chezmoi")
@@ -199,10 +198,8 @@ class ChezmoiCommand:
             text=True,
             timeout=time_out,
         )
-        pretty_cmd_items = ["chezmoi"]
-        pretty_cmd_items.append(filtered_args)
         return CommandResult(
-            completed_process=result, path=path, pretty_cmd=" ".join(pretty_cmd_items)
+            completed_process=result, path=path, pretty_args=pretty_args
         )
 
     def get_relative_path(self, path: Path) -> str:
@@ -217,20 +214,18 @@ class ChezmoiCommand:
     ) -> CommandResult:
         is_write_cmd = isinstance(cmd, WriteCmd)
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
-        filtered_args: list[str] = []
+        pretty_args: tuple[str, ...] = ()
         time_out = 20
         if self.changes_enabled and is_write_cmd:
             chezmoi_args += GlobalArgs.dry_run.value
-            filtered_args.append(f"{GlobalArgs.dry_run.value[0]}")
+            pretty_args += GlobalArgs.dry_run.value
             time_out = 10
         elif not is_write_cmd:
             time_out = 6 if cmd == ReadCmd.doctor else 3
-        filtered_args.append(cmd.filtered)
+        pretty_args += cmd.pretty_args
         if path_arg is not None:
             chezmoi_args += (str(path_arg),)
-            filtered_args.append(self.get_relative_path(path_arg))
+            pretty_args += (self.get_relative_path(path_arg),)
         return self._run_chezmoi_cmd(
-            chezmoi_args=chezmoi_args,
-            time_out=time_out,
-            filtered_args=" ".join(filtered_args),
+            chezmoi_args=chezmoi_args, time_out=time_out, pretty_args=pretty_args
         )
