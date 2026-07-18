@@ -1,3 +1,4 @@
+import shutil
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -7,7 +8,7 @@ __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
 class GlobalArgs(Enum):
-    _default_args = (
+    default = (
         "--color=off",
         "--force",
         "--interactive=false",
@@ -19,9 +20,7 @@ class GlobalArgs(Enum):
         "--use-builtin-diff=true",
         "--use-builtin-git=true",
     )
-    dry_run_arg = "--dry-run"
-    live_run = _default_args
-    dry_run = _default_args + (dry_run_arg,)
+    dry_run = ("--dry-run",)
 
 
 class VerbArgs(Enum):
@@ -90,6 +89,16 @@ class ReadCmd(Enum):
     template_data = (ReadVerb.data.value,)
     unmanaged_files = (ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value)
 
+    @property
+    def filtered(self) -> str:
+        exclude: list[str] = [
+            VerbArgs.path_style_absolute.value,
+            VerbArgs.format_json.value,
+        ]
+        if self == ReadCmd.git_log:
+            exclude.extend(list(VerbArgs.git_log.value[2:]))
+        return " ".join([part for part in self.value if part and part not in exclude])
+
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
         return [
@@ -130,139 +139,95 @@ class WriteCmd(Enum):
     forget = (WriteVerb.forget.value,)
     re_add = (WriteVerb.re_add.value,)
 
+    @property
+    def filtered(self) -> str:
+        return self.value[0]
 
-@dataclass(slots=True)
+
+@dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
-    short_global_cmd: str
-    short_verb_cmd: str
     completed_process: CompletedProcess[str]
-    path_arg: Path | None
-
-    def _has_no_text(self, input: str):
-        return not bool(input.strip())
-
-    def _get_text(self, output: str) -> str:
-        if self._has_no_text(output):
-            return ""
-        lines = output.splitlines()
-        if len(lines) == 1:
-            return "" if self._has_no_text(lines[0]) else lines[0]
-        # Remove leading lines with no text
-        start = 0
-        while start < len(lines) and self._has_no_text(lines[start]):
-            start += 1
-        # Remove trailing lines with no text
-        end = len(lines)
-        while end > start and self._has_no_text(lines[end - 1]):
-            end -= 1
-        if start == end:
-            return "" if self._has_no_text(lines[start]) else lines[start]
-        return "\n".join(lines[start:end])
+    path: Path | None
+    pretty_cmd: str
 
     @property
-    def exit_code(self) -> int:
+    def was_dry_run(self) -> bool:
+        return GlobalArgs.dry_run.value[0] in self.completed_process.args
+
+    @property
+    def full_cmd(self) -> str:
+        return " ".join(self.completed_process.args)
+
+    @property
+    def returncode(self) -> int:
         return self.completed_process.returncode
 
     @property
     def std_out(self) -> str:
-        return self._get_text(self.completed_process.stdout)
+        return self.completed_process.stdout.strip()
 
     @property
     def std_err(self) -> str:
-        return self._get_text(self.completed_process.stderr)
-
-    @property
-    def short_cmd_no_path(self) -> str:
-        return f"{self.short_global_cmd} {self.short_verb_cmd}"
-
-    @property
-    def is_dry_run(self) -> bool:
-        return GlobalArgs.dry_run_arg.value in self.completed_process.args
+        return self.completed_process.stderr.strip()
 
 
 class ChezmoiCommand:
 
     def __init__(self) -> None:
         self.changes_enabled: bool = False
-        self.chezmoi_bin: str | None = None
-
-    def _short_global_cmd(self, dry_run: bool) -> str:
-        return f"chezmoi {GlobalArgs.dry_run_arg.value}" if dry_run else "chezmoi"
-
-    def _filtered_verb_cmd(self, verb_cmd: tuple[str, ...]) -> str:
-        filter_git_log_args = VerbArgs.git_log.value[2:]
-        exclude = set(
-            filter_git_log_args
-            + (VerbArgs.format_json.value, VerbArgs.path_style_absolute.value)
-        )
-        filtered_cmd = " ".join(
-            [part for part in verb_cmd if part and part not in exclude]
-        )
-        return filtered_cmd
+        self.dest_dir: Path | None = None
 
     def _run_chezmoi_cmd(
-        self, command: tuple[str, ...], cmd_timeout: int
-    ) -> CompletedProcess[str]:
-        return run(
-            command, capture_output=True, shell=False, text=True, timeout=cmd_timeout
-        )
-
-    def review_cmd(
-        self, verb_cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
-    ) -> str:
-        review_cmd = "chezmoi"
-        if isinstance(verb_cmd, WriteCmd) and not self.changes_enabled:
-            review_cmd += f" {GlobalArgs.dry_run_arg.value}"
-        review_cmd += f" {self._filtered_verb_cmd(verb_cmd.value)}"
-        if path_arg is not None:
-            review_cmd += f" {path_arg}"
-        return f"[$text-primary]{review_cmd}[/]"
-
-    def read(self, read_cmd: ReadCmd, *, path_arg: Path | None = None) -> CommandResult:
-        if self.chezmoi_bin is None:
-            raise ValueError("chezmoi_bin is not set")
-        global_cmd = (self.chezmoi_bin,) + GlobalArgs.live_run.value
-        verb_cmd = read_cmd.value
-        cmd_to_run = global_cmd + verb_cmd
-        time_out = 4 if read_cmd == ReadCmd.doctor else 2
-        if path_arg is not None:
-            path_str = str(path_arg)
-            if read_cmd == ReadCmd.git_log:
-                source_path_str = self._run_chezmoi_cmd(
-                    global_cmd + ReadCmd.source_path.value + (path_str,),
-                    cmd_timeout=time_out,
-                ).stdout.strip()
-                path_str = source_path_str
-            cmd_to_run += (path_str,)
-        result: CompletedProcess[str] = self._run_chezmoi_cmd(
-            cmd_to_run, cmd_timeout=time_out
-        )
-        command_result = CommandResult(
-            short_global_cmd=self._short_global_cmd(dry_run=False),
-            completed_process=result,
-            short_verb_cmd=self._filtered_verb_cmd(verb_cmd),
-            path_arg=path_arg,
-        )
-        return command_result
-
-    def perform(
-        self, write_cmd: WriteCmd, *, path_arg: Path | None = None
+        self,
+        *,
+        chezmoi_args: tuple[str, ...],
+        time_out: int,
+        filtered_args: str,
+        path: Path | None = None,
     ) -> CommandResult:
-        if self.chezmoi_bin is None:
-            raise ValueError("chezmoi_bin is not set")
-        global_cmd = (
-            (self.chezmoi_bin,) + GlobalArgs.live_run.value
-            if self.changes_enabled
-            else (self.chezmoi_bin,) + GlobalArgs.dry_run.value
+        chezmoi_bin: str | None = shutil.which("chezmoi")
+        if chezmoi_bin is None:
+            raise RuntimeError("cannot find chezmoi command")
+        subprocess_run_args = (chezmoi_bin,) + chezmoi_args
+        result: CompletedProcess[str] = run(
+            subprocess_run_args,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=time_out,
         )
-        command: tuple[str, ...] = global_cmd + write_cmd.value
+        pretty_cmd_items = ["chezmoi"]
+        pretty_cmd_items.append(filtered_args)
+        return CommandResult(
+            completed_process=result, path=path, pretty_cmd=" ".join(pretty_cmd_items)
+        )
+
+    def get_relative_path(self, path: Path) -> str:
+        if self.dest_dir is None:
+            # this happens when we have not yet parsed the config in the splash screen
+            return str(path)
+        else:
+            return f"{path.relative_to(self.dest_dir)}"
+
+    def run_command(
+        self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
+    ) -> CommandResult:
+        is_write_cmd = isinstance(cmd, WriteCmd)
+        chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
+        filtered_args: list[str] = []
+        time_out = 20
+        if self.changes_enabled and is_write_cmd:
+            chezmoi_args += GlobalArgs.dry_run.value
+            filtered_args.append(f"{GlobalArgs.dry_run.value[0]}")
+            time_out = 10
+        elif not is_write_cmd:
+            time_out = 6 if cmd == ReadCmd.doctor else 3
+        filtered_args.append(cmd.filtered)
         if path_arg is not None:
-            command += (str(path_arg),)
-        result: CompletedProcess[str] = self._run_chezmoi_cmd(command, cmd_timeout=7)
-        command_result = CommandResult(
-            short_global_cmd=self._short_global_cmd(dry_run=(not self.changes_enabled)),
-            short_verb_cmd=self._filtered_verb_cmd(write_cmd.value),
-            completed_process=result,
-            path_arg=path_arg,
+            chezmoi_args += (str(path_arg),)
+            filtered_args.append(self.get_relative_path(path_arg))
+        return self._run_chezmoi_cmd(
+            chezmoi_args=chezmoi_args,
+            time_out=time_out,
+            filtered_args=" ".join(filtered_args),
         )
-        return command_result
