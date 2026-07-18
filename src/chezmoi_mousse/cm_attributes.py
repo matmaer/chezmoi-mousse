@@ -84,7 +84,7 @@ class PathSets:
         return self.managed_files - self.status_files
 
     @cached_property
-    def unmanaged_paths(self) -> frozenset[Path]:
+    def unchanged_paths(self) -> frozenset[Path]:
         return self.unchanged_dirs | self.unchanged_files
 
 
