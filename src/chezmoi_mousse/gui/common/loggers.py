@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import os
 from datetime import datetime
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse.cmd_results import CommandResult
+    from chezmoi_mousse.run_cmd import CommandResult
     from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
 
 __all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
@@ -32,7 +34,7 @@ class LogColor(StrEnum):
 
 class CmdResultCollapsible(Collapsible):
 
-    def __init__(self, *, cmd_result: "CommandResult"):
+    def __init__(self, *, cmd_result: CommandResult):
         collapsible_contents = self._collapsible_contents(cmd_result)
         colored_title = self._exit_code_colored_cmd(cmd_result)
         super().__init__(
@@ -42,17 +44,13 @@ class CmdResultCollapsible(Collapsible):
             expanded_symbol=Chars.down_triangle,
         )
 
-    def _exit_code_colored_cmd(self, result: "CommandResult") -> str:
+    def _exit_code_colored_cmd(self, result: CommandResult) -> str:
         pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
-        cmd_color = LogColor.success if result.exit_code == 0 else LogColor.warning
-        cmd_text = f"{result.short_global_cmd} {result.short_verb_cmd}"
-        cmd_return = f"[dim]returncode {result.exit_code}[/]"
-        if result.path_arg is not None:
-            cmd_text += f" {result.path_arg}"
-        return f"{pretty_time} [${cmd_color}]{cmd_text}[/] {cmd_return}"
+        cmd_color = LogColor.success if result.returncode == 0 else LogColor.warning
+        return f"{pretty_time} [${cmd_color}]{result.pretty_cmd}[/] {result.returncode}"
 
-    def _collapsible_contents(self, result: "CommandResult") -> list[Label | Static]:
-        dry_run_str = "(dry run)" if result.is_dry_run else ""
+    def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
+        dry_run_str = "(dry run)" if result.was_dry_run else ""
         curated_std_out = result.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = result.std_err or f"{LogString.no_stderr} {dry_run_str}"
         contents: list[Label | Static] = [
@@ -81,11 +79,11 @@ class CmdLog(ScrollableContainer):
         app = getters.app(ChezmoiGui)
 
     def __init__(self) -> None:
-        super().__init__(id=self.app.cm_gui.ids.logs.richlog.cmd)
+        super().__init__(id=self.app.cm_attr.ids.logs.richlog.cmd)
 
-    cmd_result: reactive["CommandResult | None"] = reactive(None)
+    cmd_result: reactive[CommandResult | None] = reactive(None)
 
-    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:
             return
         self.mount(CmdResultCollapsible(cmd_result=cmd_result))
@@ -121,31 +119,27 @@ class AppLog(RichLoggers):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-    cmd_result: reactive["CommandResult | None"] = reactive(None)
+    cmd_result: reactive[CommandResult | None] = reactive(None)
 
     def __init__(self) -> None:
         super().__init__(
-            id=self.app.cm_gui.ids.logs.richlog.app, markup=True, max_lines=10000
+            id=self.app.cm_attr.ids.logs.richlog.app, markup=True, max_lines=10000
         )
 
     def on_mount(self) -> None:
         self.write_ready(LogString.app_log_initialized)
-        if self.app.cm_gui.run_cmd.chezmoi_bin is not None:
-            self.write_info(
-                LogString.using_chezmoi_bin + f" {self.app.cm_gui.chezmoi_bin}"
-            )
-        if self.app.debug_mode is True:
+        if self.app.cm_attr.debug_mode is True:
             self.write_warning(
                 f"{Chars.warning_sign} {LogString.debug_tab_enabled} "
                 f"{Chars.warning_sign} "
             )
 
-    def watch_cmd_result(self, cmd_result: "CommandResult | None") -> None:
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:
             return
-        cmd_color = LogColor.success if cmd_result.exit_code == 0 else LogColor.warning
-        log_text: list[str] = [f"{cmd_result.short_cmd_no_path}"]
-        if ReadVerb.doctor.value in cmd_result.completed_process.args:
+        cmd_color = LogColor.success if cmd_result.returncode == 0 else LogColor.warning
+        log_text: list[str] = [f"{cmd_result.pretty_cmd}"]
+        if ReadVerb.doctor.value[0] in cmd_result.completed_process.args:
             output_lower = cmd_result.std_out.lower()
             if "error" in output_lower:
                 cmd_color = LogColor.error
@@ -165,7 +159,7 @@ class AppLog(RichLoggers):
 
 class DebugLog(RichLoggers):
 
-    def __init__(self, *, ids: "AppIds") -> None:
+    def __init__(self, *, ids: AppIds) -> None:
         super().__init__(id=ids.richlog.debug, markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
@@ -242,7 +236,7 @@ class DebugLog(RichLoggers):
         self.write_info(f"{obj.__class__.__name__} attributes:")
         self.write_dimmed("\n".join(members_with_types))
 
-    def callable_source(self, callable: "Callable[..., Any]") -> None:
+    def callable_source(self, callable: Callable[..., Any]) -> None:
         self.write_info(f"Function source for {callable.__name__}:")
         try:
             source = inspect.getsource(callable)
