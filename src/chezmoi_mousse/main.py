@@ -3,7 +3,7 @@ import sys
 from enum import StrEnum
 
 from chezmoi_mousse import save_stacktrace
-from chezmoi_mousse.app_state import AppData
+from chezmoi_mousse.cm_attributes import AppData
 from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
 from chezmoi_mousse.textual_app import ChezmoiGui
 

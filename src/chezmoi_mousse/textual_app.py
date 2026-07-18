@@ -1,5 +1,5 @@
 import dataclasses
-from typing import TYPE_CHECKING, ClassVar
+from typing import ClassVar
 
 from rich.color import Color
 from rich.segment import Segment, Segments
@@ -12,17 +12,19 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
-from ._str_enums import BindingAction, BindingDescription, Chars, TabLabel
-from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .gui.common.managed_tree import DestDirTree
-from .gui.common.op_feedback import OperateInfo, OpFeedBack
-from .gui.main_screen import CustomHeader, MainScreen
-from .gui.splash_screen import SplashScreen
-from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
-
-if TYPE_CHECKING:
-    from .app_data import AppData, ChezmoiCommand
-
+from chezmoi_mousse import save_stacktrace
+from chezmoi_mousse.cm_attributes import CmAttributes
+from chezmoi_mousse.gui.common.actionables import (
+    FlatButtonsVertical,
+    SwitchSlider,
+    TabButtons,
+)
+from chezmoi_mousse.gui.common.managed_tree import DestDirTree
+from chezmoi_mousse.gui.common.op_feedback import OperateInfo, OpFeedBack
+from chezmoi_mousse.gui.main_screen import CustomHeader, MainScreen
+from chezmoi_mousse.gui.splash_screen import SplashScreen
+from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
+from chezmoi_mousse.str_enums import BindingAction, BindingDescription, Chars, TabLabel
 
 __all__ = ["ChezmoiGui"]
 
@@ -52,7 +54,7 @@ chezmoi_mousse_light = Theme(
 )
 
 
-class ChezmoiGui(App[None]):
+class ChezmoiGui(App[str]):
 
     BINDINGS: ClassVar = [
         Binding(
@@ -81,14 +83,13 @@ class ChezmoiGui(App[None]):
 
     CSS_PATH = "gui.tcss"
 
-    def __init__(self, *, cm_gui_app_data: "AppData") -> None:
+    def __init__(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.cm_gui = cm_gui_app_data
+        self.cm_attr = CmAttributes
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        if self.cm_gui.env_vars.debug_mode:
-            self.cm_gui.save_stacktrace()
+        save_stacktrace()
         super()._handle_exception(error)
 
     def on_mount(self) -> None:
@@ -101,18 +102,6 @@ class ChezmoiGui(App[None]):
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
         self.push_screen(MainScreen())
-
-    #################################################################
-    # Convenience shortcuts for the self.chezmoi_gui_attributes attributes #
-    #################################################################
-
-    @property
-    def debug_mode(self) -> bool:
-        return self.cm_gui.env_vars.debug_mode
-
-    @property
-    def run_cmd(self) -> "ChezmoiCommand":
-        return self.cm_gui.run_cmd
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
@@ -182,20 +171,20 @@ class ChezmoiGui(App[None]):
     def action_toggle_dry_run(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        self.cm_gui.run_cmd.changes_enabled = not self.cm_gui.run_cmd.changes_enabled
+        self.cm_attr.run_cmd.changes_enabled = not self.cm_attr.run_cmd.changes_enabled
         new_description = (
             BindingDescription.remove_dry_run
-            if self.cm_gui.run_cmd.changes_enabled is False
+            if self.cm_attr.run_cmd.changes_enabled is False
             else BindingDescription.add_dry_run
         )
         self._update_binding_description(
             binding_action=BindingAction.toggle_dry_run, new_description=new_description
         )
         self.screen.query_exactly_one(CustomHeader).changes_enabled = (
-            self.cm_gui.run_cmd.changes_enabled
+            self.cm_attr.run_cmd.changes_enabled
         )
         self.screen.query_exactly_one(OperateInfo).changes_enabled = (
-            self.cm_gui.run_cmd.changes_enabled
+            self.cm_attr.run_cmd.changes_enabled
         )
 
     def action_toggle_switch_slider(self) -> None:
@@ -236,35 +225,35 @@ class ChezmoiGui(App[None]):
 
         if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
-                self.cm_gui.ids.apply.container.left_side_q, DestDirTree
+                self.cm_attr.ids.apply.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.cm_gui.ids.apply.container.operate_buttons_q
+                self.cm_attr.ids.apply.container.operate_buttons_q
             )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
-                self.cm_gui.ids.re_add.container.left_side_q, DestDirTree
+                self.cm_attr.ids.re_add.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.cm_gui.ids.re_add.container.operate_buttons_q
+                self.cm_attr.ids.re_add.container.operate_buttons_q
             )
         elif active_tab == TabLabel.add:
             left_side = self.screen.query_one(
-                self.cm_gui.ids.add.container.left_side_q, Vertical
+                self.cm_attr.ids.add.container.left_side_q, Vertical
             )
             operation_buttons = self.screen.query_one(
-                self.cm_gui.ids.add.container.operate_buttons_q
+                self.cm_attr.ids.add.container.operate_buttons_q
             )
         elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
-                self.cm_gui.ids.config.container.left_side_q, FlatButtonsVertical
+                self.cm_attr.ids.config.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabLabel.debug:
             left_side = self.screen.query_one(
-                self.cm_gui.ids.debug.container.left_side_q, FlatButtonsVertical
+                self.cm_attr.ids.debug.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:

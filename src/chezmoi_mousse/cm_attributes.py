@@ -15,7 +15,7 @@ from chezmoi_mousse.str_enums import StatusCode, TabLabel
 if TYPE_CHECKING:
     from chezmoi_mousse.type_checking import ParsedJson
 
-__all__ = ["AppState"]
+__all__ = ["CmAttributes"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,15 +136,19 @@ class AppIssues:
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
-class AppState:
+class CmAttributes:
+    ids: TabIds = TabIds()
     path_sets: PathSets = PathSets()
     path_status: PathStatus = PathStatus()
+    run_cmd: ChezmoiCommand = ChezmoiCommand()
     changed_paths: ChangedPaths = field(default_factory=lambda: ChangedPaths())
 
 
-def update_app_state() -> AppState:
+def update_app_state() -> CmAttributes:
+
     try:
         [getattr(CmdResults, f.name) for f in fields(CmdResults)]
     except AttributeError as attrib_error:
         raise Exception from attrib_error
-    return AppState()
+
+    return CmAttributes()
