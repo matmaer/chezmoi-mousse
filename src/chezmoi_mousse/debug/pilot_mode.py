@@ -11,7 +11,6 @@ from textual.pilot import OutOfBounds, Pilot
 from textual.widget import Widget
 from textual.widgets import Switch, TabbedContent, TabPane
 
-from .._str_enums import TabLabel
 from ..gui.common.actionables import (
     DirContentBtn,
     FlatButton,
@@ -22,6 +21,7 @@ from ..gui.common.actionables import (
 from ..gui.common.diffs import DiffView
 from ..gui.common.loading_modal import LoadingModal
 from ..gui.tab_panes import AddTab, ApplyTab, ReAddTab
+from ..str_enums import TabLabel
 
 if TYPE_CHECKING:
     from textual.message import Message
@@ -31,14 +31,14 @@ if TYPE_CHECKING:
 from ..gui.common.messages import ReadyToUseMsg
 
 
-async def pilot_chill(pilot: Pilot[None]):
+async def pilot_chill(pilot: Pilot[str]):
     await pilot.wait_for_scheduled_animations()
     while isinstance(pilot.app.screen, LoadingModal):
         await pilot.pause(0.2)
     await pilot.pause(0.2)
 
 
-async def click_and_wait(pilot: Pilot[None], widget: Widget) -> None:
+async def click_and_wait(pilot: Pilot[str], widget: Widget) -> None:
     try:
         await pilot.click(widget)
         await pilot_chill(pilot)
@@ -48,17 +48,17 @@ async def click_and_wait(pilot: Pilot[None], widget: Widget) -> None:
         return
 
 
-async def press_and_wait(pilot: Pilot[None], key: str) -> None:
+async def press_and_wait(pilot: Pilot[str], key: str) -> None:
     await pilot.press(key)
     await pilot_chill(pilot)
 
 
-async def toggle_binding(pilot: Pilot[None], key: str):
+async def toggle_binding(pilot: Pilot[str], key: str):
     await press_and_wait(pilot, key)
     await press_and_wait(pilot, key)
 
 
-async def refresh_trees(pilot: Pilot[None], active_pane: TabPane) -> None:
+async def refresh_trees(pilot: Pilot[str], active_pane: TabPane) -> None:
     if not isinstance(active_pane, (ApplyTab, ReAddTab, AddTab)):
         return
     refresh_tree_btn = active_pane.query_one(
@@ -69,7 +69,7 @@ async def refresh_trees(pilot: Pilot[None], active_pane: TabPane) -> None:
     await click_and_wait(pilot, reload_button)
 
 
-async def toggle_switches(pilot: Pilot[None], active_pane: TabPane) -> None:
+async def toggle_switches(pilot: Pilot[str], active_pane: TabPane) -> None:
     if active_pane.id not in (TabLabel.apply, TabLabel.re_add, TabLabel.add):
         return
     switch_slider = active_pane.query_exactly_one(SwitchSlider)
@@ -84,7 +84,7 @@ async def toggle_switches(pilot: Pilot[None], active_pane: TabPane) -> None:
                 await click_and_wait(pilot, switch)
 
 
-async def click_content_switcher_buttons(pilot: Pilot[None], tab_pane: TabPane) -> None:
+async def click_content_switcher_buttons(pilot: Pilot[str], tab_pane: TabPane) -> None:
     tab_buttons = tuple(tab_pane.query(TabButton).results())
     for tab_button in tab_buttons[1:]:
         await click_and_wait(pilot, tab_button)
@@ -93,7 +93,7 @@ async def click_content_switcher_buttons(pilot: Pilot[None], tab_pane: TabPane) 
         await click_and_wait(pilot, flat_button)
 
 
-async def click_random_path_in_diff_view(pilot: Pilot[None], tab_pane: TabPane) -> None:
+async def click_random_path_in_diff_view(pilot: Pilot[str], tab_pane: TabPane) -> None:
     if tab_pane.id not in (TabLabel.apply, TabLabel.re_add):
         return
     diff_view = tab_pane.query_exactly_one(DiffView)
@@ -135,4 +135,4 @@ async def test_app_with_pilot(app: ChezmoiGui):
             await refresh_trees(pilot, tab_pane)
         tab = tabbed_content.get_tab(TabLabel.apply)
         await click_and_wait(pilot, tab)
-        await pilot.exit(None)
+        await pilot.exit("Pilot mode completed\n")

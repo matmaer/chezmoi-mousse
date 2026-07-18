@@ -13,7 +13,7 @@ import tempfile
 import traceback
 from pathlib import Path
 
-from chezmoi_mousse.debug._test_paths import TestPaths
+from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from chezmoi_mousse.run_cmd import CommandResult, ReadCmd, ReadVerb
 from chezmoi_mousse.str_enums import (
