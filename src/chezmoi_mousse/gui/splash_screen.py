@@ -104,26 +104,24 @@ class SplashScreen(Screen[None]):
     @work(thread=True, group="io_workers")
     def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
         color = self.app.theme_variables["text-primary"]
-        result = self.app.cm_gui.run_cmd.read(splash_cmd)
-        setattr(self.app.cm_gui.cmd_results, f"{splash_cmd.name}", result)
+        result = self.app.cm_attr.run_cmd.run_command(splash_cmd)
         suffix = "unknown"
-        if result.exit_code == 0:
+        if result.returncode == 0:
             suffix = "success"
         else:
             suffix = "checked"
             color = self.app.theme_variables["text-warning"]
-        padding = LOG_MSG_WIDTH - (len(result.short_cmd_no_path) + len(suffix))
-        log_text = (
-            f"[{color}]{result.short_cmd_no_path} {'.' * padding} {suffix}[/{color}]"
-        )
+        short_cmd = result.pretty_cmd.replace("chezmoi", "")
+        padding = LOG_MSG_WIDTH - (len(short_cmd) + len(suffix))
+        log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
         self.app.call_from_thread(self.splash_log.write, log_text)
 
     def _all_workers_finished(self) -> None:
+        # TODO: also update cm_attributes
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.workers
             if worker.group == "io_workers"
+            and all(w for w in self.workers if w.is_finished)
         ):
-            self.app.cm_gui.update_cache(update_cfg=True)
-            if all(w for w in self.workers if w.is_finished):
-                self.dismiss()
+            self.dismiss()
