@@ -2,7 +2,8 @@ import asyncio
 import sys
 from enum import StrEnum
 
-from chezmoi_mousse.app_data import AppData
+from chezmoi_mousse import save_stacktrace
+from chezmoi_mousse.app_state import AppData
 from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
 from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -71,9 +72,9 @@ def run_app():
         sys.exit(wil_not_run_msg)
 
     try:
-        app = ChezmoiGui(cm_gui_app_data=app_data)
+        app = ChezmoiGui()
     except Exception:
-        app_data.save_stacktrace()
+        save_stacktrace()
         raise
 
     try:
@@ -82,7 +83,7 @@ def run_app():
         else:
             app.run()
     except Exception:
-        app_data.save_stacktrace()
+        save_stacktrace()
         raise
 
 

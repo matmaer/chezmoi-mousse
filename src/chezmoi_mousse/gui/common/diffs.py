@@ -7,13 +7,13 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import AppIds, ReadCmd, SectionLabel, StatusCode, TabLabel, Tcss
+from chezmoi_mousse import ReadCmd, SectionLabel, StatusCode, TabLabel, Tcss
 
 from .actionables import DirContentBtn
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiGui
+    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
 
 __all__ = ["DiffView"]
 

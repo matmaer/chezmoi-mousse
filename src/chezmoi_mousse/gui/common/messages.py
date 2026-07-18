@@ -7,7 +7,8 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse import AppIds, CommandResult
+    from chezmoi_mousse.run_cmd import CommandResult
+    from chezmoi_mousse.type_checking import AppIds
 
 
 __all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReadyToUseMsg"]

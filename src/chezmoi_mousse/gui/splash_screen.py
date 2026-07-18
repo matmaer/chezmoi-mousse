@@ -16,7 +16,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse import ReadCmd
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import ChezmoiGui
+    from chezmoi_mousse.type_checking import ChezmoiGui
 
 __all__ = ["SplashScreen"]
 

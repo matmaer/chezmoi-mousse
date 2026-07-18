@@ -9,13 +9,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import tempfile
+import traceback
+from pathlib import Path
 
-from ._app_ids import AppIds
-from ._cmd_results import CachedData
-from ._enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from ._run_cmd import CommandResult, ReadCmd, ReadVerb
-from ._str_enums import (
+from chezmoi_mousse.debug._test_paths import TestPaths
+from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
+from chezmoi_mousse.run_cmd import CommandResult, ReadCmd, ReadVerb
+from chezmoi_mousse.str_enums import (
     Chars,
     FlatBtnLabel,
     LogString,
@@ -26,18 +27,20 @@ from ._str_enums import (
     TabLabel,
     Tcss,
 )
-from .app_data import TabIds
-from .debug._test_paths import TestPaths
 
-if TYPE_CHECKING:
-    from .textual_app import ChezmoiGui
+
+def save_stacktrace():
+    path = Path(tempfile.gettempdir()) / "chezmoi_gui_stacktrace.log"
+    if path.exists():
+        path.unlink()
+
+    with path.open("a") as f:
+        traceback.print_exc(file=f)
+
 
 __all__ = [
-    "AppIds",
-    "TabIds",
-    "CachedData",
+    "save_stacktrace",
     "Chars",
-    "ChezmoiGui",
     "CommandResult",
     "FlatBtnLabel",
     "LogString",

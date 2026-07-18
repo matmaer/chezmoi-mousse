@@ -11,7 +11,7 @@ from chezmoi_mousse import ReadCmd
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import AppIds, ChezmoiGui
+    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
 
 __all__ = ["GitLogView"]
 
