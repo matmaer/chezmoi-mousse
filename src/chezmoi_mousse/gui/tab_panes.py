@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
@@ -6,7 +5,6 @@ from typing import TYPE_CHECKING
 from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
-from textual.reactive import reactive
 from textual.widgets import (
     Button,
     ContentSwitcher,
@@ -20,10 +18,10 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import (
-    AppIds,
     FlatBtnLabel,
     OpBtnEnum,
     OpBtnLabel,
+    ReadCmd,
     SectionLabel,
     TabLabel,
     Tcss,
@@ -45,7 +43,7 @@ from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CachedData, ChezmoiGui
+    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
@@ -62,7 +60,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(self.app.cm_gui.cfg.dest_dir),
+                FilteredDirTree(self.app.cm_attr.cfg.dest_dir),
                 OpButton(
                     btn_enum=OpBtnEnum.refresh_tree,
                     btn_id=self.ids.op_btn.refresh_tree,
@@ -80,8 +78,8 @@ class AddTab(TabPane):
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.add_tab_contents_view)
-        self.contents_view.border_title = f" {self.app.cm_gui.cfg.dest_dir} "
-        self.contents_view.show_path = self.app.cm_gui.cfg.dest_dir
+        self.contents_view.border_title = f" {self.app.cm_attr.cfg.dest_dir} "
+        self.contents_view.show_path = self.app.cm_attr.cfg.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
 
     @on(DirectoryTree.FileSelected)
@@ -93,8 +91,8 @@ class AddTab(TabPane):
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
         self.contents_view.show_path = event.node.data.path
-        if event.node.data.path == self.app.cm_gui.cfg.dest_dir:
-            self.contents_view.border_title = f" {self.app.cm_gui.cfg.dest_dir} "
+        if event.node.data.path == self.app.cm_attr.cfg.dest_dir:
+            self.contents_view.border_title = f" {self.app.cm_attr.cfg.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
@@ -147,26 +145,27 @@ class ApplyTab(TabPane):
 
 class CatConfigView(Vertical):
 
-    cat_config_stdout: reactive[str | None] = reactive(None, init=False)
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
-
-    def watch_cat_config_stdout(self, cat_config_stdout: str) -> None:
-        self.mount(Static(cat_config_stdout))
+        yield Static(self.app.cm_attr.get_cmd_result(ReadCmd.cat).std_out)
 
 
 class IgnoredView(Vertical):
 
-    ignored_stdout: reactive[str | None] = reactive(None, init=False)
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
-        yield ScrollableContainer(Pretty(()))
 
-    def watch_ignored_stdout(self, ignored_stdout: str) -> None:
-        pretty = self.query_exactly_one(Pretty)
-        pretty.update(ignored_stdout.splitlines())
+        yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
+        yield ScrollableContainer(
+            Pretty(
+                self.app.cm_attr.get_cmd_result(ReadCmd.ignored).std_out.splitlines()
+            )
+        )
 
 
 class DiagramView(Vertical):
@@ -178,38 +177,29 @@ class DiagramView(Vertical):
 
 class DoctorTableView(Vertical):
 
-    doctor_stdout: reactive[str | None] = reactive(None, init=False)
-
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
         yield DoctorTable()
 
-    def watch_doctor_stdout(self, doctor_stdout: str) -> None:
-        doctor_table = self.query_exactly_one(DoctorTable)
-        doctor_table.doctor_std_out = doctor_stdout
-
 
 class TemplateDataView(Vertical):
 
-    # TODO make scrollable
-
-    template_data_stdout: reactive[str | None] = reactive(None, init=False)
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
-        yield Pretty("No template data output yet.")
+        yield ScrollableContainer(Pretty("Updating..."))
 
-    def watch_template_data_stdout(self, template_data_stdout: str) -> None:
-        pretty = self.query_exactly_one(Pretty)
-        pretty.update(json.loads(template_data_stdout))
+    def on_mount(self) -> None:
+        pretty_widget = self.query_exactly_one(Pretty)
+        pretty_widget.update(self.app.cm_attr.parsed_json[ReadCmd.dump_config])
 
 
 class ConfigTab(TabPane):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-
-    command_results: reactive["CachedData | None"] = reactive(None, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
         super().__init__(id=TabLabel.config, title=TabLabel.config)
@@ -254,36 +244,6 @@ class ConfigTab(TabPane):
             self.switcher.current = self.ids.container.template_data
         elif event.button.label == FlatBtnLabel.diagram:
             self.switcher.current = self.ids.container.diagram
-
-    def watch_command_results(self) -> None:
-        if (
-            self.app.cm_gui.cmd_results.cat_config is None
-            or self.app.cm_gui.cmd_results.doctor is None
-            or self.app.cm_gui.cmd_results.ignored is None
-            or self.app.cm_gui.cmd_results.template_data is None
-        ):
-            return
-        self.switcher.query_one(
-            self.ids.container.template_data_q, TemplateDataView
-        ).template_data_stdout = (
-            self.app.cm_gui.cmd_results.template_data.completed_process.stdout
-        )
-        self.switcher.query_one(
-            self.ids.container.ignored_q, IgnoredView
-        ).ignored_stdout = self.app.cm_gui.cmd_results.ignored.completed_process.stdout
-        self.switcher.query_one(
-            self.ids.container.cat_config_q, CatConfigView
-        ).cat_config_stdout = (
-            self.app.cm_gui.cmd_results.cat_config.completed_process.stdout
-        )
-        self.switcher.query_one(
-            self.ids.container.doctor_q, DoctorTableView
-        ).doctor_stdout = self.app.cm_gui.cmd_results.doctor.completed_process.stdout
-        self.switcher.query_one(
-            self.ids.container.pw_mgr_info_q, PwMgrInfoView
-        ).populate_pw_mgr_info(
-            self.app.cm_gui.cmd_results.doctor.completed_process.stdout
-        )
 
 
 FLOW_DIAGRAM = """\
@@ -419,17 +379,17 @@ class DebugTab(TabPane):
     def _list_existing_test_paths(self) -> str:
         colored_paths: list[str] = []
         for path in self.test_paths.get_existing_test_paths():
-            if path in self.app.cm_gui.cache.managed_dirs:
-                if path not in self.app.cm_gui.cache.status_dirs:
+            if path in self.app.cm_attr.sets.managed_dirs:
+                if path not in self.app.cm_attr.sets.status_dirs:
                     colored_paths.append(f"{TestPathColors.managed_dir}{path}[/]")
-                elif path in self.app.cm_gui.cache.status_dirs:
+                elif path in self.app.cm_attr.sets.status_dirs:
                     colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
-            elif path in self.app.cm_gui.cache.managed_files:
-                if path not in self.app.cm_gui.cache.status_files:
+            elif path in self.app.cm_attr.sets.managed_files:
+                if path not in self.app.cm_attr.sets.status_files:
                     colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
-                elif path in self.app.cm_gui.cache.status_files:
+                elif path in self.app.cm_attr.sets.status_files:
                     colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
-            elif path not in self.app.cm_gui.cache.managed_paths:
+            elif path not in self.app.cm_attr.sets.managed_paths:
                 if path.is_dir():
                     colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
                 if path.is_file():
@@ -542,7 +502,7 @@ class DebugTab(TabPane):
             result = self.test_paths.create_paths_on_disk()
         elif event.button.label == OpBtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
-        self.app.cm_gui.update_cache()
+        # TODO: self.app.cm_attr.update_attributes(ReadCmd.managed_status_commands())
         if isinstance(result, str):
             self.test_paths_static.update(result)
         else:

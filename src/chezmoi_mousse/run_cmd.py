@@ -1,5 +1,5 @@
 import shutil
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
@@ -104,6 +104,16 @@ class ReadCmd(Enum):
             ReadCmd.template_data,
         ]
 
+    # TODO added again to make the app start
+    @classmethod
+    def managed_status_commands(cls) -> list["ReadCmd"]:
+        return [
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ]
+
     @classmethod
     def json_output_commands(cls) -> list["ReadCmd"]:
         return [ReadCmd.dump_config, ReadCmd.template_data]
@@ -138,39 +148,28 @@ class WriteCmd(Enum):
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
-    completed_process: CompletedProcess[str] = field(
-        default_factory=lambda: CompletedProcess(args=[], returncode=1)
-    )
-    path: Path | None = None
-    pretty_args: tuple[str, ...] | None = None
+    args: tuple[str, ...]
+    dry_run: bool
+    full_cmd: str
+    path_arg: Path | None
+    pretty_cmd: str
+    returncode: int
+    std_err: str
+    std_out: str
 
-    @property
-    def was_dry_run(self) -> bool:
-        return GlobalArgs.dry_run.value[0] in self.completed_process.args
 
-    @property
-    def full_cmd(self) -> str:
-        if not self.completed_process.args:
-            raise AttributeError("self.completed_process is empty.")
-        return " ".join(self.completed_process.args)
-
-    @property
-    def pretty_cmd(self) -> str:
-        if self.pretty_args is None:
-            raise AttributeError("self.pretty_args is None.")
-        return "chezmoi " + " ".join(list(self.pretty_args))
-
-    @property
-    def returncode(self) -> int:
-        return self.completed_process.returncode
-
-    @property
-    def std_out(self) -> str:
-        return self.completed_process.stdout.strip()
-
-    @property
-    def std_err(self) -> str:
-        return self.completed_process.stderr.strip()
+@dataclass(slots=True, kw_only=True)
+class CmdResults:
+    cat_config: CommandResult
+    doctor: CommandResult
+    dump_config: CommandResult
+    git_log: CommandResult
+    ignored: CommandResult
+    managed_dirs: CommandResult
+    managed_files: CommandResult
+    status_dirs: CommandResult
+    status_files: CommandResult
+    template_data: CommandResult
 
 
 class ChezmoiCommand:
@@ -179,53 +178,69 @@ class ChezmoiCommand:
         self.changes_enabled: bool = False
         self.dest_dir: Path | None = None
 
-    def _run_chezmoi_cmd(
-        self,
-        *,
-        chezmoi_args: tuple[str, ...],
-        time_out: int,
-        pretty_args: tuple[str, ...],
-        path: Path | None = None,
-    ) -> CommandResult:
+    def _subprocess_run(
+        self, chezmoi_args: tuple[str, ...], time_out: int
+    ) -> CompletedProcess[str]:
         chezmoi_bin: str | None = shutil.which("chezmoi")
         if chezmoi_bin is None:
             raise RuntimeError("cannot find chezmoi command")
-        subprocess_run_args = (chezmoi_bin,) + chezmoi_args
-        result: CompletedProcess[str] = run(
-            subprocess_run_args,
+        return run(
+            (chezmoi_bin,) + chezmoi_args,
             capture_output=True,
             shell=False,
             text=True,
             timeout=time_out,
         )
-        return CommandResult(
-            completed_process=result, path=path, pretty_args=pretty_args
-        )
 
-    def get_relative_path(self, path: Path) -> str:
+    def _get_relative_path(self, path: Path) -> str:
         if self.dest_dir is None:
             # this happens when we have not yet parsed the config in the splash screen
             return str(path)
         else:
             return f"{path.relative_to(self.dest_dir)}"
 
-    def run_command(
+    def _get_pretty_args(
+        self, cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
+    ) -> tuple[str, ...]:
+        pretty_args: tuple[str, ...] = ()
+        if self.changes_enabled and isinstance(cmd, WriteCmd):
+            pretty_args += GlobalArgs.dry_run.value + cmd.pretty_args
+        else:
+            pretty_args = cmd.pretty_args
+        if path_arg is not None:
+            pretty_args += (self._get_relative_path(path_arg),)
+        return pretty_args
+
+    def review_cmd(
+        self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
+    ) -> str:
+        return "chezmoi " + " ".join(
+            list(self._get_pretty_args(cmd, path_arg=path_arg))
+        )
+
+    def run(
         self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
         is_write_cmd = isinstance(cmd, WriteCmd)
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
-        pretty_args: tuple[str, ...] = ()
         time_out = 20
         if self.changes_enabled and is_write_cmd:
             chezmoi_args += GlobalArgs.dry_run.value
-            pretty_args += GlobalArgs.dry_run.value
             time_out = 10
         elif not is_write_cmd:
             time_out = 6 if cmd == ReadCmd.doctor else 3
-        pretty_args += cmd.pretty_args
         if path_arg is not None:
             chezmoi_args += (str(path_arg),)
-            pretty_args += (self.get_relative_path(path_arg),)
-        return self._run_chezmoi_cmd(
-            chezmoi_args=chezmoi_args, time_out=time_out, pretty_args=pretty_args
+        completed_process: CompletedProcess[str] = self._subprocess_run(
+            chezmoi_args, time_out=time_out
+        )
+        return CommandResult(
+            args=completed_process.args,
+            dry_run=GlobalArgs.dry_run.value[0] in completed_process.args,
+            full_cmd=" ".join(list(completed_process.args)),
+            path_arg=path_arg,
+            pretty_cmd="chezmoi" + " ".join(list(self._get_pretty_args(cmd, path_arg))),
+            returncode=completed_process.returncode,
+            std_err=completed_process.stderr.strip(),
+            std_out=completed_process.stdout.strip(),
         )
