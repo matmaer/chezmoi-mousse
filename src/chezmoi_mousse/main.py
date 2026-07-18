@@ -1,9 +1,10 @@
 import asyncio
+import os
+import shutil
 import sys
 from enum import StrEnum
 
 from chezmoi_mousse import save_stacktrace
-from chezmoi_mousse.cm_attributes import AppData
 from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
 from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -29,33 +30,39 @@ class NoRunInfo(StrEnum):
         return cls._CHEZMOI_FOUND + which
 
 
-def _will_not_run_message(attr: "AppData") -> str | None:
+def _will_not_run_message() -> str | None:
     error_info: list[str] = []
     start_info: list[str] = []
-    if attr.git_bin is None:
+
+    chezmoi_bin: str | None = shutil.which("chezmoi")
+    git_bin: str | None = shutil.which("git")
+    chezmoi_subshell: bool = os.environ.get("CHEZMOI_SUBSHELL") == "1"
+    pretend_fail: bool = os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
+
+    if git_bin is None:
         error_info.append(NoRunInfo.GIT_NOT_FOUND)
     else:
-        start_info.append(NoRunInfo.git_found(attr.git_bin))
+        start_info.append(NoRunInfo.git_found(git_bin))
 
-    if attr.chezmoi_bin is None:
+    if chezmoi_bin is None:
         error_info.append(NoRunInfo.CHEZMOI_NOT_FOUND)
     else:
-        start_info.append(NoRunInfo.chezmoi_found(attr.chezmoi_bin))
+        start_info.append(NoRunInfo.chezmoi_found(chezmoi_bin))
 
-    if attr.env_vars.chezmoi_subshell:
+    if chezmoi_subshell:
         error_info.append(NoRunInfo.IN_SUBSHELL)
     else:
         start_info.append(NoRunInfo.NOT_IN_SUBSHELL)
 
-    if attr.env_vars.pretend_fail:
+    if pretend_fail:
         error_info.append(NoRunInfo.PRETEND_FAIL)
     else:
         start_info.append(NoRunInfo.NO_PRETEND_FAIL)
     lines: list[str] = []
-    if error_info or attr.env_vars.pretend_fail:
+    if error_info or pretend_fail:
         lines.append(NoRunInfo.NO_APP_RUN)
         lines.extend(error_info)
-    if attr.env_vars.pretend_fail:
+    if pretend_fail:
         lines.extend(start_info)
     if len(lines) > 0:
         return "\n".join(lines) + "\n" + NoRunInfo.FEEDBACK
@@ -64,9 +71,7 @@ def _will_not_run_message(attr: "AppData") -> str | None:
 
 def run_app():
 
-    app_data = AppData()
-
-    wil_not_run_msg = _will_not_run_message(app_data)
+    wil_not_run_msg = _will_not_run_message()
 
     if wil_not_run_msg is not None:
         sys.exit(wil_not_run_msg)
@@ -78,7 +83,7 @@ def run_app():
         raise
 
     try:
-        if app_data.env_vars.pilot_mode:
+        if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
             asyncio.run(test_app_with_pilot(app))
         else:
             app.run()
