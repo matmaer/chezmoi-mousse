@@ -6,12 +6,12 @@ from functools import cache, cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, ReadOnly, TypedDict
 
-from ._str_enums import PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from ._run_cmd import CommandResult
+    from chezmoi_mousse.run_cmd import CommandResult
 
 __all__ = ["CachedData"]
 
