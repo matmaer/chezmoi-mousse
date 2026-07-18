@@ -99,6 +99,10 @@ class ReadCmd(Enum):
             exclude.extend(list(VerbArgs.git_log.value[2:]))
         return " ".join([part for part in self.value if part and part not in exclude])
 
+    @property
+    def review_cmd(self) -> str:
+        return f"chezmoi {self.filtered}"
+
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
         return [
@@ -115,13 +119,8 @@ class ReadCmd(Enum):
         ]
 
     @classmethod
-    def managed_status_commands(cls) -> list["ReadCmd"]:
-        return [
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ]
+    def json_output_commands(cls) -> list["ReadCmd"]:
+        return [ReadCmd.dump_config, ReadCmd.template_data]
 
 
 class WriteVerb(Enum):
@@ -142,6 +141,10 @@ class WriteCmd(Enum):
     @property
     def filtered(self) -> str:
         return self.value[0]
+
+    @property
+    def review_cmd(self) -> str:
+        return f"chezmoi {self.value[0]}"
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
