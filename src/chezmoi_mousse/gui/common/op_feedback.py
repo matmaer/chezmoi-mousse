@@ -32,7 +32,7 @@ class OperateInfo(Static):
         self.current_button = button
         info_lines: list[str] = []
         info_lines.append(
-            self.app.cm_attr.run_cmd.review_cmd(
+            self.app.cm_attr.command.review_cmd(
                 button.btn_enum.write_cmd, path_arg=button.btn_enum.path_arg
             )
         )

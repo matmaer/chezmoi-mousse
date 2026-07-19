@@ -17,7 +17,8 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from pathlib import Path
 
-    from chezmoi_mousse import ChezmoiGui, CommandResult
+    from chezmoi_mousse.run_cmd import CommandResult
+    from chezmoi_mousse.type_checking import ChezmoiGui
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
@@ -29,7 +30,7 @@ def min_wait(func: "Callable[..., Awaitable[None]]") -> MinWaitReturn:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
     async def wrapper(self: "LoadingModal", *args: "OpBtnEnum") -> None:
-        min_wait_time = 0.4
+        min_wait_time = 0.2
         start_time = time.monotonic()
         await func(self, *args)
         elapsed = time.monotonic() - start_time
@@ -46,6 +47,7 @@ class LoadingLabel(StrEnum):
     update_changed_and_cached = "Update changed paths and cached dir nodes"
     update_config_tab = "Update Config tab"
     update_trees = "Update Trees"
+    finalize = "Finalize..."
 
     @property
     def with_color(self) -> str:
@@ -70,8 +72,8 @@ class LoadingModal(ModalScreen[None]):
 
     def on_mount(self) -> None:
         if self.btn_enum != OpBtnEnum.reload:
-            self.app.cm_gui.changed_paths.clear()
-        self.app.cm_gui.loading_modal_results.clear()
+            self.app.cm_attr.clear_changes()
+        self.app.cm_attr.loading_modal_results.clear()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
@@ -93,56 +95,35 @@ class LoadingModal(ModalScreen[None]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: "ReadCmd") -> None:
-        self.label_text = self.app.cm_gui.run_cmd.review_cmd(verb_cmd=read_cmd)
-        cmd_result: CommandResult = self.app.cm_gui.run_cmd.read(read_cmd)
-        setattr(self.app.cm_gui.cmd_results, f"{read_cmd.name}", cmd_result)
-        self.app.cm_gui.loading_modal_results.append(cmd_result)
+        cmd_result: CommandResult = self.app.cm_attr.command.run(read_cmd)
+        self.app.cm_attr.loading_modal_results.append(cmd_result)
 
     @work(thread=True, exit_on_error=False)
     @min_wait
     async def _run_write_command(self, btn_enum: "OpBtnEnum") -> None:
-        if btn_enum.path_arg == self.app.cm_gui.cfg.dest_dir:
+        if btn_enum.path_arg == self.app.cm_attr.cfg.dest_dir:
             btn_enum.path_arg = None
-        self.label_text = self.app.cm_gui.run_cmd.review_cmd(
-            verb_cmd=btn_enum.write_cmd, path_arg=btn_enum.path_arg
-        )
-        cmd_result: CommandResult = self.app.cm_gui.run_cmd.perform(
+        cmd_result: CommandResult = self.app.cm_attr.command.run(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
-        self.app.cm_gui.loading_modal_results.append(cmd_result)
+        self.app.cm_attr.loading_modal_results.append(cmd_result)
 
     @work(thread=True)
     @min_wait
     async def _update_changed_paths(self) -> None:
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
-        self.old_managed_paths: frozenset[Path] = (
-            self.app.cm_gui.cache.managed_paths.copy()
+        self.previous_managed_paths: frozenset[Path] = (
+            self.app.cm_attr.sets.managed_paths.copy()
         )
-        self.old_status_paths: frozenset[Path] = (
-            self.app.cm_gui.cache.status_paths.copy()
+        self.previous_status_paths: frozenset[Path] = (
+            self.app.cm_attr.sets.status_paths.copy()
         )
 
-        self.app.cm_gui.update_cache()
+        self.app.cm_attr.update_attributes(
+            read_commands=ReadCmd.managed_status_commands()
+        )
 
         # ^ symmetric difference: elements that exist in either set, but not in both
         # & intersection: elements that exist in both sets
         # | union: all elements that exist in either set
-
-        # Collect changed paths: Symmetric difference (added/removed) + per-path
-        # status status changes
-        new_managed = self.app.cm_gui.cache.managed_paths
-        new_status = self.app.cm_gui.cache.status_paths
-
-        removed = self.old_managed_paths - new_managed
-        added = new_managed - self.old_managed_paths
-        changed_status = {
-            p
-            for p in (self.old_managed_paths & new_managed)
-            if (p in self.old_status_paths) != (p in new_status)
-        }
-
-        self.app.cm_gui.added_paths = sorted(added)
-        self.app.cm_gui.removed_paths = sorted(removed)
-        self.app.cm_gui.changed_status_paths = sorted(changed_status)
-        self.app.cm_gui.changed_paths = sorted(removed | added | changed_status)

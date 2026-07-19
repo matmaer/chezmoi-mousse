@@ -3,13 +3,12 @@ from enum import Enum, StrEnum
 from typing import TYPE_CHECKING
 
 from rich.text import Text
-from textual import getters
+from textual import getters, work
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
-from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import Chars, SectionLabel, Tcss
+from chezmoi_mousse import Chars, ReadCmd, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.type_checking import ChezmoiGui
@@ -26,8 +25,6 @@ class DoctorTable(DataTable[Text]):
     def __init__(self) -> None:
         super().__init__(cursor_type="row")
 
-    doctor_std_out: reactive[str | None] = reactive(None, init=False)
-
     @property
     def _dr_style(self) -> dict[str, str]:
         return {
@@ -38,9 +35,15 @@ class DoctorTable(DataTable[Text]):
             "error": self.app.theme_variables["text-error"],
         }
 
-    def watch_doctor_std_out(self, doctor_std_out: str) -> None:
+    def on_mount(self):
+        self._populate_table()
+
+    @work
+    async def _populate_table(self) -> None:
+        doctor_lines = self.app.cm_attr.get_cmd_result(
+            read_cmd=ReadCmd.doctor
+        ).std_out.splitlines()
         self.clear(columns=True)
-        doctor_lines = doctor_std_out.splitlines()
         if len(doctor_lines) < 2:
             self.app.notify("No doctor data to display", severity="error")
             return
@@ -260,14 +263,21 @@ class PwCollapsible(Collapsible):
 
 class PwMgrInfoView(Vertical):
 
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
-    def populate_pw_mgr_info(self, doctor_stdout: str) -> None:
-        doctor_lines = doctor_stdout.splitlines()
+    def on_mount(self) -> None:
+        self._populate_pw_mgr_info()
+
+    @work
+    async def _populate_pw_mgr_info(self) -> None:
+        lines = self.app.cm_attr.get_cmd_result(ReadCmd.doctor).std_out.splitlines()
         pw_mgr_data_list: list[PwMgrData] = []
 
-        for line in doctor_lines[1:]:  # Skip header line
+        for line in lines[1:]:  # Skip header line
             row = tuple(line.split(maxsplit=2))
             if row[1] not in PwMgrInfo.all_pw_mgr_commands():
                 continue

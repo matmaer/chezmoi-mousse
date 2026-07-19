@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from itertools import groupby
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -36,18 +38,18 @@ class DiffView(Container):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    show_path: reactive["Path | None"] = reactive(None, init=False)
+    show_path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.diff)
         self.ids = ids
 
     def _create_diff_widgets(self, path: Path) -> list[Label | Static | DirContentBtn]:
         widgets: list[Label | Static | DirContentBtn] = []
         if self.ids.tab_label == TabLabel.apply:
-            diff_result = self.app.cm_gui.run_cmd.read(ReadCmd.diff, path_arg=path)
+            diff_result = self.app.cm_attr.command.run(ReadCmd.diff, path_arg=path)
         else:  # re-add tab
-            diff_result = self.app.cm_gui.run_cmd.read(
+            diff_result = self.app.cm_attr.command.run(
                 ReadCmd.diff_reverse, path_arg=path
             )
         self.post_message(LogCmdResultMsg(diff_result))
@@ -78,11 +80,11 @@ class DiffView(Container):
         return widgets
 
     def _get_status_files(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if self.app.cm_gui.cmd_results.status_files is None:
+        if not self.app.cm_attr.sets.status_files:
             return {}
         fs_pairs = {
             Path(line[3:]): line[:2]
-            for line in self.app.cm_gui.cmd_results.status_files.std_out.splitlines()
+            for line in self.app.cm_attr.cmd_results.status_files.std_out.splitlines()
         }
         fs_idx = 0 if app_ids.tab_label == TabLabel.apply else 1  # file status index
         return {
@@ -101,24 +103,11 @@ class DiffView(Container):
                 results[path] = status
         return results
 
-    def _get_status_dirs(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if self.app.cm_gui.cmd_results.status_dirs is None:
-            return {}
-        ds_pairs = {
-            Path(line[3:]): line[:2]
-            for line in self.app.cm_gui.cmd_results.status_dirs.std_out.splitlines()
-        }
-        ds_idx = 0 if app_ids.tab_label == TabLabel.apply else 1  # dir status index
-        return {
-            k: StatusCode(v[ds_idx])
-            for k, v in ds_pairs.items()
-            if v[ds_idx] != StatusCode.Space
-        }
+    def _get_status_dirs(self) -> dict[Path, StatusCode]:
+        return {}
 
-    def _get_status_dir_descendants(
-        self, dir_path: Path, app_ids: AppIds
-    ) -> dict[Path, StatusCode]:
-        status_dirs = self._get_status_dirs(app_ids)
+    def _get_status_dir_descendants(self, dir_path: Path) -> dict[Path, StatusCode]:
+        status_dirs = self._get_status_dirs()
         results: dict[Path, StatusCode] = {}
         for path, status in status_dirs.items():
             if path.is_relative_to(dir_path):
@@ -127,14 +116,14 @@ class DiffView(Container):
 
     def _get_unchanged_file_paths_in(self, dir_path: Path) -> list[Path]:
         results: set[Path] = set()
-        for path in self.app.cm_gui.cache.unchanged_files:
+        for path in self.app.cm_attr.sets.unchanged_files:
             if path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
 
     def _get_unchanged_dir_paths_in(self, dir_path: Path) -> list[Path]:
         results: set[Path] = set()
-        for path in self.app.cm_gui.cache.unchanged_dirs:
+        for path in self.app.cm_attr.sets.unchanged_dirs:
             if path != dir_path and path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
@@ -143,11 +132,11 @@ class DiffView(Container):
         self, dir_path: Path, app_ids: AppIds
     ) -> list[Static | Label | DirContentBtn]:
         widgets: list[Static | Label | DirContentBtn] = []
-        if dir_path == self.app.cm_gui.cfg.dest_dir:
+        if dir_path == self.app.cm_attr.cfg.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
-        if self.app.cm_gui.cache.no_managed_paths is True:
+        if not self.app.cm_attr.sets.managed_paths:
             widgets = [
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             ]
@@ -159,7 +148,7 @@ class DiffView(Container):
                 )
             )
             return widgets
-        elif self.app.cm_gui.cache.unchanged_paths:
+        elif self.app.cm_attr.sets.unchanged_paths:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )
@@ -172,38 +161,34 @@ class DiffView(Container):
             )
             return widgets
 
-        if self.app.cm_gui.cache.has_status_descendants(dir_path):
-            status_dirs_in = self._get_status_dir_descendants(dir_path, app_ids).items()
-            if status_dirs_in:
+        status_dirs_in = self._get_status_dir_descendants(dir_path).items()
+        if status_dirs_in:
+            widgets.append(
+                Label(
+                    "Contains directories with a status", classes=Tcss.sub_section_label
+                )
+            )
+            for path, status in status_dirs_in:
                 widgets.append(
-                    Label(
-                        "Contains directories with a status",
-                        classes=Tcss.sub_section_label,
+                    DirContentBtn(
+                        label=f"{status.color_tag}{path}[/]",
+                        path=path,
+                        app_ids=self.ids,
                     )
                 )
-                for path, status in status_dirs_in:
-                    widgets.append(
-                        DirContentBtn(
-                            label=f"{status.color_tag}{path}[/]",
-                            path=path,
-                            app_ids=self.ids,
-                        )
-                    )
-            status_files_in = self._get_status_files_descendants(dir_path, app_ids)
-            if status_files_in:
+        status_files_in = self._get_status_files_descendants(dir_path, app_ids)
+        if status_files_in:
+            widgets.append(
+                Label("Contains files with a status", classes=Tcss.sub_section_label)
+            )
+            for path, status in status_files_in.items():
                 widgets.append(
-                    Label(
-                        "Contains files with a status", classes=Tcss.sub_section_label
+                    DirContentBtn(
+                        label=f"{status.color_tag}{path}[/]",
+                        path=path,
+                        app_ids=self.ids,
                     )
                 )
-                for path, status in status_files_in.items():
-                    widgets.append(
-                        DirContentBtn(
-                            label=f"{status.color_tag}{path}[/]",
-                            path=path,
-                            app_ids=self.ids,
-                        )
-                    )
 
         unchanged_dirs = self._get_unchanged_dir_paths_in(dir_path)
         if unchanged_dirs:
@@ -231,23 +216,23 @@ class DiffView(Container):
             return
         self.remove_children()
         widgets: list[Label | Static | DirContentBtn] = []
-        if show_path == self.app.cm_gui.cfg.dest_dir:
+        if show_path == self.app.cm_attr.cfg.dest_dir:
             widgets = self._get_dir_widgets(show_path, self.ids)
-        elif show_path in self.app.cm_gui.cache.managed_dirs:
-            if show_path in self.app.cm_gui.cache.status_dirs:
+        elif show_path in self.app.cm_attr.sets.managed_dirs:
+            if show_path in self.app.cm_attr.sets.status_dirs:
                 widgets = self._create_diff_widgets(show_path)
             else:
                 widgets = self._get_dir_widgets(show_path, self.ids)
         elif (
-            show_path in self.app.cm_gui.cache.managed_files
-            and show_path in self.app.cm_gui.cache.status_files
+            show_path in self.app.cm_attr.sets.managed_files
+            and show_path in self.app.cm_attr.sets.status_files
         ):
             widgets = self._create_diff_widgets(show_path)
-        elif show_path not in self.app.cm_gui.cache.status_files:
+        elif show_path not in self.app.cm_attr.sets.status_files:
             widgets.append(Label("Managed file", classes=Tcss.main_section_label))
             widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
             widgets.append(Static("This file has no status.", classes=Tcss.context))
-        elif show_path not in self.app.cm_gui.cache.status_dirs:
+        elif show_path not in self.app.cm_attr.sets.status_dirs:
             widgets.append(Label("Managed directory", classes=Tcss.main_section_label))
             widgets.append(Label(str(show_path), classes=Tcss.sub_section_label))
             widgets.append(

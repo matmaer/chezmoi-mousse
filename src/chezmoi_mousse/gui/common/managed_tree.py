@@ -102,8 +102,8 @@ class ManagedTree(Tree[Path]):
 
     def _create_colored_label(self, path: Path) -> str:
         color = "dim"
-        if path in self.app.cm_gui.cache.status_paths:
-            color = self.app.theme_variables.get("green", "#FF0000")
+        if path in self.app.cm_attr.sets.status_paths:
+            color = self.app.theme_variables.get("text-success", "#FF0000")
         else:
             color = self.app.theme_variables.get("accent-darken-3", "#FF0000")
             return f"[{color}]{path.name}[/]"  # unmanaged paths always exist
@@ -130,9 +130,9 @@ class ManagedTree(Tree[Path]):
 
     def initial_tree_population(self) -> None:
         # configure root node
-        self.root.data = self.app.cm_gui.cfg.dest_dir
+        self.root.data = self.app.cm_attr.cfg.dest_dir
         color = self.app.theme_variables["text-primary"]
-        self.root.label = f"[{color} bold]{self.app.cm_gui.cfg.dest_dir.name}[/]"
+        self.root.label = f"[{color} bold]{self.app.cm_attr.cfg.dest_dir.name}[/]"
         self.root.expand()
 
         # add the root node to the tree state
@@ -156,8 +156,8 @@ class ManagedTree(Tree[Path]):
         current_nodes = self._get_nodes_from_tree(update_tree_state=False)
         for node in current_nodes:
             if (
-                node.data in self.app.cm_gui.removed_paths
-                and node.data not in self.app.cm_gui.cache.managed_dirs
+                node.data in self.app.cm_attr.changes.removed_paths
+                and node.data not in self.app.cm_attr.sets.managed_dirs
             ):
                 node.remove_children()
                 node.remove()
@@ -170,7 +170,7 @@ class ManagedTree(Tree[Path]):
         # don't add parents for these conditions
         if (
             path.parent == self.root.data
-            or path.parent in self.app.cm_gui.cfg.dest_dir.parents
+            or path.parent in self.app.cm_attr.cfg.dest_dir.parents
         ):
             return
 
@@ -203,7 +203,7 @@ class ManagedTree(Tree[Path]):
     def _insert_node(self, path: Path) -> None:
         if (
             path == self.root.data
-            or path in self.app.cm_gui.cfg.dest_dir.parents
+            or path in self.app.cm_attr.cfg.dest_dir.parents
             or path in self._tree_state.node_paths
         ):
             return
@@ -225,7 +225,7 @@ class ManagedTree(Tree[Path]):
             ),
             None,
         )
-        if path in self.app.cm_gui.cache.managed_files or path.is_file():
+        if path in self.app.cm_attr.sets.managed_files or path.is_file():
             parent_node.add_leaf(node_label, data=path, before=before_node)
         else:
             parent_node.add(node_label, data=path, before=before_node)
@@ -233,16 +233,6 @@ class ManagedTree(Tree[Path]):
     def _populate_root_node_recursive(self, tree_node: TreeNode[Path]) -> None:
         if tree_node.data is None:
             raise ValueError("tree_node.data is None in _populate_node")
-        files_to_insert = self.app.cm_gui.cache.status_files_in(self.ids.tab_label)
-
-        if self.show_unchanged:
-            files_to_insert = files_to_insert
-
-        if self.show_unmanaged_files:
-            ...
-
-        for file_path in files_to_insert:
-            self._insert_node(file_path)
 
     #################################
     # Watchers and message handling #

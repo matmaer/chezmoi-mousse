@@ -5,7 +5,9 @@ import sys
 from enum import StrEnum
 
 from chezmoi_mousse import save_stacktrace
+from chezmoi_mousse.cm_attributes import CmAttributes, TabIds
 from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
+from chezmoi_mousse.run_cmd import ChezmoiCommand
 from chezmoi_mousse.textual_app import ChezmoiGui
 
 
@@ -75,6 +77,10 @@ def run_app():
 
     if wil_not_run_msg is not None:
         sys.exit(wil_not_run_msg)
+
+    CmAttributes.ids = TabIds()
+    CmAttributes.command = ChezmoiCommand()
+    CmAttributes.debug_mode = os.environ.get("CHEZMOI_MOUSSE_DEBUG_MODE") == "1"
 
     try:
         app = ChezmoiGui()

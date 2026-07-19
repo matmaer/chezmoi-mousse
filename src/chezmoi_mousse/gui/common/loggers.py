@@ -50,14 +50,13 @@ class CmdResultCollapsible(Collapsible):
         return f"{pretty_time} [${cmd_color}]{result.pretty_cmd}[/] {result.returncode}"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
-        dry_run_str = "(dry run)" if result.was_dry_run else ""
+        dry_run_str = "(dry run)" if result.dry_run else ""
         curated_std_out = result.std_out or f"{LogString.no_stdout} {dry_run_str}"
         curated_std_err = result.std_err or f"{LogString.no_stderr} {dry_run_str}"
         contents: list[Label | Static] = [
             Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
         ]
-        full_cmd = f"{' '.join(item for item in result.completed_process.args)}"
-        contents.extend([Label(full_cmd, classes=Tcss.full_cmd)])
+        contents.extend([Label(result.full_cmd, classes=Tcss.full_cmd)])
         contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
@@ -139,7 +138,7 @@ class AppLog(RichLoggers):
             return
         cmd_color = LogColor.success if cmd_result.returncode == 0 else LogColor.warning
         log_text: list[str] = [f"{cmd_result.pretty_cmd}"]
-        if ReadVerb.doctor.value[0] in cmd_result.completed_process.args:
+        if ReadVerb.doctor.value[0] in cmd_result.args:
             output_lower = cmd_result.std_out.lower()
             if "error" in output_lower:
                 cmd_color = LogColor.error

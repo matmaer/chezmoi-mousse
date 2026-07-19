@@ -145,7 +145,7 @@ class ContentsView(Container):
 
         def _read_file(file_path: Path) -> str:
             if not file_path.exists():
-                cmd_result = self.app.cm_attr.run_cmd.run_command(
+                cmd_result = self.app.cm_attr.command.run(
                     ReadCmd.cat, path_arg=file_path
                 )
                 self.post_message(LogCmdResultMsg(cmd_result))

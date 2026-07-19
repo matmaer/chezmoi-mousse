@@ -59,18 +59,21 @@ class GitLogView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if show_path == self.app.cm_gui.cfg.dest_dir:
+        if show_path == self.app.cm_attr.cfg.dest_dir:
             if (
-                self.app.cm_gui.cmd_results.git_log is None
-                or not self.app.cm_gui.cmd_results.git_log.std_out
+                self.app.cm_attr.cmd_results.git_log.std_out
+                or not self.app.cm_attr.cmd_results.git_log.std_out
             ):
                 git_log_lines = ["No commits;No git log entries available yet."]
             else:
-                git_log_lines = self.app.cm_gui.cmd_results.git_log.std_out.splitlines()
+                git_log_lines = (
+                    self.app.cm_attr.cmd_results.git_log.std_out.splitlines()
+                )
             container = self._create_datatable_container(git_log_lines)
         else:
-            cmd_result = self.app.cm_gui.run_cmd.read(
-                ReadCmd.git_log, path_arg=show_path
+            source_path_result = self.app.cm_attr.command.run(ReadCmd.source_path)
+            cmd_result = self.app.cm_attr.command.run(
+                ReadCmd.git_log, path_arg=source_path_result.path_arg
             )
             self.post_message(LogCmdResultMsg(cmd_result))
             container = self._create_datatable_container(
