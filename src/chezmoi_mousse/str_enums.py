@@ -61,7 +61,7 @@ class Tcss(StrEnum):
     add_tab_contents_view = auto()
     added = auto()
     changed = auto()
-    changes_enabled_color = auto()
+    live_run_color = auto()
     context = auto()
     dest_dir_tree_label = auto()
     flat_button = auto()

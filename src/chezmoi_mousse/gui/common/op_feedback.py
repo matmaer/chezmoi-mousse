@@ -22,7 +22,7 @@ class OperateInfo(Static):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    changes_enabled: reactive[bool] = reactive(False, init=False)
+    dry_run: reactive[bool] = reactive(True)
     current_button: OpButton | None = None
 
     def on_mount(self) -> None:
@@ -50,7 +50,7 @@ class OperateInfo(Static):
         self.border_title = button.btn_enum.op_info_title
         self.border_subtitle = button.btn_enum.op_info_subtitle
 
-    def watch_changes_enabled(self) -> None:
+    def watch_dry_run(self) -> None:
         if not self.display or self.current_button is None:
             return
         self.update_review_info(self.current_button)

@@ -98,7 +98,7 @@ CustomHeader {
   color: $primary;
   height: 2;
   text-style: bold;
-  &>.changes_enabled_color {
+  &>.live_run {
     color: $warning;
   }
 }

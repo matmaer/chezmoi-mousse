@@ -171,20 +171,20 @@ class ChezmoiGui(App[str]):
     def action_toggle_dry_run(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        self.cm_attr.run_cmd.changes_enabled = not self.cm_attr.run_cmd.changes_enabled
+        self.cm_attr.command.dry_run = not self.cm_attr.command.dry_run
         new_description = (
             BindingDescription.remove_dry_run
-            if self.cm_attr.run_cmd.changes_enabled is False
+            if self.cm_attr.command.dry_run is True
             else BindingDescription.add_dry_run
         )
         self._update_binding_description(
             binding_action=BindingAction.toggle_dry_run, new_description=new_description
         )
-        self.screen.query_exactly_one(CustomHeader).changes_enabled = (
-            self.cm_attr.run_cmd.changes_enabled
+        self.screen.query_exactly_one(CustomHeader).dry_run = (
+            self.cm_attr.command.dry_run
         )
-        self.screen.query_exactly_one(OperateInfo).changes_enabled = (
-            self.cm_attr.run_cmd.changes_enabled
+        self.screen.query_exactly_one(OperateInfo).dry_run = (
+            self.cm_attr.command.dry_run
         )
 
     def action_toggle_switch_slider(self) -> None:

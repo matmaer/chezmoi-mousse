@@ -175,8 +175,15 @@ class CmdResults:
 class ChezmoiCommand:
 
     def __init__(self) -> None:
-        self.changes_enabled: bool = False
+        self.dry_run: bool = True
         self.dest_dir: Path | None = None
+
+    def review_cmd(
+        self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
+    ) -> str:
+        return "chezmoi " + " ".join(
+            list(self._get_pretty_args(cmd, path_arg=path_arg))
+        )
 
     def _subprocess_run(
         self, chezmoi_args: tuple[str, ...], time_out: int
@@ -193,17 +200,16 @@ class ChezmoiCommand:
         )
 
     def _get_relative_path(self, path: Path) -> str:
-        if self.dest_dir is None:
-            # this happens when we have not yet parsed the config in the splash screen
-            return str(path)
-        else:
-            return f"{path.relative_to(self.dest_dir)}"
+        # this happens when we have not yet parsed the config in the splash screen
+        return (
+            str(path) if self.dest_dir is None else f"{path.relative_to(self.dest_dir)}"
+        )
 
     def _get_pretty_args(
         self, cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
     ) -> tuple[str, ...]:
         pretty_args: tuple[str, ...] = ()
-        if self.changes_enabled and isinstance(cmd, WriteCmd):
+        if self.dry_run:
             pretty_args += GlobalArgs.dry_run.value + cmd.pretty_args
         else:
             pretty_args = cmd.pretty_args
@@ -211,23 +217,15 @@ class ChezmoiCommand:
             pretty_args += (self._get_relative_path(path_arg),)
         return pretty_args
 
-    def review_cmd(
-        self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
-    ) -> str:
-        return "chezmoi " + " ".join(
-            list(self._get_pretty_args(cmd, path_arg=path_arg))
-        )
-
     def run(
         self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
-        is_write_cmd = isinstance(cmd, WriteCmd)
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
-        time_out = 20
-        if self.changes_enabled and is_write_cmd:
+        if self.dry_run:
             chezmoi_args += GlobalArgs.dry_run.value
+        if isinstance(cmd, WriteCmd):
             time_out = 10
-        elif not is_write_cmd:
+        else:
             time_out = 6 if cmd == ReadCmd.doctor else 3
         if path_arg is not None:
             chezmoi_args += (str(path_arg),)

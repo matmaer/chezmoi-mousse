@@ -40,22 +40,23 @@ __all__ = ["MainScreen", "CustomHeader"]
 
 class CustomHeader(Header):
 
-    changes_enabled: reactive[bool] = reactive(False)
+    dry_run: reactive[bool] = reactive(True)
     dry_run_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
     live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
 
     def on_mount(self) -> None:
         self.icon = Chars.burger
 
-    def watch_changes_enabled(self, changes_enabled: bool) -> None:
-        if changes_enabled is False:
+    def watch_dry_run(self, dry_run: bool) -> None:
+        if dry_run is False:
+            # TODO: check if we can just set screen title
             self.screen.title = self.dry_run_mode
             header_title = self.query_exactly_one("HeaderTitle", Static)
-            header_title.remove_class(Tcss.changes_enabled_color)
-            return
-        self.screen.title = self.live_mode
-        header_title = self.query_exactly_one("HeaderTitle", Static)
-        header_title.add_class(Tcss.changes_enabled_color)
+            header_title.add_class(Tcss.live_run_color)
+        if dry_run is True:
+            self.screen.title = self.live_mode
+            header_title = self.query_exactly_one("HeaderTitle", Static)
+            header_title.remove_class(Tcss.live_run_color)
 
 
 class MainScreen(Screen[None]):
@@ -250,7 +251,12 @@ class MainScreen(Screen[None]):
             return
 
         # Enable/disable all review buttons
-        if self.app.cm_attr.sets.has_status_descendants is True:
+        if (
+            self.app.cm_attr.sets.has_status_descendants(
+                tab_label=msg.ids.tab_label, dir_path=msg.path
+            )
+            is True
+        ):
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
