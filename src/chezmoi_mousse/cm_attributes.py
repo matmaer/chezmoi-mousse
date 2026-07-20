@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.run_cmd import ChezmoiCommand, CmdResults, CommandResult
-from chezmoi_mousse.str_enums import StatusCode, TabLabel
+from chezmoi_mousse.chezmoi_command import ChezmoiCommand, CmdResults
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.type_checking import ParsedJson
@@ -95,20 +94,12 @@ class CmAttributes:
     changes: ChangedPaths = ChangedPaths()
     managed_paths: ManagedPaths = ManagedPaths()
 
-    @classmethod
-    def json_parse_dump_config(cls, cmd_result: CommandResult) -> None:
-        cls.cfg = json.loads(cmd_result.std_out)
+    managed_dirs = CmdResults.get_managed_dict(PathKind.dir)
+    managed_files = CmdResults.get_managed_dict(PathKind.file)
 
     @classmethod
-    def json_parse_template_data(cls, cmd_result: CommandResult) -> None:
-        cls.cfg = json.loads(cmd_result.std_out)
-
-    @classmethod
-    def get_all_cmd_results(cls) -> list[CommandResult]:
-        return [getattr(CmdResults, f.name) for f in fields(CmdResults)]
-
-    def _dirs_with_nested_status(
-        self,
+    def _get_dirs_with_nested_status(
+        cls,
         dest_dir: Path,
         dirs_dict: dict[Path, StatusCode],
         files_dict: dict[Path, StatusCode],

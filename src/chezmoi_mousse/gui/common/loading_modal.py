@@ -12,12 +12,12 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
 from chezmoi_mousse import OpBtnEnum, ReadCmd
+from chezmoi_mousse.cm_attributes import ManagedPaths
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
-    from pathlib import Path
 
-    from chezmoi_mousse.run_cmd import CommandResult
+    from chezmoi_mousse.chezmoi_command import CommandResult
     from chezmoi_mousse.type_checking import ChezmoiGui
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
@@ -113,13 +113,7 @@ class LoadingModal(ModalScreen[None]):
     async def _update_cm_attr(self) -> None:
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
-        self.previous_managed_paths: frozenset[Path] = (
-            self.app.cm_attr.managed_paths.copy()
-        )
-        self.previous_status_paths: frozenset[Path] = (
-            self.app.cm_attr.sets.status_paths.copy()
-        )
-
+        self.previous_managed_paths: ManagedPaths = self.app.cm_attr.managed_paths
         self.app.cm_attr.update_attributes(
             read_commands=ReadCmd.managed_status_commands()
         )

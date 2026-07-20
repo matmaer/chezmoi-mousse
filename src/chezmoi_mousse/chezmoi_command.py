@@ -4,6 +4,8 @@ from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
 
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+
 __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
@@ -169,6 +171,27 @@ class CmdResults:
     status_dirs: CommandResult
     status_files: CommandResult
     template_data: CommandResult
+
+    @classmethod
+    def get_managed_dict(cls, path_kind: PathKind) -> dict[Path, StatusCode]:
+        result: dict[Path, StatusCode] = {}
+        source = cls.managed_dirs if path_kind == PathKind.dir else cls.managed_files
+        for line in source.std_out.splitlines():
+            path = Path(line)
+            result[path] = StatusCode.Exists if path.exists() else StatusCode.NotExists
+        return result
+
+    @classmethod
+    def status_dict(
+        cls, tab_label: TabLabel, path_kind: PathKind
+    ) -> dict[Path, StatusCode]:
+        result: dict[Path, StatusCode] = {}
+        source = cls.status_dirs if path_kind == PathKind.dir else cls.managed_files
+        idx = 1 if tab_label == TabLabel.apply else 0
+        for line in source.std_out.splitlines():
+            path = Path(line[3:])
+            result[path] = StatusCode(line[idx])
+        return result
 
 
 class ChezmoiCommand:
