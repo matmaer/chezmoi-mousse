@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import json
 from collections import deque
 from typing import TYPE_CHECKING
 
@@ -16,6 +19,7 @@ from textual.worker import WorkerState
 from chezmoi_mousse import ReadCmd
 
 if TYPE_CHECKING:
+    from chezmoi_mousse.run_cmd import CommandResult
     from chezmoi_mousse.type_checking import ChezmoiGui
 
 __all__ = ["SplashScreen"]
@@ -101,27 +105,56 @@ class SplashScreen(Screen[None]):
         for splash_cmd in ReadCmd.splash_commands():
             self._run_io_worker(splash_cmd)
 
-    @work(thread=True, group="io_workers")
-    def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
-        color = self.app.theme_variables["text-primary"]
+    def _get_log_message(self, color: str, prefix: str, suffix: str) -> str:
+        padding = LOG_MSG_WIDTH - (len(prefix) + len(suffix))
+        return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
+
+    @work
+    async def _parse_json(self, result: CommandResult, short_cmd: str) -> str:
+        prefix = f"parse {short_cmd}"
+        try:
+            parsed = json.loads(result.std_out)
+            suffix = "success"
+            color = self.app.theme_variables["text-success"]
+        except json.JSONDecodeError:
+            parsed = {}
+            suffix = "failed"
+            color = self.app.theme_variables["text-error"]
+        if str(ReadCmd.dump_config.name) in result.args:
+            self.app.cm_attr.cfg = parsed
+        elif str(ReadCmd.template_data.name) in result.args:
+            self.app.cm_attr.template_data = parsed
+        return self._get_log_message(color, prefix, suffix)
+
+    @work(group="splash_worker")
+    def _run_chezmoi_command(self, splash_cmd: ReadCmd, short_cmd: str) -> None:
         result = self.app.cm_attr.command.run(splash_cmd)
+        color = self.app.theme_variables["text-primary"]
         suffix = "unknown"
         if result.returncode == 0:
             suffix = "success"
         else:
             suffix = "checked"
             color = self.app.theme_variables["text-warning"]
+        msg = self._get_log_message(color, short_cmd, suffix)
+        self.app.call_from_thread(self.splash_log.write, msg)
+
+    @work(thread=True, group="splash_worker")
+    def _run_io_worker(self, splash_cmd: ReadCmd) -> None:
+        result: CommandResult = self.app.cm_attr.command.run(splash_cmd)
         short_cmd = result.pretty_cmd.replace("chezmoi", "")
-        padding = LOG_MSG_WIDTH - (len(short_cmd) + len(suffix))
-        log_text = f"[{color}]{short_cmd} {'.' * padding} {suffix}[/{color}]"
+        log_text = self._run_chezmoi_command(result, short_cmd).wait()
         self.app.call_from_thread(self.splash_log.write, log_text)
+        if splash_cmd in (ReadCmd.dump_config, ReadCmd.dump_config):
+            log_text = self._parse_json(result, short_cmd).wait()
+            self.app.call_from_thread(self.splash_log.write, log_text)
 
     def _all_workers_finished(self) -> None:
         # TODO: also update cm_attributes
         if all(
             worker.state == WorkerState.SUCCESS
             for worker in self.workers
-            if worker.group == "io_workers"
-            and all(w for w in self.workers if w.is_finished)
+            if worker.group == "splash_worker"
         ):
+
             self.dismiss()
