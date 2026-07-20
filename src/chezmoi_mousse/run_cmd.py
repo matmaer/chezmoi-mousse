@@ -217,15 +217,15 @@ class ChezmoiCommand:
         return pretty_args
 
     def run(
-        self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
+        self, verb_cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
         if self.dry_run:
             chezmoi_args += GlobalArgs.dry_run.value
-        if isinstance(cmd, WriteCmd):
+        if isinstance(verb_cmd, WriteCmd):
             time_out = 10
         else:
-            time_out = 6 if cmd == ReadCmd.doctor else 3
+            time_out = 6 if verb_cmd == ReadCmd.doctor else 3
         if path_arg is not None:
             chezmoi_args += (str(path_arg),)
         completed_process: CompletedProcess[str] = self._subprocess_run(
@@ -236,8 +236,10 @@ class ChezmoiCommand:
             dry_run=GlobalArgs.dry_run.value[0] in completed_process.args,
             full_cmd=" ".join(list(completed_process.args)),
             path_arg=path_arg,
-            pretty_cmd="chezmoi" + " ".join(list(self._get_pretty_args(cmd, path_arg))),
+            pretty_cmd="chezmoi"
+            + " ".join(list(self._get_pretty_args(verb_cmd, path_arg))),
             returncode=completed_process.returncode,
             std_err=completed_process.stderr.strip(),
             std_out=completed_process.stdout.strip(),
+            verb_cmd=verb_cmd,
         )

@@ -12,7 +12,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse import Chars, LogString, ReadVerb, SectionLabel, Tcss
+from chezmoi_mousse import Chars, LogString, ReadCmd, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -98,6 +98,9 @@ class RichLoggers(RichLog):
         msg_color = self.app.theme_variables[color.value]
         return f"{log_time} [{msg_color}]{msg}[/]"
 
+    def write_color(self, message: str, color: LogColor) -> None:
+        self.write(self._get_log_line(message, color))
+
     def write_cmd(self, message: str, color: LogColor) -> None:
         self.write(self._get_log_line(message, color))
 
@@ -131,27 +134,28 @@ class AppLog(RichLoggers):
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
 
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is None:
-            return
-        cmd_color = LogColor.success if cmd_result.returncode == 0 else LogColor.warning
-        log_text: list[str] = [f"{cmd_result.pretty_cmd}"]
-        if ReadVerb.doctor.value[0] in cmd_result.args:
-            output_lower = cmd_result.std_out.lower()
-            if "error" in output_lower:
-                cmd_color = LogColor.error
-                log_text.append(LogString.doctor_errors_found)
-            elif "failed" in output_lower:
-                log_text.append(LogString.doctor_fails_found)
-            elif "warning" in output_lower:
-                log_text.append(LogString.doctor_warnings_found)
-                cmd_color = LogColor.info
+    def log_doctor_info(self, std_out: str) -> None:
+        self.write_ready("chezmoi doctor output lines")
+        for line in std_out.splitlines():
+            if "error" in line.lower():
+                self.write_error(line)
+            elif "failed" in line.lower():
+                self.write_warning(line)
+            elif "warning" in line.lower():
+                self.write_info(line)
             else:
-                log_text.append(LogString.doctor_no_issue_found)
-                cmd_color = LogColor.success
-        else:
-            return
-        self.write_cmd(" ".join(log_text), cmd_color)
+                self.write_info(LogString.doctor_no_issue_found)
+        self.write_ready("end of chezmoi doctor output")
+
+    def watch_cmd_results(self, cmd_results: list[CommandResult]) -> None:
+        for result in cmd_results:
+            if result.verb_cmd == ReadCmd.doctor:
+                self.log_doctor_info(result.std_out)
+            else:
+                log_color = (
+                    LogColor.success if result.returncode == 0 else LogColor.warning
+                )
+                self.write_color(f"executed {result.pretty_cmd}", log_color)
 
 
 class DebugLog(RichLoggers):
