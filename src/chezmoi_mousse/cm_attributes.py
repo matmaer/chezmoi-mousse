@@ -46,8 +46,8 @@ class TabIds:
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class ManagedPaths:
-    managed_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    managed_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    files: dict[Path, StatusCode] = field(default_factory=lambda: {})
     unmanaged_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     unmanaged_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
     apply_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
@@ -92,10 +92,20 @@ class CmAttributes:
 
     # updated after operations
     changes: ChangedPaths = ChangedPaths()
-    managed_paths: ManagedPaths = ManagedPaths()
+    managed: ManagedPaths = ManagedPaths()
 
-    managed_dirs = CmdResults.get_managed_dict(PathKind.dir)
-    managed_files = CmdResults.get_managed_dict(PathKind.file)
+    @classmethod
+    def update_managed_attr(cls) -> None:
+        cls.managed = ManagedPaths(
+            dirs=CmdResults.get_managed_dict(PathKind.dir),
+            files=CmdResults.get_managed_dict(PathKind.file),
+            unmanaged_dirs={},
+            unmanaged_files={},
+            apply_files={},
+            apply_dirs={},
+            re_add_files={},
+            re_add_dirs={},
+        )
 
     @classmethod
     def _get_dirs_with_nested_status(

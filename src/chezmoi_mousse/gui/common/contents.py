@@ -60,7 +60,7 @@ class ContentsView(Container):
 
             for name in dirs:
                 path = root_path / name
-                if path not in self.app.cm_attr.sets.managed_dirs:
+                if path not in self.app.cm_attr.managed.dirs:
                     unmanaged_dirs.append(
                         str(path.relative_to(self.app.cm_attr.cfg.dest_dir))
                     )
@@ -74,7 +74,7 @@ class ContentsView(Container):
             root_path = Path(root)
             for name in files:
                 path = root_path / name
-                if path not in self.app.cm_attr.sets.managed_files:
+                if path not in self.app.cm_attr.managed.files:
                     unmanaged_files.append(
                         str(path.relative_to(self.app.cm_attr.cfg.dest_dir))
                     )
@@ -182,9 +182,9 @@ class ContentsView(Container):
             show_path == self.app.cm_attr.cfg.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)
-        elif (
-            show_path
-            in {self.app.cm_attr.cfg.dest_dir} | self.app.cm_attr.sets.managed_dirs
+        elif show_path in (
+            self.app.cm_attr.cfg.dest_dir,
+            self.app.cm_attr.managed.dirs,
         ):
             container = self._create_managed_dir_container(show_path)
         else:

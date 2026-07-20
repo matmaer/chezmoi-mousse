@@ -79,30 +79,6 @@ class DiffView(Container):
                     )
         return widgets
 
-    def _get_status_files(self, app_ids: AppIds) -> dict[Path, StatusCode]:
-        if not self.app.cm_attr.sets.status_files:
-            return {}
-        fs_pairs = {
-            Path(line[3:]): line[:2]
-            for line in self.app.cm_attr.cmd_results.status_files.std_out.splitlines()
-        }
-        fs_idx = 0 if app_ids.tab_label == TabLabel.apply else 1  # file status index
-        return {
-            k: StatusCode(v[fs_idx])
-            for k, v in fs_pairs.items()
-            if v[fs_idx] != StatusCode.Space
-        }
-
-    def _get_status_files_descendants(
-        self, dir_path: Path, app_ids: AppIds
-    ) -> dict[Path, StatusCode]:
-        status_files = self._get_status_files(app_ids)
-        results: dict[Path, StatusCode] = {}
-        for path, status in status_files.items():
-            if path.is_relative_to(dir_path):
-                results[path] = status
-        return results
-
     def _get_status_dirs(self) -> dict[Path, StatusCode]:
         return {}
 
