@@ -153,10 +153,12 @@ class CommandResult:
     returncode: int
     std_err: str
     std_out: str
+    verb_cmd: ReadCmd | WriteCmd
 
 
 @dataclass(slots=True, kw_only=True)
 class CmdResults:
+    # will raise attribute error if field is not set and trying to access CommandResult
     cat_config: CommandResult
     doctor: CommandResult
     dump_config: CommandResult
