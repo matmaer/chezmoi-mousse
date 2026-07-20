@@ -127,11 +127,8 @@ class AppLog(RichLoggers):
 
     def on_mount(self) -> None:
         self.write_ready(LogString.app_log_initialized)
-        if self.app.cm_attr.debug_mode is True:
-            self.write_warning(
-                f"{Chars.warning_sign} {LogString.debug_tab_enabled} "
-                f"{Chars.warning_sign} "
-            )
+        if "debug" in self.app.features:
+            self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
 
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:

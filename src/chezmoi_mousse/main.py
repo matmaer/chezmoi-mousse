@@ -80,7 +80,6 @@ def run_app():
 
     CmAttributes.ids = TabIds()
     CmAttributes.command = ChezmoiCommand()
-    CmAttributes.debug_mode = os.environ.get("CHEZMOI_MOUSSE_DEBUG_MODE") == "1"
 
     try:
         app = ChezmoiGui()

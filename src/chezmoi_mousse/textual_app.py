@@ -89,7 +89,8 @@ class ChezmoiGui(App[str]):
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        save_stacktrace()
+        if "debug" in self.features:
+            save_stacktrace()
         super()._handle_exception(error)
 
     def on_mount(self) -> None:
