@@ -92,16 +92,17 @@ class ReadCmd(Enum):
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
         return [
-            ReadCmd.cat_config,
+            # order is related to thread worker logic in splash screen
             ReadCmd.doctor,
             ReadCmd.dump_config,
-            ReadCmd.git_log,
-            ReadCmd.ignored,
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
             ReadCmd.status_files,
             ReadCmd.template_data,
+            ReadCmd.git_log,
+            ReadCmd.cat_config,
+            ReadCmd.ignored,
         ]
 
     # TODO added again to make the app start
@@ -113,10 +114,6 @@ class ReadCmd(Enum):
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ]
-
-    @classmethod
-    def json_output_commands(cls) -> list["ReadCmd"]:
-        return [ReadCmd.dump_config, ReadCmd.template_data]
 
     @property
     def pretty_args(self) -> tuple[str, ...]:
