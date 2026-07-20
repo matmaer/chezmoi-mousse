@@ -114,7 +114,7 @@ class LoadingModal(ModalScreen[None]):
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
         self.previous_managed_paths: frozenset[Path] = (
-            self.app.cm_attr.sets.managed_paths.copy()
+            self.app.cm_attr.managed_paths.copy()
         )
         self.previous_status_paths: frozenset[Path] = (
             self.app.cm_attr.sets.status_paths.copy()

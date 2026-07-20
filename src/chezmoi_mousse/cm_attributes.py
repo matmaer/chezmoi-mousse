@@ -93,6 +93,7 @@ class CmAttributes:
 
     # updated after operations
     changes: ChangedPaths = ChangedPaths()
+    managed_paths: ManagedPaths = ManagedPaths()
 
     @classmethod
     def json_parse_dump_config(cls, cmd_result: CommandResult) -> None:
