@@ -82,16 +82,17 @@ class ParsedConfig:
 
 @dataclass
 class CmAttributes:
-    # will raise an attribute error if any of these fields are accessed before set
-    # in splash screen BEFORE pushing main screen, setting for type checking and tab
-    # auto complete
-    cfg: ParsedJson
-    template_data: ParsedJson
 
-    # init correctly
-    changes: ChangedPaths = ChangedPaths()  # empty
+    # inits without needing updates later on
     command: ChezmoiCommand = ChezmoiCommand()
     ids: TabIds = TabIds()
+
+    # updated in splash screen
+    template_data: ParsedJson = field(default_factory=lambda: {})
+    cfg: ParsedConfig = field(default_factory=lambda: ParsedConfig())
+
+    # updated after operations
+    changes: ChangedPaths = ChangedPaths()
 
     @classmethod
     def json_parse_dump_config(cls, cmd_result: CommandResult) -> None:
