@@ -83,16 +83,11 @@ def run_app():
 
     try:
         app = ChezmoiGui()
-    except Exception:
-        save_stacktrace()
-        raise
-
-    try:
         if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
             asyncio.run(test_app_with_pilot(app))
         else:
             app.run()
-    except Exception:
+    except:
         save_stacktrace()
         raise
 
