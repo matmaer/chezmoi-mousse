@@ -223,6 +223,13 @@ class StatusCode(StrEnum):
     Run = "R"
     Space = " "
 
+    # Fake status codes for Tree management
+    Exists = auto()
+    NotExists = auto()
+    N_Dir = auto()  # dir without status but with any nested status children
+    Unchanged = auto()
+    Unmanaged = auto()
+
     @property
     def _theme_var_color_name(self) -> dict[str, str]:
         return {
