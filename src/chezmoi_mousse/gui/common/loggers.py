@@ -118,7 +118,8 @@ class AppLog(RichLoggers):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-    cmd_result: reactive[CommandResult | None] = reactive(None)
+
+    cmd_results: reactive[list[CommandResult] | None] = reactive(None)
 
     def __init__(self) -> None:
         super().__init__(

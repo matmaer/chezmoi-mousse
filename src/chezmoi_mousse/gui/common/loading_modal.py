@@ -64,6 +64,7 @@ class LoadingModal(ModalScreen[None]):
     def __init__(self, btn_enum: OpBtnEnum | None) -> None:
         super().__init__()
         self.btn_enum: OpBtnEnum | None = btn_enum
+        self.cmd_results: list[CommandResult] = []
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
@@ -72,8 +73,7 @@ class LoadingModal(ModalScreen[None]):
 
     def on_mount(self) -> None:
         if self.btn_enum != OpBtnEnum.reload:
-            self.app.cm_attr.clear_changes()
-        self.app.cm_attr.loading_modal_results.clear()
+            self.app.cm_attr.changes.clear_changes()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
@@ -85,7 +85,7 @@ class LoadingModal(ModalScreen[None]):
     async def run_all_read_cmds(self) -> None:
         for read_cmd in ReadCmd.managed_status_commands():
             await self._run_read_command(read_cmd).wait()
-        await self._update_changed_paths().wait()
+        await self._update_cm_attr().wait()
 
     @work
     async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
@@ -96,7 +96,7 @@ class LoadingModal(ModalScreen[None]):
     @min_wait
     async def _run_read_command(self, read_cmd: "ReadCmd") -> None:
         cmd_result: CommandResult = self.app.cm_attr.command.run(read_cmd)
-        self.app.cm_attr.loading_modal_results.append(cmd_result)
+        self.cmd_results.append(cmd_result)
 
     @work(thread=True, exit_on_error=False)
     @min_wait
@@ -106,11 +106,11 @@ class LoadingModal(ModalScreen[None]):
         cmd_result: CommandResult = self.app.cm_attr.command.run(
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
-        self.app.cm_attr.loading_modal_results.append(cmd_result)
+        self.cmd_results.append(cmd_result)
 
     @work(thread=True)
     @min_wait
-    async def _update_changed_paths(self) -> None:
+    async def _update_cm_attr(self) -> None:
         self.label_text = LoadingLabel.update_changed_and_cached.with_color
 
         self.previous_managed_paths: frozenset[Path] = (

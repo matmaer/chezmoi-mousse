@@ -125,7 +125,7 @@ class MainScreen(Screen[None]):
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()
         elif btn_enum == OpBtnEnum.reload:
-            if self.app.cm_attr.changes.none:
+            if self.app.cm_attr.changes.no_changes:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
