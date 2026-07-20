@@ -14,7 +14,6 @@ from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
-from textual.worker import WorkerState
 
 from chezmoi_mousse import ReadCmd
 
@@ -109,21 +108,22 @@ class SplashScreen(Screen[None]):
         padding = LOG_MSG_WIDTH - (len(prefix) + len(suffix))
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
-    @work
-    async def _parse_json(self, result: CommandResult, short_cmd: str) -> str:
+    @work(group="splash_worker")
+    async def _parse_json(
+        self, result: CommandResult, read_cmd: ReadCmd, short_cmd: str
+    ) -> str:
         prefix = f"parse {short_cmd}"
+        parsed_json = json.loads(result.std_out)
         try:
-            parsed = json.loads(result.std_out)
+            if read_cmd == ReadCmd.dump_config:
+                self.app.cm_attr.cfg = parsed_json
+            elif read_cmd == ReadCmd.template_data:
+                self.app.cm_attr.template_data = parsed_json
             suffix = "success"
             color = self.app.theme_variables["text-success"]
         except json.JSONDecodeError:
-            parsed = {}
             suffix = "failed"
             color = self.app.theme_variables["text-error"]
-        if str(ReadCmd.dump_config.name) in result.args:
-            self.app.cm_attr.cfg = parsed
-        elif str(ReadCmd.template_data.name) in result.args:
-            self.app.cm_attr.template_data = parsed
         return self._get_log_message(color, prefix, suffix)
 
     @work(group="splash_worker")
@@ -152,9 +152,8 @@ class SplashScreen(Screen[None]):
     def _all_workers_finished(self) -> None:
         # TODO: also update cm_attributes
         if all(
-            worker.state == WorkerState.SUCCESS
+            worker.is_finished
             for worker in self.workers
             if worker.group == "splash_worker"
         ):
-
             self.dismiss()
