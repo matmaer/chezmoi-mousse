@@ -189,6 +189,8 @@ class CmdResults:
         source = cls.status_dirs if path_kind == PathKind.dir else cls.managed_files
         idx = 1 if tab_label == TabLabel.apply else 0
         for line in source.std_out.splitlines():
+            if line[idx] == StatusCode.Space:
+                continue
             path = Path(line[3:])
             result[path] = StatusCode(line[idx])
         return result
