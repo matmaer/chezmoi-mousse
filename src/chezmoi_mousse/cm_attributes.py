@@ -46,10 +46,11 @@ class TabIds:
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class ManagedPaths:
-    dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    files: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    unmanaged_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    unmanaged_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    dest_dir: Path
+    classic_theme_vars: dict[str, str]
+    dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
+    files: dict[Path, PathKind] = field(default_factory=lambda: {})
+    apply_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     apply_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
     apply_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     re_add_files: dict[Path, StatusCode] = field(default_factory=lambda: {})

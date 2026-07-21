@@ -83,6 +83,11 @@ def run_app():
 
     try:
         app = ChezmoiGui()
+        CmAttributes.classic_theme_vars = {
+            k: v
+            for k, v in app.theme_variables.items()
+            if v.startswith("#") and len(v) == 7
+        }
         if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
             asyncio.run(test_app_with_pilot(app))
         else:
