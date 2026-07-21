@@ -101,45 +101,35 @@ class ReadCmd(Enum):
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
         return [
-            # order is related to thread worker logic in splash screen
-            ReadCmd.unmanaged_dirs,
-            ReadCmd.unmanaged_files,
             ReadCmd.doctor,
             ReadCmd.dump_config,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
             ReadCmd.template_data,
             ReadCmd.git_log,
             ReadCmd.cat_config,
             ReadCmd.ignored,
         ]
 
-    # TODO added again to make the app start
     @classmethod
-    def managed_status_commands(cls) -> list["ReadCmd"]:
+    def chezmoi_managed_commands(cls) -> list["ReadCmd"]:
         return [
+            ReadCmd.unmanaged_dirs,
+            ReadCmd.unmanaged_files,
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
             ReadCmd.status_dirs,
             ReadCmd.status_files,
         ]
 
-    @property
-    def pretty_args(self) -> tuple[str, ...]:
-        exclude = (VerbArgs.path_style_absolute.value, VerbArgs.format_json.value)
-        if self == ReadCmd.git_log:
-            exclude += VerbArgs.git_log.value[2:]
-        return tuple(t for t in self.value if t not in exclude)
+    @classmethod
+    def parse_json_commands(cls) -> list["ReadCmd"]:
+        return [ReadCmd.dump_config, ReadCmd.template_data]
 
     @property
     def pretty_verb(self) -> str:
-        return " ".join(self.pretty_args)
-
-    @property
-    def pretty_cmd(self) -> str:
-        return "chezmoi" + " ".join(self.pretty_args)
+        exclude = (VerbArgs.path_style_absolute.value, VerbArgs.format_json.value)
+        if self == ReadCmd.git_log:
+            exclude += VerbArgs.git_log.value[2:]
+        return " ".join(t for t in self.value if t not in exclude)
 
 
 class WriteVerb(Enum):
@@ -158,30 +148,33 @@ class WriteCmd(Enum):
     re_add = (WriteVerb.re_add.value,)
 
     @property
-    def pretty_args(self) -> tuple[str, ...]:
-        return self.value
+    def pretty_verb(self) -> str:
+        return self.value[0]
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
-    args: tuple[str, ...]
     dry_run: bool
     full_cmd: str
     path_arg: Path | None
-    pretty_cmd: str
+    pretty_args: str
     returncode: int
     std_err: str
     std_out: str
     verb_cmd: ReadCmd | WriteCmd
 
     @property
+    def pretty_cmd(self) -> str:
+        return f"chezmoi {self.pretty_args}"
+
+    @property
     def out_lines(self) -> list[str]:
         return self.std_out.splitlines()
 
 
-@dataclass(slots=True, kw_only=True)
+@dataclass(slots=False, frozen=False, kw_only=True)
 class CmdResults:
-    # will raise attribute error if field is not set and trying to access CommandResult
+    # will raise attribute error if field is not set
     cat_config: CommandResult
     doctor: CommandResult
     dump_config: CommandResult
@@ -221,22 +214,19 @@ class ChezmoiCommand:
             timeout=time_out,
         )
 
-    def _get_relative_path(self, path: Path) -> str:
-        # this happens when we have not yet parsed the config in the splash screen
-        return (
-            str(path) if self.dest_dir is None else f"{path.relative_to(self.dest_dir)}"
-        )
-
     def _get_pretty_args(
         self, cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
-    ) -> tuple[str, ...]:
-        pretty_args: tuple[str, ...] = ()
-        if self.dry_run:
-            pretty_args += GlobalArgs.dry_run.value + cmd.pretty_args
-        else:
-            pretty_args = cmd.pretty_args
+    ) -> str:
+        pretty_args = ""
+        if self.dry_run and isinstance(cmd, WriteCmd):
+            pretty_args += GlobalArgs.dry_run.value[0]
+        pretty_args = cmd.pretty_verb
         if path_arg is not None:
-            pretty_args += (self._get_relative_path(path_arg),)
+            pretty_args += (
+                str(path_arg)
+                if self.dest_dir is None
+                else f"{path_arg.relative_to(self.dest_dir)}"
+            )
         return pretty_args
 
     def run(
@@ -254,14 +244,15 @@ class ChezmoiCommand:
         completed_process: CompletedProcess[str] = self._subprocess_run(
             chezmoi_args, time_out=time_out
         )
-        return CommandResult(
-            args=completed_process.args,
+        command_result = CommandResult(
             dry_run=GlobalArgs.dry_run.value[0] in completed_process.args,
             full_cmd=" ".join(list(completed_process.args)),
             path_arg=path_arg,
-            pretty_cmd="chezmoi" + " ".join(self._get_pretty_args(verb_cmd, path_arg)),
+            pretty_args=" ".join(self._get_pretty_args(verb_cmd, path_arg)),
             returncode=completed_process.returncode,
             std_err=completed_process.stderr.strip(),
             std_out=completed_process.stdout.strip(),
             verb_cmd=verb_cmd,
         )
+        setattr(CmdResults, verb_cmd.name, command_result)
+        return command_result
