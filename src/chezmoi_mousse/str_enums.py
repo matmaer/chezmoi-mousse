@@ -227,29 +227,3 @@ class StatusCode(StrEnum):
     Modified = "M"
     Run = "R"
     Space = " "
-
-    # Fake status codes for Tree management
-    Exists = auto()
-    NotExists = auto()
-    N_Dir = auto()  # dir without status but with any nested status children
-    Unchanged = auto()
-    Unmanaged = auto()
-
-    @property
-    def _theme_var_color_name(self) -> dict[str, str]:
-        return {
-            StatusCode.Added: "text-success",
-            StatusCode.Deleted: "text-error",
-            StatusCode.Modified: "text-warning",
-            StatusCode.Run: "text-error",  # choose error as it's not yet implemented
-            StatusCode.Space: "text-muted",
-        }
-
-    @property
-    def color_var(self) -> str:
-        return self._theme_var_color_name[self.value]
-
-    @property
-    def color_tag(self) -> str:
-        # return the color for a status code
-        return f"[${self.color_var}]"
