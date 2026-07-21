@@ -82,7 +82,19 @@ class ParsedConfig:
 @dataclass
 class CmAttributes:
 
-    # inits without needing updates later on
+    # we never initialize the CmAttributes class and just provide a pointer in the
+    # ChezmoiGui(App[str]) class
+
+    # initialize in main.py before calling .run() on the app instance
+    classic_theme_vars: dict[str, str]
+
+    # initialize in splash_screen.py by calling update_cm_attr before we push the
+    # MainScreen
+    cfg: ParsedConfig
+    managed: ManagedPaths
+    template_data: ParsedJson
+
+    # initialize empty
     command: ChezmoiCommand = ChezmoiCommand()
     ids: TabIds = TabIds()
 
