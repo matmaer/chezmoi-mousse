@@ -207,18 +207,18 @@ class CmAttributes:
         return result
 
     @classmethod
-    def update_managed_attr(cls, cmd_results: CmdResults) -> None:
+    def update_managed_attr(cls) -> None:
         cls.managed = ManagedPaths(
             dest_dir=cls.cfg.dest_dir,
             classic_theme_vars={},
-            dirs=cls._path_kind_dict(cmd_results.managed_dirs),
-            files=cls._path_kind_dict(cmd_results.managed_files),
-            apply_dirs=cls._status_dict(cmd_results.status_dirs.out_lines, 1),
-            apply_files=cls._status_dict(cmd_results.status_files.out_lines, 1),
-            re_add_dirs=cls._status_dict(cmd_results.status_dirs.out_lines, 0),
-            re_add_files=cls._status_dict(cmd_results.status_files.out_lines, 0),
-            dirs_not_managed=cls._path_kind_dict(cmd_results.unmanaged_dirs),
-            files_not_managed=cls._path_kind_dict(cmd_results.unmanaged_dirs),
+            dirs=cls._path_kind_dict(CmdResults.managed_dirs),
+            files=cls._path_kind_dict(CmdResults.managed_files),
+            apply_dirs=cls._status_dict(CmdResults.status_dirs.out_lines, 1),
+            apply_files=cls._status_dict(CmdResults.status_files.out_lines, 1),
+            re_add_dirs=cls._status_dict(CmdResults.status_dirs.out_lines, 0),
+            re_add_files=cls._status_dict(CmdResults.status_files.out_lines, 0),
+            dirs_not_managed=cls._path_kind_dict(CmdResults.unmanaged_dirs),
+            files_not_managed=cls._path_kind_dict(CmdResults.unmanaged_dirs),
         )
 
     @staticmethod
