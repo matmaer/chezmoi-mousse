@@ -4,8 +4,6 @@ from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
 
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
-
 __all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
 
 
@@ -89,12 +87,23 @@ class ReadCmd(Enum):
         VerbArgs.include_files.value,
     )
     template_data = (ReadVerb.data.value,)
-    unmanaged_files = (ReadVerb.unmanaged.value, VerbArgs.path_style_absolute.value)
+    unmanaged_dirs = (
+        ReadVerb.unmanaged.value,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_dirs.value,
+    )
+    unmanaged_files = (
+        ReadVerb.unmanaged.value,
+        VerbArgs.path_style_absolute.value,
+        VerbArgs.include_files.value,
+    )
 
     @classmethod
     def splash_commands(cls) -> list["ReadCmd"]:
         return [
             # order is related to thread worker logic in splash screen
+            ReadCmd.unmanaged_dirs,
+            ReadCmd.unmanaged_files,
             ReadCmd.doctor,
             ReadCmd.dump_config,
             ReadCmd.managed_dirs,
@@ -123,6 +132,14 @@ class ReadCmd(Enum):
         if self == ReadCmd.git_log:
             exclude += VerbArgs.git_log.value[2:]
         return tuple(t for t in self.value if t not in exclude)
+
+    @property
+    def pretty_verb(self) -> str:
+        return " ".join(self.pretty_args)
+
+    @property
+    def pretty_cmd(self) -> str:
+        return "chezmoi" + " ".join(self.pretty_args)
 
 
 class WriteVerb(Enum):
@@ -157,6 +174,10 @@ class CommandResult:
     std_out: str
     verb_cmd: ReadCmd | WriteCmd
 
+    @property
+    def out_lines(self) -> list[str]:
+        return self.std_out.splitlines()
+
 
 @dataclass(slots=True, kw_only=True)
 class CmdResults:
@@ -171,29 +192,8 @@ class CmdResults:
     status_dirs: CommandResult
     status_files: CommandResult
     template_data: CommandResult
-
-    @classmethod
-    def get_managed_dict(cls, path_kind: PathKind) -> dict[Path, StatusCode]:
-        result: dict[Path, StatusCode] = {}
-        source = cls.managed_dirs if path_kind == PathKind.dir else cls.managed_files
-        for line in source.std_out.splitlines():
-            path = Path(line)
-            result[path] = StatusCode.Exists if path.exists() else StatusCode.NotExists
-        return result
-
-    @classmethod
-    def status_dict(
-        cls, tab_label: TabLabel, path_kind: PathKind
-    ) -> dict[Path, StatusCode]:
-        result: dict[Path, StatusCode] = {}
-        source = cls.status_dirs if path_kind == PathKind.dir else cls.managed_files
-        idx = 1 if tab_label == TabLabel.apply else 0
-        for line in source.std_out.splitlines():
-            if line[idx] == StatusCode.Space:
-                continue
-            path = Path(line[3:])
-            result[path] = StatusCode(line[idx])
-        return result
+    unmanaged_dirs: CommandResult
+    unmanaged_files: CommandResult
 
 
 class ChezmoiCommand:
@@ -205,9 +205,7 @@ class ChezmoiCommand:
     def review_cmd(
         self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> str:
-        return "chezmoi " + " ".join(
-            list(self._get_pretty_args(cmd, path_arg=path_arg))
-        )
+        return "chezmoi " + " ".join(self._get_pretty_args(cmd, path_arg=path_arg))
 
     def _subprocess_run(
         self, chezmoi_args: tuple[str, ...], time_out: int
@@ -261,8 +259,7 @@ class ChezmoiCommand:
             dry_run=GlobalArgs.dry_run.value[0] in completed_process.args,
             full_cmd=" ".join(list(completed_process.args)),
             path_arg=path_arg,
-            pretty_cmd="chezmoi"
-            + " ".join(list(self._get_pretty_args(verb_cmd, path_arg))),
+            pretty_cmd="chezmoi" + " ".join(self._get_pretty_args(verb_cmd, path_arg)),
             returncode=completed_process.returncode,
             std_err=completed_process.stderr.strip(),
             std_out=completed_process.stdout.strip(),
