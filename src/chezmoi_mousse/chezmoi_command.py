@@ -131,6 +131,10 @@ class ReadCmd(Enum):
             exclude += VerbArgs.git_log.value[2:]
         return " ".join(t for t in self.value if t not in exclude)
 
+    @property
+    def pretty_cmd(self) -> str:
+        return f"chezmoi {self.pretty_verb}"
+
 
 class WriteVerb(Enum):
     add = "add"
@@ -229,7 +233,7 @@ class ChezmoiCommand:
             )
         return pretty_args
 
-    async def run(
+    def run(
         self, verb_cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
