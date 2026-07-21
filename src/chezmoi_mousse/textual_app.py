@@ -99,6 +99,11 @@ class ChezmoiGui(App[str]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
+    def clean_exit(self, *, message: str) -> None:
+        self.disable_messages()
+        self.workers.cancel_all()
+        self.exit(result=f"{message}", return_code=1)
+
     @work
     async def _run_splash_screen(self) -> None:
         await self.push_screen(SplashScreen(), wait_for_dismiss=True)
