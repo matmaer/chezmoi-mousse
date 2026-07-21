@@ -19,9 +19,17 @@ __all__ = [
 
 
 class PathKind(StrEnum):
-    dir = auto()
-    file = auto()
-    both = auto()
+    dir_exists = auto()  # managed dir which exists on file system
+    dir_not_exists = auto()  # managed dir, does not exist on the file system
+    file_exists = auto()  # managed file, does not exist on the file system
+    file_not_exists = auto()  # managed file system which exists on file system
+
+    # these always exist on disk but are not managed
+    dir_not_managed = auto()
+    file_not_managed = auto()
+
+    # this should not happen as we set "--mode=file" globally
+    symlink = auto()
 
 
 class BindingAction(StrEnum):
