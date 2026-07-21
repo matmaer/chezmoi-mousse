@@ -40,15 +40,11 @@ class DoctorTable(DataTable[Text]):
 
     @work
     async def _populate_table(self) -> None:
-        doctor_lines = self.app.cm_attr.get_cmd_result(
-            read_cmd=ReadCmd.doctor
-        ).std_out.splitlines()
-        self.clear(columns=True)
-        if len(doctor_lines) < 2:
-            self.app.notify("No doctor data to display", severity="error")
-            return
-        if not self.columns:
-            self.add_columns(*doctor_lines[0].split())
+        doctor_lines: list[str] = self.app.cm_attr.get_command_result(
+            command=ReadCmd.doctor
+        ).out_lines
+
+        self.add_columns(*doctor_lines[0].split())
 
         for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
@@ -274,7 +270,7 @@ class PwMgrInfoView(Vertical):
 
     @work
     async def _populate_pw_mgr_info(self) -> None:
-        lines = self.app.cm_attr.get_cmd_result(ReadCmd.doctor).std_out.splitlines()
+        lines: list[str] = self.app.cm_attr.get_command_result(ReadCmd.doctor).out_lines
         pw_mgr_data_list: list[PwMgrData] = []
 
         for line in lines[1:]:  # Skip header line
