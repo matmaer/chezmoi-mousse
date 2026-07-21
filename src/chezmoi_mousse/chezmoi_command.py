@@ -229,7 +229,7 @@ class ChezmoiCommand:
             )
         return pretty_args
 
-    def run(
+    async def run(
         self, verb_cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
