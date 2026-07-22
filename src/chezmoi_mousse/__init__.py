@@ -15,12 +15,11 @@ from pathlib import Path
 
 from chezmoi_mousse.cm_command import CommandResult, ReadCmd, ReadVerb
 from chezmoi_mousse.debug.test_paths import TestPaths
-from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
+from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, OpInfoString, SwitchEnum
 from chezmoi_mousse.str_enums import (
     Chars,
     FlatBtnLabel,
     LogString,
-    OperateString,
     PathKind,
     SectionLabel,
     StatusCode,
@@ -46,7 +45,7 @@ __all__ = [
     "LogString",
     "OpBtnEnum",
     "OpBtnLabel",
-    "OperateString",
+    "OpInfoString",
     "PathKind",
     "ReadCmd",
     "ReadVerb",

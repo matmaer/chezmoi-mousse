@@ -8,7 +8,6 @@ __all__ = [
     "FlatBtnLabel",
     "RichLogName",
     "LogString",
-    "OperateString",
     "PathKind",
     "SectionLabel",
     "StatusCode",
@@ -18,24 +17,45 @@ __all__ = [
 ]
 
 
-class PathKind(StrEnum):
-    dir_exists = auto()  # managed dir which exists on file system
-    dir_not_exists = auto()  # managed dir, does not exist on the file system
-    file_exists = auto()  # managed file, does not exist on the file system
-    file_not_exists = auto()  # managed file system which exists on file system
-
-    # these always exist on disk but are not managed
-    dir_not_managed = auto()
-    file_not_managed = auto()
-
-    # this should not happen as we set "--mode=file" globally
-    symlink = auto()
-
-
 class BindingAction(StrEnum):
     toggle_dry_run = auto()
     toggle_maximized = auto()
     toggle_switch_slider = auto()
+
+
+class BindingDescription(StrEnum):
+    # Tab bindings
+    hide_filters = "Hide filters"
+    # Shared bindings
+    maximize = "Maximize"
+    minimize = "Minimize"
+    show_filters = "Show filters"
+    remove_dry_run = "Remove --dry-run"
+    add_dry_run = "Add --dry-run"
+
+
+class Chars(StrEnum):
+    burger = "\u2261"  # IDENTICAL TO
+    down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
+    lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
+    right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
+    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    warning_sign = "\u26a0"  # WARNING SIGN
+    x_mark = "\u2716"  # HEAVY MULTIPLICATION X
+    # bullet = "\u2022"  # BULLET # noqa: ERA001
+    check_mark = "\u2714"  # HEAVY CHECK MARK
+    # gear = "\u2699"  # GEAR # noqa: ERA001
+    # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
+    # heavy_line_left = "\u2578"  # BOX DRAWINGS HEAVY LEFT  # noqa: ERA001
+    # heavy_line_right = "\u257a"  # BOX DRAWINGS HEAVY RIGHT # noqa: ERA001
+    # quadrant_lower_left = "\u2596"  # Quadrant Lower Left # noqa: ERA001
+    # quadrant_lower_right = "\u2597"  # Quadrant Lower Rightbottom # noqa: ERA001
+    # quadrant_upper_left = "\u2598"  # Quadrant Upper Left # noqa: ERA001
+    # quadrant_upper_right = "\u259d"  # Quadrant Upper Right # noqa: ERA001
+
+    # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
+    tree_collapsed = f"{right_triangle} "
+    tree_expanded = f"{down_triangle} "
 
 
 class ContainerName(StrEnum):
@@ -57,12 +77,108 @@ class ContainerName(StrEnum):
     test_paths_view = auto()
 
 
+class FlatBtnLabel(StrEnum):
+    cat_config = "Cat Config"
+    debug_log = "Debug Log"
+    diagram = "Diagram"
+    doctor = "Doctor"
+    dom_nodes = "DOM Nodes"
+    ignored = "Ignored"
+    pw_mgr_info = "Password Managers"
+    template_data = "Template Data"
+    test_paths = "Test Paths"
+    memory_usage = "Memory Usage"
+
+
+class LogString(StrEnum):
+    app_log_initialized = "Application log initialized"
+    debug_log_initialized = "Debug log initialized"
+    debug_tab_enabled = "Debug tab enabled"
+    doctor_no_issue_found = "No warnings, failed or error entries reported"
+    no_stderr = "No output on stderr"
+    no_stdout = "No output on stdout"
+    using_chezmoi_bin = "Using chezmoi binary at:"
+
+
+class PathKind(StrEnum):
+    dir_exists = auto()  # managed dir which exists on file system
+    dir_not_exists = auto()  # managed dir, does not exist on the file system
+    file_exists = auto()  # managed file, does not exist on the file system
+    file_not_exists = auto()  # managed file system which exists on file system
+
+    # these always exist on disk but are not managed
+    dir_not_managed = auto()
+    file_not_managed = auto()
+
+    # this should not happen as we set "--mode=file" globally
+    symlink = auto()
+
+
 class RichLogName(StrEnum):
     app_logger = auto()
     cmd_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
     memory_usage_logger = auto()
+
+
+class SectionLabel(StrEnum):
+    cat_config_output = "Cat Config Output"
+    debug_log = " Debug Log "
+    diagram = "Chezmoi Diagram"
+    doctor_output = "Doctor Output"
+    dom_nodes = " DOM Nodes "
+    full_cmd = "Full Command"
+    ignored_output = "Ignored Output"
+    memory_usage = " Memory Usage "
+    password_managers = "Password Manager Information"
+    paths_with_status = "Paths with Status"
+    project_description = "Project Description"
+    project_link = "Project Link"
+    stderr_output = "Output from stderr"
+    stdout_output = "Output from stdout"
+    template_data_output = "Chezmoi Data Output"
+    test_paths = " Test Paths "
+
+
+class StatusCode(StrEnum):
+    Added = "A"
+    Deleted = "D"
+    Modified = "M"
+    Run = "R"
+    Space = " "
+
+
+class SwitchLabel(StrEnum):
+    # Apply and ReAdd Tab
+    show_unchanged = "Show unchanged paths"
+    show_unmanaged_files = "Show unmanaged files"
+    expand_all = "Expand all dirs"
+
+    # Add Tab
+    hide_unmanaged_dirs = "Hide unmanaged dirs"
+    show_managed = "Show managed paths"
+    show_unwanted = "Show unwanted paths"
+
+
+class TabLabel(StrEnum):
+    # Main tabs
+    add = "Add"
+    apply = "Apply"
+    config = "Config"
+    debug = "Debug"
+    logs = "Logs"
+    re_add = "Re-Add"
+    # Tab buttons for content switcher within a main tab
+    app_log = "Application"
+    cmd_log = "Chezmoi-Commands"
+    contents = "Contents"
+    diff = "Diff"
+    git_log = "Git-Log"
+
+    @classmethod
+    def main_tabs(cls) -> tuple["TabLabel", ...]:
+        return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
 
 
 class Tcss(StrEnum):
@@ -97,133 +213,3 @@ class Tcss(StrEnum):
     @property
     def dot_prefix(self) -> str:
         return f".{self.value}"
-
-
-class FlatBtnLabel(StrEnum):
-    cat_config = "Cat Config"
-    debug_log = "Debug Log"
-    diagram = "Diagram"
-    doctor = "Doctor"
-    dom_nodes = "DOM Nodes"
-    ignored = "Ignored"
-    pw_mgr_info = "Password Managers"
-    template_data = "Template Data"
-    test_paths = "Test Paths"
-    memory_usage = "Memory Usage"
-
-
-class TabLabel(StrEnum):
-    # Main tabs
-    add = "Add"
-    apply = "Apply"
-    config = "Config"
-    debug = "Debug"
-    logs = "Logs"
-    re_add = "Re-Add"
-    # Tab buttons for content switcher within a main tab
-    app_log = "Application"
-    cmd_log = "Chezmoi-Commands"
-    contents = "Contents"
-    diff = "Diff"
-    git_log = "Git-Log"
-
-    @classmethod
-    def main_tabs(cls) -> tuple["TabLabel", ...]:
-        return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
-
-
-class Chars(StrEnum):
-    burger = "\u2261"  # IDENTICAL TO
-    down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
-    lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
-    right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
-    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
-    warning_sign = "\u26a0"  # WARNING SIGN
-    x_mark = "\u2716"  # HEAVY MULTIPLICATION X
-    # bullet = "\u2022"  # BULLET # noqa: ERA001
-    # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
-    # gear = "\u2699"  # GEAR # noqa: ERA001
-    # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
-    # heavy_line_left = "\u2578"  # BOX DRAWINGS HEAVY LEFT  # noqa: ERA001
-    # heavy_line_right = "\u257a"  # BOX DRAWINGS HEAVY RIGHT # noqa: ERA001
-    # quadrant_lower_left = "\u2596"  # Quadrant Lower Left # noqa: ERA001
-    # quadrant_lower_right = "\u2597"  # Quadrant Lower Rightbottom # noqa: ERA001
-    # quadrant_upper_left = "\u2598"  # Quadrant Upper Left # noqa: ERA001
-    # quadrant_upper_right = "\u259d"  # Quadrant Upper Right # noqa: ERA001
-
-    # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
-    tree_collapsed = f"{right_triangle} "
-    tree_expanded = f"{down_triangle} "
-
-
-class LogString(StrEnum):
-    app_log_initialized = "Application log initialized"
-    debug_log_initialized = "Debug log initialized"
-    debug_tab_enabled = "Debug tab enabled"
-    doctor_no_issue_found = "No warnings, failed or error entries reported"
-    no_stderr = "No output on stderr"
-    no_stdout = "No output on stdout"
-    using_chezmoi_bin = "Using chezmoi binary at:"
-
-
-class BindingDescription(StrEnum):
-    # Tab bindings
-    hide_filters = "Hide filters"
-    # Shared bindings
-    maximize = "Maximize"
-    minimize = "Minimize"
-    show_filters = "Show filters"
-    remove_dry_run = "Remove --dry-run"
-    add_dry_run = "Add --dry-run"
-
-
-class SwitchLabel(StrEnum):
-    # Apply and ReAdd Tab
-    show_unchanged = "Show unchanged paths"
-    show_unmanaged_files = "Show unmanaged files"
-    expand_all = "Expand all dirs"
-
-    # Add Tab
-    hide_unmanaged_dirs = "Hide unmanaged dirs"
-    show_managed = "Show managed paths"
-    show_unwanted = "Show unwanted paths"
-
-
-class OperateString(StrEnum):
-    auto_commit = (
-        f"[$text-warning]{Chars.warning_sign} Git auto commit is enabled: "
-        "files will also be committed."
-        f"{Chars.warning_sign}[/]"
-    )
-    auto_push = (
-        f"[$text-warning]{Chars.warning_sign} Git auto push is enabled: "
-        "files will be pushed to the remote."
-        f"{Chars.warning_sign}[/]"
-    )
-
-
-class SectionLabel(StrEnum):
-    cat_config_output = "Cat Config Output"
-    debug_log = " Debug Log "
-    diagram = "Chezmoi Diagram"
-    doctor_output = "Doctor Output"
-    dom_nodes = " DOM Nodes "
-    full_cmd = "Full Command"
-    ignored_output = "Ignored Output"
-    memory_usage = " Memory Usage "
-    password_managers = "Password Manager Information"
-    paths_with_status = "Paths with Status"
-    project_description = "Project Description"
-    project_link = "Project Link"
-    stderr_output = "Output from stderr"
-    stdout_output = "Output from stdout"
-    template_data_output = "Chezmoi Data Output"
-    test_paths = " Test Paths "
-
-
-class StatusCode(StrEnum):
-    Added = "A"
-    Deleted = "D"
-    Modified = "M"
-    Run = "R"
-    Space = " "

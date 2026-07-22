@@ -8,7 +8,7 @@ from chezmoi_mousse.str_enums import Chars, SwitchLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ["OpBtnEnum", "OpBtnLabel", "SwitchEnum"]
+__all__ = ["OpBtnEnum", "OpBtnLabel", "OpInfoString", "SwitchEnum"]
 
 
 class OpInfoString(StrEnum):
@@ -24,6 +24,21 @@ class OpInfoString(StrEnum):
         "directory, it will be recursed in.[/]"
     )
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    auto_add = (
+        f"[$text-warning]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
+        "paths will be added to the chezmoi repository."
+        f"{Chars.check_mark}[/]"
+    )
+    auto_commit = (
+        f"[$text-warning]{Chars.warning_sign} Chezmoi 'autocommit' is enabled: "
+        "paths will be committed to the chezmoi repository."
+        f"{Chars.warning_sign}[/]"
+    )
+    auto_push = (
+        f"[$text-error]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
+        "the updated chezmoi repository will be pushed to the remote (origin)."
+        f"{Chars.warning_sign}[/]"
+    )
     destroy_path_info = (
         "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
         "SURE YOU HAVE A BACKUP![/]"

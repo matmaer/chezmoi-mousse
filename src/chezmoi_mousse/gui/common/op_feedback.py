@@ -6,7 +6,7 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import OpBtnEnum, OperateString, Tcss
+from chezmoi_mousse import OpBtnEnum, OpInfoString, Tcss
 
 from .actionables import OpButton
 from .loggers import CmdResultCollapsible
@@ -38,14 +38,18 @@ class OperateInfo(Static):
         )
         info_lines.append(button.btn_enum.op_info_string)
         if button.btn_enum != OpBtnEnum.apply_review:
+            if self.app.cm_attr.cfg.auto_add is True:
+                info_lines.append(OpInfoString.auto_commit)
             if self.app.cm_attr.cfg.auto_commit is True:
-                info_lines.append(OperateString.auto_commit)
+                info_lines.append(OpInfoString.auto_commit)
             if self.app.cm_attr.cfg.auto_push is True:
-                info_lines.append(OperateString.auto_push)
+                info_lines.append(OpInfoString.auto_push)
         else:
-            info_lines.append(
-                "[dim]Apply operation: auto-commit and auto-push not applicable[/]"
+            msg = (
+                "[dim]Apply operation: chezmoi autoadd, autocommit and autopush not "
+                "applicable[/]"
             )
+            info_lines.append(msg)
         self.update("\n".join(info_lines))
         self.border_title = button.btn_enum.op_info_title
         self.border_subtitle = button.btn_enum.op_info_subtitle
@@ -119,7 +123,7 @@ class CommandOutput(ScrollableContainer):
 class OpFeedBack(Vertical):
 
     def compose(self) -> ComposeResult:
-        yield OperateInfo(classes=Tcss.operate_info)
+        yield OperateInfo()
         yield CommandOutput()
 
     def on_mount(self) -> None:
