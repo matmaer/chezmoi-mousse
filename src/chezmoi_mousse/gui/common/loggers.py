@@ -80,12 +80,13 @@ class CmdLog(ScrollableContainer):
     def __init__(self) -> None:
         super().__init__(id=self.app.cm_attr.ids.logs.richlog.cmd)
 
-    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
+    cmd_results: reactive[list[CommandResult] | None] = reactive(None, init=False)
 
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is None:
+    def watch_cmd_results(self, cmd_results: list[CommandResult] | None) -> None:
+        if cmd_results is None:
             return
-        self.mount(CmdResultCollapsible(cmd_result=cmd_result))
+        for result in cmd_results:
+            self.mount(CmdResultCollapsible(cmd_result=result))
 
 
 class RichLoggers(RichLog):
