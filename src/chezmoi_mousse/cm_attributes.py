@@ -99,6 +99,10 @@ class ManagedPaths:
     def no_status_paths(self) -> bool:
         return self.no_apply_paths and self.no_re_add_paths
 
+    @cached_property
+    def no_managed_paths(self) -> bool:
+        return not self.dirs and not self.files
+
     def _get_tag(
         self, context: tuple[StatusCode | None, PathKind | None] = (None, None)
     ) -> str:
