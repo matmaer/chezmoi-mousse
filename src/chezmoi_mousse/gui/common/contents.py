@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from enum import StrEnum
 from pathlib import Path
@@ -10,9 +12,10 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import ReadCmd, TabLabel, Tcss
-
-from .messages import LogCmdResultMsg
+from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.gui.common.actionables import DirContentBtn
+from chezmoi_mousse.gui.common.messages import LogCmdResultMsg
+from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
@@ -34,9 +37,9 @@ class ContentsView(Container):
         read_error = "Error reading path"
         truncated = "\n--- File content truncated to"
 
-    show_path: reactive["Path | None"] = reactive(None, init=False)
+    show_path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.contents)
         self.ids = ids
 
@@ -173,6 +176,41 @@ class ContentsView(Container):
         ReprHighlighter().highlight(text_obj)
         widgets.append(Static(text_obj))
         return ScrollableContainer(*widgets)
+
+    def _dir_contents_widgets(
+        self, dir_path: Path
+    ) -> list[Static | Label | DirContentBtn]:
+        widgets: list[Static | Label | DirContentBtn] = []
+        if dir_path == self.app.cm_attr.cfg.dest_dir:
+            widgets.append(
+                Label("Destination directory", classes=Tcss.main_section_label)
+            )
+        if not self.app.cm_attr.managed.dirs:
+            widgets = [
+                Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
+            ]
+            widgets.append(
+                Static(
+                    "No managed paths are in the chezmoi repository, "
+                    "switch to the Add tab to add some paths.",
+                    classes=Tcss.added,
+                )
+            )
+            return widgets
+        elif self.app.cm_attr.managed.no_status_paths:
+            widgets.append(
+                Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
+            )
+            widgets.append(
+                Static(
+                    "No diffs are available because no paths have a status. Toggle "
+                    "the 'Show unchanged paths' switch to view all managed paths.",
+                    classes=Tcss.info,
+                )
+            )
+            return widgets
+
+        return widgets
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
