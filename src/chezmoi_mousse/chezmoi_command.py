@@ -1,5 +1,5 @@
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from enum import Enum
 from pathlib import Path
 from subprocess import CompletedProcess, run
@@ -191,6 +191,11 @@ class CmdResults:
     template_data: CommandResult
     unmanaged_dirs: CommandResult
     unmanaged_files: CommandResult
+
+    @classmethod
+    def get_all_command_results(cls) -> list[CommandResult]:
+        # Will raise AttributeError as soon as it hits any unassigned field name
+        return [getattr(cls, field.name) for field in fields(cls)]
 
 
 class ChezmoiCommand:
