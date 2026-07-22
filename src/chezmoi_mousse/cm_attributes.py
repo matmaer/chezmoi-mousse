@@ -61,7 +61,6 @@ class ChangedPaths:
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class ManagedPaths:
-    dest_dir: Path
     classic_theme_vars: dict[str, str]
     dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
     files: dict[Path, PathKind] = field(default_factory=lambda: {})
@@ -139,7 +138,6 @@ class CmAttributes:
     cfg: ParsedConfig
     managed: ManagedPaths
     template_data: ParsedJson
-    dest_dir: Path
 
     # initialize in main.py before calling .run() on the app instance
     classic_theme_vars: dict[str, str]
@@ -207,7 +205,7 @@ class CmAttributes:
         s_parents = set(chain.from_iterable(p.parents for p in chain(s_dirs, s_files)))
 
         for p in s_parents - s_dirs:
-            if not p.is_relative_to(cls.dest_dir) or p == cls.dest_dir:
+            if not p.is_relative_to(cls.cfg.dest_dir) or p == cls.cfg.dest_dir:
                 continue
             else:
                 n_dirs.add(p)
@@ -229,7 +227,6 @@ class CmAttributes:
         re_add_dirs = cls._status_dict(CmdResults.status_dirs.out_lines, 0)
         re_add_files = cls._status_dict(CmdResults.status_files.out_lines, 0)
         cls.managed = ManagedPaths(
-            dest_dir=cls.cfg.dest_dir,
             classic_theme_vars={},
             dirs=cls._path_kind_dict(CmdResults.managed_dirs),
             files=cls._path_kind_dict(CmdResults.managed_files),
