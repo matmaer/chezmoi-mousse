@@ -18,7 +18,7 @@ from chezmoi_mousse.gui.common.messages import LogCmdResultMsg
 from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
 
 __all__ = ["ContentsView"]
 

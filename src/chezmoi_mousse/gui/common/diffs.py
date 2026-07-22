@@ -14,7 +14,7 @@ from chezmoi_mousse import ReadCmd, StatusCode, TabLabel, Tcss
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
 
 __all__ = ["DiffView"]
 

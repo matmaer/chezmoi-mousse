@@ -17,9 +17,27 @@ from chezmoi_mousse.cm_command import (
 from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.type_checking import ParsedJson
+    from chezmoi_mousse.cm_type_checking import ParsedJson
 
 __all__ = ["CmAttributes"]
+
+
+def get_unchanged_dir_paths_in(dir_path: Path, managed_files: set[Path]) -> list[Path]:
+    results: set[Path] = set()
+    for path in managed_files:
+        if path != dir_path and path.is_relative_to(dir_path):
+            results.add(path)
+    return sorted(results)
+
+
+def get_unchanged_file_paths_in(
+    dir_path: Path, managed_dirs: dict[Path, str]
+) -> list[Path]:
+    results: set[Path] = set()
+    for path in managed_dirs:
+        if path.is_relative_to(dir_path):
+            results.add(path)
+    return sorted(results)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

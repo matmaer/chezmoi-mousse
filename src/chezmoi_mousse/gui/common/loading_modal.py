@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from chezmoi_mousse.cm_command import CommandResult
-    from chezmoi_mousse.type_checking import ChezmoiGui
+    from chezmoi_mousse.cm_type_checking import ChezmoiGui
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
@@ -62,7 +62,7 @@ class LoadingModal(ModalScreen[None]):
 
     def __init__(self, btn_enum: OpBtnEnum | None) -> None:
         self.btn_enum: OpBtnEnum | None = btn_enum
-        self.cmd_results: list[CommandResult] = []
+        self.results: list[CommandResult] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -93,15 +93,13 @@ class LoadingModal(ModalScreen[None]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: "ReadCmd") -> None:
-        cmd_result: CommandResult = self.app.cm_attr.command.run(read_cmd)
-        self.cmd_results.append(cmd_result)
+        self.results.append(self.app.cm_attr.command.run(read_cmd))
 
     @work(thread=True, exit_on_error=False)
     @min_wait
     async def _run_write_command(self, btn_enum: "OpBtnEnum") -> None:
         if btn_enum.path_arg == self.app.cm_attr.cfg.dest_dir:
             btn_enum.path_arg = None
-        cmd_result: CommandResult = self.app.cm_attr.command.run(
-            btn_enum.write_cmd, path_arg=btn_enum.path_arg
+        self.results.append(
+            self.app.cm_attr.command.run(btn_enum.write_cmd, path_arg=btn_enum.path_arg)
         )
-        self.cmd_results.append(cmd_result)

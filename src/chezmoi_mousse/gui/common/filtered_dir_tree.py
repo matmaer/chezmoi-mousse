@@ -10,7 +10,7 @@ from textual.widgets import DirectoryTree
 from chezmoi_mousse import Chars
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.type_checking import ChezmoiGui
+    from chezmoi_mousse.cm_type_checking import ChezmoiGui
 
 __all__ = ["FilteredDirTree"]
 

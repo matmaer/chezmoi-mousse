@@ -43,7 +43,7 @@ from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
