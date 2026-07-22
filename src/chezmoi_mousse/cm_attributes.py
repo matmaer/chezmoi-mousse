@@ -14,7 +14,7 @@ from chezmoi_mousse.chezmoi_command import (
     ReadCmd,
     WriteCmd,
 )
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 if TYPE_CHECKING:
     from chezmoi_mousse.type_checking import ParsedJson
@@ -48,44 +48,13 @@ class ManagedPaths:
     dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
     files: dict[Path, PathKind] = field(default_factory=lambda: {})
     apply_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    apply_n_dirs: set[Path] = field(default_factory=lambda: set())
     apply_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    re_add_n_dirs: set[Path] = field(default_factory=lambda: set())
     re_add_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     re_add_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
     dirs_not_managed: dict[Path, PathKind] = field(default_factory=lambda: {})
     files_not_managed: dict[Path, PathKind] = field(default_factory=lambda: {})
-
-    def _get_n_dirs(self, tab_label: TabLabel) -> set[Path]:
-        n_dirs: set[Path] = set()
-
-        # s_dirs var to exclude dirs with a real status and their parents
-        # s_files to consider all files with a real status their parents
-        if tab_label == TabLabel.apply:
-            s_dirs: set[Path] = set(self.apply_dirs)
-            s_files: set[Path] = set(self.apply_files)
-        elif tab_label == TabLabel.re_add:
-            s_dirs: set[Path] = set(self.re_add_dirs)
-            s_files: set[Path] = set(self.re_add_files)
-
-        else:
-            raise ValueError(f"Trying to get n_dirs for tab {tab_label}")
-
-        # all dirs with status descendants
-        s_parents = set(chain.from_iterable(p.parents for p in chain(s_dirs, s_files)))
-
-        for p in s_parents - s_dirs:
-            if not p.is_relative_to(self.dest_dir) or p == self.dest_dir:
-                continue
-            else:
-                n_dirs.add(p)
-        return n_dirs
-
-    @cached_property
-    def apply_n_dirs(self) -> set[Path]:
-        return self._get_n_dirs(TabLabel.apply)
-
-    @cached_property
-    def re_add_n_dirs(self) -> set[Path]:
-        return self._get_n_dirs(TabLabel.re_add)
 
     @cached_property
     def no_apply_paths(self) -> bool:
@@ -152,6 +121,7 @@ class CmAttributes:
     cfg: ParsedConfig
     managed: ManagedPaths
     template_data: ParsedJson
+    dest_dir: Path
 
     # initialize in main.py before calling .run() on the app instance
     classic_theme_vars: dict[str, str]
@@ -200,18 +170,41 @@ class CmAttributes:
         return result
 
     @classmethod
+    def _n_dirs(cls, s_dirs: set[Path], s_files: set[Path]) -> set[Path]:
+        n_dirs: set[Path] = set()
+
+        # s_dirs var to exclude dirs with a real status and their parents
+        # s_files to consider all files with a real status their parents
+
+        # all dirs with status descendants
+        s_parents = set(chain.from_iterable(p.parents for p in chain(s_dirs, s_files)))
+
+        for p in s_parents - s_dirs:
+            if not p.is_relative_to(cls.dest_dir) or p == cls.dest_dir:
+                continue
+            else:
+                n_dirs.add(p)
+        return n_dirs
+
+    @classmethod
     def update_managed_attr(cls) -> None:
+        apply_dirs = cls._status_dict(CmdResults.status_dirs.out_lines, 1)
+        apply_files = cls._status_dict(CmdResults.status_files.out_lines, 1)
+        re_add_dirs = cls._status_dict(CmdResults.status_dirs.out_lines, 0)
+        re_add_files = cls._status_dict(CmdResults.status_files.out_lines, 0)
         cls.managed = ManagedPaths(
             dest_dir=cls.cfg.dest_dir,
             classic_theme_vars={},
             dirs=cls._path_kind_dict(CmdResults.managed_dirs),
             files=cls._path_kind_dict(CmdResults.managed_files),
-            apply_dirs=cls._status_dict(CmdResults.status_dirs.out_lines, 1),
-            apply_files=cls._status_dict(CmdResults.status_files.out_lines, 1),
-            re_add_dirs=cls._status_dict(CmdResults.status_dirs.out_lines, 0),
-            re_add_files=cls._status_dict(CmdResults.status_files.out_lines, 0),
+            apply_dirs=apply_dirs,
+            apply_files=apply_files,
+            re_add_dirs=re_add_dirs,
+            re_add_files=re_add_files,
             dirs_not_managed=cls._path_kind_dict(CmdResults.unmanaged_dirs),
             files_not_managed=cls._path_kind_dict(CmdResults.unmanaged_dirs),
+            apply_n_dirs=cls._n_dirs(set(apply_dirs), set(apply_files)),
+            re_add_n_dirs=cls._n_dirs(set(re_add_dirs), set(re_add_files)),
         )
 
     @staticmethod
