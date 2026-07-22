@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
@@ -48,13 +48,13 @@ class ManagedPaths:
     dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
     files: dict[Path, PathKind] = field(default_factory=lambda: {})
     apply_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    apply_n_dirs: set[Path] = field(default_factory=lambda: set())
     apply_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    re_add_n_dirs: set[Path] = field(default_factory=lambda: set())
+    apply_n_dirs: set[Path] = field(default_factory=lambda: set())
     re_add_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     re_add_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    dirs_not_managed: dict[Path, PathKind] = field(default_factory=lambda: {})
-    files_not_managed: dict[Path, PathKind] = field(default_factory=lambda: {})
+    re_add_n_dirs: set[Path] = field(default_factory=lambda: set())
+    unmanaged_dirs: list[Path] = field(default_factory=lambda: [])
+    unmanaged_files: list[Path] = field(default_factory=lambda: [])
 
     @cached_property
     def no_apply_paths(self) -> bool:
@@ -130,17 +130,18 @@ class CmAttributes:
     command: ChezmoiCommand = ChezmoiCommand()
     ids: TabIds = TabIds()
     changes: ChangedPaths = ChangedPaths()
+    loading_modal_results: list[CommandResult] = field(default_factory=lambda: [])
 
-    @staticmethod
-    def _status_dict(lines: list[str], column: int) -> dict[Path, StatusCode]:
+    @classmethod
+    def _status_dict(cls, lines: list[str], column: int) -> dict[Path, StatusCode]:
         return {
             Path(line[3:]): StatusCode(line[column])
             for line in lines
             if line[column] != StatusCode.Space
         }
 
-    @staticmethod
-    def _path_kind_dict(command_result: CommandResult) -> dict[Path, PathKind]:
+    @classmethod
+    def _path_kind_dict(cls, command_result: CommandResult) -> dict[Path, PathKind]:
         result: dict[Path, PathKind] = {}
         paths: list[Path] = [Path(line) for line in command_result.out_lines]
         symlink_error = (
@@ -170,7 +171,15 @@ class CmAttributes:
         return result
 
     @classmethod
-    def _n_dirs(cls, s_dirs: set[Path], s_files: set[Path]) -> set[Path]:
+    def _path_list(cls, command_result: CommandResult) -> list[Path]:
+        return [Path(line) for line in command_result.out_lines]
+
+    @classmethod
+    def _path_set(cls, command_result: CommandResult) -> set[Path]:
+        return {Path(line) for line in command_result.out_lines}
+
+    @classmethod
+    def _compute_n_dirs(cls, s_dirs: set[Path], s_files: set[Path]) -> set[Path]:
         n_dirs: set[Path] = set()
 
         # s_dirs var to exclude dirs with a real status and their parents
@@ -187,6 +196,15 @@ class CmAttributes:
         return n_dirs
 
     @classmethod
+    def get_command_result(cls, command: ReadCmd | WriteCmd) -> CommandResult:
+        # will raise AttributeError if we get it before set
+        return getattr(CmdResults, str(command.name))
+
+    @classmethod
+    def get_all_command_results(cls) -> list[CommandResult]:
+        return [getattr(cls, field.name) for field in fields(cls)]
+
+    @classmethod
     def update_managed_attr(cls) -> None:
         apply_dirs = cls._status_dict(CmdResults.status_dirs.out_lines, 1)
         apply_files = cls._status_dict(CmdResults.status_files.out_lines, 1)
@@ -199,19 +217,10 @@ class CmAttributes:
             files=cls._path_kind_dict(CmdResults.managed_files),
             apply_dirs=apply_dirs,
             apply_files=apply_files,
+            apply_n_dirs=cls._compute_n_dirs(set(apply_dirs), set(apply_files)),
             re_add_dirs=re_add_dirs,
             re_add_files=re_add_files,
-            dirs_not_managed=cls._path_kind_dict(CmdResults.unmanaged_dirs),
-            files_not_managed=cls._path_kind_dict(CmdResults.unmanaged_dirs),
-            apply_n_dirs=cls._n_dirs(set(apply_dirs), set(apply_files)),
-            re_add_n_dirs=cls._n_dirs(set(re_add_dirs), set(re_add_files)),
+            re_add_n_dirs=cls._compute_n_dirs(set(re_add_dirs), set(re_add_files)),
+            unmanaged_dirs=CmdResults.unmanaged_dirs.path_list,
+            unmanaged_files=CmdResults.unmanaged_files.path_list,
         )
-
-    @staticmethod
-    def get_command_result(command: ReadCmd | WriteCmd) -> CommandResult:
-        # will raise AttributeError if we get it before set
-        return getattr(CmdResults, command.name)
-
-    @staticmethod
-    def get_all_command_results() -> list[CommandResult]:
-        return CmdResults.get_all_command_results()

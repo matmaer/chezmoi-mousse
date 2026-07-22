@@ -203,7 +203,7 @@ class CommandResult:
         return set(self.path_list)
 
 
-@dataclass(slots=False, frozen=False, kw_only=True)
+@dataclass(slots=False, frozen=False, kw_only=True)  # be explicit
 class CmdResults:
     # will raise attribute error if field is not set
     cat_config: CommandResult
@@ -219,10 +219,15 @@ class CmdResults:
     unmanaged_dirs: CommandResult
     unmanaged_files: CommandResult
 
+    # methods below raise AttributeError when field is not assigned as slots=False
+
     @classmethod
     def get_all_command_results(cls) -> list[CommandResult]:
-        # Will raise AttributeError as soon as it hits any unassigned field name
         return [getattr(cls, field.name) for field in fields(cls)]
+
+    @classmethod
+    def get_command_results(cls, field_name: str) -> CommandResult:
+        return getattr(cls, field_name)
 
 
 class ChezmoiCommand:
