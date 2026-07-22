@@ -100,17 +100,6 @@ class ManagedTree(Tree[Path]):
         self.guide_depth: int = 3
         self._tree_state = TreeState(nodes=set())
 
-    def _create_colored_label(self, path: Path) -> str:
-        color = "dim"
-        if path in self.app.cm_attr.sets.status_paths:
-            color = self.app.theme_variables.get("text-success", "#FF0000")
-        else:
-            color = self.app.theme_variables.get("accent-darken-3", "#FF0000")
-            return f"[{color}]{path.name}[/]"  # unmanaged paths always exist
-
-        italic = " italic" if not path.exists() else ""
-        return f"[{color}{italic}]{path.name}[/]"
-
     def _update_tree_state(self, node_set: set[TreeNode[Path]]) -> None:
         self._tree_state.nodes = node_set
 
@@ -157,7 +146,7 @@ class ManagedTree(Tree[Path]):
         for node in current_nodes:
             if (
                 node.data in self.app.cm_attr.changes.removed_paths
-                and node.data not in self.app.cm_attr.sets.managed_dirs
+                and node.data not in self.app.cm_attr.managed.dirs
             ):
                 node.remove_children()
                 node.remove()
@@ -216,7 +205,7 @@ class ManagedTree(Tree[Path]):
             )
             raise ValueError(msg)
 
-        node_label = self._create_colored_label(path)
+        node_label = "placeholder"
         before_node = next(
             (
                 n
@@ -225,7 +214,7 @@ class ManagedTree(Tree[Path]):
             ),
             None,
         )
-        if path in self.app.cm_attr.sets.managed_files or path.is_file():
+        if path in self.app.cm_attr.managed.files or path.is_file():
             parent_node.add_leaf(node_label, data=path, before=before_node)
         else:
             parent_node.add(node_label, data=path, before=before_node)
