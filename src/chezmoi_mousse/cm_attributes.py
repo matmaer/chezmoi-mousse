@@ -225,3 +225,7 @@ class CmAttributes:
     def get_command_result(command: ReadCmd | WriteCmd) -> CommandResult:
         # will raise AttributeError if we get it before set
         return getattr(CmdResults, command.name)
+
+    @staticmethod
+    def get_all_command_result() -> list[CommandResult]:
+        return CmdResults.get_all_command_results()
