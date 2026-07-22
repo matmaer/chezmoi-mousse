@@ -150,7 +150,7 @@ class CatConfigView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
-        yield Static(self.app.cm_attr.get_cmd_result(ReadCmd.cat).std_out)
+        yield Static(self.app.cm_attr.get_command_result(ReadCmd.cat).std_out)
 
 
 class IgnoredView(Vertical):
@@ -162,9 +162,7 @@ class IgnoredView(Vertical):
 
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
         yield ScrollableContainer(
-            Pretty(
-                self.app.cm_attr.get_cmd_result(ReadCmd.ignored).std_out.splitlines()
-            )
+            Pretty(self.app.cm_attr.get_command_result(ReadCmd.ignored).out_lines)
         )
 
 
@@ -193,7 +191,7 @@ class TemplateDataView(Vertical):
 
     def on_mount(self) -> None:
         pretty_widget = self.query_exactly_one(Pretty)
-        pretty_widget.update(self.app.cm_attr.parsed_json[ReadCmd.dump_config])
+        pretty_widget.update(self.app.cm_attr.template_data)
 
 
 class ConfigTab(TabPane):
@@ -377,41 +375,9 @@ class DebugTab(TabPane):
         self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
 
     def _list_existing_test_paths(self) -> str:
-        colored_paths: list[str] = []
-        for path in self.test_paths.get_existing_test_paths():
-            if path in self.app.cm_attr.sets.managed_dirs:
-                if path not in self.app.cm_attr.sets.status_dirs:
-                    colored_paths.append(f"{TestPathColors.managed_dir}{path}[/]")
-                elif path in self.app.cm_attr.sets.status_dirs:
-                    colored_paths.append(f"{TestPathColors.status_dir}{path}[/]")
-            elif path in self.app.cm_attr.sets.managed_files:
-                if path not in self.app.cm_attr.sets.status_files:
-                    colored_paths.append(f"{TestPathColors.managed_file}{path}[/]")
-                elif path in self.app.cm_attr.sets.status_files:
-                    colored_paths.append(f"{TestPathColors.status_file}{path}[/]")
-            elif path not in self.app.cm_attr.sets.managed_paths:
-                if path.is_dir():
-                    colored_paths.append(f"{TestPathColors.unmanaged_dir}{path}[/]")
-                if path.is_file():
-                    colored_paths.append(f"{TestPathColors.unmanaged_file}{path}[/]")
-            else:
-                colored_paths.append(f"{TestPathColors.unhandled}{path}[/]")
-
-        if colored_paths:
-            colored_paths.extend(
-                [
-                    "\n[bold]Color legend:[/]",
-                    f"{TestPathColors.managed_dir}Managed dir[/]",
-                    f"{TestPathColors.status_dir}Status dir[/]",
-                    f"{TestPathColors.unmanaged_dir}Unmanaged dir[/]",
-                    f"{TestPathColors.managed_file}Managed file[/]",
-                    f"{TestPathColors.status_file}Status file[/]",
-                    f"{TestPathColors.unmanaged_file}Unmanaged file[/]",
-                    f"{TestPathColors.unhandled}Unhandled condition[/]",
-                    "\n",
-                ]
-            )
-            return "\n".join(colored_paths)
+        path_lines = "\n".join(f"{self.test_paths.get_existing_test_paths()}")
+        if path_lines:
+            return path_lines
         else:
             return "[$text-warning bold]No test paths exist.[/]"
 

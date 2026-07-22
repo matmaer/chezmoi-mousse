@@ -112,7 +112,11 @@ class OperateButtons(HorizontalGroup):
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
 
     def on_mount(self) -> None:
-        no_changed_paths = self.app.cm_attr.managed.no_changed_paths(self.ids.tab_label)
+        if self.ids.tab_label == TabLabel.apply:
+            no_changed_paths: bool = self.app.cm_attr.managed.no_apply_paths
+        else:
+            no_changed_paths: bool = self.app.cm_attr.managed.no_re_add_paths
+
         # disable apply and re-add review button if no unchanged paths
         if self.ids.tab_label == TabLabel.apply:
             review_btn = self.query_one(self.ids.op_btn.apply_review_q, OpButton)
