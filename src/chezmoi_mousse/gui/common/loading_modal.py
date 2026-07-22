@@ -12,7 +12,6 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
 from chezmoi_mousse import OpBtnEnum, ReadCmd
-from chezmoi_mousse.cm_attributes import ManagedPaths
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -82,15 +81,14 @@ class LoadingModal(ModalScreen[None]):
         label.update(label_text)
 
     @work
-    async def run_all_read_cmds(self) -> None:
-        for read_cmd in ReadCmd.managed_status_commands():
+    async def run_managed_commands(self) -> None:
+        for read_cmd in ReadCmd.chezmoi_managed_commands():
             await self._run_read_command(read_cmd).wait()
-        await self._update_cm_attr().wait()
 
     @work
     async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
         await self._run_write_command(btn_enum).wait()
-        await self.run_all_read_cmds().wait()
+        await self.run_managed_commands().wait()
 
     @work(thread=True)
     @min_wait
@@ -107,17 +105,3 @@ class LoadingModal(ModalScreen[None]):
             btn_enum.write_cmd, path_arg=btn_enum.path_arg
         )
         self.cmd_results.append(cmd_result)
-
-    @work(thread=True)
-    @min_wait
-    async def _update_cm_attr(self) -> None:
-        self.label_text = LoadingLabel.update_changed_and_cached.with_color
-
-        self.previous_managed_paths: ManagedPaths = self.app.cm_attr.managed_paths
-        self.app.cm_attr.update_attributes(
-            read_commands=ReadCmd.managed_status_commands()
-        )
-
-        # ^ symmetric difference: elements that exist in either set, but not in both
-        # & intersection: elements that exist in both sets
-        # | union: all elements that exist in either set
