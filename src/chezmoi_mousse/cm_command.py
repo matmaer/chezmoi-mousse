@@ -1,6 +1,7 @@
 import shutil
 from dataclasses import dataclass, fields
 from enum import Enum
+from functools import cached_property
 from pathlib import Path
 from subprocess import CompletedProcess, run
 
@@ -156,7 +157,7 @@ class WriteCmd(Enum):
         return self.value[0]
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(frozen=True, kw_only=True)
 class CommandResult:
     dry_run: bool
     full_cmd: str
@@ -167,13 +168,39 @@ class CommandResult:
     std_out: str
     verb_cmd: ReadCmd | WriteCmd
 
-    @property
+    @cached_property
     def pretty_cmd(self) -> str:
         return f"chezmoi {self.pretty_args}"
 
-    @property
+    @cached_property
     def out_lines(self) -> list[str]:
         return self.std_out.splitlines()
+
+    @cached_property
+    def valid_paths_cmd(self) -> bool:  # Fixed return hint
+        if self.verb_cmd not in (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.unmanaged_dirs,
+            ReadCmd.unmanaged_files,
+        ):
+            raise AttributeError(
+                f"Path attributes are not relevant for command '{self.verb_cmd}'"
+            )
+        return True
+
+    @cached_property
+    def path_list(self) -> list[Path]:
+        _ = self.valid_paths_cmd
+        if self.verb_cmd in (ReadCmd.status_dirs, ReadCmd.status_files):
+            return [Path(p[3:]) for p in self.out_lines]
+        return [Path(p) for p in self.out_lines]
+
+    @cached_property
+    def path_set(self) -> set[Path]:
+        return set(self.path_list)
 
 
 @dataclass(slots=False, frozen=False, kw_only=True)
@@ -241,6 +268,19 @@ class ChezmoiCommand:
     def run(
         self, verb_cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
     ) -> CommandResult:
+
+        def trim_blank_lines(stdout: str) -> str:
+            # normally not needed as chezmoi output is clean, however do not call
+            # .strip() on status lines or we lose the leading spaces in status output
+            lines = stdout.splitlines()
+            start = 0
+            end = len(lines)
+            while start < end and not lines[start].strip():
+                start += 1
+            while end > start and not lines[end - 1].strip():
+                end -= 1
+            return "\n".join(lines[start:end])
+
         chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
         if self.dry_run:
             chezmoi_args += GlobalArgs.dry_run.value
@@ -259,8 +299,8 @@ class ChezmoiCommand:
             path_arg=path_arg,
             pretty_args=" ".join(self._get_pretty_args(verb_cmd, path_arg)),
             returncode=completed_process.returncode,
-            std_err=completed_process.stderr.strip(),
-            std_out=completed_process.stdout.strip(),
+            std_err=trim_blank_lines(completed_process.stderr),
+            std_out=trim_blank_lines(completed_process.stdout),
             verb_cmd=verb_cmd,
         )
         setattr(CmdResults, verb_cmd.name, command_result)
