@@ -62,9 +62,9 @@ class LoadingModal(ModalScreen[None]):
     label_text: reactive[str | None] = reactive(None, init=False)
 
     def __init__(self, btn_enum: OpBtnEnum | None) -> None:
-        super().__init__()
         self.btn_enum: OpBtnEnum | None = btn_enum
         self.cmd_results: list[CommandResult] = []
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
