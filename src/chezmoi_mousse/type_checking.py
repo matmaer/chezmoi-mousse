@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     from typing import Any
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_attributes import TabIds
     from chezmoi_mousse.str_enums import StatusCode, TabLabel
     from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -18,6 +17,5 @@ if TYPE_CHECKING:
         "ParsedJson",
         "StatusCode",
         "StatusDict",
-        "TabIds",
         "TabLabel",
     )

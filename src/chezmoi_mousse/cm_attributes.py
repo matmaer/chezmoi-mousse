@@ -6,7 +6,7 @@ from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.app_ids import AppIds
+from chezmoi_mousse.app_ids import TabIds
 from chezmoi_mousse.chezmoi_command import (
     ChezmoiCommand,
     CmdResults,
@@ -39,16 +39,6 @@ class ChangedPaths:
     @classmethod
     def clear_changes(cls) -> None:
         cls.changes = ChangedPaths()
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class TabIds:
-    add = AppIds(TabLabel.add)
-    apply = AppIds(TabLabel.apply)
-    config = AppIds(TabLabel.config)
-    debug = AppIds(TabLabel.debug)
-    logs = AppIds(TabLabel.logs)
-    re_add = AppIds(TabLabel.re_add)
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -154,18 +144,17 @@ class ParsedConfig:
 
 @dataclass
 class CmAttributes:
-
-    # initialize in main.py before calling .run() on the app instance
-    classic_theme_vars: dict[str, str]
-    command: ChezmoiCommand
-    ids: TabIds
-
     # initialize in splash_screen.py before we push the MainScreen
     cfg: ParsedConfig
     managed: ManagedPaths
     template_data: ParsedJson
 
-    # initialize empty
+    # initialize in main.py before calling .run() on the app instance
+    classic_theme_vars: dict[str, str]
+
+    # initialize right away
+    command: ChezmoiCommand = ChezmoiCommand()
+    ids: TabIds = TabIds()
     changes: ChangedPaths = ChangedPaths()
 
     @staticmethod
@@ -227,5 +216,5 @@ class CmAttributes:
         return getattr(CmdResults, command.name)
 
     @staticmethod
-    def get_all_command_result() -> list[CommandResult]:
+    def get_all_command_results() -> list[CommandResult]:
         return CmdResults.get_all_command_results()
