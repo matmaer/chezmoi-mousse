@@ -18,7 +18,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse import ReadCmd
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.chezmoi_command import CommandResult
+    from chezmoi_mousse.cm_command import CommandResult
     from chezmoi_mousse.type_checking import ChezmoiGui
 
 __all__ = ["SplashScreen"]

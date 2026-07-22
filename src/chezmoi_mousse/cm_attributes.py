@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import TabIds
-from chezmoi_mousse.chezmoi_command import (
+from chezmoi_mousse.cm_command import (
     ChezmoiCommand,
     CmdResults,
     CommandResult,

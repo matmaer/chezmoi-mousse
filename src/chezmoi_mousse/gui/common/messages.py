@@ -7,7 +7,7 @@ from textual.message import Message
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.chezmoi_command import CommandResult
+    from chezmoi_mousse.cm_command import CommandResult
     from chezmoi_mousse.type_checking import AppIds
 
 
