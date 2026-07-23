@@ -14,7 +14,7 @@ from chezmoi_mousse import ReadCmd, StatusCode, TabLabel, Tcss
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 __all__ = ["DiffView"]
 
@@ -46,10 +46,12 @@ class DiffView(Container):
     def _create_diff_widgets(self, path: Path) -> list[Label | Static]:
         widgets: list[Label | Static] = []
         if self.ids.tab_label == TabLabel.apply:
-            diff_result = self.app.cm_attr.command.run(ReadCmd.diff, path_arg=path)
+            diff_result = self.app.cm_attr.command.run(
+                dry_run=False, cmd=ReadCmd.diff, path_arg=path
+            )
         else:  # re-add tab
             diff_result = self.app.cm_attr.command.run(
-                ReadCmd.diff_reverse, path_arg=path
+                dry_run=False, cmd=ReadCmd.diff_reverse, path_arg=path
             )
         self.post_message(LogCmdResultMsg(diff_result))
         diff_lines = diff_result.std_out.splitlines()

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from textual import getters, on
+from textual import getters, on, work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.widgets import (
@@ -21,7 +21,6 @@ from chezmoi_mousse import (
     FlatBtnLabel,
     OpBtnEnum,
     OpBtnLabel,
-    ReadCmd,
     SectionLabel,
     TabLabel,
     Tcss,
@@ -43,7 +42,7 @@ from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
@@ -60,7 +59,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(self.app.cm_attr.cfg.dest_dir),
+                FilteredDirTree(self.app.cm_attr.dest_dir),
                 OpButton(
                     btn_enum=OpBtnEnum.refresh_tree,
                     btn_id=self.ids.op_btn.refresh_tree,
@@ -78,8 +77,8 @@ class AddTab(TabPane):
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.add_tab_contents_view)
-        self.contents_view.border_title = f" {self.app.cm_attr.cfg.dest_dir} "
-        self.contents_view.show_path = self.app.cm_attr.cfg.dest_dir
+        self.contents_view.border_title = f" {self.app.cm_attr.dest_dir} "
+        self.contents_view.show_path = self.app.cm_attr.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
 
     @on(DirectoryTree.FileSelected)
@@ -91,8 +90,8 @@ class AddTab(TabPane):
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
         self.contents_view.show_path = event.node.data.path
-        if event.node.data.path == self.app.cm_attr.cfg.dest_dir:
-            self.contents_view.border_title = f" {self.app.cm_attr.cfg.dest_dir} "
+        if event.node.data.path == self.app.cm_attr.dest_dir:
+            self.contents_view.border_title = f" {self.app.cm_attr.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
@@ -150,7 +149,9 @@ class CatConfigView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
-        yield Static(self.app.cm_attr.get_command_result(ReadCmd.cat).std_out)
+        yield Static("Loading...")
+
+        # Todo implement updating Static
 
 
 class IgnoredView(Vertical):
@@ -161,9 +162,17 @@ class IgnoredView(Vertical):
     def compose(self) -> ComposeResult:
 
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
-        yield ScrollableContainer(
-            Pretty(self.app.cm_attr.get_command_result(ReadCmd.ignored).out_lines)
-        )
+        yield ScrollableContainer(Pretty("Loading..."))
+
+    def on_mount(self) -> None:
+        self.update_pretty_ignored()
+
+    @work
+    def update_pretty_ignored(self) -> None:
+        pretty_ignored: Pretty = self.query_exactly_one(Pretty)
+        pretty_ignored.update("Loading...")
+
+        # TODO: implement updating Pretty
 
 
 class DiagramView(Vertical):

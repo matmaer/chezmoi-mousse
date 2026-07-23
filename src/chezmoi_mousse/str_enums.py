@@ -1,4 +1,4 @@
-from enum import StrEnum, auto
+from enum import Enum, StrEnum, auto
 
 __all__ = [
     "BindingAction",
@@ -110,8 +110,128 @@ class PathKind(StrEnum):
     dir_not_managed = auto()
     file_not_managed = auto()
 
+    # these are managed dirs, have no status but have status descendants
+    apply_n_dir = auto()  # column 1 in chezmoi status output
+    re_add_n_dir = auto()  # column 2 in chezmoi status output
+
     # this should not happen as we set "--mode=file" globally
     symlink = auto()
+
+
+class PathFilters(Enum):
+
+    UNWANTED_DIRS = (
+        ".build",
+        ".bundle",
+        ".dart_tool",
+        ".DS_Store",
+        ".env",
+        ".ipynb_checkpoints",
+        ".mozilla",
+        ".Trash",
+        ".venv",
+        "bin",
+        "CMakeFiles",
+        "Crash Reports",
+        "DerivedData",
+        "Desktop",
+        "Documents",
+        "Downloads",
+        "extensions",
+        "go-build",
+        "Music",
+        "node_modules",
+        "Pictures",
+        "Public",
+        "Recent",
+        "temp",
+        "Temp",
+        "Templates",
+        "tmp",
+        "trash",
+        "Trash",
+        "Videos",
+    )
+
+    KEY_FILE_NAMES = (
+        # As we don't support adding encrypted files yet, we are excluding them.
+        # Common private key file names across platforms
+        "id_rsa",
+        "id_dsa",
+        "id_ecdsa",
+        "id_ed25519",
+        "id_ecdsa_sk",  # FIDO/U2F ECDSA
+        "id_ed25519_sk",  # FIDO/U2F Ed25519
+        "identity",  # Legacy RSA1
+        # Age encryption tool
+        "age-key.txt",
+        "keys.txt",  # common age key file name
+        # Generic private key naming conventions
+        "private_key",
+        "privatekey",
+        "priv_key",
+        "privkey",
+        # Terraform / cloud provider credentials
+        "terraform.tfvars",  # often contains secrets
+        "credentials",  # AWS credentials file pattern
+        # Kubernetes
+        "kubeconfig",
+        # Wireguard
+        "wg0.conf",  # contains PrivateKey
+        "privatekey",
+    )
+
+    KEY_FILE_EXTENSIONS = (
+        # Common private key file extensions
+        # PuTTY private key files
+        ".ppk",
+        # GPG / PGP private key exports
+        ".gpg",
+        ".pgp",
+        ".asc",
+        # SSL/TLS private keys
+        ".key",
+        ".p12",
+        ".pfx",
+        # Generic private key naming conventions
+        ".pem",
+    )
+
+    UNWANTED_FILE_SUFFIXES = (
+        ".7z",
+        ".AppImage",
+        ".bak",
+        ".bin",
+        ".coverage",
+        ".doc",
+        ".docx",
+        ".egg-info",
+        ".exe",
+        ".gif",
+        ".gz",
+        ".img",
+        ".iso",
+        ".jar",
+        ".jpeg",
+        ".jpg",
+        ".kdbx",
+        ".lock",
+        ".pdf",
+        ".pid",
+        ".png",
+        ".ppk",
+        ".ppt",
+        ".pptx",
+        ".rar",
+        ".swp",
+        ".tar",
+        ".temp",
+        ".tgz",
+        ".tmp",
+        ".xls",
+        ".xlsx",
+        ".zip",
+    )
 
 
 class RichLogName(StrEnum):

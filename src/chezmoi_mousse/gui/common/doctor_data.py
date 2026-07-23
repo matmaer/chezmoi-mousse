@@ -11,7 +11,7 @@ from textual.widgets import Collapsible, DataTable, Label, Link, Static
 from chezmoi_mousse import Chars, ReadCmd, SectionLabel, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import ChezmoiGui
+    from chezmoi_mousse.cm_types import ChezmoiGui
 
 
 __all__ = ["DoctorTable", "PwMgrInfoView"]
@@ -270,7 +270,7 @@ class PwMgrInfoView(Vertical):
 
     @work
     async def _populate_pw_mgr_info(self) -> None:
-        lines: list[str] = self.app.cm_attr.get_command_result(ReadCmd.doctor).out_lines
+        lines: list[str] = self.app.cm_attr.cmd_results.doctor.out_lines
         pw_mgr_data_list: list[PwMgrData] = []
 
         for line in lines[1:]:  # Skip header line

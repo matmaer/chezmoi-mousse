@@ -1,43 +1,19 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import TabIds
-from chezmoi_mousse.cm_command import (
-    ChezmoiCommand,
-    CmdResults,
-    CommandResult,
-    ReadCmd,
-    WriteCmd,
-)
-from chezmoi_mousse.str_enums import PathKind, StatusCode
+from chezmoi_mousse.cm_command import ChezmoiCommand, CommandResult, ReadCmd
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import ParsedJson
+    from chezmoi_mousse.cm_types import ParsedJson
 
 __all__ = ["CmAttributes"]
-
-
-def get_unchanged_dir_paths_in(dir_path: Path, managed_files: set[Path]) -> list[Path]:
-    results: set[Path] = set()
-    for path in managed_files:
-        if path != dir_path and path.is_relative_to(dir_path):
-            results.add(path)
-    return sorted(results)
-
-
-def get_unchanged_file_paths_in(
-    dir_path: Path, managed_dirs: dict[Path, str]
-) -> list[Path]:
-    results: set[Path] = set()
-    for path in managed_dirs:
-        if path.is_relative_to(dir_path):
-            results.add(path)
-    return sorted(results)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -56,22 +32,26 @@ class ChangedPaths:
 
     @classmethod
     def clear_changes(cls) -> None:
-        cls.changes = ChangedPaths()
+        cls.added_paths: list[Path] = []
+        cls.changed_status_paths: list[Path] = []
+        cls.removed_paths: list[Path] = []
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, kw_only=True)
 class ManagedPaths:
-    classic_theme_vars: dict[str, str]
-    dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
-    files: dict[Path, PathKind] = field(default_factory=lambda: {})
+    managed_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
+    managed_files: dict[Path, PathKind] = field(default_factory=lambda: {})
+
     apply_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     apply_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    apply_n_dirs: set[Path] = field(default_factory=lambda: set())
     re_add_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
     re_add_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    re_add_n_dirs: set[Path] = field(default_factory=lambda: set())
-    unmanaged_dirs: list[Path] = field(default_factory=lambda: [])
-    unmanaged_files: list[Path] = field(default_factory=lambda: [])
+
+    apply_n_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
+    re_add_n_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
+
+    unmanaged_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
+    unmanaged_files: dict[Path, PathKind] = field(default_factory=lambda: {})
 
     @cached_property
     def no_apply_paths(self) -> bool:
@@ -87,7 +67,14 @@ class ManagedPaths:
 
     @cached_property
     def no_managed_paths(self) -> bool:
-        return not self.dirs and not self.files
+        return not self.managed_dirs and not self.managed_files
+
+    def clear_cached_properties(self) -> None:
+        # get all properties which have a .clear_cache() method and call it
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if hasattr(attr, "clear_cache"):
+                attr.clear_cache()
 
     def _get_tag(
         self, context: tuple[StatusCode | None, PathKind | None] = (None, None)
@@ -109,55 +96,35 @@ class ManagedPaths:
             tag.append("accent-")
         return f"{tag}]"
 
+    def _compute_n_dirs(
+        self,
+        *,
+        dest_dir: Path,
+        tab_label: TabLabel,
+        s_dirs: set[Path],
+        s_files: set[Path],
+    ) -> dict[Path, PathKind]:
+        n_dirs: dict[Path, PathKind] = {}
 
-@dataclass(frozen=True, kw_only=True)
-class ParsedConfig:
+        path_kind = (
+            PathKind.apply_n_dir
+            if tab_label == TabLabel.apply
+            else PathKind.re_add_n_dir
+        )
 
-    cfg: ParsedJson
+        # s_dirs var to exclude dirs with a real status and their parents
+        # s_files to consider all files with a real status their parents
 
-    @property
-    def dest_dir(self) -> Path:
-        return Path(self.cfg["destDir"])
+        # all dirs with status descendants
+        s_parents = set(chain.from_iterable(p.parents for p in chain(s_dirs, s_files)))
+        for p in s_parents - s_dirs:
+            if not p.is_relative_to(dest_dir) or p == dest_dir:
+                continue
+            else:
+                n_dirs[p] = path_kind
+        return dict(sorted(n_dirs.items()))
 
-    @property
-    def auto_add(self) -> bool:
-        return self.cfg["git"]["autoadd"]
-
-    @property
-    def auto_commit(self) -> bool:
-        return self.cfg["git"]["autocommit"]
-
-    @property
-    def auto_push(self) -> bool:
-        return self.cfg["git"]["autopush"]
-
-
-@dataclass
-class CmAttributes:
-    # initialize in splash_screen.py before we push the MainScreen
-    cfg: ParsedConfig
-    managed: ManagedPaths
-    template_data: ParsedJson
-
-    # initialize in main.py before calling .run() on the app instance
-    classic_theme_vars: dict[str, str]
-
-    # initialize right away
-    command: ChezmoiCommand = ChezmoiCommand()
-    ids: TabIds = TabIds()
-    changes: ChangedPaths = ChangedPaths()
-    loading_modal_results: list[CommandResult] = field(default_factory=lambda: [])
-
-    @classmethod
-    def _status_dict(cls, lines: list[str], column: int) -> dict[Path, StatusCode]:
-        return {
-            Path(line[3:]): StatusCode(line[column])
-            for line in lines
-            if line[column] != StatusCode.Space
-        }
-
-    @classmethod
-    def _path_kind_dict(cls, command_result: CommandResult) -> dict[Path, PathKind]:
+    def _path_kind_dict(self, command_result: CommandResult) -> dict[Path, PathKind]:
         result: dict[Path, PathKind] = {}
         paths: list[Path] = [Path(line) for line in command_result.out_lines]
         symlink_error = (
@@ -186,56 +153,81 @@ class CmAttributes:
                 raise NotImplementedError(f"Path kind not implemented for {path}")
         return result
 
-    @classmethod
-    def _path_list(cls, command_result: CommandResult) -> list[Path]:
-        return [Path(line) for line in command_result.out_lines]
+    def _status_dict(self, lines: list[str], column: int) -> dict[Path, StatusCode]:
+        return {
+            Path(line[3:]): StatusCode(line[column])
+            for line in lines
+            if line[column] != StatusCode.Space
+        }
 
-    @classmethod
-    def _path_set(cls, command_result: CommandResult) -> set[Path]:
-        return {Path(line) for line in command_result.out_lines}
+    def update_fields(
+        self,
+        *,
+        dest_dir: Path,
+        status_dirs: CommandResult,
+        status_files: CommandResult,
+        managed_files: CommandResult,
+        managed_dirs: CommandResult,
+        unmanaged_files: CommandResult,
+        unmanaged_dirs: CommandResult,
+    ) -> None:
 
-    @classmethod
-    def _compute_n_dirs(cls, s_dirs: set[Path], s_files: set[Path]) -> set[Path]:
-        n_dirs: set[Path] = set()
+        self.clear_cached_properties()
 
-        # s_dirs var to exclude dirs with a real status and their parents
-        # s_files to consider all files with a real status their parents
+        apply_dirs = self._status_dict(status_dirs.out_lines, 1)
+        apply_files = self._status_dict(status_files.out_lines, 1)
+        re_add_dirs = self._status_dict(status_dirs.out_lines, 0)
+        re_add_files = self._status_dict(status_files.out_lines, 0)
 
-        # all dirs with status descendants
-        s_parents = set(chain.from_iterable(p.parents for p in chain(s_dirs, s_files)))
-
-        for p in s_parents - s_dirs:
-            if not p.is_relative_to(cls.cfg.dest_dir) or p == cls.cfg.dest_dir:
-                continue
-            else:
-                n_dirs.add(p)
-        return n_dirs
-
-    @classmethod
-    def get_command_result(cls, command: ReadCmd | WriteCmd) -> CommandResult:
-        # will raise AttributeError if we get it before set
-        return getattr(CmdResults, str(command.name))
-
-    @classmethod
-    def get_all_command_results(cls) -> list[CommandResult]:
-        return [getattr(cls, field.name) for field in fields(cls)]
-
-    @classmethod
-    def update_managed_attr(cls) -> None:
-        apply_dirs = cls._status_dict(CmdResults.status_dirs.out_lines, 1)
-        apply_files = cls._status_dict(CmdResults.status_files.out_lines, 1)
-        re_add_dirs = cls._status_dict(CmdResults.status_dirs.out_lines, 0)
-        re_add_files = cls._status_dict(CmdResults.status_files.out_lines, 0)
-        cls.managed = ManagedPaths(
-            classic_theme_vars={},
-            dirs=cls._path_kind_dict(CmdResults.managed_dirs),
-            files=cls._path_kind_dict(CmdResults.managed_files),
-            apply_dirs=apply_dirs,
-            apply_files=apply_files,
-            apply_n_dirs=cls._compute_n_dirs(set(apply_dirs), set(apply_files)),
-            re_add_dirs=re_add_dirs,
-            re_add_files=re_add_files,
-            re_add_n_dirs=cls._compute_n_dirs(set(re_add_dirs), set(re_add_files)),
-            unmanaged_dirs=CmdResults.unmanaged_dirs.path_list,
-            unmanaged_files=CmdResults.unmanaged_files.path_list,
+        self.managed_dirs = self._path_kind_dict(managed_dirs)
+        self.managed_files = self._path_kind_dict(managed_files)
+        self.apply_dirs = apply_dirs
+        self.apply_files = apply_files
+        self.apply_n_dirs = self._compute_n_dirs(
+            dest_dir=dest_dir,
+            tab_label=TabLabel.apply,
+            s_dirs=set(apply_dirs),
+            s_files=set(apply_files),
         )
+        self.re_add_dirs = re_add_dirs
+        self.re_add_files = re_add_files
+        self.re_add_n_dirs = self._compute_n_dirs(
+            dest_dir=dest_dir,
+            tab_label=TabLabel.re_add,
+            s_dirs=set(re_add_dirs),
+            s_files=set(re_add_files),
+        )
+        self.unmanaged_dirs = self._path_kind_dict(unmanaged_dirs)
+        self.unmanaged_files = self._path_kind_dict(unmanaged_files)
+
+
+@dataclass(slots=True, kw_only=True)
+class CmAttributes:
+    ids: TabIds = TabIds()
+    command: ChezmoiCommand = ChezmoiCommand()
+
+    changes: ChangedPaths = ChangedPaths()
+    paths: ManagedPaths = ManagedPaths()
+
+    parsed_config_dump: ParsedJson = field(default_factory=lambda: {})
+    parsed_template_data: ParsedJson = field(default_factory=lambda: {})
+
+    @cached_property
+    def dest_dir(self) -> Path:
+        return Path(self.parsed_config_dump["destDir"])
+
+    @cached_property
+    def auto_add(self) -> bool:
+        return self.parsed_config_dump["git"]["autoadd"]
+
+    @cached_property
+    def auto_commit(self) -> bool:
+        return self.parsed_config_dump["git"]["autocommit"]
+
+    @cached_property
+    def auto_push(self) -> bool:
+        return self.parsed_config_dump["git"]["autopush"]
+
+    @cached_property
+    def template_data(self) -> ParsedJson:
+        return self.parsed_template_data

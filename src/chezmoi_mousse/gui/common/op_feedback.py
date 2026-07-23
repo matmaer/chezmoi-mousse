@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from textual import getters, work
@@ -7,12 +9,14 @@ from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
 from chezmoi_mousse import OpBtnEnum, OpInfoString, Tcss
+from chezmoi_mousse.cm_command import GlobalArgs, WriteCmd
 
 from .actionables import OpButton
-from .loggers import CmdResultCollapsible
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import ChezmoiGui
+    from pathlib import Path
+
+    from chezmoi_mousse.cm_types import ChezmoiGui
 
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 
@@ -22,27 +26,41 @@ class OperateInfo(Static):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    dry_run: reactive[bool] = reactive(True)
-    current_button: OpButton | None = None
+    dry_run: reactive[bool] = reactive(False)
+    current_button: OpButton
+
+    def __init__(self) -> None:
+        self.current_command: WriteCmd | None = None
+        super().__init__(classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
         self.display = False
+        self.dest_dir = self.app.cm_attr.dest_dir
+
+    def review_cmd(self, cmd: WriteCmd, *, path_arg: Path | None = None) -> str:
+        lines: list[str] = ["chezmoi"]
+        if self.dry_run is True:
+            lines.append(GlobalArgs.dry_run.value[0])
+        lines.append(cmd.pretty_verb)
+        if path_arg is not None:
+            lines.append(f"{path_arg.relative_to(self.dest_dir)}")
+        return " ".join(lines)
 
     def update_review_info(self, button: OpButton) -> None:
         self.current_button = button
         info_lines: list[str] = []
         info_lines.append(
-            self.app.cm_attr.command.review_cmd(
+            self.review_cmd(
                 button.btn_enum.write_cmd, path_arg=button.btn_enum.path_arg
             )
         )
         info_lines.append(button.btn_enum.op_info_string)
         if button.btn_enum != OpBtnEnum.apply_review:
-            if self.app.cm_attr.cfg.auto_add is True:
+            if self.app.cm_attr.auto_add is True:
                 info_lines.append(OpInfoString.auto_commit)
-            if self.app.cm_attr.cfg.auto_commit is True:
+            if self.app.cm_attr.auto_commit is True:
                 info_lines.append(OpInfoString.auto_commit)
-            if self.app.cm_attr.cfg.auto_push is True:
+            if self.app.cm_attr.auto_push is True:
                 info_lines.append(OpInfoString.auto_push)
         else:
             msg = (
@@ -55,7 +73,7 @@ class OperateInfo(Static):
         self.border_subtitle = button.btn_enum.op_info_subtitle
 
     def watch_dry_run(self) -> None:
-        if not self.display or self.current_button is None:
+        if not self.display:
             return
         self.update_review_info(self.current_button)
 
@@ -115,9 +133,6 @@ class CommandOutput(ScrollableContainer):
             )
         else:
             self.changed_status.update("No changed status paths")
-        # mount a collapsible for each command
-        for result in self.app.cm_attr.loading_modal_results:
-            self.mount(CmdResultCollapsible(cmd_result=result))
 
 
 class OpFeedBack(Vertical):

@@ -1,13 +1,9 @@
 from dataclasses import dataclass
 
-from chezmoi_mousse.cm_type_checking import TYPE_CHECKING
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from chezmoi_mousse.str_enums import ContainerName, FlatBtnLabel, RichLogName, TabLabel
 
-__all__ = ["TabIds"]
-
-if TYPE_CHECKING:
-    __all__.append("AppIds")
+__all__ = ["AppIds", "TabIds"]
 
 
 class AppIds:

@@ -9,15 +9,16 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Static, Switch, TabbedContent, Tabs
+from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse import Chars, OpBtnEnum, OpBtnLabel, TabLabel, Tcss
+from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
 from chezmoi_mousse.gui.common.actionables import (
     DirContentBtn,
     OpButton,
     OperateButtons,
     SwitchSlider,
 )
+from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
 from .common.contents import ContentsView
 from .common.diffs import DiffView
@@ -33,7 +34,7 @@ from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
     from chezmoi_mousse import CommandResult
-    from chezmoi_mousse.type_checking import ChezmoiGui
+    from chezmoi_mousse.cm_types import ChezmoiGui
 
 __all__ = ["MainScreen", "CustomHeader"]
 
@@ -110,7 +111,6 @@ class MainScreen(Screen[None]):
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
         await self._log_all_cmd_results().wait()
-        self.loading_modal.dismiss()
 
     @work
     async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
@@ -121,7 +121,7 @@ class MainScreen(Screen[None]):
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.command_output.update_cmd_output().wait()
         elif btn_enum == OpBtnEnum.refresh_tree:
-            await self.loading_modal.run_all_read_cmds().wait()
+            await self.loading_modal.run_managed_commands().wait()
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()
         elif btn_enum == OpBtnEnum.reload:
@@ -134,8 +134,8 @@ class MainScreen(Screen[None]):
                 self.notify("Changed managed paths found, refreshing data.")
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
-        await self._log_all_cmd_results(self.app.cm_attr.loading_modal_results).wait()
-        self.loading_modal.dismiss()
+        cmd_results: list[CommandResult] = await self.loading_modal.dismiss()
+        await self._log_all_cmd_results(cmd_results).wait()
 
     #####################
     # UI update workers #
@@ -143,11 +143,10 @@ class MainScreen(Screen[None]):
 
     @work
     @min_wait
-    async def _log_all_cmd_results(self) -> None:
+    async def _log_all_cmd_results(self, cmd_results: list[CommandResult]) -> None:
         self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
-        for cmd_result in self.app.cm_attr.get_all_cmd_results():
-            self.app_log.cmd_result = cmd_result
-            self.cmd_log.cmd_result = cmd_result
+        self.app_log.cmd_results = cmd_results
+        self.cmd_log.cmd_results = cmd_results
 
     @work
     @min_wait
@@ -181,8 +180,8 @@ class MainScreen(Screen[None]):
     @on(LogCmdResultMsg)
     def _log_cmd_results(self, msg: LogCmdResultMsg) -> None:
         msg.stop()
-        self.app_log.cmd_result = msg.cmd_result
-        self.cmd_log.cmd_result = msg.cmd_result
+        self.app_log.cmd_results = [msg.cmd_result]
+        self.cmd_log.cmd_results = [msg.cmd_result]
 
     @on(OpButton.Pressed)
     async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
@@ -211,15 +210,6 @@ class MainScreen(Screen[None]):
             managed_tree = self.query_one(
                 event.button.app_ids.managed_tree_q, ManagedTree
             )
-            # # Flick the 'Show unchanged paths' switch if needed
-            unchanged_switch = self.query_one(
-                event.button.app_ids.switch.show_unchanged_q, Switch
-            )
-            if (
-                unchanged_switch.value is False
-                and event.button.path in self.app.cm_attr.sets.managed_paths
-            ):
-                unchanged_switch.value = True
             managed_tree.show_requested_node(event.button.path)
 
     @on(CurrentNodeMsg)
@@ -232,7 +222,7 @@ class MainScreen(Screen[None]):
         ).query_exactly_one(Horizontal)
         tab_buttons.border_subtitle = (
             f" {msg.path} "
-            if msg.path == self.app.cm_attr.cfg.dest_dir
+            if msg.path == self.app.cm_attr.dest_dir
             else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
@@ -245,18 +235,18 @@ class MainScreen(Screen[None]):
         ).set_path_arg(msg.path)
 
         # Could occur at startup or after operations, when we aute select the root node.
-        if not self.app.cm_attr.sets.managed_paths:
+        if not self.app.cm_attr.paths.no_managed_paths:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
             return
 
         # Enable/disable all review buttons
-        if (
-            self.app.cm_attr.sets.has_status_descendants(
-                tab_label=msg.ids.tab_label, dir_path=msg.path
-            )
-            is True
-        ):
+        n_dirs = (
+            self.app.cm_attr.paths.apply_n_dirs
+            if msg.ids.tab_label == TabLabel.apply
+            else self.app.cm_attr.paths.re_add_n_dirs
+        )
+        if msg.path in n_dirs or msg.path in self.app.cm_attr.paths.managed_dirs:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
@@ -264,9 +254,9 @@ class MainScreen(Screen[None]):
                 self.query_one(btn_id_q, Button).disabled = True
         # Enable/disable Forget and Destroy button
         for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
-            if msg.path == self.app.cm_attr.cfg.dest_dir:
+            if msg.path == self.app.cm_attr.dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
-            elif not self.app.cm_attr.sets.unchanged_paths:
+            elif not self.app.cm_attr.paths.no_status_paths:
                 self.query_one(btn_id_q, Button).disabled = False
 
     ########################

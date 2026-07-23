@@ -13,7 +13,7 @@ from .diffs import DiffView
 from .git_log import GitLogView
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import AppIds
+    from chezmoi_mousse.cm_types import AppIds
 
 __all__ = ["ViewSwitcher"]
 

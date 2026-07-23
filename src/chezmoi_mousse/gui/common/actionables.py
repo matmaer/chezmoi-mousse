@@ -12,7 +12,7 @@ from chezmoi_mousse import FlatBtnLabel, OpBtnEnum, SwitchEnum, TabLabel, Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 
 __all__ = [
@@ -113,9 +113,9 @@ class OperateButtons(HorizontalGroup):
 
     def on_mount(self) -> None:
         if self.ids.tab_label == TabLabel.apply:
-            no_changed_paths: bool = self.app.cm_attr.managed.no_apply_paths
+            no_changed_paths: bool = self.app.cm_attr.paths.no_apply_paths
         else:
-            no_changed_paths: bool = self.app.cm_attr.managed.no_re_add_paths
+            no_changed_paths: bool = self.app.cm_attr.paths.no_re_add_paths
 
         # disable apply and re-add review button if no unchanged paths
         if self.ids.tab_label == TabLabel.apply:

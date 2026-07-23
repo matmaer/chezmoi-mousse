@@ -18,7 +18,7 @@ from chezmoi_mousse.gui.common.messages import LogCmdResultMsg
 from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 __all__ = ["ContentsView"]
 
@@ -45,7 +45,7 @@ class ContentsView(Container):
 
     def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
-        if dir_path == self.app.cm_attr.cfg.dest_dir:
+        if dir_path == self.app.cm_attr.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
@@ -63,9 +63,9 @@ class ContentsView(Container):
 
             for name in dirs:
                 path = root_path / name
-                if path not in self.app.cm_attr.managed.dirs:
+                if path not in self.app.cm_attr.paths.managed_dirs:
                     unmanaged_dirs.append(
-                        str(path.relative_to(self.app.cm_attr.cfg.dest_dir))
+                        str(path.relative_to(self.app.cm_attr.dest_dir))
                     )
                     if len(unmanaged_dirs) >= OUTPUT_LIMIT:
                         limited_dirs = True
@@ -77,9 +77,9 @@ class ContentsView(Container):
             root_path = Path(root)
             for name in files:
                 path = root_path / name
-                if path not in self.app.cm_attr.managed.files:
+                if path not in self.app.cm_attr.paths.managed_files:
                     unmanaged_files.append(
-                        str(path.relative_to(self.app.cm_attr.cfg.dest_dir))
+                        str(path.relative_to(self.app.cm_attr.dest_dir))
                     )
                     if len(unmanaged_files) >= OUTPUT_LIMIT:
                         limited_files = True
@@ -121,7 +121,7 @@ class ContentsView(Container):
 
     def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
-        if dir_path == self.app.cm_attr.cfg.dest_dir:
+        if dir_path == self.app.cm_attr.dest_dir:
             widgets.append(
                 Label("Destination Directory", classes=Tcss.main_section_label)
             )
@@ -149,7 +149,7 @@ class ContentsView(Container):
         def _read_file(file_path: Path) -> str:
             if not file_path.exists():
                 cmd_result = self.app.cm_attr.command.run(
-                    ReadCmd.cat, path_arg=file_path
+                    dry_run=False, cmd=ReadCmd.cat, path_arg=file_path
                 )
                 self.post_message(LogCmdResultMsg(cmd_result))
                 return cmd_result.std_out
@@ -181,11 +181,11 @@ class ContentsView(Container):
         self, dir_path: Path
     ) -> list[Static | Label | DirContentBtn]:
         widgets: list[Static | Label | DirContentBtn] = []
-        if dir_path == self.app.cm_attr.cfg.dest_dir:
+        if dir_path == self.app.cm_attr.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
-        if not self.app.cm_attr.managed.dirs:
+        if not self.app.cm_attr.paths.managed_dirs:
             widgets = [
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             ]
@@ -197,7 +197,7 @@ class ContentsView(Container):
                 )
             )
             return widgets
-        elif self.app.cm_attr.managed.no_status_paths:
+        elif self.app.cm_attr.paths.no_status_paths:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )
@@ -217,12 +217,12 @@ class ContentsView(Container):
             return
         self.remove_children()
         if self.ids.tab_label == TabLabel.add and (
-            show_path == self.app.cm_attr.cfg.dest_dir or show_path.is_dir()
+            show_path == self.app.cm_attr.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)
         elif show_path in (
-            self.app.cm_attr.cfg.dest_dir,
-            self.app.cm_attr.managed.dirs,
+            self.app.cm_attr.dest_dir,
+            self.app.cm_attr.paths.managed_dirs,
         ):
             container = self._create_managed_dir_container(show_path)
         else:

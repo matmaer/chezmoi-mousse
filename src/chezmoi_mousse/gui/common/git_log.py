@@ -11,7 +11,7 @@ from chezmoi_mousse import ReadCmd
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 __all__ = ["GitLogView"]
 
@@ -60,14 +60,18 @@ class GitLogView(Container):
             return
         self.remove_children()
         if show_path == self.app.cm_attr.cfg.dest_dir:
-            lines = self.app.cm_attr.get_command_result(ReadCmd.git_log).out_lines
+            lines = self.app.cm_attr.cmd_results.git_log.out_lines
             if not lines:
                 lines = ["No commits;No git log entries available yet."]
             container = self._create_datatable_container(lines)
         else:
-            source_path_result = self.app.cm_attr.command.run(ReadCmd.source_path)
+            source_path_result = self.app.cm_attr.command.run(
+                dry_run=False, command=ReadCmd.source_path, path_arg=show_path
+            )
             cmd_result = self.app.cm_attr.command.run(
-                ReadCmd.git_log, path_arg=source_path_result.path_arg
+                dry_run=False,
+                command=ReadCmd.git_log,
+                path_arg=source_path_result.path_arg,
             )
             self.post_message(LogCmdResultMsg(cmd_result))
             container = self._create_datatable_container(

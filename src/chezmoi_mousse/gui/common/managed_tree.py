@@ -14,7 +14,7 @@ from chezmoi_mousse import Chars, OpBtnEnum, Tcss
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse.cm_type_checking import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 from .actionables import OpButton
 from .messages import CurrentNodeMsg
@@ -119,9 +119,9 @@ class ManagedTree(Tree[Path]):
 
     def initial_tree_population(self) -> None:
         # configure root node
-        self.root.data = self.app.cm_attr.cfg.dest_dir
+        self.root.data = self.app.cm_attr.dest_dir
         color = self.app.theme_variables["text-primary"]
-        self.root.label = f"[{color} bold]{self.app.cm_attr.cfg.dest_dir.name}[/]"
+        self.root.label = f"[{color} bold]{self.app.cm_attr.dest_dir.name}[/]"
         self.root.expand()
 
         # add the root node to the tree state
@@ -146,7 +146,7 @@ class ManagedTree(Tree[Path]):
         for node in current_nodes:
             if (
                 node.data in self.app.cm_attr.changes.removed_paths
-                and node.data not in self.app.cm_attr.managed.dirs
+                and node.data not in self.app.cm_attr.paths.managed_dirs
             ):
                 node.remove_children()
                 node.remove()
@@ -159,7 +159,7 @@ class ManagedTree(Tree[Path]):
         # don't add parents for these conditions
         if (
             path.parent == self.root.data
-            or path.parent in self.app.cm_attr.cfg.dest_dir.parents
+            or path.parent in self.app.cm_attr.dest_dir.parents
         ):
             return
 
@@ -192,7 +192,7 @@ class ManagedTree(Tree[Path]):
     def _insert_node(self, path: Path) -> None:
         if (
             path == self.root.data
-            or path in self.app.cm_attr.cfg.dest_dir.parents
+            or path in self.app.cm_attr.dest_dir.parents
             or path in self._tree_state.node_paths
         ):
             return
@@ -214,7 +214,7 @@ class ManagedTree(Tree[Path]):
             ),
             None,
         )
-        if path in self.app.cm_attr.managed.files or path.is_file():
+        if path in self.app.cm_attr.paths.managed_files or path.is_file():
             parent_node.add_leaf(node_label, data=path, before=before_node)
         else:
             parent_node.add(node_label, data=path, before=before_node)

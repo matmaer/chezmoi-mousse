@@ -1,15 +1,27 @@
-import shutil
-from dataclasses import dataclass, fields
+import json
+from dataclasses import dataclass
 from enum import Enum
-from functools import cached_property
 from pathlib import Path
 from subprocess import CompletedProcess, run
+from typing import TYPE_CHECKING, ClassVar, NamedTuple
 
-__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "ReadVerb", "WriteCmd"]
+if TYPE_CHECKING:
+    from chezmoi_mousse.cm_types import ParsedJson
 
 
-class GlobalArgs(Enum):
-    default = (
+__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "WriteCmd"]
+
+
+type StrTup = tuple[str, ...]  # args after the chezmoi command
+
+
+CHEZMOI = "chezmoi"
+
+UGLY_ARGS: set[str] = set()  # args to filter when showing pretty command
+
+
+class GlobalArgs:
+    global_defaults: ClassVar[StrTup] = (
         "--color=off",
         "--force",
         "--interactive=false",
@@ -18,17 +30,21 @@ class GlobalArgs(Enum):
         "--no-pager",
         "--no-tty",
         "--progress=false",
-        "--use-builtin-diff=true",
-        "--use-builtin-git=true",
+        "--use-builtin-diff",
+        "--use-builtin-git",
     )
-    dry_run = ("--dry-run",)
+    dry_run: ClassVar[str] = "--dry-run"
+    UGLY_ARGS.update(global_defaults)
 
 
-class VerbArgs(Enum):
-    format_json = "--format=json"
-    git_log = (
-        "--",
-        "log",
+class ChezmoiGitArgs:
+    # args for 'chezmoi git'
+    _ot: ClassVar[str] = "--"
+    _global_args: ClassVar[StrTup] = ("--no-pager", "--no-advice")
+    _default_args: ClassVar[StrTup] = (_ot,) + _global_args
+    _verbose: ClassVar[str] = "--verbose"
+    # _dry_run: ClassVar[str] = "--dry-run" # noqa: ERA001
+    _git_log_args: ClassVar[StrTup] = (
         "--date-order",
         "--format=%ar by %cn;%s",
         "--max-count=100",
@@ -36,277 +52,174 @@ class VerbArgs(Enum):
         "--no-decorate",
         "--no-expand-tabs",
     )
-    include_dirs = "--include=dirs"
-    include_files = "--include=files"
-    path_style_absolute = "--path-style=absolute"
-    reverse = "--reverse"
+    git_log: ClassVar[StrTup] = _default_args + ("log",) + _git_log_args
+    git_remote: ClassVar[StrTup] = _default_args + ("remote", _verbose)
+    UGLY_ARGS.update(_global_args, _git_log_args, _verbose)
 
 
-class ReadVerb(Enum):
-    cat = "cat"
-    cat_config = "cat-config"
-    data = "data"
-    diff = "diff"
-    doctor = "doctor"
-    dump_config = "dump-config"
-    git = "git"
-    ignored = "ignored"
-    managed = "managed"
-    source_path = "source-path"
-    status = "status"
-    unmanaged = "unmanaged"
+class VerbArgs(NamedTuple):
+    format_json: str = "--format=json"
+    include_dirs: str = "--include=dirs"
+    include_files: str = "--include=files"
+    path_style_absolute: str = "--path-style=absolute"
+    reverse: str = "--reverse"
+    UGLY_ARGS.update((format_json, path_style_absolute))
 
 
 class ReadCmd(Enum):
-    cat = (ReadVerb.cat.value,)
-    cat_config = (ReadVerb.cat_config.value,)
-    diff = (ReadVerb.diff.value,)
-    diff_reverse = (ReadVerb.diff.value, VerbArgs.reverse.value)
-    doctor = (ReadVerb.doctor.value,)
-    dump_config = (ReadVerb.dump_config.value, VerbArgs.format_json.value)
-    git_log = (ReadVerb.git.value,) + VerbArgs.git_log.value
-    ignored = (ReadVerb.ignored.value,)
-    managed_dirs = (
-        ReadVerb.managed.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_dirs.value,
-    )
-    managed_files = (
-        ReadVerb.managed.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
-    )
-    source_path = (ReadVerb.source_path.value,)
-    status_dirs = (
-        ReadVerb.status.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_dirs.value,
-    )
-    status_files = (
-        ReadVerb.status.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
-    )
-    template_data = (ReadVerb.data.value,)
-    unmanaged_dirs = (
-        ReadVerb.unmanaged.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_dirs.value,
-    )
+    cat = ("cat",)
+    cat_config = ("cat-config",)
+    diff = ("diff",)
+    diff_reverse = ("diff", VerbArgs.reverse)
+    doctor = ("doctor",)
+    dump_config = ("dump-config", VerbArgs.format_json)
+    git_log = ("git",) + ChezmoiGitArgs.git_log
+    git_remote = ("git",) + ChezmoiGitArgs.git_remote
+    ignored = ("ignored",)
+    managed_dirs = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
+    managed_files = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_files)
+    source_path = ("source-path",)
+    status_dirs = ("status", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
+    status_files = ("status", VerbArgs.path_style_absolute, VerbArgs.include_files)
+    template_data = ("template-data", VerbArgs.format_json)
+    unmanaged_dirs = ("unmanaged", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
     unmanaged_files = (
-        ReadVerb.unmanaged.value,
-        VerbArgs.path_style_absolute.value,
-        VerbArgs.include_files.value,
+        "unmanaged",
+        VerbArgs.path_style_absolute,
+        VerbArgs.include_files,
     )
-
-    @classmethod
-    def splash_commands(cls) -> list["ReadCmd"]:
-        return [
-            ReadCmd.doctor,
-            ReadCmd.dump_config,
-            ReadCmd.template_data,
-            ReadCmd.git_log,
-            ReadCmd.cat_config,
-            ReadCmd.ignored,
-        ]
-
-    @classmethod
-    def chezmoi_managed_commands(cls) -> list["ReadCmd"]:
-        return [
-            ReadCmd.unmanaged_dirs,
-            ReadCmd.unmanaged_files,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ]
-
-    @classmethod
-    def parse_json_commands(cls) -> list["ReadCmd"]:
-        return [ReadCmd.dump_config, ReadCmd.template_data]
 
     @property
-    def pretty_verb(self) -> str:
-        exclude = (VerbArgs.path_style_absolute.value, VerbArgs.format_json.value)
-        if self == ReadCmd.git_log:
-            exclude += VerbArgs.git_log.value[2:]
-        return " ".join(t for t in self.value if t not in exclude)
+    def subprocess_args(self) -> StrTup:
+        return (CHEZMOI,) + self.value
+
+    @property
+    def full_cmd_str(self) -> str:
+        return f"{CHEZMOI} " + " ".join(self.value)
 
     @property
     def pretty_cmd(self) -> str:
-        return f"chezmoi {self.pretty_verb}"
-
-
-class WriteVerb(Enum):
-    add = "add"
-    apply = "apply"
-    destroy = "destroy"
-    forget = "forget"
-    re_add = "re-add"
+        return f"{CHEZMOI} " + " ".join(
+            arg for arg in self.value if arg not in UGLY_ARGS
+        )
 
 
 class WriteCmd(Enum):
-    add = (WriteVerb.add.value,)
-    apply = (WriteVerb.apply.value,)
-    destroy = (WriteVerb.destroy.value,)
-    forget = (WriteVerb.forget.value,)
-    re_add = (WriteVerb.re_add.value,)
+    add = ("add",)
+    apply = ("apply",)
+    destroy = ("destroy",)
+    forget = ("forget",)
+    re_add = ("re-add",)
 
-    @property
-    def pretty_verb(self) -> str:
-        return self.value[0]
+    @classmethod
+    def subprocess_args(cls, cmd: "WriteCmd", dry_run: bool) -> StrTup:
+        if dry_run:
+            return (CHEZMOI, GlobalArgs.dry_run) + cmd.value
+        else:
+            return (CHEZMOI,) + cmd.value
+
+    @classmethod
+    def full_cmd_str(cls, cmd: "WriteCmd", dry_run: bool) -> str:
+        return f"{CHEZMOI} " + " ".join(cls.subprocess_args(cmd, dry_run))
+
+    @classmethod
+    def pretty_cmd(cls, write_cmd: "WriteCmd", dry_run: bool) -> str:
+        return f"{CHEZMOI} " + " ".join(
+            arg
+            for arg in (
+                (GlobalArgs.dry_run,) + write_cmd.value if dry_run else write_cmd.value
+            )
+            if arg not in UGLY_ARGS
+        )
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
     dry_run: bool
+    err_lines: list[str]
     full_cmd: str
+    out_lines: list[str]
+    parsed_json: ParsedJson
     path_arg: Path | None
-    pretty_args: str
     returncode: int
     std_err: str
     std_out: str
     verb_cmd: ReadCmd | WriteCmd
 
-    @cached_property
-    def pretty_cmd(self) -> str:
-        return f"chezmoi {self.pretty_args}"
-
-    @cached_property
-    def out_lines(self) -> list[str]:
-        return self.std_out.splitlines()
-
-    @cached_property
-    def valid_paths_cmd(self) -> bool:  # Fixed return hint
-        if self.verb_cmd not in (
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-            ReadCmd.unmanaged_dirs,
-            ReadCmd.unmanaged_files,
-        ):
-            raise AttributeError(
-                f"Path attributes are not relevant for command '{self.verb_cmd}'"
-            )
-        return True
-
-    @cached_property
-    def path_list(self) -> list[Path]:
-        _ = self.valid_paths_cmd
-        if self.verb_cmd in (ReadCmd.status_dirs, ReadCmd.status_files):
-            return [Path(p[3:]) for p in self.out_lines]
-        return [Path(p) for p in self.out_lines]
-
-    @cached_property
-    def path_set(self) -> set[Path]:
-        return set(self.path_list)
-
-
-@dataclass(slots=False, frozen=False, kw_only=True)  # be explicit
-class CmdResults:
-    # will raise attribute error if field is not set
-    cat_config: CommandResult
-    doctor: CommandResult
-    dump_config: CommandResult
-    git_log: CommandResult
-    ignored: CommandResult
-    managed_dirs: CommandResult
-    managed_files: CommandResult
-    status_dirs: CommandResult
-    status_files: CommandResult
-    template_data: CommandResult
-    unmanaged_dirs: CommandResult
-    unmanaged_files: CommandResult
-
-    # methods below raise AttributeError when field is not assigned as slots=False
-
-    @classmethod
-    def get_all_command_results(cls) -> list[CommandResult]:
-        return [getattr(cls, field.name) for field in fields(cls)]
-
-    @classmethod
-    def get_command_results(cls, field_name: str) -> CommandResult:
-        return getattr(cls, field_name)
-
 
 class ChezmoiCommand:
-
     def __init__(self) -> None:
         self.dry_run: bool = True
         self.dest_dir: Path | None = None
 
     def review_cmd(
-        self, cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
+        self,
+        cmd: ReadCmd | WriteCmd,
+        *,
+        dry_run: bool | None = None,
+        rel_path: str = "",
     ) -> str:
-        return "chezmoi " + " ".join(self._get_pretty_args(cmd, path_arg=path_arg))
+        if isinstance(cmd, ReadCmd):
+            return cmd.pretty_cmd + rel_path
+        elif dry_run is not None:
+            return cmd.pretty_cmd(write_cmd=cmd, dry_run=dry_run) + rel_path
+        else:
+            raise ValueError(f"Receiving write cmd {cmd} and dry run is {dry_run}")
 
-    def _subprocess_run(
-        self, chezmoi_args: tuple[str, ...], time_out: int
-    ) -> CompletedProcess[str]:
-        chezmoi_bin: str | None = shutil.which("chezmoi")
-        if chezmoi_bin is None:
-            raise RuntimeError("cannot find chezmoi command")
+    def _subprocess_run(self, run_args: StrTup, time_out: int) -> CompletedProcess[str]:
         return run(
-            (chezmoi_bin,) + chezmoi_args,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
+            run_args, capture_output=True, shell=False, text=True, timeout=time_out
         )
-
-    def _get_pretty_args(
-        self, cmd: ReadCmd | WriteCmd, path_arg: Path | None = None
-    ) -> str:
-        pretty_args = ""
-        if self.dry_run and isinstance(cmd, WriteCmd):
-            pretty_args += GlobalArgs.dry_run.value[0]
-        pretty_args = cmd.pretty_verb
-        if path_arg is not None:
-            pretty_args += (
-                str(path_arg)
-                if self.dest_dir is None
-                else f"{path_arg.relative_to(self.dest_dir)}"
-            )
-        return pretty_args
 
     def run(
-        self, verb_cmd: ReadCmd | WriteCmd, *, path_arg: Path | None = None
+        self,
+        cmd: ReadCmd | WriteCmd,
+        *,
+        dry_run: bool | None = None,
+        path_arg: Path | None = None,
     ) -> CommandResult:
-
-        def trim_blank_lines(stdout: str) -> str:
-            # normally not needed as chezmoi output is clean, however do not call
-            # .strip() on status lines or we lose the leading spaces in status output
-            lines = stdout.splitlines()
-            start = 0
-            end = len(lines)
-            while start < end and not lines[start].strip():
-                start += 1
-            while end > start and not lines[end - 1].strip():
-                end -= 1
-            return "\n".join(lines[start:end])
-
-        chezmoi_args: tuple[str, ...] = GlobalArgs.default.value
-        if self.dry_run:
-            chezmoi_args += GlobalArgs.dry_run.value
-        if isinstance(verb_cmd, WriteCmd):
-            time_out = 10
+        time_out: int = 10 if isinstance(cmd, ReadCmd) else 20
+        if isinstance(cmd, WriteCmd):
+            if dry_run is None:
+                raise ValueError(f"dry_run is None for a write cmd: {cmd}")
+            else:
+                full_cmd_str = cmd.full_cmd_str(cmd, dry_run)
+                run_args = cmd.subprocess_args(cmd, dry_run) + (str(path_arg),)
         else:
-            time_out = 6 if verb_cmd == ReadCmd.doctor else 3
-        if path_arg is not None:
-            chezmoi_args += (str(path_arg),)
+            full_cmd_str = cmd.full_cmd_str
+            run_args = cmd.subprocess_args + (str(path_arg),)
+
         completed_process: CompletedProcess[str] = self._subprocess_run(
-            chezmoi_args, time_out=time_out
+            run_args, time_out
         )
-        command_result = CommandResult(
-            dry_run=GlobalArgs.dry_run.value[0] in completed_process.args,
-            full_cmd=" ".join(list(completed_process.args)),
+
+        out_lines = [
+            line for line in completed_process.stdout.splitlines() if line.strip()
+        ]
+        std_out = "\n".join(out_lines)
+
+        err_lines = [
+            line for line in completed_process.stderr.splitlines() if line.strip()
+        ]
+        std_err = "\n".join(err_lines)
+
+        if isinstance(cmd, ReadCmd) and cmd in (
+            ReadCmd.template_data,
+            ReadCmd.dump_config,
+        ):
+            parsed_json: ParsedJson = json.loads(std_out)
+        else:
+            parsed_json = {}
+
+        return CommandResult(
+            dry_run=GlobalArgs.dry_run in run_args,
+            err_lines=err_lines,
+            full_cmd=full_cmd_str,
+            out_lines=out_lines,
+            parsed_json=parsed_json,
             path_arg=path_arg,
-            pretty_args=" ".join(self._get_pretty_args(verb_cmd, path_arg)),
             returncode=completed_process.returncode,
-            std_err=trim_blank_lines(completed_process.stderr),
-            std_out=trim_blank_lines(completed_process.stdout),
-            verb_cmd=verb_cmd,
+            std_err=std_err,
+            std_out=std_out,
+            verb_cmd=cmd,
         )
-        setattr(CmdResults, verb_cmd.name, command_result)
-        return command_result

@@ -13,7 +13,7 @@ import tempfile
 import traceback
 from pathlib import Path
 
-from chezmoi_mousse.cm_command import CommandResult, ReadCmd, ReadVerb
+from chezmoi_mousse.cm_command import CommandResult, ReadCmd
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, OpInfoString, SwitchEnum
 from chezmoi_mousse.str_enums import (
@@ -48,7 +48,6 @@ __all__ = [
     "OpInfoString",
     "PathKind",
     "ReadCmd",
-    "ReadVerb",
     "SectionLabel",
     "StatusCode",
     "SwitchEnum",

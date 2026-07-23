@@ -83,9 +83,9 @@ class ChezmoiGui(App[str]):
 
     CSS_PATH = "gui.tcss"
 
-    def __init__(self) -> None:
+    def __init__(self, *, cm_attr: CmAttributes) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.cm_attr = CmAttributes
+        self.cm_attr = cm_attr
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
