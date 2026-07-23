@@ -5,7 +5,6 @@ import sys
 from enum import StrEnum
 
 from chezmoi_mousse import save_stacktrace
-from chezmoi_mousse.cm_attributes import CmAttributes
 from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
 from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -79,11 +78,6 @@ def run_app():
 
     try:
         app = ChezmoiGui()
-        CmAttributes.classic_theme_vars = {
-            k: v
-            for k, v in app.theme_variables.items()
-            if v.startswith("#") and len(v) == 7
-        }
         if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
             asyncio.run(test_app_with_pilot(app))
         else:
