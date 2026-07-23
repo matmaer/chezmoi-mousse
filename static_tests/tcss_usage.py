@@ -8,7 +8,7 @@ from chezmoi_mousse import Tcss
 from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 with Path.open(Path("src", "chezmoi_mousse", "gui.tcss")) as f:
-    tcss_lines = [
+    tcss_lines: list[str] = [
         line for line in f.read().splitlines() if not line.startswith(("/", "#"))
     ]
     tcss_content = "\n".join(tcss_lines)
