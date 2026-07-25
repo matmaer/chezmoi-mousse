@@ -11,7 +11,8 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse import OpBtnEnum, ReadCmd
+from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.enum_data import OpBtnEnum
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -53,7 +54,7 @@ class LoadingLabel(StrEnum):
         return f"[$text-primary]{self.value}[/]"
 
 
-class LoadingModal(ModalScreen[None]):
+class LoadingModal(ModalScreen[list[CommandResult]]):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -62,7 +63,7 @@ class LoadingModal(ModalScreen[None]):
 
     def __init__(self, btn_enum: OpBtnEnum | None) -> None:
         self.btn_enum: OpBtnEnum | None = btn_enum
-        self.results: list[CommandResult] = []
+        self.command_results: list[CommandResult] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:

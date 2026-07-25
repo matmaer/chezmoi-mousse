@@ -10,7 +10,8 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse import Chars, OpBtnEnum, Tcss
+from chezmoi_mousse.enum_data import OpBtnEnum
+from chezmoi_mousse.str_enums import Chars, Tcss
 
 if TYPE_CHECKING:
 

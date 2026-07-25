@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import ContentSwitcher
 
-from chezmoi_mousse import TabLabel
+from chezmoi_mousse.str_enums import TabLabel
 
 from .actionables import TabButton, TabButtons
 from .contents import ContentsView

@@ -7,8 +7,8 @@ from textual import getters
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse import Chars
 from chezmoi_mousse.functions import CheckPath
+from chezmoi_mousse.str_enums import Chars
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui

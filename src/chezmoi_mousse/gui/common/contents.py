@@ -13,9 +13,10 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.gui.common.actionables import DirContentBtn
-from chezmoi_mousse.gui.common.messages import LogCmdResultMsg
 from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
+
+from .actionables import DirContentBtn
+from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import AppIds, ChezmoiGui

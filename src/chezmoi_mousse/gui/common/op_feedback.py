@@ -8,8 +8,9 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import OpBtnEnum, OpInfoString, Tcss
 from chezmoi_mousse.cm_command import GlobalArgs, WriteCmd
+from chezmoi_mousse.enum_data import OpBtnEnum, OpInfoString
+from chezmoi_mousse.str_enums import Tcss
 
 from .actionables import OpButton
 
@@ -40,7 +41,7 @@ class OperateInfo(Static):
     def review_cmd(self, cmd: WriteCmd, *, path_arg: Path | None = None) -> str:
         lines: list[str] = ["chezmoi"]
         if self.dry_run is True:
-            lines.append(GlobalArgs.dry_run.value[0])
+            lines.append(GlobalArgs.dry_run)
         lines.append(cmd.pretty_verb)
         if path_arg is not None:
             lines.append(f"{path_arg.relative_to(self.dest_dir)}")

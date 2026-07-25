@@ -6,7 +6,7 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import ReadCmd
+from chezmoi_mousse.cm_command import ReadCmd
 
 from .messages import LogCmdResultMsg
 
@@ -59,7 +59,7 @@ class GitLogView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if show_path == self.app.cm_attr.cfg.dest_dir:
+        if show_path == self.app.cm_attr.dest_dir:
             lines = self.app.cm_attr.cmd_results.git_log.out_lines
             if not lines:
                 lines = ["No commits;No git log entries available yet."]

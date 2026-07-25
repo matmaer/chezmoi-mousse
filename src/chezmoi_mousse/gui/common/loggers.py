@@ -12,7 +12,8 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse import Chars, LogString, ReadCmd, SectionLabel, Tcss
+from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.str_enums import Chars, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable

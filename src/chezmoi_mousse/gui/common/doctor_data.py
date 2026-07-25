@@ -8,7 +8,8 @@ from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse import Chars, ReadCmd, SectionLabel, Tcss
+from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.str_enums import Chars, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui

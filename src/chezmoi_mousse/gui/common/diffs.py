@@ -9,7 +9,8 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
-from chezmoi_mousse import ReadCmd, StatusCode, TabLabel, Tcss
+from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.str_enums import StatusCode, TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
 

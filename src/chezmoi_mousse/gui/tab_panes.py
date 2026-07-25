@@ -17,15 +17,9 @@ from textual.widgets import (
     TabPane,
 )
 
-from chezmoi_mousse import (
-    FlatBtnLabel,
-    OpBtnEnum,
-    OpBtnLabel,
-    SectionLabel,
-    TabLabel,
-    Tcss,
-    TestPaths,
-)
+from chezmoi_mousse.debug.test_paths import TestPaths
+from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
+from chezmoi_mousse.str_enums import FlatBtnLabel, SectionLabel, TabLabel, Tcss
 
 from .common.actionables import (
     FlatButtonsVertical,

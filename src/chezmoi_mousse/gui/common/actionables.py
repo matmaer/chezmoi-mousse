@@ -7,7 +7,8 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, Label, Switch
 
-from chezmoi_mousse import FlatBtnLabel, OpBtnEnum, SwitchEnum, TabLabel, Tcss
+from chezmoi_mousse.enum_data import OpBtnEnum, SwitchEnum
+from chezmoi_mousse.str_enums import FlatBtnLabel, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -12,14 +12,9 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
-from chezmoi_mousse.gui.common.actionables import (
-    DirContentBtn,
-    OpButton,
-    OperateButtons,
-    SwitchSlider,
-)
 from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
+from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -33,7 +28,7 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse import CommandResult
+    from chezmoi_mousse.cm_command import CommandResult
     from chezmoi_mousse.cm_types import ChezmoiGui
 
 __all__ = ["MainScreen", "CustomHeader"]

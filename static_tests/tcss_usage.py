@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from chezmoi_mousse import Tcss
+from chezmoi_mousse.str_enums import Tcss
 from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 with Path.open(Path("src", "chezmoi_mousse", "gui.tcss")) as f:
