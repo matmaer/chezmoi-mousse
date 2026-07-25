@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar, NamedTuple
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Any, ClassVar, NamedTuple
+    from typing import Any
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_command import CommandResult
