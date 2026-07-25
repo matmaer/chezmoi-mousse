@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING, NamedTuple
+from pathlib import Path
+from typing import NamedTuple
 
 from chezmoi_mousse.cm_command import WriteCmd
 from chezmoi_mousse.str_enums import Chars, SwitchLabel
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 __all__ = ["OpBtnEnum", "OpBtnLabel", "OpInfoString", "SwitchEnum"]
 

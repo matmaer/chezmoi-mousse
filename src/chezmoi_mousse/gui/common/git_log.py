@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -7,6 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.functions import RunChezmoi
 
 from .messages import LogCmdResultMsg
 
@@ -23,7 +26,7 @@ class GitLogView(Container):
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.git_log)
 
     def _create_datatable_container(
@@ -65,13 +68,11 @@ class GitLogView(Container):
                 lines = ["No commits;No git log entries available yet."]
             container = self._create_datatable_container(lines)
         else:
-            source_path_result = self.app.cm_attr.command.run(
-                dry_run=False, command=ReadCmd.source_path, path_arg=show_path
+            source_path_result = RunChezmoi.run(
+                dry_run=False, cmd=ReadCmd.source_path, path_arg=show_path
             )
-            cmd_result = self.app.cm_attr.command.run(
-                dry_run=False,
-                command=ReadCmd.git_log,
-                path_arg=source_path_result.path_arg,
+            cmd_result = RunChezmoi.run(
+                dry_run=False, cmd=ReadCmd.git_log, path_arg=source_path_result.path_arg
             )
             self.post_message(LogCmdResultMsg(cmd_result))
             container = self._create_datatable_container(

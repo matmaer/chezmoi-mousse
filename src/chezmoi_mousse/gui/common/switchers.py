@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -20,7 +22,7 @@ __all__ = ["ViewSwitcher"]
 
 class ViewSwitcher(Vertical):
 
-    def __init__(self, ids: "AppIds"):
+    def __init__(self, ids: AppIds):
         super().__init__(id=ids.container.right_side)
         self.ids = ids
 

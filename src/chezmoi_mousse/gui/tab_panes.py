@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
@@ -46,7 +48,7 @@ class AddTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.add, title=TabLabel.add)
         self.ids = ids
 
@@ -112,7 +114,7 @@ class AddTab(TabPane):
 
 class ApplyTab(TabPane):
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.apply, title=TabLabel.apply)
         self.ids = ids
 
@@ -202,7 +204,7 @@ class ConfigTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.config, title=TabLabel.config)
         self.ids = ids
 
@@ -303,7 +305,7 @@ class DebugTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, ids: "AppIds"):
+    def __init__(self, ids: AppIds):
         super().__init__(id=TabLabel.debug, title=TabLabel.debug)
         self.ids = ids
 
@@ -480,7 +482,7 @@ class DebugTab(TabPane):
 
 class LogsTab(TabPane):
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.logs, title=TabLabel.logs)
         self.ids = ids
 
@@ -506,7 +508,7 @@ class LogsTab(TabPane):
 
 class ReAddTab(TabPane):
 
-    def __init__(self, ids: "AppIds") -> None:
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.re_add, title=TabLabel.re_add)
         self.ids = ids
 

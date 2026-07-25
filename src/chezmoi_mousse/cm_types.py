@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
     type ParsedJson = dict[str, Any]
     type StatusDict = dict[Path, StatusCode]
+    type StrTup = tuple[str, ...]
 
 __all__ = [
     "ManagedResults",

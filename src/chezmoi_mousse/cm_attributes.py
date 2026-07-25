@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import TabIds
-from chezmoi_mousse.cm_command import ChezmoiCommand, CommandResult, ReadCmd
+from chezmoi_mousse.cm_command import CommandResult, ReadCmd
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -203,8 +203,9 @@ class ManagedPaths:
 
 @dataclass(slots=True, kw_only=True)
 class CmAttributes:
+    dry_run: bool = True
+
     ids: TabIds = TabIds()
-    command: ChezmoiCommand = ChezmoiCommand()
 
     changes: ChangedPaths = ChangedPaths()
     paths: ManagedPaths = ManagedPaths()

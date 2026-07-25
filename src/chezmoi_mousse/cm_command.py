@@ -1,18 +1,15 @@
-import json
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from subprocess import CompletedProcess, run
 from typing import TYPE_CHECKING, ClassVar, NamedTuple
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson
+    from chezmoi_mousse.cm_types import ParsedJson, StrTup
 
 
-__all__ = ["ChezmoiCommand", "CommandResult", "ReadCmd", "WriteCmd"]
-
-
-type StrTup = tuple[str, ...]  # args after the chezmoi command
+__all__ = ["CommandResult", "ReadCmd", "WriteCmd"]
 
 
 CHEZMOI = "chezmoi"
@@ -104,15 +101,15 @@ class ReadCmd(Enum):
         )
 
     @classmethod
-    def splash_commands(cls) -> list["ReadCmd"]:
+    def splash_commands(cls) -> list[ReadCmd]:
         return [ReadCmd.doctor, ReadCmd.git_log, ReadCmd.cat_config, ReadCmd.ignored]
 
     @classmethod
-    def json_output_commands(cls) -> list["ReadCmd"]:
+    def json_output_commands(cls) -> list[ReadCmd]:
         return [ReadCmd.dump_config, ReadCmd.template_data]
 
     @classmethod
-    def chezmoi_managed_commands(cls) -> list["ReadCmd"]:
+    def chezmoi_managed_commands(cls) -> list[ReadCmd]:
         return [
             ReadCmd.managed_dirs,
             ReadCmd.managed_files,
@@ -131,18 +128,18 @@ class WriteCmd(Enum):
     re_add = ("re-add",)
 
     @classmethod
-    def subprocess_args(cls, cmd: "WriteCmd", dry_run: bool) -> StrTup:
+    def subprocess_args(cls, cmd: WriteCmd, dry_run: bool) -> StrTup:
         if dry_run:
             return (CHEZMOI, GlobalArgs.dry_run) + cmd.value
         else:
             return (CHEZMOI,) + cmd.value
 
     @classmethod
-    def full_cmd_str(cls, cmd: "WriteCmd", dry_run: bool) -> str:
+    def full_cmd_str(cls, cmd: WriteCmd, dry_run: bool) -> str:
         return f"{CHEZMOI} " + " ".join(cls.subprocess_args(cmd, dry_run))
 
     @classmethod
-    def pretty_cmd(cls, write_cmd: "WriteCmd", dry_run: bool) -> str:
+    def pretty_cmd(cls, write_cmd: WriteCmd, dry_run: bool) -> str:
         return f"{CHEZMOI} " + " ".join(
             arg
             for arg in (
@@ -164,81 +161,3 @@ class CommandResult:
     std_err: str
     std_out: str
     verb_cmd: ReadCmd | WriteCmd
-
-
-class ChezmoiCommand:
-    def __init__(self) -> None:
-        self.dry_run: bool = True
-        self.dest_dir: Path | None = None
-
-    def review_cmd(
-        self,
-        cmd: ReadCmd | WriteCmd,
-        *,
-        dry_run: bool | None = None,
-        rel_path: str = "",
-    ) -> str:
-        if isinstance(cmd, ReadCmd):
-            return cmd.pretty_cmd + rel_path
-        elif dry_run is not None:
-            return cmd.pretty_cmd(write_cmd=cmd, dry_run=dry_run) + rel_path
-        else:
-            raise ValueError(f"Receiving write cmd {cmd} and dry run is {dry_run}")
-
-    def _subprocess_run(self, run_args: StrTup, time_out: int) -> CompletedProcess[str]:
-        return run(
-            run_args, capture_output=True, shell=False, text=True, timeout=time_out
-        )
-
-    def run(
-        self,
-        cmd: ReadCmd | WriteCmd,
-        *,
-        dry_run: bool | None = None,
-        path_arg: Path | None = None,
-    ) -> CommandResult:
-        time_out: int = 10 if isinstance(cmd, ReadCmd) else 20
-        if isinstance(cmd, WriteCmd):
-            if dry_run is None:
-                raise ValueError(f"dry_run is None for a write cmd: {cmd}")
-            else:
-                full_cmd_str = cmd.full_cmd_str(cmd, dry_run)
-                run_args = cmd.subprocess_args(cmd, dry_run) + (str(path_arg),)
-        else:
-            full_cmd_str = cmd.full_cmd_str
-            run_args = cmd.subprocess_args + (str(path_arg),)
-
-        completed_process: CompletedProcess[str] = self._subprocess_run(
-            run_args, time_out
-        )
-
-        out_lines = [
-            line for line in completed_process.stdout.splitlines() if line.strip()
-        ]
-        std_out = "\n".join(out_lines)
-
-        err_lines = [
-            line for line in completed_process.stderr.splitlines() if line.strip()
-        ]
-        std_err = "\n".join(err_lines)
-
-        if isinstance(cmd, ReadCmd) and cmd in (
-            ReadCmd.template_data,
-            ReadCmd.dump_config,
-        ):
-            parsed_json: ParsedJson = json.loads(std_out)
-        else:
-            parsed_json = {}
-
-        return CommandResult(
-            dry_run=GlobalArgs.dry_run in run_args,
-            err_lines=err_lines,
-            full_cmd=full_cmd_str,
-            out_lines=out_lines,
-            parsed_json=parsed_json,
-            path_arg=path_arg,
-            returncode=completed_process.returncode,
-            std_err=std_err,
-            std_out=std_out,
-            verb_cmd=cmd,
-        )

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 from asyncio import sleep
 from enum import StrEnum
@@ -13,6 +15,7 @@ from textual.widgets import Label, LoadingIndicator
 
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.enum_data import OpBtnEnum
+from chezmoi_mousse.functions import RunChezmoi
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -26,10 +29,10 @@ __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 type MinWaitReturn = Callable[..., Awaitable[CommandResult | None]]
 
 
-def min_wait(func: "Callable[..., Awaitable[None]]") -> MinWaitReturn:
+def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
-    async def wrapper(self: "LoadingModal", *args: "OpBtnEnum") -> None:
+    async def wrapper(self: LoadingModal, *args: OpBtnEnum) -> None:
         min_wait_time = 0.2
         start_time = time.monotonic()
         await func(self, *args)
@@ -87,24 +90,22 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
             await self._run_read_command(read_cmd).wait()
 
     @work
-    async def run_write_command(self, btn_enum: "OpBtnEnum") -> None:
+    async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
         await self._run_write_command(btn_enum).wait()
         await self.run_managed_commands().wait()
 
     @work(thread=True)
     @min_wait
-    async def _run_read_command(self, read_cmd: "ReadCmd") -> None:
-        self.command_results.append(
-            self.app.cm_attr.command.run(dry_run=False, cmd=read_cmd)
-        )
+    async def _run_read_command(self, read_cmd: ReadCmd) -> None:
+        self.command_results.append(RunChezmoi.run(dry_run=False, cmd=read_cmd))
 
     @work(thread=True, exit_on_error=False)
     @min_wait
-    async def _run_write_command(self, dry_run: bool, btn_enum: "OpBtnEnum") -> None:
+    async def _run_write_command(self, dry_run: bool, btn_enum: OpBtnEnum) -> None:
         if btn_enum.path_arg == self.app.cm_attr.dest_dir:
             btn_enum.path_arg = None
         self.command_results.append(
-            self.app.cm_attr.command.run(
+            RunChezmoi.run(
                 dry_run=dry_run, cmd=btn_enum.write_cmd, path_arg=btn_enum.path_arg
             )
         )

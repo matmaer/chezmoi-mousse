@@ -18,6 +18,7 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_command import CommandResult, ReadCmd
 from chezmoi_mousse.cm_types import CmdResultCollector, ManagedResults, SplashResults
+from chezmoi_mousse.functions import RunChezmoi
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui
@@ -142,7 +143,7 @@ class SplashScreen(Screen[SplashResults]):
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        result: CommandResult = self.app.cm_attr.command.run(command)
+        result: CommandResult = RunChezmoi.run(command)
         # first call getattr to ensure the attribute exists, then set it
         getattr(CmdResultCollector, command.name)
         setattr(CmdResultCollector, command.name, result)
