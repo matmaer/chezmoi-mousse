@@ -86,14 +86,12 @@ class RunChezmoi:
         ]
         std_err = "\n".join(err_lines)
 
-        if isinstance(cmd, ReadCmd) and cmd in (
-            ReadCmd.template_data,
-            ReadCmd.dump_config,
-        ):
-            parsed_json: ParsedJson = json.loads(std_out)
-        else:
-            parsed_json = {}
+        parsed_json: ParsedJson | None = None
 
+        if cmd in (ReadCmd.template_data, ReadCmd.dump_config):
+            parsed_json = json.loads(std_out)
+
+        full_cmd_str = RunChezmoi.full_cmd_str(cmd, dry_run)
         pretty_cmd = RunChezmoi.pretty_cmd(cmd, dry_run, path_arg)
         exit_colored_cmd = RunChezmoi._exit_code_colored_cmd(
             pretty_cmd, completed_process.returncode
@@ -102,7 +100,7 @@ class RunChezmoi:
         return CommandResult(
             dry_run=dry_run,
             err_lines=err_lines,
-            full_cmd_str=RunChezmoi.full_cmd_str(cmd, dry_run),
+            full_cmd_str=full_cmd_str,
             out_lines=out_lines,
             parsed_json=parsed_json,
             pretty_cmd=pretty_cmd,

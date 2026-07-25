@@ -33,7 +33,7 @@ class CommandResult(NamedTuple):
     err_lines: list[str]
     full_cmd_str: str
     out_lines: list[str]
-    parsed_json: ParsedJson
+    parsed_json: ParsedJson | None
     path_arg: Path | None
     pretty_cmd: str
     returncode: int
