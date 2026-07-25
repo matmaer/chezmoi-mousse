@@ -24,7 +24,17 @@ __all__ = [
     # exports only importable in TYPE_CHECKING block
     "AppIds",
     "ChezmoiGui",
+    "TabIds",
 ]
+
+
+class TabIds(NamedTuple):
+    add: AppIds
+    apply: AppIds
+    config: AppIds
+    debug: AppIds
+    logs: AppIds
+    re_add: AppIds
 
 
 class SplashResults(NamedTuple):

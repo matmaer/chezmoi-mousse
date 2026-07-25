@@ -6,8 +6,9 @@ from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.app_ids import TabIds
+from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import CommandResult, ReadCmd
+from chezmoi_mousse.cm_types import TabIds
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -203,9 +204,16 @@ class ManagedPaths:
 
 @dataclass(slots=True, kw_only=True)
 class CmAttributes:
-    dry_run: bool = True
+    ids = TabIds(
+        add=AppIds(TabLabel.add),
+        apply=AppIds(TabLabel.apply),
+        config=AppIds(TabLabel.config),
+        debug=AppIds(TabLabel.debug),
+        logs=AppIds(TabLabel.logs),
+        re_add=AppIds(TabLabel.re_add),
+    )
 
-    ids: TabIds = TabIds()
+    dry_run: bool = True
 
     changes: ChangedPaths = ChangedPaths()
     paths: ManagedPaths = field(default_factory=lambda: ManagedPaths())

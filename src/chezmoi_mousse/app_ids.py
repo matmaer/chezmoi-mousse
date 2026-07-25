@@ -1,9 +1,7 @@
-from dataclasses import dataclass
-
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
 from chezmoi_mousse.str_enums import ContainerName, FlatBtnLabel, RichLogName, TabLabel
 
-__all__ = ["AppIds", "TabIds"]
+__all__ = ["AppIds"]
 
 
 class AppIds:
@@ -241,13 +239,3 @@ class SwitchIds:
 
         self.show_unwanted: str = ids.switch_id(switch=SwitchEnum.show_unwanted)
         self.show_unwanted_q: str = f"#{self.show_unwanted}"
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class TabIds:
-    add = AppIds(TabLabel.add)
-    apply = AppIds(TabLabel.apply)
-    config = AppIds(TabLabel.config)
-    debug = AppIds(TabLabel.debug)
-    logs = AppIds(TabLabel.logs)
-    re_add = AppIds(TabLabel.re_add)
