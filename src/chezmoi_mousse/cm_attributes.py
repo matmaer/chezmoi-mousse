@@ -4,15 +4,10 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_command import CommandResult, ReadCmd
-from chezmoi_mousse.cm_types import TabIds
+from chezmoi_mousse.cm_types import ManagedResults, ParsedJson, TabIds
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
-
-if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson
 
 __all__ = ["CmAttributes"]
 
@@ -87,17 +82,14 @@ class ManagedPaths:
             StatusCode.Modified: "text-warning",
             StatusCode.Run: "error",  # choose error as it's not yet implemented
         }
+        # TODO: implement colors for PathKind
+        # path_kind_map = {PathKind.path_exists: "text-success"} # noqa: ERA001
         status_code = context[0]
-        path_kind = context[1]
-        if status_code is None and path_kind is None:
-            raise ValueError("Cannot compute tag.")
-        elif status_code is not None and status_code in chezmoi_status_map:
+        if status_code is not None and status_code in chezmoi_status_map:
             tag.append(chezmoi_status_map[status_code])
-        elif path_kind in (PathKind.file_not_managed, PathKind.dir_not_managed):
-            tag.append("accent-")
         return f"{tag}]"
 
-    def _compute_n_dirs(
+    def _is_n_dir(
         self,
         *,
         dest_dir: Path,
@@ -125,81 +117,69 @@ class ManagedPaths:
                 n_dirs[p] = path_kind
         return dict(sorted(n_dirs.items()))
 
-    def _path_kind_dict(self, command_result: CommandResult) -> dict[Path, PathKind]:
+    def _path_kind_dict(
+        self, paths: list[Path], unmanaged: bool
+    ) -> dict[Path, PathKind]:
         result: dict[Path, PathKind] = {}
-        paths: list[Path] = [Path(line) for line in command_result.out_lines]
-        symlink_error = (
-            "found a symlink after calling chezmoi with global flag '--mode=file'"
-        )
         for path in paths:
-            # unmanaged paths
-            if command_result.verb_cmd == ReadCmd.unmanaged_dirs:
-                result[path] = PathKind.dir_not_managed
-            elif command_result.verb_cmd == ReadCmd.unmanaged_files:
-                result[path] = PathKind.file_not_managed
-            # managed dirs
-            elif command_result.verb_cmd == ReadCmd.managed_dirs:
-                result[path] = (
-                    PathKind.dir_exists if path.is_dir() else PathKind.dir_not_exists
-                )
-            # managed files
-            elif command_result.verb_cmd == ReadCmd.managed_files:
-                result[path] = (
-                    PathKind.file_exists if path.is_file() else PathKind.file_not_exists
-                )
-            # raise if symlink is found
-            elif path.is_symlink():
-                raise ValueError(symlink_error)
+            if path.is_symlink():
+                path_kind = PathKind.symlink
+            elif unmanaged is False and path.exists():
+                path_kind = PathKind.path_exists
+            elif unmanaged is True:
+                path_kind = PathKind.unmanaged  # TODO: add PathKind.unwanted
             else:
-                raise NotImplementedError(f"Path kind not implemented for {path}")
+                path_kind = PathKind.unknown
+            result[path] = path_kind
         return result
 
-    def _status_dict(self, lines: list[str], column: int) -> dict[Path, StatusCode]:
-        return {
-            Path(line[3:]): StatusCode(line[column])
-            for line in lines
-            if line[column] != StatusCode.Space
-        }
-
-    def update_fields(
-        self,
-        *,
-        dest_dir: Path,
-        status_dirs: CommandResult,
-        status_files: CommandResult,
-        managed_files: CommandResult,
-        managed_dirs: CommandResult,
-        unmanaged_files: CommandResult,
-        unmanaged_dirs: CommandResult,
-    ) -> None:
+    def update_fields(self, *, dest_dir: Path, results: ManagedResults) -> None:
 
         self.clear_cached_properties()
 
-        apply_dirs = self._status_dict(status_dirs.out_lines, 1)
-        apply_files = self._status_dict(status_files.out_lines, 1)
-        re_add_dirs = self._status_dict(status_dirs.out_lines, 0)
-        re_add_files = self._status_dict(status_files.out_lines, 0)
+        def _lines_to_paths(lines: list[str]) -> list[Path]:
+            return [Path(line) for line in lines]
 
-        self.managed_dirs = self._path_kind_dict(managed_dirs)
-        self.managed_files = self._path_kind_dict(managed_files)
-        self.apply_dirs = apply_dirs
-        self.apply_files = apply_files
-        self.apply_n_dirs = self._compute_n_dirs(
+        def _status_dict(lines: list[str], column: int) -> dict[Path, StatusCode]:
+            return {
+                Path(line[3:]): StatusCode(line[column])
+                for line in lines
+                if line[column] != StatusCode.Space
+            }
+
+        # no context vars
+        _managed_dirs = _lines_to_paths(results.managed_dirs.out_lines)
+        _managed_files = _lines_to_paths(results.managed_files.out_lines)
+        _unmanaged_dirs = _lines_to_paths(results.unmanaged_dirs.out_lines)
+        _unmanaged_files = _lines_to_paths(results.unmanaged_files.out_lines)
+
+        # context vars
+        _apply_dirs = _status_dict(results.status_dirs.out_lines, 1)
+        _apply_files = _status_dict(results.status_files.out_lines, 1)
+        _re_add_dirs = _status_dict(results.status_dirs.out_lines, 0)
+        _re_add_files = _status_dict(results.status_files.out_lines, 0)
+
+        # assign results
+        self.managed_dirs = self._path_kind_dict(_managed_dirs, unmanaged=False)
+        self.managed_files = self._path_kind_dict(_managed_files, unmanaged=False)
+        self.apply_dirs = _apply_dirs
+        self.apply_files = _apply_files
+        self.apply_n_dirs = self._is_n_dir(
             dest_dir=dest_dir,
             tab_label=TabLabel.apply,
-            s_dirs=set(apply_dirs),
-            s_files=set(apply_files),
+            s_dirs=set(_apply_dirs),
+            s_files=set(_apply_files),
         )
-        self.re_add_dirs = re_add_dirs
-        self.re_add_files = re_add_files
-        self.re_add_n_dirs = self._compute_n_dirs(
+        self.re_add_dirs = _re_add_dirs
+        self.re_add_files = _re_add_files
+        self.re_add_n_dirs = self._is_n_dir(
             dest_dir=dest_dir,
             tab_label=TabLabel.re_add,
-            s_dirs=set(re_add_dirs),
-            s_files=set(re_add_files),
+            s_dirs=set(_re_add_dirs),
+            s_files=set(_re_add_files),
         )
-        self.unmanaged_dirs = self._path_kind_dict(unmanaged_dirs)
-        self.unmanaged_files = self._path_kind_dict(unmanaged_files)
+        self.unmanaged_dirs = self._path_kind_dict(_unmanaged_dirs, unmanaged=True)
+        self.unmanaged_files = self._path_kind_dict(_unmanaged_files, unmanaged=True)
 
 
 @dataclass(slots=True, kw_only=True)

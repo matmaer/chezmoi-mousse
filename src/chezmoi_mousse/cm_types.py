@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, NamedTuple
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Any
+    from typing import Any, ClassVar, NamedTuple
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_command import CommandResult
+    from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
     from chezmoi_mousse.str_enums import StatusCode
     from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -35,6 +35,19 @@ class TabIds(NamedTuple):
     debug: AppIds
     logs: AppIds
     re_add: AppIds
+
+
+class CommandResult:
+    dry_run: bool
+    err_lines: list[str]
+    full_cmd_str: str
+    out_lines: list[str]
+    parsed_json: ParsedJson
+    path_arg: Path | None
+    returncode: int
+    std_err: str
+    std_out: str
+    verb_cmd: ReadCmd | WriteCmd
 
 
 class SplashResults(NamedTuple):

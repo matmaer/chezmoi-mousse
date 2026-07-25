@@ -179,15 +179,7 @@ class SplashScreen(Screen[SplashResults]):
     def _update_managed_paths(
         self, dest_dir: Path, managed_results: ManagedResults
     ) -> None:
-        self.app.cm_attr.paths.update_fields(
-            dest_dir=dest_dir,
-            status_dirs=managed_results.status_dirs,
-            status_files=managed_results.status_files,
-            managed_files=managed_results.managed_files,
-            managed_dirs=managed_results.managed_dirs,
-            unmanaged_files=managed_results.unmanaged_files,
-            unmanaged_dirs=managed_results.unmanaged_dirs,
-        )
+        self.app.cm_attr.paths.update_fields(dest_dir=dest_dir, results=managed_results)
         self.cm_attr_managed_updated = True
         msg = self._get_log_msg(
             prefix="update cm_attr.managed", suffix="completed", returncode=None
