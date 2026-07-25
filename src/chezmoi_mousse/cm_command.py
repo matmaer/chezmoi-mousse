@@ -103,6 +103,25 @@ class ReadCmd(Enum):
             arg for arg in self.value if arg not in UGLY_ARGS
         )
 
+    @classmethod
+    def splash_commands(cls) -> list["ReadCmd"]:
+        return [ReadCmd.doctor, ReadCmd.git_log, ReadCmd.cat_config, ReadCmd.ignored]
+
+    @classmethod
+    def json_output_commands(cls) -> list["ReadCmd"]:
+        return [ReadCmd.dump_config, ReadCmd.template_data]
+
+    @classmethod
+    def chezmoi_managed_commands(cls) -> list["ReadCmd"]:
+        return [
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.unmanaged_dirs,
+            ReadCmd.unmanaged_files,
+        ]
+
 
 class WriteCmd(Enum):
     add = ("add",)

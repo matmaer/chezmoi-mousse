@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import json
 from collections import deque
 from enum import StrEnum, auto
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -16,15 +16,15 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse.cm_attributes import CmAttrFunctions
 from chezmoi_mousse.cm_command import CommandResult, ReadCmd
+from chezmoi_mousse.cm_types import CmdResultCollector, ManagedResults, SplashResults
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_type_checking import ChezmoiGui
+    from chezmoi_mousse.cm_types import ChezmoiGui
 
 __all__ = ["SplashScreen"]
 
-SPLASH_LOGO = """\
+SPLASH_ASCII = """\
  _______________________________ ___________________._
 |       |   |   |    ___|___    |    '    |       |   |
 |    ===|       |     __|     __|         |   |   |   |
@@ -35,67 +35,75 @@ SPLASH_LOGO = """\
   |         |   |   |   |   |__     |__     |     __|
   |   |ˇ|   |       |       |       |       |       |
   '---' '---^-------^-------^-------^-------^-------'
-"""
+""".replace("===", "=\u200b=\u200b=").splitlines()
 
-SPLASH = SPLASH_LOGO.replace("===", "=\u200b=\u200b=").splitlines()
-
-FADE_HEIGHT = len(SPLASH)
-FADE_WIDTH = len(max(SPLASH, key=len))
-LOG_MSG_WIDTH = 44
-
-# +1 to update cm_attr.managed
-LOG_HEIGHT = len(ReadCmd.splash_cmd_group()) + len(ReadCmd.json_output_cmd_group()) + 1
+SPLASH_WIDTH = len(max(SPLASH_ASCII, key=len))
+LOG_MSG_WIDTH = SPLASH_WIDTH - 8
 
 
-class SplashWorker(StrEnum):
-    cm_attr_group = auto()
+def create_fade_line_styles() -> deque[Style]:
+    start_color = "#0178D4"
+    end_color = "#F187FB"
+    fade = [start_color] * 8
+    gradient = Gradient.from_colors(start_color, end_color, quality=6)
+    fade.extend([color.hex for color in gradient.colors])
+    gradient.colors.reverse()
+    fade.extend([color.hex for color in gradient.colors])
+    fade_line_styles = deque(
+        [Style(color=color, bgcolor="#000000", bold=True) for color in fade]
+    )
+    fade_line_styles.rotate(-2)
+    return fade_line_styles
+
+
+FADE_LINE_STYLES: deque[Style] = create_fade_line_styles()
+
+
+class GroupNames(StrEnum):
+    json_output_group = auto()
     managed_cmd_group = auto()
     splash_cmd_group = auto()
 
 
+class WorkerNames(StrEnum):
+    update_managed_paths = auto()
+    construct_results = auto()
+
+
 class AnimatedFade(Static):
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.styles.height = len(SPLASH_ASCII)
+        self.styles.width = SPLASH_WIDTH
+
     def on_mount(self) -> None:
-        self.styles.height = FADE_HEIGHT
-        self.styles.width = FADE_WIDTH
-        start_color = "#0178D4"
-        end_color = "#F187FB"
-        fade = [start_color] * 8
-        gradient = Gradient.from_colors(start_color, end_color, quality=6)
-        fade.extend([color.hex for color in gradient.colors])
-        gradient.colors.reverse()
-        fade.extend([color.hex for color in gradient.colors])
-        self.fade_line_styles = deque(
-            [Style(color=color, bgcolor="#000000", bold=True) for color in fade]
-        )
-        self.fade_line_styles.rotate(-2)
         self.fade_timer = self.set_interval(
             name="refresh_self", interval=0.1, callback=self.refresh, pause=True
         )
 
     def render_lines(self, crop: Region) -> list[Strip]:
-        self.fade_line_styles.rotate()
+        FADE_LINE_STYLES.rotate()
         return super().render_lines(crop)
 
     def render_line(self, y: int) -> Strip:
-        return Strip([Segment(SPLASH[y], style=self.fade_line_styles[y])])
+        return Strip([Segment(SPLASH_ASCII[y], style=FADE_LINE_STYLES[y])])
 
 
-class SplashLog(RichLog):
-
-    def __init__(self) -> None:
-        super().__init__(markup=True)
-
-    def on_mount(self) -> None:
-        self.styles.width = "auto"
-        self.styles.margin = 2
-        self.styles.height = LOG_HEIGHT
-
-
-class SplashScreen(Screen[None]):
+class SplashScreen(Screen[SplashResults]):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
+
+    def __init__(self) -> None:
+
+        # +2: one to process managed paths and one to avoid scrollbar when it's equal
+        self.log_height = 14  # TODO: calculate properly
+
+        super().__init__()
+        self.styles.width = "auto"
+        self.styles.margin = 2
+        self.styles.height = self.log_height
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method to prevent refresh when moving mouse
@@ -107,86 +115,105 @@ class SplashScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade())
-            yield Center(SplashLog())
+            yield Center(RichLog(markup=True))
 
     def on_mount(self) -> None:
         fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
-        self.cm_attr_managed_updated = False
-        self.cm_attr_parsed_json_updated = False
+        self.splash_log = self.query_exactly_one(RichLog)
         self.primary_color = self.app.theme_variables["text-primary"]
         self.warning_color = self.app.theme_variables["text-warning"]
         self.error_color = self.app.theme_variables["text-error"]
-        self.splash_log = self.query_exactly_one(SplashLog)
-        for command in ReadCmd.managed_cmd_group():
+        for command in ReadCmd.json_output_commands():
             self._run_managed_cmd(command)
-        for command in ReadCmd.splash_cmd_group():
+        for command in ReadCmd.splash_commands():
             self._run_splash_cmd(command)
-        fade_timer.resume()
+        for command in ReadCmd.chezmoi_managed_commands():
+            self._run_managed_cmd(command)
         self.set_interval(interval=2, callback=self._all_workers_finished)
+        fade_timer.resume()
 
-    def _get_log_msg(self, prefix: str, returncode: int) -> str:
-        if "parse" in prefix:
-            suffix = "failed"
-            color = self.error_color
-        suffix = "done"
+    def _get_log_msg(self, *, prefix: str, suffix: str, returncode: int | None) -> str:
         padding = LOG_MSG_WIDTH - (len(prefix) + len(suffix))
-        color = self.primary_color if returncode == 0 else self.warning_color
+        color = (
+            self.primary_color
+            if returncode == 0 or returncode is None
+            else self.warning_color
+        )
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
-    @work(thread=True, group=SplashWorker.splash_cmd_group)
-    async def _run_splash_cmd(self, command: ReadCmd) -> None:
+    def _run_chezmoi_command(self, command: ReadCmd) -> str:
         result: CommandResult = self.app.cm_attr.command.run(command)
-        msg = self._get_log_msg(command.pretty_cmd, result.returncode)
+        # first call getattr to ensure the attribute exists, then set it
+        getattr(CmdResultCollector, command.name)
+        setattr(CmdResultCollector, command.name, result)
+        suffix = "completed"
+        if command in ReadCmd.json_output_commands():
+            suffix = "completed and parsed"
+        return self._get_log_msg(
+            prefix=command.pretty_cmd, suffix=suffix, returncode=result.returncode
+        )
+
+    # Command groups
+
+    @work(thread=True, group=GroupNames.splash_cmd_group)
+    def _run_splash_cmd(self, command: ReadCmd) -> None:
+        msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, group=SplashWorker.managed_cmd_group)
-    async def _run_managed_cmd(self, command: ReadCmd) -> None:
-        result: CommandResult = self.app.cm_attr.command.run(command)
-        msg = self._get_log_msg(command.pretty_cmd, result.returncode)
+    @work(thread=True, group=GroupNames.managed_cmd_group)
+    def _run_managed_cmd(self, command: ReadCmd) -> None:
+        msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, group=SplashWorker.cm_attr_group)
-    def _update_cm_attr_parsed_json(self) -> None:
-        try:
-            CmAttrFunctions.json_loads_outputs()
-            returncode = 0
-        except json.JSONDecodeError:
-            returncode = 1
-        self.cm_attr_parsed_json_updated = True
-        msg_1 = self._get_log_msg("parse dump-config", returncode)
-        msg_2 = self._get_log_msg("parse template_data", returncode)
-        self.app.call_from_thread(self.splash_log.write, msg_1)
-        self.app.call_from_thread(self.splash_log.write, msg_2)
+    @work(thread=True, name=GroupNames.json_output_group)
+    def _run_json_output_cmd(self, command: ReadCmd) -> None:
+        msg = self._run_chezmoi_command(command)
+        self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, group=SplashWorker.cm_attr_group)
-    def _update_cm_attr_managed(self) -> None:
+    # set update ManagedPaths which accessed through cm_attr.paths
 
-        CmAttrFunctions.update_managed_attr()
+    @work(thread=True, group=WorkerNames.update_managed_paths)
+    def _update_managed_paths(
+        self, dest_dir: Path, managed_results: ManagedResults
+    ) -> None:
+        self.app.cm_attr.paths.update_fields(
+            dest_dir=dest_dir,
+            status_dirs=managed_results.status_dirs,
+            status_files=managed_results.status_files,
+            managed_files=managed_results.managed_files,
+            managed_dirs=managed_results.managed_dirs,
+            unmanaged_files=managed_results.unmanaged_files,
+            unmanaged_dirs=managed_results.unmanaged_dirs,
+        )
         self.cm_attr_managed_updated = True
-        msg = self._get_log_msg("update cm_attr.managed", returncode=0)
+        msg = self._get_log_msg(
+            prefix="update cm_attr.managed", suffix="completed", returncode=None
+        )
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    def _worker_group_finished(self, worker_group: SplashWorker) -> bool:
+    def _worker_group_finished(self, worker_group: GroupNames) -> bool:
         group_workers = (w for w in self.workers if w.group == worker_group)
         return all(worker.is_finished for worker in group_workers)
 
     def _all_workers_finished(self) -> None:
-        if (
-            self._worker_group_finished(SplashWorker.splash_cmd_group)
-            and self.cm_attr_parsed_json_updated is False
-        ):
-            self._update_cm_attr_parsed_json()
-        elif (
-            self._worker_group_finished(SplashWorker.managed_cmd_group)
-            and self.cm_attr_managed_updated is False
-            and self.cm_attr_parsed_json_updated is True
-        ):
-            self._update_cm_attr_managed()
-        if all(
+        if not all(
             worker.is_finished
             for worker in self.workers
-            if worker.group == SplashWorker.splash_cmd_group
-            or worker.group == SplashWorker.cm_attr_group
-            or worker.group == SplashWorker.managed_cmd_group
+            if worker.group == GroupNames.json_output_group
+            or worker.group == GroupNames.managed_cmd_group
         ):
-            self.dismiss()
+            return
+        if not all(
+            worker.is_finished
+            for worker in self.workers
+            if worker.name == WorkerNames.update_managed_paths
+        ):
+            managed_results: ManagedResults = CmdResultCollector.get_managed_results()
+            self._update_managed_paths(
+                dest_dir=self.app.cm_attr.dest_dir, managed_results=managed_results
+            )
+            return
+        if all(worker.is_finished for worker in self.workers) and all(
+            worker.is_finished for worker in self.app.workers
+        ):
+            self.dismiss(CmdResultCollector.get_all_results())

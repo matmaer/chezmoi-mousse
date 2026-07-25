@@ -15,16 +15,31 @@ if TYPE_CHECKING:
     type StatusDict = dict[Path, StatusCode]
 
 __all__ = [
-    "AllResults",
-    "CmdResults",
     "ManagedResults",
     "SplashResults",
+    "CmdResultCollector",
     # exports only importable in TYPE_CHECKING block
     "AppIds",
     "ChezmoiGui",
     "ParsedJson",
     "StatusDict",
 ]
+
+
+class SplashResults(NamedTuple):
+    doctor: CommandResult
+    git_log: CommandResult
+    dump_config: CommandResult
+    cat_config: CommandResult
+    template_data: CommandResult
+    ignored: CommandResult
+    git_remote: CommandResult
+    managed_dirs: CommandResult
+    managed_files: CommandResult
+    status_dirs: CommandResult
+    status_files: CommandResult
+    unmanaged_dirs: CommandResult
+    unmanaged_files: CommandResult
 
 
 class ManagedResults(NamedTuple):
@@ -36,67 +51,51 @@ class ManagedResults(NamedTuple):
     unmanaged_files: CommandResult
 
 
-class SplashResults(NamedTuple):
-    doctor_result: CommandResult
-    git_log_result: CommandResult
-    dump_config_result: CommandResult
-    cat_config_result: CommandResult
-    template_data_result: CommandResult
-    ignored_result: CommandResult
-    git_remote_result: CommandResult
-
-
-class AllResults(NamedTuple):
-    managed_results: ManagedResults
-    splash_results: SplashResults
-
-
-class CmdResults:
+class CmdResultCollector:
 
     # currently only executed in splash screen
-    doctor_result: ClassVar[CommandResult]
-    git_log_result: ClassVar[CommandResult]
-    dump_config_result: ClassVar[CommandResult]
-    cat_config_result: ClassVar[CommandResult]
-    template_data_result: ClassVar[CommandResult]
-    ignored_result: ClassVar[CommandResult]
-    git_remote_result: ClassVar[CommandResult]
+    doctor: ClassVar[CommandResult]
+    git_log: ClassVar[CommandResult]
+    dump_config: ClassVar[CommandResult]
+    cat_config: ClassVar[CommandResult]
+    template_data: ClassVar[CommandResult]
+    ignored: ClassVar[CommandResult]
+    git_remote: ClassVar[CommandResult]
 
-    # managed related commands
-    managed_dirs_result: ClassVar[CommandResult]
-    managed_files_result: ClassVar[CommandResult]
-    status_dirs_result: ClassVar[CommandResult]
-    status_files_result: ClassVar[CommandResult]
-    unmanaged_dirs_result: ClassVar[CommandResult]
-    unmanaged_files_result: ClassVar[CommandResult]
+    # currently executed in both splash screen and loading screen
+    managed_dirs: ClassVar[CommandResult]
+    managed_files: ClassVar[CommandResult]
+    status_dirs: ClassVar[CommandResult]
+    status_files: ClassVar[CommandResult]
+    unmanaged_dirs: ClassVar[CommandResult]
+    unmanaged_files: ClassVar[CommandResult]
+
+    @classmethod
+    def get_all_results(cls) -> SplashResults:
+        return SplashResults(
+            doctor=cls.doctor,
+            git_log=cls.git_log,
+            dump_config=cls.dump_config,
+            cat_config=cls.cat_config,
+            template_data=cls.template_data,
+            ignored=cls.ignored,
+            git_remote=cls.git_remote,
+            managed_dirs=cls.managed_dirs,
+            managed_files=cls.managed_files,
+            status_dirs=cls.status_dirs,
+            status_files=cls.status_files,
+            unmanaged_dirs=cls.unmanaged_dirs,
+            unmanaged_files=cls.unmanaged_files,
+        )
 
     # get the managed results as a ManagedResults tuple
     @classmethod
     def get_managed_results(cls) -> ManagedResults:
         return ManagedResults(
-            managed_dirs=cls.managed_dirs_result,
-            managed_files=cls.managed_files_result,
-            status_dirs=cls.status_dirs_result,
-            status_files=cls.status_files_result,
-            unmanaged_dirs=cls.unmanaged_dirs_result,
-            unmanaged_files=cls.unmanaged_files_result,
-        )
-
-    @classmethod
-    def get_splash_results(cls) -> SplashResults:
-        return SplashResults(
-            doctor_result=cls.doctor_result,
-            git_log_result=cls.git_log_result,
-            dump_config_result=cls.dump_config_result,
-            cat_config_result=cls.cat_config_result,
-            template_data_result=cls.template_data_result,
-            ignored_result=cls.ignored_result,
-            git_remote_result=cls.git_remote_result,
-        )
-
-    @classmethod
-    def get_all_results(cls) -> AllResults:
-        return AllResults(
-            managed_results=cls.get_managed_results(),
-            splash_results=cls.get_splash_results(),
+            managed_dirs=cls.managed_dirs,
+            managed_files=cls.managed_files,
+            status_dirs=cls.status_dirs,
+            status_files=cls.status_files,
+            unmanaged_dirs=cls.unmanaged_dirs,
+            unmanaged_files=cls.unmanaged_files,
         )
