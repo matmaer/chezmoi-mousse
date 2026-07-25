@@ -101,21 +101,20 @@ class LogString(StrEnum):
 
 
 class PathKind(StrEnum):
-    dir_exists = auto()  # managed dir which exists on file system
-    dir_not_exists = auto()  # managed dir, does not exist on the file system
-    file_exists = auto()  # managed file, does not exist on the file system
-    file_not_exists = auto()  # managed file system which exists on file system
-
-    # these always exist on disk but are not managed
-    dir_not_managed = auto()
-    file_not_managed = auto()
+    path_exists = auto()  # managed path which exists on file system
+    path_not_exists = auto()  # managed path which does not exists on file system
 
     # these are managed dirs, have no status but have status descendants
     apply_n_dir = auto()  # column 1 in chezmoi status output
     re_add_n_dir = auto()  # column 2 in chezmoi status output
 
-    # this should not happen as we set "--mode=file" globally
+    # for unmanaged paths
+    unmanaged = auto()
+    unwanted = auto()
+
+    # for any managed or unmanaged path
     symlink = auto()
+    unknown = auto()
 
 
 class PathFilters(Enum):
