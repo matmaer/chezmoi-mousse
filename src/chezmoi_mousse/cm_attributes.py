@@ -208,7 +208,7 @@ class CmAttributes:
     ids: TabIds = TabIds()
 
     changes: ChangedPaths = ChangedPaths()
-    paths: ManagedPaths = ManagedPaths()
+    paths: ManagedPaths = field(default_factory=lambda: ManagedPaths())
 
     parsed_config_dump: ParsedJson = field(default_factory=lambda: {})
     parsed_template_data: ParsedJson = field(default_factory=lambda: {})
