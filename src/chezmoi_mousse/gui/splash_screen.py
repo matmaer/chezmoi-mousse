@@ -128,8 +128,6 @@ class SplashScreen(Screen[SplashResults]):
             self._run_managed_cmd(command)
         for command in self.app.cm_attr.read_cmd_groups.splash_only:
             self._run_splash_cmd(command)
-        for command in self.app.cm_attr.read_cmd_groups.json_output:
-            self._run_managed_cmd(command)
         self.set_interval(interval=2, callback=self._all_workers_finished)
         fade_timer.resume()
 
@@ -198,16 +196,11 @@ class SplashScreen(Screen[SplashResults]):
             or worker.group == GroupNames.managed_cmd_group
         ):
             return
-        if not all(
-            worker.is_finished
-            for worker in self.workers
-            if worker.name == WorkerNames.update_managed_paths
-        ):
+        else:
             managed_results: ManagedResults = CmdResultCollector.get_managed_results()
             self._update_managed_paths(
                 dest_dir=self.app.cm_attr.dest_dir, managed_results=managed_results
             )
-            return
         if all(worker.is_finished for worker in self.workers) and all(
             worker.is_finished for worker in self.app.workers
         ):
