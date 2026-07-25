@@ -108,6 +108,36 @@ class LogString(StrEnum):
     using_chezmoi_bin = "Using chezmoi binary at:"
 
 
+class OpBtnLabel(StrEnum):
+    add_review = "Review Add Path"
+    add_run = "Run Chezmoi Add"
+    apply_review = "Review Apply Path"
+    apply_run = "Run Chezmoi Apply"
+    cancel = "Cancel"
+    create_diffs = "Create Diffs"
+    create_paths = "Create Test Paths"
+    destroy_review = "Review Destroy Path"
+    destroy_run = "Run Chezmoi Destroy"
+    forget_review = "Review Forget Path"
+    forget_run = "Run Chezmoi Forget"
+    list_test_paths = "List Test Paths"
+    log_memory = "Log Memory Usage"
+    re_add_review = "Review Re-Add Path"
+    re_add_run = "Run Chezmoi Re-Add"
+    refresh_tree = "Refresh Trees"
+    reload = "Reload"
+    remove_paths = "Remove Test Paths"
+
+    @property
+    def normalized_label(self) -> str:
+        return (
+            self.value.replace(" ", "_")
+            .replace("-", "_")
+            .replace("(", "")
+            .replace(")", "")
+        ).lower()
+
+
 class PathKind(StrEnum):
     path_exists = auto()  # managed path which exists on file system
     path_not_exists = auto()  # managed path which does not exists on file system

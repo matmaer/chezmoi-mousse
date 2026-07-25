@@ -1,5 +1,11 @@
-from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel, SwitchEnum
-from chezmoi_mousse.str_enums import ContainerName, FlatBtnLabel, RichLogName, TabLabel
+from chezmoi_mousse.enum_data import OpBtnEnum, SwitchEnum
+from chezmoi_mousse.str_enums import (
+    ContainerName,
+    FlatBtnLabel,
+    OpBtnLabel,
+    RichLogName,
+    TabLabel,
+)
 
 __all__ = ["AppIds"]
 

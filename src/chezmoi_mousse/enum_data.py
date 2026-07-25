@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import NamedTuple
 
 from chezmoi_mousse.cm_command import WriteCmd
-from chezmoi_mousse.str_enums import Chars, SwitchLabel
+from chezmoi_mousse.str_enums import Chars, OpBtnLabel, SwitchLabel
 
-__all__ = ["OpBtnEnum", "OpBtnLabel", "OpInfoString", "SwitchEnum"]
+__all__ = ["OpBtnEnum", "OpInfoString", "SwitchEnum"]
 
 
 class OpInfoString(StrEnum):
@@ -56,36 +56,6 @@ class OpInfoString(StrEnum):
         " will be recursed in.[/]"
     )
     re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-
-
-class OpBtnLabel(StrEnum):
-    add_review = "Review Add Path"
-    add_run = "Run Chezmoi Add"
-    apply_review = "Review Apply Path"
-    apply_run = "Run Chezmoi Apply"
-    cancel = "Cancel"
-    create_diffs = "Create Diffs"
-    create_paths = "Create Test Paths"
-    destroy_review = "Review Destroy Path"
-    destroy_run = "Run Chezmoi Destroy"
-    forget_review = "Review Forget Path"
-    forget_run = "Run Chezmoi Forget"
-    list_test_paths = "List Test Paths"
-    log_memory = "Log Memory Usage"
-    re_add_review = "Review Re-Add Path"
-    re_add_run = "Run Chezmoi Re-Add"
-    refresh_tree = "Refresh Trees"
-    reload = "Reload"
-    remove_paths = "Remove Test Paths"
-
-    @property
-    def normalized_label(self) -> str:
-        return (
-            self.value.replace(" ", "_")
-            .replace("-", "_")
-            .replace("(", "")
-            .replace(")", "")
-        ).lower()
 
 
 @dataclass(slots=True)
