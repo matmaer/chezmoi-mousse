@@ -68,6 +68,13 @@ wrap-descriptions = 88
 skip-magic-trailing-comma = true
 target-version = ["py313"]
 
+[tool.pyright]
+typeCheckingMode = "strict"
+reportUnknownParameterType = true
+reportUnknownArgumentType = true
+include = ["src/**/*.py", "static_tests/**/*.py"]
+exclude = [".venv", "**/node_modules", "**/__pycache__", "**/.*"]
+
 [tool.ruff]
 line-length = 88
 target-version = "py313"
