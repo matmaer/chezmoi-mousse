@@ -2,49 +2,46 @@ from __future__ import annotations
 
 import json
 import subprocess
+from datetime import datetime
 from functools import cache
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
-from chezmoi_mousse.cm_command import GlobalArgs, ReadCmd, WriteCmd
+from chezmoi_mousse.cm_command import UGLY_ARGS, ReadCmd, WriteCmd
 from chezmoi_mousse.cm_types import CommandResult
-from chezmoi_mousse.str_enums import PathFilters
+from chezmoi_mousse.str_enums import LogColor, PathFilters
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, StrTup
 
+DRY_RUN = "--dry-run"
+
 
 class RunChezmoi:
-    UGLY_ARGS: ClassVar[set[str]] = set()  # args to filter when showing pretty command
 
     @staticmethod
     def subprocess_args(cmd: ReadCmd | WriteCmd, dry_run: bool) -> StrTup:
         return (
             ("chezmoi",) + cmd.value
             if dry_run is False
-            else ("chezmoi", f"{GlobalArgs.dry_run}") + cmd.value
+            else ("chezmoi", f"{DRY_RUN}") + cmd.value
         )
-
-    @staticmethod
-    def _pretty_base_cmd(dry_run: bool):
-        return "chezmoi" if dry_run is False else f"chezmoi {GlobalArgs.dry_run}"
 
     @staticmethod
     def full_cmd_str(cmd: ReadCmd | WriteCmd, dry_run: bool) -> str:
         return (
             f"chezmoi {" ".join(cmd.value)}"
             if dry_run is False
-            else f"chezmoi {GlobalArgs.dry_run} {" ".join(cmd.value)}"
+            else f"chezmoi {DRY_RUN} {" ".join(cmd.value)}"
         )
 
     @staticmethod
     def pretty_cmd(
-        cmd: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None
+        cmd: ReadCmd | WriteCmd, dry_run: bool, path_arg: Path | None
     ) -> str:
-        pretty_cmd = f"{RunChezmoi._pretty_base_cmd(dry_run)} {" ".join(
-            a for a in cmd.value if a not in RunChezmoi.UGLY_ARGS
-        )}"
+        pretty_cmd = "chezmoi" if dry_run is False else f"chezmoi {DRY_RUN}"
+        pretty_cmd += " ".join([a for a in cmd.value if a not in UGLY_ARGS])
         return pretty_cmd if path_arg is None else f"{pretty_cmd} {path_arg}"
 
     @staticmethod
@@ -54,6 +51,12 @@ class RunChezmoi:
         return subprocess.run(
             run_args, capture_output=True, shell=False, text=True, timeout=time_out
         )
+
+    @staticmethod
+    def _exit_code_colored_cmd(pretty_cmd: str, returncode: int) -> str:
+        pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
+        cmd_color = LogColor.success if returncode == 0 else LogColor.warning
+        return f"{pretty_time} [${cmd_color}]{pretty_cmd}[/] (returncode {returncode})"
 
     @staticmethod
     def run(
@@ -86,17 +89,23 @@ class RunChezmoi:
         else:
             parsed_json = {}
 
+        pretty_cmd = RunChezmoi.pretty_cmd(cmd, dry_run, path_arg)
+        exit_colored_cmd = RunChezmoi._exit_code_colored_cmd(
+            pretty_cmd, completed_process.returncode
+        )
+
         return CommandResult(
-            dry_run=GlobalArgs.dry_run in run_args,
+            dry_run=dry_run,
             err_lines=err_lines,
             full_cmd_str=RunChezmoi.full_cmd_str(cmd, dry_run),
             out_lines=out_lines,
             parsed_json=parsed_json,
+            pretty_cmd=pretty_cmd,
             path_arg=path_arg,
             returncode=completed_process.returncode,
             std_err=std_err,
             std_out=std_out,
-            verb_cmd=cmd,
+            colored_cmd=exit_colored_cmd,
         )
 
 
