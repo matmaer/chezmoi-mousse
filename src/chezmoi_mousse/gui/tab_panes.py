@@ -164,7 +164,7 @@ class IgnoredView(Vertical):
         self.update_pretty_ignored()
 
     @work
-    def update_pretty_ignored(self) -> None:
+    async def update_pretty_ignored(self) -> None:
         pretty_ignored: Pretty = self.query_exactly_one(Pretty)
         pretty_ignored.update("Loading...")
 
