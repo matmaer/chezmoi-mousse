@@ -3,7 +3,6 @@ from __future__ import annotations
 import inspect
 import os
 from datetime import datetime
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
@@ -12,8 +11,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse.functions import RunChezmoi
-from chezmoi_mousse.str_enums import Chars, LogString, SectionLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, LogColor, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -24,35 +22,16 @@ if TYPE_CHECKING:
 __all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
 
 
-class LogColor(StrEnum):
-    error = "text-error"
-    info = "text-primary"
-    ready = "accent-darken-2"
-    success = "text-success"
-    warning = "text-warning"
-
-
 class CmdResultCollapsible(Collapsible):
 
     def __init__(self, *, cmd_result: CommandResult):
         collapsible_contents = self._collapsible_contents(cmd_result)
-        colored_title = self._exit_code_colored_cmd(cmd_result)
         super().__init__(
             *collapsible_contents,
-            title=colored_title,
+            title=cmd_result.colored_cmd,
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
         )
-
-    def _exit_code_colored_cmd(self, result: CommandResult) -> str:
-        pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
-        cmd_color = LogColor.success if result.returncode == 0 else LogColor.warning
-        pretty_cmd = {
-            RunChezmoi.pretty_cmd(
-                result.verb_cmd, dry_run=result.dry_run, path_arg=result.path_arg
-            )
-        }
-        return f"{pretty_time} [${cmd_color}]{pretty_cmd}[/] {result.returncode}"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
         dry_run_str = "(dry run)" if result.dry_run else ""
