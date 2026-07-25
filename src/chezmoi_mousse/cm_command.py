@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, NamedTuple
 
 from chezmoi_mousse.functions import RunChezmoi
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson, StrTup
+    from chezmoi_mousse.cm_types import StrTup
 
 
 __all__ = ["ReadCmd", "WriteCmd"]
@@ -112,17 +110,3 @@ class WriteCmd(Enum):
     destroy = ("destroy",)
     forget = ("forget",)
     re_add = ("re-add",)
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class CommandResult:
-    dry_run: bool
-    err_lines: list[str]
-    full_cmd_str: str
-    out_lines: list[str]
-    parsed_json: ParsedJson
-    path_arg: Path | None
-    returncode: int
-    std_err: str
-    std_out: str
-    verb_cmd: ReadCmd | WriteCmd

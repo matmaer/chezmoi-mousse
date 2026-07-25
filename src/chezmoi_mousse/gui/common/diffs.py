@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from itertools import groupby
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import getters
@@ -11,12 +10,14 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.functions import RunChezmoi
-from chezmoi_mousse.str_enums import StatusCode, TabLabel, Tcss
+from chezmoi_mousse.str_enums import TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from pathlib import Path
+
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, StatusDict
 
 __all__ = ["DiffView"]
 
@@ -80,12 +81,12 @@ class DiffView(Container):
                     )
         return widgets
 
-    def _get_status_dirs(self) -> dict[Path, StatusCode]:
+    def _get_status_dirs(self) -> StatusDict:
         return {}
 
-    def _get_status_dir_descendants(self, dir_path: Path) -> dict[Path, StatusCode]:
+    def _get_status_dir_descendants(self, dir_path: Path) -> StatusDict:
         status_dirs = self._get_status_dirs()
-        results: dict[Path, StatusCode] = {}
+        results: StatusDict = {}
         for path, status in status_dirs.items():
             if path.is_relative_to(dir_path):
                 results[path] = status

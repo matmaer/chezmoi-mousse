@@ -13,14 +13,14 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse.cm_command import CommandResult, ReadCmd
+from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.functions import RunChezmoi
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from chezmoi_mousse.cm_types import ChezmoiGui
+    from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 
@@ -96,7 +96,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        self.command_results.append(RunChezmoi.run(dry_run=False, cmd=read_cmd))
+        self.command_results.append(RunChezmoi.run(read_cmd, dry_run=False))
 
     @work(thread=True, exit_on_error=False)
     @min_wait
@@ -105,6 +105,6 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
             btn_enum.path_arg = None
         self.command_results.append(
             RunChezmoi.run(
-                dry_run=dry_run, cmd=btn_enum.write_cmd, path_arg=btn_enum.path_arg
+                btn_enum.write_cmd, dry_run=dry_run, path_arg=btn_enum.path_arg
             )
         )

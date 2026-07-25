@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import json
 import subprocess
 from functools import cache
 from itertools import islice
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
-from chezmoi_mousse.cm_command import CommandResult, GlobalArgs, ReadCmd, WriteCmd
-from chezmoi_mousse.cm_types import ParsedJson, StrTup
+from chezmoi_mousse.cm_command import GlobalArgs, ReadCmd, WriteCmd
+from chezmoi_mousse.cm_types import CommandResult
 from chezmoi_mousse.str_enums import PathFilters
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.cm_types import ParsedJson, StrTup
 
 
 class RunChezmoi:

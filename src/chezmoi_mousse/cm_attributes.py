@@ -4,10 +4,14 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import chain
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_types import ManagedResults, ParsedJson, TabIds
+from chezmoi_mousse.cm_types import ManagedResults, TabIds
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.cm_types import ParsedJson, PathKindDict, StatusDict
 
 __all__ = ["CmAttributes"]
 
@@ -35,19 +39,19 @@ class ChangedPaths:
 
 @dataclass(slots=True, kw_only=True)
 class ManagedPaths:
-    managed_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
-    managed_files: dict[Path, PathKind] = field(default_factory=lambda: {})
+    managed_dirs: PathKindDict = field(default_factory=lambda: {})
+    managed_files: PathKindDict = field(default_factory=lambda: {})
 
-    apply_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    apply_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    re_add_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
-    re_add_files: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    apply_dirs: StatusDict = field(default_factory=lambda: {})
+    apply_files: StatusDict = field(default_factory=lambda: {})
+    re_add_dirs: StatusDict = field(default_factory=lambda: {})
+    re_add_files: StatusDict = field(default_factory=lambda: {})
 
-    apply_n_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
-    re_add_n_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
+    apply_n_dirs: PathKindDict = field(default_factory=lambda: {})
+    re_add_n_dirs: PathKindDict = field(default_factory=lambda: {})
 
-    unmanaged_dirs: dict[Path, PathKind] = field(default_factory=lambda: {})
-    unmanaged_files: dict[Path, PathKind] = field(default_factory=lambda: {})
+    unmanaged_dirs: PathKindDict = field(default_factory=lambda: {})
+    unmanaged_files: PathKindDict = field(default_factory=lambda: {})
 
     @cached_property
     def no_apply_paths(self) -> bool:
@@ -96,8 +100,8 @@ class ManagedPaths:
         tab_label: TabLabel,
         s_dirs: set[Path],
         s_files: set[Path],
-    ) -> dict[Path, PathKind]:
-        n_dirs: dict[Path, PathKind] = {}
+    ) -> PathKindDict:
+        n_dirs: PathKindDict = {}
 
         path_kind = (
             PathKind.apply_n_dir
@@ -117,10 +121,8 @@ class ManagedPaths:
                 n_dirs[p] = path_kind
         return dict(sorted(n_dirs.items()))
 
-    def _path_kind_dict(
-        self, paths: list[Path], unmanaged: bool
-    ) -> dict[Path, PathKind]:
-        result: dict[Path, PathKind] = {}
+    def _path_kind_dict(self, paths: list[Path], unmanaged: bool) -> PathKindDict:
+        result: PathKindDict = {}
         for path in paths:
             if path.is_symlink():
                 path_kind = PathKind.symlink
@@ -140,7 +142,7 @@ class ManagedPaths:
         def _lines_to_paths(lines: list[str]) -> list[Path]:
             return [Path(line) for line in lines]
 
-        def _status_dict(lines: list[str], column: int) -> dict[Path, StatusCode]:
+        def _status_dict(lines: list[str], column: int) -> StatusDict:
             return {
                 Path(line[3:]): StatusCode(line[column])
                 for line in lines

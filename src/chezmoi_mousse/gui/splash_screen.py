@@ -16,12 +16,12 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse.cm_command import CommandResult, ReadCmd
+from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import CmdResultCollector, ManagedResults, SplashResults
 from chezmoi_mousse.functions import RunChezmoi
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ChezmoiGui
+    from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
 
 __all__ = ["SplashScreen"]
 

@@ -28,8 +28,7 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_command import CommandResult
-    from chezmoi_mousse.cm_types import ChezmoiGui
+    from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
 
 __all__ = ["MainScreen", "CustomHeader"]
 

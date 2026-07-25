@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -8,12 +9,13 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
-    from chezmoi_mousse.str_enums import StatusCode
+    from chezmoi_mousse.str_enums import PathKind, StatusCode
     from chezmoi_mousse.textual_app import ChezmoiGui
 
-type StatusDict = dict[Path, StatusCode]
-type StrTup = tuple[str, ...]
-type ParsedJson = dict[str, Any]
+    type StatusDict = dict[Path, StatusCode]
+    type PathKindDict = dict[Path, PathKind]
+    type StrTup = tuple[str, ...]
+    type ParsedJson = dict[str, Any]
 
 __all__ = [
     "CmdResultCollector",
@@ -37,6 +39,7 @@ class TabIds(NamedTuple):
     re_add: AppIds
 
 
+@dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
     dry_run: bool
     err_lines: list[str]

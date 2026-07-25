@@ -19,8 +19,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse.cm_command import CommandResult
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, CommandResult
 
 __all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
 
