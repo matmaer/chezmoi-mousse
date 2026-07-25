@@ -11,19 +11,19 @@ if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import StatusCode
     from chezmoi_mousse.textual_app import ChezmoiGui
 
-    type ParsedJson = dict[str, Any]
-    type StatusDict = dict[Path, StatusCode]
-    type StrTup = tuple[str, ...]
+type StatusDict = dict[Path, StatusCode]
+type StrTup = tuple[str, ...]
+type ParsedJson = dict[str, Any]
 
 __all__ = [
-    "ManagedResults",
-    "SplashResults",
     "CmdResultCollector",
+    "ManagedResults",
+    "ParsedJson",
+    "SplashResults",
+    "StatusDict",
     # exports only importable in TYPE_CHECKING block
     "AppIds",
     "ChezmoiGui",
-    "ParsedJson",
-    "StatusDict",
 ]
 
 
