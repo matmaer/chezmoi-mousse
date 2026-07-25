@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -8,7 +7,7 @@ if TYPE_CHECKING:
     from typing import Any, ClassVar, NamedTuple
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
+    from chezmoi_mousse.cm_command import ReadCmd
     from chezmoi_mousse.str_enums import PathKind, StatusCode
     from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -18,39 +17,48 @@ if TYPE_CHECKING:
     type ParsedJson = dict[str, Any]
 
 __all__ = [
+    "AppIds",
+    "ChezmoiGui",
     "CmdResultCollector",
     "ManagedResults",
     "ParsedJson",
     "SplashResults",
     "StatusDict",
-    # exports only importable in TYPE_CHECKING block
-    "AppIds",
-    "ChezmoiGui",
     "TabIds",
 ]
 
 
-class TabIds(NamedTuple):
-    add: AppIds
-    apply: AppIds
-    config: AppIds
-    debug: AppIds
-    logs: AppIds
-    re_add: AppIds
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class CommandResult:
+class CommandResult(NamedTuple):
     dry_run: bool
     err_lines: list[str]
     full_cmd_str: str
     out_lines: list[str]
     parsed_json: ParsedJson
     path_arg: Path | None
+    pretty_cmd: str
     returncode: int
     std_err: str
     std_out: str
-    verb_cmd: ReadCmd | WriteCmd
+    colored_cmd: str
+
+
+class ManagedResults(NamedTuple):
+    managed_dirs: CommandResult
+    managed_files: CommandResult
+    status_dirs: CommandResult
+    status_files: CommandResult
+    unmanaged_dirs: CommandResult
+    unmanaged_files: CommandResult
+
+
+class ReadCmdGroup(NamedTuple):
+    splash_only: list[ReadCmd]
+    json_output: list[ReadCmd]
+    managed: list[ReadCmd]
+
+    @property
+    def commands_count(self) -> int:
+        return len(self.splash_only + self.json_output + self.managed)
 
 
 class SplashResults(NamedTuple):
@@ -69,13 +77,13 @@ class SplashResults(NamedTuple):
     unmanaged_files: CommandResult
 
 
-class ManagedResults(NamedTuple):
-    managed_dirs: CommandResult
-    managed_files: CommandResult
-    status_dirs: CommandResult
-    status_files: CommandResult
-    unmanaged_dirs: CommandResult
-    unmanaged_files: CommandResult
+class TabIds(NamedTuple):
+    add: AppIds
+    apply: AppIds
+    config: AppIds
+    debug: AppIds
+    logs: AppIds
+    re_add: AppIds
 
 
 class CmdResultCollector:

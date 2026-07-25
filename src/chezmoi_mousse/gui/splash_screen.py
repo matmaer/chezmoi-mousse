@@ -17,7 +17,12 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import CmdResultCollector, ManagedResults, SplashResults
+from chezmoi_mousse.cm_types import (
+    CmdResultCollector,
+    ManagedResults,
+    ReadCmdGroup,
+    SplashResults,
+)
 from chezmoi_mousse.functions import RunChezmoi
 
 if TYPE_CHECKING:
@@ -69,6 +74,20 @@ class GroupNames(StrEnum):
 class WorkerNames(StrEnum):
     update_managed_paths = auto()
     construct_results = auto()
+
+
+read_cmd_groups = ReadCmdGroup(
+    splash_only=[ReadCmd.doctor, ReadCmd.git_log, ReadCmd.cat_config, ReadCmd.ignored],
+    json_output=[ReadCmd.dump_config, ReadCmd.template_data],
+    managed=[
+        ReadCmd.managed_dirs,
+        ReadCmd.managed_files,
+        ReadCmd.status_dirs,
+        ReadCmd.status_files,
+        ReadCmd.unmanaged_dirs,
+        ReadCmd.unmanaged_files,
+    ],
+)
 
 
 class AnimatedFade(Static):
@@ -124,11 +143,11 @@ class SplashScreen(Screen[SplashResults]):
         self.primary_color = self.app.theme_variables["text-primary"]
         self.warning_color = self.app.theme_variables["text-warning"]
         self.error_color = self.app.theme_variables["text-error"]
-        for command in ReadCmd.json_output_commands():
+        for command in read_cmd_groups.managed:
             self._run_managed_cmd(command)
-        for command in ReadCmd.splash_commands():
+        for command in read_cmd_groups.splash_only:
             self._run_splash_cmd(command)
-        for command in ReadCmd.chezmoi_managed_commands():
+        for command in read_cmd_groups.json_output:
             self._run_managed_cmd(command)
         self.set_interval(interval=2, callback=self._all_workers_finished)
         fade_timer.resume()
@@ -148,7 +167,7 @@ class SplashScreen(Screen[SplashResults]):
         getattr(CmdResultCollector, command.name)
         setattr(CmdResultCollector, command.name, result)
         suffix = "completed"
-        if command in ReadCmd.json_output_commands():
+        if command in read_cmd_groups.splash_only:
             suffix = "completed and parsed"
         return self._get_log_msg(
             prefix=RunChezmoi.pretty_cmd(command, dry_run=False, path_arg=None),
