@@ -3,6 +3,7 @@ import subprocess
 from functools import cache
 from itertools import islice
 from pathlib import Path
+from typing import ClassVar
 
 from chezmoi_mousse.cm_command import CommandResult, GlobalArgs, ReadCmd, WriteCmd
 from chezmoi_mousse.cm_types import ParsedJson, StrTup
@@ -10,17 +11,36 @@ from chezmoi_mousse.str_enums import PathFilters
 
 
 class RunChezmoi:
+    UGLY_ARGS: ClassVar[set[str]] = set()  # args to filter when showing pretty command
 
     @staticmethod
-    def review_cmd(
-        cmd: ReadCmd | WriteCmd, *, dry_run: bool | None = None, rel_path: str = ""
+    def subprocess_args(cmd: ReadCmd | WriteCmd, dry_run: bool) -> StrTup:
+        return (
+            ("chezmoi",) + cmd.value
+            if dry_run is False
+            else ("chezmoi", f"{GlobalArgs.dry_run}") + cmd.value
+        )
+
+    @staticmethod
+    def _pretty_base_cmd(dry_run: bool):
+        return "chezmoi" if dry_run is False else f"chezmoi {GlobalArgs.dry_run}"
+
+    @staticmethod
+    def full_cmd_str(cmd: ReadCmd | WriteCmd, dry_run: bool) -> str:
+        return (
+            f"chezmoi {" ".join(cmd.value)}"
+            if dry_run is False
+            else f"chezmoi {GlobalArgs.dry_run} {" ".join(cmd.value)}"
+        )
+
+    @staticmethod
+    def pretty_cmd(
+        cmd: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None
     ) -> str:
-        if isinstance(cmd, ReadCmd):
-            return cmd.pretty_cmd + rel_path
-        elif dry_run is not None:
-            return cmd.pretty_cmd(write_cmd=cmd, dry_run=dry_run) + rel_path
-        else:
-            raise ValueError(f"Receiving write cmd {cmd} and dry run is {dry_run}")
+        pretty_cmd = f"{RunChezmoi._pretty_base_cmd(dry_run)} {" ".join(
+            a for a in cmd.value if a not in RunChezmoi.UGLY_ARGS
+        )}"
+        return pretty_cmd if path_arg is None else f"{pretty_cmd} {path_arg}"
 
     @staticmethod
     def _subprocess_run(
@@ -32,21 +52,12 @@ class RunChezmoi:
 
     @staticmethod
     def run(
-        cmd: ReadCmd | WriteCmd,
-        *,
-        dry_run: bool | None = None,
-        path_arg: Path | None = None,
+        cmd: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None = None
     ) -> CommandResult:
         time_out: int = 10 if isinstance(cmd, ReadCmd) else 20
-        if isinstance(cmd, WriteCmd):
-            if dry_run is None:
-                raise ValueError(f"dry_run is None for a write cmd: {cmd}")
-            else:
-                full_cmd_str = cmd.full_cmd_str(cmd, dry_run)
-                run_args = cmd.subprocess_args(cmd, dry_run) + (str(path_arg),)
-        else:
-            full_cmd_str = cmd.full_cmd_str
-            run_args = cmd.subprocess_args + (str(path_arg),)
+        run_args = RunChezmoi.subprocess_args(cmd, dry_run) + (str(path_arg),)
+        if path_arg is not None:
+            run_args += (str(path_arg),)
 
         completed_process: subprocess.CompletedProcess[str] = (
             RunChezmoi._subprocess_run(run_args, time_out)
@@ -73,7 +84,7 @@ class RunChezmoi:
         return CommandResult(
             dry_run=GlobalArgs.dry_run in run_args,
             err_lines=err_lines,
-            full_cmd=full_cmd_str,
+            full_cmd_str=RunChezmoi.full_cmd_str(cmd, dry_run),
             out_lines=out_lines,
             parsed_json=parsed_json,
             path_arg=path_arg,

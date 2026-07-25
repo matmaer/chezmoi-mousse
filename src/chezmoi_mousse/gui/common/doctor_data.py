@@ -8,9 +8,9 @@ from rich.text import Text
 from textual import getters, work
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
+from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.str_enums import Chars, SectionLabel, Tcss
 
 if TYPE_CHECKING:
@@ -25,12 +25,13 @@ class DoctorTable(DataTable[Text]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    doctor_lines: reactive[list[str]] = reactive(list[str], init=False)
+
     def __init__(self) -> None:
         super().__init__(cursor_type="row")
 
-    @property
-    def _dr_style(self) -> dict[str, str]:
-        return {
+    def on_mount(self) -> None:
+        self._dr_style = {
             "ok": self.app.theme_variables["text-success"],
             "info": self.app.theme_variables["foreground-darken-1"],
             "warning": self.app.theme_variables["text-warning"],
@@ -38,15 +39,8 @@ class DoctorTable(DataTable[Text]):
             "error": self.app.theme_variables["text-error"],
         }
 
-    def on_mount(self):
-        self._populate_table()
-
     @work
-    async def _populate_table(self) -> None:
-        doctor_lines: list[str] = self.app.cm_attr.get_command_result(
-            command=ReadCmd.doctor
-        ).out_lines
-
+    async def _populate_table(self, doctor_lines: list[str]) -> None:
         self.add_columns(*doctor_lines[0].split())
 
         for line in doctor_lines[1:]:
@@ -71,6 +65,9 @@ class DoctorTable(DataTable[Text]):
             else:
                 text_row = [Text(cell_text) for cell_text in row]
                 self.add_row(*text_row)
+
+    def watch_doctor_lines(self, doctor_lines: list[str]):
+        self._populate_table(doctor_lines)
 
 
 class InfoStrings(StrEnum):
@@ -101,7 +98,7 @@ class InfoStrings(StrEnum):
     )
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, kw_only=True)
 class PwMgrData:
     description: str
     doctor_check: str
@@ -265,18 +262,16 @@ class PwMgrInfoView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    doctor_lines: reactive[list[str]] = reactive(list[str])
+
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
-    def on_mount(self) -> None:
-        self._populate_pw_mgr_info()
-
     @work
-    async def _populate_pw_mgr_info(self) -> None:
-        lines: list[str] = self.app.cm_attr.cmd_results.doctor.out_lines
+    async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:
         pw_mgr_data_list: list[PwMgrData] = []
 
-        for line in lines[1:]:  # Skip header line
+        for line in doctor_lines[1:]:  # Skip header line
             row = tuple(line.split(maxsplit=2))
             if row[1] not in PwMgrInfo.all_pw_mgr_commands():
                 continue
@@ -289,3 +284,6 @@ class PwMgrInfoView(Vertical):
             self.mount(pw_collapsible)
 
         self.mount(Static(f"\n{InfoStrings.info_warning}"))
+
+    def watch_doctor_lines(self, doctor_lines: list[str]):
+        self._populate_pw_mgr_info(doctor_lines)

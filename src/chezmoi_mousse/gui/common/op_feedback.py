@@ -8,15 +8,14 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.cm_command import GlobalArgs, WriteCmd
+from chezmoi_mousse.cm_command import WriteCmd
 from chezmoi_mousse.enum_data import OpBtnEnum, OpInfoString
+from chezmoi_mousse.functions import RunChezmoi
 from chezmoi_mousse.str_enums import Tcss
 
 from .actionables import OpButton
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse.cm_types import ChezmoiGui
 
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
@@ -38,21 +37,14 @@ class OperateInfo(Static):
         self.display = False
         self.dest_dir = self.app.cm_attr.dest_dir
 
-    def review_cmd(self, cmd: WriteCmd, *, path_arg: Path | None = None) -> str:
-        lines: list[str] = ["chezmoi"]
-        if self.dry_run is True:
-            lines.append(GlobalArgs.dry_run)
-        lines.append(cmd.pretty_verb)
-        if path_arg is not None:
-            lines.append(f"{path_arg.relative_to(self.dest_dir)}")
-        return " ".join(lines)
-
-    def update_review_info(self, button: OpButton) -> None:
+    def update_review_info(self, button: OpButton, dry_run: bool) -> None:
         self.current_button = button
         info_lines: list[str] = []
         info_lines.append(
-            self.review_cmd(
-                button.btn_enum.write_cmd, path_arg=button.btn_enum.path_arg
+            RunChezmoi.pretty_cmd(
+                button.btn_enum.write_cmd,
+                dry_run=dry_run,
+                path_arg=button.btn_enum.path_arg,
             )
         )
         info_lines.append(button.btn_enum.op_info_string)
@@ -73,10 +65,10 @@ class OperateInfo(Static):
         self.border_title = button.btn_enum.op_info_title
         self.border_subtitle = button.btn_enum.op_info_subtitle
 
-    def watch_dry_run(self) -> None:
+    def watch_dry_run(self, dry_run: bool) -> None:
         if not self.display:
             return
-        self.update_review_info(self.current_button)
+        self.update_review_info(self.current_button, dry_run)
 
 
 class CommandOutput(ScrollableContainer):

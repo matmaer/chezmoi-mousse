@@ -5,16 +5,16 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, NamedTuple
 
+from chezmoi_mousse.functions import RunChezmoi
+
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, StrTup
 
 
-__all__ = ["CommandResult", "ReadCmd", "WriteCmd"]
+__all__ = ["ReadCmd", "WriteCmd"]
 
 
 CHEZMOI = "chezmoi"
-
-UGLY_ARGS: set[str] = set()  # args to filter when showing pretty command
 
 
 class GlobalArgs:
@@ -31,7 +31,7 @@ class GlobalArgs:
         "--use-builtin-git",
     )
     dry_run: ClassVar[str] = "--dry-run"
-    UGLY_ARGS.update(global_defaults)
+    RunChezmoi.UGLY_ARGS.update(global_defaults)
 
 
 class ChezmoiGitArgs:
@@ -51,7 +51,7 @@ class ChezmoiGitArgs:
     )
     git_log: ClassVar[StrTup] = _default_args + ("log",) + _git_log_args
     git_remote: ClassVar[StrTup] = _default_args + ("remote", _verbose)
-    UGLY_ARGS.update(_global_args, _git_log_args, _verbose)
+    RunChezmoi.UGLY_ARGS.update(_global_args, _git_log_args, _verbose)
 
 
 class VerbArgs(NamedTuple):
@@ -60,7 +60,7 @@ class VerbArgs(NamedTuple):
     include_files: str = "--include=files"
     path_style_absolute: str = "--path-style=absolute"
     reverse: str = "--reverse"
-    UGLY_ARGS.update((format_json, path_style_absolute))
+    RunChezmoi.UGLY_ARGS.update((format_json, path_style_absolute))
 
 
 class ReadCmd(Enum):
@@ -85,20 +85,6 @@ class ReadCmd(Enum):
         VerbArgs.path_style_absolute,
         VerbArgs.include_files,
     )
-
-    @property
-    def subprocess_args(self) -> StrTup:
-        return (CHEZMOI,) + self.value
-
-    @property
-    def full_cmd_str(self) -> str:
-        return f"{CHEZMOI} " + " ".join(self.value)
-
-    @property
-    def pretty_cmd(self) -> str:
-        return f"{CHEZMOI} " + " ".join(
-            arg for arg in self.value if arg not in UGLY_ARGS
-        )
 
     @classmethod
     def splash_commands(cls) -> list[ReadCmd]:
@@ -127,33 +113,12 @@ class WriteCmd(Enum):
     forget = ("forget",)
     re_add = ("re-add",)
 
-    @classmethod
-    def subprocess_args(cls, cmd: WriteCmd, dry_run: bool) -> StrTup:
-        if dry_run:
-            return (CHEZMOI, GlobalArgs.dry_run) + cmd.value
-        else:
-            return (CHEZMOI,) + cmd.value
-
-    @classmethod
-    def full_cmd_str(cls, cmd: WriteCmd, dry_run: bool) -> str:
-        return f"{CHEZMOI} " + " ".join(cls.subprocess_args(cmd, dry_run))
-
-    @classmethod
-    def pretty_cmd(cls, write_cmd: WriteCmd, dry_run: bool) -> str:
-        return f"{CHEZMOI} " + " ".join(
-            arg
-            for arg in (
-                (GlobalArgs.dry_run,) + write_cmd.value if dry_run else write_cmd.value
-            )
-            if arg not in UGLY_ARGS
-        )
-
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
     dry_run: bool
     err_lines: list[str]
-    full_cmd: str
+    full_cmd_str: str
     out_lines: list[str]
     parsed_json: ParsedJson
     path_arg: Path | None

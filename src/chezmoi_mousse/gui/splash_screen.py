@@ -143,7 +143,7 @@ class SplashScreen(Screen[SplashResults]):
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        result: CommandResult = RunChezmoi.run(command)
+        result: CommandResult = RunChezmoi.run(command, dry_run=False)
         # first call getattr to ensure the attribute exists, then set it
         getattr(CmdResultCollector, command.name)
         setattr(CmdResultCollector, command.name, result)
@@ -151,7 +151,9 @@ class SplashScreen(Screen[SplashResults]):
         if command in ReadCmd.json_output_commands():
             suffix = "completed and parsed"
         return self._get_log_msg(
-            prefix=command.pretty_cmd, suffix=suffix, returncode=result.returncode
+            prefix=RunChezmoi.pretty_cmd(command, dry_run=False, path_arg=None),
+            suffix=suffix,
+            returncode=result.returncode,
         )
 
     # Command groups

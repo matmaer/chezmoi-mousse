@@ -187,7 +187,7 @@ class MainScreen(Screen[None]):
         self._set_display(event.button)
         if event.button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.reset_widgets()
-            self.operate_info.update_review_info(event.button)
+            self.operate_info.update_review_info(event.button, self.app.cm_attr.dry_run)
             return
         if event.button.btn_enum == OpBtnEnum.reload:
             self.command_output.reset_widgets()

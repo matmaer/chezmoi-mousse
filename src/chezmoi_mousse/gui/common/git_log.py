@@ -63,7 +63,7 @@ class GitLogView(Container):
             return
         self.remove_children()
         if show_path == self.app.cm_attr.dest_dir:
-            lines = self.app.cm_attr.cmd_results.git_log.out_lines
+            lines = []  # TODO: make sure the lines are known
             if not lines:
                 lines = ["No commits;No git log entries available yet."]
             container = self._create_datatable_container(lines)

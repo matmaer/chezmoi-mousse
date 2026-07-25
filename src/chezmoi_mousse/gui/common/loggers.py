@@ -12,7 +12,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.functions import RunChezmoi
 from chezmoi_mousse.str_enums import Chars, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
@@ -48,7 +48,12 @@ class CmdResultCollapsible(Collapsible):
     def _exit_code_colored_cmd(self, result: CommandResult) -> str:
         pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
         cmd_color = LogColor.success if result.returncode == 0 else LogColor.warning
-        return f"{pretty_time} [${cmd_color}]{result.pretty_cmd}[/] {result.returncode}"
+        pretty_cmd = {
+            RunChezmoi.pretty_cmd(
+                result.verb_cmd, dry_run=result.dry_run, path_arg=result.path_arg
+            )
+        }
+        return f"{pretty_time} [${cmd_color}]{pretty_cmd}[/] {result.returncode}"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
         dry_run_str = "(dry run)" if result.dry_run else ""
@@ -57,7 +62,7 @@ class CmdResultCollapsible(Collapsible):
         contents: list[Label | Static] = [
             Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
         ]
-        contents.extend([Label(result.full_cmd, classes=Tcss.full_cmd)])
+        contents.extend([Label(result.full_cmd_str, classes=Tcss.full_cmd)])
         contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
@@ -149,15 +154,10 @@ class AppLog(RichLoggers):
                 self.write_info(LogString.doctor_no_issue_found)
         self.write_ready("end of chezmoi doctor output")
 
+    # TODO: implement watch_cmd_results
     def watch_cmd_results(self, cmd_results: list[CommandResult]) -> None:
-        for result in cmd_results:
-            if result.verb_cmd == ReadCmd.doctor:
-                self.log_doctor_info(result.std_out)
-            else:
-                log_color = (
-                    LogColor.success if result.returncode == 0 else LogColor.warning
-                )
-                self.write_color(f"executed {result.pretty_cmd}", log_color)
+
+        self.notify(f"{cmd_results}")
 
 
 class DebugLog(RichLoggers):
