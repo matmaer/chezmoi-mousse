@@ -4,7 +4,20 @@ from enum import Enum, StrEnum
 
 __all__ = ["ReadCmd", "WriteCmd"]
 
-UGLY_ARGS: set[str] = set()  # updated at the end of the module
+
+def get_ugly_args() -> set[str]:
+    ugly_args: set[str] = set()
+    ugly_args.update(
+        GlobalArgs.global_defaults.value,
+        ChezmoiGitArgs.global_args.value,
+        ChezmoiGitArgs.git_log_args.value,
+        (
+            ChezmoiGitArgs.verbose.value,
+            VerbArgs.format_json.value,
+            VerbArgs.path_style_absolute.value,
+        ),
+    )
+    return ugly_args
 
 
 class GlobalArgs(Enum):
@@ -80,15 +93,3 @@ class WriteCmd(Enum):
     destroy = ("destroy",)
     forget = ("forget",)
     re_add = ("re-add",)
-
-
-UGLY_ARGS.update(
-    GlobalArgs.global_defaults.value,
-    ChezmoiGitArgs.global_args.value,
-    ChezmoiGitArgs.git_log_args.value,
-    (
-        ChezmoiGitArgs.verbose.value,
-        VerbArgs.format_json.value,
-        VerbArgs.path_style_absolute.value,
-    ),
-)

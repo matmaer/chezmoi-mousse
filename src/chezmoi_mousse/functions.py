@@ -8,17 +8,20 @@ from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.cm_command import UGLY_ARGS, ReadCmd, WriteCmd
+from chezmoi_mousse.cm_command import ReadCmd, WriteCmd, get_ugly_args
 from chezmoi_mousse.cm_types import CommandResult
 from chezmoi_mousse.str_enums import LogColor, PathFilters
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, StrTup
-
 DRY_RUN = "--dry-run"
 
 
 class RunChezmoi:
+
+    @staticmethod
+    def ugly_args():
+        return get_ugly_args()
 
     @staticmethod
     def subprocess_args(cmd: ReadCmd | WriteCmd, dry_run: bool) -> StrTup:
@@ -41,7 +44,9 @@ class RunChezmoi:
         cmd: ReadCmd | WriteCmd, dry_run: bool, path_arg: Path | None
     ) -> str:
         pretty_cmd = "chezmoi" if dry_run is False else f"chezmoi {DRY_RUN}"
-        pretty_cmd += " ".join([a for a in cmd.value if a not in UGLY_ARGS])
+        pretty_cmd += " ".join(
+            [a for a in cmd.value if a not in RunChezmoi.ugly_args()]
+        )
         return pretty_cmd if path_arg is None else f"{pretty_cmd} {path_arg}"
 
     @staticmethod
