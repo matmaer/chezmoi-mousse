@@ -85,7 +85,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
 
     @work
     async def run_managed_commands(self) -> None:
-        for read_cmd in ReadCmd.chezmoi_managed_commands():
+        for read_cmd in self.app.cm_attr.read_cmd_groups.managed:
             await self._run_read_command(read_cmd).wait()
 
     @work

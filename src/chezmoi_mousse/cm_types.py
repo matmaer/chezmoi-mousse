@@ -51,7 +51,7 @@ class ManagedResults(NamedTuple):
     unmanaged_files: CommandResult
 
 
-class ReadCmdGroup(NamedTuple):
+class ReadCmdGroups(NamedTuple):
     splash_only: list[ReadCmd]
     json_output: list[ReadCmd]
     managed: list[ReadCmd]

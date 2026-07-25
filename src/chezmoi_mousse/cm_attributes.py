@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_types import ManagedResults, TabIds
+from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, TabIds
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -193,6 +194,24 @@ class CmAttributes:
         debug=AppIds(TabLabel.debug),
         logs=AppIds(TabLabel.logs),
         re_add=AppIds(TabLabel.re_add),
+    )
+
+    read_cmd_groups = ReadCmdGroups(
+        splash_only=[
+            ReadCmd.doctor,
+            ReadCmd.git_log,
+            ReadCmd.cat_config,
+            ReadCmd.ignored,
+        ],
+        json_output=[ReadCmd.dump_config, ReadCmd.template_data],
+        managed=[
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.unmanaged_dirs,
+            ReadCmd.unmanaged_files,
+        ],
     )
 
     dry_run: bool = True
