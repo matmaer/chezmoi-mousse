@@ -142,8 +142,6 @@ class SplashScreen(Screen[SplashResults]):
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
         result: CommandResult = RunChezmoi.run(command, dry_run=False)
-        # first call getattr to ensure the attribute exists, then set it
-        getattr(CmdResultCollector, command.name)
         setattr(CmdResultCollector, command.name, result)
         suffix = "completed"
         if command in self.app.cm_attr.read_cmd_groups.splash_only:
