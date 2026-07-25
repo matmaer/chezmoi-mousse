@@ -90,6 +90,14 @@ class FlatBtnLabel(StrEnum):
     memory_usage = "Memory Usage"
 
 
+class LogColor(StrEnum):
+    error = "text-error"
+    info = "text-primary"
+    ready = "accent-darken-2"
+    success = "text-success"
+    warning = "text-warning"
+
+
 class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
