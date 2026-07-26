@@ -122,15 +122,19 @@ class AppLog(RichLoggers):
 
     def log_doctor_info(self) -> None:
         self.write_ready("chezmoi doctor output lines")
+        issues: bool = False
         for line in self.app.cm_attr.splash_results.doctor.out_lines:
-            if "error" in line.lower():
+            if "error" in line.split()[0]:
                 self.write_error(line)
-            elif "failed" in line.lower():
+                issues = True
+            elif "failed" in line.split()[0]:
                 self.write_warning(line)
-            elif "warning" in line.lower():
+                issues = True
+            elif "warning" in line.split()[0]:
                 self.write_info(line)
-            else:
-                self.write_info(LogString.doctor_no_issue_found)
+                issues = True
+        if not issues:
+            self.write_info(LogString.doctor_no_issue_found)
         self.write_ready("end of chezmoi doctor output")
 
     # TODO: implement watch_cmd_results

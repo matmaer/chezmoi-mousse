@@ -142,11 +142,19 @@ class CatConfigView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    class CatConfigStatic(Static): ...
+
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
-        yield Static("Loading...")
+        yield self.CatConfigStatic("Loading...")
 
-        # Todo implement updating Static
+    def on_mount(self) -> None:
+        static = self.query_exactly_one(self.CatConfigStatic)
+        static.update(
+            "\n".join(
+                line for line in self.app.cm_attr.splash_results.cat_config.out_lines
+            )
+        )
 
 
 class IgnoredView(Vertical):
