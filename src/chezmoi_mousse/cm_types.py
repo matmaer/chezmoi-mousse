@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from functools import cached_property
 from typing import TYPE_CHECKING, ClassVar, NamedTuple
 
 if TYPE_CHECKING:
@@ -28,6 +30,39 @@ __all__ = [
 ]
 
 
+@dataclass(frozen=True, kw_only=True)
+class ManagedPaths:
+    managed_dirs: PathKindDict
+    managed_files: PathKindDict
+
+    apply_dirs: StatusDict
+    apply_files: StatusDict
+    re_add_dirs: StatusDict
+    re_add_files: StatusDict
+
+    apply_n_dirs: PathKindDict
+    re_add_n_dirs: PathKindDict
+
+    unmanaged_dirs: PathKindDict
+    unmanaged_files: PathKindDict
+
+    @cached_property
+    def no_apply_paths(self) -> bool:
+        return not self.apply_dirs and not self.apply_files
+
+    @cached_property
+    def no_re_add_paths(self) -> bool:
+        return not self.re_add_dirs and not self.re_add_files
+
+    @cached_property
+    def no_status_paths(self) -> bool:
+        return self.no_apply_paths and self.no_re_add_paths
+
+    @cached_property
+    def no_managed_paths(self) -> bool:
+        return not self.managed_dirs and not self.managed_files
+
+
 class CommandResult(NamedTuple):
     dry_run: bool
     err_lines: list[str]
@@ -49,6 +84,11 @@ class ManagedResults(NamedTuple):
     status_files: CommandResult
     unmanaged_dirs: CommandResult
     unmanaged_files: CommandResult
+
+
+class ParsedJsonResults(NamedTuple):
+    dump_config: CommandResult
+    template_data: CommandResult
 
 
 class ReadCmdGroups(NamedTuple):
@@ -121,6 +161,13 @@ class CmdResultCollector:
             status_files=cls.status_files,
             unmanaged_dirs=cls.unmanaged_dirs,
             unmanaged_files=cls.unmanaged_files,
+        )
+
+    # get the managed results as a ManagedResults tuple
+    @classmethod
+    def get_parsed_json_results(cls) -> ParsedJsonResults:
+        return ParsedJsonResults(
+            dump_config=cls.dump_config, template_data=cls.template_data
         )
 
     # get the managed results as a ManagedResults tuple
