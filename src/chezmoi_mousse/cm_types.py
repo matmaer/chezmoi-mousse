@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
-from functools import cached_property, lru_cache
+from functools import lru_cache
 from typing import TYPE_CHECKING, ClassVar, NamedTuple, cast
 
 if TYPE_CHECKING:
@@ -44,39 +43,6 @@ def typed_lru_cache[**FuncParams, FuncReturn](
         )
 
     return decorator
-
-
-@dataclass(frozen=True, kw_only=True)
-class ManagedPaths:
-    managed_dirs: PathKindDict
-    managed_files: PathKindDict
-
-    apply_dirs: StatusDict
-    apply_files: StatusDict
-    re_add_dirs: StatusDict
-    re_add_files: StatusDict
-
-    apply_n_dirs: PathKindDict
-    re_add_n_dirs: PathKindDict
-
-    unmanaged_dirs: PathKindDict
-    unmanaged_files: PathKindDict
-
-    @cached_property
-    def no_apply_paths(self) -> bool:
-        return not self.apply_dirs and not self.apply_files
-
-    @cached_property
-    def no_re_add_paths(self) -> bool:
-        return not self.re_add_dirs and not self.re_add_files
-
-    @cached_property
-    def no_status_paths(self) -> bool:
-        return self.no_apply_paths and self.no_re_add_paths
-
-    @cached_property
-    def no_managed_paths(self) -> bool:
-        return not self.managed_dirs and not self.managed_files
 
 
 class CommandResult(NamedTuple):
