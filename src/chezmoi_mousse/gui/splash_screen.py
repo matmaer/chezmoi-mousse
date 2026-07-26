@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from collections import deque
 from enum import StrEnum, auto
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -169,7 +170,7 @@ class SplashScreen(Screen[SplashResults]):
         CmdResultCollector.parsed_dump_config = parsed_dump_config
         CmdResultCollector.parsed_template_data = parsed_template_data
         CmdResultCollector.dest_dir = parsed_dump_config["destDir"]
-        self.app.cm_attr.dest_dir = parsed_dump_config["destDir"]
+        self.app.cm_attr.dest_dir = Path(parsed_dump_config["destDir"])
         self.app.cm_attr.auto_add = parsed_dump_config["git"]["autoadd"]
         self.app.cm_attr.auto_commit = parsed_dump_config["git"]["autocommit"]
         self.app.cm_attr.auto_push = parsed_dump_config["git"]["autopush"]
