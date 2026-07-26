@@ -38,7 +38,7 @@ class ChangedPaths:
         cls.removed_paths: list[Path] = []
 
 
-@dataclass(slots=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True)
 class ManagedPaths:
     managed_dirs: PathKindDict = field(default_factory=lambda: {})
     managed_files: PathKindDict = field(default_factory=lambda: {})
@@ -70,14 +70,7 @@ class ManagedPaths:
     def no_managed_paths(self) -> bool:
         return not self.managed_dirs and not self.managed_files
 
-    def clear_cached_properties(self) -> None:
-        # get all properties which have a .clear_cache() method and call it
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if hasattr(attr, "clear_cache"):
-                attr.clear_cache()
-
-    def _get_tag(
+    def get_tag(
         self, context: tuple[StatusCode | None, PathKind | None] = (None, None)
     ) -> str:
         tag: list[str] = ["["]
@@ -94,130 +87,47 @@ class ManagedPaths:
             tag.append(chezmoi_status_map[status_code])
         return f"{tag}]"
 
-    def _is_n_dir(
-        self,
-        *,
-        dest_dir: Path,
-        tab_label: TabLabel,
-        s_dirs: set[Path],
-        s_files: set[Path],
-    ) -> PathKindDict:
-        n_dirs: PathKindDict = {}
 
-        path_kind = (
-            PathKind.apply_n_dir
-            if tab_label == TabLabel.apply
-            else PathKind.re_add_n_dir
-        )
-
-        # s_dirs var to exclude dirs with a real status and their parents
-        # s_files to consider all files with a real status their parents
-
-        # all dirs with status descendants
-        s_parents = set(chain.from_iterable(p.parents for p in chain(s_dirs, s_files)))
-        for p in s_parents - s_dirs:
-            if not p.is_relative_to(dest_dir) or p == dest_dir:
-                continue
-            else:
-                n_dirs[p] = path_kind
-        return dict(sorted(n_dirs.items()))
-
-    def _path_kind_dict(self, paths: list[Path], unmanaged: bool) -> PathKindDict:
-        result: PathKindDict = {}
-        for path in paths:
-            if path.is_symlink():
-                path_kind = PathKind.symlink
-            elif unmanaged is False and path.exists():
-                path_kind = PathKind.path_exists
-            elif unmanaged is True:
-                path_kind = PathKind.unmanaged  # TODO: add PathKind.unwanted
-            else:
-                path_kind = PathKind.unknown
-            result[path] = path_kind
-        return result
-
-    def update_fields(self, *, dest_dir: Path, results: ManagedResults) -> None:
-
-        self.clear_cached_properties()
-
-        def _lines_to_paths(lines: list[str]) -> list[Path]:
-            return [Path(line) for line in lines]
-
-        def _status_dict(lines: list[str], column: int) -> StatusDict:
-            return {
-                Path(line[3:]): StatusCode(line[column])
-                for line in lines
-                if line[column] != StatusCode.Space
-            }
-
-        # no context vars
-        _managed_dirs = _lines_to_paths(results.managed_dirs.out_lines)
-        _managed_files = _lines_to_paths(results.managed_files.out_lines)
-        _unmanaged_dirs = _lines_to_paths(results.unmanaged_dirs.out_lines)
-        _unmanaged_files = _lines_to_paths(results.unmanaged_files.out_lines)
-
-        # context vars
-        _apply_dirs = _status_dict(results.status_dirs.out_lines, 1)
-        _apply_files = _status_dict(results.status_files.out_lines, 1)
-        _re_add_dirs = _status_dict(results.status_dirs.out_lines, 0)
-        _re_add_files = _status_dict(results.status_files.out_lines, 0)
-
-        # assign results
-        self.managed_dirs = self._path_kind_dict(_managed_dirs, unmanaged=False)
-        self.managed_files = self._path_kind_dict(_managed_files, unmanaged=False)
-        self.apply_dirs = _apply_dirs
-        self.apply_files = _apply_files
-        self.apply_n_dirs = self._is_n_dir(
-            dest_dir=dest_dir,
-            tab_label=TabLabel.apply,
-            s_dirs=set(_apply_dirs),
-            s_files=set(_apply_files),
-        )
-        self.re_add_dirs = _re_add_dirs
-        self.re_add_files = _re_add_files
-        self.re_add_n_dirs = self._is_n_dir(
-            dest_dir=dest_dir,
-            tab_label=TabLabel.re_add,
-            s_dirs=set(_re_add_dirs),
-            s_files=set(_re_add_files),
-        )
-        self.unmanaged_dirs = self._path_kind_dict(_unmanaged_dirs, unmanaged=True)
-        self.unmanaged_files = self._path_kind_dict(_unmanaged_files, unmanaged=True)
-
-
-@dataclass(slots=True, kw_only=True)
+@dataclass
 class CmAttributes:
-    ids = TabIds(
-        add=AppIds(TabLabel.add),
-        apply=AppIds(TabLabel.apply),
-        config=AppIds(TabLabel.config),
-        debug=AppIds(TabLabel.debug),
-        logs=AppIds(TabLabel.logs),
-        re_add=AppIds(TabLabel.re_add),
+
+    ids: TabIds = field(
+        default=TabIds(
+            add=AppIds(TabLabel.add),
+            apply=AppIds(TabLabel.apply),
+            config=AppIds(TabLabel.config),
+            debug=AppIds(TabLabel.debug),
+            logs=AppIds(TabLabel.logs),
+            re_add=AppIds(TabLabel.re_add),
+        ),
+        repr=False,
     )
 
-    read_cmd_groups = ReadCmdGroups(
-        splash_only=[
-            ReadCmd.doctor,
-            ReadCmd.git_log,
-            ReadCmd.cat_config,
-            ReadCmd.ignored,
-        ],
-        json_output=[ReadCmd.dump_config, ReadCmd.template_data],
-        managed=[
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-            ReadCmd.unmanaged_dirs,
-            ReadCmd.unmanaged_files,
-        ],
+    read_cmd_groups: ReadCmdGroups = field(
+        default=ReadCmdGroups(
+            splash_only=[
+                ReadCmd.doctor,
+                ReadCmd.git_log,
+                ReadCmd.cat_config,
+                ReadCmd.ignored,
+            ],
+            json_output=[ReadCmd.dump_config, ReadCmd.template_data],
+            managed=[
+                ReadCmd.managed_dirs,
+                ReadCmd.managed_files,
+                ReadCmd.status_dirs,
+                ReadCmd.status_files,
+                ReadCmd.unmanaged_dirs,
+                ReadCmd.unmanaged_files,
+            ],
+        ),
+        repr=False,
     )
 
-    dry_run: bool = True
+    dry_run: bool = field(default=True)
 
     changes: ChangedPaths = ChangedPaths()
-    paths: ManagedPaths = field(default_factory=lambda: ManagedPaths())
+    paths: ManagedPaths = ManagedPaths()
 
     parsed_config_dump: ParsedJson = field(default_factory=lambda: {})
     parsed_template_data: ParsedJson = field(default_factory=lambda: {})
@@ -241,3 +151,88 @@ class CmAttributes:
     @cached_property
     def template_data(self) -> ParsedJson:
         return self.parsed_template_data
+
+    def update_paths(self, results: ManagedResults) -> None:
+
+        def _lines_to_paths(lines: list[str]) -> list[Path]:
+            return [Path(line) for line in lines]
+
+        def _status_dict(lines: list[str], column: int) -> StatusDict:
+            return {
+                Path(line[3:]): StatusCode(line[column])
+                for line in lines
+                if line[column] != StatusCode.Space
+            }
+
+        def _is_n_dir(
+            *, tab_label: TabLabel, s_dirs: set[Path], s_files: set[Path]
+        ) -> PathKindDict:
+            n_dirs: PathKindDict = {}
+
+            path_kind = (
+                PathKind.apply_n_dir
+                if tab_label == TabLabel.apply
+                else PathKind.re_add_n_dir
+            )
+
+            # s_dirs var to exclude dirs with a real status and their parents
+            # s_files to consider all files with a real status their parents
+
+            # all dirs with status descendants
+            s_parents = set(
+                chain.from_iterable(p.parents for p in chain(s_dirs, s_files))
+            )
+            for p in s_parents - s_dirs:
+                if not p.is_relative_to(results.dest_dir) or p == results.dest_dir:
+                    continue
+                else:
+                    n_dirs[p] = path_kind
+            return dict(sorted(n_dirs.items()))
+
+        def _path_kind_dict(paths: list[Path], unmanaged: bool) -> PathKindDict:
+            result: PathKindDict = {}
+            for path in paths:
+                if path.is_symlink():
+                    path_kind = PathKind.symlink
+                elif unmanaged is False and path.exists():
+                    path_kind = PathKind.path_exists
+                elif unmanaged is True:
+                    path_kind = PathKind.unmanaged  # TODO: add PathKind.unwanted
+                else:
+                    path_kind = PathKind.unknown
+                result[path] = path_kind
+            return result
+
+        # no context vars
+        _managed_dirs = _lines_to_paths(results.managed_dirs.out_lines)
+        _managed_files = _lines_to_paths(results.managed_files.out_lines)
+        _unmanaged_dirs = _lines_to_paths(results.unmanaged_dirs.out_lines)
+        _unmanaged_files = _lines_to_paths(results.unmanaged_files.out_lines)
+
+        # context vars
+        _apply_dirs = _status_dict(results.status_dirs.out_lines, 1)
+        _apply_files = _status_dict(results.status_files.out_lines, 1)
+        _re_add_dirs = _status_dict(results.status_dirs.out_lines, 0)
+        _re_add_files = _status_dict(results.status_files.out_lines, 0)
+
+        # set new instance on the paths class var
+        self.paths = ManagedPaths(
+            managed_dirs=_path_kind_dict(_managed_dirs, unmanaged=False),
+            managed_files=_path_kind_dict(_managed_files, unmanaged=False),
+            apply_dirs=_apply_dirs,
+            apply_files=_apply_files,
+            apply_n_dirs=_is_n_dir(
+                tab_label=TabLabel.apply,
+                s_dirs=set(_apply_dirs),
+                s_files=set(_apply_files),
+            ),
+            re_add_dirs=_re_add_dirs,
+            re_add_files=_re_add_files,
+            re_add_n_dirs=_is_n_dir(
+                tab_label=TabLabel.re_add,
+                s_dirs=set(_re_add_dirs),
+                s_files=set(_re_add_files),
+            ),
+            unmanaged_dirs=_path_kind_dict(_unmanaged_dirs, unmanaged=True),
+            unmanaged_files=_path_kind_dict(_unmanaged_files, unmanaged=True),
+        )
