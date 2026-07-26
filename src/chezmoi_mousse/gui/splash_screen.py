@@ -39,7 +39,7 @@ SPLASH_ASCII = """\
 """.replace("===", "=\u200b=\u200b=").splitlines()
 
 SPLASH_WIDTH = len(max(SPLASH_ASCII, key=len))
-LOG_MSG_WIDTH = SPLASH_WIDTH - 8
+LOG_MSG_WIDTH = SPLASH_WIDTH - 13
 
 
 def create_fade_line_styles() -> deque[Style]:
@@ -73,12 +73,9 @@ class WorkerNames(StrEnum):
 
 class AnimatedFade(Static):
 
-    def __init__(self) -> None:
-        super().__init__()
+    def on_mount(self) -> None:
         self.styles.height = len(SPLASH_ASCII)
         self.styles.width = SPLASH_WIDTH
-
-    def on_mount(self) -> None:
         self.fade_timer = self.set_interval(
             name="refresh_self", interval=0.1, callback=self.refresh, pause=True
         )
@@ -96,16 +93,6 @@ class SplashScreen(Screen[SplashResults]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self) -> None:
-
-        # +2: one to process managed paths and one to avoid scrollbar when it's equal
-        self.log_height = 14  # TODO: calculate properly
-
-        super().__init__()
-        self.styles.width = "auto"
-        self.styles.margin = 2
-        self.styles.height = self.log_height
-
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method to prevent refresh when moving mouse
         if isinstance(event, events.MouseEvent):
@@ -119,8 +106,12 @@ class SplashScreen(Screen[SplashResults]):
             yield Center(RichLog(markup=True))
 
     def on_mount(self) -> None:
-        fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
         self.splash_log = self.query_exactly_one(RichLog)
+        self.splash_log.styles.width = "auto"
+        self.splash_log.styles.text_align = "center"
+        self.splash_log.styles.margin = 2
+        self.splash_log.styles.height = 14  # TODO: calculate properly
+        fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
         self.primary_color = self.app.theme_variables["text-primary"]
         self.warning_color = self.app.theme_variables["text-warning"]
         self.error_color = self.app.theme_variables["text-error"]
