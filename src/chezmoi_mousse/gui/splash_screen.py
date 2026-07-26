@@ -116,6 +116,8 @@ class SplashScreen(Screen[SplashResults]):
             self._run_managed_cmd(command)
         for command in self.app.cm_attr.read_cmd_groups.splash_only:
             self._run_splash_cmd(command)
+        for command in self.app.cm_attr.read_cmd_groups.json_output:
+            self._run_json_output_cmd(command)
         self.set_interval(interval=2, callback=self._all_workers_finished)
         fade_timer.resume()
 
@@ -136,6 +138,7 @@ class SplashScreen(Screen[SplashResults]):
             suffix = "completed and parsed"
             if command == ReadCmd.dump_config and result.parsed_json is not None:
                 self.app.cm_attr.parsed_config_dump = result.parsed_json
+                CmdResultCollector.dest_dir = Path(result.parsed_json["destDir"])
             elif command == ReadCmd.template_data and result.parsed_json is not None:
                 self.app.cm_attr.parsed_template_data = result.parsed_json
         return self._get_log_msg(
@@ -154,7 +157,7 @@ class SplashScreen(Screen[SplashResults]):
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, name=GroupNames.json_output_group)
+    @work(thread=True, group=GroupNames.json_output_group)
     def _run_json_output_cmd(self, command: ReadCmd) -> None:
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
@@ -162,19 +165,14 @@ class SplashScreen(Screen[SplashResults]):
     # set update ManagedPaths which accessed through cm_attr.paths
 
     @work(thread=True)
-    def _update_managed_paths(
-        self, dest_dir: Path, managed_results: ManagedResults
-    ) -> None:
-        self.app.cm_attr.paths.update_fields(dest_dir=dest_dir, results=managed_results)
+    def _update_managed_paths(self, managed_results: ManagedResults) -> None:
+
+        self.app.cm_attr.update_paths(results=managed_results)
         self.cm_attr_managed_updated = True
         msg = self._get_log_msg(
-            prefix="update cm_attr.managed", suffix="completed", returncode=None
+            prefix="update paths", suffix="completed", returncode=None
         )
         self.app.call_from_thread(self.splash_log.write, msg)
-
-    def _worker_group_finished(self, worker_group: GroupNames) -> bool:
-        group_workers = (w for w in self.workers if w.group == worker_group)
-        return all(worker.is_finished for worker in group_workers)
 
     def _all_workers_finished(self) -> None:
         if not all(
@@ -187,7 +185,7 @@ class SplashScreen(Screen[SplashResults]):
         else:
             managed_results: ManagedResults = CmdResultCollector.get_managed_results()
             self._update_managed_paths(
-                dest_dir=self.app.cm_attr.dest_dir, managed_results=managed_results
+                dest_dir=CmdResultCollector.dest_dir, managed_results=managed_results
             )
         if all(worker.is_finished for worker in self.workers) and all(
             worker.is_finished for worker in self.app.workers
