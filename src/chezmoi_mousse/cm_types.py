@@ -19,15 +19,16 @@ if TYPE_CHECKING:
     type ParsedJson = dict[str, Any]
 
 __all__ = [
+    "typed_lru_cache",
     "AppIds",
     "ChezmoiGui",
     "CmdResultCollector",
     "ManagedResults",
+    "ParsedConfig",
     "ParsedJson",
     "SplashResults",
     "StatusDict",
     "TabIds",
-    "typed_lru_cache",
 ]
 
 
@@ -60,6 +61,7 @@ class CommandResult(NamedTuple):
 
 
 class ManagedResults(NamedTuple):
+    dest_dir: Path
     managed_dirs: CommandResult
     managed_files: CommandResult
     status_dirs: CommandResult
@@ -68,9 +70,11 @@ class ManagedResults(NamedTuple):
     unmanaged_files: CommandResult
 
 
-class ParsedJsonResults(NamedTuple):
-    dump_config: CommandResult
-    template_data: CommandResult
+class ParsedConfig(NamedTuple):
+    dest_dir: Path
+    auto_add: bool
+    auto_commit: bool
+    auto_push: bool
 
 
 class ReadCmdGroups(NamedTuple):
@@ -110,6 +114,11 @@ class TabIds(NamedTuple):
 
 class CmdResultCollector:
 
+    dest_dir: ClassVar[Path]
+
+    parsed_dump_config: ClassVar[ParsedJson]
+    parsed_template_data: ClassVar[ParsedJson]
+
     # currently only executed in splash screen
     doctor: ClassVar[CommandResult]
     git_log: ClassVar[CommandResult]
@@ -147,15 +156,9 @@ class CmdResultCollector:
 
     # get the managed results as a ManagedResults tuple
     @classmethod
-    def get_parsed_json_results(cls) -> ParsedJsonResults:
-        return ParsedJsonResults(
-            dump_config=cls.dump_config, template_data=cls.template_data
-        )
-
-    # get the managed results as a ManagedResults tuple
-    @classmethod
     def get_managed_results(cls) -> ManagedResults:
         return ManagedResults(
+            dest_dir=cls.dest_dir,
             managed_dirs=cls.managed_dirs,
             managed_files=cls.managed_files,
             status_dirs=cls.status_dirs,
