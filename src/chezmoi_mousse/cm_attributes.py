@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, TabIds
+from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults, TabIds
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import PathKindDict, StatusDict
+    from chezmoi_mousse.cm_types import ParsedJson, PathKindDict, StatusDict
 
 __all__ = ["CmAttributes"]
 
@@ -38,7 +38,7 @@ class ChangedPaths:
         cls.removed_paths: list[Path] = []
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(frozen=True, kw_only=True)
 class ManagedPaths:
     managed_dirs: PathKindDict = field(default_factory=lambda: {})
     managed_files: PathKindDict = field(default_factory=lambda: {})
@@ -95,6 +95,9 @@ class CmAttributes:
     auto_add: bool = field(init=False)
     auto_commit: bool = field(init=False)
     auto_push: bool = field(init=False)
+    splash_results: SplashResults = field(init=False)
+    parsed_template_data: ParsedJson = field(init=False)
+    parsed_dump_config: ParsedJson = field(init=False)
 
     ids: TabIds = field(
         default=TabIds(
@@ -115,6 +118,7 @@ class CmAttributes:
                 ReadCmd.git_log,
                 ReadCmd.cat_config,
                 ReadCmd.ignored,
+                ReadCmd.git_remote,
             ],
             json_output=[ReadCmd.dump_config, ReadCmd.template_data],
             managed=[

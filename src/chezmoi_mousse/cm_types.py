@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import TYPE_CHECKING, ClassVar, NamedTuple, cast
 
@@ -24,7 +25,6 @@ __all__ = [
     "ChezmoiGui",
     "CmdResultCollector",
     "ManagedResults",
-    "ParsedConfig",
     "ParsedJson",
     "SplashResults",
     "StatusDict",
@@ -46,7 +46,8 @@ def typed_lru_cache[**FuncParams, FuncReturn](
     return decorator
 
 
-class CommandResult(NamedTuple):
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CommandResult:
     dry_run: bool
     err_lines: list[str]
     full_cmd_str: str
@@ -59,7 +60,8 @@ class CommandResult(NamedTuple):
     colored_cmd: str
 
 
-class ManagedResults(NamedTuple):
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ManagedResults:
     dest_dir: Path
     managed_dirs: CommandResult
     managed_files: CommandResult
@@ -67,13 +69,6 @@ class ManagedResults(NamedTuple):
     status_files: CommandResult
     unmanaged_dirs: CommandResult
     unmanaged_files: CommandResult
-
-
-class ParsedConfig(NamedTuple):
-    dest_dir: Path
-    auto_add: bool
-    auto_commit: bool
-    auto_push: bool
 
 
 class ReadCmdGroups(NamedTuple):
@@ -86,8 +81,8 @@ class ReadCmdGroups(NamedTuple):
         return len(self.splash_only + self.json_output + self.managed)
 
 
-class SplashResults(NamedTuple):
-    dest_dir: Path
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SplashResults:
     doctor: CommandResult
     git_log: CommandResult
     dump_config: CommandResult
@@ -97,8 +92,6 @@ class SplashResults(NamedTuple):
     git_remote: CommandResult
     managed_dirs: CommandResult
     managed_files: CommandResult
-    parsed_dump_config: ParsedJson
-    parsed_template_data: ParsedJson
     status_dirs: CommandResult
     status_files: CommandResult
     unmanaged_dirs: CommandResult
@@ -135,9 +128,8 @@ class CmdResultCollector:
     unmanaged_files: ClassVar[CommandResult]
 
     @classmethod
-    def get_all_results(cls) -> SplashResults:
+    def get_splash_results(cls) -> SplashResults:
         return SplashResults(
-            dest_dir=cls.dest_dir,
             cat_config=cls.cat_config,
             doctor=cls.doctor,
             dump_config=cls.dump_config,
@@ -146,8 +138,6 @@ class CmdResultCollector:
             ignored=cls.ignored,
             managed_dirs=cls.managed_dirs,
             managed_files=cls.managed_files,
-            parsed_dump_config=cls.parsed_dump_config,
-            parsed_template_data=cls.parsed_template_data,
             status_dirs=cls.status_dirs,
             status_files=cls.status_files,
             template_data=cls.template_data,

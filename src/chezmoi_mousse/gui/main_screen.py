@@ -11,7 +11,6 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.cm_types import SplashResults
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
 from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
@@ -60,10 +59,9 @@ class MainScreen(Screen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, splash_results: SplashResults) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.ids = self.app.cm_attr.ids
-        self.splash_results: SplashResults = splash_results
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()

@@ -207,8 +207,11 @@ class SplashScreen(Screen[SplashResults]):
             )
         ):
             self._update_managed_paths()  # WorkerName.update_paths
-        elif not all(worker.is_finished for worker in self.app.workers) and not all(
-            worker.is_finished for worker in self.app.workers
-        ):
             return
-        self.dismiss(CmdResultCollector.get_all_results())
+        if all(worker.is_finished for worker in self.app.workers):
+            self.app.cm_attr.splash_results = CmdResultCollector.get_splash_results()
+            self.app.cm_attr.parsed_dump_config = CmdResultCollector.parsed_dump_config
+            self.app.cm_attr.parsed_template_data = (
+                CmdResultCollector.parsed_template_data
+            )
+            self.dismiss()

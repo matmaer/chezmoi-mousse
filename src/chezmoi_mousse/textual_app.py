@@ -14,7 +14,6 @@ from textual.widgets import TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import save_stacktrace
 from chezmoi_mousse.cm_attributes import CmAttributes
-from chezmoi_mousse.cm_types import SplashResults
 from chezmoi_mousse.str_enums import BindingAction, BindingDescription, Chars, TabLabel
 
 from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
@@ -99,10 +98,10 @@ class ChezmoiGui(App[str]):
 
     @work
     async def _run_splash_screen(self) -> None:
-        splash_results: SplashResults = await self.push_screen(
-            SplashScreen(), wait_for_dismiss=True
-        )
-        self.push_screen(MainScreen(splash_results))
+        await self.push_screen(SplashScreen(), callback=self._on_splash_dismiss)
+
+    def _on_splash_dismiss(self, _: object) -> None:
+        self.push_screen(MainScreen())
 
     ######################################################################
     # Helper methods for message handling and toggling widget visibility #
