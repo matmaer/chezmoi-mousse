@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess
 from datetime import datetime
 from itertools import islice
@@ -12,7 +11,7 @@ from chezmoi_mousse.cm_types import CommandResult, typed_lru_cache
 from chezmoi_mousse.str_enums import LogColor, PathFilters
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson, StrTup
+    from chezmoi_mousse.cm_types import StrTup
 
 __all__ = ("run_chezmoi_cmd", "CheckPath")
 
@@ -85,10 +84,6 @@ def run_chezmoi_cmd(
     err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
     std_err = "\n".join(err_lines)
 
-    parsed_json: ParsedJson | None = None
-    if command in (ReadCmd.template_data, ReadCmd.dump_config):
-        parsed_json = json.loads(std_out)
-
     full_cmd_str = (
         f"{_cmd_str_without_path(cmd=command, dry=dry_run, pretty=True)} {path_arg}"
     )
@@ -101,7 +96,6 @@ def run_chezmoi_cmd(
         err_lines=err_lines,
         full_cmd_str=full_cmd_str,
         out_lines=out_lines,
-        parsed_json=parsed_json,
         pretty_cmd=pretty_cmd,
         path_arg=path_arg,
         returncode=cp.returncode,

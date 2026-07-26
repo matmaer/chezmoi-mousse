@@ -12,7 +12,7 @@ from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, TabIds
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson, PathKindDict, StatusDict
+    from chezmoi_mousse.cm_types import PathKindDict, StatusDict
 
 __all__ = ["CmAttributes"]
 
@@ -128,29 +128,6 @@ class CmAttributes:
 
     changes: ChangedPaths = ChangedPaths()
     paths: ManagedPaths = ManagedPaths()
-
-    parsed_config_dump: ParsedJson = field(default_factory=lambda: {})
-    parsed_template_data: ParsedJson = field(default_factory=lambda: {})
-
-    @cached_property
-    def dest_dir(self) -> Path:
-        return Path(self.parsed_config_dump["destDir"])
-
-    @cached_property
-    def auto_add(self) -> bool:
-        return self.parsed_config_dump["git"]["autoadd"]
-
-    @cached_property
-    def auto_commit(self) -> bool:
-        return self.parsed_config_dump["git"]["autocommit"]
-
-    @cached_property
-    def auto_push(self) -> bool:
-        return self.parsed_config_dump["git"]["autopush"]
-
-    @cached_property
-    def template_data(self) -> ParsedJson:
-        return self.parsed_template_data
 
     def update_paths(self, results: ManagedResults) -> None:
 

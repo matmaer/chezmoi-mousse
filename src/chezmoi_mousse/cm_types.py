@@ -51,7 +51,6 @@ class CommandResult(NamedTuple):
     err_lines: list[str]
     full_cmd_str: str
     out_lines: list[str]
-    parsed_json: ParsedJson | None
     path_arg: Path | None
     pretty_cmd: str
     returncode: int
@@ -88,6 +87,7 @@ class ReadCmdGroups(NamedTuple):
 
 
 class SplashResults(NamedTuple):
+    dest_dir: Path
     doctor: CommandResult
     git_log: CommandResult
     dump_config: CommandResult
@@ -97,6 +97,8 @@ class SplashResults(NamedTuple):
     git_remote: CommandResult
     managed_dirs: CommandResult
     managed_files: CommandResult
+    parsed_dump_config: ParsedJson
+    parsed_template_data: ParsedJson
     status_dirs: CommandResult
     status_files: CommandResult
     unmanaged_dirs: CommandResult
@@ -114,42 +116,40 @@ class TabIds(NamedTuple):
 
 class CmdResultCollector:
 
-    dest_dir: ClassVar[Path]
-
-    parsed_dump_config: ClassVar[ParsedJson]
-    parsed_template_data: ClassVar[ParsedJson]
-
-    # currently only executed in splash screen
-    doctor: ClassVar[CommandResult]
-    git_log: ClassVar[CommandResult]
-    dump_config: ClassVar[CommandResult]
     cat_config: ClassVar[CommandResult]
-    template_data: ClassVar[CommandResult]
-    ignored: ClassVar[CommandResult]
+    dest_dir: ClassVar[Path]
+    doctor: ClassVar[CommandResult]
+    dump_config: ClassVar[CommandResult]
+    git_log: ClassVar[CommandResult]
     git_remote: ClassVar[CommandResult]
-
-    # currently executed in both splash screen and loading screen
+    ignored: ClassVar[CommandResult]
     managed_dirs: ClassVar[CommandResult]
     managed_files: ClassVar[CommandResult]
+    parsed_dump_config: ClassVar[ParsedJson]
+    parsed_template_data: ClassVar[ParsedJson]
     status_dirs: ClassVar[CommandResult]
     status_files: ClassVar[CommandResult]
+    template_data: ClassVar[CommandResult]
     unmanaged_dirs: ClassVar[CommandResult]
     unmanaged_files: ClassVar[CommandResult]
 
     @classmethod
     def get_all_results(cls) -> SplashResults:
         return SplashResults(
-            doctor=cls.doctor,
-            git_log=cls.git_log,
-            dump_config=cls.dump_config,
+            dest_dir=cls.dest_dir,
             cat_config=cls.cat_config,
-            template_data=cls.template_data,
-            ignored=cls.ignored,
+            doctor=cls.doctor,
+            dump_config=cls.dump_config,
+            git_log=cls.git_log,
             git_remote=cls.git_remote,
+            ignored=cls.ignored,
             managed_dirs=cls.managed_dirs,
             managed_files=cls.managed_files,
+            parsed_dump_config=cls.parsed_dump_config,
+            parsed_template_data=cls.parsed_template_data,
             status_dirs=cls.status_dirs,
             status_files=cls.status_files,
+            template_data=cls.template_data,
             unmanaged_dirs=cls.unmanaged_dirs,
             unmanaged_files=cls.unmanaged_files,
         )

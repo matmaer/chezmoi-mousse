@@ -204,6 +204,8 @@ class SplashScreen(Screen[SplashResults]):
             )
         ):
             self._update_managed_paths()  # WorkerName.update_paths
-        elif not all(worker.is_finished for worker in self.workers):
+        elif not all(worker.is_finished for worker in self.app.workers) and not all(
+            worker.is_finished for worker in self.app.workers
+        ):
             return
         self.dismiss(CmdResultCollector.get_all_results())
