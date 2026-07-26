@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd, get_ugly_args
 from chezmoi_mousse.cm_types import CommandResult, typed_lru_cache
-from chezmoi_mousse.str_enums import LogColor, PathFilters
+from chezmoi_mousse.str_enums import PathFilters
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import StrTup
@@ -45,12 +45,6 @@ def _pretty_cmd(*, base_str: str, path_arg: Path | None) -> str:
     return base_str if path_arg is None else f"{base_str} {path_arg}"
 
 
-def _colored_with_timestamp(*, cmd_str: str, code: int) -> str:
-    time = f"{datetime.now().strftime('%H:%M:%S')}"
-    tag = LogColor.success.theme_tag if code == 0 else LogColor.warning.theme_tag
-    return f"{time} {tag}{cmd_str}[/] (returncode {code})"
-
-
 def _subprocess_run(
     *, args: StrTup, path: Path | None, time_out: int
 ) -> subprocess.CompletedProcess[str]:
@@ -85,7 +79,6 @@ def run_chezmoi_cmd(
     )
     pretty_cmd_str_wop = _cmd_str_without_path(cmd=command, dry=dry_run, pretty=True)
     pretty_cmd = _pretty_cmd(base_str=pretty_cmd_str_wop, path_arg=path_arg)
-    exit_colored_cmd = _colored_with_timestamp(cmd_str=pretty_cmd, code=cp.returncode)
 
     return CommandResult(
         dry_run=dry_run,
@@ -97,7 +90,7 @@ def run_chezmoi_cmd(
         returncode=cp.returncode,
         std_err=std_err,
         std_out=std_out,
-        colored_cmd=exit_colored_cmd,
+        time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
     )
 
 
