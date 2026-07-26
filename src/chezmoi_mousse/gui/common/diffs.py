@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.functions import RunChezmoi
+from chezmoi_mousse.functions import run_chezmoi_cmd
 from chezmoi_mousse.str_enums import TabLabel, Tcss
 
 from .messages import LogCmdResultMsg
@@ -49,10 +49,12 @@ class DiffView(Container):
     def _create_diff_widgets(self, path: Path) -> list[Label | Static]:
         widgets: list[Label | Static] = []
         if self.ids.tab_label == TabLabel.apply:
-            diff_result = RunChezmoi.run(dry_run=False, cmd=ReadCmd.diff, path_arg=path)
+            diff_result = run_chezmoi_cmd(
+                command=ReadCmd.diff, dry_run=False, path_arg=path
+            )
         else:  # re-add tab
-            diff_result = RunChezmoi.run(
-                dry_run=False, cmd=ReadCmd.diff_reverse, path_arg=path
+            diff_result = run_chezmoi_cmd(
+                command=ReadCmd.diff_reverse, dry_run=False, path_arg=path
             )
         self.post_message(LogCmdResultMsg(diff_result))
         diff_lines = diff_result.std_out.splitlines()

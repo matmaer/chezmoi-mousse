@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.functions import RunChezmoi
+from chezmoi_mousse.functions import run_chezmoi_cmd
 
 from .messages import LogCmdResultMsg
 
@@ -68,11 +68,13 @@ class GitLogView(Container):
                 lines = ["No commits;No git log entries available yet."]
             container = self._create_datatable_container(lines)
         else:
-            source_path_result = RunChezmoi.run(
-                dry_run=False, cmd=ReadCmd.source_path, path_arg=show_path
+            source_path_result = run_chezmoi_cmd(
+                command=ReadCmd.source_path, dry_run=False, path_arg=show_path
             )
-            cmd_result = RunChezmoi.run(
-                dry_run=False, cmd=ReadCmd.git_log, path_arg=source_path_result.path_arg
+            cmd_result = run_chezmoi_cmd(
+                command=ReadCmd.git_log,
+                dry_run=False,
+                path_arg=source_path_result.path_arg,
             )
             self.post_message(LogCmdResultMsg(cmd_result))
             container = self._create_datatable_container(

@@ -10,7 +10,6 @@ from textual.widgets import Collapsible, Label, Static
 
 from chezmoi_mousse.cm_command import WriteCmd
 from chezmoi_mousse.enum_data import OpBtnEnum, OpInfoString
-from chezmoi_mousse.functions import RunChezmoi
 from chezmoi_mousse.str_enums import Tcss
 
 from .actionables import OpButton
@@ -40,13 +39,8 @@ class OperateInfo(Static):
     def update_review_info(self, button: OpButton, dry_run: bool) -> None:
         self.current_button = button
         info_lines: list[str] = []
-        info_lines.append(
-            RunChezmoi.pretty_cmd(
-                button.btn_enum.write_cmd,
-                dry_run=dry_run,
-                path_arg=button.btn_enum.path_arg,
-            )
-        )
+        # TODO: append pretty cmd
+        info_lines.append(f"Will run command with dry run {dry_run}")
         info_lines.append(button.btn_enum.op_info_string)
         if button.btn_enum != OpBtnEnum.apply_review:
             if self.app.cm_attr.auto_add is True:
