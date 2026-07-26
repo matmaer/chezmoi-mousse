@@ -3,113 +3,112 @@ from __future__ import annotations
 import json
 import subprocess
 from datetime import datetime
-from functools import cache
 from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd, get_ugly_args
-from chezmoi_mousse.cm_types import CommandResult
+from chezmoi_mousse.cm_types import CommandResult, typed_lru_cache
 from chezmoi_mousse.str_enums import LogColor, PathFilters
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, StrTup
-DRY_RUN = "--dry-run"
+
+__all__ = ("run_chezmoi_cmd", "CheckPath")
+
+DRY_RUN_STR = "--dry-run"
+
+CM_STR: str = "chezmoi"
+CM_DRY_STR: str = f"chezmoi {DRY_RUN_STR}"
+
+CM_TUP: StrTup = ("chezmoi",)
+CM_DRY_TUP: StrTup = (CM_STR, DRY_RUN_STR)
 
 
-class RunChezmoi:
+@typed_lru_cache()
+def _ugly_args() -> set[str]:
+    return get_ugly_args()
 
-    @staticmethod
-    def ugly_args():
-        return get_ugly_args()
 
-    @staticmethod
-    def subprocess_args(cmd: ReadCmd | WriteCmd, dry_run: bool) -> StrTup:
-        return (
-            ("chezmoi",) + cmd.value
-            if dry_run is False
-            else ("chezmoi", f"{DRY_RUN}") + cmd.value
-        )
+@typed_lru_cache()
+def _args_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool) -> StrTup:
+    return CM_TUP + cmd.value if dry is False else CM_DRY_TUP + cmd.value
 
-    @staticmethod
-    def full_cmd_str(cmd: ReadCmd | WriteCmd, dry_run: bool) -> str:
-        return (
-            f"chezmoi {" ".join(cmd.value)}"
-            if dry_run is False
-            else f"chezmoi {DRY_RUN} {" ".join(cmd.value)}"
-        )
 
-    @staticmethod
-    def pretty_cmd(
-        cmd: ReadCmd | WriteCmd, dry_run: bool, path_arg: Path | None
-    ) -> str:
-        pretty_cmd = "chezmoi" if dry_run is False else f"chezmoi {DRY_RUN}"
-        pretty_cmd += " ".join(
-            [a for a in cmd.value if a not in RunChezmoi.ugly_args()]
-        )
-        return pretty_cmd if path_arg is None else f"{pretty_cmd} {path_arg}"
+@typed_lru_cache()
+def _cmd_str_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool, pretty: bool) -> str:
+    verb_str = (
+        " ".join(cmd.value)
+        if pretty is False
+        else " ".join([a for a in cmd.value if a not in _ugly_args()])
+    )
+    return f"{CM_STR} {verb_str}" if dry is False else f"{CM_DRY_STR} verb_str"
 
-    @staticmethod
-    def _subprocess_run(
-        run_args: StrTup, time_out: int
-    ) -> subprocess.CompletedProcess[str]:
-        return subprocess.run(
-            run_args, capture_output=True, shell=False, text=True, timeout=time_out
-        )
 
-    @staticmethod
-    def _exit_code_colored_cmd(pretty_cmd: str, returncode: int) -> str:
-        pretty_time = f"{datetime.now().strftime('%H:%M:%S')}"
-        cmd_color = LogColor.success if returncode == 0 else LogColor.warning
-        return f"{pretty_time} [${cmd_color}]{pretty_cmd}[/] (returncode {returncode})"
+@typed_lru_cache()
+def _pretty_cmd(*, base_str: str, path_arg: Path | None) -> str:
+    return base_str if path_arg is None else f"{base_str} {path_arg}"
 
-    @staticmethod
-    def run(
-        cmd: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None = None
-    ) -> CommandResult:
-        time_out: int = 10 if isinstance(cmd, ReadCmd) else 20
-        run_args = RunChezmoi.subprocess_args(cmd, dry_run) + (str(path_arg),)
-        if path_arg is not None:
-            run_args += (str(path_arg),)
 
-        completed_process: subprocess.CompletedProcess[str] = (
-            RunChezmoi._subprocess_run(run_args, time_out)
-        )
+def _colored_with_timestamp(*, cmd_str: str, code: int) -> str:
+    time = f"{datetime.now().strftime('%H:%M:%S')}"
+    tag = LogColor.success.theme_tag if code == 0 else LogColor.warning.theme_tag
+    return f"{time} {tag}{cmd_str}[/] (returncode {code})"
 
-        out_lines = [
-            line for line in completed_process.stdout.splitlines() if line.strip()
-        ]
-        std_out = "\n".join(out_lines)
 
-        err_lines = [
-            line for line in completed_process.stderr.splitlines() if line.strip()
-        ]
-        std_err = "\n".join(err_lines)
+def _subprocess_run(
+    *, args: StrTup, path: Path | None, time_out: int
+) -> subprocess.CompletedProcess[str]:
+    if path is None:
+        run_args = args
+    elif not path.is_absolute():
+        raise ValueError("Calling subprocess.run with a relative path")
+    else:
+        run_args = args + (str(path),)
+    return subprocess.run(
+        run_args, capture_output=True, shell=False, text=True, timeout=time_out
+    )
 
-        parsed_json: ParsedJson | None = None
 
-        if cmd in (ReadCmd.template_data, ReadCmd.dump_config):
-            parsed_json = json.loads(std_out)
+def run_chezmoi_cmd(
+    command: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None = None
+) -> CommandResult:
 
-        full_cmd_str = RunChezmoi.full_cmd_str(cmd, dry_run)
-        pretty_cmd = RunChezmoi.pretty_cmd(cmd, dry_run, path_arg)
-        exit_colored_cmd = RunChezmoi._exit_code_colored_cmd(
-            pretty_cmd, completed_process.returncode
-        )
+    args: StrTup = _args_without_path(cmd=command, dry=dry_run)
+    time_out: int = 10 if isinstance(command, ReadCmd) else 20
+    cp: subprocess.CompletedProcess[str] = _subprocess_run(
+        args=args, path=path_arg, time_out=time_out
+    )
+    out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
+    std_out = "\n".join(out_lines)
 
-        return CommandResult(
-            dry_run=dry_run,
-            err_lines=err_lines,
-            full_cmd_str=full_cmd_str,
-            out_lines=out_lines,
-            parsed_json=parsed_json,
-            pretty_cmd=pretty_cmd,
-            path_arg=path_arg,
-            returncode=completed_process.returncode,
-            std_err=std_err,
-            std_out=std_out,
-            colored_cmd=exit_colored_cmd,
-        )
+    err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
+    std_err = "\n".join(err_lines)
+
+    parsed_json: ParsedJson | None = None
+    if command in (ReadCmd.template_data, ReadCmd.dump_config):
+        parsed_json = json.loads(std_out)
+
+    full_cmd_str = (
+        f"{_cmd_str_without_path(cmd=command, dry=dry_run, pretty=True)} {path_arg}"
+    )
+    pretty_cmd_str_wop = _cmd_str_without_path(cmd=command, dry=dry_run, pretty=True)
+    pretty_cmd = _pretty_cmd(base_str=pretty_cmd_str_wop, path_arg=path_arg)
+    exit_colored_cmd = _colored_with_timestamp(cmd_str=pretty_cmd, code=cp.returncode)
+
+    return CommandResult(
+        dry_run=dry_run,
+        err_lines=err_lines,
+        full_cmd_str=full_cmd_str,
+        out_lines=out_lines,
+        parsed_json=parsed_json,
+        pretty_cmd=pretty_cmd,
+        path_arg=path_arg,
+        returncode=cp.returncode,
+        std_err=std_err,
+        std_out=std_out,
+        colored_cmd=exit_colored_cmd,
+    )
 
 
 class CheckPath:
@@ -117,7 +116,6 @@ class CheckPath:
     # functions for file paths
 
     @staticmethod
-    @cache
     def is_sensitive(file_path: Path) -> bool:
         return (
             file_path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
@@ -125,13 +123,13 @@ class CheckPath:
         )
 
     @staticmethod
-    @cache
+    @typed_lru_cache(maxsize=4000)
     def is_large(file_path: Path) -> bool:
         # check if it's a large file, typically not a dot file
         return file_path.stat().st_size > 1024 * 1024  # 1 MiB
 
     @staticmethod
-    @cache
+    @typed_lru_cache(maxsize=4000)
     def is_binary(file_path: Path) -> bool:
         # check if the file looks like a binary
         try:
@@ -142,29 +140,21 @@ class CheckPath:
             return True
 
     @staticmethod
-    @cache
     def is_bad_suffix(file_path: Path) -> bool:
         return file_path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
 
     # functions for dir paths
 
     @staticmethod
-    @cache
     def is_unwanted_dir_name(dir_path: Path) -> bool:
         return dir_path.parts[-1] in PathFilters.UNWANTED_DIRS.value
 
     @staticmethod
-    @cache
     def is_git_objects_dir(dir_path: Path) -> bool:
         return dir_path.parts[-1] == "objects" and dir_path.parts[-2] == ".git"
 
     @staticmethod
-    @cache
-    def is_dest_dir_or_parent(dir_path: Path, dest_dir: Path) -> bool:
-        return dir_path == dest_dir or not dir_path.is_relative_to(dest_dir)
-
-    @staticmethod
-    @cache
+    @typed_lru_cache(maxsize=4000)
     def has_many_children(dir_path: Path, max_entries: int = 200) -> bool:
         # TODO: make this configurable but 200 entries seems like a reasonable limit
         # for a directory to consider interesting in the context of dotfiles.
@@ -178,7 +168,7 @@ class CheckPath:
             return False
 
     @staticmethod
-    @cache
+    @typed_lru_cache(maxsize=4000)
     def get_unchanged_dir_paths_in(
         dir_path: Path, managed_files: set[Path]
     ) -> list[Path]:
@@ -189,7 +179,7 @@ class CheckPath:
         return sorted(results)
 
     @staticmethod
-    @cache
+    @typed_lru_cache(maxsize=4000)
     def get_unchanged_file_paths_in(
         dir_path: Path, managed_dirs: dict[Path, str]
     ) -> list[Path]:
@@ -202,7 +192,7 @@ class CheckPath:
     # functions for both file and dir paths
 
     @staticmethod
-    @cache
+    @typed_lru_cache(maxsize=4000)
     def looks_like_cache(path: Path) -> bool:
         path_parts_lower = [p.lower() for p in path.parts]
         return any(
