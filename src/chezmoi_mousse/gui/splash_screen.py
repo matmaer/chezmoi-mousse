@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections import deque
 from enum import StrEnum, auto
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -17,7 +17,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import CmdResultCollector, ManagedResults, SplashResults
+from chezmoi_mousse.cm_types import CmdResultCollector, SplashResults
 from chezmoi_mousse.functions import run_chezmoi_cmd
 
 if TYPE_CHECKING:
@@ -60,10 +60,15 @@ def create_fade_line_styles() -> deque[Style]:
 FADE_LINE_STYLES: deque[Style] = create_fade_line_styles()
 
 
-class GroupNames(StrEnum):
+class GroupName(StrEnum):
     json_output_group = auto()
     managed_cmd_group = auto()
     splash_cmd_group = auto()
+
+
+class WorkerName(StrEnum):
+    parse_json_output = "parse json output"
+    update_paths = "update paths"
 
 
 class AnimatedFade(Static):
@@ -101,6 +106,8 @@ class SplashScreen(Screen[SplashResults]):
             yield Center(RichLog(markup=True))
 
     def on_mount(self) -> None:
+        self.json_output_parsed = False
+        self.managed_paths_updated = False
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
@@ -110,6 +117,7 @@ class SplashScreen(Screen[SplashResults]):
         )
         fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
         self.primary_color = self.app.theme_variables["text-primary"]
+        self.success_color = self.app.theme_variables["text-success"]
         self.warning_color = self.app.theme_variables["text-warning"]
         self.error_color = self.app.theme_variables["text-error"]
         for command in self.app.cm_attr.read_cmd_groups.managed:
@@ -121,73 +129,81 @@ class SplashScreen(Screen[SplashResults]):
         self.set_interval(interval=2, callback=self._all_workers_finished)
         fade_timer.resume()
 
-    def _get_log_msg(self, *, prefix: str, suffix: str, returncode: int | None) -> str:
+    def _get_log_msg(self, *, prefix: str, returncode: int | None) -> str:
+        suffix = "completed"
         padding = LOG_MSG_WIDTH - (len(prefix) + len(suffix))
-        color = (
-            self.primary_color
-            if returncode == 0 or returncode is None
-            else self.warning_color
-        )
+        if returncode is None:
+            color = self.success_color
+        elif returncode == 0:
+            color = self.primary_color
+        else:
+            color = self.warning_color
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
         result: CommandResult = run_chezmoi_cmd(command, dry_run=False)
         setattr(CmdResultCollector, command.name, result)
-        suffix = "completed"
-        if command in self.app.cm_attr.read_cmd_groups.json_output:
-            suffix = "completed and parsed"
-            if command == ReadCmd.dump_config and result.parsed_json is not None:
-                self.app.cm_attr.parsed_config_dump = result.parsed_json
-                CmdResultCollector.dest_dir = Path(result.parsed_json["destDir"])
-            elif command == ReadCmd.template_data and result.parsed_json is not None:
-                self.app.cm_attr.parsed_template_data = result.parsed_json
-        return self._get_log_msg(
-            prefix=result.pretty_cmd, suffix=suffix, returncode=result.returncode
-        )
+        return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
     # Command groups
 
-    @work(thread=True, group=GroupNames.splash_cmd_group)
+    @work(thread=True, group=GroupName.splash_cmd_group)
     def _run_splash_cmd(self, command: ReadCmd) -> None:
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, group=GroupNames.managed_cmd_group)
+    @work(thread=True, group=GroupName.managed_cmd_group)
     def _run_managed_cmd(self, command: ReadCmd) -> None:
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, group=GroupNames.json_output_group)
+    @work(thread=True, group=GroupName.json_output_group)
     def _run_json_output_cmd(self, command: ReadCmd) -> None:
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    # set update ManagedPaths which accessed through cm_attr.paths
-
-    @work(thread=True)
-    def _update_managed_paths(self, managed_results: ManagedResults) -> None:
-
-        self.app.cm_attr.update_paths(results=managed_results)
-        self.cm_attr_managed_updated = True
-        msg = self._get_log_msg(
-            prefix="update paths", suffix="completed", returncode=None
+    @work(thread=True, name=WorkerName.parse_json_output)
+    def parse_json_outputs(self) -> None:
+        CmdResultCollector.parsed_dump_config = json.loads(
+            CmdResultCollector.dump_config.std_out
         )
+        CmdResultCollector.parsed_template_data = json.loads(
+            CmdResultCollector.template_data.std_out
+        )
+        CmdResultCollector.dest_dir = CmdResultCollector.parsed_dump_config["destDir"]
+        self.json_output_parsed = True
+        msg = self._get_log_msg(prefix=WorkerName.parse_json_output, returncode=None)
+        self.app.call_from_thread(self.splash_log.write, msg)
+
+    @work(thread=True, name=WorkerName.update_paths)
+    def _update_managed_paths(self) -> None:
+        managed_results = CmdResultCollector.get_managed_results()
+        self.app.cm_attr.update_paths(results=managed_results)
+        msg = self._get_log_msg(prefix="update paths", returncode=None)
+        self.managed_paths_updated = True
         self.app.call_from_thread(self.splash_log.write, msg)
 
     def _all_workers_finished(self) -> None:
-        if not all(
+        if self.json_output_parsed is False and all(
             worker.is_finished
             for worker in self.workers
-            if worker.group == GroupNames.json_output_group
-            or worker.group == GroupNames.managed_cmd_group
+            if worker.group == GroupName.json_output_group
         ):
-            return
-        else:
-            managed_results: ManagedResults = CmdResultCollector.get_managed_results()
-            self._update_managed_paths(
-                dest_dir=CmdResultCollector.dest_dir, managed_results=managed_results
+            self.parse_json_outputs()  # WorkerName.parse_json_output
+        elif (
+            self.managed_paths_updated is False
+            and all(
+                worker.is_finished
+                for worker in self.workers
+                if worker.name == WorkerName.parse_json_output
             )
-        if all(worker.is_finished for worker in self.workers) and all(
-            worker.is_finished for worker in self.app.workers
+            and all(
+                worker.is_finished
+                for worker in self.workers
+                if worker.group == GroupName.managed_cmd_group
+            )
         ):
-            self.dismiss(CmdResultCollector.get_all_results())
+            self._update_managed_paths()  # WorkerName.update_paths
+        elif not all(worker.is_finished for worker in self.workers):
+            return
+        self.dismiss(CmdResultCollector.get_all_results())
