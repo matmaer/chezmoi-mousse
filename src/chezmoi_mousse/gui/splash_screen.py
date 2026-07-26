@@ -164,13 +164,15 @@ class SplashScreen(Screen[SplashResults]):
 
     @work(thread=True, name=WorkerName.parse_json_output)
     def parse_json_outputs(self) -> None:
-        CmdResultCollector.parsed_dump_config = json.loads(
-            CmdResultCollector.dump_config.std_out
-        )
-        CmdResultCollector.parsed_template_data = json.loads(
-            CmdResultCollector.template_data.std_out
-        )
-        CmdResultCollector.dest_dir = CmdResultCollector.parsed_dump_config["destDir"]
+        parsed_dump_config = json.loads(CmdResultCollector.dump_config.std_out)
+        parsed_template_data = json.loads(CmdResultCollector.template_data.std_out)
+        CmdResultCollector.parsed_dump_config = parsed_dump_config
+        CmdResultCollector.parsed_template_data = parsed_template_data
+        CmdResultCollector.dest_dir = parsed_dump_config["destDir"]
+        self.app.cm_attr.dest_dir = parsed_dump_config["destDir"]
+        self.app.cm_attr.auto_add = parsed_dump_config["git"]["autoadd"]
+        self.app.cm_attr.auto_commit = parsed_dump_config["git"]["autocommit"]
+        self.app.cm_attr.auto_push = parsed_dump_config["git"]["autopush"]
         self.json_output_parsed = True
         msg = self._get_log_msg(prefix=WorkerName.parse_json_output, returncode=None)
         self.app.call_from_thread(self.splash_log.write, msg)
@@ -190,7 +192,8 @@ class SplashScreen(Screen[SplashResults]):
             if worker.group == GroupName.json_output_group
         ):
             self.parse_json_outputs()  # WorkerName.parse_json_output
-        elif (
+            return
+        if (
             self.managed_paths_updated is False
             and all(
                 worker.is_finished

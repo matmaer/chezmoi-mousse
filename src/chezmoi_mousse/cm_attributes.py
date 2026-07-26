@@ -91,6 +91,11 @@ class ManagedPaths:
 @dataclass
 class CmAttributes:
 
+    dest_dir: Path = field(init=False)
+    auto_add: bool = field(init=False)
+    auto_commit: bool = field(init=False)
+    auto_push: bool = field(init=False)
+
     ids: TabIds = field(
         default=TabIds(
             add=AppIds(TabLabel.add),
@@ -125,7 +130,6 @@ class CmAttributes:
     )
 
     dry_run: bool = field(default=True)
-
     changes: ChangedPaths = ChangedPaths()
     paths: ManagedPaths = ManagedPaths()
 

@@ -116,6 +116,7 @@ class TabIds(NamedTuple):
 
 class CmdResultCollector:
 
+    dest_dir: ClassVar[Path]
     cat_config: ClassVar[CommandResult]
     dest_dir: ClassVar[Path]
     doctor: ClassVar[CommandResult]
