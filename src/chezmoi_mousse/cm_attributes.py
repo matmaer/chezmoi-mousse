@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults, TabIds
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathFilters, PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, PathKindDict, StatusDict
@@ -174,17 +174,34 @@ class CmAttributes:
                     n_dirs[p] = path_kind
             return dict(sorted(n_dirs.items()))
 
-        def _path_kind_dict(paths: list[Path], unmanaged: bool) -> PathKindDict:
+        def _managed_path_kind_dict(paths: list[Path]) -> PathKindDict:
             result: PathKindDict = {}
             for path in paths:
+                path_kind = PathKind.unknown
+                exists = path.exists()
                 if path.is_symlink():
                     path_kind = PathKind.symlink
-                elif unmanaged is False and path.exists():
-                    path_kind = PathKind.path_exists
-                elif unmanaged is True:
-                    path_kind = PathKind.unmanaged  # TODO: add PathKind.unwanted
-                else:
-                    path_kind = PathKind.unknown
+                elif not exists:
+                    path_kind = PathKind.path_not_exists
+                result[path] = path_kind
+            return result
+
+        def _unmanaged_path_kind_dict(paths: list[Path], dirs: bool) -> PathKindDict:
+            result: PathKindDict = {}
+            for path in paths:
+                path_kind = PathKind.unknown
+                if (
+                    dirs is True
+                    and path.parts[-1] in PathFilters.UNWANTED_DIRS.value
+                    or (
+                        path in PathFilters.KEY_FILE_EXTENSIONS.value
+                        or path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
+                        or path.parts[-1] in PathFilters.KEY_FILE_NAMES.value
+                    )
+                ):
+                    path_kind = PathKind.unwanted
+                elif path.is_symlink():
+                    path_kind = PathKind.symlink
                 result[path] = path_kind
             return result
 
@@ -202,8 +219,8 @@ class CmAttributes:
 
         # set new instance on the paths class var
         self.paths = ManagedPaths(
-            managed_dirs=_path_kind_dict(_managed_dirs, unmanaged=False),
-            managed_files=_path_kind_dict(_managed_files, unmanaged=False),
+            managed_dirs=_managed_path_kind_dict(_managed_dirs),
+            managed_files=_managed_path_kind_dict(_managed_files),
             apply_dirs=_apply_dirs,
             apply_files=_apply_files,
             apply_n_dirs=_is_n_dir(
@@ -218,6 +235,6 @@ class CmAttributes:
                 s_dirs=set(_re_add_dirs),
                 s_files=set(_re_add_files),
             ),
-            unmanaged_dirs=_path_kind_dict(_unmanaged_dirs, unmanaged=True),
-            unmanaged_files=_path_kind_dict(_unmanaged_files, unmanaged=True),
+            unmanaged_dirs=_unmanaged_path_kind_dict(_unmanaged_dirs, dirs=True),
+            unmanaged_files=_unmanaged_path_kind_dict(_unmanaged_files, dirs=False),
         )
