@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from textual import getters, on, work
+from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.reactive import reactive
 from textual.widgets import (
     Button,
     ContentSwitcher,
@@ -154,20 +155,16 @@ class IgnoredView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    ignored: reactive[list[str]] = reactive([])
+
     def compose(self) -> ComposeResult:
 
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
         yield ScrollableContainer(Pretty("Loading..."))
 
-    def on_mount(self) -> None:
-        self.update_pretty_ignored()
-
-    @work
-    async def update_pretty_ignored(self) -> None:
+    def watch_ignored(self, ignored: list[str]):
         pretty_ignored: Pretty = self.query_exactly_one(Pretty)
-        pretty_ignored.update("Loading...")
-
-        # TODO: implement updating Pretty
+        pretty_ignored.update(ignored)
 
 
 class DiagramView(Vertical):
