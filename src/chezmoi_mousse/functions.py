@@ -15,14 +15,6 @@ if TYPE_CHECKING:
 
 __all__ = ("run_chezmoi_cmd", "CheckPath")
 
-DRY_RUN_STR = "--dry-run"
-
-CM_STR: str = "chezmoi"
-CM_DRY_STR: str = f"chezmoi {DRY_RUN_STR}"
-
-CM_TUP: StrTup = ("chezmoi",)
-CM_DRY_TUP: StrTup = (CM_STR, DRY_RUN_STR)
-
 
 @typed_lru_cache()
 def _ugly_args() -> set[str]:
@@ -31,7 +23,11 @@ def _ugly_args() -> set[str]:
 
 @typed_lru_cache()
 def _args_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool) -> StrTup:
-    return CM_TUP + cmd.value if dry is False else CM_DRY_TUP + cmd.value
+    return (
+        ("chezmoi",) + cmd.value
+        if dry is False
+        else ("chezmoi", "--dry-run") + cmd.value
+    )
 
 
 @typed_lru_cache()
@@ -41,7 +37,7 @@ def _cmd_str_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool, pretty: bool) -
         if pretty is False
         else " ".join([a for a in cmd.value if a not in _ugly_args()])
     )
-    return f"{CM_STR} {verb_str}" if dry is False else f"{CM_DRY_STR} verb_str"
+    return f"chezmoi {verb_str}" if dry is False else f"chezmoi --dry-run {verb_str}"
 
 
 @typed_lru_cache()
