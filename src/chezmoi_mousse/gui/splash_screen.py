@@ -18,7 +18,7 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import CmdResultCollector, ManagedResults, SplashResults
-from chezmoi_mousse.functions import RunChezmoi
+from chezmoi_mousse.functions import run_chezmoi_cmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
@@ -141,15 +141,17 @@ class SplashScreen(Screen[SplashResults]):
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        result: CommandResult = RunChezmoi.run(command, dry_run=False)
+        result: CommandResult = run_chezmoi_cmd(command, dry_run=False)
         setattr(CmdResultCollector, command.name, result)
         suffix = "completed"
-        if command in self.app.cm_attr.read_cmd_groups.splash_only:
+        if command in self.app.cm_attr.read_cmd_groups.json_output:
             suffix = "completed and parsed"
+            if command == ReadCmd.dump_config and result.parsed_json is not None:
+                self.app.cm_attr.parsed_config_dump = result.parsed_json
+            elif command == ReadCmd.template_data and result.parsed_json is not None:
+                self.app.cm_attr.parsed_template_data = result.parsed_json
         return self._get_log_msg(
-            prefix=RunChezmoi.pretty_cmd(command, dry_run=False, path_arg=None),
-            suffix=suffix,
-            returncode=result.returncode,
+            prefix=result.pretty_cmd, suffix=suffix, returncode=result.returncode
         )
 
     # Command groups
