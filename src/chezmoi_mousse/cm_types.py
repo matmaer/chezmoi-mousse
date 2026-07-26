@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import cached_property
-from typing import TYPE_CHECKING, ClassVar, NamedTuple
+from functools import cached_property, lru_cache
+from typing import TYPE_CHECKING, ClassVar, NamedTuple, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -27,7 +28,22 @@ __all__ = [
     "SplashResults",
     "StatusDict",
     "TabIds",
+    "typed_lru_cache",
 ]
+
+
+def typed_lru_cache[**FuncParams, FuncReturn](
+    *, maxsize: int | None = 128, typed: bool = False
+) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
+    def decorator(
+        func: Callable[FuncParams, FuncReturn],
+    ) -> Callable[FuncParams, FuncReturn]:
+        return cast(
+            Callable[FuncParams, FuncReturn],
+            lru_cache(maxsize=maxsize, typed=typed)(func),
+        )
+
+    return decorator
 
 
 @dataclass(frozen=True, kw_only=True)
