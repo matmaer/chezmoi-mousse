@@ -104,7 +104,10 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal(None)
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
-        await self._log_all_cmd_results().wait()
+        await self._log_all_cmd_results(
+            self.app.cm_attr.splash_results.results_list
+        ).wait()
+        self.loading_modal.dismiss()
 
     @work
     async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
@@ -139,8 +142,9 @@ class MainScreen(Screen[None]):
     @min_wait
     async def _log_all_cmd_results(self, cmd_results: list[CommandResult]) -> None:
         self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
-        self.app_log.cmd_results = cmd_results
-        self.cmd_log.cmd_results = cmd_results
+        for result in cmd_results:
+            self.cmd_log.cmd_results = [result]
+            self.app_log.cmd_results = [result]
 
     @work
     @min_wait

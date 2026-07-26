@@ -91,6 +91,7 @@ class FlatBtnLabel(StrEnum):
 
 
 class LogColor(StrEnum):
+    dimmed = "foreground-darken-3"
     error = "text-error"
     info = "text-primary"
     ready = "accent-darken-2"
@@ -106,9 +107,19 @@ class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
     debug_log_initialized = "Debug log initialized"
     debug_tab_enabled = "Debug tab enabled"
+    doctor_section = "Chezmoi doctor output"
+    doctor_warnings_found = "See the Config tab for warnings"
+    doctor_errors_found = "See the Config tab for errors"
+    doctor_failed_found = "See the Config tab for failed checks"
+    doctor_not_set_found = "See the Config tab for commands not set"
+    doctor_minor_issues_found = "Doctor issues are probably safe to ignore"
     doctor_no_issue_found = "No warnings, failed or error entries reported"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
+
+    @property
+    def end(self) -> str:
+        return "-" * len(self)
 
 
 class OpBtnLabel(StrEnum):

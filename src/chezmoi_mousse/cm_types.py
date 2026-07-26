@@ -57,7 +57,7 @@ class CommandResult:
     returncode: int
     std_err: str
     std_out: str
-    colored_cmd: str
+    time_stamp: str
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -96,6 +96,24 @@ class SplashResults:
     status_files: CommandResult
     unmanaged_dirs: CommandResult
     unmanaged_files: CommandResult
+
+    @property
+    def results_list(self) -> list[CommandResult]:
+        return [
+            self.doctor,
+            self.git_log,
+            self.dump_config,
+            self.cat_config,
+            self.template_data,
+            self.ignored,
+            self.git_remote,
+            self.managed_dirs,
+            self.managed_files,
+            self.status_dirs,
+            self.status_files,
+            self.unmanaged_dirs,
+            self.unmanaged_files,
+        ]
 
 
 class TabIds(NamedTuple):
