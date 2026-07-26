@@ -63,9 +63,10 @@ class GitLogView(Container):
             return
         self.remove_children()
         if show_path == self.app.cm_attr.dest_dir:
-            lines = []  # TODO: make sure the lines are known
-            if not lines:
+            if not self.app.cm_attr.splash_results.git_log.out_lines:
                 lines = ["No commits;No git log entries available yet."]
+            else:
+                lines = self.app.cm_attr.splash_results.git_log.out_lines
             container = self._create_datatable_container(lines)
         else:
             source_path_result = run_chezmoi_cmd(
@@ -77,7 +78,5 @@ class GitLogView(Container):
                 path_arg=source_path_result.path_arg,
             )
             self.post_message(LogCmdResultMsg(cmd_result))
-            container = self._create_datatable_container(
-                cmd_result.std_out.splitlines()
-            )
+            container = self._create_datatable_container(cmd_result.out_lines)
         self.mount(container)
