@@ -78,7 +78,7 @@ class ReadCmd(Enum):
     source_path = ("source-path",)
     status_dirs = ("status", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
     status_files = ("status", VerbArgs.path_style_absolute, VerbArgs.include_files)
-    template_data = ("template-data", VerbArgs.format_json)
+    template_data = ("data", VerbArgs.format_json)
     unmanaged_dirs = ("unmanaged", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
     unmanaged_files = (
         "unmanaged",
