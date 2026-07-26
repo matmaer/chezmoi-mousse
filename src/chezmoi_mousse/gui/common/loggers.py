@@ -118,10 +118,11 @@ class AppLog(RichLoggers):
         self.write_ready(LogString.app_log_initialized)
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
+            self.log_doctor_info()
 
-    def log_doctor_info(self, std_out: str) -> None:
+    def log_doctor_info(self) -> None:
         self.write_ready("chezmoi doctor output lines")
-        for line in std_out.splitlines():
+        for line in self.app.cm_attr.splash_results.doctor.out_lines:
             if "error" in line.lower():
                 self.write_error(line)
             elif "failed" in line.lower():
@@ -133,9 +134,10 @@ class AppLog(RichLoggers):
         self.write_ready("end of chezmoi doctor output")
 
     # TODO: implement watch_cmd_results
-    def watch_cmd_results(self, cmd_results: list[CommandResult]) -> None:
+    def watch_cmd_results(self, cmd_results: list[CommandResult] | None) -> None:
 
-        self.notify(f"{cmd_results}")
+        if cmd_results is None:
+            return
 
 
 class DebugLog(RichLoggers):

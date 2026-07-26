@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, ScrollableContainer, Vertical
-from textual.reactive import reactive
 from textual.widgets import (
     Button,
     ContentSwitcher,
@@ -155,16 +154,14 @@ class IgnoredView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    ignored: reactive[list[str]] = reactive([])
-
     def compose(self) -> ComposeResult:
 
         yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
         yield ScrollableContainer(Pretty("Loading..."))
 
-    def watch_ignored(self, ignored: list[str]):
+    def on_mount(self) -> None:
         pretty_ignored: Pretty = self.query_exactly_one(Pretty)
-        pretty_ignored.update(ignored)
+        pretty_ignored.update(self.app.cm_attr.splash_results.ignored.out_lines)
 
 
 class DiagramView(Vertical):
@@ -192,7 +189,7 @@ class TemplateDataView(Vertical):
 
     def on_mount(self) -> None:
         pretty_widget = self.query_exactly_one(Pretty)
-        pretty_widget.update(self.app.cm_attr.template_data)
+        pretty_widget.update(self.app.cm_attr.parsed_template_data)
 
 
 class ConfigTab(TabPane):
