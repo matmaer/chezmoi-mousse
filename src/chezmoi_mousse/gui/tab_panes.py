@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from textual import getters, on, work
@@ -278,16 +277,6 @@ FLOW_DIAGRAM = """\
 │ destination  │    │    target state / source state   │    │  git remote  │
 └──────────────┘    └──────────────────────────────────┘    └──────────────┘
 """
-
-
-class TestPathColors(StrEnum):
-    managed_dir = "[$text-accent bold]"
-    status_dir = "[$text-warning bold]"
-    unmanaged_dir = "[$text-primary bold]"
-    managed_file = "[$text-accent]"
-    status_file = "[$text-warning]"
-    unmanaged_file = "[$text-primary]"
-    unhandled = "[$text-error bold]"
 
 
 class DebugTab(TabPane):

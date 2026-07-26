@@ -109,7 +109,6 @@ class LogString(StrEnum):
     doctor_no_issue_found = "No warnings, failed or error entries reported"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
-    using_chezmoi_bin = "Using chezmoi binary at:"
 
 
 class OpBtnLabel(StrEnum):

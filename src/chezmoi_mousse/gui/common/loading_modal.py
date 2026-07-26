@@ -47,10 +47,7 @@ class LoadingLabel(StrEnum):
     loading = "Loading"  # the initial label
     log_cmd_results = "Logging command results"
     purge_cache = "Purge cached data"
-    update_changed_and_cached = "Update changed paths and cached dir nodes"
-    update_config_tab = "Update Config tab"
     update_trees = "Update Trees"
-    update_managed_paths = "Update managed paths"
 
     @property
     def with_color(self) -> str:

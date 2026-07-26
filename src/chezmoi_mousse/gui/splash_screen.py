@@ -66,11 +66,6 @@ class GroupNames(StrEnum):
     splash_cmd_group = auto()
 
 
-class WorkerNames(StrEnum):
-    update_managed_paths = auto()
-    construct_results = auto()
-
-
 class AnimatedFade(Static):
 
     def on_mount(self) -> None:
@@ -110,7 +105,9 @@ class SplashScreen(Screen[SplashResults]):
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
         self.splash_log.styles.margin = 2
-        self.splash_log.styles.height = 14  # TODO: calculate properly
+        self.splash_log.styles.height = (
+            self.app.cm_attr.read_cmd_groups.commands_count + 2
+        )
         fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
         self.primary_color = self.app.theme_variables["text-primary"]
         self.warning_color = self.app.theme_variables["text-warning"]
@@ -164,7 +161,7 @@ class SplashScreen(Screen[SplashResults]):
 
     # set update ManagedPaths which accessed through cm_attr.paths
 
-    @work(thread=True, group=WorkerNames.update_managed_paths)
+    @work(thread=True)
     def _update_managed_paths(
         self, dest_dir: Path, managed_results: ManagedResults
     ) -> None:
