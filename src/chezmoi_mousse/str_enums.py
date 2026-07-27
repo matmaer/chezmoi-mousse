@@ -6,14 +6,16 @@ __all__ = [
     "Chars",
     "ContainerName",
     "FlatBtnLabel",
-    "RichLogName",
+    "GlobalArgs",
     "LogString",
     "PathKind",
+    "RichLogName",
     "SectionLabel",
     "StatusCode",
     "SwitchLabel",
     "TabLabel",
     "Tcss",
+    "VerbArgs",
 ]
 
 
@@ -382,3 +384,51 @@ class Tcss(StrEnum):
     @property
     def dot_prefix(self) -> str:
         return f".{self.value}"
+
+
+##############################################
+# Enums for the chezmoi command construction #
+##############################################s
+
+
+class ChezmoiGitArgs(Enum):
+    # args for 'chezmoi git'
+    option_terminator = "--"  # option terminator
+    global_args = ("--no-pager", "--no-advice")
+    default_args = (option_terminator,) + global_args
+    verbose = "--verbose"
+    # _dry_run = "--dry-run" # noqa: ERA001
+    git_log_args = (
+        "--date-order",
+        "--format=%ar by %cn;%s",
+        "--max-count=100",
+        "--no-color",
+        "--no-decorate",
+        "--no-expand-tabs",
+    )
+    git_log = default_args + ("log",) + git_log_args
+    git_remote = default_args + ("remote", verbose)
+
+
+class GlobalArgs(Enum):
+    global_defaults = (
+        "--color=off",
+        "--force",
+        "--interactive=false",
+        "--keep-going=false",
+        "--mode=file",
+        "--no-pager",
+        "--no-tty",
+        "--progress=false",
+        "--use-builtin-diff",
+        "--use-builtin-git",
+    )
+    dry_run = "--dry-run"
+
+
+class VerbArgs(StrEnum):
+    format_json = "--format=json"
+    include_dirs = "--include=dirs"
+    include_files = "--include=files"
+    path_style_absolute = "--path-style=absolute"
+    reverse = "--reverse"

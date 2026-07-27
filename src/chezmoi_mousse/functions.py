@@ -6,14 +6,29 @@ from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.cm_command import ReadCmd, WriteCmd, get_ugly_args
+from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
 from chezmoi_mousse.cm_types import CommandResult, typed_lru_cache
-from chezmoi_mousse.str_enums import PathFilters
+from chezmoi_mousse.str_enums import ChezmoiGitArgs, GlobalArgs, PathFilters, VerbArgs
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import StrTup
 
 __all__ = ("run_chezmoi_cmd", "CheckPath")
+
+
+def get_ugly_args() -> set[str]:
+    ugly_args: set[str] = set()
+    ugly_args.update(
+        GlobalArgs.global_defaults.value,
+        ChezmoiGitArgs.global_args.value,
+        ChezmoiGitArgs.git_log_args.value,
+        (
+            ChezmoiGitArgs.verbose.value,
+            VerbArgs.format_json.value,
+            VerbArgs.path_style_absolute.value,
+        ),
+    )
+    return ugly_args
 
 
 @typed_lru_cache()

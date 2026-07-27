@@ -1,66 +1,10 @@
 from __future__ import annotations
 
-from enum import Enum, StrEnum
+from enum import Enum
 
-__all__ = ["ReadCmd", "WriteCmd"]
+from chezmoi_mousse.str_enums import ChezmoiGitArgs, VerbArgs
 
-
-def get_ugly_args() -> set[str]:
-    ugly_args: set[str] = set()
-    ugly_args.update(
-        GlobalArgs.global_defaults.value,
-        ChezmoiGitArgs.global_args.value,
-        ChezmoiGitArgs.git_log_args.value,
-        (
-            ChezmoiGitArgs.verbose.value,
-            VerbArgs.format_json.value,
-            VerbArgs.path_style_absolute.value,
-        ),
-    )
-    return ugly_args
-
-
-class GlobalArgs(Enum):
-    global_defaults = (
-        "--color=off",
-        "--force",
-        "--interactive=false",
-        "--keep-going=false",
-        "--mode=file",
-        "--no-pager",
-        "--no-tty",
-        "--progress=false",
-        "--use-builtin-diff",
-        "--use-builtin-git",
-    )
-    dry_run = "--dry-run"
-
-
-class VerbArgs(StrEnum):
-    option_terminator = "--"  # option terminator
-    format_json = "--format=json"
-    include_dirs = "--include=dirs"
-    include_files = "--include=files"
-    path_style_absolute = "--path-style=absolute"
-    reverse = "--reverse"
-
-
-class ChezmoiGitArgs(Enum):
-    # args for 'chezmoi git'
-    global_args = ("--no-pager", "--no-advice")
-    default_args = (VerbArgs.option_terminator,) + global_args
-    verbose = "--verbose"
-    # _dry_run = "--dry-run" # noqa: ERA001
-    git_log_args = (
-        "--date-order",
-        "--format=%ar by %cn;%s",
-        "--max-count=100",
-        "--no-color",
-        "--no-decorate",
-        "--no-expand-tabs",
-    )
-    git_log = default_args + ("log",) + git_log_args
-    git_remote = default_args + ("remote", verbose)
+__all__ = ["ReadCmd", "WriteCmd", "ChezmoiGitArgs"]
 
 
 class ReadCmd(Enum):
