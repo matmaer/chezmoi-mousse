@@ -12,7 +12,6 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
-from chezmoi_mousse import save_stacktrace
 from chezmoi_mousse.cm_attributes import CmAttributes
 from chezmoi_mousse.str_enums import BindingAction, BindingDescription, Chars, TabLabel
 
@@ -86,8 +85,9 @@ class ChezmoiGui(App[str]):
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        if "debug" in self.features:
-            save_stacktrace()
+        from chezmoi_mousse.debug.utils import DebugUtils
+
+        DebugUtils.save_stacktrace()
         super()._handle_exception(error)
 
     def on_mount(self) -> None:
