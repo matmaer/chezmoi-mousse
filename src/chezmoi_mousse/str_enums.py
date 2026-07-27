@@ -154,6 +154,55 @@ class OpBtnLabel(StrEnum):
         ).lower()
 
 
+class OpInfoString(StrEnum):
+    add_path_info = (
+        "[dim]Add new targets to the source state. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
+    apply_path_info = (
+        "[dim]Chezmoi will ensure that the path is in the target state. "
+        "The command will run without prompting. "
+        "For targets modified since chezmoi last wrote it. If adding a "
+        "directory, it will be recursed in.[/]"
+    )
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    auto_add = (
+        f"[$text-warning]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
+        "paths will be added to the chezmoi repository."
+        f"{Chars.check_mark}[/]"
+    )
+    auto_commit = (
+        f"[$text-warning]{Chars.warning_sign} Chezmoi 'autocommit' is enabled: "
+        "paths will be committed to the chezmoi repository."
+        f"{Chars.warning_sign}[/]"
+    )
+    auto_push = (
+        f"[$text-error]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
+        "the updated chezmoi repository will be pushed to the remote (origin)."
+        f"{Chars.warning_sign}[/]"
+    )
+    destroy_path_info = (
+        "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
+        "SURE YOU HAVE A BACKUP![/]"
+    )
+    destroy_subtitle = (
+        f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[$text-error]{Chars.x_mark}[/]"
+    )
+    forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
+    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
+    ready_to_run = "[$text]Ready to run[/]"
+    run_completed = "[$text]Command completed[/]"
+    re_add_path_info = (
+        "[dim]Re-add modified files in the target state, preserving "
+        "any encrypted_ attributes. chezmoi will not overwrite templates, and "
+        "all entries that are not files are ignored. If adding a directory, it"
+        " will be recursed in.[/]"
+    )
+    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
+
+
 class PathKind(StrEnum):
     path_exists = auto()  # managed path which exists on file system
     path_not_exists = auto()  # managed path which does not exists on file system
