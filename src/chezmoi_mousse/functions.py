@@ -16,7 +16,8 @@ if TYPE_CHECKING:
 __all__ = ("run_chezmoi_cmd", "CheckPath")
 
 
-def get_ugly_args() -> set[str]:
+@typed_lru_cache()
+def _ugly_args() -> set[str]:
     ugly_args: set[str] = set()
     ugly_args.update(
         GlobalArgs.global_defaults.value,
@@ -29,11 +30,6 @@ def get_ugly_args() -> set[str]:
         ),
     )
     return ugly_args
-
-
-@typed_lru_cache()
-def _ugly_args() -> set[str]:
-    return get_ugly_args()
 
 
 @typed_lru_cache()
