@@ -181,7 +181,7 @@ class MainScreen(Screen[None]):
         self.cmd_log.cmd_results = [msg.cmd_result]
 
     @on(OpButton.Pressed)
-    async def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
+    def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
         if not isinstance(event.button, OpButton):
             return
         else:
@@ -193,12 +193,12 @@ class MainScreen(Screen[None]):
             return
         if event.button.btn_enum == OpBtnEnum.reload:
             self.command_output.reset_widgets()
-            await self._push_loading_modal(OpBtnEnum.reload).wait()
+            self._push_loading_modal(OpBtnEnum.reload)
         elif (
             event.button.btn_enum in OpBtnEnum.run_btn_enums()
             or event.button.btn_enum == OpBtnEnum.refresh_tree
         ):
-            await self._push_loading_modal(event.button.btn_enum).wait()
+            self._push_loading_modal(event.button.btn_enum)
 
     @on(DirContentBtn.Pressed)
     def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
