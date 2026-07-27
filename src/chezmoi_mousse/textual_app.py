@@ -79,6 +79,8 @@ class ChezmoiGui(App[str]):
 
     CSS_PATH = "gui.tcss"
 
+    SCREENS: ClassVar = {"main_screen": MainScreen}
+
     def __init__(self, *, cm_attr: CmAttributes) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         self.cm_attr = cm_attr
