@@ -8,7 +8,6 @@ from chezmoi_mousse.textual_app import ChezmoiGui
 
 
 def check_if_we_can_run() -> str | None:
-    import os
     import shutil
     import sys
 
@@ -44,8 +43,9 @@ def run_app():
             asyncio.run(test_app_with_pilot(app))
         else:
             app.run()
-    except Exception:
+    except Exception as error:
         DebugUtils.save_stacktrace()
+        raise error
 
 
 if __name__ == "__main__":
