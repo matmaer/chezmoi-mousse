@@ -139,9 +139,6 @@ class CmAttributes:
 
     def update_paths(self, results: ManagedResults) -> None:
 
-        def _lines_to_paths(lines: list[str]) -> list[Path]:
-            return [Path(line) for line in lines]
-
         def _status_dict(lines: list[str], column: int) -> StatusDict:
             return {
                 Path(line[3:]): StatusCode(line[column])
@@ -150,15 +147,9 @@ class CmAttributes:
             }
 
         def _is_n_dir(
-            *, tab_label: TabLabel, s_dirs: set[Path], s_files: set[Path]
+            path_kind: PathKind, *, s_dirs: set[Path], s_files: set[Path]
         ) -> PathKindDict:
             n_dirs: PathKindDict = {}
-
-            path_kind = (
-                PathKind.apply_n_dir
-                if tab_label == TabLabel.apply
-                else PathKind.re_add_n_dir
-            )
 
             # s_dirs var to exclude dirs with a real status and their parents
             # s_files to consider all files with a real status their parents
@@ -174,42 +165,40 @@ class CmAttributes:
                     n_dirs[p] = path_kind
             return dict(sorted(n_dirs.items()))
 
-        def _managed_path_kind_dict(paths: list[Path]) -> PathKindDict:
+        def _managed_path_kind_dict(lines: list[str]) -> PathKindDict:
             result: PathKindDict = {}
-            for path in paths:
-                path_kind = PathKind.unknown
-                exists = path.exists()
-                if path.is_symlink():
-                    path_kind = PathKind.symlink
-                elif not exists:
-                    path_kind = PathKind.path_not_exists
-                result[path] = path_kind
+            for path in [Path(line) for line in lines]:
+                if path.exists():
+                    result[path] = PathKind.path_exists
+                else:
+                    result[path] = PathKind.path_not_exists
             return result
 
-        def _unmanaged_path_kind_dict(paths: list[Path], dirs: bool) -> PathKindDict:
+        def _unmanaged_dir_kind_dict(lines: list[str]) -> PathKindDict:
             result: PathKindDict = {}
-            for path in paths:
-                path_kind = PathKind.unknown
-                if (
-                    dirs is True
-                    and path.parts[-1] in PathFilters.UNWANTED_DIRS.value
-                    or (
-                        path in PathFilters.KEY_FILE_EXTENSIONS.value
-                        or path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
-                        or path.parts[-1] in PathFilters.KEY_FILE_NAMES.value
-                    )
-                ):
-                    path_kind = PathKind.unwanted
+            for path in [Path(line) for line in lines]:
+                if path.parts[-1] in PathFilters.UNWANTED_DIRS.value:
+                    result[path] = PathKind.unwanted
                 elif path.is_symlink():
-                    path_kind = PathKind.symlink
-                result[path] = path_kind
+                    result[path] = PathKind.symlink
+                else:
+                    result[path] = PathKind.unknown
             return result
 
-        # no context vars
-        _managed_dirs = _lines_to_paths(results.managed_dirs.out_lines)
-        _managed_files = _lines_to_paths(results.managed_files.out_lines)
-        _unmanaged_dirs = _lines_to_paths(results.unmanaged_dirs.out_lines)
-        _unmanaged_files = _lines_to_paths(results.unmanaged_files.out_lines)
+        def _unmanaged_file_kind_dict(lines: list[str]) -> PathKindDict:
+            result: PathKindDict = {}
+            for path in [Path(line) for line in lines]:
+                if (
+                    path in PathFilters.KEY_FILE_EXTENSIONS.value
+                    or path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
+                    or path.parts[-1] in PathFilters.KEY_FILE_NAMES.value
+                ):
+                    result[path] = PathKind.unwanted
+                elif path.is_symlink():
+                    result[path] = PathKind.symlink
+                else:
+                    result[path] = PathKind.unknown
+            return result
 
         # context vars
         _apply_dirs = _status_dict(results.status_dirs.out_lines, 1)
@@ -219,22 +208,22 @@ class CmAttributes:
 
         # set new instance on the paths class var
         self.paths = ManagedPaths(
-            managed_dirs=_managed_path_kind_dict(_managed_dirs),
-            managed_files=_managed_path_kind_dict(_managed_files),
+            managed_dirs=_managed_path_kind_dict(results.managed_dirs.out_lines),
+            managed_files=_managed_path_kind_dict(results.managed_files.out_lines),
             apply_dirs=_apply_dirs,
             apply_files=_apply_files,
             apply_n_dirs=_is_n_dir(
-                tab_label=TabLabel.apply,
-                s_dirs=set(_apply_dirs),
-                s_files=set(_apply_files),
+                PathKind.apply_n_dir, s_dirs=set(_apply_dirs), s_files=set(_apply_files)
             ),
             re_add_dirs=_re_add_dirs,
             re_add_files=_re_add_files,
             re_add_n_dirs=_is_n_dir(
-                tab_label=TabLabel.re_add,
+                PathKind.re_add_n_dir,
                 s_dirs=set(_re_add_dirs),
                 s_files=set(_re_add_files),
             ),
-            unmanaged_dirs=_unmanaged_path_kind_dict(_unmanaged_dirs, dirs=True),
-            unmanaged_files=_unmanaged_path_kind_dict(_unmanaged_files, dirs=False),
+            unmanaged_dirs=_unmanaged_dir_kind_dict(results.unmanaged_dirs.out_lines),
+            unmanaged_files=_unmanaged_file_kind_dict(
+                results.unmanaged_files.out_lines
+            ),
         )

@@ -163,8 +163,6 @@ class PathKind(StrEnum):
     # for unmanaged paths
     unmanaged = auto()
     unwanted = auto()
-
-    # for any managed or unmanaged path
     symlink = auto()
     unknown = auto()
 
