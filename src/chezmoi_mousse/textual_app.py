@@ -81,9 +81,10 @@ class ChezmoiGui(App[str]):
 
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
-    def __init__(self, *, cmattr: CmAttributes) -> None:
+    cmattr: ClassVar[CmAttributes] = CmAttributes()
+
+    def __init__(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.cmattr = cmattr
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:

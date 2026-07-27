@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import random
 from itertools import product
 from typing import TYPE_CHECKING
@@ -102,8 +103,11 @@ async def click_random_path_in_diff_view(pilot: Pilot[str], tab_pane: TabPane) -
     await click_and_wait(pilot, to_click)
 
 
-async def test_app_with_pilot(app: ChezmoiGui):
+def run_with_pilot(app: ChezmoiGui):
+    asyncio.run(start_pilot_mode(app))
 
+
+async def start_pilot_mode(app: ChezmoiGui):
     async with app.run_test(headless=False, notifications=True) as pilot:
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
         for label in TabLabel.main_tabs():

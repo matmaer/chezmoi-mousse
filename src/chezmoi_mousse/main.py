@@ -1,8 +1,6 @@
-import asyncio
 import os
 
-from chezmoi_mousse.cm_attributes import CmAttributes
-from chezmoi_mousse.debug.pilot_mode import test_app_with_pilot
+from chezmoi_mousse.debug.pilot_mode import run_with_pilot
 from chezmoi_mousse.debug.utils import DebugUtils
 from chezmoi_mousse.textual_app import ChezmoiGui
 
@@ -37,10 +35,9 @@ def run_app():
     check_if_we_can_run()
 
     try:
-        cmattr_instance = CmAttributes()
-        app = ChezmoiGui(cmattr=cmattr_instance)
+        app = ChezmoiGui()
         if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
-            asyncio.run(test_app_with_pilot(app))
+            run_with_pilot(app)
         else:
             app.run()
     except Exception as error:
