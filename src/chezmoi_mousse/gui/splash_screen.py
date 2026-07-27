@@ -121,12 +121,12 @@ class SplashScreen(Screen[SplashResults]):
         self.success_color = self.app.theme_variables["text-success"]
         self.warning_color = self.app.theme_variables["text-warning"]
         self.error_color = self.app.theme_variables["text-error"]
+        for command in self.app.cm_attr.read_cmd_groups.json_output:
+            self._run_json_output_cmd(command)
         for command in self.app.cm_attr.read_cmd_groups.managed:
             self._run_managed_cmd(command)
         for command in self.app.cm_attr.read_cmd_groups.splash_only:
             self._run_splash_cmd(command)
-        for command in self.app.cm_attr.read_cmd_groups.json_output:
-            self._run_json_output_cmd(command)
         self.set_interval(interval=2, callback=self._all_workers_finished)
         fade_timer.resume()
 
@@ -163,8 +163,8 @@ class SplashScreen(Screen[SplashResults]):
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True, name=WorkerName.parse_json_output)
-    def parse_json_outputs(self) -> None:
+    @work(name=WorkerName.parse_json_output)
+    async def parse_json_outputs(self) -> None:
         parsed_dump_config = json.loads(CmdResultCollector.dump_config.std_out)
         parsed_template_data = json.loads(CmdResultCollector.template_data.std_out)
         CmdResultCollector.parsed_dump_config = parsed_dump_config
@@ -176,7 +176,7 @@ class SplashScreen(Screen[SplashResults]):
         self.app.cm_attr.auto_push = parsed_dump_config["git"]["autopush"]
         self.json_output_parsed = True
         msg = self._get_log_msg(prefix=WorkerName.parse_json_output, returncode=None)
-        self.app.call_from_thread(self.splash_log.write, msg)
+        self.splash_log.write(msg)
 
     @work(thread=True, name=WorkerName.update_paths)
     def _update_managed_paths(self) -> None:
@@ -209,7 +209,8 @@ class SplashScreen(Screen[SplashResults]):
         ):
             self._update_managed_paths()  # WorkerName.update_paths
             return
-        if all(worker.is_finished for worker in self.app.workers):
+
+        if all(worker.is_finished for worker in self.workers):
             self.app.cm_attr.splash_results = CmdResultCollector.get_splash_results()
             self.app.cm_attr.parsed_dump_config = CmdResultCollector.parsed_dump_config
             self.app.cm_attr.parsed_template_data = (
