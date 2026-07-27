@@ -139,12 +139,18 @@ class CmAttributes:
 
     def update_paths(self, results: ManagedResults) -> None:
 
-        def _status_dict(lines: list[str], column: int) -> StatusDict:
-            return {
-                Path(line[3:]): StatusCode(line[column])
-                for line in lines
-                if line[column] != StatusCode.Space
-            }
+        def _status_dicts(lines: list[str]) -> tuple[StatusDict, StatusDict]:
+            apply: StatusDict = {}
+            re_add: StatusDict = {}
+            for line in lines:
+                path = Path(line[3:])
+                apply_status = StatusCode(line[1])
+                if apply_status != StatusCode.Space:
+                    apply[path] = apply_status
+                re_add_status = StatusCode(line[0])
+                if re_add_status != StatusCode.Space:
+                    re_add[path] = re_add_status
+            return apply, re_add
 
         def _is_n_dir(
             path_kind: PathKind, *, s_dirs: set[Path], s_files: set[Path]
@@ -167,7 +173,8 @@ class CmAttributes:
 
         def _managed_path_kind_dict(lines: list[str]) -> PathKindDict:
             result: PathKindDict = {}
-            for path in [Path(line) for line in lines]:
+            for line in lines:
+                path = Path(line)
                 if path.exists():
                     result[path] = PathKind.path_exists
                 else:
@@ -176,7 +183,8 @@ class CmAttributes:
 
         def _unmanaged_dir_kind_dict(lines: list[str]) -> PathKindDict:
             result: PathKindDict = {}
-            for path in [Path(line) for line in lines]:
+            for line in lines:
+                path = Path(line)
                 if path.parts[-1] in PathFilters.UNWANTED_DIRS.value:
                     result[path] = PathKind.unwanted
                 elif path.is_symlink():
@@ -187,7 +195,8 @@ class CmAttributes:
 
         def _unmanaged_file_kind_dict(lines: list[str]) -> PathKindDict:
             result: PathKindDict = {}
-            for path in [Path(line) for line in lines]:
+            for line in lines:
+                path = Path(line)
                 if (
                     path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
                     or path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
@@ -201,10 +210,8 @@ class CmAttributes:
             return result
 
         # context vars
-        _apply_dirs = _status_dict(results.status_dirs.out_lines, 1)
-        _apply_files = _status_dict(results.status_files.out_lines, 1)
-        _re_add_dirs = _status_dict(results.status_dirs.out_lines, 0)
-        _re_add_files = _status_dict(results.status_files.out_lines, 0)
+        _apply_dirs, _re_add_dirs = _status_dicts(results.status_dirs.out_lines)
+        _apply_files, _re_add_files = _status_dicts(results.status_files.out_lines)
 
         # set new instance on the paths class var
         self.paths = ManagedPaths(
