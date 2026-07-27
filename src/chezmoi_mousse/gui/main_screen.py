@@ -22,7 +22,7 @@ from .common.git_log import GitLogView
 from .common.loading_modal import LoadingLabel, LoadingModal, min_wait
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
-from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReadyToUseMsg
+from .common.messages import CurrentNodeMsg, LogCmdResultMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
@@ -93,7 +93,6 @@ class MainScreen(Screen[None]):
         self.command_output = self.query_exactly_one(CommandOutput)
         self.command_output.display = False
         self._first_time_startup()
-        self.post_message(ReadyToUseMsg())
 
     ###########################################
     # Push modal methods with their callbacks #

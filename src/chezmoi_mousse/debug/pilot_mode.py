@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import random
 from itertools import product
 from typing import TYPE_CHECKING
@@ -24,11 +23,8 @@ from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.str_enums import TabLabel
 
 if TYPE_CHECKING:
-    from textual.message import Message
 
     from chezmoi_mousse.textual_app import ChezmoiGui
-
-from chezmoi_mousse.gui.common.messages import ReadyToUseMsg
 
 
 async def pilot_chill(pilot: Pilot[str]):
@@ -107,18 +103,8 @@ async def click_random_path_in_diff_view(pilot: Pilot[str], tab_pane: TabPane) -
 
 
 async def test_app_with_pilot(app: ChezmoiGui):
-    ready_event = asyncio.Event()
 
-    def message_hook(message: Message) -> None:
-        # Called for every message delivered while running under run_test
-        if isinstance(message, ReadyToUseMsg):
-            ready_event.set()
-
-    async with app.run_test(
-        headless=False, notifications=True, message_hook=message_hook
-    ) as pilot:
-        # wait until ReadyToUseMsg is observed
-        await ready_event.wait()
+    async with app.run_test(headless=False, notifications=True) as pilot:
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
         for label in TabLabel.main_tabs():
             tab = tabbed_content.get_tab(label)

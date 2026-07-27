@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import AppIds, CommandResult
 
 
-__all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReadyToUseMsg"]
+__all__ = ["LogCmdResultMsg", "CurrentNodeMsg"]
 
 
 class LogCmdResultMsg(Message):
@@ -24,9 +24,3 @@ class CurrentNodeMsg(Message):
         self.ids = ids
         self.path = path
         super().__init__()
-
-
-class ReadyToUseMsg(Message):
-    """Message only used needed to correctly run in pilot mode."""
-
-    pass
