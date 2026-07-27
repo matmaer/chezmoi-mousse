@@ -189,7 +189,7 @@ class CmAttributes:
             result: PathKindDict = {}
             for path in [Path(line) for line in lines]:
                 if (
-                    path in PathFilters.KEY_FILE_EXTENSIONS.value
+                    path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
                     or path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
                     or path.parts[-1] in PathFilters.KEY_FILE_NAMES.value
                 ):
