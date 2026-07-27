@@ -73,7 +73,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
 
     def on_mount(self) -> None:
         if self.btn_enum != OpBtnEnum.reload:
-            self.app.cm_attr.changes.clear_changes()
+            self.app.cmattr.changes.clear_changes()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:
@@ -83,7 +83,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
 
     @work
     async def run_managed_commands(self) -> None:
-        for read_cmd in self.app.cm_attr.read_cmd_groups.managed:
+        for read_cmd in self.app.cmattr.read_cmd_groups.managed:
             await self._run_read_command(read_cmd).wait()
 
     @work
@@ -99,7 +99,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
     @work(thread=True, exit_on_error=False)
     @min_wait
     async def _run_write_command(self, dry_run: bool, btn_enum: OpBtnEnum) -> None:
-        if btn_enum.path_arg == self.app.cm_attr.dest_dir:
+        if btn_enum.path_arg == self.app.cmattr.dest_dir:
             btn_enum.path_arg = None
         self.command_results.append(
             run_chezmoi_cmd(

@@ -38,8 +38,8 @@ def run_app():
     check_if_we_can_run()
 
     try:
-        cm_attr_instance = CmAttributes()
-        app = ChezmoiGui(cm_attr=cm_attr_instance)
+        cmattr_instance = CmAttributes()
+        app = ChezmoiGui(cmattr=cmattr_instance)
         if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
             asyncio.run(test_app_with_pilot(app))
         else:

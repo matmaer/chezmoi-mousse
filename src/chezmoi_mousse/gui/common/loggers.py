@@ -69,7 +69,7 @@ class CmdLog(ScrollableContainer):
         app = getters.app(ChezmoiGui)
 
     def __init__(self) -> None:
-        super().__init__(id=self.app.cm_attr.ids.logs.richlog.cmd)
+        super().__init__(id=self.app.cmattr.logs_id.richlog.cmd)
 
     cmd_results: reactive[list[CommandResult] | None] = reactive(None, init=False)
 
@@ -125,7 +125,7 @@ class AppLog(RichLoggers):
 
     def __init__(self) -> None:
         super().__init__(
-            id=self.app.cm_attr.ids.logs.richlog.app, markup=True, max_lines=10000
+            id=self.app.cmattr.logs_id.richlog.app, markup=True, max_lines=10000
         )
 
     def on_mount(self) -> None:

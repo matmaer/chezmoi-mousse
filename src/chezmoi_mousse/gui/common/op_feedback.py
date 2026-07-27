@@ -34,7 +34,7 @@ class OperateInfo(Static):
 
     def on_mount(self) -> None:
         self.display = False
-        self.dest_dir = self.app.cm_attr.dest_dir
+        self.dest_dir = self.app.cmattr.dest_dir
 
     def update_review_info(self, button: OpButton, dry_run: bool) -> None:
         self.current_button = button
@@ -43,11 +43,11 @@ class OperateInfo(Static):
         info_lines.append(f"Will run command with dry run {dry_run}")
         info_lines.append(button.btn_enum.op_info_string)
         if button.btn_enum != OpBtnEnum.apply_review:
-            if self.app.cm_attr.auto_add is True:
+            if self.app.cmattr.auto_add is True:
                 info_lines.append(OpInfoString.auto_commit)
-            if self.app.cm_attr.auto_commit is True:
+            if self.app.cmattr.auto_commit is True:
                 info_lines.append(OpInfoString.auto_commit)
-            if self.app.cm_attr.auto_push is True:
+            if self.app.cmattr.auto_push is True:
                 info_lines.append(OpInfoString.auto_push)
         else:
             msg = (
@@ -100,22 +100,22 @@ class CommandOutput(ScrollableContainer):
 
     @work
     async def update_cmd_output(self) -> None:
-        if self.app.cm_attr.changes.added_paths:
+        if self.app.cmattr.changes.added_paths:
             self.added_paths.update(
-                "\n".join([str(p) for p in self.app.cm_attr.changes.added_paths])
+                "\n".join([str(p) for p in self.app.cmattr.changes.added_paths])
             )
         else:
             self.added_paths.update("No added paths")
-        if self.app.cm_attr.changes.removed_paths:
+        if self.app.cmattr.changes.removed_paths:
             self.removed_paths.update(
-                "\n".join([str(p) for p in self.app.cm_attr.changes.removed_paths])
+                "\n".join([str(p) for p in self.app.cmattr.changes.removed_paths])
             )
         else:
             self.removed_paths.update("No removed paths")
-        if self.app.cm_attr.changes.changed_status_paths:
+        if self.app.cmattr.changes.changed_status_paths:
             self.changed_status.update(
                 "\n".join(
-                    [str(p) for p in self.app.cm_attr.changes.changed_status_paths]
+                    [str(p) for p in self.app.cmattr.changes.changed_status_paths]
                 )
             )
         else:

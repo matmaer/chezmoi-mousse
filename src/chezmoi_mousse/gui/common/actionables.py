@@ -114,9 +114,9 @@ class OperateButtons(HorizontalGroup):
 
     def on_mount(self) -> None:
         if self.ids.tab_label == TabLabel.apply:
-            no_changed_paths: bool = self.app.cm_attr.paths.no_apply_paths
+            no_changed_paths: bool = self.app.cmattr.paths.no_apply_paths
         else:
-            no_changed_paths: bool = self.app.cm_attr.paths.no_re_add_paths
+            no_changed_paths: bool = self.app.cmattr.paths.no_re_add_paths
 
         # disable apply and re-add review button if no unchanged paths
         if self.ids.tab_label == TabLabel.apply:

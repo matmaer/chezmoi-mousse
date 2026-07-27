@@ -57,11 +57,11 @@ class FilteredDirTree(DirectoryTree):
         if CheckPath.is_sensitive(file_path):
             return False
 
-        if file_path in self.app.cm_attr.paths.managed_files:
+        if file_path in self.app.cmattr.paths.managed_files:
             return self.hide_unmanaged_dirs
 
         if (
-            file_path.parent not in self.app.cm_attr.paths.managed_dirs
+            file_path.parent not in self.app.cmattr.paths.managed_dirs
             and self.hide_unmanaged_dirs is True
         ):
             return False
@@ -70,7 +70,7 @@ class FilteredDirTree(DirectoryTree):
 
     def _show_dir(self, dir_path: Path) -> bool:
 
-        if dir_path not in self.app.cm_attr.paths.managed_dirs:
+        if dir_path not in self.app.cmattr.paths.managed_dirs:
             return not self.hide_unmanaged_dirs
 
         return True

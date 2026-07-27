@@ -54,7 +54,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(self.app.cm_attr.dest_dir),
+                FilteredDirTree(self.app.cmattr.dest_dir),
                 OpButton(
                     btn_enum=OpBtnEnum.refresh_tree,
                     btn_id=self.ids.op_btn.refresh_tree,
@@ -72,8 +72,8 @@ class AddTab(TabPane):
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.add_tab_contents_view)
-        self.contents_view.border_title = f" {self.app.cm_attr.dest_dir} "
-        self.contents_view.show_path = self.app.cm_attr.dest_dir
+        self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
+        self.contents_view.show_path = self.app.cmattr.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
 
     @on(DirectoryTree.FileSelected)
@@ -85,8 +85,8 @@ class AddTab(TabPane):
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
         self.contents_view.show_path = event.node.data.path
-        if event.node.data.path == self.app.cm_attr.dest_dir:
-            self.contents_view.border_title = f" {self.app.cm_attr.dest_dir} "
+        if event.node.data.path == self.app.cmattr.dest_dir:
+            self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
         # Set path_arg for the btn_enums in OperateMode
@@ -152,7 +152,7 @@ class CatConfigView(Vertical):
         static = self.query_exactly_one(self.CatConfigStatic)
         static.update(
             "\n".join(
-                line for line in self.app.cm_attr.splash_results.cat_config.out_lines
+                line for line in self.app.cmattr.splash_results.cat_config.out_lines
             )
         )
 
@@ -169,7 +169,7 @@ class IgnoredView(Vertical):
 
     def on_mount(self) -> None:
         pretty_ignored: Pretty = self.query_exactly_one(Pretty)
-        pretty_ignored.update(self.app.cm_attr.splash_results.ignored.out_lines)
+        pretty_ignored.update(self.app.cmattr.splash_results.ignored.out_lines)
 
 
 class DiagramView(Vertical):
@@ -197,7 +197,7 @@ class TemplateDataView(Vertical):
 
     def on_mount(self) -> None:
         pretty_widget = self.query_exactly_one(Pretty)
-        pretty_widget.update(self.app.cm_attr.parsed_template_data)
+        pretty_widget.update(self.app.cmattr.parsed_template_data)
 
 
 class ConfigTab(TabPane):
@@ -464,7 +464,7 @@ class DebugTab(TabPane):
             result = self.test_paths.create_paths_on_disk()
         elif event.button.label == OpBtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
-        # TODO: self.app.cm_attr.update_attributes(ReadCmd.managed_status_commands())
+        # TODO: self.app.cmattr.update_attributes(ReadCmd.managed_status_commands())
         if isinstance(result, str):
             self.test_paths_static.update(result)
         else:

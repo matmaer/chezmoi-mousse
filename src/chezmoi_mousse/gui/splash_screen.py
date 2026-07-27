@@ -114,18 +114,18 @@ class SplashScreen(Screen[SplashResults]):
         self.splash_log.styles.text_align = "center"
         self.splash_log.styles.margin = 2
         self.splash_log.styles.height = (
-            self.app.cm_attr.read_cmd_groups.commands_count + 2
+            self.app.cmattr.read_cmd_groups.commands_count + 2
         )
         fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
         self.primary_color = self.app.theme_variables["text-primary"]
         self.success_color = self.app.theme_variables["text-success"]
         self.warning_color = self.app.theme_variables["text-warning"]
         self.error_color = self.app.theme_variables["text-error"]
-        for command in self.app.cm_attr.read_cmd_groups.json_output:
+        for command in self.app.cmattr.read_cmd_groups.json_output:
             self._run_json_output_cmd(command)
-        for command in self.app.cm_attr.read_cmd_groups.managed:
+        for command in self.app.cmattr.read_cmd_groups.managed:
             self._run_managed_cmd(command)
-        for command in self.app.cm_attr.read_cmd_groups.splash_only:
+        for command in self.app.cmattr.read_cmd_groups.splash_only:
             self._run_splash_cmd(command)
         self.set_interval(interval=2, callback=self._all_workers_finished)
         fade_timer.resume()
@@ -170,10 +170,10 @@ class SplashScreen(Screen[SplashResults]):
         CmdResultCollector.parsed_dump_config = parsed_dump_config
         CmdResultCollector.parsed_template_data = parsed_template_data
         CmdResultCollector.dest_dir = parsed_dump_config["destDir"]
-        self.app.cm_attr.dest_dir = Path(parsed_dump_config["destDir"])
-        self.app.cm_attr.auto_add = parsed_dump_config["git"]["autoadd"]
-        self.app.cm_attr.auto_commit = parsed_dump_config["git"]["autocommit"]
-        self.app.cm_attr.auto_push = parsed_dump_config["git"]["autopush"]
+        self.app.cmattr.dest_dir = Path(parsed_dump_config["destDir"])
+        self.app.cmattr.auto_add = parsed_dump_config["git"]["autoadd"]
+        self.app.cmattr.auto_commit = parsed_dump_config["git"]["autocommit"]
+        self.app.cmattr.auto_push = parsed_dump_config["git"]["autopush"]
         self.json_output_parsed = True
         msg = self._get_log_msg(prefix=WorkerName.parse_json_output, returncode=None)
         self.splash_log.write(msg)
@@ -181,7 +181,7 @@ class SplashScreen(Screen[SplashResults]):
     @work(thread=True, name=WorkerName.update_paths)
     def _update_managed_paths(self) -> None:
         managed_results = CmdResultCollector.get_managed_results()
-        self.app.cm_attr.update_paths(results=managed_results)
+        self.app.cmattr.update_paths(results=managed_results)
         msg = self._get_log_msg(prefix="update paths", returncode=None)
         self.managed_paths_updated = True
         self.app.call_from_thread(self.splash_log.write, msg)
@@ -211,9 +211,9 @@ class SplashScreen(Screen[SplashResults]):
             return
 
         if all(worker.is_finished for worker in self.workers):
-            self.app.cm_attr.splash_results = CmdResultCollector.get_splash_results()
-            self.app.cm_attr.parsed_dump_config = CmdResultCollector.parsed_dump_config
-            self.app.cm_attr.parsed_template_data = (
+            self.app.cmattr.splash_results = CmdResultCollector.get_splash_results()
+            self.app.cmattr.parsed_dump_config = CmdResultCollector.parsed_dump_config
+            self.app.cmattr.parsed_template_data = (
                 CmdResultCollector.parsed_template_data
             )
             self.dismiss()

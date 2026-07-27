@@ -28,7 +28,6 @@ __all__ = [
     "ParsedJson",
     "SplashResults",
     "StatusDict",
-    "TabIds",
 ]
 
 
@@ -114,15 +113,6 @@ class SplashResults:
             self.unmanaged_dirs,
             self.unmanaged_files,
         ]
-
-
-class TabIds(NamedTuple):
-    add: AppIds
-    apply: AppIds
-    config: AppIds
-    debug: AppIds
-    logs: AppIds
-    re_add: AppIds
 
 
 class CmdResultCollector:

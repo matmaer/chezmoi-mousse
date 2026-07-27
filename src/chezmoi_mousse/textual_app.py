@@ -81,9 +81,9 @@ class ChezmoiGui(App[str]):
 
     SCREENS: ClassVar = {"main_screen": MainScreen}
 
-    def __init__(self, *, cm_attr: CmAttributes) -> None:
+    def __init__(self, *, cmattr: CmAttributes) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
-        self.cm_attr = cm_attr
+        self.cmattr = cmattr
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
@@ -173,17 +173,17 @@ class ChezmoiGui(App[str]):
     def action_toggle_dry_run(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        self.cm_attr.dry_run = not self.cm_attr.dry_run
+        self.cmattr.dry_run = not self.cmattr.dry_run
         new_description = (
             BindingDescription.remove_dry_run
-            if self.cm_attr.dry_run is True
+            if self.cmattr.dry_run is True
             else BindingDescription.add_dry_run
         )
         self._update_binding_description(
             binding_action=BindingAction.toggle_dry_run, new_description=new_description
         )
-        self.screen.query_exactly_one(CustomHeader).dry_run = self.cm_attr.dry_run
-        self.screen.query_exactly_one(OperateInfo).dry_run = self.cm_attr.dry_run
+        self.screen.query_exactly_one(CustomHeader).dry_run = self.cmattr.dry_run
+        self.screen.query_exactly_one(OperateInfo).dry_run = self.cmattr.dry_run
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -223,35 +223,35 @@ class ChezmoiGui(App[str]):
 
         if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
-                self.cm_attr.ids.apply.container.left_side_q, DestDirTree
+                self.cmattr.apply_id.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.cm_attr.ids.apply.container.operate_buttons_q
+                self.cmattr.apply_id.container.operate_buttons_q
             )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
-                self.cm_attr.ids.re_add.container.left_side_q, DestDirTree
+                self.cmattr.re_add_id.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.cm_attr.ids.re_add.container.operate_buttons_q
+                self.cmattr.re_add_id.container.operate_buttons_q
             )
         elif active_tab == TabLabel.add:
             left_side = self.screen.query_one(
-                self.cm_attr.ids.add.container.left_side_q, Vertical
+                self.cmattr.add_id.container.left_side_q, Vertical
             )
             operation_buttons = self.screen.query_one(
-                self.cm_attr.ids.add.container.operate_buttons_q
+                self.cmattr.add_id.container.operate_buttons_q
             )
         elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
-                self.cm_attr.ids.config.container.left_side_q, FlatButtonsVertical
+                self.cmattr.config_id.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabLabel.debug:
             left_side = self.screen.query_one(
-                self.cm_attr.ids.debug.container.left_side_q, FlatButtonsVertical
+                self.cmattr.debug_id.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:

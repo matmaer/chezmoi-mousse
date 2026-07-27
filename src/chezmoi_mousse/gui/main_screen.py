@@ -59,34 +59,30 @@ class MainScreen(Screen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.ids = self.app.cm_attr.ids
-
     def compose(self) -> ComposeResult:
         yield CustomHeader()
         yield OpFeedBack()
 
         with Vertical(), TabbedContent():
-            yield ApplyTab(self.ids.apply)
-            yield ReAddTab(self.ids.re_add)
-            yield AddTab(self.ids.add)
-            yield LogsTab(self.ids.logs)
-            yield ConfigTab(self.ids.config)
+            yield ApplyTab(self.app.cmattr.apply_id)
+            yield ReAddTab(self.app.cmattr.re_add_id)
+            yield AddTab(self.app.cmattr.add_id)
+            yield LogsTab(self.app.cmattr.logs_id)
+            yield ConfigTab(self.app.cmattr.config_id)
             if "debug" in self.app.features:
-                yield DebugTab(self.ids.debug)
+                yield DebugTab(self.app.cmattr.debug_id)
         yield Footer()
 
     def on_mount(self) -> None:
         self.run_cmd_results: list[CommandResult] = []
-        self.app_log = self.query_one(self.ids.logs.richlog.app_q, AppLog)
-        self.cmd_log = self.query_one(self.ids.logs.richlog.cmd_q, CmdLog)
+        self.app_log = self.query_one(self.app.cmattr.logs_id.richlog.app_q, AppLog)
+        self.cmd_log = self.query_one(self.app.cmattr.logs_id.richlog.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
         self.apply_managed_tree = self.query_one(
-            self.ids.apply.managed_tree_q, ManagedTree
+            self.app.cmattr.apply_id.managed_tree_q, ManagedTree
         )
         self.re_add_managed_tree = self.query_one(
-            self.ids.re_add.managed_tree_q, ManagedTree
+            self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
         )
         self.op_feed_back = self.query_exactly_one(OpFeedBack)
         self.operate_info = self.query_exactly_one(OperateInfo)
@@ -104,7 +100,7 @@ class MainScreen(Screen[None]):
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
         await self._log_all_cmd_results(
-            self.app.cm_attr.splash_results.results_list
+            self.app.cmattr.splash_results.results_list
         ).wait()
         self.loading_modal.dismiss()
 
@@ -121,7 +117,7 @@ class MainScreen(Screen[None]):
             await self.command_output.update_cmd_output().wait()
             await self._update_trees().wait()
         elif btn_enum == OpBtnEnum.reload:
-            if self.app.cm_attr.changes.no_changes:
+            if self.app.cmattr.changes.no_changes:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
                     severity="warning",
@@ -189,7 +185,7 @@ class MainScreen(Screen[None]):
         self._set_display(event.button)
         if event.button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.reset_widgets()
-            self.operate_info.update_review_info(event.button, self.app.cm_attr.dry_run)
+            self.operate_info.update_review_info(event.button, self.app.cmattr.dry_run)
             return
         if event.button.btn_enum == OpBtnEnum.reload:
             self.command_output.reset_widgets()
@@ -219,7 +215,7 @@ class MainScreen(Screen[None]):
         ).query_exactly_one(Horizontal)
         tab_buttons.border_subtitle = (
             f" {msg.path} "
-            if msg.path == self.app.cm_attr.dest_dir
+            if msg.path == self.app.cmattr.dest_dir
             else f" {msg.path.name} "
         )
         # Update diff_view, contents_view, and git_log_view with the new path
@@ -232,18 +228,18 @@ class MainScreen(Screen[None]):
         ).set_path_arg(msg.path)
 
         # Could occur at startup or after operations, when we aute select the root node.
-        if not self.app.cm_attr.paths.no_managed_paths:
+        if not self.app.cmattr.paths.no_managed_paths:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
             return
 
         # Enable/disable all review buttons
         n_dirs = (
-            self.app.cm_attr.paths.apply_n_dirs
+            self.app.cmattr.paths.apply_n_dirs
             if msg.ids.tab_label == TabLabel.apply
-            else self.app.cm_attr.paths.re_add_n_dirs
+            else self.app.cmattr.paths.re_add_n_dirs
         )
-        if msg.path in n_dirs or msg.path in self.app.cm_attr.paths.managed_dirs:
+        if msg.path in n_dirs or msg.path in self.app.cmattr.paths.managed_dirs:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
@@ -251,9 +247,9 @@ class MainScreen(Screen[None]):
                 self.query_one(btn_id_q, Button).disabled = True
         # Enable/disable Forget and Destroy button
         for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
-            if msg.path == self.app.cm_attr.dest_dir:
+            if msg.path == self.app.cmattr.dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
-            elif not self.app.cm_attr.paths.no_status_paths:
+            elif not self.app.cmattr.paths.no_status_paths:
                 self.query_one(btn_id_q, Button).disabled = False
 
     ########################

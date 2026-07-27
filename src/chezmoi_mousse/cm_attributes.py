@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults, TabIds
+from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults
 from chezmoi_mousse.str_enums import PathFilters, PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -99,17 +99,12 @@ class CmAttributes:
     parsed_template_data: ParsedJson = field(init=False)
     parsed_dump_config: ParsedJson = field(init=False)
 
-    ids: TabIds = field(
-        default=TabIds(
-            add=AppIds(TabLabel.add),
-            apply=AppIds(TabLabel.apply),
-            config=AppIds(TabLabel.config),
-            debug=AppIds(TabLabel.debug),
-            logs=AppIds(TabLabel.logs),
-            re_add=AppIds(TabLabel.re_add),
-        ),
-        repr=False,
-    )
+    add_id = AppIds(TabLabel.add)
+    apply_id = AppIds(TabLabel.apply)
+    config_id = AppIds(TabLabel.config)
+    debug_id = AppIds(TabLabel.debug)
+    logs_id = AppIds(TabLabel.logs)
+    re_add_id = AppIds(TabLabel.re_add)
 
     read_cmd_groups: ReadCmdGroups = field(
         default=ReadCmdGroups(
