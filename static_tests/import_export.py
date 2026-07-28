@@ -86,7 +86,7 @@ class AllVariableDetector(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def test_all_variable_usage() -> None:
+def test_import_export() -> None:
     detector = AllVariableDetector()
 
     # Map file paths to package-relative module dotted names
