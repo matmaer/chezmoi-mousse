@@ -15,12 +15,12 @@ from textual.widgets import TabbedContent, TabPane, Tabs
 from chezmoi_mousse.cm_attributes import CmAttributes
 from chezmoi_mousse.str_enums import BindingAction, BindingDescription, Chars, TabLabel
 
-from .gui.common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
-from .gui.common.managed_tree import DestDirTree
-from .gui.common.op_feedback import OperateInfo, OpFeedBack
-from .gui.main_screen import CustomHeader, MainScreen
-from .gui.splash_screen import SplashScreen
-from .gui.tab_panes import AddTab, ApplyTab, ReAddTab
+from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .common.managed_tree import DestDirTree
+from .common.op_feedback import OperateInfo, OpFeedBack
+from .main_screen import CustomHeader, MainScreen
+from .splash_screen import SplashScreen
+from .tab_panes import AddTab, ApplyTab, ReAddTab
 
 __all__ = ["ChezmoiGui"]
 

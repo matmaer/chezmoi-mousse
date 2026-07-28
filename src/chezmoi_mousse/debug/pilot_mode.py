@@ -25,7 +25,7 @@ from chezmoi_mousse.str_enums import TabLabel
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse.textual_app import ChezmoiGui
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 async def pilot_chill(pilot: Pilot[str]):

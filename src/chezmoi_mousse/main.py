@@ -2,7 +2,7 @@ import os
 
 from chezmoi_mousse.debug.pilot_mode import run_with_pilot
 from chezmoi_mousse.debug.utils import DebugUtils
-from chezmoi_mousse.textual_app import ChezmoiGui
+from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 def check_if_we_can_run() -> str | None:
