@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from datetime import datetime
 from itertools import islice
@@ -7,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
-from chezmoi_mousse.cm_types import CommandResult, typed_lru_cache
+from chezmoi_mousse.cm_types import CommandResult, ScanDirItem, typed_lru_cache
 from chezmoi_mousse.str_enums import ChezmoiGitArgs, GlobalArgs, PathFilters, VerbArgs
 
 if TYPE_CHECKING:
@@ -107,9 +108,43 @@ def run_chezmoi_cmd(
 
 class CheckPath:
 
+    # functions for both file and dir paths
+
+    @staticmethod
+    @typed_lru_cache(maxsize=1000)
+    def os_scan_dir(dir_path: Path, managed_dir: bool = False) -> list[ScanDirItem]:
+        scan_dir_items: list[ScanDirItem] = []
+        with os.scandir(dir_path) as entry_generator:
+            dir_entries: list[os.DirEntry[str]] = list(entry_generator)
+            sibling_count = len(dir_entries)
+            for de in dir_entries:
+                de_path = Path(de.path)
+                if de.is_dir():
+                    unwanted = CheckPath.is_unwanted_dir(de_path)
+                else:
+                    unwanted = CheckPath.is_unwanted_file(de_path)
+                scan_dir_items.append(
+                    ScanDirItem(
+                        dir_entry=de,
+                        matches_unwanted=unwanted,
+                        managed_parent=managed_dir,
+                        path=de_path,
+                        sibling_count=sibling_count,
+                    )
+                )
+        return scan_dir_items
+
+    @staticmethod
+    def _looks_like_cache(path: Path) -> bool:
+        path_parts_lower = [p.lower() for p in path.parts]
+        return any(
+            p.startswith("cache") or p.endswith("cache") for p in path_parts_lower
+        )
+
     # functions for file paths
 
     @staticmethod
+    @typed_lru_cache(maxsize=4000)
     def is_sensitive(file_path: Path) -> bool:
         return (
             file_path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
@@ -117,14 +152,12 @@ class CheckPath:
         )
 
     @staticmethod
-    @typed_lru_cache(maxsize=4000)
-    def is_large(file_path: Path) -> bool:
+    def _is_large(file_path: Path) -> bool:
         # check if it's a large file, typically not a dot file
         return file_path.stat().st_size > 1024 * 1024  # 1 MiB
 
     @staticmethod
-    @typed_lru_cache(maxsize=4000)
-    def is_binary(file_path: Path) -> bool:
+    def _is_binary(file_path: Path) -> bool:
         # check if the file looks like a binary
         try:
             with Path.open(file_path, "rb") as f:
@@ -134,22 +167,31 @@ class CheckPath:
             return True
 
     @staticmethod
-    def is_bad_suffix(file_path: Path) -> bool:
+    def _is_bad_suffix(file_path: Path) -> bool:
         return file_path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
+
+    @staticmethod
+    @typed_lru_cache(maxsize=4000)
+    def is_unwanted_file(file_path: Path) -> bool:
+        return (
+            CheckPath._looks_like_cache(file_path)
+            or CheckPath._is_bad_suffix(file_path)
+            or CheckPath._is_large(file_path)
+            or CheckPath._is_binary(file_path)
+        )
 
     # functions for dir paths
 
     @staticmethod
-    def is_unwanted_dir_name(dir_path: Path) -> bool:
+    def _is_unwanted_dir_name(dir_path: Path) -> bool:
         return dir_path.parts[-1] in PathFilters.UNWANTED_DIRS.value
 
     @staticmethod
-    def is_git_objects_dir(dir_path: Path) -> bool:
+    def _is_git_objects_dir(dir_path: Path) -> bool:
         return dir_path.parts[-1] == "objects" and dir_path.parts[-2] == ".git"
 
     @staticmethod
-    @typed_lru_cache(maxsize=4000)
-    def has_many_children(dir_path: Path, max_entries: int = 200) -> bool:
+    def _dir_has_many_children(dir_path: Path, max_entries: int = 200) -> bool:
         # TODO: make this configurable but 200 entries seems like a reasonable limit
         # for a directory to consider interesting in the context of dotfiles.
         max_entries = max_entries - 1
@@ -160,6 +202,16 @@ class CheckPath:
             )
         except (PermissionError, FileNotFoundError, OSError):
             return False
+
+    @staticmethod
+    @typed_lru_cache(maxsize=4000)
+    def is_unwanted_dir(dir_path: Path) -> bool:
+        return (
+            CheckPath._looks_like_cache(dir_path)
+            or CheckPath._is_unwanted_dir_name(dir_path)
+            or CheckPath._is_git_objects_dir(dir_path)
+            or CheckPath._dir_has_many_children(dir_path)
+        )
 
     @staticmethod
     @typed_lru_cache(maxsize=4000)
@@ -182,16 +234,6 @@ class CheckPath:
             if path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
-
-    # functions for both file and dir paths
-
-    @staticmethod
-    @typed_lru_cache(maxsize=4000)
-    def looks_like_cache(path: Path) -> bool:
-        path_parts_lower = [p.lower() for p in path.parts]
-        return any(
-            p.startswith("cache") or p.endswith("cache") for p in path_parts_lower
-        )
 
     @staticmethod
     def clear_caches() -> None:

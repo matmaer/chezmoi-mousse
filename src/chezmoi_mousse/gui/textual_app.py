@@ -291,7 +291,7 @@ class ChezmoiGui(App[str]):
                 return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)
             return False
 
-        if action == BindingAction.toggle_maximized:
+        elif action == BindingAction.toggle_maximized:
             return not (
                 isinstance(self.screen, MainScreen)
                 and self.screen.query_exactly_one(OpFeedBack).display is True

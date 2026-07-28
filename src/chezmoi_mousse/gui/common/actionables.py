@@ -152,15 +152,11 @@ class SwitchSlider(VerticalGroup):
         if ids.tab_label in (TabLabel.apply, TabLabel.re_add):
             self.switches = (
                 SwitchEnum.show_unchanged,
-                SwitchEnum.show_unmanaged_files,
+                SwitchEnum.show_unmanaged,
                 SwitchEnum.expand_all,
             )
         else:  # for the AddTab
-            self.switches = (
-                SwitchEnum.hide_unmanaged_dirs,
-                SwitchEnum.show_managed,
-                SwitchEnum.show_unwanted,
-            )
+            self.switches = (SwitchEnum.show_managed, SwitchEnum.show_unwanted)
         self.ids = ids
 
     def compose(self) -> ComposeResult:

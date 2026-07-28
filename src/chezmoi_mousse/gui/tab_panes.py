@@ -54,7 +54,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(self.app.cmattr.dest_dir),
+                FilteredDirTree(dest_dir=self.app.cmattr.dest_dir),
                 OpButton(
                     btn_enum=OpBtnEnum.refresh_tree,
                     btn_id=self.ids.op_btn.refresh_tree,
@@ -102,9 +102,7 @@ class AddTab(TabPane):
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch.hide_unmanaged_dirs:
-            self.dir_tree.hide_unmanaged_dirs = event.value
-        elif event.switch.id == self.ids.switch.show_managed:
+        if event.switch.id == self.ids.switch.show_managed:
             self.dir_tree.show_managed = event.value
         elif event.switch.id == self.ids.switch.show_unwanted:
             self.dir_tree.show_unwanted = event.value
@@ -131,8 +129,8 @@ class ApplyTab(TabPane):
         event.stop()
         if event.switch.id == self.ids.switch.show_unchanged:
             self.managed_tree.show_unchanged = event.value
-        elif event.switch.id == self.ids.switch.show_unmanaged_files:
-            self.managed_tree.show_unmanaged_files = event.value
+        elif event.switch.id == self.ids.switch.show_unmanaged:
+            self.managed_tree.show_unmanaged = event.value
         elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value
 
@@ -517,7 +515,7 @@ class ReAddTab(TabPane):
         event.stop()
         if event.switch.id == self.ids.switch.show_unchanged:
             self.managed_tree.show_unchanged = event.value
-        elif event.switch.id == self.ids.switch.show_unmanaged_files:
-            self.managed_tree.show_unmanaged_files = event.value
+        elif event.switch.id == self.ids.switch.show_unmanaged:
+            self.managed_tree.show_unmanaged = event.value
         elif event.switch.id == self.ids.switch.expand_all:
             self.managed_tree.expand_all = event.value

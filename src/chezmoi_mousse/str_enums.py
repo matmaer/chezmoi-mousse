@@ -199,20 +199,6 @@ class OpInfoString(StrEnum):
     re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
 
 
-class PathKind(StrEnum):
-    path_exists = auto()  # managed path which exists on file system
-    path_not_exists = auto()  # managed path which does not exists on file system
-
-    # these are managed dirs, have no status but have status descendants
-    apply_n_dir = auto()  # column 1 in chezmoi status output
-    re_add_n_dir = auto()  # column 2 in chezmoi status output
-
-    # for unmanaged paths
-    unmanaged = auto()
-    unwanted = auto()
-    symlink = auto()
-
-
 class PathFilters(Enum):
 
     UNWANTED_DIRS = (
@@ -329,6 +315,19 @@ class PathFilters(Enum):
     )
 
 
+class PathKind(StrEnum):
+    dest_dir = auto()
+    mandir_exists = auto()
+    manfile_exists = auto()
+    apply_n_dir = auto()
+    re_add_n_dir = auto()
+    symlink = auto()
+    junction = auto()
+    dir = auto()
+    file = auto()
+    os_error = auto()
+
+
 class RichLogName(StrEnum):
     app_logger = auto()
     cmd_logger = auto()
@@ -367,11 +366,10 @@ class StatusCode(StrEnum):
 class SwitchLabel(StrEnum):
     # Apply and ReAdd Tab
     show_unchanged = "Show unchanged paths"
-    show_unmanaged_files = "Show unmanaged files"
+    show_unmanaged = "Show unmanaged children"
     expand_all = "Expand all dirs"
 
     # Add Tab
-    hide_unmanaged_dirs = "Hide unmanaged dirs"
     show_managed = "Show managed paths"
     show_unwanted = "Show unwanted paths"
 

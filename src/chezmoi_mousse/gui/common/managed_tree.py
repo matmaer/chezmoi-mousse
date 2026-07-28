@@ -92,7 +92,7 @@ class ManagedTree(Tree[Path]):
     ICON_NODE_EXPANDED = Chars.tree_expanded
 
     show_unchanged: reactive[bool] = reactive(False, init=False)
-    show_unmanaged_files: reactive[bool] = reactive(False, init=False)
+    show_unmanaged: reactive[bool] = reactive(False, init=False)
     expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, ids: "AppIds") -> None:
@@ -251,9 +251,7 @@ class ManagedTree(Tree[Path]):
         if self.expand_all:
             self.root.expand_all()
 
-    def watch_show_unmanaged_files(self, show_unmanaged: bool) -> None:
-        if show_unmanaged is True:
-            self._populate_root_node_recursive(self.root)
+    def watch_show_unmanaged(self, show_unmanaged: bool) -> None: ...
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:

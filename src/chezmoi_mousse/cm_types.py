@@ -6,6 +6,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, ClassVar, NamedTuple, cast
 
 if TYPE_CHECKING:
+    from os import DirEntry
     from pathlib import Path
     from typing import Any
 
@@ -60,14 +61,18 @@ class CommandResult:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class PathKindResult:
+    path: Path
+    path_kind: PathKind
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ManagedResults:
     dest_dir: Path
     managed_dirs: CommandResult
     managed_files: CommandResult
     status_dirs: CommandResult
     status_files: CommandResult
-    unmanaged_dirs: CommandResult
-    unmanaged_files: CommandResult
 
 
 class ReadCmdGroups(NamedTuple):
@@ -78,6 +83,15 @@ class ReadCmdGroups(NamedTuple):
     @property
     def commands_count(self) -> int:
         return len(self.splash_only + self.json_output + self.managed)
+
+
+@dataclass(slots=True)
+class ScanDirItem:
+    path: Path
+    managed_parent: bool
+    dir_entry: DirEntry[str]
+    matches_unwanted: bool
+    sibling_count: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -93,8 +107,6 @@ class SplashResults:
     managed_files: CommandResult
     status_dirs: CommandResult
     status_files: CommandResult
-    unmanaged_dirs: CommandResult
-    unmanaged_files: CommandResult
 
     @property
     def results_list(self) -> list[CommandResult]:
@@ -110,8 +122,6 @@ class SplashResults:
             self.managed_files,
             self.status_dirs,
             self.status_files,
-            self.unmanaged_dirs,
-            self.unmanaged_files,
         ]
 
 
@@ -132,8 +142,6 @@ class CmdResultCollector:
     status_dirs: ClassVar[CommandResult]
     status_files: ClassVar[CommandResult]
     template_data: ClassVar[CommandResult]
-    unmanaged_dirs: ClassVar[CommandResult]
-    unmanaged_files: ClassVar[CommandResult]
 
     @classmethod
     def get_splash_results(cls) -> SplashResults:
@@ -149,8 +157,6 @@ class CmdResultCollector:
             status_dirs=cls.status_dirs,
             status_files=cls.status_files,
             template_data=cls.template_data,
-            unmanaged_dirs=cls.unmanaged_dirs,
-            unmanaged_files=cls.unmanaged_files,
         )
 
     # get the managed results as a ManagedResults tuple
@@ -162,6 +168,4 @@ class CmdResultCollector:
             managed_files=cls.managed_files,
             status_dirs=cls.status_dirs,
             status_files=cls.status_files,
-            unmanaged_dirs=cls.unmanaged_dirs,
-            unmanaged_files=cls.unmanaged_files,
         )

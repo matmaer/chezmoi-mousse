@@ -226,20 +226,13 @@ class SwitchIds:
         self.show_unchanged: str = ids.switch_id(switch=SwitchEnum.show_unchanged)
         self.show_unchanged_q: str = f"#{self.show_unchanged}"
 
-        self.show_unmanaged_files: str = ids.switch_id(
-            switch=SwitchEnum.show_unmanaged_files
-        )
-        self.show_unmanaged_files_q: str = f"#{self.show_unmanaged_files}"
+        self.show_unmanaged: str = ids.switch_id(switch=SwitchEnum.show_unmanaged)
+        self.show_unmanaged_q: str = f"#{self.show_unmanaged}"
 
         self.expand_all: str = ids.switch_id(switch=SwitchEnum.expand_all)
         self.expand_all_q: str = f"#{self.expand_all}"
 
         # Add tab
-        self.hide_unmanaged_dirs: str = ids.switch_id(
-            switch=SwitchEnum.hide_unmanaged_dirs
-        )
-        self.hide_unmanaged_dirs_q: str = f"#{self.hide_unmanaged_dirs}"
-
         self.show_managed: str = ids.switch_id(switch=SwitchEnum.show_managed)
         self.show_managed_q: str = f"#{self.show_managed}"
 

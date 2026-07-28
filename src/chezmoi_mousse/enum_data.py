@@ -179,19 +179,16 @@ class SwitchEnum(Enum):
             "output."
         ),
     )
-    show_unmanaged_files = SwitchData(
-        label=SwitchLabel.show_unmanaged_files,
-        enabled_tooltip=("If enabled, also show unmanaged files."),
+    show_unmanaged = SwitchData(
+        label=SwitchLabel.show_unmanaged,
+        enabled_tooltip=("If enabled, also show unmanaged children."),
     )
     expand_all = SwitchData(
         label=SwitchLabel.expand_all, enabled_tooltip=("Expand all directories.")
     )
 
     # Add Tab
-    hide_unmanaged_dirs = SwitchData(
-        label=SwitchLabel.hide_unmanaged_dirs,
-        enabled_tooltip=("If enabled, hide unmanaged directories."),
-    )
+
     show_managed = SwitchData(
         label=SwitchLabel.show_managed,
         enabled_tooltip=("If enabled, also show already managed paths."),

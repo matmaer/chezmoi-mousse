@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults
-from chezmoi_mousse.str_enums import PathFilters, PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, PathKindDict, StatusDict
@@ -51,9 +51,6 @@ class ManagedPaths:
     apply_n_dirs: PathKindDict = field(default_factory=lambda: {})
     re_add_n_dirs: PathKindDict = field(default_factory=lambda: {})
 
-    unmanaged_dirs: PathKindDict = field(default_factory=lambda: {})
-    unmanaged_files: PathKindDict = field(default_factory=lambda: {})
-
     @cached_property
     def no_apply_paths(self) -> bool:
         return not self.apply_dirs and not self.apply_files
@@ -69,6 +66,10 @@ class ManagedPaths:
     @cached_property
     def no_managed_paths(self) -> bool:
         return not self.managed_dirs and not self.managed_files
+
+    @cached_property
+    def managed_paths(self) -> PathKindDict:
+        return self.managed_dirs | self.managed_files
 
     def get_tag(
         self, context: tuple[StatusCode | None, PathKind | None] = (None, None)
@@ -121,8 +122,6 @@ class CmAttributes:
                 ReadCmd.managed_files,
                 ReadCmd.status_dirs,
                 ReadCmd.status_files,
-                ReadCmd.unmanaged_dirs,
-                ReadCmd.unmanaged_files,
             ],
         ),
         repr=False,
@@ -170,38 +169,10 @@ class CmAttributes:
             result: PathKindDict = {}
             for line in lines:
                 path = Path(line)
-                if path.exists():
-                    result[path] = PathKind.path_exists
-                else:
-                    result[path] = PathKind.path_not_exists
-            return result
-
-        def _unmanaged_dir_kind_dict(lines: list[str]) -> PathKindDict:
-            result: PathKindDict = {}
-            for line in lines:
-                path = Path(line)
-                if path.parts[-1] in PathFilters.UNWANTED_DIRS.value:
-                    result[path] = PathKind.unwanted
-                elif path.is_symlink():
-                    result[path] = PathKind.symlink
-                else:
-                    result[path] = PathKind.unmanaged
-            return result
-
-        def _unmanaged_file_kind_dict(lines: list[str]) -> PathKindDict:
-            result: PathKindDict = {}
-            for line in lines:
-                path = Path(line)
-                if (
-                    path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
-                    or path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
-                    or path.parts[-1] in PathFilters.KEY_FILE_NAMES.value
-                ):
-                    result[path] = PathKind.unwanted
-                elif path.is_symlink():
-                    result[path] = PathKind.symlink
-                else:
-                    result[path] = PathKind.unmanaged
+                if path.is_dir():
+                    result[path] = PathKind.mandir_exists
+                elif path.is_file():
+                    result[path] = PathKind.manfile_exists
             return result
 
         # context vars
@@ -223,9 +194,5 @@ class CmAttributes:
                 PathKind.re_add_n_dir,
                 s_dirs=set(_re_add_dirs),
                 s_files=set(_re_add_files),
-            ),
-            unmanaged_dirs=_unmanaged_dir_kind_dict(results.unmanaged_dirs.out_lines),
-            unmanaged_files=_unmanaged_file_kind_dict(
-                results.unmanaged_files.out_lines
             ),
         )
