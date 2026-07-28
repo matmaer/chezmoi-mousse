@@ -164,7 +164,7 @@ class SplashScreen(Screen[SplashResults]):
         self.app.call_from_thread(self.splash_log.write, msg)
 
     @work(name=WorkerName.parse_json_output)
-    async def parse_json_outputs(self) -> None:
+    async def _parse_json_outputs(self) -> None:
         parsed_dump_config = json.loads(CmdResultCollector.dump_config.std_out)
         parsed_template_data = json.loads(CmdResultCollector.template_data.std_out)
         CmdResultCollector.parsed_dump_config = parsed_dump_config
@@ -192,7 +192,7 @@ class SplashScreen(Screen[SplashResults]):
             for worker in self.workers
             if worker.group == GroupName.json_output_group
         ):
-            self.parse_json_outputs()  # WorkerName.parse_json_output
+            self._parse_json_outputs()  # WorkerName.parse_json_output
             return
         if (
             self.managed_paths_updated is False

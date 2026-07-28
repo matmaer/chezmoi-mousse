@@ -100,10 +100,6 @@ class LogColor(StrEnum):
     success = "text-success"
     warning = "text-warning"
 
-    @property
-    def theme_tag(self):
-        return f"[${self}]"
-
 
 class LogString(StrEnum):
     app_log_initialized = "Application log initialized"
@@ -215,7 +211,6 @@ class PathKind(StrEnum):
     unmanaged = auto()
     unwanted = auto()
     symlink = auto()
-    unknown = auto()
 
 
 class PathFilters(Enum):

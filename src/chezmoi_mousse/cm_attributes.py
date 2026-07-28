@@ -185,7 +185,7 @@ class CmAttributes:
                 elif path.is_symlink():
                     result[path] = PathKind.symlink
                 else:
-                    result[path] = PathKind.unknown
+                    result[path] = PathKind.unmanaged
             return result
 
         def _unmanaged_file_kind_dict(lines: list[str]) -> PathKindDict:
@@ -201,7 +201,7 @@ class CmAttributes:
                 elif path.is_symlink():
                     result[path] = PathKind.symlink
                 else:
-                    result[path] = PathKind.unknown
+                    result[path] = PathKind.unmanaged
             return result
 
         # context vars
