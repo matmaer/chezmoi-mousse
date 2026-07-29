@@ -78,10 +78,10 @@ class ScanDirItem(NamedTuple):
     # matches DirEntry attribute
     is_dir: bool
     is_file: bool
-    is_junction: bool
     is_symlink: bool
     name: str
-    size: int
+    # if it's a dir or if an exception occurs when calling .stat()
+    file_size: int | None
     # set by the os_scan_dir function
     sibling_count: int
     matches_unwanted: bool
