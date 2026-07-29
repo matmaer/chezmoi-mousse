@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
-    type DirPathDict = dict[Path, list[ScanDirItem] | PathKind]
     type ParsedJson = dict[str, Any]
     type PathKindDict = dict[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
