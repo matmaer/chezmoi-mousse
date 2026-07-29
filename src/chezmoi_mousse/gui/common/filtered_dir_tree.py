@@ -2,16 +2,12 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
-from dataclasses import dataclass
-from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import getters
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
-from textual.widgets.directory_tree import DirEntry
-from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.str_enums import Chars
@@ -22,29 +18,6 @@ if TYPE_CHECKING:
 __all__ = ["FilteredDirTree"]
 
 GIT_OBJECT_DIR: str = f"{os.sep}{Path(".git", "objects")}{os.sep}"
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class VisibleNodes:
-    expanded_nodes: set[TreeNode[DirEntry]]
-    collapsed_nodes: set[TreeNode[DirEntry]]
-    file_nodes: set[TreeNode[DirEntry]]
-
-    @cached_property
-    def _expanded_node_paths(self) -> set[Path]:
-        return {p.data.path for p in self.expanded_nodes if p.data is not None}
-
-    @cached_property
-    def _collapsed_node_paths(self) -> set[Path]:
-        return {p.data.path for p in self.collapsed_nodes if p.data is not None}
-
-    @cached_property
-    def dir_paths(self) -> set[Path]:
-        return self._expanded_node_paths | self._collapsed_node_paths
-
-    @cached_property
-    def file_paths(self) -> set[Path]:
-        return {p.data.path for p in self.file_nodes if p.data is not None}
 
 
 class FilteredDirTree(DirectoryTree):

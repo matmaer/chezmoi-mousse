@@ -213,14 +213,3 @@ class CheckPath:
             or CheckPath._is_git_objects_dir(dir_path)
             or CheckPath._dir_has_many_children(dir_path)
         )
-
-    @staticmethod
-    @typed_lru_cache(maxsize=4000)
-    def get_unchanged_dir_paths_in(
-        dir_path: Path, managed_files: set[Path]
-    ) -> list[Path]:
-        results: set[Path] = set()
-        for path in managed_files:
-            if path != dir_path and path.is_relative_to(dir_path):
-                results.add(path)
-        return sorted(results)
