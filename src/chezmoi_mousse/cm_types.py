@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
+    from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_command import ReadCmd
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "typed_lru_cache",
+    "AppIds",
     "ChezmoiGui",
     "CmdResultCollector",
     "ManagedResults",
