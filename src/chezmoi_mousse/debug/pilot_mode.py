@@ -23,6 +23,8 @@ from chezmoi_mousse.gui.common.loading_modal import LoadingModal
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.str_enums import TabLabel
 
+__all__ = ["run_with_pilot"]
+
 if TYPE_CHECKING:
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -103,11 +105,11 @@ async def click_random_path_in_diff_view(pilot: Pilot[str], tab_pane: TabPane) -
     await click_and_wait(pilot, to_click)
 
 
-def run_with_pilot(app: ChezmoiGui):
+def run_with_pilot(app: ChezmoiGui) -> None:
     asyncio.run(start_pilot_mode(app))
 
 
-async def start_pilot_mode(app: ChezmoiGui):
+async def start_pilot_mode(app: ChezmoiGui) -> None:
     async with app.run_test(headless=False, notifications=True) as pilot:
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
         for label in TabLabel.main_tabs():

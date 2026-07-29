@@ -4,7 +4,7 @@ from enum import Enum
 
 from chezmoi_mousse.str_enums import ChezmoiGitArgs, VerbArgs
 
-__all__ = ["ReadCmd", "WriteCmd", "ChezmoiGitArgs"]
+__all__ = ["ReadCmd", "WriteCmd"]
 
 
 class ReadCmd(Enum):
