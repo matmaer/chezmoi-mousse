@@ -145,7 +145,7 @@ class CheckPath:
 
     @staticmethod
     @typed_lru_cache(maxsize=4000)
-    def is_sensitive(file_path: Path) -> bool:
+    def _is_sensitive(file_path: Path) -> bool:
         return (
             file_path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
             or file_path.parts[-1] in PathFilters.KEY_FILE_NAMES.value
@@ -175,6 +175,7 @@ class CheckPath:
     def is_unwanted_file(file_path: Path) -> bool:
         return (
             CheckPath._looks_like_cache(file_path)
+            or CheckPath._is_sensitive(file_path)
             or CheckPath._is_bad_suffix(file_path)
             or CheckPath._is_large(file_path)
             or CheckPath._is_binary(file_path)
