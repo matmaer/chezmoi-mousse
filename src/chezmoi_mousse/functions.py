@@ -125,11 +125,17 @@ class CheckPath:
                     unwanted = CheckPath.is_unwanted_file(de_path)
                 scan_dir_items.append(
                     ScanDirItem(
-                        dir_entry=de,
-                        matches_unwanted=unwanted,
-                        managed_parent=managed_dir,
+                        parent_path=dir_path,
+                        managed_arg=managed_dir,
                         path=de_path,
+                        is_dir=de.is_dir(),
+                        is_file=de.is_file(),
+                        is_junction=de.is_junction(),
+                        is_symlink=de.is_symlink(),
+                        name=de.name,
+                        size=de.stat().st_size,
                         sibling_count=sibling_count,
+                        matches_unwanted=unwanted,
                     )
                 )
         return scan_dir_items
