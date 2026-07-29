@@ -455,17 +455,17 @@ class ChezmoiGitArgs(Enum):
 class GlobalArgs(Enum):
     global_defaults = (
         "--color=off",
-        "--force",
+        "--force=true",
         "--interactive=false",
         "--keep-going=false",
         "--mode=file",
-        "--no-pager",
-        "--no-tty",
+        "--no-pager=true",
+        "--no-tty=true",
         "--progress=false",
-        "--use-builtin-diff",
-        "--use-builtin-git",
+        "--use-builtin-diff=true",
+        "--use-builtin-git=true",
     )
-    dry_run = "--dry-run"
+    dry_run = "--dry-run=true"
 
 
 class VerbArgs(StrEnum):
