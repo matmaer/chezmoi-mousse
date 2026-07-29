@@ -71,23 +71,6 @@ class ManagedPaths:
     def managed_paths(self) -> PathKindDict:
         return self.managed_dirs | self.managed_files
 
-    def get_tag(
-        self, context: tuple[StatusCode | None, PathKind | None] = (None, None)
-    ) -> str:
-        tag: list[str] = ["["]
-        chezmoi_status_map = {
-            StatusCode.Added: "text-success",
-            StatusCode.Deleted: "text-error",
-            StatusCode.Modified: "text-warning",
-            StatusCode.Run: "error",  # choose error as it's not yet implemented
-        }
-        # TODO: implement colors for PathKind
-        # path_kind_map = {PathKind.path_exists: "text-success"} # noqa: ERA001
-        status_code = context[0]
-        if status_code is not None and status_code in chezmoi_status_map:
-            tag.append(chezmoi_status_map[status_code])
-        return f"{tag}]"
-
 
 @dataclass
 class CmAttributes:
