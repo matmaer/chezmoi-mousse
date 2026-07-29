@@ -4,7 +4,7 @@ __all__ = ["DebugUtils"]
 class DebugUtils:
 
     @staticmethod
-    def clear_stacktrace():
+    def clear_stacktrace() -> None:
         import tempfile
         from pathlib import Path
 
@@ -14,7 +14,7 @@ class DebugUtils:
             f.write("")
 
     @staticmethod
-    def save_stacktrace():
+    def save_stacktrace() -> None:
         import tempfile
         import traceback
         from pathlib import Path
