@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
     type ParsedJson = dict[str, Any]
-    type PathKindDict = dict[Path, PathKind]
+    type PathDataDict = dict[Path, PathKind | ScanDirItem]
     type StatusDict = dict[Path, StatusCode]
     type StrTup = tuple[str, ...]
 
