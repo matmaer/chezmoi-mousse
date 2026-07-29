@@ -112,32 +112,57 @@ class CheckPath:
 
     @staticmethod
     @typed_lru_cache(maxsize=1000)
-    def os_scan_dir(dir_path: Path, managed_dir: bool = False) -> list[ScanDirItem]:
+    def os_scan_dir(
+        dir_path: Path, managed_dir: bool = False
+    ) -> list[ScanDirItem] | FileNotFoundError | PermissionError:
         scan_dir_items: list[ScanDirItem] = []
-        with os.scandir(dir_path) as entry_generator:
-            dir_entries: list[os.DirEntry[str]] = list(entry_generator)
-            sibling_count = len(dir_entries)
-            for de in dir_entries:
-                de_path = Path(de.path)
-                if de.is_dir():
-                    unwanted = CheckPath.is_unwanted_dir(de_path)
+        # str(dir_path) to reduce possible exceptions which would be raised by pathlib
+        try:
+            with os.scandir(str(dir_path)) as entry_generator:
+                dir_entries: list[os.DirEntry[str]] = list(entry_generator)
+        except FileNotFoundError as not_found:
+            return not_found
+        except PermissionError as access_denied:
+            return access_denied
+
+        sibling_count = len(dir_entries)
+
+        for de in dir_entries:
+            # will be absolute as we pass an absolute dir_path to the function
+            de_path = Path(de.path)
+            is_dir = de.is_dir()
+            is_file = de.is_file()
+            is_symlink = de.is_symlink()
+            file_size = None
+            if is_symlink:
+                matches_unwanted = True
+            elif is_dir:
+                matches_unwanted = CheckPath.is_unwanted_dir(de_path)
+            elif is_file:
+                try:
+                    file_size = de.stat().st_size
+                except OSError:
+                    file_size = None
+                    matches_unwanted = True
                 else:
-                    unwanted = CheckPath.is_unwanted_file(de_path)
-                scan_dir_items.append(
-                    ScanDirItem(
-                        parent_path=dir_path,
-                        managed_arg=managed_dir,
-                        path=de_path,
-                        is_dir=de.is_dir(),
-                        is_file=de.is_file(),
-                        is_junction=de.is_junction(),
-                        is_symlink=de.is_symlink(),
-                        name=de.name,
-                        size=de.stat().st_size,
-                        sibling_count=sibling_count,
-                        matches_unwanted=unwanted,
-                    )
+                    matches_unwanted = CheckPath.is_unwanted_file(de_path)
+            else:
+                matches_unwanted = True
+
+            scan_dir_items.append(
+                ScanDirItem(
+                    parent_path=dir_path,
+                    managed_arg=managed_dir,
+                    path=de_path,
+                    is_dir=is_dir,
+                    is_file=is_file,
+                    is_symlink=is_symlink,
+                    name=de.name,
+                    file_size=file_size,
+                    sibling_count=sibling_count,
+                    matches_unwanted=matches_unwanted,
                 )
+            )
         return scan_dir_items
 
     @staticmethod
