@@ -121,20 +121,6 @@ class ContentsView(Container):
             widgets.append(Static("No unmanaged paths in this directory."))
         return ScrollableContainer(*widgets)
 
-    def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
-        widgets: list[Static | Label] = []
-        if dir_path == self.app.cmattr.dest_dir:
-            widgets.append(
-                Label("Destination Directory", classes=Tcss.main_section_label)
-            )
-        else:
-            widgets.append(Label("Managed directory", classes=Tcss.main_section_label))
-        widgets.append(Label(str(dir_path), classes=Tcss.sub_section_label))
-        widgets.append(
-            Static("<- Click a file to see its contents.", classes=Tcss.added)
-        )
-        return ScrollableContainer(*widgets)
-
     def _create_file_container(self, file_path: Path) -> ScrollableContainer:
         widgets: list[Label | Static] = []
 
@@ -179,10 +165,12 @@ class ContentsView(Container):
         widgets.append(Static(text_obj))
         return ScrollableContainer(*widgets)
 
-    def _dir_contents_widgets(
-        self, dir_path: Path
-    ) -> list[Static | Label | DirContentBtn]:
+    def _create_managed_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label | DirContentBtn] = []
+        widgets.append(Label(str(dir_path), classes=Tcss.sub_section_label))
+        widgets.append(
+            Static("<- Click a file to see its contents.", classes=Tcss.added)
+        )
         if dir_path == self.app.cmattr.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
@@ -198,7 +186,6 @@ class ContentsView(Container):
                     classes=Tcss.added,
                 )
             )
-            return widgets
         elif self.app.cmattr.paths.no_status_paths:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
@@ -210,9 +197,8 @@ class ContentsView(Container):
                     classes=Tcss.info,
                 )
             )
-            return widgets
 
-        return widgets
+        return ScrollableContainer(*widgets)
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
