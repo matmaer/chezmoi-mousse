@@ -6,23 +6,21 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, ClassVar, NamedTuple, cast
 
 if TYPE_CHECKING:
-    from os import DirEntry
     from pathlib import Path
     from typing import Any
 
-    from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_command import ReadCmd
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
-    type StatusDict = dict[Path, StatusCode]
-    type PathKindDict = dict[Path, PathKind]
-    type StrTup = tuple[str, ...]
+    type DirPathDict = dict[Path, list[ScanDirItem] | PathKind]
     type ParsedJson = dict[str, Any]
+    type PathKindDict = dict[Path, PathKind]
+    type StatusDict = dict[Path, StatusCode]
+    type StrTup = tuple[str, ...]
 
 __all__ = [
     "typed_lru_cache",
-    "AppIds",
     "ChezmoiGui",
     "CmdResultCollector",
     "ManagedResults",
@@ -79,13 +77,22 @@ class ReadCmdGroups(NamedTuple):
         return len(self.splash_only + self.json_output + self.managed)
 
 
-@dataclass(slots=True)
-class ScanDirItem:
+class ScanDirItem(NamedTuple):
+    # matches the argument passed to the os_scan_dir function
+    parent_path: Path
+    managed_arg: bool
+    # absolute path matchingthe DirEntry.path attribute
     path: Path
-    managed_parent: bool
-    dir_entry: DirEntry[str]
-    matches_unwanted: bool
+    # matches DirEntry attribute
+    is_dir: bool
+    is_file: bool
+    is_junction: bool
+    is_symlink: bool
+    name: str
+    size: int
+    # set by the os_scan_dir function
     sibling_count: int
+    matches_unwanted: bool
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
