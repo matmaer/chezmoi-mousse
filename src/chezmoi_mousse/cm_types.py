@@ -61,12 +61,6 @@ class CommandResult:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class PathKindResult:
-    path: Path
-    path_kind: PathKind
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
 class ManagedResults:
     dest_dir: Path
     managed_dirs: CommandResult

@@ -321,11 +321,6 @@ class PathKind(StrEnum):
     manfile_exists = auto()
     apply_n_dir = auto()
     re_add_n_dir = auto()
-    symlink = auto()
-    junction = auto()
-    dir = auto()
-    file = auto()
-    os_error = auto()
 
 
 class RichLogName(StrEnum):

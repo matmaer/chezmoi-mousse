@@ -223,21 +223,3 @@ class CheckPath:
             if path != dir_path and path.is_relative_to(dir_path):
                 results.add(path)
         return sorted(results)
-
-    @staticmethod
-    @typed_lru_cache(maxsize=4000)
-    def get_unchanged_file_paths_in(
-        dir_path: Path, managed_dirs: dict[Path, str]
-    ) -> list[Path]:
-        results: set[Path] = set()
-        for path in managed_dirs:
-            if path.is_relative_to(dir_path):
-                results.add(path)
-        return sorted(results)
-
-    @staticmethod
-    def clear_caches() -> None:
-        for attr_name in dir(CheckPath):
-            attr = getattr(CheckPath, attr_name)
-            if hasattr(attr, "cache_clear"):
-                attr.cache_clear()
