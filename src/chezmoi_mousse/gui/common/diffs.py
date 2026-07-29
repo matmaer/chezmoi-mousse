@@ -17,7 +17,7 @@ from .messages import LogCmdResultMsg
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, StatusDict
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
 __all__ = ["DiffView"]
 
@@ -82,17 +82,6 @@ class DiffView(Container):
                         Static(line, classes=DIFF_TCSS[prefix].value, markup=False)
                     )
         return widgets
-
-    def _get_status_dirs(self) -> StatusDict:
-        return {}
-
-    def _get_status_dir_descendants(self, dir_path: Path) -> StatusDict:
-        status_dirs = self._get_status_dirs()
-        results: StatusDict = {}
-        for path, status in status_dirs.items():
-            if path.is_relative_to(dir_path):
-                results[path] = status
-        return results
 
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
