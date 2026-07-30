@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import TYPE_CHECKING, ClassVar, NamedTuple, cast
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.cm_attributes import ManagedPaths
     from chezmoi_mousse.cm_command import ReadCmd
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
@@ -51,8 +52,7 @@ class CommandResult:
     time_stamp: str
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class ManagedResults:
+class ManagedResults(NamedTuple):
     dest_dir: Path
     managed_dirs: CommandResult
     managed_files: CommandResult
@@ -88,22 +88,28 @@ class ScanDirItem(NamedTuple):
     matches_unwanted: bool
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SplashResults:
-    doctor: CommandResult
-    git_log: CommandResult
-    dump_config: CommandResult
-    cat_config: CommandResult
-    template_data: CommandResult
-    ignored: CommandResult
-    git_remote: CommandResult
-    managed_dirs: CommandResult
-    managed_files: CommandResult
-    status_dirs: CommandResult
-    status_files: CommandResult
+@dataclass(slots=True)
+class ResultCollector:
 
+    dest_dir: Path = field(init=False)
+    cat_config: CommandResult = field(init=False)
+    doctor: CommandResult = field(init=False)
+    dump_config: CommandResult = field(init=False)
+    git_log: CommandResult = field(init=False)
+    git_remote: CommandResult = field(init=False)
+    ignored: CommandResult = field(init=False)
+    managed_dirs: CommandResult = field(init=False)
+    managed_files: CommandResult = field(init=False)
+    parsed_dump_config: ParsedJson = field(init=False)
+    parsed_template_data: ParsedJson = field(init=False)
+    status_dirs: CommandResult = field(init=False)
+    status_files: CommandResult = field(init=False)
+    template_data: CommandResult = field(init=False)
+    managed_paths_instance: ManagedPaths = field(init=False)
+
+    # Used for logging after the splash screen is disimissed and we push the MainScreen
     @property
-    def results_list(self) -> list[CommandResult]:
+    def splash_results_list(self) -> list[CommandResult]:
         return [
             self.doctor,
             self.git_log,
@@ -118,48 +124,12 @@ class SplashResults:
             self.status_files,
         ]
 
-
-class CmdResultCollector:
-
-    dest_dir: ClassVar[Path]
-    cat_config: ClassVar[CommandResult]
-    dest_dir: ClassVar[Path]
-    doctor: ClassVar[CommandResult]
-    dump_config: ClassVar[CommandResult]
-    git_log: ClassVar[CommandResult]
-    git_remote: ClassVar[CommandResult]
-    ignored: ClassVar[CommandResult]
-    managed_dirs: ClassVar[CommandResult]
-    managed_files: ClassVar[CommandResult]
-    parsed_dump_config: ClassVar[ParsedJson]
-    parsed_template_data: ClassVar[ParsedJson]
-    status_dirs: ClassVar[CommandResult]
-    status_files: ClassVar[CommandResult]
-    template_data: ClassVar[CommandResult]
-
-    @classmethod
-    def get_splash_results(cls) -> SplashResults:
-        return SplashResults(
-            cat_config=cls.cat_config,
-            doctor=cls.doctor,
-            dump_config=cls.dump_config,
-            git_log=cls.git_log,
-            git_remote=cls.git_remote,
-            ignored=cls.ignored,
-            managed_dirs=cls.managed_dirs,
-            managed_files=cls.managed_files,
-            status_dirs=cls.status_dirs,
-            status_files=cls.status_files,
-            template_data=cls.template_data,
-        )
-
-    # get the managed results as a ManagedResults tuple
-    @classmethod
-    def get_managed_results(cls) -> ManagedResults:
+    @property
+    def managed_results(self) -> ManagedResults:
         return ManagedResults(
-            dest_dir=cls.dest_dir,
-            managed_dirs=cls.managed_dirs,
-            managed_files=cls.managed_files,
-            status_dirs=cls.status_dirs,
-            status_files=cls.status_files,
+            dest_dir=self.dest_dir,
+            managed_dirs=self.managed_dirs,
+            managed_files=self.managed_files,
+            status_dirs=self.status_dirs,
+            status_files=self.status_files,
         )

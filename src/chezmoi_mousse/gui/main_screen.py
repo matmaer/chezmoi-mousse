@@ -100,7 +100,7 @@ class MainScreen(Screen[None]):
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
         await self._log_all_cmd_results(
-            self.app.cmattr.splash_results.results_list
+            self.app.cmattr.cmd_results.splash_results_list
         ).wait()
         self.loading_modal.dismiss()
 

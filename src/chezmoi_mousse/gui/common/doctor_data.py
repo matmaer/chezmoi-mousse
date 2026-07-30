@@ -38,7 +38,7 @@ class DoctorTable(DataTable[Text]):
             "failed": self.app.theme_variables["text-error"],
             "error": self.app.theme_variables["text-error"],
         }
-        self._populate_table(self.app.cmattr.splash_results.doctor.out_lines)
+        self._populate_table(self.app.cmattr.cmd_results.doctor.out_lines)
 
     @work
     async def _populate_table(self, doctor_lines: list[str]) -> None:
@@ -269,7 +269,7 @@ class PwMgrInfoView(Vertical):
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self._populate_pw_mgr_info(self.app.cmattr.splash_results.doctor.out_lines)
+        self._populate_pw_mgr_info(self.app.cmattr.cmd_results.doctor.out_lines)
 
     @work
     async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:

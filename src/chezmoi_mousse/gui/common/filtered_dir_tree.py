@@ -71,9 +71,8 @@ class FilteredDirTree(DirectoryTree):
         for p in paths:
             is_dir = p.is_dir()
             is_managed = bool(
-                p
-                in self.app.cmattr.paths.managed_paths
-                # or p == self.app.cmattr.dest_dir
+                p in self.app.cmattr.paths.managed_dirs
+                or p in self.app.cmattr.paths.managed_files
             )
             if is_dir:
                 is_unwanted = CheckPath.is_unwanted_dir(p)

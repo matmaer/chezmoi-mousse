@@ -149,9 +149,7 @@ class CatConfigView(Vertical):
     def on_mount(self) -> None:
         static = self.query_exactly_one(self.CatConfigStatic)
         static.update(
-            "\n".join(
-                line for line in self.app.cmattr.splash_results.cat_config.out_lines
-            )
+            "\n".join(line for line in self.app.cmattr.cmd_results.cat_config.out_lines)
         )
 
 
@@ -167,7 +165,7 @@ class IgnoredView(Vertical):
 
     def on_mount(self) -> None:
         pretty_ignored: Pretty = self.query_exactly_one(Pretty)
-        pretty_ignored.update(self.app.cmattr.splash_results.ignored.out_lines)
+        pretty_ignored.update(self.app.cmattr.cmd_results.ignored.out_lines)
 
 
 class DiagramView(Vertical):
@@ -195,7 +193,7 @@ class TemplateDataView(Vertical):
 
     def on_mount(self) -> None:
         pretty_widget = self.query_exactly_one(Pretty)
-        pretty_widget.update(self.app.cmattr.parsed_template_data)
+        pretty_widget.update(self.app.cmattr.cmd_results.parsed_template_data)
 
 
 class ConfigTab(TabPane):

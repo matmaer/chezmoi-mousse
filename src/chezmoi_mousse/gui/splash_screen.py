@@ -17,8 +17,9 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
+from chezmoi_mousse.cm_attributes import ManagedPaths
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import CmdResultCollector
+from chezmoi_mousse.cm_types import ManagedResults, ResultCollector
 from chezmoi_mousse.functions import run_chezmoi_cmd
 
 if TYPE_CHECKING:
@@ -69,7 +70,6 @@ class GroupName(StrEnum):
 
 class WorkerName(StrEnum):
     parse_json_output = "parse json output"
-    update_paths = "update paths"
 
 
 class AnimatedFade(Static):
@@ -108,7 +108,7 @@ class SplashScreen(Screen[None]):
 
     def on_mount(self) -> None:
         self.json_output_parsed = False
-        self.managed_paths_updated = False
+        self.managed_paths_instance_ready = False
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
@@ -143,7 +143,7 @@ class SplashScreen(Screen[None]):
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
         result: CommandResult = run_chezmoi_cmd(command, dry_run=False)
-        setattr(CmdResultCollector, command.name, result)
+        setattr(ResultCollector, command.name, result)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
     # Command groups
@@ -163,28 +163,27 @@ class SplashScreen(Screen[None]):
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(name=WorkerName.parse_json_output)
-    async def _parse_json_outputs(self) -> None:
-        parsed_dump_config = json.loads(CmdResultCollector.dump_config.std_out)
-        parsed_template_data = json.loads(CmdResultCollector.template_data.std_out)
-        CmdResultCollector.parsed_dump_config = parsed_dump_config
-        CmdResultCollector.parsed_template_data = parsed_template_data
-        CmdResultCollector.dest_dir = parsed_dump_config["destDir"]
-        self.app.cmattr.dest_dir = Path(parsed_dump_config["destDir"])
-        self.app.cmattr.auto_add = parsed_dump_config["git"]["autoadd"]
-        self.app.cmattr.auto_commit = parsed_dump_config["git"]["autocommit"]
-        self.app.cmattr.auto_push = parsed_dump_config["git"]["autopush"]
+    def _parse_json_outputs(self) -> None:
+        parsed_dump_config = json.loads(ResultCollector.dump_config.std_out)
+        parsed_template_data = json.loads(ResultCollector.template_data.std_out)
+        ResultCollector.parsed_dump_config = parsed_dump_config
+        ResultCollector.parsed_template_data = parsed_template_data
+        ResultCollector.dest_dir = parsed_dump_config["destDir"]
         self.json_output_parsed = True
-        msg = self._get_log_msg(prefix=WorkerName.parse_json_output, returncode=None)
-        self.splash_log.write(msg)
 
-    @work(thread=True, name=WorkerName.update_paths)
-    def _update_managed_paths(self) -> None:
-        managed_results = CmdResultCollector.get_managed_results()
-        self.app.cmattr.update_paths(results=managed_results)
-        msg = self._get_log_msg(prefix="update paths", returncode=None)
-        self.managed_paths_updated = True
-        self.app.call_from_thread(self.splash_log.write, msg)
+    def _set_cm_attributes(self) -> None:
+        self.app.cmattr.dest_dir = Path(ResultCollector.parsed_dump_config["destDir"])
+        self.app.cmattr.auto_add = ResultCollector.parsed_dump_config["git"]["autoadd"]
+        self.app.cmattr.auto_commit = ResultCollector.parsed_dump_config["git"][
+            "autocommit"
+        ]
+        self.app.cmattr.auto_push = ResultCollector.parsed_dump_config["git"][
+            "autopush"
+        ]
+        self.app.cmattr.cmd_results = ResultCollector()
+        self.app.cmattr.paths = ResultCollector.managed_paths_instance
+        msg = self._get_log_msg(prefix="set cmattr", returncode=None)
+        self.splash_log.write(msg)
 
     def _all_workers_finished(self) -> None:
         if self.json_output_parsed is False and all(
@@ -193,27 +192,38 @@ class SplashScreen(Screen[None]):
             if worker.group == GroupName.json_output_group
         ):
             self._parse_json_outputs()  # WorkerName.parse_json_output
-            return
-        if (
-            self.managed_paths_updated is False
-            and all(
-                worker.is_finished
-                for worker in self.workers
-                if worker.name == WorkerName.parse_json_output
+            msg = self._get_log_msg(
+                prefix=WorkerName.parse_json_output, returncode=None
             )
+            self.splash_log.write(msg)
+            return
+        elif (
+            self.json_output_parsed is True
+            and self.managed_paths_instance_ready is False
             and all(
                 worker.is_finished
                 for worker in self.workers
                 if worker.group == GroupName.managed_cmd_group
             )
         ):
-            self._update_managed_paths()  # WorkerName.update_paths
+            ResultCollector.managed_paths_instance = ManagedPaths(
+                results=ManagedResults(
+                    dest_dir=ResultCollector.dest_dir,
+                    managed_dirs=ResultCollector.managed_dirs,
+                    managed_files=ResultCollector.managed_files,
+                    status_dirs=ResultCollector.status_dirs,
+                    status_files=ResultCollector.status_files,
+                )
+            )
+            msg = self._get_log_msg(prefix="update paths", returncode=None)
+            self.splash_log.write(msg)
+            self.managed_paths_instance_ready = True
             return
 
-        if all(worker.is_finished for worker in self.workers):
-            self.app.cmattr.splash_results = CmdResultCollector.get_splash_results()
-            self.app.cmattr.parsed_dump_config = CmdResultCollector.parsed_dump_config
-            self.app.cmattr.parsed_template_data = (
-                CmdResultCollector.parsed_template_data
-            )
+        if (
+            self.json_output_parsed is True
+            and self.managed_paths_instance_ready is True
+            and all(worker.is_finished for worker in self.workers)
+        ):
+            self._set_cm_attributes()  # WorkerName.set_cm_attributes
             self.dismiss()
