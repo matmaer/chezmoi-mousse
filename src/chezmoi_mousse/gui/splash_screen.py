@@ -18,7 +18,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import CmdResultCollector, SplashResults
+from chezmoi_mousse.cm_types import CmdResultCollector
 from chezmoi_mousse.functions import run_chezmoi_cmd
 
 if TYPE_CHECKING:
@@ -89,7 +89,7 @@ class AnimatedFade(Static):
         return Strip([Segment(SPLASH_ASCII[y], style=FADE_LINE_STYLES[y])])
 
 
-class SplashScreen(Screen[SplashResults]):
+class SplashScreen(Screen[None]):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
