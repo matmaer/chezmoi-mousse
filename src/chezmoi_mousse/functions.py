@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
-from chezmoi_mousse.cm_types import CommandResult, ScanDirItem, typed_lru_cache
+from chezmoi_mousse.cm_types import (
+    CommandResult,
+    PathKind,
+    ScanDirItem,
+    typed_lru_cache,
+)
 from chezmoi_mousse.str_enums import ChezmoiGitArgs, GlobalArgs, PathFilters, VerbArgs
 
 if TYPE_CHECKING:
@@ -114,21 +119,20 @@ class CheckPath:
     @typed_lru_cache(maxsize=1000)
     def os_scan_dir(
         dir_path: Path, managed_dir: bool = False
-    ) -> list[ScanDirItem] | FileNotFoundError | PermissionError:
+    ) -> list[ScanDirItem] | PathKind:
         scan_dir_items: list[ScanDirItem] = []
         # str(dir_path) to reduce possible exceptions which would be raised by pathlib
         try:
             with os.scandir(str(dir_path)) as entry_generator:
                 dir_entries: list[os.DirEntry[str]] = list(entry_generator)
-        except FileNotFoundError as not_found:
-            return not_found
-        except PermissionError as access_denied:
-            return access_denied
+        except FileNotFoundError:
+            return PathKind.mandir_not_exists
+        except PermissionError:
+            return PathKind.mandir_access_denied
 
         sibling_count = len(dir_entries)
 
         for de in dir_entries:
-            # will be absolute as we pass an absolute dir_path to the function
             de_path = Path(de.path)
             is_dir = de.is_dir()
             is_file = de.is_file()
@@ -151,7 +155,7 @@ class CheckPath:
 
             scan_dir_items.append(
                 ScanDirItem(
-                    parent_path=dir_path,
+                    scanned_dir=dir_path,
                     managed_arg=managed_dir,
                     path=de_path,
                     is_dir=is_dir,

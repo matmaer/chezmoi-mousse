@@ -71,7 +71,7 @@ class ReadCmdGroups(NamedTuple):
 
 class ScanDirItem(NamedTuple):
     # matches the argument passed to the os_scan_dir function
-    parent_path: Path
+    scanned_dir: Path
     managed_arg: bool
     # absolute path matchingthe DirEntry.path attribute
     path: Path

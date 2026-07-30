@@ -321,10 +321,11 @@ class PathFilters(Enum):
 
 
 class PathKind(StrEnum):
-    dest_dir = auto()
-    mandir_exists = auto()
-    manfile_exists = auto()
     apply_n_dir = auto()
+    dest_dir = auto()
+    mandir_access_denied = auto()
+    mandir_exists = auto()
+    mandir_not_exists = auto()
     re_add_n_dir = auto()
 
 
