@@ -326,9 +326,11 @@ class PathKind(StrEnum):
     man_dir_exists = auto()
     man_dir_exists_empty = auto()
     man_dir_not_exists = auto()
+    man_dir_unchanged = auto()
     man_file_exists = auto()
     man_file_no_status = auto()
     man_file_not_exists = auto()
+    man_file_unchanged = auto()
 
     apply_n_dir = auto()
     re_add_n_dir = auto()

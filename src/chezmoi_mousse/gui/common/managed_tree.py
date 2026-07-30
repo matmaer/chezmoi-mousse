@@ -11,11 +11,11 @@ from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.str_enums import Chars, Tcss
+from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, PathKindDict, StatusDict
 
 from .actionables import OpButton
 from .messages import CurrentNodeMsg
@@ -174,6 +174,32 @@ class ManagedTree(Tree[Path]):
     def _populate_root_node_recursive(self, tree_node: TreeNode[Path]) -> None:
         if tree_node.data is None:
             raise ValueError("tree_node.data is None in _populate_node")
+        n_dirs: PathKindDict = (
+            self.app.cmattr.paths.apply_n_dirs
+            if self.ids.tab_label == TabLabel.apply
+            else self.app.cmattr.paths.re_add_n_dirs
+        )
+        status_dirs: StatusDict = (
+            self.app.cmattr.paths.apply_dirs
+            if self.ids.tab_label == TabLabel.apply
+            else self.app.cmattr.paths.re_add_dirs
+        )
+        status_files: StatusDict = (
+            self.app.cmattr.paths.apply_files
+            if self.ids.tab_label == TabLabel.apply
+            else self.app.cmattr.paths.re_add_files
+        )
+
+        dir_to_insert = sorted(n_dirs | status_dirs)
+
+        for dir in dir_to_insert:
+            child_node = self._insert_node(dir)
+            if child_node is None:
+                continue
+            self._populate_root_node_recursive(child_node)
+
+        for file_path in status_files:
+            self._insert_node(file_path)
 
     #################################
     # Watchers and message handling #

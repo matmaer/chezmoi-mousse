@@ -18,7 +18,7 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import StrTup
+    from chezmoi_mousse.cm_types import PathKindDict, StatusDict, StrTup
 
 __all__ = ("run_chezmoi_cmd", "CheckPath")
 
@@ -256,3 +256,30 @@ class CheckPath:
             or CheckPath._is_git_objects_dir(dir_path)
             or CheckPath._dir_has_many_children(dir_path)
         )
+
+    @staticmethod
+    @typed_lru_cache(maxsize=500)
+    def n_dirs_in(dir_path: Path, n_dir_dict: PathKindDict) -> PathKindDict:
+        return {
+            path: path_kind
+            for path, path_kind in n_dir_dict.items()
+            if path.parent == dir_path
+        }
+
+    @staticmethod
+    @typed_lru_cache(maxsize=500)
+    def status_paths_in(dir_path: Path, status_dict: StatusDict) -> StatusDict:
+        return {
+            path: path_kind
+            for path, path_kind in status_dict.items()
+            if path.parent == dir_path
+        }
+
+    @staticmethod
+    @typed_lru_cache(maxsize=500)
+    def unchanged_paths_in(dir_path: Path, unchanged: PathKindDict) -> PathKindDict:
+        return {
+            path: path_kind
+            for path, path_kind in unchanged.items()
+            if path.parent == dir_path
+        }

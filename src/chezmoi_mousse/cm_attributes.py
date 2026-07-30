@@ -8,12 +8,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import (
-    ManagedResults,
-    PathKindDict,
-    ReadCmdGroups,
-    SplashResults,
-)
+from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -47,6 +42,8 @@ class ChangedPaths:
 class ManagedPaths:
     managed_dirs: PathKindDict = field(default_factory=lambda: {})
     managed_files: PathKindDict = field(default_factory=lambda: {})
+    unchanged_files: PathKindDict = field(default_factory=lambda: {})
+    unchanged_dirs: PathKindDict = field(default_factory=lambda: {})
 
     apply_dirs: StatusDict = field(default_factory=lambda: {})
     apply_files: StatusDict = field(default_factory=lambda: {})
@@ -134,7 +131,7 @@ class CmAttributes:
                     re_add[path] = re_add_status
             return apply, re_add
 
-        def _is_n_dir(
+        def _get_n_dir_dict(
             path_kind: PathKind, *, s_dirs: set[Path], s_files: set[Path]
         ) -> PathKindDict:
             n_dirs: PathKindDict = {}
@@ -163,6 +160,16 @@ class CmAttributes:
                     result[path] = PathKind.man_file_exists
             return result
 
+        def _unchanged_path_kind_dict(
+            path_kind: PathKind, managed_lines: list[str], status_lines: list[str]
+        ) -> PathKindDict:
+            status_path_strings: set[str] = {line[3:] for line in status_lines}
+            result: PathKindDict = {}
+            for line in managed_lines:
+                if line not in status_path_strings:
+                    result[Path(line)] = path_kind
+            return result
+
         # context vars
         _apply_dirs, _re_add_dirs = _status_dicts(results.status_dirs.out_lines)
         _apply_files, _re_add_files = _status_dicts(results.status_files.out_lines)
@@ -173,14 +180,24 @@ class CmAttributes:
             managed_files=_managed_path_kind_dict(results.managed_files.out_lines),
             apply_dirs=_apply_dirs,
             apply_files=_apply_files,
-            apply_n_dirs=_is_n_dir(
+            apply_n_dirs=_get_n_dir_dict(
                 PathKind.apply_n_dir, s_dirs=set(_apply_dirs), s_files=set(_apply_files)
             ),
             re_add_dirs=_re_add_dirs,
             re_add_files=_re_add_files,
-            re_add_n_dirs=_is_n_dir(
+            re_add_n_dirs=_get_n_dir_dict(
                 PathKind.re_add_n_dir,
                 s_dirs=set(_re_add_dirs),
                 s_files=set(_re_add_files),
+            ),
+            unchanged_dirs=_unchanged_path_kind_dict(
+                PathKind.man_dir_unchanged,
+                results.managed_dirs.out_lines,
+                results.status_dirs.out_lines,
+            ),
+            unchanged_files=_unchanged_path_kind_dict(
+                PathKind.man_file_unchanged,
+                results.managed_files.out_lines,
+                results.status_files.out_lines,
             ),
         )
