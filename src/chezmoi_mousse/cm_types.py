@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
+    from textual.widgets.tree import NodeID as TextualNodeID
+
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_attributes import ManagedPaths
     from chezmoi_mousse.cm_command import ReadCmd
@@ -21,7 +23,7 @@ if TYPE_CHECKING:
     type StatusDict = dict[Path, StatusCode]
     type StrTup = tuple[str, ...]
 
-__all__ = ["AppIds", "ChezmoiGui"]
+__all__ = ["AppIds", "ChezmoiGui", "TextualNodeID"]
 
 
 def typed_lru_cache[**FuncParams, FuncReturn](
@@ -58,6 +60,12 @@ class ManagedResults(NamedTuple):
     managed_files: CommandResult
     status_dirs: CommandResult
     status_files: CommandResult
+
+
+class TreePathStatus(NamedTuple):
+    status_dirs: frozenset[Path]
+    status_files: frozenset[Path]
+    n_dirs: frozenset[Path]
 
 
 class ReadCmdGroups(NamedTuple):

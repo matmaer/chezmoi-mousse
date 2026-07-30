@@ -208,7 +208,7 @@ class TestPaths:
     def _create_python_file(self) -> list[str]:
         file_path = self.all_paths.python_file_path
         shutil.copyfile(
-            Path(__file__).resolve().parent.parent / "_str_enums.py", file_path
+            Path(__file__).resolve().parent.parent / "str_enums.py", file_path
         )
         return [str(file_path)]
 
