@@ -8,13 +8,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
-from chezmoi_mousse.cm_types import (
-    CommandResult,
+from chezmoi_mousse.cm_types import CommandResult, ScanDirItem, typed_lru_cache
+from chezmoi_mousse.str_enums import (
+    ChezmoiGitArgs,
+    GlobalArgs,
+    PathFilters,
     PathKind,
-    ScanDirItem,
-    typed_lru_cache,
+    VerbArgs,
 )
-from chezmoi_mousse.str_enums import ChezmoiGitArgs, GlobalArgs, PathFilters, VerbArgs
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import StrTup
@@ -113,8 +114,6 @@ def run_chezmoi_cmd(
 
 class CheckPath:
 
-    # functions for both file and dir paths
-
     @staticmethod
     @typed_lru_cache(maxsize=1000)
     def os_scan_dir(
@@ -125,10 +124,17 @@ class CheckPath:
         try:
             with os.scandir(str(dir_path)) as entry_generator:
                 dir_entries: list[os.DirEntry[str]] = list(entry_generator)
-        except FileNotFoundError:
-            return PathKind.mandir_not_exists
+        except FileNotFoundError as dir_path_not_found:
+            if managed_dir:
+                return PathKind.man_dir_not_exists
+            else:
+                raise dir_path_not_found  # fail fast
         except PermissionError:
-            return PathKind.mandir_access_denied
+            if managed_dir:
+                return PathKind.man_dir_access_denied
+            else:
+                # can happen in ManagedTree scan
+                return PathKind.unman_dir_access_denied
 
         sibling_count = len(dir_entries)
 
@@ -168,6 +174,8 @@ class CheckPath:
                 )
             )
         return scan_dir_items
+
+    # functions for both file and dir paths
 
     @staticmethod
     def _looks_like_cache(path: Path) -> bool:

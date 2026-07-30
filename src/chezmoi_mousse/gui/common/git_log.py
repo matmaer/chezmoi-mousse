@@ -8,11 +8,6 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.functions import run_chezmoi_cmd
-
-from .messages import LogCmdResultMsg
-
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
 
@@ -62,21 +57,6 @@ class GitLogView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if show_path == self.app.cmattr.dest_dir:
-            if not self.app.cmattr.splash_results.git_log.out_lines:
-                lines = ["No commits;No git log entries available yet."]
-            else:
-                lines = self.app.cmattr.splash_results.git_log.out_lines
-            container = self._create_datatable_container(lines)
-        else:
-            source_path_result = run_chezmoi_cmd(
-                command=ReadCmd.source_path, dry_run=False, path_arg=show_path
-            )
-            cmd_result = run_chezmoi_cmd(
-                command=ReadCmd.git_log,
-                dry_run=False,
-                path_arg=source_path_result.path_arg,
-            )
-            self.post_message(LogCmdResultMsg(cmd_result))
-            container = self._create_datatable_container(cmd_result.out_lines)
+        lines = ["No commits;Widget temporarily disabled."]
+        container = self._create_datatable_container(lines)
         self.mount(container)

@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
     type ParsedJson = dict[str, Any]
     type PathDataDict = dict[Path, PathKind | ScanDirItem]
+    type PathKindDict = dict[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
     type StrTup = tuple[str, ...]
 

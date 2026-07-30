@@ -321,12 +321,19 @@ class PathFilters(Enum):
 
 
 class PathKind(StrEnum):
-    apply_n_dir = auto()
     dest_dir = auto()
-    mandir_access_denied = auto()
-    mandir_exists = auto()
-    mandir_not_exists = auto()
+    man_dir_access_denied = auto()
+    man_dir_exists = auto()
+    man_dir_exists_empty = auto()
+    man_dir_not_exists = auto()
+    man_file_exists = auto()
+    man_file_no_status = auto()
+    man_file_not_exists = auto()
+
+    apply_n_dir = auto()
     re_add_n_dir = auto()
+
+    unman_dir_access_denied = auto()
 
 
 class RichLogName(StrEnum):

@@ -8,7 +8,12 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import ManagedResults, ReadCmdGroups, SplashResults
+from chezmoi_mousse.cm_types import (
+    ManagedResults,
+    PathKindDict,
+    ReadCmdGroups,
+    SplashResults,
+)
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -153,9 +158,9 @@ class CmAttributes:
             for line in lines:
                 path = Path(line)
                 if path.is_dir():
-                    result[path] = PathKind.mandir_exists
+                    result[path] = PathKind.man_dir_exists
                 elif path.is_file():
-                    result[path] = PathKind.manfile_exists
+                    result[path] = PathKind.man_file_exists
             return result
 
         # context vars
