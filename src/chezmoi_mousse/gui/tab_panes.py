@@ -20,7 +20,13 @@ from textual.widgets import (
 
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
-from chezmoi_mousse.str_enums import FlatBtnLabel, SectionLabel, TabLabel, Tcss
+from chezmoi_mousse.str_enums import (
+    ColorVar,
+    FlatBtnLabel,
+    SectionLabel,
+    TabLabel,
+    Tcss,
+)
 
 from .common.actionables import (
     FlatButtonsVertical,
@@ -371,7 +377,7 @@ class DebugTab(TabPane):
         if path_lines:
             return path_lines
         else:
-            return "[$text-warning bold]No test paths exist.[/]"
+            return f"[${ColorVar.warning} bold]No test paths exist.[/]"
 
     def _write_to_memory_log(self, auto: bool = True) -> None:
         mem_info = self._process.memory_info()

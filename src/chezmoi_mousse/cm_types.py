@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     type PathDataDict = dict[Path, PathKind | ScanDirItem]
     type PathKindDict = dict[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
-    type StrTup = tuple[str, ...]
+    type StrTuple = tuple[str, ...]
 
 __all__ = ["AppIds", "ChezmoiGui", "TextualNodeID"]
 

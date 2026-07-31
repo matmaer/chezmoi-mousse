@@ -11,7 +11,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
-from chezmoi_mousse.str_enums import Chars, LogColor, LogString, SectionLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, ColorVar, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -36,7 +36,7 @@ class CmdResultCollapsible(Collapsible):
         )
 
     def _colored_with_timestamp(self, cmd_str: str, code: int) -> str:
-        color = "$text-success" if code == 0 else "text-success"
+        color = f"${ColorVar.success}" if code == 0 else f"${ColorVar.warning}"
         time = f"{datetime.now().strftime('%H:%M:%S')}"
         return f"{time} [{color}]{cmd_str}[/] (returncode {code})"
 
@@ -85,32 +85,32 @@ class RichLoggers(RichLog):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def _get_log_line(self, msg: str, color: LogColor) -> str:
+    def _get_log_line(self, msg: str, color: ColorVar) -> str:
         log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
         msg_color = self.app.theme_variables[color.value]
         return f"{log_time} [{msg_color}]{msg}[/]"
 
     def write_cmd(self, pretty_cmd: str, returncode: int) -> None:
-        color = LogColor.success if returncode == 0 else LogColor.warning
+        color = ColorVar.success if returncode == 0 else ColorVar.warning
         self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode}", color))
 
     def write_dimmed(self, message: str) -> None:
-        self.write(self._get_log_line(message, LogColor.dimmed))
+        self.write(self._get_log_line(message, ColorVar.dimmed))
 
     def write_error(self, message: str) -> None:
-        self.write(self._get_log_line(message, LogColor.error))
+        self.write(self._get_log_line(message, ColorVar.error))
 
     def write_info(self, message: str) -> None:
-        self.write(self._get_log_line(message, LogColor.info))
+        self.write(self._get_log_line(message, ColorVar.info))
 
     def write_ready(self, message: str) -> None:
-        self.write(self._get_log_line(f"--- {message} ---", LogColor.ready))
+        self.write(self._get_log_line(f"--- {message} ---", ColorVar.ready))
 
     def write_success(self, message: str) -> None:
-        self.write(self._get_log_line(message, LogColor.success))
+        self.write(self._get_log_line(message, ColorVar.success))
 
     def write_warning(self, message: str) -> None:
-        self.write(self._get_log_line(message, LogColor.warning))
+        self.write(self._get_log_line(message, ColorVar.warning))
 
 
 class AppLog(RichLoggers):

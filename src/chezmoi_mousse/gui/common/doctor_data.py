@@ -11,7 +11,7 @@ from textual.containers import Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
-from chezmoi_mousse.str_enums import Chars, SectionLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, ColorVar, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui
@@ -32,11 +32,11 @@ class DoctorTable(DataTable[Text]):
 
     def on_mount(self) -> None:
         self._dr_style = {
-            "ok": self.app.theme_variables["text-success"],
-            "info": self.app.theme_variables["foreground-darken-1"],
-            "warning": self.app.theme_variables["text-warning"],
-            "failed": self.app.theme_variables["text-error"],
-            "error": self.app.theme_variables["text-error"],
+            "ok": self.app.get_color(ColorVar.success),
+            "info": self.app.get_color(ColorVar.info),
+            "warning": self.app.get_color(ColorVar.warning),
+            "failed": self.app.get_color(ColorVar.error),
+            "error": self.app.get_color(ColorVar.error),
         }
         self._populate_table(self.app.cmattr.cmd_results.doctor.out_lines)
 
@@ -83,7 +83,7 @@ class InfoStrings(StrEnum):
         " authority, maintainers reputation, etc."
     )
     info_warning = (
-        f"[$text-warning]{Chars.warning_sign} The additional info is provided but"
+        f"[${ColorVar.warning}]{Chars.warning_sign} The additional info is provided but"
         " may not be up-to-date or correct. Please contribute to improve"
         " it.{Chars.warning_sign}[/]"
     )
@@ -248,9 +248,9 @@ class PwCollapsible(Collapsible):
                 classes=Tcss.pw_mgr_group,
             ),
             title=(
-                f"[$text-primary]Doctor check: "
+                f"[${ColorVar.primary}]Doctor check: "
                 f"{self.pw_mgr_data.doctor_check}[/] "
-                f"[dim]({self.pw_mgr_data.dr_message})[/]"
+                f"[{ColorVar.dimmed}]({self.pw_mgr_data.dr_message})[/]"
             ),
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,

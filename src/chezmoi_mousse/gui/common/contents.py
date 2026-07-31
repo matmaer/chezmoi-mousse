@@ -13,7 +13,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.functions import run_chezmoi_cmd
+from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
 
 from .actionables import DirContentBtn
@@ -136,7 +136,7 @@ class ContentsView(Container):
 
         def _read_file(file_path: Path) -> str:
             if not file_path.exists():
-                cmd_result = run_chezmoi_cmd(
+                cmd_result = Commands.run_chezmoi_cmd(
                     command=ReadCmd.cat, dry_run=False, path_arg=file_path
                 )
                 self.post_message(LogCmdResultMsg(cmd_result))

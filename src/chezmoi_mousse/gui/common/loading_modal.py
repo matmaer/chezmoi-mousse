@@ -16,7 +16,8 @@ from textual.widgets import Label, LoadingIndicator
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import CommandResult
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.functions import run_chezmoi_cmd
+from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -51,7 +52,7 @@ class LoadingLabel(StrEnum):
 
     @property
     def with_color(self) -> str:
-        return f"[$text-primary]{self.value}[/]"
+        return f"[${ColorVar.text}]{self.value}[/]"
 
 
 class LoadingModal(ModalScreen[list[CommandResult]]):
@@ -94,7 +95,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        self.command_results.append(run_chezmoi_cmd(read_cmd, dry_run=False))
+        self.command_results.append(Commands.run_chezmoi_cmd(read_cmd, dry_run=False))
 
     @work(thread=True, exit_on_error=False)
     @min_wait
@@ -102,7 +103,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
         if btn_enum.path_arg == self.app.cmattr.dest_dir:
             btn_enum.path_arg = None
         self.command_results.append(
-            run_chezmoi_cmd(
+            Commands.run_chezmoi_cmd(
                 btn_enum.write_cmd, dry_run=dry_run, path_arg=btn_enum.path_arg
             )
         )

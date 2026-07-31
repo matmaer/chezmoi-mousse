@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from collections import deque
 from enum import StrEnum, auto
 from pathlib import Path
@@ -20,7 +19,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse.cm_attributes import ManagedPaths
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import ManagedResults, ResultCollector
-from chezmoi_mousse.functions import run_chezmoi_cmd
+from chezmoi_mousse.functions import Commands
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
@@ -142,7 +141,7 @@ class SplashScreen(Screen[None]):
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        result: CommandResult = run_chezmoi_cmd(command, dry_run=False)
+        result: CommandResult = Commands.run_chezmoi_cmd(command, dry_run=False)
         setattr(ResultCollector, command.name, result)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
@@ -164,8 +163,10 @@ class SplashScreen(Screen[None]):
         self.app.call_from_thread(self.splash_log.write, msg)
 
     def _parse_json_outputs(self) -> None:
-        parsed_dump_config = json.loads(ResultCollector.dump_config.std_out)
-        parsed_template_data = json.loads(ResultCollector.template_data.std_out)
+        parsed_dump_config = Commands.json_loads(ResultCollector.dump_config.std_out)
+        parsed_template_data = Commands.json_loads(
+            ResultCollector.template_data.std_out
+        )
         ResultCollector.parsed_dump_config = parsed_dump_config
         ResultCollector.parsed_template_data = parsed_template_data
         ResultCollector.dest_dir = parsed_dump_config["destDir"]

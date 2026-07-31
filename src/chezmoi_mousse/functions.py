@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from datetime import datetime
@@ -18,98 +19,130 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import StrTup
+    from chezmoi_mousse.cm_types import ParsedJson, StrTuple
 
-__all__ = ("run_chezmoi_cmd", "CheckPath")
-
-
-@typed_lru_cache()
-def _ugly_args() -> set[str]:
-    ugly_args: set[str] = set()
-    ugly_args.update(
-        GlobalArgs.global_defaults.value,
-        ChezmoiGitArgs.global_args.value,
-        ChezmoiGitArgs.git_log_args.value,
-        (
-            ChezmoiGitArgs.verbose.value,
-            VerbArgs.format_json.value,
-            VerbArgs.path_style_absolute.value,
-        ),
-    )
-    return ugly_args
+__all__ = ("Commands", "CheckPath")
 
 
-@typed_lru_cache()
-def _args_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool) -> StrTup:
-    return (
-        ("chezmoi",) + cmd.value
-        if dry is False
-        else ("chezmoi", "--dry-run") + cmd.value
-    )
+# caches never to be cleared in app lifecycle
+# TODO implement clearing for cached stuff in other classes than AppLife
 
 
-@typed_lru_cache()
-def _cmd_str_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool, pretty: bool) -> str:
-    verb_str = (
-        " ".join(cmd.value)
-        if pretty is False
-        else " ".join([a for a in cmd.value if a not in _ugly_args()])
-    )
-    return f"chezmoi {verb_str}" if dry is False else f"chezmoi --dry-run {verb_str}"
+class AppLife:
+
+    @staticmethod
+    @typed_lru_cache()
+    def _ugly_args() -> set[str]:
+        ugly_args: set[str] = set()
+        ugly_args.update(
+            GlobalArgs.global_defaults.value,
+            ChezmoiGitArgs.global_args.value,
+            ChezmoiGitArgs.git_log_args.value,
+            (
+                ChezmoiGitArgs.verbose.value,
+                VerbArgs.format_json.value,
+                VerbArgs.path_style_absolute.value,
+            ),
+        )
+        return ugly_args
+
+    @staticmethod
+    @typed_lru_cache()
+    def args_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool) -> StrTuple:
+        return (
+            ("chezmoi",) + cmd.value
+            if dry is False
+            else ("chezmoi", "--dry-run") + cmd.value
+        )
+
+    @staticmethod
+    @typed_lru_cache()
+    def cmd_str_wop(cmd: ReadCmd | WriteCmd, *, dry: bool, pretty: bool) -> str:
+        verb_str = (
+            " ".join(cmd.value)
+            if pretty is False
+            else " ".join([a for a in cmd.value if a not in AppLife._ugly_args()])
+        )
+        return (
+            f"chezmoi {verb_str}" if dry is False else f"chezmoi --dry-run {verb_str}"
+        )
+
+    @staticmethod
+    @typed_lru_cache()
+    def pretty_cmd(*, base_str: str, path_arg: Path | None) -> str:
+        return base_str if path_arg is None else f"{base_str} {path_arg}"
 
 
-@typed_lru_cache()
-def _pretty_cmd(*, base_str: str, path_arg: Path | None) -> str:
-    return base_str if path_arg is None else f"{base_str} {path_arg}"
+class Commands:
 
+    def _subprocess_run(
+        *, args: StrTuple, path: Path | None, time_out: int
+    ) -> subprocess.CompletedProcess[str]:
+        if path is None:
+            run_args = args
+        elif not path.is_absolute():
+            raise ValueError("Calling subprocess.run with a relative path")
+        else:
+            run_args = args + (str(path),)
+        return subprocess.run(
+            run_args, capture_output=True, shell=False, text=True, timeout=time_out
+        )
 
-def _subprocess_run(
-    *, args: StrTup, path: Path | None, time_out: int
-) -> subprocess.CompletedProcess[str]:
-    if path is None:
-        run_args = args
-    elif not path.is_absolute():
-        raise ValueError("Calling subprocess.run with a relative path")
-    else:
-        run_args = args + (str(path),)
-    return subprocess.run(
-        run_args, capture_output=True, shell=False, text=True, timeout=time_out
-    )
+    @staticmethod
+    def run_chezmoi_cmd(
+        command: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None = None
+    ) -> CommandResult:
 
+        args: StrTuple = AppLife.args_without_path(cmd=command, dry=dry_run)
+        time_out: int = 10 if isinstance(command, ReadCmd) else 20
+        cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
+            args=args, path=path_arg, time_out=time_out
+        )
+        out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
+        std_out = "\n".join(out_lines)
 
-def run_chezmoi_cmd(
-    command: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None = None
-) -> CommandResult:
+        err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
+        std_err = "\n".join(err_lines)
 
-    args: StrTup = _args_without_path(cmd=command, dry=dry_run)
-    time_out: int = 10 if isinstance(command, ReadCmd) else 20
-    cp: subprocess.CompletedProcess[str] = _subprocess_run(
-        args=args, path=path_arg, time_out=time_out
-    )
-    out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
-    std_out = "\n".join(out_lines)
+        full_cmd_str = (
+            f"{AppLife.cmd_str_wop(command, dry=dry_run, pretty=True)} {path_arg}"
+        )
+        pretty_cmd_str_wop = AppLife.cmd_str_wop(cmd=command, dry=dry_run, pretty=True)
+        pretty_cmd = AppLife.pretty_cmd(base_str=pretty_cmd_str_wop, path_arg=path_arg)
 
-    err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
-    std_err = "\n".join(err_lines)
+        return CommandResult(
+            dry_run=dry_run,
+            err_lines=err_lines,
+            full_cmd_str=full_cmd_str,
+            out_lines=out_lines,
+            pretty_cmd=pretty_cmd,
+            path_arg=path_arg,
+            returncode=cp.returncode,
+            std_err=std_err,
+            std_out=std_out,
+            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
+        )
 
-    full_cmd_str = (
-        f"{_cmd_str_without_path(cmd=command, dry=dry_run, pretty=True)} {path_arg}"
-    )
-    pretty_cmd_str_wop = _cmd_str_without_path(cmd=command, dry=dry_run, pretty=True)
-    pretty_cmd = _pretty_cmd(base_str=pretty_cmd_str_wop, path_arg=path_arg)
+    @staticmethod
+    def json_loads(str_to_parse: str) -> ParsedJson:
+        return json.loads(str_to_parse)
 
-    return CommandResult(
-        dry_run=dry_run,
-        err_lines=err_lines,
-        full_cmd_str=full_cmd_str,
-        out_lines=out_lines,
-        pretty_cmd=pretty_cmd,
-        path_arg=path_arg,
-        returncode=cp.returncode,
-        std_err=std_err,
-        std_out=std_out,
-        time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-    )
+    @staticmethod
+    @typed_lru_cache(maxsize=500)
+    def run_chezmoi_git_log(path_arg: Path | None = None) -> CommandResult:
+        if path_arg is None:
+            return Commands.run_chezmoi_cmd(
+                ReadCmd.git_log, dry_run=False, path_arg=path_arg
+            )
+        else:
+            source_path_result = Commands.run_chezmoi_cmd(
+                dry_run=False, command=ReadCmd.source_path, path_arg=path_arg
+            )
+            return Commands.run_chezmoi_cmd(
+                dry_run=False,
+                command=ReadCmd.git_log,
+                path_arg=Path(source_path_result.std_out),
+            )
 
 
 class CheckPath:

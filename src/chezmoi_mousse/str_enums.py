@@ -5,10 +5,10 @@ __all__ = [
     "BindingDescription",
     "Chars",
     "ChezmoiGitArgs",
+    "ColorVar",
     "ContainerName",
     "FlatBtnLabel",
     "GlobalArgs",
-    "LogColor",
     "LogString",
     "OpBtnLabel",
     "OpInfoString",
@@ -65,6 +65,19 @@ class Chars(StrEnum):
     tree_expanded = f"{down_triangle} "
 
 
+class ColorVar(StrEnum):
+    dimmed = "foreground-darken-3"
+    error = "text-error"
+    info = "text-primary-darken-1"
+    no_commit_message = "text-secondary"
+    primary = "text-primary"
+    ready = "accent-darken-2"
+    secondary = "text-secondary"
+    success = "text-success"
+    text = "text"
+    warning = "text-warning"
+
+
 class ContainerName(StrEnum):
     cat_config = auto()
     contents = auto()
@@ -95,15 +108,6 @@ class FlatBtnLabel(StrEnum):
     template_data = "Template Data"
     test_paths = "Test Paths"
     memory_usage = "Memory Usage"
-
-
-class LogColor(StrEnum):
-    dimmed = "foreground-darken-3"
-    error = "text-error"
-    info = "text-primary"
-    ready = "accent-darken-2"
-    success = "text-success"
-    warning = "text-warning"
 
 
 class LogString(StrEnum):
@@ -157,46 +161,48 @@ class OpBtnLabel(StrEnum):
 
 class OpInfoString(StrEnum):
     add_path_info = (
-        "[dim]Add new targets to the source state. If adding a directory, it"
-        " will be recursed in.[/]"
+        f"[${ColorVar.dimmed}]Add new targets to the source state. If adding a "
+        "directory, it will be recursed in.[/]"
     )
     add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
     apply_path_info = (
-        "[dim]Chezmoi will ensure that the path is in the target state. "
-        "The command will run without prompting. "
+        f"[${ColorVar.dimmed}]Chezmoi will ensure that the path is in the target "
+        "state. The command will run without prompting. "
         "For targets modified since chezmoi last wrote it. If adding a "
         "directory, it will be recursed in.[/]"
     )
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_add = (
-        f"[$text-warning]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
+        f"[${ColorVar.success}]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
         "paths will be added to the chezmoi repository."
         f"{Chars.check_mark}[/]"
     )
     auto_commit = (
-        f"[$text-warning]{Chars.warning_sign} Chezmoi 'autocommit' is enabled: "
+        f"[${ColorVar.warning}]{Chars.warning_sign} Chezmoi 'autocommit' is enabled: "
         "paths will be committed to the chezmoi repository."
         f"{Chars.warning_sign}[/]"
     )
     auto_push = (
-        f"[$text-error]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
+        f"[${ColorVar.error}]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
         "the updated chezmoi repository will be pushed to the remote (origin)."
         f"{Chars.warning_sign}[/]"
     )
     destroy_path_info = (
-        "[$text-error]Permanently remove the path from disk and chezmoi. MAKE "
+        f"[${ColorVar.error}]Permanently remove the path from disk and chezmoi. MAKE "
         "SURE YOU HAVE A BACKUP![/]"
     )
     destroy_subtitle = (
-        f"[$text-error]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
-        f"[$text-error]{Chars.x_mark}[/]"
+        f"[${ColorVar.error}]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[${ColorVar.error}]{Chars.x_mark}[/]"
     )
-    forget_path_info = "[dim]Remove from the source state, i.e. stop managing them.[/]"
+    forget_path_info = (
+        f"[${ColorVar.dimmed}]Remove from the source state, i.e. stop managing them.[/]"
+    )
     forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
-    ready_to_run = "[$text]Ready to run[/]"
-    run_completed = "[$text]Command completed[/]"
+    ready_to_run = f"[${ColorVar.text}]Ready to run[/]"
+    run_completed = f"[${ColorVar.text}]Command completed[/]"
     re_add_path_info = (
-        "[dim]Re-add modified files in the target state, preserving "
+        f"[${ColorVar.dimmed}]Re-add modified files in the target state, preserving "
         "any encrypted_ attributes. chezmoi will not overwrite templates, and "
         "all entries that are not files are ignored. If adding a directory, it"
         " will be recursed in.[/]"
@@ -452,7 +458,7 @@ class ChezmoiGitArgs(Enum):
     # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
-        "--format=%ar by %cn;%s",
+        "--format=%ar%x1f%cn%x1f%s%x00",
         "--max-count=100",
         "--no-color",
         "--no-decorate",

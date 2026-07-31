@@ -13,7 +13,13 @@ from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse.cm_attributes import CmAttributes
-from chezmoi_mousse.str_enums import BindingAction, BindingDescription, Chars, TabLabel
+from chezmoi_mousse.str_enums import (
+    BindingAction,
+    BindingDescription,
+    Chars,
+    ColorVar,
+    TabLabel,
+)
 
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.managed_tree import DestDirTree
@@ -98,6 +104,27 @@ class ChezmoiGui(App[str]):
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
+
+    def get_color(self, log_color: ColorVar) -> str:
+        match log_color:
+            case ColorVar.success:
+                return self.theme_variables["text-success"]
+            case ColorVar.warning:
+                return self.theme_variables["text-warning"]
+            case ColorVar.error:
+                return self.theme_variables["text-error"]
+            case ColorVar.no_commit_message:
+                return self.theme_variables["text-secondary"]
+            case ColorVar.info:
+                return self.theme_variables["text-primary"]
+            case ColorVar.dimmed:
+                return self.theme_variables["foreground-darken-3"]
+            case ColorVar.ready:
+                return self.theme_variables["accent-darken-2"]
+            case ColorVar.text:
+                return self.theme_variables["text"]
+            case _:
+                return self.theme_variables["text-primary"]
 
     @work
     async def _run_splash_screen(self) -> None:
