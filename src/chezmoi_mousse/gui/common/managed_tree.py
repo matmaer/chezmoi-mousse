@@ -72,19 +72,19 @@ class ManagedTree(Tree[Path]):
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-        self.configure_root_node()
+        self._configure_root_node()
         # keep state
         self.visible_dirs: set[TreeNode[Path]] = set()
         self.visible_files: set[TreeNode[Path]] = set()
 
-    def configure_root_node(self) -> None:
+    def _configure_root_node(self) -> None:
         self.root.data = self.app.cmattr.dest_dir
         color = self.app.theme_variables["text-primary"]
         self.root.label = f"[{color} bold]{self.app.cmattr.dest_dir.name}[/]"
         self.root.expand()
         self.root.allow_expand = False  # prevent from being collapsed
 
-    def all_nodes_bfs(self) -> set[TreeNode[Path]]:
+    def _all_nodes_bfs(self) -> set[TreeNode[Path]]:
         # BFS (Breadth-First Search) approach using deque for O(1) pops from the left.
         queue = deque(self.root.children)  # Start with the root's children
         node_set: set[TreeNode[Path]] = set()
@@ -94,20 +94,20 @@ class ManagedTree(Tree[Path]):
             queue.extend(node.children)
         return node_set
 
-    def update_visible_nodes(self) -> None:
+    def _update_visible_nodes(self) -> None:
         # a node can be expanded but its parent may be collapsed so filter these out
-        all_nodes = self.all_nodes_bfs()
+        all_nodes = self._all_nodes_bfs()
         self.visible_dirs = {
             n for n in all_nodes if n.parent is not None and n.parent.is_expanded
         }
         self.visible_files = {n for n in all_nodes if n.parent in self.visible_dirs}
 
-    def get_node_by_path(self, path: Path) -> TreeNode[Path]:
-        return next((n for n in self.all_nodes_bfs() if n.data == path), self.root)
+    def _get_node_by_path(self, path: Path) -> TreeNode[Path]:
+        return next((n for n in self._all_nodes_bfs() if n.data == path), self.root)
 
     def initial_tree_population(self) -> None:
         self.root.remove_children()
-        self.populate_root_node_bfs()
+        self._populate_root_node_bfs()
 
         # expand all switch is false by default
         self.root.collapse_all()
@@ -124,18 +124,18 @@ class ManagedTree(Tree[Path]):
         # Add or expand potentially missing parent nodes
         # reversed makes sure we start with the highest level path
         for parent_path in reversed(path.parents):
-            parent_node = self.get_node_by_path(parent_path)
+            parent_node = self._get_node_by_path(parent_path)
             if parent_node.is_collapsed:
                 parent_node.expand()
                 continue
             else:
                 # add missing parent path
                 self._insert_node(parent_path, parent_node)
-        self.update_visible_nodes()
+        self._update_visible_nodes()
 
     def show_requested_node(self, path: Path) -> None:
         self._add_or_expand_parents(path)
-        node_parent = self.get_node_by_path(path.parent)
+        node_parent = self._get_node_by_path(path.parent)
         node_parent.expand()
         new_node = self._insert_node(path, node_parent)
         if new_node is not None:
@@ -147,7 +147,7 @@ class ManagedTree(Tree[Path]):
         if path == self.root.data or path in self.app.cmattr.dest_dir.parents:
             return None
 
-        existing_node = next((n for n in self.all_nodes_bfs() if n.data == path), None)
+        existing_node = next((n for n in self._all_nodes_bfs() if n.data == path), None)
         if existing_node is not None:
             return existing_node
 
@@ -163,7 +163,7 @@ class ManagedTree(Tree[Path]):
             return parent_node.add_leaf(path.name, data=path, before=before_node)
         return parent_node.add(path.name, data=path, before=before_node)
 
-    def populate_root_node_bfs(self) -> None:
+    def _populate_root_node_bfs(self) -> None:
         dir_queue: deque[TreeNode[Path]] = deque([self.root])
         remaining_dirs = set(self.tree_status_dirs)
 
@@ -211,12 +211,12 @@ class ManagedTree(Tree[Path]):
 
     @on(Tree.NodeCollapsed)
     def update_collapsed(self) -> None:
-        self.update_visible_nodes()
+        self._update_visible_nodes()
 
     @on(Tree.NodeExpanded)
     def update_expanded(self) -> None:
         if not self.expand_all:
-            self.update_visible_nodes()
+            self._update_visible_nodes()
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
