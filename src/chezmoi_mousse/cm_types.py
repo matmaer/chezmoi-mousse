@@ -131,13 +131,3 @@ class ResultCollector:
             self.status_dirs,
             self.status_files,
         ]
-
-    @property
-    def managed_results(self) -> ManagedResults:
-        return ManagedResults(
-            dest_dir=self.dest_dir,
-            managed_dirs=self.managed_dirs,
-            managed_files=self.managed_files,
-            status_dirs=self.status_dirs,
-            status_files=self.status_files,
-        )
