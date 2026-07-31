@@ -20,6 +20,7 @@ from chezmoi_mousse.gui.common.actionables import (
 )
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.loading_modal import LoadingModal
+from chezmoi_mousse.gui.main_screen import MainScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.str_enums import TabLabel
 
@@ -30,7 +31,8 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-async def pilot_chill(pilot: Pilot[str]):
+async def pilot_chill(pilot: Pilot[str]) -> None:
+
     await pilot.wait_for_scheduled_animations()
     while isinstance(pilot.app.screen, LoadingModal):
         await pilot.pause(0.2)
@@ -109,8 +111,20 @@ def run_with_pilot(app: ChezmoiGui) -> None:
     asyncio.run(start_pilot_mode(app))
 
 
+def app_is_ready(pilot: Pilot[str]) -> bool:
+    return isinstance(pilot.app.screen, MainScreen) and all(
+        worker.is_finished for worker in pilot.app.screen.workers
+    )
+
+
 async def start_pilot_mode(app: ChezmoiGui) -> None:
+
     async with app.run_test(headless=False, notifications=True) as pilot:
+
+        while not isinstance(pilot.app.screen, MainScreen):
+            await pilot_chill(pilot)
+
+        await pilot_chill(pilot)
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
         for label in TabLabel.main_tabs():
             tab = tabbed_content.get_tab(label)
