@@ -42,7 +42,7 @@ def typed_lru_cache[**FuncParams, FuncReturn](
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class CommandResult:
-    dry_run: bool
+    dry_run: bool | None
     err_lines: list[str]
     full_cmd_str: str
     out_lines: list[str]

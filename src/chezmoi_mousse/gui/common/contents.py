@@ -136,9 +136,7 @@ class ContentsView(Container):
 
         def _read_file(file_path: Path) -> str:
             if not file_path.exists():
-                cmd_result = Commands.run_chezmoi_cmd(
-                    command=ReadCmd.cat, dry_run=False, path_arg=file_path
-                )
+                cmd_result = Commands.run_read_cmd(cmd=ReadCmd.cat, path_arg=file_path)
                 self.post_message(LogCmdResultMsg(cmd_result))
                 return cmd_result.std_out
             try:

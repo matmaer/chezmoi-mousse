@@ -74,6 +74,7 @@ class MainScreen(Screen[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.first_start = True
         self.run_cmd_results: list[CommandResult] = []
         self.app_log = self.query_one(self.app.cmattr.logs_id.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(self.app.cmattr.logs_id.richlog.cmd_q, CmdLog)
@@ -88,7 +89,8 @@ class MainScreen(Screen[None]):
         self.operate_info = self.query_exactly_one(OperateInfo)
         self.command_output = self.query_exactly_one(CommandOutput)
         self.command_output.display = False
-        self._first_time_startup()
+        if self.first_start:
+            self._first_time_startup()
 
     ###########################################
     # Push modal methods with their callbacks #
@@ -96,17 +98,18 @@ class MainScreen(Screen[None]):
 
     @work
     async def _first_time_startup(self) -> None:
-        self.loading_modal = LoadingModal(None)
+        self.loading_modal = LoadingModal(btn_enum=None)
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
         await self._log_all_cmd_results(
             self.app.cmattr.cmd_results.splash_results_list
         ).wait()
         self.loading_modal.dismiss()
+        self._first_start = False
 
     @work
     async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
-        self.loading_modal = LoadingModal(btn_enum)
+        self.loading_modal = LoadingModal(btn_enum=btn_enum)
         await self.app.push_screen(self.loading_modal)
 
         if btn_enum in OpBtnEnum.run_btn_enums():

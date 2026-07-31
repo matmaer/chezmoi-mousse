@@ -60,11 +60,10 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    label_text: reactive[str | None] = reactive(None, init=False)
+    label_text: reactive[str] = reactive("Loading...")
 
-    def __init__(self, btn_enum: OpBtnEnum | None) -> None:
+    def __init__(self, *, btn_enum: OpBtnEnum | None) -> None:
         self.btn_enum: OpBtnEnum | None = btn_enum
-        self.command_results: list[CommandResult] = []
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -73,6 +72,7 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
+        self.command_results: list[CommandResult] = []
         if self.btn_enum != OpBtnEnum.reload:
             self.app.cmattr.changes.clear_changes()
 
@@ -95,15 +95,19 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        self.command_results.append(Commands.run_chezmoi_cmd(read_cmd, dry_run=False))
+        self.command_results.append(Commands.run_read_cmd(read_cmd))
 
     @work(thread=True, exit_on_error=False)
     @min_wait
-    async def _run_write_command(self, dry_run: bool, btn_enum: OpBtnEnum) -> None:
+    async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
         if btn_enum.path_arg == self.app.cmattr.dest_dir:
-            btn_enum.path_arg = None
+            return
+        elif self.app.cmattr.dry_run is None:
+            dry_run = False
+        else:
+            dry_run = self.app.cmattr.dry_run
         self.command_results.append(
-            Commands.run_chezmoi_cmd(
+            Commands.run_write_cmd(
                 btn_enum.write_cmd, dry_run=dry_run, path_arg=btn_enum.path_arg
             )
         )

@@ -48,29 +48,22 @@ class AppLife:
 
     @staticmethod
     @typed_lru_cache()
-    def args_without_path(*, cmd: ReadCmd | WriteCmd, dry: bool) -> StrTuple:
-        return (
-            ("chezmoi",) + cmd.value
-            if dry is False
-            else ("chezmoi", "--dry-run") + cmd.value
-        )
-
-    @staticmethod
-    @typed_lru_cache()
-    def cmd_str_wop(cmd: ReadCmd | WriteCmd, *, dry: bool, pretty: bool) -> str:
+    def cmd_str_wop(cmd: ReadCmd | WriteCmd, *, dry: bool | None, pretty: bool) -> str:
         verb_str = (
             " ".join(cmd.value)
             if pretty is False
             else " ".join([a for a in cmd.value if a not in AppLife._ugly_args()])
         )
-        return (
-            f"chezmoi {verb_str}" if dry is False else f"chezmoi --dry-run {verb_str}"
-        )
-
-    @staticmethod
-    @typed_lru_cache()
-    def pretty_cmd(*, base_str: str, path_arg: Path | None) -> str:
-        return base_str if path_arg is None else f"{base_str} {path_arg}"
+        if isinstance(cmd, ReadCmd) and dry is None:
+            return f"chezmoi {verb_str}"
+        elif isinstance(cmd, WriteCmd) and dry is not None:
+            return (
+                f"chezmoi {verb_str}"
+                if dry is False
+                else f"chezmoi --dry-run {verb_str}"
+            )
+        else:
+            raise ValueError(f"Received invalid params for {cmd}, dry={dry}")
 
 
 class Commands:
@@ -89,14 +82,49 @@ class Commands:
         )
 
     @staticmethod
-    def run_chezmoi_cmd(
-        command: ReadCmd | WriteCmd, *, dry_run: bool, path_arg: Path | None = None
-    ) -> CommandResult:
-
-        args: StrTuple = AppLife.args_without_path(cmd=command, dry=dry_run)
-        time_out: int = 10 if isinstance(command, ReadCmd) else 20
+    def run_read_cmd(cmd: ReadCmd, path_arg: Path | None = None) -> CommandResult:
+        args: StrTuple = ("chezmoi",) + cmd.value
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
-            args=args, path=path_arg, time_out=time_out
+            args=args, path=path_arg, time_out=5
+        )
+        out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
+        std_out = "\n".join(out_lines)
+
+        err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
+        std_err = "\n".join(err_lines)
+
+        full_cmd_str = f"{AppLife.cmd_str_wop(cmd, dry=None, pretty=True)} {path_arg}"
+        pretty_read_cmd_wop = AppLife.cmd_str_wop(cmd=cmd, dry=None, pretty=True)
+        pretty_read_cmd = (
+            pretty_read_cmd_wop
+            if path_arg is None
+            else f"{pretty_read_cmd_wop} {path_arg})"
+        )
+
+        return CommandResult(
+            dry_run=None,
+            err_lines=err_lines,
+            full_cmd_str=full_cmd_str,
+            out_lines=out_lines,
+            pretty_cmd=pretty_read_cmd,
+            path_arg=path_arg,
+            returncode=cp.returncode,
+            std_err=std_err,
+            std_out=std_out,
+            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
+        )
+
+    @staticmethod
+    def run_write_cmd(
+        cmd: WriteCmd, dry_run: bool, path_arg: Path | None = None
+    ) -> CommandResult:
+        args: StrTuple = (
+            ("chezmoi",) + cmd.value
+            if dry_run is True
+            else ("chezmoi", "--dry-run") + cmd.value
+        )
+        cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
+            args=args, path=path_arg, time_out=20
         )
         out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
         std_out = "\n".join(out_lines)
@@ -105,17 +133,21 @@ class Commands:
         std_err = "\n".join(err_lines)
 
         full_cmd_str = (
-            f"{AppLife.cmd_str_wop(command, dry=dry_run, pretty=True)} {path_arg}"
+            f"{AppLife.cmd_str_wop(cmd, dry=dry_run, pretty=True)} {path_arg}"
         )
-        pretty_cmd_str_wop = AppLife.cmd_str_wop(cmd=command, dry=dry_run, pretty=True)
-        pretty_cmd = AppLife.pretty_cmd(base_str=pretty_cmd_str_wop, path_arg=path_arg)
+        pretty_write_cmd_wop = AppLife.cmd_str_wop(cmd=cmd, dry=dry_run, pretty=True)
+        pretty_write_cmd = (
+            pretty_write_cmd_wop
+            if path_arg is None
+            else f"{pretty_write_cmd_wop} {path_arg})"
+        )
 
         return CommandResult(
             dry_run=dry_run,
             err_lines=err_lines,
             full_cmd_str=full_cmd_str,
             out_lines=out_lines,
-            pretty_cmd=pretty_cmd,
+            pretty_cmd=pretty_write_cmd,
             path_arg=path_arg,
             returncode=cp.returncode,
             std_err=std_err,
@@ -131,17 +163,13 @@ class Commands:
     @typed_lru_cache(maxsize=500)
     def run_chezmoi_git_log(path_arg: Path | None = None) -> CommandResult:
         if path_arg is None:
-            return Commands.run_chezmoi_cmd(
-                ReadCmd.git_log, dry_run=False, path_arg=path_arg
-            )
+            return Commands.run_read_cmd(ReadCmd.git_log, path_arg=path_arg)
         else:
-            source_path_result = Commands.run_chezmoi_cmd(
-                dry_run=False, command=ReadCmd.source_path, path_arg=path_arg
+            source_path_result = Commands.run_read_cmd(
+                cmd=ReadCmd.source_path, path_arg=path_arg
             )
-            return Commands.run_chezmoi_cmd(
-                dry_run=False,
-                command=ReadCmd.git_log,
-                path_arg=Path(source_path_result.std_out),
+            return Commands.run_read_cmd(
+                cmd=ReadCmd.git_log, path_arg=Path(source_path_result.std_out)
             )
 
 

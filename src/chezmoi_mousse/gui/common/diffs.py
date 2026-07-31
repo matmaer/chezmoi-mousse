@@ -49,19 +49,15 @@ class DiffView(Container):
     def _create_diff_widgets(self, path: Path) -> list[Label | Static]:
         widgets: list[Label | Static] = []
         if self.ids.tab_label == TabLabel.apply:
-            diff_result = Commands.run_chezmoi_cmd(
-                command=ReadCmd.diff, dry_run=False, path_arg=path
-            )
+            diff_result = Commands.run_read_cmd(ReadCmd.diff, path_arg=path)
         else:  # re-add tab
-            diff_result = Commands.run_chezmoi_cmd(
-                command=ReadCmd.diff_reverse, dry_run=False, path_arg=path
-            )
+            diff_result = Commands.run_read_cmd(ReadCmd.diff_reverse, path_arg=path)
         self.post_message(LogCmdResultMsg(diff_result))
-        diff_lines = diff_result.std_out.splitlines()
-        if not diff_lines:
+        if not diff_result.out_lines:
             return [Static("No diff output available.", classes=Tcss.info)]
-        diff_cmd = diff_lines.pop(0)
-        widgets.append(Label(diff_cmd, classes=Tcss.flat_section_label))
+        else:
+            diff_cmd = diff_result.out_lines.pop(0)
+            widgets.append(Label(diff_cmd, classes=Tcss.flat_section_label))
 
         def get_prefix(line: str) -> str:
             for p in DIFF_TCSS:
@@ -69,7 +65,7 @@ class DiffView(Container):
                     return p
             return "unhandled"
 
-        for prefix, group_lines in groupby(diff_lines, key=get_prefix):
+        for prefix, group_lines in groupby(diff_result.out_lines, key=get_prefix):
             group_list = list(group_lines)
             if prefix in ("+", "-"):
                 text = "\n".join(group_list)

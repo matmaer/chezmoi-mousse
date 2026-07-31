@@ -212,5 +212,5 @@ class CmAttributes:
         repr=False,
     )
 
-    dry_run: bool = field(default=True)
+    dry_run: bool | None = None
     changes: ChangedPaths = ChangedPaths()
