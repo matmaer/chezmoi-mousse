@@ -373,7 +373,9 @@ class DebugTab(TabPane):
         self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
 
     def _list_existing_test_paths(self) -> str:
-        path_lines = "\n".join(f"{self.test_paths.get_existing_test_paths()}")
+        path_lines = "\n".join(
+            str(p) for p in self.test_paths.get_existing_test_paths()
+        )
         if path_lines:
             return path_lines
         else:

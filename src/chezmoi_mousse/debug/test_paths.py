@@ -280,7 +280,7 @@ class TestPaths:
         return sorted(created_files)
 
     def get_existing_test_paths(self) -> list[Path]:
-        return sorted(p for p in self.all_paths.all_test_paths if p.exists())
+        return [p for p in self.all_paths.all_test_paths if p.exists()]
 
     def create_paths_on_disk(self) -> list[str]:
         # record existing expected paths before creating anything
