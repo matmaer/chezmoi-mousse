@@ -120,6 +120,7 @@ class ManagedPaths:
             n_dirs=n_dirs,
             no_managed_paths=self.no_managed_paths,
             no_status_paths=(not status_dirs and not status_files),
+            tree_status_dirs=(n_dirs | status_dirs),
             unchanged_dirs=self.unchanged_dirs,
             unchanged_files=self.unchanged_files,
         )

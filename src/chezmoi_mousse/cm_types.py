@@ -71,6 +71,7 @@ class ManagedTreePaths(NamedTuple):
     no_status_paths: bool
     status_dirs: frozenset[Path]
     status_files: frozenset[Path]
+    tree_status_dirs: frozenset[Path]
     unchanged_dirs: frozenset[Path]
     unchanged_files: frozenset[Path]
 
