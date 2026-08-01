@@ -327,7 +327,10 @@ class PathFilters(Enum):
 
 
 class PathKind(StrEnum):
+    any = auto()
     dest_dir = auto()
+    dir = auto()
+    file = auto()
     man_dir_access_denied = auto()
     man_dir_exists = auto()
     man_dir_exists_empty = auto()

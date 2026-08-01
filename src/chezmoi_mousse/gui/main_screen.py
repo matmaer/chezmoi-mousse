@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from textual import getters, on, work
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
@@ -14,7 +14,13 @@ from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
 from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
-from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
+from .common.actionables import (
+    DirContentBtn,
+    OpButton,
+    OperateButtons,
+    SwitchSlider,
+    TabButtons,
+)
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -24,7 +30,6 @@ from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
-from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
@@ -160,9 +165,9 @@ class MainScreen(Screen[None]):
     @min_wait
     async def _update_trees(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees.with_color
-        self.apply_managed_tree.initial_tree_population()
+        self.apply_managed_tree.populate_tree()
         self.apply_managed_tree.refresh()
-        self.re_add_managed_tree.initial_tree_population()
+        self.re_add_managed_tree.populate_tree()
         self.re_add_managed_tree.refresh()
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)
@@ -213,14 +218,9 @@ class MainScreen(Screen[None]):
         msg.stop()
 
         # Update the border subtitle for the tab buttons in the ViewSwitcher
-        tab_buttons = self.query_one(
-            msg.ids.container.right_side_q, ViewSwitcher
-        ).query_exactly_one(Horizontal)
-        tab_buttons.border_subtitle = (
-            f" {msg.path} "
-            if msg.path == self.app.cmattr.dest_dir
-            else f" {msg.path.name} "
-        )
+        self.query_exactly_one(
+            msg.ids.container.right_side_q, TabButtons
+        ).border_subtitle = msg.border_path
         # Update diff_view, contents_view, and git_log_view with the new path
         self.query_one(msg.ids.container.diff_q, DiffView).show_path = msg.path
         self.query_one(msg.ids.container.contents_q, ContentsView).show_path = msg.path
@@ -230,30 +230,42 @@ class MainScreen(Screen[None]):
             msg.ids.container.operate_buttons_q, OperateButtons
         ).set_path_arg(msg.path)
 
-        # Could occur at startup or after operations, when we aute select the root node.
+        # always disable all buttons if no managed paths
         if not self.app.cmattr.paths.no_managed_paths:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
-            return
+
+        if msg.no_changed_paths:
+            for btn_id_q in (
+                b
+                for b in msg.ids.review_btn_qids
+                if b not in msg.ids.forget_destroy_review_btn_qids
+                and not msg.is_dest_dir
+            ):
+                self.query_one(btn_id_q, Button).disabled = True
 
         # Enable/disable all review buttons
-        n_dirs = (
-            self.app.cmattr.paths.apply_n_dirs
-            if msg.ids.tab_label == TabLabel.apply
-            else self.app.cmattr.paths.re_add_n_dirs
-        )
-        if msg.path in n_dirs or msg.path in self.app.cmattr.paths.managed_dirs:
+        if msg.path in self.app.cmattr.paths.managed_dirs:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = False
         else:
             for btn_id_q in msg.ids.review_btn_qids:
                 self.query_one(btn_id_q, Button).disabled = True
-        # Enable/disable Forget and Destroy button
+        # Enable/disable Forget and Destroy button, is enabled with or without status
         for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
-            if msg.path == self.app.cmattr.dest_dir:
+            if msg.is_dest_dir:
                 self.query_one(btn_id_q, Button).disabled = True
-            elif not self.app.cmattr.paths.no_status_paths:
+            elif not msg.has_status:
                 self.query_one(btn_id_q, Button).disabled = False
+
+        # disable apply and re-add review button if no unchanged paths
+        if msg.ids.tab_label == TabLabel.apply:
+            review_btn = self.query_one(msg.ids.op_btn.apply_review_q, OpButton)
+        elif msg.ids.tab_label == TabLabel.re_add:
+            review_btn = self.query_one(msg.ids.op_btn.re_add_review_q, OpButton)
+        else:
+            return
+        review_btn.disabled = True
 
     ########################
     # Widget display logic #

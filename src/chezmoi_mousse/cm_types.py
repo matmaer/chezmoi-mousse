@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
-    from textual.widgets.tree import NodeID as TextualNodeID
+    from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_attributes import ManagedPaths
@@ -17,13 +17,14 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
+    type TreeNodeDict = dict[Path, TreeNode[Path]]
     type ParsedJson = dict[str, Any]
     type PathDataDict = dict[Path, PathKind | ScanDirItem]
     type PathKindDict = dict[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
     type StrTuple = tuple[str, ...]
 
-__all__ = ["AppIds", "ChezmoiGui", "TextualNodeID"]
+__all__ = ["AppIds", "ChezmoiGui"]
 
 
 def typed_lru_cache[**FuncParams, FuncReturn](
