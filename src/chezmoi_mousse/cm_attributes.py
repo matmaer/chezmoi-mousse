@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
@@ -11,12 +12,7 @@ from chezmoi_mousse.cm_types import ManagedTreePaths, ReadCmdGroups
 from chezmoi_mousse.str_enums import StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import (
-        ManagedResults,
-        MappingProxyType,
-        ResultCollector,
-        StatusMap,
-    )
+    from chezmoi_mousse.cm_types import ManagedResults, ResultCollector, StatusMap
 
 
 __all__ = ["CmAttributes"]
@@ -104,21 +100,25 @@ class ManagedPaths:
         """
         dest_dir = self.results.dest_dir
 
-        status_dirs = frozenset(
-            Path(line[3:])
-            for line in self.results.status_dirs.out_lines
-            if line[status_col] != StatusCode.Space
+        status_dirs: StatusMap = MappingProxyType(
+            {
+                Path(line[3:]): StatusCode(line[status_col])
+                for line in self.results.status_dirs.out_lines
+                if line[status_col] != StatusCode.Space
+            }
         )
 
-        status_files = frozenset(
-            Path(line[3:])
-            for line in self.results.status_files.out_lines
-            if line[status_col] != StatusCode.Space
+        status_files: StatusMap = MappingProxyType(
+            {
+                Path(line[3:]): StatusCode(line[status_col])
+                for line in self.results.status_files.out_lines
+                if line[status_col] != StatusCode.Space
+            }
         )
 
         n_dirs = frozenset(
             parent
-            for path in (status_dirs | status_files)
+            for path in (status_dirs.keys() | status_files.keys())
             for parent in path.parents
             if parent != dest_dir
             and parent not in status_dirs
@@ -134,7 +134,7 @@ class ManagedPaths:
             n_dirs=n_dirs,
             no_managed_paths=self.no_managed_paths,
             no_status_paths=(not status_dirs and not status_files),
-            tree_status_dirs=(n_dirs | status_dirs),
+            tree_status_dirs=(n_dirs | status_dirs.keys()),
             unchanged_dirs=self.unchanged_dirs,
             unchanged_files=self.unchanged_files,
         )
