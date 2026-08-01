@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import cached_property
-from itertools import chain
 from pathlib import Path
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import (
     ManagedResults,
+    ManagedTreePaths,
     ReadCmdGroups,
     ResultCollector,
-    TreePathStatus,
 )
 from chezmoi_mousse.str_enums import StatusCode, TabLabel
 
@@ -41,12 +40,12 @@ class ChangedPaths:
 
 @dataclass(frozen=True, kw_only=True)
 class ManagedPaths:
+    """Contains only immutable fields and attribute outputs to avoid asyncio related
+    issues."""
+
     results: ManagedResults
 
     def __post_init__(self) -> None:
-        # warm the TreePathStatus NamedTuple
-        _ = self._apply_tree_path_status
-        _ = self._re_add_tree_path_status
 
         # warm all public cached_property attributes
         # self.__dict__.items() to maintain the order
@@ -76,9 +75,19 @@ class ManagedPaths:
         )
         return self.managed_files - status_files
 
-    # method helpers for derived cached_property attributes
+    # not cached, fast boolean logic
 
-    def _compute_tree_path_status(self, status_col: int) -> TreePathStatus:
+    @property
+    def no_managed_paths(self) -> bool:
+        return not self.managed_dirs and not self.managed_files
+
+    def _compute_managed_tree_paths(self, status_col: int) -> ManagedTreePaths:
+        """Results accessed by the ManagedTree classes for Apply and ReAdd tab.
+
+        Includes all paths, also destDir, managed_dirs etc which are the same for both
+        contexts. This povides convenient access and we convert them there to sorted
+        lists before we refresh the trees.
+        """
         dest_dir = self.results.dest_dir
 
         status_dirs = frozenset(
@@ -102,77 +111,28 @@ class ManagedPaths:
             and parent.is_relative_to(dest_dir)
         )
 
-        return TreePathStatus(status_dirs, status_files, n_dirs)
-
-    def _has_status_paths(self, status_col: int) -> bool:
-        return any(
-            line[status_col] != StatusCode.Space
-            for line in chain(
-                self.results.status_dirs.out_lines, self.results.status_files.out_lines
-            )
+        return ManagedTreePaths(
+            dest_dir=dest_dir,
+            managed_dirs=self.managed_dirs,
+            managed_files=self.managed_files,
+            status_dirs=status_dirs,
+            status_files=status_files,
+            n_dirs=n_dirs,
+            no_managed_paths=self.no_managed_paths,
+            no_status_paths=(not status_dirs and not status_files),
+            unchanged_dirs=self.unchanged_dirs,
+            unchanged_files=self.unchanged_files,
         )
 
-    # derived private cached properties
+    # cached properties used by the ManagedTree class
 
     @cached_property
-    def _apply_tree_path_status(self) -> TreePathStatus:
-        return self._compute_tree_path_status(status_col=1)
+    def apply_tree_paths(self) -> ManagedTreePaths:
+        return self._compute_managed_tree_paths(status_col=1)
 
     @cached_property
-    def _re_add_tree_path_status(self) -> TreePathStatus:
-        return self._compute_tree_path_status(status_col=0)
-
-    # derived public cached properties
-
-    @cached_property
-    def no_apply_paths(self) -> bool:
-        return not self._has_status_paths(status_col=1)
-
-    @cached_property
-    def no_re_add_paths(self) -> bool:
-        return not self._has_status_paths(status_col=0)
-
-    # anything derived from 'TreePathStatus' is already cached
-
-    @property
-    def apply_n_dirs(self) -> frozenset[Path]:
-        return self._apply_tree_path_status.n_dirs
-
-    @property
-    def apply_tree_status_dirs(self) -> frozenset[Path]:
-        return (
-            self._apply_tree_path_status.status_dirs
-            | self._apply_tree_path_status.n_dirs
-        )
-
-    @property
-    def apply_status_files(self) -> frozenset[Path]:
-        return self._apply_tree_path_status.status_files
-
-    @property
-    def re_add_n_dirs(self) -> frozenset[Path]:
-        return self._re_add_tree_path_status.n_dirs
-
-    @property
-    def re_add_tree_status_dirs(self) -> frozenset[Path]:
-        return (
-            self._re_add_tree_path_status.status_dirs
-            | self._re_add_tree_path_status.n_dirs
-        )
-
-    @property
-    def re_add_status_files(self) -> frozenset[Path]:
-        return self._re_add_tree_path_status.status_files
-
-    # fast boolean logic, no need to cache
-
-    @property
-    def no_status_paths(self) -> bool:
-        return self.no_apply_paths and self.no_re_add_paths
-
-    @property
-    def no_managed_paths(self) -> bool:
-        return not self.managed_dirs and not self.managed_files
+    def re_add_tree_paths(self) -> ManagedTreePaths:
+        return self._compute_managed_tree_paths(status_col=0)
 
 
 @dataclass

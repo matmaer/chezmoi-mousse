@@ -62,10 +62,17 @@ class ManagedResults(NamedTuple):
     status_files: CommandResult
 
 
-class TreePathStatus(NamedTuple):
+class ManagedTreePaths(NamedTuple):
+    dest_dir: Path
+    managed_dirs: frozenset[Path]
+    managed_files: frozenset[Path]
+    n_dirs: frozenset[Path]
+    no_managed_paths: bool
+    no_status_paths: bool
     status_dirs: frozenset[Path]
     status_files: frozenset[Path]
-    n_dirs: frozenset[Path]
+    unchanged_dirs: frozenset[Path]
+    unchanged_files: frozenset[Path]
 
 
 class ReadCmdGroups(NamedTuple):
