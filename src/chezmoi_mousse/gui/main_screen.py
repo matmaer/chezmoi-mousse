@@ -208,10 +208,8 @@ class MainScreen(Screen[None]):
     def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
         if isinstance(event.button, DirContentBtn):
             event.stop()
-            managed_tree = self.query_one(
-                event.button.app_ids.managed_tree_q, ManagedTree
-            )
-            managed_tree.show_requested_node(event.button.path)
+            _ = self.query_one(event.button.app_ids.managed_tree_q, ManagedTree)
+            return
 
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
