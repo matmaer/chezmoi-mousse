@@ -20,7 +20,7 @@ from .actionables import DirContentBtn
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, ManagedTreePaths
 
 __all__ = ["ContentsView"]
 
@@ -42,12 +42,20 @@ class ContentsView(Container):
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
+        self.app_ids = ids
         super().__init__(id=ids.container.contents)
-        self.ids = ids
+
+    @property
+    def paths(self) -> ManagedTreePaths:
+        return (
+            self.app.cmattr.paths.apply_tree_paths
+            if self.app_ids.tab_label == TabLabel.apply
+            else self.app.cmattr.paths.re_add_tree_paths
+        )
 
     def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
         widgets: list[Static | Label] = []
-        if dir_path == self.app.cmattr.dest_dir:
+        if dir_path == self.paths.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
@@ -65,10 +73,8 @@ class ContentsView(Container):
 
             for name in dirs:
                 path = root_path / name
-                if path not in self.app.cmattr.paths.managed_dirs:
-                    unmanaged_dirs.append(
-                        str(path.relative_to(self.app.cmattr.dest_dir))
-                    )
+                if path not in self.paths.managed_dirs:
+                    unmanaged_dirs.append(str(path.relative_to(self.paths.dest_dir)))
                     if len(unmanaged_dirs) >= OUTPUT_LIMIT:
                         limited_dirs = True
                         break
@@ -79,10 +85,8 @@ class ContentsView(Container):
             root_path = Path(root)
             for name in files:
                 path = root_path / name
-                if path not in self.app.cmattr.paths.managed_files:
-                    unmanaged_files.append(
-                        str(path.relative_to(self.app.cmattr.dest_dir))
-                    )
+                if path not in self.paths.managed_files:
+                    unmanaged_files.append(str(path.relative_to(self.paths.dest_dir)))
                     if len(unmanaged_files) >= OUTPUT_LIMIT:
                         limited_files = True
                         break
@@ -169,11 +173,11 @@ class ContentsView(Container):
         widgets.append(
             Static("<- Click a file to see its contents.", classes=Tcss.added)
         )
-        if dir_path == self.app.cmattr.dest_dir:
+        if dir_path == self.paths.dest_dir:
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
-        if not self.app.cmattr.paths.managed_dirs:
+        if not self.paths.managed_dirs:
             widgets = [
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             ]
@@ -184,7 +188,7 @@ class ContentsView(Container):
                     classes=Tcss.added,
                 )
             )
-        elif self.app.cmattr.paths.no_status_paths:
+        elif self.paths.no_status_paths:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )
@@ -202,14 +206,11 @@ class ContentsView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if self.ids.tab_label == TabLabel.add and (
-            show_path == self.app.cmattr.dest_dir or show_path.is_dir()
+        if self.app_ids.tab_label == TabLabel.add and (
+            show_path == self.paths.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)
-        elif show_path in (
-            self.app.cmattr.dest_dir,
-            self.app.cmattr.paths.managed_dirs,
-        ):
+        elif show_path in (self.paths.dest_dir, self.paths.managed_dirs):
             container = self._create_managed_dir_container(show_path)
         else:
             container = self._create_file_container(show_path)
