@@ -34,8 +34,8 @@ class FilteredDirTree(DirectoryTree):
 
     def __init__(self, *, dest_dir: Path) -> None:
         super().__init__(dest_dir)
-        self.root.allow_expand = True
         self.root.expand()
+        self.root.allow_expand = False  # prevent from being collapsed
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
