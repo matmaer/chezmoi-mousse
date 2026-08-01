@@ -105,30 +105,15 @@ class OperateButtons(HorizontalGroup):
         app = getters.app(ChezmoiGui)
 
     def __init__(self, ids: AppIds) -> None:
+        self.tab_ids = ids
         super().__init__(id=ids.container.operate_buttons)
-        self.ids = ids
 
     def compose(self) -> ComposeResult:
-        for btn_id, btn_enum in self.ids.op_btn_map.items():
-            yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.ids)
-
-    def on_mount(self) -> None:
-        if self.ids.tab_label == TabLabel.apply:
-            no_changed_paths: bool = self.app.cmattr.paths.no_apply_paths
-        else:
-            no_changed_paths: bool = self.app.cmattr.paths.no_re_add_paths
-
-        # disable apply and re-add review button if no unchanged paths
-        if self.ids.tab_label == TabLabel.apply:
-            review_btn = self.query_one(self.ids.op_btn.apply_review_q, OpButton)
-        elif self.ids.tab_label == TabLabel.re_add:
-            review_btn = self.query_one(self.ids.op_btn.re_add_review_q, OpButton)
-        else:
-            return
-        review_btn.disabled = no_changed_paths
+        for btn_id, btn_enum in self.tab_ids.op_btn_map.items():
+            yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.tab_ids)
 
     def set_path_arg(self, path: Path) -> None:
-        for btn_enum in self.ids.op_btn_map.values():
+        for btn_enum in self.tab_ids.op_btn_map.values():
             btn_enum.path_arg = path
 
 
