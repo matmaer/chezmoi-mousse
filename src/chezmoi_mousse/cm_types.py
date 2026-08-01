@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import TYPE_CHECKING, NamedTuple, cast
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
+    from types import MappingProxyType
     from typing import Any
 
     from textual.widgets.tree import TreeNode
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     type PathKindDict = dict[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
     type StrTuple = tuple[str, ...]
+    type ManagedStatus = MappingProxyType[Path, StatusCode]
 
 __all__ = ["AppIds", "ChezmoiGui"]
 
@@ -34,7 +36,8 @@ def typed_lru_cache[**FuncParams, FuncReturn](
         func: Callable[FuncParams, FuncReturn],
     ) -> Callable[FuncParams, FuncReturn]:
         return cast(
-            Callable[FuncParams, FuncReturn],
+            # has to be quoted for cast if don't want to import Callable at runtime
+            "Callable[FuncParams, FuncReturn]",
             lru_cache(maxsize=maxsize, typed=typed)(func),
         )
 
