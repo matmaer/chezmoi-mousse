@@ -30,7 +30,7 @@ class DestDirTree(Vertical):
 
     def compose(self) -> ComposeResult:
         yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-        yield ManagedTree(tree_ids=self.app_ids)
+        yield ManagedTree(self.app_ids)
         yield OpButton(
             btn_enum=OpBtnEnum.refresh_tree,
             btn_id=self.app_ids.op_btn.refresh_tree,
