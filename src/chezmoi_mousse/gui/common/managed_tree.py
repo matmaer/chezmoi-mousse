@@ -103,12 +103,11 @@ class ManagedTree(Tree[Path]):
     def _get_nodes_bfs(self, path_kind: PathKind) -> TreeNodeDict:
         # BFS approach using deque for O(1) pops from the left.
 
+        queue = deque([self.root])  # add the root node as it's not allowed to expand
         if path_kind == PathKind.dir:
-            queue = deque(n for n in self.root.children if n.allow_expand)
+            queue.extend(deque(n for n in self.root.children if n.allow_expand))
         elif path_kind == PathKind.file:
-            queue = deque(n for n in self.root.children if not n.allow_expand)
-        else:
-            queue = deque(n for n in self.root.children)
+            queue.extend(deque(n for n in self.root.children if not n.allow_expand))
 
         nodes_dict: dict[Path, TreeNode[Path]] = {}
 
@@ -119,7 +118,7 @@ class ManagedTree(Tree[Path]):
             nodes_dict[node.data] = node
             queue.extend(node.children)
 
-        return {self.paths.dest_dir: self.root} | nodes_dict
+        return nodes_dict
 
     def _update_tree_state(self) -> None:
         # a node can be expanded but its parent may be collapsed so filter these out
