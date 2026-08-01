@@ -3,16 +3,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import (
-    ManagedResults,
-    ManagedTreePaths,
-    ReadCmdGroups,
-    ResultCollector,
-)
+from chezmoi_mousse.cm_types import ManagedTreePaths, ReadCmdGroups
 from chezmoi_mousse.str_enums import StatusCode, TabLabel
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.cm_types import ManagedResults, ResultCollector
+
 
 __all__ = ["CmAttributes"]
 
