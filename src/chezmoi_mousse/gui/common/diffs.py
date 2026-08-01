@@ -43,12 +43,12 @@ class DiffView(Container):
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
-        self.ids = ids
+        self.app_ids = ids
         super().__init__(id=ids.container.diff)
 
     def _create_diff_widgets(self, path: Path) -> list[Label | Static]:
         widgets: list[Label | Static] = []
-        if self.ids.tab_label == TabLabel.apply:
+        if self.app_ids.tab_label == TabLabel.apply:
             diff_result = Commands.run_read_cmd(ReadCmd.diff, path_arg=path)
         else:  # re-add tab
             diff_result = Commands.run_read_cmd(ReadCmd.diff_reverse, path_arg=path)
