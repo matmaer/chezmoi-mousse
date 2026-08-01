@@ -175,15 +175,15 @@ class TabButton(Button):
 
 
 class TabButtons(Horizontal):
-    def __init__(self, ids: AppIds, buttons: tuple[TabLabel, ...]):
-        super().__init__()
+    def __init__(self, ids: AppIds, buttons: tuple[TabLabel, ...]) -> None:
         self.buttons = buttons
-        self.ids = ids
+        self.tab_ids = ids
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         for btn_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield TabButton(app_ids=self.ids, label=btn_enum)
+                yield TabButton(app_ids=self.tab_ids, label=btn_enum)
 
     def on_mount(self) -> None:
         self.query(TabButton).first().add_class(Tcss.last_clicked_tab_btn)

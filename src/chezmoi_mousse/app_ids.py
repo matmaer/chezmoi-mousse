@@ -158,7 +158,7 @@ class ContainerIds:
 
 
 class RichLogIds:
-    def __init__(self, ids: AppIds):
+    def __init__(self, ids: AppIds) -> None:
         self.app: str = ids.richlog_id(richlog=RichLogName.app_logger)
         self.app_q: str = f"#{self.app}"
         self.cmd: str = ids.richlog_id(richlog=RichLogName.cmd_logger)
@@ -172,7 +172,7 @@ class RichLogIds:
 
 
 class OperateButtonIds:
-    def __init__(self, ids: AppIds):
+    def __init__(self, ids: AppIds) -> None:
         self.add_review: str = ids.op_btn_id(operation=OpBtnLabel.add_review)
         self.add_review_q: str = f"#{self.add_review}"
         self.add_run: str = ids.op_btn_id(operation=OpBtnLabel.add_run)
@@ -220,7 +220,7 @@ class OperateButtonIds:
 
 
 class SwitchIds:
-    def __init__(self, ids: AppIds):
+    def __init__(self, ids: AppIds) -> None:
 
         # Apply and Re-Add tab
         self.show_unchanged: str = ids.switch_id(switch=SwitchEnum.show_unchanged)
