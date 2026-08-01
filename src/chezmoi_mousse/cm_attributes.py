@@ -11,7 +11,12 @@ from chezmoi_mousse.cm_types import ManagedTreePaths, ReadCmdGroups
 from chezmoi_mousse.str_enums import StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ManagedResults, ResultCollector
+    from chezmoi_mousse.cm_types import (
+        ManagedResults,
+        MappingProxyType,
+        ResultCollector,
+        StatusMap,
+    )
 
 
 __all__ = ["CmAttributes"]
@@ -80,6 +85,15 @@ class ManagedPaths:
     @property
     def no_managed_paths(self) -> bool:
         return not self.managed_dirs and not self.managed_files
+
+    def _get_managed_status(self, status_col: int) -> StatusMap:
+        temp_dict: dict[Path, StatusCode] = {}
+
+        for line in self.results.status_dirs.out_lines:
+            if line[status_col] != StatusCode.Space:
+                temp_dict[Path(line[3:])] = StatusCode(line[status_col])
+
+        return MappingProxyType(temp_dict)
 
     def _compute_managed_tree_paths(self, status_col: int) -> ManagedTreePaths:
         """Results accessed by the ManagedTree classes for Apply and ReAdd tab.

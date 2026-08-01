@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     type PathKindDict = dict[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
     type StrTuple = tuple[str, ...]
-    type ManagedStatus = MappingProxyType[Path, StatusCode]
+    type StatusMap = MappingProxyType[Path, StatusCode]
 
 __all__ = ["AppIds", "ChezmoiGui"]
 
