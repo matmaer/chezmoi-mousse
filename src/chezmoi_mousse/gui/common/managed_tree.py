@@ -14,12 +14,11 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.cm_types import ManagedTreePaths
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.functions import AppLife
-from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, PathKind, TabLabel, Tcss
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, PathKind, TreeNodeDict
+    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, TreeNodeDict
 
 from .actionables import OpButton
 from .messages import CurrentNodeMsg
@@ -145,8 +144,7 @@ class ManagedTree(Tree[Path]):
             )
             for child_dir in child_dirs:
                 child_node = self._insert_node(parent_node=parent_node, path=child_dir)
-                if child_node is not None:
-                    dir_queue.append(child_node)
+                dir_queue.append(child_node)
                 remaining_dirs.remove(child_dir)
 
         current_dir_nodes = self._get_nodes_bfs(path_kind=PathKind.dir)
@@ -162,17 +160,7 @@ class ManagedTree(Tree[Path]):
             self.root.expand()
             return
 
-    def show_requested_node(self, path: Path) -> None:
-        try:
-            _ = self.state.all_dir_nodes[path]
-            for parent_path in AppLife.parents(path, self.paths.dest_dir):
-                if not self.state.all_dir_nodes[parent_path].is_expanded:
-                    self.state.all_dir_nodes[path].expand()
-        except KeyError:
-            # create missing parent nodes
-            self.notify(f"cannot show {path} because it has no parent")
-
-    def _insert_node(self, parent_node: TreeNode[Path], path: Path) -> None:
+    def _insert_node(self, parent_node: TreeNode[Path], path: Path) -> TreeNode[Path]:
         """Inserts a dir node or file node alphabetically, using is_file to determine
         where as we keep children which are directories on top followed by the children
         which are files."""
@@ -180,8 +168,7 @@ class ManagedTree(Tree[Path]):
         children = parent_node.children
 
         if not children:
-            parent_node.add(path.name, data=path, expand=is_dir_path)
-            return
+            return parent_node.add(path.name, data=path, expand=is_dir_path)
         elif is_dir_path:
             node_context = [c for c in children if c.allow_expand]
         else:
@@ -195,7 +182,9 @@ class ManagedTree(Tree[Path]):
             ),
             None,
         )
-        parent_node.add(path.name, data=path, before=before_node, expand=is_dir_path)
+        return parent_node.add(
+            path.name, data=path, before=before_node, expand=is_dir_path
+        )
 
     # #################################
     # # Watchers and message handling #
