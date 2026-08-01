@@ -14,13 +14,7 @@ from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
 from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
-from .common.actionables import (
-    DirContentBtn,
-    OpButton,
-    OperateButtons,
-    SwitchSlider,
-    TabButtons,
-)
+from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -30,7 +24,15 @@ from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg
 from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
-from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
+from .tab_panes import (
+    AddTab,
+    ApplyTab,
+    ConfigTab,
+    DebugTab,
+    LogsTab,
+    ReAddTab,
+    ViewSwitcher,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
@@ -217,7 +219,7 @@ class MainScreen(Screen[None]):
 
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         self.query_exactly_one(
-            msg.ids.container.right_side_q, TabButtons
+            msg.ids.container.right_side_q, ViewSwitcher
         ).border_subtitle = msg.border_path
         # Update diff_view, contents_view, and git_log_view with the new path
         self.query_one(msg.ids.container.diff_q, DiffView).show_path = msg.path
