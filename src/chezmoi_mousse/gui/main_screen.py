@@ -11,8 +11,8 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.enum_data import OpBtnEnum, OpBtnLabel
-from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
+from chezmoi_mousse.enum_data import OpBtnEnum
+from chezmoi_mousse.str_enums import Chars, OpBtnLabel, TabLabel, Tcss
 
 from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
 from .common.contents import ContentsView

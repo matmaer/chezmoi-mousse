@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-__all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
+__all__ = ["AppLog", "CmdLog", "DebugLog"]
 
 
 class CmdResultCollapsible(Collapsible):

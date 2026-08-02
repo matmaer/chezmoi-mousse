@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     )
 
 
-__all__ = ["CmAttributes"]
+__all__ = ["CmAttributes", "ManagedPaths"]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

@@ -17,13 +17,26 @@ if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
     type ParsedJson = dict[str, Any]
-    type PathDataDict = dict[Path, PathKind | ScanDirItem]
-    type PathKindDict = dict[Path, PathKind]
     type PathKindMap = MappingProxyType[Path, PathKind]
-    type StatusDict = dict[Path, StatusCode]
     type StatusMap = MappingProxyType[Path, StatusCode]
     type StrTuple = tuple[str, ...]
     type TreeNodeDict = dict[Path, TreeNode[Path]]
+
+
+__all__ = [
+    "typed_lru_cache",
+    "CommandResult",
+    "ManagedResults",
+    "ManagedTreePaths",
+    "ReadCmdGroups",
+    "ScanDirItem",
+    "ResultCollector",
+    "ParsedJson",
+    "PathKindMap",
+    "StatusMap",
+    "StrTuple",
+    "TreeNodeDict",
+]
 
 
 def typed_lru_cache[**FuncParams, FuncReturn](
