@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from collections import deque
 from enum import StrEnum, auto
 from pathlib import Path
@@ -11,7 +12,6 @@ from textual import events, getters, work
 from textual.app import ComposeResult
 from textual.color import Gradient
 from textual.containers import Center, Middle
-from textual.geometry import Region
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
@@ -20,6 +20,7 @@ from chezmoi_mousse.cm_attributes import ManagedPaths, ResultCollector
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult, ManagedResults
+from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -46,15 +47,14 @@ LOG_MSG_WIDTH = SPLASH_WIDTH - 13
 def create_fade_line_styles() -> deque[Style]:
     start_color = "#0178D4"
     end_color = "#F187FB"
-    fade = [start_color] * 8
-    gradient = Gradient.from_colors(start_color, end_color, quality=6)
+    fade: list[str] = [start_color] * 10
+    gradient = Gradient.from_colors(start_color, end_color, quality=5)
     fade.extend([color.hex for color in gradient.colors])
     gradient.colors.reverse()
     fade.extend([color.hex for color in gradient.colors])
     fade_line_styles = deque(
         [Style(color=color, bgcolor="#000000", bold=True) for color in fade]
     )
-    fade_line_styles.rotate(-2)
     return fade_line_styles
 
 
@@ -68,23 +68,28 @@ class GroupName(StrEnum):
 
 
 class WorkerName(StrEnum):
-    parse_json_output = "parse json output"
-    update_paths = "update paths"
+    parse_json_outputs = "parse json outputs"
+    update_managed_paths = "update managed paths"
     set_cm_attributes = "set cmattr"
 
 
 class AnimatedFade(Static):
 
     def on_mount(self) -> None:
+        self.step_count = 0
         self.styles.height = len(SPLASH_ASCII)
         self.styles.width = SPLASH_WIDTH
         self.fade_timer = self.set_interval(
-            name="refresh_self", interval=0.1, callback=self.refresh, pause=True
+            name="refresh_self",
+            interval=0.1,
+            callback=self._rotate_and_refresh,
+            pause=True,
         )
 
-    def render_lines(self, crop: Region) -> list[Strip]:
+    def _rotate_and_refresh(self) -> None:
         FADE_LINE_STYLES.rotate()
-        return super().render_lines(crop)
+        self.step_count += 1
+        self.refresh()
 
     def render_line(self, y: int) -> Strip:
         return Strip([Segment(SPLASH_ASCII[y], style=FADE_LINE_STYLES[y])])
@@ -97,7 +102,21 @@ class SplashScreen(Screen[None]):
 
     def _forward_event(self, event: events.Event) -> None:
         # Override textual Screen method to prevent refresh when moving mouse
-        if isinstance(event, events.MouseEvent):
+        if isinstance(
+            event,
+            (
+                events.AppBlur,
+                events.AppFocus,
+                events.CursorPosition,
+                events.Enter,
+                events.InputEvent,
+                events.Leave,
+                events.MouseEvent,
+                events.Paste,
+                events.Resize,
+                events.TextSelected,
+            ),
+        ):
             return
         # Allow all other events (keyboard, etc.)
         super()._forward_event(event)
@@ -108,29 +127,21 @@ class SplashScreen(Screen[None]):
             yield Center(RichLog(markup=True))
 
     def on_mount(self) -> None:
-        self.json_output_parsed = False
-        self.managed_paths_instance_ready = False
-        self.cm_attributes_set = False
+        self.animated_fade = self.query_exactly_one(AnimatedFade)
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
         self.splash_log.styles.margin = 2
         self.splash_log.styles.height = (
-            self.app.cmattr.read_cmd_groups.commands_count + 2
+            self.app.cmattr.read_cmd_groups.commands_count + 3
         )
-        fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
-        self.primary_color = self.app.theme_variables["text-primary"]
-        self.success_color = self.app.theme_variables["text-success"]
-        self.warning_color = self.app.theme_variables["text-warning"]
-        self.error_color = self.app.theme_variables["text-error"]
-        for command in self.app.cmattr.read_cmd_groups.json_output:
-            self._run_json_output_cmd(command)
-        for command in self.app.cmattr.read_cmd_groups.managed:
-            self._run_managed_cmd(command)
-        for command in self.app.cmattr.read_cmd_groups.splash_only:
-            self._run_splash_cmd(command)
-        self.set_interval(interval=2, callback=self._all_workers_finished)
-        fade_timer.resume()
+
+        self.primary_color = self.app.get_color(ColorVar.text_primary)
+        self.success_color = self.app.get_color(ColorVar.text_success)
+        self.warning_color = self.app.get_color(ColorVar.text_warning)
+
+        self.fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
+        self._run_all_tasks()
 
     def _get_log_msg(self, *, prefix: str, returncode: int | None) -> str:
         suffix = "completed"
@@ -148,7 +159,7 @@ class SplashScreen(Screen[None]):
         setattr(ResultCollector, command.name, result)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
-    # Command groups
+    # Threaded Command Workers
 
     @work(thread=True, group=GroupName.splash_cmd_group)
     def _run_splash_cmd(self, command: ReadCmd) -> None:
@@ -165,7 +176,23 @@ class SplashScreen(Screen[None]):
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(name=WorkerName.parse_json_output)
+    @work(name=WorkerName.update_managed_paths)
+    async def _create_managed_paths_instance(self) -> None:
+        ResultCollector.managed_paths_instance = ManagedPaths(
+            results=ManagedResults(
+                dest_dir=ResultCollector.dest_dir,
+                managed_dirs=ResultCollector.managed_dirs,
+                managed_files=ResultCollector.managed_files,
+                status_dirs=ResultCollector.status_dirs,
+                status_files=ResultCollector.status_files,
+            )
+        )
+        msg = self._get_log_msg(prefix=WorkerName.update_managed_paths, returncode=None)
+        self.splash_log.write(msg)
+
+    # Non-threaded Command Workers for tasks that are not worth creating a thread for
+
+    @work(name=WorkerName.parse_json_outputs)
     async def _parse_json_outputs(self) -> None:
         parsed_dump_config = Commands.json_loads(ResultCollector.dump_config.std_out)
         parsed_template_data = Commands.json_loads(
@@ -174,7 +201,8 @@ class SplashScreen(Screen[None]):
         ResultCollector.parsed_dump_config = parsed_dump_config
         ResultCollector.parsed_template_data = parsed_template_data
         ResultCollector.dest_dir = parsed_dump_config["destDir"]
-        self.json_output_parsed = True
+        msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
+        self.splash_log.write(msg)
 
     @work(name=WorkerName.set_cm_attributes)
     async def _set_cm_attributes(self) -> None:
@@ -188,49 +216,49 @@ class SplashScreen(Screen[None]):
         ]
         self.app.cmattr.cmd_results = ResultCollector()
         self.app.cmattr.paths = ResultCollector.managed_paths_instance
-        self.cm_attributes_set = True
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)
 
-    def _all_workers_finished(self) -> None:
-        if self.json_output_parsed is False and all(
-            worker.is_finished
-            for worker in self.workers
-            if worker.group == GroupName.json_output_group
-        ):
-            _ = self._parse_json_outputs().wait()  # WorkerName.parse_json_output
-            msg = self._get_log_msg(
-                prefix=WorkerName.parse_json_output, returncode=None
-            )
-            self.splash_log.write(msg)
-            return
-        elif (
-            self.json_output_parsed is True
-            and self.managed_paths_instance_ready is False
-            and all(
-                worker.is_finished
-                for worker in self.workers
-                if worker.group == GroupName.managed_cmd_group
-            )
-        ):
-            ResultCollector.managed_paths_instance = ManagedPaths(
-                results=ManagedResults(
-                    dest_dir=ResultCollector.dest_dir,
-                    managed_dirs=ResultCollector.managed_dirs,
-                    managed_files=ResultCollector.managed_files,
-                    status_dirs=ResultCollector.status_dirs,
-                    status_files=ResultCollector.status_files,
-                )
-            )
-            msg = self._get_log_msg(prefix=WorkerName.update_paths, returncode=None)
-            self.splash_log.write(msg)
-            self.managed_paths_instance_ready = True
-            return
+    # Sequential Orchestration Pipeline
 
-        if (
-            self.json_output_parsed is True
-            and self.managed_paths_instance_ready is True
-            and all(worker.is_finished for worker in self.workers)
+    @work
+    async def _run_all_tasks(self) -> None:
+        self.fade_timer.resume()
+
+        # Dispatch command workers and store worker instances for awaiting later.
+        json_workers = [
+            self._run_json_output_cmd(cmd)
+            for cmd in self.app.cmattr.read_cmd_groups.json_output
+        ]
+        managed_workers = [
+            self._run_managed_cmd(cmd)
+            for cmd in self.app.cmattr.read_cmd_groups.managed
+        ]
+        splash_workers = [
+            self._run_splash_cmd(cmd)
+            for cmd in self.app.cmattr.read_cmd_groups.splash_only
+        ]
+
+        # Await JSON output read commands and then parse them.
+        for worker in json_workers:
+            await worker.wait()
+        await self._parse_json_outputs().wait()
+
+        # Await Managed paths read commands and then create the cmattr.paths instance.
+        for worker in managed_workers:
+            await worker.wait()
+        await self._create_managed_paths_instance().wait()
+
+        # Wait for remaining splash commands, if any, before setting all cm attributes.
+        for worker in splash_workers:
+            await worker.wait()
+        await self._set_cm_attributes().wait()
+
+        # Only dismiss after a completed fade cycle
+        while (
+            self.animated_fade.step_count < 20
+            or self.animated_fade.step_count % 20 != 0
         ):
-            _ = self._set_cm_attributes().wait()  # WorkerName.set_cm_attributes
-            self.dismiss()
+            await asyncio.sleep(0.05)
+
+        self.dismiss()
