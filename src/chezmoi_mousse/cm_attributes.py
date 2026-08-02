@@ -9,10 +9,15 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.cm_types import ManagedTreePaths, ReadCmdGroups
-from chezmoi_mousse.str_enums import StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ManagedResults, ResultCollector, StatusMap
+    from chezmoi_mousse.cm_types import (
+        ManagedResults,
+        PathKindMap,
+        ResultCollector,
+        StatusMap,
+    )
 
 
 __all__ = ["CmAttributes"]
@@ -82,12 +87,27 @@ class ManagedPaths:
     def no_managed_paths(self) -> bool:
         return not self.managed_dirs and not self.managed_files
 
-    def _get_managed_status(self, status_col: int) -> StatusMap:
+    def _get_status_map(self, status_col: int) -> StatusMap:
         temp_dict: dict[Path, StatusCode] = {}
 
         for line in self.results.status_dirs.out_lines:
             if line[status_col] != StatusCode.Space:
                 temp_dict[Path(line[3:])] = StatusCode(line[status_col])
+
+        return MappingProxyType(temp_dict)
+
+    def _get_path_kind_map(self, paths: frozenset[Path]) -> PathKindMap:
+        temp_dict: dict[Path, PathKind] = {}
+
+        for path in paths:
+            if path.is_symlink():
+                temp_dict[path] = PathKind.SYMLINK
+            elif path.exists():
+                temp_dict[path] = PathKind.EXISTS_TRUE
+            elif not path.exists():
+                temp_dict[path] = PathKind.EXISTS_FALSE
+            else:
+                temp_dict[path] = PathKind.UNHANDLED
 
         return MappingProxyType(temp_dict)
 
@@ -100,15 +120,17 @@ class ManagedPaths:
         """
         dest_dir = self.results.dest_dir
 
-        status_dirs: StatusMap = MappingProxyType(
+        managed_dirs_map: PathKindMap = self._get_path_kind_map(self.managed_dirs)
+        managed_files_map: PathKindMap = self._get_path_kind_map(self.managed_files)
+
+        status_dirs_map: StatusMap = MappingProxyType(
             {
                 Path(line[3:]): StatusCode(line[status_col])
                 for line in self.results.status_dirs.out_lines
                 if line[status_col] != StatusCode.Space
             }
         )
-
-        status_files: StatusMap = MappingProxyType(
+        status_files_map: StatusMap = MappingProxyType(
             {
                 Path(line[3:]): StatusCode(line[status_col])
                 for line in self.results.status_files.out_lines
@@ -118,23 +140,23 @@ class ManagedPaths:
 
         n_dirs = frozenset(
             parent
-            for path in (status_dirs.keys() | status_files.keys())
+            for path in (status_dirs_map.keys() | status_files_map.keys())
             for parent in path.parents
             if parent != dest_dir
-            and parent not in status_dirs
+            and parent not in status_dirs_map
             and parent.is_relative_to(dest_dir)
         )
 
         return ManagedTreePaths(
             dest_dir=dest_dir,
-            managed_dirs=self.managed_dirs,
-            managed_files=self.managed_files,
-            status_dirs=status_dirs,
-            status_files=status_files,
+            managed_dirs_map=managed_dirs_map,
+            managed_files_map=managed_files_map,
+            status_dirs_map=status_dirs_map,
+            status_files_map=status_files_map,
             n_dirs=n_dirs,
             no_managed_paths=self.no_managed_paths,
-            no_status_paths=(not status_dirs and not status_files),
-            tree_status_dirs=(n_dirs | status_dirs.keys()),
+            no_status_paths=(not status_dirs_map and not status_files_map),
+            tree_status_dirs=(n_dirs | status_dirs_map.keys()),
             unchanged_dirs=self.unchanged_dirs,
             unchanged_files=self.unchanged_files,
         )

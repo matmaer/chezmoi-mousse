@@ -47,13 +47,13 @@ class GitLogView(Container):
             column_two = f"{subject}" if subject.strip() else no_commit_message
             columns: list[str] = [column_one, column_two]
             if column_two.split(maxsplit=1)[0] == "Add":
-                add_row_with_style(columns, ColorVar.success)
+                add_row_with_style(columns, ColorVar.text_success)
             elif column_two.split(maxsplit=1)[0] == "Update":
-                add_row_with_style(columns, ColorVar.warning)
+                add_row_with_style(columns, ColorVar.text_warning)
             elif column_two.split(maxsplit=1)[0] == "Remove":
-                add_row_with_style(columns, ColorVar.error)
+                add_row_with_style(columns, ColorVar.text_error)
             elif column_two == no_commit_message:
-                add_row_with_style(columns, ColorVar.secondary)
+                add_row_with_style(columns, ColorVar.text_secondary)
             else:
                 add_row_with_style(columns, ColorVar.text)
         return ScrollableContainer(data_table)

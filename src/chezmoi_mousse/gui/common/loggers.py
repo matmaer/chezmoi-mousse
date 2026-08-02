@@ -36,7 +36,9 @@ class CmdResultCollapsible(Collapsible):
         )
 
     def _colored_with_timestamp(self, cmd_str: str, code: int) -> str:
-        color = f"${ColorVar.success}" if code == 0 else f"${ColorVar.warning}"
+        color = (
+            f"${ColorVar.text_success}" if code == 0 else f"${ColorVar.text_warning}"
+        )
         time = f"{datetime.now().strftime('%H:%M:%S')}"
         return f"{time} [{color}]{cmd_str}[/] (returncode {code})"
 
@@ -91,14 +93,14 @@ class RichLoggers(RichLog):
         return f"{log_time} [{msg_color}]{msg}[/]"
 
     def write_cmd(self, pretty_cmd: str, returncode: int) -> None:
-        color = ColorVar.success if returncode == 0 else ColorVar.warning
+        color = ColorVar.text_success if returncode == 0 else ColorVar.text_warning
         self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode}", color))
 
     def write_dimmed(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.dimmed))
 
     def write_error(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.error))
+        self.write(self._get_log_line(message, ColorVar.text_error))
 
     def write_info(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.info))
@@ -107,10 +109,10 @@ class RichLoggers(RichLog):
         self.write(self._get_log_line(f"--- {message} ---", ColorVar.ready))
 
     def write_success(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.success))
+        self.write(self._get_log_line(message, ColorVar.text_success))
 
     def write_warning(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.warning))
+        self.write(self._get_log_line(message, ColorVar.text_warning))
 
 
 class AppLog(RichLoggers):

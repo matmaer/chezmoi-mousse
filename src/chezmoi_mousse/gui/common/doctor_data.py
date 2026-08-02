@@ -32,11 +32,11 @@ class DoctorTable(DataTable[Text]):
 
     def on_mount(self) -> None:
         self._dr_style = {
-            "ok": self.app.get_color(ColorVar.success),
+            "ok": self.app.get_color(ColorVar.text_success),
             "info": self.app.get_color(ColorVar.info),
-            "warning": self.app.get_color(ColorVar.warning),
-            "failed": self.app.get_color(ColorVar.error),
-            "error": self.app.get_color(ColorVar.error),
+            "warning": self.app.get_color(ColorVar.text_warning),
+            "failed": self.app.get_color(ColorVar.text_error),
+            "error": self.app.get_color(ColorVar.text_error),
         }
         self._populate_table(self.app.cmattr.cmd_results.doctor.out_lines)
 
@@ -83,9 +83,9 @@ class InfoStrings(StrEnum):
         " authority, maintainers reputation, etc."
     )
     info_warning = (
-        f"[${ColorVar.warning}]{Chars.warning_sign} The additional info is provided but"
-        " may not be up-to-date or correct. Please contribute to improve"
-        " it.{Chars.warning_sign}[/]"
+        f"[${ColorVar.text_warning}]{Chars.warning_sign} The additional info is "
+        "provided but may not be up-to-date or correct. Please contribute to improve "
+        f"this.{Chars.warning_sign}[/]"
     )
     not_documented = "Not yet documented in chezmoi mousse."
     not_open_source = (
@@ -99,7 +99,7 @@ class InfoStrings(StrEnum):
     )
 
 
-@dataclass(slots=True, kw_only=True)
+@dataclass(slots=True, kw_only=True)  # TODO Enum members better be immutable!
 class PwMgrData:
     description: str
     doctor_check: str
@@ -215,11 +215,11 @@ class PwMgrInfo(Enum):
         info=InfoStrings.not_documented,
     )
 
-    @classmethod
+    @classmethod  # TODO: avoid class methods in Enum classes
     def all_pw_mgr_commands(cls) -> list[str]:
         return [pw_mgr.value.doctor_check for pw_mgr in cls]
 
-    @classmethod
+    @classmethod  # TODO: avoid class methods in Enum classes
     def get_member_from_doctor_check(cls, doctor_check: str) -> PwMgrData:
         for member in PwMgrInfo:
             if member.value.doctor_check == doctor_check:
@@ -248,7 +248,7 @@ class PwCollapsible(Collapsible):
                 classes=Tcss.pw_mgr_group,
             ),
             title=(
-                f"[${ColorVar.primary}]Doctor check: "
+                f"[${ColorVar.text_primary}]Doctor check: "
                 f"{self.pw_mgr_data.doctor_check}[/] "
                 f"[{ColorVar.dimmed}]({self.pw_mgr_data.dr_message})[/]"
             ),

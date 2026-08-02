@@ -67,15 +67,16 @@ class Chars(StrEnum):
 
 class ColorVar(StrEnum):
     dimmed = "foreground-darken-3"
-    error = "text-error"
+    text_error = "text-error"
+    text_error_dark = "text-error-darken-3"
     info = "text-primary-darken-1"
     no_commit_message = "text-secondary"
-    primary = "text-primary"
+    text_primary = "text-primary"
     ready = "accent-darken-2"
-    secondary = "text-secondary"
-    success = "text-success"
+    text_secondary = "text-secondary"
+    text_success = "text-success"
     text = "text"
-    warning = "text-warning"
+    text_warning = "text-warning"
 
 
 class ContainerName(StrEnum):
@@ -173,27 +174,27 @@ class OpInfoString(StrEnum):
     )
     apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_add = (
-        f"[${ColorVar.success}]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
+        f"[${ColorVar.text_success}]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
         "paths will be added to the chezmoi repository."
         f"{Chars.check_mark}[/]"
     )
     auto_commit = (
-        f"[${ColorVar.warning}]{Chars.warning_sign} Chezmoi 'autocommit' is enabled: "
-        "paths will be committed to the chezmoi repository."
+        f"[${ColorVar.text_warning}]{Chars.warning_sign} Chezmoi 'autocommit' is "
+        "enabled: paths will be committed to the chezmoi repository. "
         f"{Chars.warning_sign}[/]"
     )
     auto_push = (
-        f"[${ColorVar.error}]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
+        f"[${ColorVar.text_error}]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
         "the updated chezmoi repository will be pushed to the remote (origin)."
         f"{Chars.warning_sign}[/]"
     )
     destroy_path_info = (
-        f"[${ColorVar.error}]Permanently remove the path from disk and chezmoi. MAKE "
-        "SURE YOU HAVE A BACKUP![/]"
+        f"[${ColorVar.text_error}]Permanently remove the path from disk and chezmoi.\n"
+        "MAKE SURE YOU HAVE A BACKUP![/]"
     )
     destroy_subtitle = (
-        f"[${ColorVar.error}]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
-        f"[${ColorVar.error}]{Chars.x_mark}[/]"
+        f"[${ColorVar.text_error}]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[${ColorVar.text_error}]{Chars.x_mark}[/]"
     )
     forget_path_info = (
         f"[${ColorVar.dimmed}]Remove from the source state, i.e. stop managing them.[/]"
@@ -330,6 +331,8 @@ class PathKind(StrEnum):
     any = auto()
     dest_dir = auto()
     dir = auto()
+    EXISTS_FALSE = auto()
+    EXISTS_TRUE = auto()
     file = auto()
     man_dir_access_denied = auto()
     man_dir_exists = auto()
@@ -340,11 +343,11 @@ class PathKind(StrEnum):
     man_file_no_status = auto()
     man_file_not_exists = auto()
     man_file_unchanged = auto()
-
-    apply_n_dir = auto()
-    re_add_n_dir = auto()
-
+    N_DIR = auto()
+    SYMLINK = auto()
+    UNHANDLED = auto()
     unman_dir_access_denied = auto()
+    UNMANAGED = auto()
 
 
 class RichLogName(StrEnum):
@@ -408,7 +411,7 @@ class TabLabel(StrEnum):
     diff = "Diff"
     git_log = "Git-Log"
 
-    @classmethod
+    @classmethod  # TODO: avoid class methods in Enum classes
     def main_tabs(cls) -> tuple["TabLabel", ...]:
         return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
 

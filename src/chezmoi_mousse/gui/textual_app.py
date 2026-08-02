@@ -18,6 +18,8 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     Chars,
     ColorVar,
+    PathKind,
+    StatusCode,
     TabLabel,
 )
 
@@ -105,26 +107,41 @@ class ChezmoiGui(App[str]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
-    def get_color(self, log_color: ColorVar) -> str:
-        match log_color:
-            case ColorVar.success:
-                return self.theme_variables["text-success"]
-            case ColorVar.warning:
-                return self.theme_variables["text-warning"]
-            case ColorVar.error:
-                return self.theme_variables["text-error"]
-            case ColorVar.no_commit_message:
-                return self.theme_variables["text-secondary"]
-            case ColorVar.info:
-                return self.theme_variables["text-primary"]
-            case ColorVar.dimmed:
-                return self.theme_variables["foreground-darken-3"]
-            case ColorVar.ready:
-                return self.theme_variables["accent-darken-2"]
-            case ColorVar.text:
-                return self.theme_variables["text"]
-            case _:
-                return self.theme_variables["text-primary"]
+    def get_color(
+        self, str_enum_member: ColorVar | StatusCode | PathKind | None
+    ) -> str:
+        """If str_enum_member is None, return the bogus color (pure yellow) to indicate
+        " "an error.
+
+        Otherwise, return the color value from the theme_variables. If getattr fails to
+        find the color value, also return the bogus color.
+        """
+        bogus_color = "#FFFF00"  # pure yellow
+        if isinstance(str_enum_member, StatusCode):
+            mapping = {
+                StatusCode.Added: ColorVar.text_success,
+                StatusCode.Modified: ColorVar.text_warning,
+                StatusCode.Deleted: ColorVar.text_error,
+                StatusCode.Space: ColorVar.dimmed,
+            }
+            color_var = getattr(mapping[str_enum_member], "value", bogus_color)
+        elif isinstance(str_enum_member, PathKind):
+            mapping = {
+                PathKind.dir: ColorVar.text_secondary,
+                PathKind.file: ColorVar.text_primary,
+                PathKind.N_DIR: ColorVar.text_secondary,
+                PathKind.UNMANAGED: ColorVar.text_error_dark,
+            }
+            color_var = getattr(mapping[str_enum_member], "value", bogus_color)
+        elif isinstance(str_enum_member, ColorVar):
+            color_var = str_enum_member
+        elif str_enum_member is None:
+            return bogus_color
+        return (
+            self.theme_variables[color_var]
+            if isinstance(color_var, str)
+            else bogus_color
+        )
 
     @work
     async def _run_splash_screen(self) -> None:

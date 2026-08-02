@@ -18,13 +18,14 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
-    type TreeNodeDict = dict[Path, TreeNode[Path]]
     type ParsedJson = dict[str, Any]
     type PathDataDict = dict[Path, PathKind | ScanDirItem]
     type PathKindDict = dict[Path, PathKind]
+    type PathKindMap = MappingProxyType[Path, PathKind]
     type StatusDict = dict[Path, StatusCode]
-    type StrTuple = tuple[str, ...]
     type StatusMap = MappingProxyType[Path, StatusCode]
+    type StrTuple = tuple[str, ...]
+    type TreeNodeDict = dict[Path, TreeNode[Path]]
 
 __all__ = ["AppIds", "ChezmoiGui"]
 
@@ -68,13 +69,13 @@ class ManagedResults(NamedTuple):
 
 class ManagedTreePaths(NamedTuple):
     dest_dir: Path
-    managed_dirs: frozenset[Path]
-    managed_files: frozenset[Path]
+    managed_dirs_map: PathKindMap
+    managed_files_map: PathKindMap
     n_dirs: frozenset[Path]
     no_managed_paths: bool
     no_status_paths: bool
-    status_dirs: StatusMap
-    status_files: StatusMap
+    status_dirs_map: StatusMap
+    status_files_map: StatusMap
     tree_status_dirs: frozenset[Path]
     unchanged_dirs: frozenset[Path]
     unchanged_files: frozenset[Path]

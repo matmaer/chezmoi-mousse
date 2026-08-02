@@ -379,7 +379,7 @@ class DebugTab(TabPane):
         if path_lines:
             return path_lines
         else:
-            return f"[${ColorVar.warning} bold]No test paths exist.[/]"
+            return f"[${ColorVar.text_warning} bold]No test paths exist.[/]"
 
     def _write_to_memory_log(self, auto: bool = True) -> None:
         mem_info = self._process.memory_info()

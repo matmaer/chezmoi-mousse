@@ -299,7 +299,7 @@ class TestPaths:
         created = {str(p) for p in (existing_after - existing_before)}
 
         if not created:
-            msg = f"[${ColorVar.warning}]No test paths were created because they "
+            msg = f"[${ColorVar.text_warning}]No test paths were created because they "
             "already exist.[/]"
             return [msg] + [
                 f"[${ColorVar.dimmed}]{p}[/]" for p in sorted(existing_after)
@@ -310,9 +310,11 @@ class TestPaths:
     def remove_test_paths(self) -> list[str]:
         existing_paths = self.get_existing_test_paths()
         if not existing_paths:
-            return [f"[${ColorVar.warning} bold]No test paths to remove.[/]"]
+            return [f"[${ColorVar.text_warning} bold]No test paths to remove.[/]"]
 
-        removed_entries = [f"[${ColorVar.error}]{p}[/]" for p in sorted(existing_paths)]
+        removed_entries = [
+            f"[${ColorVar.text_error}]{p}[/]" for p in sorted(existing_paths)
+        ]
 
         # Remove the test directory tree
         shutil.rmtree(self.all_paths.test_dir, ignore_errors=True)
@@ -327,7 +329,7 @@ class TestPaths:
 
     def create_diffs(self) -> str:
         if not self.get_existing_test_paths():
-            return f"[${ColorVar.warning} bold]No test paths exist to modify.[/]"
+            return f"[${ColorVar.text_warning} bold]No test paths exist to modify.[/]"
         modified: set[str] = set()
 
         # Modify LARGE file
@@ -340,14 +342,14 @@ class TestPaths:
                     .replace("o", "O")
                 )
                 f.write(modified_content)
-            modified.add(f"[${ColorVar.warning}]{large_file_path}[/]")
+            modified.add(f"[${ColorVar.text_warning}]{large_file_path}[/]")
 
         # Modify TOML files
         for file in self.all_paths.toml_files_for_diff:
             if file.exists():
                 if file in self.all_paths.toml_files_to_delete:
                     file.unlink()
-                    modified.add(f"[${ColorVar.error}]{file}[/]")
+                    modified.add(f"[${ColorVar.text_error}]{file}[/]")
                     continue
                 file_lines = file.read_text(encoding="utf-8").splitlines()
                 old_title = [line for line in file_lines if line.startswith("title")]
@@ -361,7 +363,7 @@ class TestPaths:
                         line.replace("false", "true")
                 with Path.open(file, "w", encoding="utf-8") as f:
                     f.write("\n".join(file_lines))
-                modified.add(f"[${ColorVar.warning}]{file}[/]")
+                modified.add(f"[${ColorVar.text_warning}]{file}[/]")
 
         # Toggle between 0o750 and 0o755 for the dir with status
         dir_with_status = self.all_paths.dir_with_status
@@ -371,16 +373,16 @@ class TestPaths:
                 dir_with_status.chmod(0o755)
             else:
                 dir_with_status.chmod(0o750)
-            modified.add(f"[${ColorVar.warning}]{dir_with_status}[/]")
+            modified.add(f"[${ColorVar.text_warning}]{dir_with_status}[/]")
 
         # Delete or create the self.nested_dirs_1
         nested_dirs_1 = self.all_paths.nested_dirs_1
         if nested_dirs_1.exists():
             shutil.rmtree(nested_dirs_1)
-            modified.add(f"[${ColorVar.error}]{nested_dirs_1}[/]")
+            modified.add(f"[${ColorVar.text_error}]{nested_dirs_1}[/]")
         else:
             nested_dirs_1.mkdir(parents=True)
-            modified.add(f"[${ColorVar.success}]{nested_dirs_1}[/]")
+            modified.add(f"[${ColorVar.text_success}]{nested_dirs_1}[/]")
 
         return f"[${ColorVar.info} bold]Modified paths:[/]\n" + "\n".join(
             sorted(modified)
