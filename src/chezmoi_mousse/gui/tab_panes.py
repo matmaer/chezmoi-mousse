@@ -43,7 +43,8 @@ from .common.managed_tree import DestDirTree, ManagedTree
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
 
@@ -478,14 +479,14 @@ class DebugTab(TabPane):
 class LogsTab(TabPane):
 
     def __init__(self, ids: AppIds) -> None:
+        self.app_ids = ids
         super().__init__(id=TabLabel.logs, title=TabLabel.logs)
-        self.ids = ids
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield TabButtons(self.ids, (TabLabel.cmd_log, TabLabel.app_log))
-            with ContentSwitcher(initial=self.ids.richlog.cmd):
-                yield CmdLog()
+            yield TabButtons(self.app_ids, (TabLabel.cmd_log, TabLabel.app_log))
+            with ContentSwitcher(initial=self.app_ids.richlog.cmd):
+                yield CmdLog(self.app_ids)
                 yield AppLog()
 
     def on_mount(self) -> None:
@@ -496,9 +497,9 @@ class LogsTab(TabPane):
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == TabLabel.app_log:
-            self.switcher.current = self.ids.richlog.app
+            self.switcher.current = self.app_ids.richlog.app
         elif event.button.label == TabLabel.cmd_log:
-            self.switcher.current = self.ids.richlog.cmd
+            self.switcher.current = self.app_ids.richlog.cmd
 
 
 class ReAddTab(TabPane):

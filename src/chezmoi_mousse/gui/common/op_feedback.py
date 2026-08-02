@@ -15,7 +15,7 @@ from chezmoi_mousse.str_enums import Tcss
 from .actionables import OpButton
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ChezmoiGui
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 

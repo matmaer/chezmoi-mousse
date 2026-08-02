@@ -17,14 +17,16 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, CommandResult
+    from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.cm_types import CommandResult
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["AppLog", "CmdLog", "CmdResultCollapsible", "DebugLog"]
 
 
 class CmdResultCollapsible(Collapsible):
 
-    def __init__(self, *, cmd_result: CommandResult):
+    def __init__(self, *, cmd_result: CommandResult) -> None:
         collapsible_contents = self._collapsible_contents(cmd_result)
         super().__init__(
             *collapsible_contents,
@@ -67,11 +69,8 @@ class CmdResultCollapsible(Collapsible):
 
 class CmdLog(ScrollableContainer):
 
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    def __init__(self) -> None:
-        super().__init__(id=self.app.cmattr.logs_id.richlog.cmd)
+    def __init__(self, ids: AppIds) -> None:
+        super().__init__(id=ids.richlog.cmd)
 
     cmd_results: reactive[list[CommandResult] | None] = reactive(None, init=False)
 

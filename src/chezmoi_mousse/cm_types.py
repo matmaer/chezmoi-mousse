@@ -12,10 +12,8 @@ if TYPE_CHECKING:
 
     from textual.widgets.tree import TreeNode
 
-    from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_attributes import ManagedPaths
     from chezmoi_mousse.cm_command import ReadCmd
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
     type ParsedJson = dict[str, Any]
@@ -26,8 +24,6 @@ if TYPE_CHECKING:
     type StatusMap = MappingProxyType[Path, StatusCode]
     type StrTuple = tuple[str, ...]
     type TreeNodeDict = dict[Path, TreeNode[Path]]
-
-__all__ = ["AppIds", "ChezmoiGui"]
 
 
 def typed_lru_cache[**FuncParams, FuncReturn](

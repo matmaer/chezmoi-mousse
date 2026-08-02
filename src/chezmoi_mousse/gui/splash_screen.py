@@ -22,7 +22,8 @@ from chezmoi_mousse.cm_types import ManagedResults, ResultCollector
 from chezmoi_mousse.functions import Commands
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ChezmoiGui, CommandResult
+    from chezmoi_mousse.cm_types import CommandResult
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["SplashScreen"]
 

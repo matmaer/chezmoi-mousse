@@ -14,7 +14,8 @@ from chezmoi_mousse.str_enums import ColorVar
 from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["GitLogView"]
 

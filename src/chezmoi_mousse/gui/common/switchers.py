@@ -15,14 +15,14 @@ from .diffs import DiffView
 from .git_log import GitLogView
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import AppIds
+    from chezmoi_mousse.app_ids import AppIds
 
 __all__ = ["ViewSwitcher"]
 
 
 class ViewSwitcher(Vertical):
 
-    def __init__(self, ids: AppIds):
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.right_side)
         self.ids = ids
 

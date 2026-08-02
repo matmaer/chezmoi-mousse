@@ -22,7 +22,7 @@ from chezmoi_mousse.str_enums import ColorVar
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from chezmoi_mousse.cm_types import ChezmoiGui
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
 

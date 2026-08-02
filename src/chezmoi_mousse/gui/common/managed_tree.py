@@ -14,11 +14,13 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.cm_types import ManagedTreePaths
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.str_enums import Chars, PathKind, TabLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, PathKind, StatusCode, TabLabel, Tcss
 
 if TYPE_CHECKING:
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui, TreeNodeDict
+    from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.cm_types import TreeNodeDict
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 from .actionables import OpButton
 from .messages import CurrentNodeMsg
@@ -100,6 +102,23 @@ class ManagedTree(Tree[Path]):
             else self.app.cmattr.paths.re_add_tree_paths
         )
 
+    def _create_colored_label(self, path: Path) -> str:
+        if path in self.paths.n_dirs:
+            color = self.app.get_color(PathKind.N_DIR)
+        elif path in self.paths.status_dirs_map or path in self.paths.status_files_map:
+            color = self.app.get_color(self.paths.status_files_map[path])
+        elif path in self.paths.unchanged_dirs or path in self.paths.unchanged_files:
+            color = self.app.get_color(StatusCode.Space)
+        elif (
+            path not in self.paths.managed_dirs_map
+            and path not in self.paths.managed_files_map
+        ):
+            color = self.app.get_color(PathKind.UNMANAGED)
+        else:
+            color = self.app.get_color(None)
+        italic = " italic" if not path.exists() else ""
+        return f"[{color}{italic}]{path.name}[/]"
+
     def _get_nodes_bfs(self, path_kind: PathKind) -> TreeNodeDict:
         # BFS approach using deque for O(1) pops from the left.
 
@@ -148,7 +167,7 @@ class ManagedTree(Tree[Path]):
 
         current_dir_nodes = self._get_nodes_bfs(path_kind=PathKind.dir)
 
-        for path in self.paths.status_files:
+        for path in self.paths.status_files_map:
             parent_node = current_dir_nodes[path.parent]
             self._insert_node(parent_node, path)
 
@@ -163,11 +182,35 @@ class ManagedTree(Tree[Path]):
         """Inserts a dir node or file node alphabetically, using is_file to determine
         where as we keep children which are directories on top followed by the children
         which are files."""
-        is_dir_path = path in self.paths.managed_dirs or path.is_dir()
+
+        def _create_colored_label(path: Path) -> str:
+            if path in self.paths.n_dirs:
+                color = self.app.get_color(PathKind.N_DIR)
+            elif (
+                path in self.paths.status_dirs_map
+                or path in self.paths.status_files_map
+            ):
+                color = self.app.get_color(self.paths.status_files_map[path])
+            elif (
+                path in self.paths.unchanged_dirs or path in self.paths.unchanged_files
+            ):
+                color = self.app.get_color(StatusCode.Space)
+            elif (
+                path not in self.paths.managed_dirs_map
+                and path not in self.paths.managed_files_map
+            ):
+                color = self.app.get_color(PathKind.UNMANAGED)
+            else:
+                color = self.app.get_color(None)
+            italic = " italic" if not path.exists() else ""
+            return f"[{color}{italic}]{path.name}[/]"
+
+        is_dir_path = path in self.paths.managed_dirs_map or path.is_dir()
         children = parent_node.children
+        path_label = _create_colored_label(path)
 
         if not children:
-            return parent_node.add(path.name, data=path, expand=is_dir_path)
+            return parent_node.add(path_label, data=path, expand=is_dir_path)
         elif is_dir_path:
             node_context = [c for c in children if c.allow_expand]
         else:
@@ -182,7 +225,7 @@ class ManagedTree(Tree[Path]):
             None,
         )
         return parent_node.add(
-            path.name, data=path, before=before_node, expand=is_dir_path
+            path_label, data=path, before=before_node, expand=is_dir_path
         )
 
     # #################################
@@ -201,8 +244,8 @@ class ManagedTree(Tree[Path]):
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is not None:
             has_status = (
-                event.node.data in self.paths.status_files
-                or event.node.data in self.paths.status_dirs
+                event.node.data in self.paths.status_files_map
+                or event.node.data in self.paths.status_dirs_map
             )
             is_ndir = event.node.data in self.paths.n_dirs
             self.post_message(

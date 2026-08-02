@@ -3,7 +3,6 @@ from __future__ import annotations
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from textual import getters
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
@@ -17,7 +16,7 @@ from .messages import LogCmdResultMsg
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.app_ids import AppIds
 
 __all__ = ["DiffView"]
 
@@ -36,10 +35,6 @@ DIFF_TCSS = {
 
 
 class DiffView(Container):
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:

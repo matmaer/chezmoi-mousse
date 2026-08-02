@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual import getters, on
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, Label, Switch
@@ -13,7 +13,7 @@ from chezmoi_mousse.str_enums import FlatBtnLabel, TabLabel, Tcss
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_types import AppIds, ChezmoiGui
+    from chezmoi_mousse.app_ids import AppIds
 
 
 __all__ = [
@@ -100,9 +100,6 @@ class OpButton(Button):
 
 
 class OperateButtons(HorizontalGroup):
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
 
     def __init__(self, ids: AppIds) -> None:
         self.tab_ids = ids
