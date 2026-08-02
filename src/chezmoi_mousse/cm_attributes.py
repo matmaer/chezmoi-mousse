@@ -87,10 +87,10 @@ class ManagedPaths:
     def no_managed_paths(self) -> bool:
         return not self.managed_dirs and not self.managed_files
 
-    def _get_status_map(self, status_col: int) -> StatusMap:
+    def _get_status_map(self, lines: list[str], status_col: int) -> StatusMap:
         temp_dict: dict[Path, StatusCode] = {}
 
-        for line in self.results.status_dirs.out_lines:
+        for line in lines:
             if line[status_col] != StatusCode.Space:
                 temp_dict[Path(line[3:])] = StatusCode(line[status_col])
 
@@ -123,19 +123,11 @@ class ManagedPaths:
         managed_dirs_map: PathKindMap = self._get_path_kind_map(self.managed_dirs)
         managed_files_map: PathKindMap = self._get_path_kind_map(self.managed_files)
 
-        status_dirs_map: StatusMap = MappingProxyType(
-            {
-                Path(line[3:]): StatusCode(line[status_col])
-                for line in self.results.status_dirs.out_lines
-                if line[status_col] != StatusCode.Space
-            }
+        status_dirs_map: StatusMap = self._get_status_map(
+            lines=self.results.status_dirs.out_lines, status_col=status_col
         )
-        status_files_map: StatusMap = MappingProxyType(
-            {
-                Path(line[3:]): StatusCode(line[status_col])
-                for line in self.results.status_files.out_lines
-                if line[status_col] != StatusCode.Space
-            }
+        status_files_map: StatusMap = self._get_status_map(
+            lines=self.results.status_files.out_lines, status_col=status_col
         )
 
         n_dirs = frozenset(
