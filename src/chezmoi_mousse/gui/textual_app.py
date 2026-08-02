@@ -113,9 +113,10 @@ class ChezmoiGui(App[str]):
         """If str_enum_member is None, return the bogus color (pure yellow) to indicate
         " "an error.
 
-        Otherwise, return the color value from the theme_variables. If getattr fails to
-        find the color value, also return the bogus color.
+        Otherwise, return the color value from theme_variables.
         """
+        bogus = ColorVar.bogus.value
+
         if isinstance(str_enum_member, StatusCode):
             mapping = {
                 StatusCode.Added: ColorVar.text_success,
@@ -124,7 +125,7 @@ class ChezmoiGui(App[str]):
                 StatusCode.Space: ColorVar.dimmed,
                 StatusCode.Run: ColorVar.bogus,
             }
-            color_var = getattr(mapping[str_enum_member], "value", ColorVar.bogus)
+            color_var = mapping.get(str_enum_member, ColorVar.bogus)
         elif isinstance(str_enum_member, PathKind):
             mapping = {
                 PathKind.dir: ColorVar.text_secondary,
@@ -132,12 +133,15 @@ class ChezmoiGui(App[str]):
                 PathKind.N_DIR: ColorVar.text_secondary,
                 PathKind.UNMANAGED: ColorVar.text_error_dark,
             }
-            color_var = getattr(mapping[str_enum_member], "value", ColorVar.bogus)
+            color_var = mapping.get(str_enum_member, ColorVar.bogus)
         elif isinstance(str_enum_member, ColorVar):
-            color_var = getattr(str_enum_member, "value", ColorVar.bogus)
+            color_var = str_enum_member
         elif str_enum_member is None:
-            return ColorVar.bogus
-        return getattr(self.theme_variables[color_var], "value", ColorVar.bogus)
+            return bogus
+        else:
+            return bogus
+
+        return self.theme_variables.get(color_var.value, bogus)
 
     @work
     async def _run_splash_screen(self) -> None:
