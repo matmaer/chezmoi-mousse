@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -46,7 +46,7 @@ class DestDirTree(Vertical):
 
 @dataclass(slots=True, frozen=True)
 class ManagedTreeState:
-    all_dir_nodes: TreeNodeDict
+    all_dir_nodes: TreeNodeDict = field(default_factory=lambda: {})
 
     @property
     def visible_dir_nodes(self) -> TreeNodeDict:
@@ -57,12 +57,11 @@ class ManagedTreeState:
         }
 
     @property
-    def visible_file_nodes(self) -> TreeNodeDict:
-        return {
-            p: n
-            for p, n in self.all_dir_nodes.items()
-            if n.parent is not None and n.parent.is_expanded and not n.allow_expand
-        }
+    def visible_expanded_dir_nodes(self) -> TreeNodeDict:
+        return {p: n for p, n in self.visible_dir_nodes.items() if n.is_expanded}
+
+    @property
+    def visible_file_nodes(self) -> TreeNodeDict: ...
 
 
 class ManagedTree(Tree[Path]):
@@ -92,7 +91,7 @@ class ManagedTree(Tree[Path]):
         self.root.expand()
         self.root.allow_expand = False  # prevent from being collapsed
         # keep state
-        self.state = ManagedTreeState
+        self.state = ManagedTreeState()
 
     @property
     def paths(self) -> ManagedTreePaths:
@@ -212,7 +211,7 @@ class ManagedTree(Tree[Path]):
         path_label = _create_colored_label(path)
 
         if not children:
-            return parent_node.add(path_label, data=path, expand=is_dir_path)
+            return parent_node.add(path_label, data=path, allow_expand=is_dir_path)
         elif is_dir_path:
             node_context = [c for c in children if c.allow_expand]
         else:
@@ -227,7 +226,7 @@ class ManagedTree(Tree[Path]):
             None,
         )
         return parent_node.add(
-            path_label, data=path, before=before_node, expand=is_dir_path
+            path_label, data=path, before=before_node, allow_expand=is_dir_path
         )
 
     # #################################
@@ -262,8 +261,18 @@ class ManagedTree(Tree[Path]):
             )
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
-        _ = show_unchanged
-        return  # will be implemented later on
+        if show_unchanged:
+            for path in self.paths.unchanged_dirs | self.paths.unchanged_files:
+                parent_node: TreeNode[Path] | None = (
+                    self.state.visible_expanded_dir_nodes.get(path.parent)
+                )
+                if parent_node is None and path.parent == self.root.data:
+                    parent_node = self.root
+                if parent_node is not None:
+                    self._insert_node(parent_node, path)
+        else:
+            ...
+        self._update_tree_state()
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:
