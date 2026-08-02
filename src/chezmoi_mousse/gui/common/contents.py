@@ -21,8 +21,8 @@ from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_types import ManagedTreePaths
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import ManagedTreePaths
 
 __all__ = ["ContentsView"]
 

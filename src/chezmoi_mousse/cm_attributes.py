@@ -8,19 +8,52 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import ManagedTreePaths, ReadCmdGroups
+from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths, ReadCmdGroups
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import (
-        ManagedResults,
-        PathKindMap,
-        ResultCollector,
-        StatusMap,
-    )
+    from chezmoi_mousse.cm_types import ParsedJson, PathKindMap, StatusMap
+    from chezmoi_mousse.named_tuples import ManagedResults
 
 
-__all__ = ["CmAttributes", "ManagedPaths"]
+__all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
+
+
+@dataclass(slots=True)
+class ResultCollector:
+
+    dest_dir: Path = field(init=False)
+    cat_config: CommandResult = field(init=False)
+    doctor: CommandResult = field(init=False)
+    dump_config: CommandResult = field(init=False)
+    git_log: CommandResult = field(init=False)
+    git_remote: CommandResult = field(init=False)
+    ignored: CommandResult = field(init=False)
+    managed_dirs: CommandResult = field(init=False)
+    managed_files: CommandResult = field(init=False)
+    parsed_dump_config: ParsedJson = field(init=False)
+    parsed_template_data: ParsedJson = field(init=False)
+    status_dirs: CommandResult = field(init=False)
+    status_files: CommandResult = field(init=False)
+    template_data: CommandResult = field(init=False)
+    managed_paths_instance: ManagedPaths = field(init=False)
+
+    # Used for logging after the splash screen is disimissed and we push the MainScreen
+    @property
+    def splash_results_list(self) -> list[CommandResult]:
+        return [
+            self.doctor,
+            self.git_log,
+            self.dump_config,
+            self.cat_config,
+            self.template_data,
+            self.ignored,
+            self.git_remote,
+            self.managed_dirs,
+            self.managed_files,
+            self.status_dirs,
+            self.status_files,
+        ]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

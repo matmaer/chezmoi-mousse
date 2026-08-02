@@ -18,8 +18,8 @@ if TYPE_CHECKING:
     from typing import Any
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import CommandResult
 
 __all__ = ["AppLog", "CmdLog", "DebugLog"]
 

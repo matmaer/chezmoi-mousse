@@ -12,6 +12,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse.enum_data import OpBtnEnum
+from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import Chars, OpBtnLabel, TabLabel, Tcss
 
 from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
@@ -19,7 +20,7 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
-from .common.loading_modal import LoadingLabel, LoadingModal, min_wait
+from .common.loading_modal import LoadingLabel, LoadingModal
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg
@@ -28,8 +29,8 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import CommandResult
 
 __all__ = ["MainScreen", "CustomHeader"]
 

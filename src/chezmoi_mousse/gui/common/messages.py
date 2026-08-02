@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_types import CommandResult
+    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["LogCmdResultMsg", "CurrentNodeMsg"]

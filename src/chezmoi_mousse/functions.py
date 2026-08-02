@@ -3,13 +3,17 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import time
+from asyncio import sleep
+from collections.abc import Callable
 from datetime import datetime
+from functools import lru_cache, wraps
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
-from chezmoi_mousse.cm_types import CommandResult, ScanDirItem, typed_lru_cache
+from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
     GlobalArgs,
@@ -19,9 +23,42 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson, StrTuple
+    from collections.abc import Awaitable
 
-__all__ = ("Commands", "CheckPath")
+    from chezmoi_mousse.cm_types import MinWaitReturn, ParsedJson, StrTuple
+    from chezmoi_mousse.enum_data import OpBtnEnum
+    from chezmoi_mousse.gui.common.loading_modal import LoadingModal
+
+__all__ = ("Commands", "CheckPath", "min_wait")
+
+
+def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
+    # not needed for anything else than showing log messages briefly for humans
+    @wraps(func)
+    async def wrapper(self: LoadingModal, *args: OpBtnEnum) -> None:
+        min_wait_time = 0.2
+        start_time = time.monotonic()
+        await func(self, *args)
+        elapsed = time.monotonic() - start_time
+        if elapsed < min_wait_time:
+            await sleep(min_wait_time - elapsed)
+
+    return wrapper
+
+
+def typed_lru_cache[**FuncParams, FuncReturn](
+    *, maxsize: int | None = 128, typed: bool = False
+) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
+    def decorator(
+        func: Callable[FuncParams, FuncReturn],
+    ) -> Callable[FuncParams, FuncReturn]:
+        return cast(
+            Callable[FuncParams, FuncReturn],
+            lru_cache(maxsize=maxsize, typed=typed)(func),
+        )
+
+    return decorator
+
 
 # TODO implement clearing for cached stuff in other classes than AppLife
 

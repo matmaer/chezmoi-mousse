@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import time
-from asyncio import sleep
 from enum import StrEnum
-from functools import wraps
 from typing import TYPE_CHECKING
 
 from textual import getters, work
@@ -14,34 +11,15 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
 from chezmoi_mousse.cm_command import ReadCmd
-from chezmoi_mousse.cm_types import CommandResult
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.functions import Commands, min_wait
+from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
-
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-__all__ = ["LoadingLabel", "LoadingModal", "min_wait"]
-
-
-type MinWaitReturn = Callable[..., Awaitable[CommandResult | None]]
-
-
-def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
-    # not needed for anything else than showing log messages briefly for humans
-    @wraps(func)
-    async def wrapper(self: LoadingModal, *args: OpBtnEnum) -> None:
-        min_wait_time = 0.2
-        start_time = time.monotonic()
-        await func(self, *args)
-        elapsed = time.monotonic() - start_time
-        if elapsed < min_wait_time:
-            await sleep(min_wait_time - elapsed)
-
-    return wrapper
+__all__ = ["LoadingLabel", "LoadingModal"]
 
 
 class LoadingLabel(StrEnum):

@@ -12,8 +12,8 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse.cm_types import ManagedTreePaths
 from chezmoi_mousse.enum_data import OpBtnEnum
+from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import Chars, PathKind, StatusCode, TabLabel, Tcss
 
 if TYPE_CHECKING:
