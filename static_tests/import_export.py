@@ -21,7 +21,7 @@ class AllVariableDetector(ast.NodeVisitor):
         # (imported_from_module, item_name) -> set of modules that imported it
         self.imports_tracker: dict[tuple[str, str], set[str]] = {}
 
-        # New tracking: set of (module_name, item_name) imported *by* a module
+        # Set of (module_name, item_name) imported *by* a module
         self.items_imported_by_module: set[tuple[str, str]] = set()
 
     def _is_known_module_path(self, module_name: str) -> bool:
@@ -37,14 +37,9 @@ class AllVariableDetector(ast.NodeVisitor):
         if not module_name:
             return None
 
-        # Keep explicit absolute imports from the project root package.
-        if module_name == self.root_package:
-            return module_name
-
         root_prefix = f"{self.root_package}."
         if module_name.startswith(root_prefix):
-            normalized = module_name[len(root_prefix) :]
-            return normalized if normalized else self.root_package
+            return module_name[len(root_prefix) :]
 
         current_parts = self.current_module.split(".")
         package_parts = current_parts[:-1]
@@ -122,8 +117,6 @@ class AllVariableDetector(ast.NodeVisitor):
             # (used to check if it's re-exported in __all__)
             self.items_imported_by_module.add((self.current_module, alias.name))
 
-        self.generic_visit(node)
-
 
 def test_import_export() -> None:
     detector = AllVariableDetector()
@@ -132,10 +125,7 @@ def test_import_export() -> None:
     file_to_module: dict[Path, str] = {}
     for file_path in get_file_paths():
         rel_parts = file_path.relative_to(MODULE_DIR).with_suffix("").parts
-        if rel_parts[-1] == "__init__":
-            module_name = ".".join(rel_parts[:-1])
-        else:
-            module_name = ".".join(rel_parts)
+        module_name = ".".join(rel_parts)
 
         if module_name:
             file_to_module[file_path] = module_name
@@ -150,26 +140,26 @@ def test_import_export() -> None:
 
     # Output Buckets
     never_imported_anywhere: list[str] = []
-    only_imported_via_init_but_abandoned: list[str] = []
     imported_but_missing_from_all: list[str] = []
     missing_all_variable_entirely: list[str] = []
-    imported_items_in_all: list[str] = []  # <--- New bucket
+    imported_items_in_all: list[str] = []
 
     # Map target modules being queried
     modules_imported_from = {mod for mod, _ in detector.imports_tracker}
 
     # Module has no __all__ variable but other modules import from it
     for mod, has_all in detector.has_all.items():
-        if not has_all and mod in modules_imported_from:
-            has_external_consumers = False
-            for (imp_mod, _), consumers in detector.imports_tracker.items():
-                if imp_mod == mod and (consumers - {mod}):
-                    has_external_consumers = True
-                    break
-            if has_external_consumers:
-                missing_all_variable_entirely.append(
-                    f"- {mod} has no __all__ but other modules import from it."
-                )
+        if (
+            not has_all
+            and mod in modules_imported_from
+            and any(
+                imp_mod == mod and (consumers - {mod})
+                for (imp_mod, _), consumers in detector.imports_tracker.items()
+            )
+        ):
+            missing_all_variable_entirely.append(
+                f"- {mod} has no __all__ but other modules import from it."
+            )
 
     # Core evaluations per tracked import statement
     for (source_mod, item), consumers in detector.imports_tracker.items():
@@ -178,44 +168,25 @@ def test_import_export() -> None:
             continue
 
         # A module imports from another module, but the entry is missing from __all__
-        if source_mod in detector.has_all and detector.has_all[source_mod]:
+        if detector.has_all.get(source_mod):
             exports = detector.defined_all.get(source_mod, set())
             if item not in exports:
                 imported_but_missing_from_all.append(
                     f"- {item} is imported from '{source_mod}', but not exported."
                 )
 
-        # Entry imported in '__init__.py', but no other module imports it from there.
-        if source_mod == "chezmoi_mousse":
-            root_consumers = external_consumers
-            if not root_consumers:
-                only_imported_via_init_but_abandoned.append(f"- {item} not exported")
-
     # Entry in __all__ evaluations
     for mod, exports in detector.defined_all.items():
-        # Determine if this module qualifies as an __init__.py file context
-        is_init_file = mod == "chezmoi_mousse" or mod.endswith(".__init__")
-
         for item in exports:
             # Item in __all__ was imported from elsewhere
-            if not is_init_file and (mod, item) in detector.items_imported_by_module:
+            if (mod, item) in detector.items_imported_by_module:
                 imported_items_in_all.append(
                     f"- {item} in {mod} is imported from elsewhere but exported."
                 )
 
             direct_consumers = detector.imports_tracker.get((mod, item), set()) - {mod}
 
-            # If it isn't directly consumed, see if it was grabbed via the root package
-            is_used_downstream = False
-            if direct_consumers:
-                is_used_downstream = True
-            else:
-                for p_mod in ["chezmoi_mousse", f"{mod}.__init__"]:
-                    if detector.imports_tracker.get((p_mod, item), set()) - {p_mod}:
-                        is_used_downstream = True
-                        break
-
-            if not is_used_downstream:
+            if not direct_consumers:
                 never_imported_anywhere.append(f"- {item} in {mod}")
 
     error_lines: list[str] = []
@@ -225,12 +196,6 @@ def test_import_export() -> None:
             "\nFound entries in __all__ that are never imported anywhere:"
         )
         error_lines.extend(never_imported_anywhere)
-
-    if only_imported_via_init_but_abandoned:
-        error_lines.append(
-            "\nItems imported in '__init__.py', but never imported from chezmoi_mousse:"
-        )
-        error_lines.extend(only_imported_via_init_but_abandoned)
 
     if imported_but_missing_from_all:
         error_lines.append("\nItems imported from a module, but not exported:")
