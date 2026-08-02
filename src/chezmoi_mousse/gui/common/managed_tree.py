@@ -178,6 +178,7 @@ class ManagedTree(Tree[Path]):
             self.first_time_populating = False
             self.root.collapse_all()
             self.root.expand()
+            self.select_node(self.root)
             return
 
     def _insert_node(self, parent_node: TreeNode[Path], path: Path) -> TreeNode[Path]:
