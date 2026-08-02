@@ -24,6 +24,9 @@ class AllVariableDetector(ast.NodeVisitor):
         # Set of (module_name, item_name) imported *by* a module
         self.items_imported_by_module: set[tuple[str, str]] = set()
 
+        # Policy violations: relative imports deeper than one level (.., ...)
+        self.invalid_relative_imports: set[str] = set()
+
     def _is_known_module_path(self, module_name: str) -> bool:
         """Return True for exact known module names or package prefixes."""
         if module_name in self.known_modules:
@@ -45,8 +48,8 @@ class AllVariableDetector(ast.NodeVisitor):
         package_parts = current_parts[:-1]
 
         # Accept implicit package-style imports by resolving nearest package first.
-        # Example: from common.x import Y inside chezmoi_mousse.gui.*
-        # becomes chezmoi_mousse.gui.common.x when that module exists.
+        # Relative imports like `from .common.x import Y` are handled in
+        # visit_ImportFrom via node.level > 0 before reaching this branch.
         incoming_parts = module_name.split(".")
         for end in range(len(package_parts), 0, -1):
             candidate_parts = package_parts[:end] + incoming_parts
@@ -94,11 +97,18 @@ class AllVariableDetector(ast.NodeVisitor):
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         # Resolve the source module based on absolute vs relative context rules
         if node.level > 0:
-            # Handle relative imports (e.g., level=1 -> '.', level=2 -> '..')
-            parts = self.current_module.split(".")
-            slice_end = -node.level
-            base = parts[:slice_end] if slice_end < 0 else parts
+            if node.level != 1:
+                imported_names = ", ".join(alias.name for alias in node.names)
+                dots = "." * node.level
+                from_target = node.module or ""
+                self.invalid_relative_imports.add(
+                    f"- {self.current_module} uses disallowed relative import: "
+                    f"from {dots}{from_target} import {imported_names}"
+                )
+                return
 
+            parts = self.current_module.split(".")
+            base = parts[:-1]
             suffix = [node.module] if node.module else []
             absolute_module = ".".join(base + suffix)
         else:
@@ -143,6 +153,7 @@ def test_import_export() -> None:
     imported_but_missing_from_all: list[str] = []
     missing_all_variable_entirely: list[str] = []
     imported_items_in_all: list[str] = []
+    invalid_relative_imports: list[str] = sorted(detector.invalid_relative_imports)
 
     # Map target modules being queried
     modules_imported_from = {mod for mod, _ in detector.imports_tracker}
@@ -210,6 +221,10 @@ def test_import_export() -> None:
     if imported_items_in_all:
         error_lines.append("\nIndirect imports:")
         error_lines.extend(imported_items_in_all)
+
+    if invalid_relative_imports:
+        error_lines.append("\nDisallowed deep relative imports (only '.' is allowed):")
+        error_lines.extend(invalid_relative_imports)
 
     if error_lines:
         pytest.fail("\n".join(error_lines))
