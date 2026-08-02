@@ -70,6 +70,8 @@ class GroupName(StrEnum):
 
 class WorkerName(StrEnum):
     parse_json_output = "parse json output"
+    update_paths = "update paths"
+    set_cm_attributes = "set cmattr"
 
 
 class AnimatedFade(Static):
@@ -109,6 +111,7 @@ class SplashScreen(Screen[None]):
     def on_mount(self) -> None:
         self.json_output_parsed = False
         self.managed_paths_instance_ready = False
+        self.cm_attributes_set = False
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
@@ -163,7 +166,8 @@ class SplashScreen(Screen[None]):
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    def _parse_json_outputs(self) -> None:
+    @work(name=WorkerName.parse_json_output)
+    async def _parse_json_outputs(self) -> None:
         parsed_dump_config = Commands.json_loads(ResultCollector.dump_config.std_out)
         parsed_template_data = Commands.json_loads(
             ResultCollector.template_data.std_out
@@ -173,7 +177,8 @@ class SplashScreen(Screen[None]):
         ResultCollector.dest_dir = parsed_dump_config["destDir"]
         self.json_output_parsed = True
 
-    def _set_cm_attributes(self) -> None:
+    @work(name=WorkerName.set_cm_attributes)
+    async def _set_cm_attributes(self) -> None:
         self.app.cmattr.dest_dir = Path(ResultCollector.parsed_dump_config["destDir"])
         self.app.cmattr.auto_add = ResultCollector.parsed_dump_config["git"]["autoadd"]
         self.app.cmattr.auto_commit = ResultCollector.parsed_dump_config["git"][
@@ -184,7 +189,8 @@ class SplashScreen(Screen[None]):
         ]
         self.app.cmattr.cmd_results = ResultCollector()
         self.app.cmattr.paths = ResultCollector.managed_paths_instance
-        msg = self._get_log_msg(prefix="set cmattr", returncode=None)
+        self.cm_attributes_set = True
+        msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)
 
     def _all_workers_finished(self) -> None:
@@ -193,7 +199,7 @@ class SplashScreen(Screen[None]):
             for worker in self.workers
             if worker.group == GroupName.json_output_group
         ):
-            self._parse_json_outputs()  # WorkerName.parse_json_output
+            _ = self._parse_json_outputs().wait()  # WorkerName.parse_json_output
             msg = self._get_log_msg(
                 prefix=WorkerName.parse_json_output, returncode=None
             )
@@ -217,7 +223,7 @@ class SplashScreen(Screen[None]):
                     status_files=ResultCollector.status_files,
                 )
             )
-            msg = self._get_log_msg(prefix="update paths", returncode=None)
+            msg = self._get_log_msg(prefix=WorkerName.update_paths, returncode=None)
             self.splash_log.write(msg)
             self.managed_paths_instance_ready = True
             return
@@ -227,5 +233,5 @@ class SplashScreen(Screen[None]):
             and self.managed_paths_instance_ready is True
             and all(worker.is_finished for worker in self.workers)
         ):
-            self._set_cm_attributes()  # WorkerName.set_cm_attributes
+            _ = self._set_cm_attributes().wait()  # WorkerName.set_cm_attributes
             self.dismiss()

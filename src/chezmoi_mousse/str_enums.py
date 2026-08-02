@@ -66,16 +66,16 @@ class Chars(StrEnum):
 
 
 class ColorVar(StrEnum):
+    bogus = "#FFFF00"
     dimmed = "foreground-darken-3"
+    info = "foreground-darken-1"
+    ready = "accent-darken-2"
+    text = "text"
     text_error = "text-error"
     text_error_dark = "text-error-darken-3"
-    info = "text-primary-darken-1"
-    no_commit_message = "text-secondary"
     text_primary = "text-primary"
-    ready = "accent-darken-2"
     text_secondary = "text-secondary"
     text_success = "text-success"
-    text = "text"
     text_warning = "text-warning"
 
 
@@ -328,7 +328,6 @@ class PathFilters(Enum):
 
 
 class PathKind(StrEnum):
-    any = auto()
     dest_dir = auto()
     dir = auto()
     EXISTS_FALSE = auto()

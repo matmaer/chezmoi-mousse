@@ -105,7 +105,9 @@ class ManagedTree(Tree[Path]):
     def _create_colored_label(self, path: Path) -> str:
         if path in self.paths.n_dirs:
             color = self.app.get_color(PathKind.N_DIR)
-        elif path in self.paths.status_dirs_map or path in self.paths.status_files_map:
+        elif path in self.paths.status_dirs_map:
+            color = self.app.get_color(self.paths.status_dirs_map[path])
+        elif path in self.paths.status_files_map:
             color = self.app.get_color(self.paths.status_files_map[path])
         elif path in self.paths.unchanged_dirs or path in self.paths.unchanged_files:
             color = self.app.get_color(StatusCode.Space)
@@ -186,10 +188,9 @@ class ManagedTree(Tree[Path]):
         def _create_colored_label(path: Path) -> str:
             if path in self.paths.n_dirs:
                 color = self.app.get_color(PathKind.N_DIR)
-            elif (
-                path in self.paths.status_dirs_map
-                or path in self.paths.status_files_map
-            ):
+            elif path in self.paths.status_dirs_map:
+                color = self.app.get_color(self.paths.status_dirs_map[path])
+            elif path in self.paths.status_files_map:
                 color = self.app.get_color(self.paths.status_files_map[path])
             elif (
                 path in self.paths.unchanged_dirs or path in self.paths.unchanged_files
