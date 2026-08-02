@@ -332,20 +332,6 @@ class CheckPath:
 
     @staticmethod
     @typed_lru_cache(maxsize=500)
-    def tree_status_dirs_in(
-        dir_path: Path, tree_status_dirs: frozenset[Path]
-    ) -> frozenset[Path]:
-        return frozenset(path for path in tree_status_dirs if path.parent == dir_path)
-
-    @staticmethod
-    @typed_lru_cache(maxsize=500)
-    def status_files_in(
-        dir_path: Path, status_files: frozenset[Path]
-    ) -> frozenset[Path]:
-        return frozenset(path for path in status_files if path.parent == dir_path)
-
-    @staticmethod
-    @typed_lru_cache(maxsize=500)
     def unchanged_paths_in(
         dir_path: Path, unchanged: frozenset[Path]
     ) -> frozenset[Path]:
