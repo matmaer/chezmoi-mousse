@@ -9,6 +9,8 @@ from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 class AllVariableDetector(ast.NodeVisitor):
     def __init__(self) -> None:
         self.current_module: str = ""
+        self.known_modules: set[str] = set()
+        self.root_package: str = "chezmoi_mousse"
 
         # Mapping of module_name -> set of exported strings in __all__
         self.defined_all: dict[str, set[str]] = {}
@@ -21,6 +23,47 @@ class AllVariableDetector(ast.NodeVisitor):
 
         # New tracking: set of (module_name, item_name) imported *by* a module
         self.items_imported_by_module: set[tuple[str, str]] = set()
+
+    def _is_known_module_path(self, module_name: str) -> bool:
+        """Return True for exact known module names or package prefixes."""
+        if module_name in self.known_modules:
+            return True
+
+        package_prefix = f"{module_name}."
+        return any(known.startswith(package_prefix) for known in self.known_modules)
+
+    def _resolve_non_relative_import(self, module_name: str | None) -> str | None:
+        """Resolve non-relative imports into a module path tracked by this test."""
+        if not module_name:
+            return None
+
+        # Keep explicit absolute imports from the project root package.
+        if module_name == self.root_package:
+            return module_name
+
+        root_prefix = f"{self.root_package}."
+        if module_name.startswith(root_prefix):
+            normalized = module_name[len(root_prefix) :]
+            return normalized if normalized else self.root_package
+
+        current_parts = self.current_module.split(".")
+        package_parts = current_parts[:-1]
+
+        # Accept implicit package-style imports by resolving nearest package first.
+        # Example: from common.x import Y inside chezmoi_mousse.gui.*
+        # becomes chezmoi_mousse.gui.common.x when that module exists.
+        incoming_parts = module_name.split(".")
+        for end in range(len(package_parts), 0, -1):
+            candidate_parts = package_parts[:end] + incoming_parts
+            candidate = ".".join(candidate_parts)
+            if self._is_known_module_path(candidate):
+                return candidate
+
+        # Fallback to root package scope for root-level modules.
+        if self._is_known_module_path(module_name):
+            return module_name
+
+        return None
 
     def visit_Module(self, node: ast.Module) -> None:
         self.has_all[self.current_module] = False
@@ -64,12 +107,8 @@ class AllVariableDetector(ast.NodeVisitor):
             suffix = [node.module] if node.module else []
             absolute_module = ".".join(base + suffix)
         else:
-            # Handle the explicit exception: 'from chezmoi_mousse import SomeClass'
-            if node.module == "chezmoi_mousse" or (
-                node.module and node.module.startswith("chezmoi_mousse.")
-            ):
-                absolute_module = node.module
-            else:
+            absolute_module = self._resolve_non_relative_import(node.module)
+            if absolute_module is None:
                 return
 
         for alias in node.names:
@@ -100,6 +139,8 @@ def test_import_export() -> None:
 
         if module_name:
             file_to_module[file_path] = module_name
+
+    detector.known_modules = set(file_to_module.values())
 
     # Scan all files to gather structural definitions and cross-references
     for file_path, module_name in file_to_module.items():
