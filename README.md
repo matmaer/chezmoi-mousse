@@ -31,10 +31,10 @@ Check out the [Wiki Screenshots](https://github.com/matmaer/chezmoi-mousse/wiki/
 
 ### Pre build binary for Linux
 
-https://github.com/matmaer/chezmoi-mousse/releases/tag/v0.2.5
+https://github.com/matmaer/chezmoi-mousse/releases/latest
 
 ```shell
-wget https://github.com/matmaer/chezmoi-mousse/releases/tag/v0.2.5
+wget https://github.com/matmaer/chezmoi-mousse/releases/latest
 chmod +x chezmoi-mousse
 ./chezmoi-mousse
 ```
