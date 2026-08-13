@@ -122,7 +122,7 @@ class AppIds:
 
 
 class ContainerIds:
-    def __init__(self, ids: AppIds):
+    def __init__(self, ids: AppIds) -> None:
         self.cat_config: str = ids.container_id(name=ContainerName.cat_config)
         self.cat_config_q: str = f"#{self.cat_config}"
         self.contents: str = ids.container_id(name=ContainerName.contents)

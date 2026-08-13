@@ -67,7 +67,7 @@ class DoctorTable(DataTable[Text]):
                 text_row = [Text(cell_text) for cell_text in row]
                 self.add_row(*text_row)
 
-    def watch_doctor_lines(self, doctor_lines: list[str]):
+    def watch_doctor_lines(self, doctor_lines: list[str]) -> None:
         self._populate_table(doctor_lines)
 
 
@@ -289,5 +289,5 @@ class PwMgrInfoView(Vertical):
 
         self.mount(Static(f"\n{InfoStrings.info_warning}"))
 
-    def watch_doctor_lines(self, doctor_lines: list[str]):
+    def watch_doctor_lines(self, doctor_lines: list[str]) -> None:
         self._populate_pw_mgr_info(doctor_lines)

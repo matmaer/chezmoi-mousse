@@ -300,7 +300,7 @@ class DebugTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, ids: AppIds):
+    def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.debug, title=TabLabel.debug)
         self.ids = ids
 

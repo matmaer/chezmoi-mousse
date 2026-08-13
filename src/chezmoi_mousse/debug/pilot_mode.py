@@ -54,7 +54,7 @@ async def press_and_wait(pilot: Pilot[str], key: str) -> None:
     await pilot_chill(pilot)
 
 
-async def toggle_binding(pilot: Pilot[str], key: str):
+async def toggle_binding(pilot: Pilot[str], key: str) -> None:
     await press_and_wait(pilot, key)
     await press_and_wait(pilot, key)
 
