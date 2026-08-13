@@ -83,18 +83,14 @@ class OpButton(Button):
             OpBtnEnum.add_review,
         ):
             self.disabled = True
-        elif (
-            btn_enum
-            in (
-                OpBtnEnum.add_run,
-                OpBtnEnum.apply_run,
-                OpBtnEnum.destroy_run,
-                OpBtnEnum.forget_run,
-                OpBtnEnum.re_add_run,
-                OpBtnEnum.reload,
-                OpBtnEnum.cancel,
-            )
-            or btn_id == self.app_ids.op_btn.log_memory
+        elif btn_enum in (
+            OpBtnEnum.add_run,
+            OpBtnEnum.apply_run,
+            OpBtnEnum.destroy_run,
+            OpBtnEnum.forget_run,
+            OpBtnEnum.re_add_run,
+            OpBtnEnum.reload,
+            OpBtnEnum.cancel,
         ):
             self.display = False
 
