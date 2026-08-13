@@ -4,6 +4,7 @@
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
 > [!NOTE]
+> Do not run the app from the current head, we are implementing a new workflow to avoid this issue in the future, use the pre build binary instead (linux only).
 > It's safe to use the app to visualize your `chezmoi` repository, as no write operations are enabled by default.
 > See the [Use Case](#use-case) to disable dry-run or [Test](#test) first with dummy files.
 > The app is not packaged yet but you can simply run it as a `Python` module, see the [Start](#start) section.
