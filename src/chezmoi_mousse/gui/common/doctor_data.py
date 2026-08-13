@@ -8,7 +8,6 @@ from rich.text import Text
 from textual import getters, work
 from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalGroup
-from textual.reactive import reactive
 from textual.widgets import Collapsible, DataTable, Label, Link, Static
 
 from chezmoi_mousse.str_enums import Chars, ColorVar, SectionLabel, Tcss
@@ -25,50 +24,41 @@ class DoctorTable(DataTable[Text]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    doctor_lines: reactive[list[str]] = reactive(list[str], init=False)
-
     def __init__(self) -> None:
         super().__init__(cursor_type="row")
 
     def on_mount(self) -> None:
-        self._dr_style = {
+        self._populate_table(self.app.cmattr.cmd_results.doctor.out_lines)
+
+    @work
+    async def _populate_table(self, doctor_lines: list[str]) -> None:
+        dr_style = {
             "ok": self.app.get_color(ColorVar.text_success),
             "info": self.app.get_color(ColorVar.info),
             "warning": self.app.get_color(ColorVar.text_warning),
             "failed": self.app.get_color(ColorVar.text_error),
             "error": self.app.get_color(ColorVar.text_error),
         }
-        self._populate_table(self.app.cmattr.cmd_results.doctor.out_lines)
-
-    @work
-    async def _populate_table(self, doctor_lines: list[str]) -> None:
         self.add_columns(*doctor_lines[0].split())
 
         for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                new_row = [
-                    Text(cell_text, style=self._dr_style["info"]) for cell_text in row
-                ]
+                new_row = [Text(cell_text, style=dr_style["info"]) for cell_text in row]
                 self.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
                 new_row = [
-                    Text(cell_text, style=f"{self._dr_style[row[0]]}")
-                    for cell_text in row
+                    Text(cell_text, style=f"{dr_style[row[0]]}") for cell_text in row
                 ]
                 self.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
-                    Text(cell_text, style=self._dr_style["warning"])
-                    for cell_text in row
+                    Text(cell_text, style=dr_style["warning"]) for cell_text in row
                 ]
                 self.add_row(*new_row)
             else:
                 text_row = [Text(cell_text) for cell_text in row]
                 self.add_row(*text_row)
-
-    def watch_doctor_lines(self, doctor_lines: list[str]) -> None:
-        self._populate_table(doctor_lines)
 
 
 class InfoStrings(StrEnum):
@@ -99,13 +89,12 @@ class InfoStrings(StrEnum):
     )
 
 
-@dataclass(slots=True, kw_only=True)  # TODO Enum members better be immutable!
+@dataclass(frozen=True, slots=True, kw_only=True)
 class PwMgrData:
     description: str
     doctor_check: str
     link: str
     info: str
-    dr_message: str = "doctor message not set"
 
 
 class PwMgrInfo(Enum):
@@ -215,22 +204,12 @@ class PwMgrInfo(Enum):
         info=InfoStrings.not_documented,
     )
 
-    @classmethod  # TODO: avoid class methods in Enum classes
-    def all_pw_mgr_commands(cls) -> list[str]:
-        return [pw_mgr.value.doctor_check for pw_mgr in cls]
-
-    @classmethod  # TODO: avoid class methods in Enum classes
-    def get_member_from_doctor_check(cls, doctor_check: str) -> PwMgrData:
-        for member in PwMgrInfo:
-            if member.value.doctor_check == doctor_check:
-                return member.value
-        raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
-
 
 class PwCollapsible(Collapsible):
 
-    def __init__(self, pw_mgr_data: PwMgrData) -> None:
+    def __init__(self, pw_mgr_data: PwMgrData, dr_message: str) -> None:
         self.pw_mgr_data = pw_mgr_data
+        self.dr_message = dr_message
         self.stripped_link = self.pw_mgr_data.link.replace("https://", "").replace(
             "www.", ""
         )
@@ -250,7 +229,7 @@ class PwCollapsible(Collapsible):
             title=(
                 f"[${ColorVar.text_primary}]Doctor check: "
                 f"{self.pw_mgr_data.doctor_check}[/] "
-                f"[{ColorVar.dimmed}]({self.pw_mgr_data.dr_message})[/]"
+                f"[{ColorVar.dimmed}]({self.dr_message})[/]"
             ),
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
@@ -263,31 +242,34 @@ class PwMgrInfoView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    doctor_lines: reactive[list[str]] = reactive(list[str])
-
     def compose(self) -> ComposeResult:
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
         self._populate_pw_mgr_info(self.app.cmattr.cmd_results.doctor.out_lines)
 
+    def _get_pw_mgr_data(self, doctor_check: str) -> PwMgrData:
+        for member in PwMgrInfo:
+            if member.value.doctor_check == doctor_check:
+                return member.value
+        raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
+
     @work
     async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:
-        pw_mgr_data_list: list[PwMgrData] = []
+        pw_mgr_entries: list[tuple[PwMgrData, str]] = []
+        all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrInfo]
 
         for line in doctor_lines[1:]:  # Skip header line
             row = tuple(line.split(maxsplit=2))
-            if row[1] not in PwMgrInfo.all_pw_mgr_commands():
+            if row[1] not in all_pw_mgr_commands:
                 continue
-            pw_mgr_data = PwMgrInfo.get_member_from_doctor_check(row[1])
-            pw_mgr_data.dr_message = row[2]  # contains the doctor message
-            pw_mgr_data_list.append(pw_mgr_data)
+            pw_mgr_data = self._get_pw_mgr_data(row[1])
+            pw_mgr_entries.append((pw_mgr_data, row[2]))
 
-        for item in pw_mgr_data_list:
-            pw_collapsible = PwCollapsible(pw_mgr_data=item)
+        for pw_mgr_data, doctor_message in pw_mgr_entries:
+            pw_collapsible = PwCollapsible(
+                pw_mgr_data=pw_mgr_data, dr_message=doctor_message
+            )
             self.mount(pw_collapsible)
 
         self.mount(Static(f"\n{InfoStrings.info_warning}"))
-
-    def watch_doctor_lines(self, doctor_lines: list[str]) -> None:
-        self._populate_pw_mgr_info(doctor_lines)
