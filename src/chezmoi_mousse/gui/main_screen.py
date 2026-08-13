@@ -337,7 +337,7 @@ class MainScreen(Screen[None]):
             right_side.display = display
 
         set_button_display(button)
-        if button.btn_enum in (OpBtnEnum.reload, OpBtnEnum.cancel):
+        if button.btn_enum is OpBtnEnum.reload:
             set_left_side_display(True)
             set_right_side_display(True)
             self.main_tabs.display = True

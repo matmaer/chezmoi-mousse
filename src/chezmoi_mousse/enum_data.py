@@ -21,7 +21,6 @@ class OpBtnData:
 
 class OpBtnEnum(Enum):
 
-    cancel = OpBtnData(label=OpBtnLabel.cancel)
     refresh_tree = OpBtnData(label=OpBtnLabel.refresh_tree)
     reload = OpBtnData(label=OpBtnLabel.reload)
 

@@ -53,15 +53,11 @@ class AppIds:
 
     @property
     def op_btn_map(self) -> dict[str, OpBtnEnum]:
-        _common_buttons = {
-            self.op_btn.cancel: OpBtnEnum.cancel,
-            self.op_btn.reload: OpBtnEnum.reload,
-        }
         if self.tab_label == TabLabel.add:
             return {
                 self.op_btn.add_review: OpBtnEnum.add_review,
                 self.op_btn.add_run: OpBtnEnum.add_run,
-                **_common_buttons,
+                self.op_btn.reload: OpBtnEnum.reload,
             }
         _forget_destroy_buttons = {
             self.op_btn.destroy_review: OpBtnEnum.destroy_review,
@@ -71,17 +67,17 @@ class AppIds:
         }
         if self.tab_label == TabLabel.apply:
             return {
+                **_forget_destroy_buttons,
                 self.op_btn.apply_review: OpBtnEnum.apply_review,
                 self.op_btn.apply_run: OpBtnEnum.apply_run,
-                **_forget_destroy_buttons,
-                **_common_buttons,
+                self.op_btn.reload: OpBtnEnum.reload,
             }
         elif self.tab_label == TabLabel.re_add:
             return {
+                **_forget_destroy_buttons,
                 self.op_btn.re_add_review: OpBtnEnum.re_add_review,
                 self.op_btn.re_add_run: OpBtnEnum.re_add_run,
-                **_forget_destroy_buttons,
-                **_common_buttons,
+                self.op_btn.reload: OpBtnEnum.reload,
             }
         else:
             raise ValueError(f"Unexpected tab_label {self.tab_label} for op_btn_map")
@@ -91,7 +87,7 @@ class AppIds:
         return {
             btn_id
             for btn_id, btn_enum in self.op_btn_map.items()
-            if "Run" in btn_enum.label
+            if "Run" in getattr(btn_enum, "label", "")
         }
 
     @property
@@ -99,7 +95,7 @@ class AppIds:
         return {
             btn_id
             for btn_id, btn_enum in self.op_btn_map.items()
-            if "Review" in btn_enum.label
+            if "Review" in getattr(btn_enum, "label", "")
         }
 
     @property
@@ -107,7 +103,7 @@ class AppIds:
         return {
             f"#{btn_id}"
             for btn_id, btn_enum in self.op_btn_map.items()
-            if "Review" in btn_enum.label
+            if "Review" in getattr(btn_enum, "label", "")
         }
 
     @property

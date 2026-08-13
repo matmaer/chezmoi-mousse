@@ -8,7 +8,7 @@ from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGr
 from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse.enum_data import OpBtnEnum, SwitchEnum
-from chezmoi_mousse.str_enums import FlatBtnLabel, TabLabel, Tcss
+from chezmoi_mousse.str_enums import FlatBtnLabel, OpBtnLabel, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -67,6 +67,15 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
+class CancelButton(Button):
+    def __init__(self, tab_ids: AppIds) -> None:
+        super().__init__(
+            classes=Tcss.operate_button,
+            id=tab_ids.op_btn.cancel,
+            label=OpBtnLabel.cancel,
+        )
+
+
 class OpButton(Button):
 
     def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: AppIds) -> None:
@@ -90,7 +99,6 @@ class OpButton(Button):
             OpBtnEnum.forget_run,
             OpBtnEnum.re_add_run,
             OpBtnEnum.reload,
-            OpBtnEnum.cancel,
         ):
             self.display = False
 
@@ -104,6 +112,11 @@ class OperateButtons(HorizontalGroup):
     def compose(self) -> ComposeResult:
         for btn_id, btn_enum in self.tab_ids.op_btn_map.items():
             yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.tab_ids)
+        yield CancelButton(tab_ids=self.tab_ids)
+
+    def on_mount(self) -> None:
+        cancel_btn = self.query_one(self.tab_ids.op_btn.cancel_q, CancelButton)
+        cancel_btn.display = False
 
     def set_path_arg(self, path: Path) -> None:
         for btn_enum in self.tab_ids.op_btn_map.values():
