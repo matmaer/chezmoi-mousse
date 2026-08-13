@@ -169,13 +169,12 @@ class DebugLog(RichLoggers):
         self.write_ready(LogString.debug_log_initialized)
 
     def write_dimmed(self, message: str) -> None:
-        lines: list[str] = message.splitlines()
-        for line in lines:
-            if line.strip() != "":
-                escaped_line = escape(line)
-                lines.append(f"[dim]{escaped_line}[/]")
-        message = "  \n".join(lines)
-        self.write(message)
+        escaped_lines = [
+            f"[dim]{escape(line)}[/]"
+            for line in message.splitlines()
+            if line.strip() != ""
+        ]
+        self.write("  \n".join(escaped_lines))
 
     def mro(self, mro: tuple[type, ...]) -> None:
         """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
