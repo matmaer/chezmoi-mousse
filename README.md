@@ -90,6 +90,7 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 - [ ] `chezmoi init` clone repository
 - [ ] `chezmoi purge`
 - [x] `chezmoi re-add` file
+- [ ] `chezmoi re-add` directory
 
 ### Read Operations
 
@@ -117,7 +118,6 @@ See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Sc
 - :black_circle: Under development, help wanted or to be documented
 
 > [!NOTE] `chezmoi` command **flags** can override your local config file.
-> See the [_run_cmd.py](https://github.com/matmaer/chezmoi-mousse/blob/main/src/chezmoi_mousse/_run_cmd.py) file for the exact flags in use.
 
 ### Top level
 
@@ -266,7 +266,6 @@ status
 - :green_square: status.exclude
 
 template
-- [x] `chezmoi re-add` directory
 - :black_circle: template.options
 
 textconv
