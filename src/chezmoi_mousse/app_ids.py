@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from chezmoi_mousse.enum_data import OpBtnEnum, SwitchEnum
 from chezmoi_mousse.str_enums import (
     ContainerName,
@@ -50,7 +52,7 @@ class AppIds:
         return f"{qid}{self.tab_label.name}_{richlog.name}"
 
     @property
-    def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
+    def op_btn_map(self) -> dict[str, OpBtnEnum]:
         _common_buttons = {
             self.op_btn.cancel: OpBtnEnum.cancel,
             self.op_btn.reload: OpBtnEnum.reload,
