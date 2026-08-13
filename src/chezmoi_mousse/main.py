@@ -32,7 +32,7 @@ def check_if_we_can_run() -> str | None:
         sys.exit("\n".join(list(error_info)))
 
 
-def run_app():
+def run_app() -> None:
     DebugUtils.clear_stacktrace()
     check_if_we_can_run()
 
