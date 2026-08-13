@@ -5,7 +5,12 @@ from typing import TYPE_CHECKING
 
 from textual import getters, on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.containers import (
+    Horizontal,
+    HorizontalGroup,
+    ScrollableContainer,
+    Vertical,
+)
 from textual.widgets import (
     Button,
     ContentSwitcher,
@@ -338,7 +343,34 @@ class DebugTab(TabPane):
                     RichLog(id=self.ids.richlog.memory, markup=True),
                     id=self.ids.container.memory_usage,
                 )
-        yield OperateButtons(self.ids)
+        with HorizontalGroup(
+            id=self.ids.container.operate_buttons, classes=Tcss.op_btn_group
+        ):
+            yield Button(
+                classes=Tcss.operate_button,
+                id=self.ids.op_btn.log_memory,
+                label=OpBtnLabel.log_memory,
+            )
+            yield Button(
+                classes=Tcss.operate_button,
+                id=self.ids.op_btn.list_test_paths,
+                label=OpBtnLabel.list_test_paths,
+            )
+            yield Button(
+                classes=Tcss.operate_button,
+                id=self.ids.op_btn.create_diffs,
+                label=OpBtnLabel.create_diffs,
+            )
+            yield Button(
+                classes=Tcss.operate_button,
+                id=self.ids.op_btn.create_paths,
+                label=OpBtnLabel.create_paths,
+            )
+            yield Button(
+                classes=Tcss.operate_button,
+                id=self.ids.op_btn.remove_paths,
+                label=OpBtnLabel.remove_paths,
+            )
 
     def on_mount(self) -> None:
         self.test_paths = TestPaths()
@@ -349,6 +381,7 @@ class DebugTab(TabPane):
         self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
         self.memory_logger = self.query_one(self.ids.richlog.memory_q, RichLog)
         self.mem_log_op_btn = self.query_one(self.ids.op_btn.log_memory_q, Button)
+        self.mem_log_op_btn.display = False
         self.list_test_paths_op_btn = self.query_one(
             self.ids.op_btn.list_test_paths_q, Button
         )
@@ -457,7 +490,7 @@ class DebugTab(TabPane):
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == OpBtnLabel.log_memory:
+        if event.button.label == OpBtnLabel.log_memory.value:
             self._write_to_memory_log(auto=False)
             return
         result: str | list[str] = ""

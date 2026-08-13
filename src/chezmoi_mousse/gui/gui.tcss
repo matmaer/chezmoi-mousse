@@ -45,6 +45,29 @@
   min-width: 78;
 }
 
+.op_btn_group {
+  dock: bottom;
+  height: 2;
+  &>.operate_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-top: wide $primary-darken-3;
+    border-bottom: none;
+    color: $primary-lighten-3;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+    &:hover {
+      text-style: none;
+      color: $accent;
+      border-top: wide $accent-darken-3;
+    }
+    &:focus {
+      text-style: none;
+    }
+  }
+}
+
 .tab_left_vertical {
   margin-right: 2;
   width: auto;
@@ -135,29 +158,6 @@ LoadingModal {
     &>LoadingIndicator {
       height: auto;
       margin-top: 1;
-    }
-  }
-}
-
-OperateButtons {
-  dock: bottom;
-  height: 2;
-  &>.operate_button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-top: wide $primary-darken-3;
-    border-bottom: none;
-    color: $primary-lighten-3;
-    margin: 0 1;
-    text-style: none;
-    width: 1fr;
-    &:hover {
-      text-style: none;
-      color: $accent;
-      border-top: wide $accent-darken-3;
-    }
-    &:focus {
-      text-style: none;
     }
   }
 }

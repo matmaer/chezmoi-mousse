@@ -51,14 +51,6 @@ class AppIds:
 
     @property
     def op_btn_map(self) -> dict[str, "OpBtnEnum"]:
-        if self.tab_label == TabLabel.debug:
-            return {
-                self.op_btn.list_test_paths: OpBtnEnum.list_test_paths,
-                self.op_btn.create_paths: OpBtnEnum.create_paths,
-                self.op_btn.remove_paths: OpBtnEnum.remove_paths,
-                self.op_btn.create_diffs: OpBtnEnum.create_diffs,
-                self.op_btn.log_memory: OpBtnEnum.log_memory,
-            }
         _common_buttons = {
             self.op_btn.cancel: OpBtnEnum.cancel,
             self.op_btn.reload: OpBtnEnum.reload,

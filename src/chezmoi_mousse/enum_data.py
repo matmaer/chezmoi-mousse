@@ -22,13 +22,8 @@ class OpBtnData:
 class OpBtnEnum(Enum):
 
     cancel = OpBtnData(label=OpBtnLabel.cancel)
-    create_diffs = OpBtnData(label=OpBtnLabel.create_diffs)
-    create_paths = OpBtnData(label=OpBtnLabel.create_paths)
-    list_test_paths = OpBtnData(label=OpBtnLabel.list_test_paths)
-    log_memory = OpBtnData(label=OpBtnLabel.log_memory)
     refresh_tree = OpBtnData(label=OpBtnLabel.refresh_tree)
     reload = OpBtnData(label=OpBtnLabel.reload)
-    remove_paths = OpBtnData(label=OpBtnLabel.remove_paths)
 
     add_review = OpBtnData(
         label=OpBtnLabel.add_review,

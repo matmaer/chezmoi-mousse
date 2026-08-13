@@ -99,7 +99,7 @@ class OperateButtons(HorizontalGroup):
 
     def __init__(self, ids: AppIds) -> None:
         self.tab_ids = ids
-        super().__init__(id=ids.container.operate_buttons)
+        super().__init__(id=ids.container.operate_buttons, classes=Tcss.op_btn_group)
 
     def compose(self) -> ComposeResult:
         for btn_id, btn_enum in self.tab_ids.op_btn_map.items():
