@@ -28,7 +28,6 @@ Check out the [Wiki Screenshots](https://github.com/matmaer/chezmoi-mousse/wiki/
 
 ## Start
 
-
 ### Pre build binary for Linux
 
 https://github.com/matmaer/chezmoi-mousse/releases/latest
@@ -39,32 +38,12 @@ chmod +x chezmoi-mousse
 ./chezmoi-mousse
 ```
 
-### Run from source all platforms
-
-Clone the repository: `git clone https://github.com/matmaer/chezmoi-mousse.git`
-
-Change directory: `cd chezmoi-mousse` and `cd src`
-
-The easiest way is to run the app with `uv`, [install uv](https://docs.astral.sh/uv/getting-started/installation/) on your platform. Then in the chezmoi-mousse src directory, run:
-
-`uv run --no-dev --python 3.13 --with textual -m chezmoi_mousse`
-
-If Python 3.13 with `textual` is available in you env, in the `src` directory, you can run:
-
-`python -m chezmoi_mousse`
-
 > [!NOTE]
 > Navigate to the "Config" tab and check the output from `chezmoi doctor`
 
 ## Test
 
-To test the app without "real" dotfiles in a container or VM:
-
-In the src directory of the cloned repository, you can run
-
-`CHEZMOI_MOUSSE_DEBUG_MODE=1 uv run --python 3.13 --with textual -m chezmoi_mousse`
-
-Then on the "Debug" tab, you can generate some files in the home directory, and offer the possibility to modify the generated files to have diffs.
+To test the app without "real" dotfiles in a container or VM, on the "Debug" tab, you can generate some files in the home directory, and offer the possibility to modify the generated files to have diffs.
 Files are generated using the `Faker` [package](https://faker.readthedocs.io/en/master/#)
 
 See the [Debug tab screenshot](https://github.com/matmaer/chezmoi-mousse/wiki/Screenshots#debug-tab)
