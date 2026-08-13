@@ -47,7 +47,7 @@ def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
 
 
 def typed_lru_cache[**FuncParams, FuncReturn](
-    *, maxsize: int | None = 128, typed: bool = False
+    *, maxsize: int = 128, typed: bool = False
 ) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
     def decorator(
         func: Callable[FuncParams, FuncReturn],
