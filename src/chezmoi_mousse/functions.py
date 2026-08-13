@@ -90,16 +90,15 @@ class AppLife:
             if pretty is False
             else " ".join([a for a in cmd.value if a not in AppLife._ugly_args()])
         )
-        if isinstance(cmd, ReadCmd) and dry is None:
+
+        if isinstance(cmd, ReadCmd):
+            if dry is not None:
+                raise ValueError(f"Read commands are always live; received dry={dry}")
             return f"chezmoi {verb_str}"
-        elif isinstance(cmd, WriteCmd) and dry is not None:
-            return (
-                f"chezmoi {verb_str}"
-                if dry is False
-                else f"chezmoi --dry-run {verb_str}"
-            )
-        else:
-            raise ValueError(f"Received invalid params for {cmd}, dry={dry}")
+
+        if dry is None:
+            raise ValueError(f"Write commands require dry flag; received dry={dry}")
+        return f"chezmoi --dry-run {verb_str}" if dry is True else f"chezmoi {verb_str}"
 
     @staticmethod
     @typed_lru_cache(maxsize=500)
@@ -166,9 +165,9 @@ class Commands:
         cmd: WriteCmd, dry_run: bool, path_arg: Path | None = None
     ) -> CommandResult:
         args: StrTuple = (
-            ("chezmoi",) + cmd.value
+            ("chezmoi", "--dry-run") + cmd.value
             if dry_run is True
-            else ("chezmoi", "--dry-run") + cmd.value
+            else ("chezmoi",) + cmd.value
         )
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
             args=args, path=path_arg, time_out=20
