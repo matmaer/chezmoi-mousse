@@ -188,7 +188,7 @@ class MainScreen(Screen[None]):
             return
         else:
             event.stop()
-        self.set_button_display(event.button)
+        self._set_button_display(event.button)
         if event.button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.reset_widgets()
             self.operate_info.update_review_info(event.button, self.app.cmattr.dry_run)
@@ -267,13 +267,13 @@ class MainScreen(Screen[None]):
         # Widget display logic #
         ########################
 
-    def set_left_side_display(self, app_ids: AppIds, display: bool) -> None:
+    def _set_left_side_display(self, app_ids: AppIds, display: bool) -> None:
         left_side = self.query_one(app_ids.container.left_side_q, Vertical)
         left_side.display = display
         switch_slider = self.query_one(app_ids.switch_slider_q, SwitchSlider)
         switch_slider.display = display
 
-    def set_right_side_display(self, app_ids: AppIds, display: bool) -> None:
+    def _set_right_side_display(self, app_ids: AppIds, display: bool) -> None:
         right_side: Vertical | ContentsView | None = None
         if app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
             right_side = self.query_one(app_ids.container.right_side_q, Vertical)
@@ -283,7 +283,7 @@ class MainScreen(Screen[None]):
             raise NotImplementedError(f"Not implemented for {app_ids.tab_label}")
         right_side.display = display
 
-    def set_button_display(self, button: OpButton) -> None:
+    def _set_button_display(self, button: OpButton) -> None:
         op_button_group = self.query_one(
             button.app_ids.container.operate_buttons_q, OperateButtons
         )
@@ -327,10 +327,10 @@ class MainScreen(Screen[None]):
                 btn.display = False
             reload_btn.display = True
 
-        self.set_button_display(button)
+        self._set_button_display(button)
         if button.btn_enum is OpBtnEnum.reload:
-            self.set_left_side_display(button.app_ids, True)
-            self.set_right_side_display(button.app_ids, True)
+            self._set_left_side_display(button.app_ids, True)
+            self._set_right_side_display(button.app_ids, True)
             self.main_tabs.display = True
             self.op_feed_back.display = False
             self.command_output.display = False
@@ -338,15 +338,15 @@ class MainScreen(Screen[None]):
             return
         self.op_feed_back.display = True
         self.main_tabs.display = False
-        self.set_left_side_display(button.app_ids, False)
+        self._set_left_side_display(button.app_ids, False)
         if button.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.display = False
             self.operate_info.display = True
-            self.set_right_side_display(button.app_ids, True)
+            self._set_right_side_display(button.app_ids, True)
         elif (
             button.btn_enum in OpBtnEnum.run_btn_enums()
             or button.btn_enum == OpBtnEnum.refresh_tree
         ):
             self.command_output.display = True
             self.operate_info.display = False
-            self.set_right_side_display(button.app_ids, False)
+            self._set_right_side_display(button.app_ids, False)
