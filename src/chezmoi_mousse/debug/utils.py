@@ -1,3 +1,7 @@
+import tempfile
+import traceback
+from pathlib import Path
+
 __all__ = ["DebugUtils"]
 
 
@@ -5,9 +9,6 @@ class DebugUtils:
 
     @staticmethod
     def clear_stacktrace() -> None:
-        import tempfile
-        from pathlib import Path
-
         path = Path(tempfile.gettempdir()) / "chezmoi_gui_stacktrace.log"
         path.unlink(missing_ok=True)
         with path.open("w") as f:
@@ -15,10 +16,6 @@ class DebugUtils:
 
     @staticmethod
     def save_stacktrace() -> None:
-        import tempfile
-        import traceback
-        from pathlib import Path
-
         path = Path(tempfile.gettempdir()) / "chezmoi_gui_stacktrace.log"
         if not path.exists():
             path.touch()
