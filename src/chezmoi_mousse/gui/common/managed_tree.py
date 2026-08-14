@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Iterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -15,7 +15,14 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.named_tuples import ManagedTreePaths
-from chezmoi_mousse.str_enums import Chars, PathKind, StatusCode, TabLabel, Tcss
+from chezmoi_mousse.str_enums import (
+    Chars,
+    ColorVar,
+    PathKind,
+    StatusCode,
+    TabLabel,
+    Tcss,
+)
 
 if TYPE_CHECKING:
 
@@ -47,13 +54,16 @@ class DestDirTree(Vertical):
 
 @dataclass(slots=True, frozen=True)
 class ManagedTreeState:
-    all_dir_nodes: TreeNodeDict = field(default_factory=lambda: {})
-    all_file_nodes: TreeNodeDict = field(default_factory=lambda: {})
-    expanded_dirs: dict[str, bool] = field(default_factory=lambda: {})
-    selected_path: Path | None = None
+    root_node: TreeNode[Path]
+    all_dir_nodes: TreeNodeDict
+    all_file_nodes: TreeNodeDict
+    selected_node: TreeNode[Path] | None
+    show_unchanged: bool
+    show_unmanaged: bool
+    expand_all: bool
 
     @property
-    def visible_dir_nodes(self) -> TreeNodeDict:
+    def expanded_dir_nodes(self) -> TreeNodeDict:
         return {
             p: n
             for p, n in self.all_dir_nodes.items()
@@ -61,29 +71,22 @@ class ManagedTreeState:
         }
 
     @property
-    def visible_expanded_dir_nodes(self) -> TreeNodeDict:
-        return {p: n for p, n in self.visible_dir_nodes.items() if n.is_expanded}
+    def visible_dir_nodes(self) -> TreeNodeDict:
+        return {
+            p: n
+            for p, n in self.expanded_dir_nodes.items()
+            if n.parent is not None
+            and n.parent.is_expanded
+            or n.parent is self.root_node
+        }
 
     @property
     def visible_file_nodes(self) -> TreeNodeDict:
         return {
             p: n
             for p, n in self.all_file_nodes.items()
-            if n.parent is not None and n.parent.is_expanded
+            if n.parent is not None and n.parent in self.visible_dir_nodes.values()
         }
-
-    def snapshot(self) -> ManagedTreeState:
-        expanded_dirs = {
-            str(path): node.is_expanded
-            for path, node in self.all_dir_nodes.items()
-            if node.is_expanded
-        }
-        return ManagedTreeState(
-            all_dir_nodes=self.all_dir_nodes,
-            all_file_nodes=self.all_file_nodes,
-            expanded_dirs=expanded_dirs,
-            selected_path=self.selected_path,
-        )
 
 
 class ManagedTree(Tree[Path]):
@@ -104,7 +107,6 @@ class ManagedTree(Tree[Path]):
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-        self.first_time_populating = False
 
         # configure root node
         self.root.data = self.app.cmattr.dest_dir
@@ -112,8 +114,6 @@ class ManagedTree(Tree[Path]):
         self.root.label = f"[{color} bold]{self.app.cmattr.dest_dir.name}[/]"
         self.root.expand()
         self.root.allow_expand = False  # prevent from being collapsed
-        # keep state
-        self.state = ManagedTreeState()
 
     @property
     def paths(self) -> ManagedTreePaths:
@@ -121,52 +121,6 @@ class ManagedTree(Tree[Path]):
             self.app.cmattr.paths.apply_tree_paths
             if self.app_ids.tab_label == TabLabel.apply
             else self.app.cmattr.paths.re_add_tree_paths
-        )
-
-    def _create_colored_label(self, path: Path) -> str:
-        if path in self.paths.n_dirs:
-            color = self.app.get_color(PathKind.N_DIR)
-        elif path in self.paths.status_dirs_map:
-            color = self.app.get_color(self.paths.status_dirs_map[path])
-        elif path in self.paths.status_files_map:
-            color = self.app.get_color(self.paths.status_files_map[path])
-        elif path in self.paths.unchanged_dirs or path in self.paths.unchanged_files:
-            color = self.app.get_color(StatusCode.Space)
-        elif (
-            path not in self.paths.managed_dirs_map
-            and path not in self.paths.managed_files_map
-        ):
-            color = self.app.get_color(PathKind.UNMANAGED)
-        else:
-            color = self.app.get_color(None)
-        italic = " italic" if not path.exists() else ""
-        return f"[{color}{italic}]{path.name}[/]"
-
-    def _get_nodes_bfs(self, path_kind: PathKind) -> TreeNodeDict:
-        # BFS approach using deque for O(1) pops from the left.
-
-        queue = deque([self.root])  # add the root node as it's not allowed to expand
-        if path_kind == PathKind.dir:
-            queue.extend(deque(n for n in self.root.children if n.allow_expand))
-        elif path_kind == PathKind.file:
-            queue.extend(deque(n for n in self.root.children if not n.allow_expand))
-
-        nodes_dict: dict[Path, TreeNode[Path]] = {}
-
-        while queue:
-            node = queue.popleft()
-            if node.data is None:
-                raise RuntimeError(f"{node.label}: Path is None.")
-            nodes_dict[node.data] = node
-            queue.extend(node.children)
-
-        return nodes_dict
-
-    def _update_tree_state(self) -> None:
-        all_dir_nodes = self._get_nodes_bfs(PathKind.dir)
-        all_file_nodes = self._get_nodes_bfs(PathKind.file)
-        self.state = ManagedTreeState(
-            all_dir_nodes=all_dir_nodes, all_file_nodes=all_file_nodes
         )
 
     def _iter_tree_nodes(self) -> Iterator[TreeNode[Path]]:
@@ -177,112 +131,131 @@ class ManagedTree(Tree[Path]):
             queue.extend(node.children)
 
     def _snapshot_tree_state(self) -> ManagedTreeState:
+        current_dir_nodes: TreeNodeDict = {}
+        current_file_nodes: TreeNodeDict = {}
+        for node in self._iter_tree_nodes():
+            if node.data is not None:
+                if node.allow_expand:
+                    current_dir_nodes[node.data] = node
+                else:
+                    current_file_nodes[node.data] = node
         return ManagedTreeState(
-            all_dir_nodes=self.state.all_dir_nodes,
-            all_file_nodes=self.state.all_file_nodes,
-            expanded_dirs={
-                str(path): node.is_expanded
-                for path, node in self.state.all_dir_nodes.items()
-                if node.is_expanded
-            },
-            selected_path=(
-                self.cursor_node.data if self.cursor_node is not None else None
-            ),
+            root_node=self.root,
+            all_dir_nodes=current_dir_nodes,
+            all_file_nodes=current_file_nodes,
+            selected_node=self.cursor_node,
+            show_unchanged=self.show_unchanged,
+            show_unmanaged=self.show_unmanaged,
+            expand_all=self.expand_all,
         )
 
-    def _restore_tree_state(self, snapshot: ManagedTreeState) -> None:
-        expanded_dirs = snapshot.expanded_dirs
-        selected_path = snapshot.selected_path
+    def _add_unchanged_nodes(self) -> None:
+        """First add unchanged directories, then add unchanged files.
 
-        for path, node in self.state.all_dir_nodes.items():
-            should_expand = expanded_dirs.get(str(path), False)
-            if should_expand and not node.is_expanded:
-                node.expand()
-            elif not should_expand and node.is_expanded:
-                node.collapse()
-
-        if selected_path is not None:
-            for node in self._iter_tree_nodes():
-                if node.data == selected_path:
-                    self.select_node(node)
-                    break
+        This ensures that all parent directories are present before adding files.
+        """
+        ...
 
     def _remove_unchanged_nodes(self) -> None:
-        queue: deque[TreeNode[Path]] = deque([self.root])
-        unchanged_paths = self.paths.unchanged_dirs | self.paths.unchanged_files
+        """Removes unchanged nodes from the tree, first the files, then the directories
+        if they no longer contain any files."""
+        ...
 
-        while queue:
-            current_node = queue.popleft()
-            for child in list(current_node.children):
-                if child.data in unchanged_paths:
-                    child.remove()
-                else:
-                    queue.append(child)
+    def _get_node_label(
+        self,
+        node_path: Path,
+        managed_kind: PathKind | None,
+        status_code: StatusCode | None,
+    ) -> str:
+        # determine the color for the node
+        if managed_kind is None:
+            color = self.app.get_color(ColorVar.ready)
+        elif status_code is not None:
+            color = self.app.get_color(status_code)
+        else:
+            color = self.app.get_color(StatusCode.Space)
+        # determine if the label should be italic or not
+        italic = ""
+        if managed_kind == PathKind.EXISTS_FALSE:
+            italic = " italic"
+        return f"[{color}{italic}]{node_path.name}[/]"
 
     def populate_tree(self) -> None:
-        self.root.remove_children()
+        current_state = self._snapshot_tree_state()
+        for dir_path in self.paths.tree_status_dirs:
+            parent_path = dir_path.parent
+            parent_node = current_state.all_dir_nodes.get(parent_path, self.root)
+            self._insert_dir_node(parent_node, dir_path)
+        for file_path in self.paths.status_files:
+            parent_path = file_path.parent
+            parent_node = current_state.all_dir_nodes.get(parent_path, self.root)
+            self._insert_file_node(
+                parent_node, file_path
+            )  # update state after adding files
 
-        dir_queue: deque[TreeNode[Path]] = deque([self.root])
-        remaining_dirs = set(self.paths.tree_status_dirs)
-
-        while dir_queue and remaining_dirs:
-            parent_node = dir_queue.popleft()
-            parent_path = parent_node.data
-            if parent_path is None:
-                continue
-
-            child_dirs = sorted(
-                (path for path in remaining_dirs if path.parent == parent_path),
-                key=lambda path: path.name.lower(),
-            )
-            for child_dir in child_dirs:
-                child_node = self._insert_node(parent_node=parent_node, path=child_dir)
-                dir_queue.append(child_node)
-                remaining_dirs.remove(child_dir)
-
-        current_dir_nodes = self._get_nodes_bfs(path_kind=PathKind.dir)
-
-        for path in self.paths.status_files_map:
-            parent_node = current_dir_nodes.get(path.parent)
-            if parent_node is not None:
-                self._insert_node(parent_node, path)
-
-        self._update_tree_state()
-
-        # expand all switch is false by default, tree state does not matter yet
-        if self.first_time_populating:
-            self.first_time_populating = False
-            self.root.collapse_all()
-            self.root.expand()
-            self.select_node(self.root)
-            return
-
-    def _insert_node(self, parent_node: TreeNode[Path], path: Path) -> TreeNode[Path]:
-        """Inserts a dir node or file node alphabetically, using is_file to determine
-        where as we keep children which are directories on top followed by the children
-        which are files."""
-        is_dir_path = path in self.paths.managed_dirs_map or path.is_dir()
-        children = parent_node.children
-        path_label = self._create_colored_label(path)
-
-        if not children:
-            return parent_node.add(path_label, data=path, allow_expand=is_dir_path)
-        elif is_dir_path:
-            node_context = [c for c in children if c.allow_expand]
-        else:
-            node_context = [c for c in children if not c.allow_expand]
-
+    def _insert_dir_node(self, parent_node: TreeNode[Path], dir_path: Path) -> None:
+        """Inserts a child directory node for a given parent alphabetically."""
+        # determine before_node value
+        dir_children = (c for c in parent_node.children if c.allow_expand)
         before_node = next(
             (
                 n
-                for n in node_context
-                if n.data is not None and n.data.name.lower() > path.name.lower()
+                for n in dir_children
+                if n.data is not None and n.data.name.lower() > dir_path.name.lower()
             ),
             None,
         )
-        return parent_node.add(
-            path_label, data=path, before=before_node, allow_expand=is_dir_path
+        # look up the dir_path in self.paths.managed_dirs to get the PathKind
+        managed_kind = self.paths.managed_dirs.get(dir_path, None)
+        # look up the dir_path in self.paths.tree_status_dirs to get the StatusCode
+        status_code = self.paths.tree_status_dirs.get(dir_path, None)
+
+        # call _insert_node
+        self._insert_node(
+            allow_expand=True,
+            before_node=before_node,
+            data=dir_path,
+            label=self._get_node_label(dir_path, managed_kind, status_code),
+            parent_node=parent_node,
         )
+
+    def _insert_file_node(self, parent_node: TreeNode[Path], file_path: Path) -> None:
+        """Inserts a file node for a given parent alphabetically."""
+        file_children = (c for c in parent_node.children if not c.allow_expand)
+        before_node = next(
+            (
+                n
+                for n in file_children
+                if n.data is not None and n.data.name.lower() > file_path.name.lower()
+            ),
+            None,
+        )
+        # look up the file_path in self.paths.managed_files to get the PathKind
+        managed_kind = self.paths.managed_files.get(file_path, None)
+        # look up the file_path in self.paths.status_files to get the StatusCode
+        status_code = self.paths.status_files.get(file_path, None)
+
+        # call _insert_node
+        self._insert_node(
+            allow_expand=False,
+            before_node=before_node,
+            data=file_path,
+            label=self._get_node_label(file_path, managed_kind, status_code),
+            parent_node=parent_node,
+        )
+
+    def _insert_node(
+        self,
+        allow_expand: bool,
+        before_node: TreeNode[Path] | None,
+        data: Path,
+        label: str,
+        parent_node: TreeNode[Path],
+    ) -> None:
+        state = self._snapshot_tree_state()
+        if data in state.all_dir_nodes or data in state.all_file_nodes:
+            return  # node already exists, do not insert again
+        parent_node.add(label, data=data, before=before_node, allow_expand=allow_expand)
 
     # #################################
     # # Watchers and message handling #
@@ -292,16 +265,14 @@ class ManagedTree(Tree[Path]):
     def update_collapsed(self) -> None: ...
 
     @on(Tree.NodeExpanded)
-    def update_expanded(self) -> None:
-        if not self.expand_all:
-            ...
+    def update_expanded(self) -> None: ...
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         if event.node.data is not None:
             has_status = (
-                event.node.data in self.paths.status_files_map
-                or event.node.data in self.paths.status_dirs_map
+                event.node.data in self.paths.status_files
+                or event.node.data in self.paths.status_dirs
             )
             is_ndir = event.node.data in self.paths.n_dirs
             self.post_message(
@@ -317,20 +288,15 @@ class ManagedTree(Tree[Path]):
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged:
-            for path in self.paths.unchanged_dirs | self.paths.unchanged_files:
-                parent_node: TreeNode[Path] | None = (
-                    self.state.visible_expanded_dir_nodes.get(path.parent)
-                )
-                if parent_node is None and path.parent == self.root.data:
-                    parent_node = self.root
-                if parent_node is not None and not any(
-                    child.data == path for child in parent_node.children
-                ):
-                    self._insert_node(parent_node, path)
+            self._add_unchanged_nodes()
         else:
             self._remove_unchanged_nodes()
-        self._update_tree_state()
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:
             self.root.expand_all()
+        else:
+            self.root.collapse_all()
+
+    def watch_show_unmanaged(self) -> None:
+        self.notify("Not implemented yet: show_unmanaged watcher")

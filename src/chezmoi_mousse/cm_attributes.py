@@ -13,7 +13,6 @@ from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, PathKindMap, StatusMap
-    from chezmoi_mousse.named_tuples import ManagedResults
 
 
 __all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
@@ -79,8 +78,12 @@ class ChangedPaths:
 
 @dataclass(frozen=True, kw_only=True)
 class ManagedPaths:
-    """Contains only immutable fields and attribute outputs to avoid asyncio related
-    issues."""
+
+    _dest_dir: Path
+    _managed_dirs_result: CommandResult
+    _managed_files_result: CommandResult
+    _status_dirs_result: CommandResult
+    _status_files_result: CommandResult
 
     def __post_init__(self) -> None:
         # warm all public cached_property attributes
@@ -105,11 +108,11 @@ class ManagedPaths:
 
     @cached_property
     def managed_dirs(self) -> PathKindMap:
-        return self._get_managed_path_kind_map(self.results.managed_dirs.out_lines)
+        return self._get_managed_path_kind_map(self._managed_dirs_result.out_lines)
 
     @cached_property
     def managed_files(self) -> PathKindMap:
-        return self._get_managed_path_kind_map(self.results.managed_files.out_lines)
+        return self._get_managed_path_kind_map(self._managed_files_result.out_lines)
 
     # not cached, fast boolean logic
     @property
@@ -140,8 +143,6 @@ class ManagedPaths:
 
         return MappingProxyType(dict(sorted(temp_dict.items())))
 
-    results: ManagedResults
-
     def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
         """Results accessed by the ManagedTree classes for Apply and ReAdd tab context.
 
@@ -154,13 +155,13 @@ class ManagedPaths:
         which call this method, in the ManagedTree class.
         """
         dirs_map: StatusMap = self._get_status_map(
-            self.results.status_dirs.out_lines, status_col
+            self._status_dirs_result.out_lines, status_col
         )
         status_dirs: StatusMap = MappingProxyType(
             {k: v for k, v in dirs_map.items() if v != StatusCode.Space}
         )
         files_map: StatusMap = self._get_status_map(
-            self.results.status_files.out_lines, status_col
+            self._status_files_result.out_lines, status_col
         )
         status_files: StatusMap = MappingProxyType(
             {k: v for k, v in files_map.items() if v != StatusCode.Space}
@@ -170,12 +171,11 @@ class ManagedPaths:
             parent
             for path in (status_dirs.keys() | status_files.keys())
             for parent in path.parents
-            if parent not in status_dirs
-            and parent.is_relative_to(self.results.dest_dir)
+            if parent not in status_dirs and parent.is_relative_to(self._dest_dir)
         )
 
         return ManagedTreePaths(
-            dest_dir=self.results.dest_dir,
+            dest_dir=self._dest_dir,
             managed_dirs=self.managed_dirs,
             managed_files=self.managed_files,
             n_dirs=_n_dirs,

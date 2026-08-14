@@ -9,13 +9,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import PathKindMap, StatusMap
 
 
-__all__ = [
-    "CommandResult",
-    "ManagedResults",
-    "ManagedTreePaths",
-    "ReadCmdGroups",
-    "ScanDirItem",
-]
+__all__ = ["CommandResult", "ManagedTreePaths", "ReadCmdGroups", "ScanDirItem"]
 
 
 class CommandResult(NamedTuple):
@@ -29,14 +23,6 @@ class CommandResult(NamedTuple):
     std_err: str
     std_out: str
     time_stamp: str
-
-
-class ManagedResults(NamedTuple):
-    dest_dir: Path
-    managed_dirs: CommandResult
-    managed_files: CommandResult
-    status_dirs: CommandResult
-    status_files: CommandResult
 
 
 class ManagedTreePaths(NamedTuple):

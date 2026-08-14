@@ -19,7 +19,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse.cm_attributes import ManagedPaths, ResultCollector
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.named_tuples import CommandResult, ManagedResults
+from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
@@ -179,13 +179,11 @@ class SplashScreen(Screen[None]):
     @work(name=WorkerName.update_managed_paths)
     async def _create_managed_paths_instance(self) -> None:
         ResultCollector.managed_paths_instance = ManagedPaths(
-            results=ManagedResults(
-                dest_dir=ResultCollector.dest_dir,
-                managed_dirs=ResultCollector.managed_dirs,
-                managed_files=ResultCollector.managed_files,
-                status_dirs=ResultCollector.status_dirs,
-                status_files=ResultCollector.status_files,
-            )
+            _dest_dir=ResultCollector.dest_dir,
+            _managed_dirs_result=ResultCollector.managed_dirs,
+            _managed_files_result=ResultCollector.managed_files,
+            _status_dirs_result=ResultCollector.status_dirs,
+            _status_files_result=ResultCollector.status_files,
         )
         msg = self._get_log_msg(prefix=WorkerName.update_managed_paths, returncode=None)
         self.splash_log.write(msg)
