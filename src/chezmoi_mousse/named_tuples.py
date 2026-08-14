@@ -43,39 +43,39 @@ class ManagedTreePaths(NamedTuple):
     """
     dest_dir, # the destination directory path
 
-    managed_dirs_map: a mapping of managed directories to their PathKind
-    managed_files_map: a mapping of managed files to their PathKind
+    managed_dirs: a mapping of managed directories to their PathKind
+    managed_files: a mapping of managed files to their PathKind
     Possible PathKind values:
         PathKind.EXISTS_FALSE
         PathKind.EXISTS_TRUE
         PathKind.SYMLINK
         PathKind.UNHANDLED
 
-    status_dirs_map: a mapping of status directories to their StatusCode
-    status_files_map: a mapping of status files to their StatusCode
+    n_dirs: a frozenset of dirs which don't have a status but have status descendants
+    status_dirs: a mapping of status directories to their StatusCode
+    status_files: a mapping of status files to their StatusCode
     Possible StatusCode values (StatusCode.Space is excluded):
         Added = "A"
         Deleted = "D"
         Modified = "M"
         Run = "R"
 
-    n_dirs: parents of any nested status paths but don't have a status themselves
     no_managed_paths: boolean indicating if there are no managed paths
     no_status_paths: boolean indicating if there are no status paths
-    tree_status_dirs: set of both status directories and n_dirs
-    self.unchanged_dirs: set of unchanged directories
-    self.unchanged_files: set of unchanged files
+    tree_status_dirs: mapping of dirs to their StatusCode, including StatusCode.N_DIR
+    unchanged_dirs: a frozenset of dirs with StatusCode.Space
+    unchanged_files: a frozenset of files with StatusCode.Space
     """
 
     dest_dir: Path
-    managed_dirs_map: PathKindMap
-    managed_files_map: PathKindMap
+    managed_dirs: PathKindMap
+    managed_files: PathKindMap
     n_dirs: frozenset[Path]
     no_managed_paths: bool
     no_status_paths: bool
-    status_dirs_map: StatusMap
-    status_files_map: StatusMap
-    tree_status_dirs: frozenset[Path]
+    status_dirs: StatusMap
+    status_files: StatusMap
+    tree_status_dirs: StatusMap
     unchanged_dirs: frozenset[Path]
     unchanged_files: frozenset[Path]
 

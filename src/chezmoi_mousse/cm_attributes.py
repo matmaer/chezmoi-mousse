@@ -82,55 +82,15 @@ class ManagedPaths:
     """Contains only immutable fields and attribute outputs to avoid asyncio related
     issues."""
 
-    results: ManagedResults
-
     def __post_init__(self) -> None:
         # warm all public cached_property attributes
         for attr_name, value in type(self).__dict__.items():
             if isinstance(value, cached_property):
                 getattr(self, attr_name)
 
-    @cached_property
-    def managed_dirs(self) -> frozenset[Path]:
-        return frozenset(Path(line) for line in self.results.managed_dirs.out_lines)
-
-    @cached_property
-    def managed_files(self) -> frozenset[Path]:
-        return frozenset(Path(line) for line in self.results.managed_files.out_lines)
-
-    @cached_property
-    def unchanged_dirs(self) -> frozenset[Path]:
-        status_dirs = frozenset(
-            Path(line[3:]) for line in self.results.status_dirs.out_lines
-        )
-        return self.managed_dirs - status_dirs
-
-    @cached_property
-    def unchanged_files(self) -> frozenset[Path]:
-        status_files = frozenset(
-            Path(line[3:]) for line in self.results.status_files.out_lines
-        )
-        return self.managed_files - status_files
-
-    # not cached, fast boolean logic
-
-    @property
-    def no_managed_paths(self) -> bool:
-        return not self.managed_dirs and not self.managed_files
-
-    # methods to compute cached properties "apply_tree_paths" and "re_add_tree_paths"
-
-    def _get_status_map(self, lines: list[str], status_col: int) -> StatusMap:
-        temp_dict: dict[Path, StatusCode] = {}
-
-        for line in lines:
-            if line[status_col] != StatusCode.Space:
-                temp_dict[Path(line[3:])] = StatusCode(line[status_col])
-
-        return MappingProxyType(temp_dict)
-
-    def _get_path_kind_map(self, paths: frozenset[Path]) -> PathKindMap:
+    def _get_managed_path_kind_map(self, managed_output: list[str]) -> PathKindMap:
         temp_dict: dict[Path, PathKind] = {}
+        paths: list[Path] = [Path(line) for line in managed_output]
 
         for path in paths:
             if path.is_symlink():
@@ -142,7 +102,47 @@ class ManagedPaths:
             else:
                 temp_dict[path] = PathKind.UNHANDLED
 
-        return MappingProxyType(temp_dict)
+        # sort the temp_dict by path
+        return MappingProxyType(dict(sorted(temp_dict.items())))
+
+    @cached_property
+    def managed_dirs(self) -> PathKindMap:
+        return self._get_managed_path_kind_map(self.results.managed_dirs.out_lines)
+
+    @cached_property
+    def managed_files(self) -> PathKindMap:
+        return self._get_managed_path_kind_map(self.results.managed_files.out_lines)
+
+    # not cached, fast boolean logic
+    @property
+    def no_managed_paths(self) -> bool:
+        return not self.managed_dirs and not self.managed_files
+
+    def _get_status_map(self, lines: list[str], status_col: int) -> StatusMap:
+        temp_dict: dict[Path, StatusCode] = {}
+
+        for line in lines:
+            temp_dict[Path(line[3:])] = StatusCode(line[status_col])
+
+        return MappingProxyType(dict(sorted(temp_dict.items())))
+
+    def _get_tree_status_map(
+        self, dirs_map: StatusMap, n_dirs: frozenset[Path]
+    ) -> StatusMap:
+        temp_dict: dict[Path, StatusCode] = {}
+
+        # In the dirs_map, set StatusCode.N_DIR for all paths present in n_dirs.
+        for path, status in dirs_map.items():
+            if path in n_dirs:
+                temp_dict[path] = StatusCode.N_DIR
+            else:
+                temp_dict[path] = status
+        # Remove all remaining paths in the temp_dict which have StatusCode.Space
+        temp_dict = {k: v for k, v in temp_dict.items() if v != StatusCode.Space}
+
+        return MappingProxyType(dict(sorted(temp_dict.items())))
+
+    results: ManagedResults
 
     def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
         """Results accessed by the ManagedTree classes for Apply and ReAdd tab context.
@@ -155,37 +155,47 @@ class ManagedPaths:
         We access them via the cached properties apply_tree_paths and re_add_tree_paths
         which call this method, in the ManagedTree class.
         """
-        dest_dir = self.results.dest_dir
-
-        managed_dirs_map: PathKindMap = self._get_path_kind_map(self.managed_dirs)
-        managed_files_map: PathKindMap = self._get_path_kind_map(self.managed_files)
-
-        status_dirs_map: StatusMap = self._get_status_map(
-            lines=self.results.status_dirs.out_lines, status_col=status_col
+        dirs_map: StatusMap = self._get_status_map(
+            self.results.status_dirs.out_lines, status_col
         )
-        status_files_map: StatusMap = self._get_status_map(
-            lines=self.results.status_files.out_lines, status_col=status_col
+        status_dirs: StatusMap = MappingProxyType(
+            {k: v for k, v in dirs_map.items() if v != StatusCode.Space}
+        )
+        files_map: StatusMap = self._get_status_map(
+            self.results.status_files.out_lines, status_col
+        )
+        status_files: StatusMap = MappingProxyType(
+            {k: v for k, v in files_map.items() if v != StatusCode.Space}
         )
 
-        n_dirs = frozenset(
+        _n_dirs = frozenset(
             parent
-            for path in (status_dirs_map.keys() | status_files_map.keys())
+            for path in (status_dirs.keys() | status_files.keys())
             for parent in path.parents
-            if parent not in status_dirs_map and parent.is_relative_to(dest_dir)
+            if parent not in status_dirs
+            and parent.is_relative_to(self.results.dest_dir)
         )
 
         return ManagedTreePaths(
-            dest_dir=dest_dir,
-            managed_dirs_map=managed_dirs_map,
-            managed_files_map=managed_files_map,
-            status_dirs_map=status_dirs_map,
-            status_files_map=status_files_map,
-            n_dirs=n_dirs,
+            dest_dir=self.results.dest_dir,
+            managed_dirs=self.managed_dirs,
+            managed_files=self.managed_files,
+            n_dirs=_n_dirs,
             no_managed_paths=self.no_managed_paths,
-            no_status_paths=(not status_dirs_map and not status_files_map),
-            tree_status_dirs=(n_dirs | status_dirs_map.keys()),
-            unchanged_dirs=self.unchanged_dirs,
-            unchanged_files=self.unchanged_files,
+            no_status_paths=(not status_dirs and not status_files),
+            status_dirs=status_dirs,
+            status_files=status_files,
+            tree_status_dirs=self._get_tree_status_map(dirs_map, _n_dirs),
+            unchanged_dirs=frozenset(
+                path
+                for path in self.managed_dirs
+                if path not in status_dirs and path not in status_files
+            ),
+            unchanged_files=frozenset(
+                path
+                for path in self.managed_files
+                if path not in status_dirs and path not in status_files
+            ),
         )
 
     # cached properties used by the ManagedTree class
