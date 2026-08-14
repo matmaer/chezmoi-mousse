@@ -162,7 +162,10 @@ class CatConfigView(Vertical):
     def on_mount(self) -> None:
         static = self.query_exactly_one(self.CatConfigStatic)
         static.update(
-            "\n".join(line for line in self.app.cmattr.cmd_results.cat_config.out_lines)
+            "\n".join(
+                line
+                for line in self.app.cmattr.cmd_results.cat_config.std_out.splitlines()
+            )
         )
 
 
@@ -178,7 +181,7 @@ class IgnoredView(Vertical):
 
     def on_mount(self) -> None:
         pretty_ignored: Pretty = self.query_exactly_one(Pretty)
-        pretty_ignored.update(self.app.cmattr.cmd_results.ignored.out_lines)
+        pretty_ignored.update(self.app.cmattr.cmd_results.ignored.std_out.splitlines())
 
 
 class DiagramView(Vertical):

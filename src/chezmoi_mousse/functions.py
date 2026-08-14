@@ -114,30 +114,30 @@ class AppLife:
 
 class Commands:
 
+    @staticmethod
     def _subprocess_run(
-        *, args: StrTuple, path: Path | None, time_out: int
+        args_tuple: StrTuple, *, path: Path | None, time_out: int
     ) -> subprocess.CompletedProcess[str]:
         if path is None:
-            run_args = args
+            run_args = args_tuple
         elif not path.is_absolute():
             raise ValueError("Calling subprocess.run with a relative path")
         else:
-            run_args = args + (str(path),)
+            run_args = args_tuple + (str(path),)
         return subprocess.run(
             run_args, capture_output=True, shell=False, text=True, timeout=time_out
         )
 
     @staticmethod
-    def run_read_cmd(cmd: ReadCmd, path_arg: Path | None = None) -> CommandResult:
-        args: StrTuple = ("chezmoi",) + cmd.value
-        cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
-            args=args, path=path_arg, time_out=5
-        )
-        out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
-        std_out = "\n".join(out_lines)
+    def _strip_empty_lines(text: str) -> str:
+        return "\n".join([line for line in text.splitlines() if line.strip()])
 
-        err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
-        std_err = "\n".join(err_lines)
+    @staticmethod
+    def run_read_cmd(cmd: ReadCmd, path_arg: Path | None = None) -> CommandResult:
+        args_tuple: StrTuple = ("chezmoi",) + cmd.value
+        cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
+            args_tuple, path=path_arg, time_out=5
+        )
 
         full_cmd_str = f"{AppLife.cmd_str_wop(cmd, dry=None, pretty=True)} {path_arg}"
         pretty_read_cmd_wop = AppLife.cmd_str_wop(cmd=cmd, dry=None, pretty=True)
@@ -149,14 +149,12 @@ class Commands:
 
         return CommandResult(
             dry_run=None,
-            err_lines=err_lines,
             full_cmd_str=full_cmd_str,
-            out_lines=out_lines,
             pretty_cmd=pretty_read_cmd,
             path_arg=path_arg,
             returncode=cp.returncode,
-            std_err=std_err,
-            std_out=std_out,
+            std_err=Commands._strip_empty_lines(cp.stderr),
+            std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
 
@@ -164,20 +162,14 @@ class Commands:
     def run_write_cmd(
         cmd: WriteCmd, dry_run: bool, path_arg: Path | None = None
     ) -> CommandResult:
-        args: StrTuple = (
+        args_tuple: StrTuple = (
             ("chezmoi", "--dry-run") + cmd.value
             if dry_run is True
             else ("chezmoi",) + cmd.value
         )
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
-            args=args, path=path_arg, time_out=20
+            args_tuple, path=path_arg, time_out=20
         )
-        out_lines = [line for line in cp.stdout.splitlines() if line.strip()]
-        std_out = "\n".join(out_lines)
-
-        err_lines = [line for line in cp.stderr.splitlines() if line.strip()]
-        std_err = "\n".join(err_lines)
-
         full_cmd_str = (
             f"{AppLife.cmd_str_wop(cmd, dry=dry_run, pretty=True)} {path_arg}"
         )
@@ -190,14 +182,12 @@ class Commands:
 
         return CommandResult(
             dry_run=dry_run,
-            err_lines=err_lines,
             full_cmd_str=full_cmd_str,
-            out_lines=out_lines,
             pretty_cmd=pretty_write_cmd,
             path_arg=path_arg,
             returncode=cp.returncode,
-            std_err=std_err,
-            std_out=std_out,
+            std_err=Commands._strip_empty_lines(cp.stderr),
+            std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
 

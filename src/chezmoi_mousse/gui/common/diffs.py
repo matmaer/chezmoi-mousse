@@ -48,10 +48,10 @@ class DiffView(Container):
         else:  # re-add tab
             diff_result = Commands.run_read_cmd(ReadCmd.diff_reverse, path_arg=path)
         self.post_message(LogCmdResultMsg(diff_result))
-        if not diff_result.out_lines:
+        if not diff_result.std_out.splitlines():
             return [Static("No diff output available.", classes=Tcss.info)]
         else:
-            diff_cmd = diff_result.out_lines.pop(0)
+            diff_cmd = diff_result.std_out.splitlines().pop(0)
             widgets.append(Label(diff_cmd, classes=Tcss.flat_section_label))
 
         def get_prefix(line: str) -> str:
@@ -60,7 +60,9 @@ class DiffView(Container):
                     return p
             return "unhandled"
 
-        for prefix, group_lines in groupby(diff_result.out_lines, key=get_prefix):
+        for prefix, group_lines in groupby(
+            diff_result.std_out.splitlines(), key=get_prefix
+        ):
             group_list = list(group_lines)
             if prefix in ("+", "-"):
                 text = "\n".join(group_list)

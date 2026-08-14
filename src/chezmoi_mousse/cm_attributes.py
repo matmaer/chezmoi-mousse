@@ -108,11 +108,15 @@ class ManagedPaths:
 
     @cached_property
     def managed_dirs(self) -> PathKindMap:
-        return self._get_managed_path_kind_map(self._managed_dirs_result.out_lines)
+        return self._get_managed_path_kind_map(
+            self._managed_dirs_result.std_out.splitlines()
+        )
 
     @cached_property
     def managed_files(self) -> PathKindMap:
-        return self._get_managed_path_kind_map(self._managed_files_result.out_lines)
+        return self._get_managed_path_kind_map(
+            self._managed_files_result.std_out.splitlines()
+        )
 
     # not cached, fast boolean logic
     @property
@@ -155,13 +159,13 @@ class ManagedPaths:
         which call this method, in the ManagedTree class.
         """
         dirs_map: StatusMap = self._get_status_map(
-            self._status_dirs_result.out_lines, status_col
+            self._status_dirs_result.std_out.splitlines(), status_col
         )
         status_dirs: StatusMap = MappingProxyType(
             {k: v for k, v in dirs_map.items() if v != StatusCode.Space}
         )
         files_map: StatusMap = self._get_status_map(
-            self._status_files_result.out_lines, status_col
+            self._status_files_result.std_out.splitlines(), status_col
         )
         status_files: StatusMap = MappingProxyType(
             {k: v for k, v in files_map.items() if v != StatusCode.Space}

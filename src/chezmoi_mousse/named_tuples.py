@@ -14,9 +14,7 @@ __all__ = ["CommandResult", "ManagedTreePaths", "ReadCmdGroups", "ScanDirItem"]
 
 class CommandResult(NamedTuple):
     dry_run: bool | None
-    err_lines: list[str]
     full_cmd_str: str
-    out_lines: list[str]
     path_arg: Path | None
     pretty_cmd: str
     returncode: int

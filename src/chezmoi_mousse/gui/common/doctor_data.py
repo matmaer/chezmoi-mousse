@@ -28,7 +28,7 @@ class DoctorTable(DataTable[Text]):
         super().__init__(cursor_type="row")
 
     def on_mount(self) -> None:
-        self._populate_table(self.app.cmattr.cmd_results.doctor.out_lines)
+        self._populate_table(self.app.cmattr.cmd_results.doctor.std_out.splitlines())
 
     @work
     async def _populate_table(self, doctor_lines: list[str]) -> None:
@@ -246,7 +246,9 @@ class PwMgrInfoView(Vertical):
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self._populate_pw_mgr_info(self.app.cmattr.cmd_results.doctor.out_lines)
+        self._populate_pw_mgr_info(
+            self.app.cmattr.cmd_results.doctor.std_out.splitlines()
+        )
 
     def _get_pw_mgr_data(self, doctor_check: str) -> PwMgrData:
         for member in PwMgrInfo:

@@ -139,7 +139,9 @@ class AppLog(RichLoggers):
                 self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
             if "doctor" in cmd_result.full_cmd_str:
                 first_col: list[str] = [
-                    line.split()[0] for line in cmd_result.out_lines
+                    line.split()[0]
+                    for line in cmd_result.std_out.splitlines()
+                    if line.strip() != ""
                 ]
                 self.write_ready(LogString.doctor_section)
                 nothing_serious = True
