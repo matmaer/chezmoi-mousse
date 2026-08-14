@@ -34,7 +34,6 @@ class ResultCollector:
     template_data: CommandResult = field(init=False)
 
     # Processed ReadCmd results in SplashScreen
-    dest_dir: Path = field(init=False)
     parsed_dump_config: ParsedJson = field(init=False)
     parsed_template_data: ParsedJson = field(init=False)
     managed_paths_instance: ManagedPaths = field(init=False)

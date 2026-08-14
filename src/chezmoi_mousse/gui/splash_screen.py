@@ -179,7 +179,7 @@ class SplashScreen(Screen[None]):
     @work(name=WorkerName.update_managed_paths)
     async def _create_managed_paths_instance(self) -> None:
         ResultCollector.managed_paths_instance = ManagedPaths(
-            _dest_dir=ResultCollector.dest_dir,
+            _dest_dir=ResultCollector.parsed_dump_config["destDir"],
             _managed_dirs_result=ResultCollector.managed_dirs,
             _managed_files_result=ResultCollector.managed_files,
             _status_dirs_result=ResultCollector.status_dirs,
@@ -198,7 +198,6 @@ class SplashScreen(Screen[None]):
         )
         ResultCollector.parsed_dump_config = parsed_dump_config
         ResultCollector.parsed_template_data = parsed_template_data
-        ResultCollector.dest_dir = parsed_dump_config["destDir"]
         msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
         self.splash_log.write(msg)
 
