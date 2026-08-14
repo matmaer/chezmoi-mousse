@@ -47,6 +47,7 @@ class DestDirTree(Vertical):
 @dataclass(slots=True, frozen=True)
 class ManagedTreeState:
     all_dir_nodes: TreeNodeDict = field(default_factory=lambda: {})
+    all_file_nodes: TreeNodeDict = field(default_factory=lambda: {})
 
     @property
     def visible_dir_nodes(self) -> TreeNodeDict:
@@ -61,7 +62,12 @@ class ManagedTreeState:
         return {p: n for p, n in self.visible_dir_nodes.items() if n.is_expanded}
 
     @property
-    def visible_file_nodes(self) -> TreeNodeDict: ...
+    def visible_file_nodes(self) -> TreeNodeDict:
+        return {
+            p: n
+            for p, n in self.all_file_nodes.items()
+            if n.parent is not None and n.parent.is_expanded
+        }
 
 
 class ManagedTree(Tree[Path]):
@@ -141,9 +147,11 @@ class ManagedTree(Tree[Path]):
         return nodes_dict
 
     def _update_tree_state(self) -> None:
-        # a node can be expanded but its parent may be collapsed so filter these out
         all_dir_nodes = self._get_nodes_bfs(PathKind.dir)
-        self.state = ManagedTreeState(all_dir_nodes=all_dir_nodes)
+        all_file_nodes = self._get_nodes_bfs(PathKind.file)
+        self.state = ManagedTreeState(
+            all_dir_nodes=all_dir_nodes, all_file_nodes=all_file_nodes
+        )
 
     def populate_tree(self) -> None:
         self.root.remove_children()
