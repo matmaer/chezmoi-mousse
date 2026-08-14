@@ -18,7 +18,6 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     Chars,
     ColorVar,
-    PathKind,
     StatusCode,
     TabLabel,
 )
@@ -107,11 +106,9 @@ class ChezmoiGui(App[str]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
-    def get_color(
-        self, str_enum_member: ColorVar | StatusCode | PathKind | None
-    ) -> str:
+    def get_color(self, str_enum_member: ColorVar | StatusCode | None) -> str:
         """If str_enum_member is None, return the bogus color (pure yellow) to indicate
-        " "an error.
+        an error.
 
         Otherwise, return the color value from theme_variables.
         """
@@ -120,18 +117,11 @@ class ChezmoiGui(App[str]):
         if isinstance(str_enum_member, StatusCode):
             mapping = {
                 StatusCode.Added: ColorVar.text_success,
-                StatusCode.Modified: ColorVar.text_warning,
                 StatusCode.Deleted: ColorVar.text_error,
-                StatusCode.Space: ColorVar.dimmed,
+                StatusCode.Modified: ColorVar.text_warning,
+                StatusCode.N_DIR: ColorVar.text_secondary,
                 StatusCode.Run: ColorVar.bogus,
-            }
-            color_var = mapping.get(str_enum_member, ColorVar.bogus)
-        elif isinstance(str_enum_member, PathKind):
-            mapping = {
-                PathKind.dir: ColorVar.text_secondary,
-                PathKind.file: ColorVar.text_primary,
-                PathKind.N_DIR: ColorVar.text_secondary,
-                PathKind.UNMANAGED: ColorVar.text_error_dark,
+                StatusCode.Space: ColorVar.dimmed,
             }
             color_var = mapping.get(str_enum_member, ColorVar.bogus)
         elif isinstance(str_enum_member, ColorVar):
