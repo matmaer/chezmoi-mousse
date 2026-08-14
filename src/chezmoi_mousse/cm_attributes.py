@@ -85,12 +85,10 @@ class ManagedPaths:
     results: ManagedResults
 
     def __post_init__(self) -> None:
-
         # warm all public cached_property attributes
-        # self.__dict__.items() to maintain the order
-        for attr, value in self.__dict__.items():
-            if not attr.startswith("_") and isinstance(value, cached_property):
-                getattr(self, attr)
+        for attr_name, value in type(self).__dict__.items():
+            if isinstance(value, cached_property):
+                getattr(self, attr_name)
 
     @cached_property
     def managed_dirs(self) -> frozenset[Path]:
@@ -147,9 +145,14 @@ class ManagedPaths:
     def _compute_managed_tree_paths(self, status_col: int) -> ManagedTreePaths:
         """Results accessed by the ManagedTree classes for Apply and ReAdd tab.
 
-        Includes all paths, also destDir, managed_dirs etc which are the same for both
-        contexts. This povides convenient access and we convert them there to sorted
-        lists before we refresh the trees.
+        Includes all paths: destDir, managed dirs and managed files which are the same
+        for both contexts.
+
+        Status dirs, status files and n_dirs are different for each context.
+        (n_dirs contain status paths at any depth but don't have a status themselves)
+
+        We access them via the cached properties apply_tree_paths and re_add_tree_paths
+        which call this method.
         """
         dest_dir = self.results.dest_dir
 
