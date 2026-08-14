@@ -328,14 +328,10 @@ class PathFilters(Enum):
 
 
 class PathKind(StrEnum):
-    dest_dir = auto()
-    dir = auto()
     EXISTS_FALSE = auto()
     EXISTS_TRUE = auto()
-    file = auto()
     man_dir_access_denied = auto()
     man_dir_not_exists = auto()
-    N_DIR = auto()
     SYMLINK = auto()
     UNHANDLED = auto()
     unman_dir_access_denied = auto()
@@ -375,6 +371,10 @@ class StatusCode(StrEnum):
     Modified = "M"
     Run = "R"
     Space = " "
+
+    # Fake status code for internal use in the ManagedTree, not returned by chezmoi
+    # Used to create the color and to determine if the dir should be displayed or not.
+    N_DIR = auto()
 
 
 class SwitchLabel(StrEnum):
