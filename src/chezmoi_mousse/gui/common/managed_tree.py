@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -48,6 +49,8 @@ class DestDirTree(Vertical):
 class ManagedTreeState:
     all_dir_nodes: TreeNodeDict = field(default_factory=lambda: {})
     all_file_nodes: TreeNodeDict = field(default_factory=lambda: {})
+    expanded_dirs: dict[str, bool] = field(default_factory=lambda: {})
+    selected_path: Path | None = None
 
     @property
     def visible_dir_nodes(self) -> TreeNodeDict:
@@ -68,6 +71,19 @@ class ManagedTreeState:
             for p, n in self.all_file_nodes.items()
             if n.parent is not None and n.parent.is_expanded
         }
+
+    def snapshot(self) -> ManagedTreeState:
+        expanded_dirs = {
+            str(path): node.is_expanded
+            for path, node in self.all_dir_nodes.items()
+            if node.is_expanded
+        }
+        return ManagedTreeState(
+            all_dir_nodes=self.all_dir_nodes,
+            all_file_nodes=self.all_file_nodes,
+            expanded_dirs=expanded_dirs,
+            selected_path=self.selected_path,
+        )
 
 
 class ManagedTree(Tree[Path]):
@@ -153,6 +169,56 @@ class ManagedTree(Tree[Path]):
             all_dir_nodes=all_dir_nodes, all_file_nodes=all_file_nodes
         )
 
+    def _iter_tree_nodes(self) -> Iterator[TreeNode[Path]]:
+        queue: deque[TreeNode[Path]] = deque([self.root])
+        while queue:
+            node = queue.popleft()
+            yield node
+            queue.extend(node.children)
+
+    def _snapshot_tree_state(self) -> ManagedTreeState:
+        return ManagedTreeState(
+            all_dir_nodes=self.state.all_dir_nodes,
+            all_file_nodes=self.state.all_file_nodes,
+            expanded_dirs={
+                str(path): node.is_expanded
+                for path, node in self.state.all_dir_nodes.items()
+                if node.is_expanded
+            },
+            selected_path=(
+                self.cursor_node.data if self.cursor_node is not None else None
+            ),
+        )
+
+    def _restore_tree_state(self, snapshot: ManagedTreeState) -> None:
+        expanded_dirs = snapshot.expanded_dirs
+        selected_path = snapshot.selected_path
+
+        for path, node in self.state.all_dir_nodes.items():
+            should_expand = expanded_dirs.get(str(path), False)
+            if should_expand and not node.is_expanded:
+                node.expand()
+            elif not should_expand and node.is_expanded:
+                node.collapse()
+
+        if selected_path is not None:
+            for node in self._iter_tree_nodes():
+                if node.data == selected_path:
+                    self.select_node(node)
+                    break
+
+    def _remove_unchanged_nodes(self) -> None:
+        queue: deque[TreeNode[Path]] = deque([self.root])
+        unchanged_paths = self.paths.unchanged_dirs | self.paths.unchanged_files
+
+        while queue:
+            current_node = queue.popleft()
+            for child in list(current_node.children):
+                if child.data in unchanged_paths:
+                    child.remove()
+                else:
+                    queue.append(child)
+
     def populate_tree(self) -> None:
         self.root.remove_children()
 
@@ -177,8 +243,11 @@ class ManagedTree(Tree[Path]):
         current_dir_nodes = self._get_nodes_bfs(path_kind=PathKind.dir)
 
         for path in self.paths.status_files_map:
-            parent_node = current_dir_nodes[path.parent]
-            self._insert_node(parent_node, path)
+            parent_node = current_dir_nodes.get(path.parent)
+            if parent_node is not None:
+                self._insert_node(parent_node, path)
+
+        self._update_tree_state()
 
         # expand all switch is false by default, tree state does not matter yet
         if self.first_time_populating:
@@ -254,10 +323,12 @@ class ManagedTree(Tree[Path]):
                 )
                 if parent_node is None and path.parent == self.root.data:
                     parent_node = self.root
-                if parent_node is not None:
+                if parent_node is not None and not any(
+                    child.data == path for child in parent_node.children
+                ):
                     self._insert_node(parent_node, path)
         else:
-            ...
+            self._remove_unchanged_nodes()
         self._update_tree_state()
 
     def watch_expand_all(self, expand_all: bool) -> None:
