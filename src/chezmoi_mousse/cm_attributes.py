@@ -118,6 +118,8 @@ class ManagedPaths:
     def no_managed_paths(self) -> bool:
         return not self.managed_dirs and not self.managed_files
 
+    # methods to compute cached properties "apply_tree_paths" and "re_add_tree_paths"
+
     def _get_status_map(self, lines: list[str], status_col: int) -> StatusMap:
         temp_dict: dict[Path, StatusCode] = {}
 
@@ -142,17 +144,16 @@ class ManagedPaths:
 
         return MappingProxyType(temp_dict)
 
-    def _compute_managed_tree_paths(self, status_col: int) -> ManagedTreePaths:
-        """Results accessed by the ManagedTree classes for Apply and ReAdd tab.
+    def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
+        """Results accessed by the ManagedTree classes for Apply and ReAdd tab context.
 
-        Includes all paths: destDir, managed dirs and managed files which are the same
-        for both contexts.
+        destDir, managed dirs and managed files are the same for both contexts.
 
-        Status dirs, status files and n_dirs are different for each context.
-        (n_dirs contain status paths at any depth but don't have a status themselves)
+        Status dirs, status files and n_dirs are different for each context. (n_dirs
+        contain status paths at any depth but don't have a status themselves)
 
         We access them via the cached properties apply_tree_paths and re_add_tree_paths
-        which call this method.
+        which call this method, in the ManagedTree class.
         """
         dest_dir = self.results.dest_dir
 
@@ -170,9 +171,7 @@ class ManagedPaths:
             parent
             for path in (status_dirs_map.keys() | status_files_map.keys())
             for parent in path.parents
-            if parent != dest_dir
-            and parent not in status_dirs_map
-            and parent.is_relative_to(dest_dir)
+            if parent not in status_dirs_map and parent.is_relative_to(dest_dir)
         )
 
         return ManagedTreePaths(
@@ -193,11 +192,11 @@ class ManagedPaths:
 
     @cached_property
     def apply_tree_paths(self) -> ManagedTreePaths:
-        return self._compute_managed_tree_paths(status_col=1)
+        return self._create_managed_tree_paths_instance(status_col=1)
 
     @cached_property
     def re_add_tree_paths(self) -> ManagedTreePaths:
-        return self._compute_managed_tree_paths(status_col=0)
+        return self._create_managed_tree_paths_instance(status_col=0)
 
 
 @dataclass
