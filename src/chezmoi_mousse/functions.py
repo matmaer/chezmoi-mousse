@@ -100,17 +100,6 @@ class AppLife:
             raise ValueError(f"Write commands require dry flag; received dry={dry}")
         return f"chezmoi --dry-run {verb_str}" if dry is True else f"chezmoi {verb_str}"
 
-    @staticmethod
-    @typed_lru_cache(maxsize=500)
-    def parents(path: Path, stop_path: Path) -> tuple[Path, ...]:
-
-        std_parents = path.parents
-        if path == stop_path or stop_path not in std_parents:
-            raise RuntimeError(
-                f"Path '{path}' is not a child of stop_path '{stop_path}'"
-            )
-        return tuple(std_parents[: std_parents.index(stop_path)])
-
 
 class Commands:
 
