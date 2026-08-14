@@ -184,31 +184,9 @@ class ManagedTree(Tree[Path]):
         """Inserts a dir node or file node alphabetically, using is_file to determine
         where as we keep children which are directories on top followed by the children
         which are files."""
-
-        def _create_colored_label(path: Path) -> str:
-            if path in self.paths.n_dirs:
-                color = self.app.get_color(PathKind.N_DIR)
-            elif path in self.paths.status_dirs_map:
-                color = self.app.get_color(self.paths.status_dirs_map[path])
-            elif path in self.paths.status_files_map:
-                color = self.app.get_color(self.paths.status_files_map[path])
-            elif (
-                path in self.paths.unchanged_dirs or path in self.paths.unchanged_files
-            ):
-                color = self.app.get_color(StatusCode.Space)
-            elif (
-                path not in self.paths.managed_dirs_map
-                and path not in self.paths.managed_files_map
-            ):
-                color = self.app.get_color(PathKind.UNMANAGED)
-            else:
-                color = self.app.get_color(None)
-            italic = " italic" if not path.exists() else ""
-            return f"[{color}{italic}]{path.name}[/]"
-
         is_dir_path = path in self.paths.managed_dirs_map or path.is_dir()
         children = parent_node.children
-        path_label = _create_colored_label(path)
+        path_label = self._create_colored_label(path)
 
         if not children:
             return parent_node.add(path_label, data=path, allow_expand=is_dir_path)
