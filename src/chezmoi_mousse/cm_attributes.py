@@ -21,7 +21,6 @@ __all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
 @dataclass(slots=True)
 class ResultCollector:
 
-    dest_dir: Path = field(init=False)
     cat_config: CommandResult = field(init=False)
     doctor: CommandResult = field(init=False)
     dump_config: CommandResult = field(init=False)
@@ -30,28 +29,31 @@ class ResultCollector:
     ignored: CommandResult = field(init=False)
     managed_dirs: CommandResult = field(init=False)
     managed_files: CommandResult = field(init=False)
-    parsed_dump_config: ParsedJson = field(init=False)
-    parsed_template_data: ParsedJson = field(init=False)
     status_dirs: CommandResult = field(init=False)
     status_files: CommandResult = field(init=False)
     template_data: CommandResult = field(init=False)
+
+    # Processed ReadCmd results in SplashScreen
+    dest_dir: Path = field(init=False)
+    parsed_dump_config: ParsedJson = field(init=False)
+    parsed_template_data: ParsedJson = field(init=False)
     managed_paths_instance: ManagedPaths = field(init=False)
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @property
     def splash_results_list(self) -> list[CommandResult]:
         return [
-            self.doctor,
-            self.git_log,
-            self.dump_config,
             self.cat_config,
-            self.template_data,
-            self.ignored,
+            self.doctor,
+            self.dump_config,
+            self.git_log,
             self.git_remote,
+            self.ignored,
             self.managed_dirs,
             self.managed_files,
             self.status_dirs,
             self.status_files,
+            self.template_data,
         ]
 
 
