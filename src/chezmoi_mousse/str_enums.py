@@ -329,7 +329,6 @@ class PathFilters(Enum):
 
 class PathKind(StrEnum):
     EXISTS_FALSE = auto()
-    EXISTS_TRUE = auto()
     man_dir_access_denied = auto()
     man_dir_not_exists = auto()
     SYMLINK = auto()

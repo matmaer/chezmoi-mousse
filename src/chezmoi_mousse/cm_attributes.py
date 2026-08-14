@@ -95,8 +95,6 @@ class ManagedPaths:
         for path in paths:
             if path.is_symlink():
                 temp_dict[path] = PathKind.SYMLINK
-            elif path.exists():
-                temp_dict[path] = PathKind.EXISTS_TRUE
             elif not path.exists():
                 temp_dict[path] = PathKind.EXISTS_FALSE
             else:
