@@ -180,7 +180,7 @@ class ManagedTree(Tree[Path]):
             italic = " italic"
         return f"[{color}{italic}]{node_path.name}[/]"
 
-    def populate_tree(self) -> None:
+    def update_tree(self) -> None:
         current_state = self._snapshot_tree_state()
         for dir_path in self.paths.tree_status_dirs:
             parent_path = dir_path.parent
