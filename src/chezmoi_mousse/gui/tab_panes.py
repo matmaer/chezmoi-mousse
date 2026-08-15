@@ -24,12 +24,13 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.debug.test_paths import TestPaths
+from chezmoi_mousse.enum_data import PwMgrEnum
 from chezmoi_mousse.named_tuples import PwMgrData
 from chezmoi_mousse.str_enums import (
     ColorVar,
     FlatBtnLabel,
     OpBtnLabel,
-    PwMgrStrings,
+    PwMgrInfo,
     SectionLabel,
     TabLabel,
     Tcss,
@@ -45,7 +46,7 @@ from .common.actionables import (
 )
 from .common.ascii_constants import FLOW_DIAGRAM
 from .common.contents import ContentsView
-from .common.doctor_data import DoctorTable, PwCollapsible, PwMgrInfo
+from .common.doctor_data import DoctorTable, PwCollapsible
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog, DebugLog
 from .common.managed_tree import DestDirTree, ManagedTree
@@ -214,17 +215,17 @@ class ConfigTab(TabPane):
         self._load_views()
 
     def _get_pw_mgr_data(self, doctor_check: str) -> PwMgrData:
-        for member in PwMgrInfo:
+        for member in PwMgrEnum:
             if member.value.doctor_check == doctor_check:
-                return member.value
-        raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
+                return PwMgrEnum[member.name].value
+        raise ValueError(f"No PwMgrEnum member for doctor_check '{doctor_check}'")
 
     @work
     async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:
         pw_mgr_info = self.query_one(self.ids.container.pw_mgr_info_q, Vertical)
 
         pw_mgr_entries: list[tuple[PwMgrData, str]] = []
-        all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrInfo]
+        all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrEnum]
 
         for line in doctor_lines[1:]:  # Skip header line
             row = tuple(line.split(maxsplit=2))
@@ -238,7 +239,7 @@ class ConfigTab(TabPane):
                 pw_mgr_data=pw_mgr_data, dr_message=doctor_message
             )
             pw_mgr_info.mount(pw_collapsible)
-        pw_mgr_info.mount(Static(f"\n{PwMgrStrings.info_warning}"))
+        pw_mgr_info.mount(Static(f"\n{PwMgrInfo.info_warning}"))
 
     @work
     async def _load_views(self) -> None:

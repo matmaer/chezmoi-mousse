@@ -14,7 +14,7 @@ __all__ = [
     "OpInfoString",
     "PathFilters",
     "PathKind",
-    "PwMgrStrings",
+    "PwMgrInfo",
     "RichLogName",
     "SectionLabel",
     "StatusCode",
@@ -337,7 +337,7 @@ class PathKind(StrEnum):
     UNMANAGED = auto()
 
 
-class PwMgrStrings(StrEnum):
+class PwMgrInfo(StrEnum):
     confusing = (
         "Check your package manager which implementation is used as there are"
         " confusingly similar named packages."
