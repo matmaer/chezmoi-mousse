@@ -35,10 +35,14 @@ class DoctorTable(DataTable[Text]):
             "failed": self.app.get_color(ColorVar.text_error),
             "error": self.app.get_color(ColorVar.text_error),
         }
-        self._populate_table(self.app.cmattr.cmd_results.doctor.std_out.splitlines())
+        self._populate_table()
 
     @work
-    async def _populate_table(self, doctor_lines: list[str]) -> None:
+    async def _populate_table(self) -> None:
+        doctor_lines = self.app.cmattr.cmd_results.doctor.std_out.splitlines()
+        if not doctor_lines:
+            self.notify("No doctor output available to display.")
+            return
         self.add_columns(*doctor_lines[0].split())
 
         for line in doctor_lines[1:]:
@@ -250,9 +254,7 @@ class PwMgrInfoView(Vertical):
         yield Label(SectionLabel.password_managers, classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self._populate_pw_mgr_info(
-            self.app.cmattr.cmd_results.doctor.std_out.splitlines()
-        )
+        self._populate_pw_mgr_info()
 
     def _get_pw_mgr_data(self, doctor_check: str) -> PwMgrData:
         for member in PwMgrInfo:
@@ -261,7 +263,10 @@ class PwMgrInfoView(Vertical):
         raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
 
     @work
-    async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:
+    async def _populate_pw_mgr_info(self) -> None:
+        doctor_lines = self.app.cmattr.cmd_results.doctor.std_out.splitlines()
+        if not doctor_lines:
+            return
         pw_mgr_entries: list[tuple[PwMgrData, str]] = []
         all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrInfo]
 
