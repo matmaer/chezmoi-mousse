@@ -30,6 +30,7 @@ class CurrentNodeMsg(Message):
         has_status: bool,
         is_ndir: bool,
         dest_dir: Path,
+        is_unmanaged: bool,
     ) -> None:
         self.ids = ids
         self.path = path
@@ -37,6 +38,7 @@ class CurrentNodeMsg(Message):
         self.has_status = has_status
         self.is_ndir = is_ndir
         self._dest_dir = dest_dir
+        self.is_unmanaged = is_unmanaged
         super().__init__()
 
     @property

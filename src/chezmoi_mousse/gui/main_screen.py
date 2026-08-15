@@ -208,6 +208,13 @@ class MainScreen(Screen[None]):
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
+        if msg.is_unmanaged:
+            # TODO: handle unmanaged paths, currently just notify and return
+            self.notify(
+                f"Selected path {msg.path} is unmanaged, not yet implemented.",
+                severity="warning",
+            )
+            return
 
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         self.query_exactly_one(

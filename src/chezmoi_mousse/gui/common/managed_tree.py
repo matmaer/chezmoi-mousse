@@ -14,6 +14,7 @@ from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse.enum_data import OpBtnEnum
+from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import (
     Chars,
@@ -27,7 +28,7 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_types import TreeNodeDict
+    from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 from .actionables import OpButton
@@ -55,8 +56,8 @@ class DestDirTree(Vertical):
 @dataclass(slots=True, frozen=True)
 class ManagedTreeState:
     root_node: TreeNode[Path]
-    expanded_dir_nodes: TreeNodeDict
-    all_file_nodes: TreeNodeDict
+    current_dir_nodes: TreeNodeDict
+    current_file_nodes: TreeNodeDict
     selected_node: TreeNode[Path]
     show_unchanged: bool
     show_unmanaged: bool
@@ -125,19 +126,19 @@ class ManagedTree(Tree[Path]):
         return None
 
     def _snapshot_tree_state(self) -> ManagedTreeState:
-        expanded_dir_nodes: TreeNodeDict = {}
+        current_dir_nodes: TreeNodeDict = {}
         current_file_nodes: TreeNodeDict = {}
         selected_node = self.cursor_node if self.cursor_node is not None else self.root
         for node in self._iter_tree_nodes():
             if node.data is not None:
                 if node.allow_expand and node.is_expanded:
-                    expanded_dir_nodes[node.data] = node
+                    current_dir_nodes[node.data] = node
                 else:
                     current_file_nodes[node.data] = node
         return ManagedTreeState(
             root_node=self.root,
-            expanded_dir_nodes=expanded_dir_nodes,
-            all_file_nodes=current_file_nodes,
+            current_dir_nodes=current_dir_nodes,
+            current_file_nodes=current_file_nodes,
             selected_node=selected_node,
             show_unchanged=self.show_unchanged,
             show_unmanaged=self.show_unmanaged,
@@ -240,22 +241,28 @@ class ManagedTree(Tree[Path]):
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
-        if event.node.data is not None:
-            has_status = (
-                event.node.data in self.paths.status_files
-                or event.node.data in self.paths.status_dirs
+        if event.node.data is None:
+            raise RuntimeError("Node data is None, which is unexpected.")
+        is_unmanaged = (
+            event.node.data not in self.paths.managed_dirs | self.paths.managed_files
+            and event.node is not self.root
+        )
+        has_status = (
+            event.node.data in self.paths.status_files
+            or event.node.data in self.paths.status_dirs
+        )
+        is_ndir = event.node.data in self.paths.n_dirs
+        self.post_message(
+            CurrentNodeMsg(
+                ids=self.app_ids,
+                path=event.node.data,
+                no_changed_paths=self.paths.no_status_paths,
+                has_status=has_status,
+                is_ndir=is_ndir,
+                dest_dir=self.paths.dest_dir,
+                is_unmanaged=is_unmanaged,
             )
-            is_ndir = event.node.data in self.paths.n_dirs
-            self.post_message(
-                CurrentNodeMsg(
-                    ids=self.app_ids,
-                    path=event.node.data,
-                    no_changed_paths=self.paths.no_status_paths,
-                    has_status=has_status,
-                    is_ndir=is_ndir,
-                    dest_dir=self.paths.dest_dir,
-                )
-            )
+        )
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged:
@@ -288,5 +295,41 @@ class ManagedTree(Tree[Path]):
             self.root.collapse_all()
             self.root.expand()  # keep root expanded
 
-    def watch_show_unmanaged(self) -> None:
-        self.notify("Not implemented yet: show_unmanaged watcher")
+    def watch_show_unmanaged(self, show_unmanaged: bool) -> None:
+        if show_unmanaged:
+            expanded_dirs = [self.paths.dest_dir]
+            expanded_dirs += [
+                node.data
+                for node in self._iter_tree_nodes()
+                if node.allow_expand and node.is_expanded
+            ]
+
+            for dir_path in expanded_dirs:
+                if dir_path is None:
+                    raise RuntimeError("dir_path is None, which is unexpected.")
+                unmanaged: ScanDirResult = CheckPath.os_scan_dir(
+                    dir_path, managed_dir=True
+                )
+                if isinstance(unmanaged, PathKind):
+                    continue  # TODO: handle this case
+                for item in unmanaged:
+                    if self.show_unchanged and (
+                        item.path in self.paths.unchanged_tree_dirs
+                        or item.path in self.paths.unchanged_files
+                    ):
+                        continue  # skip unchanged paths
+                    parent_node = self._get_tree_node(item.path, parent_node=True)
+                    if parent_node is not None:
+                        self._insert_node(
+                            dir_node=item.is_dir,
+                            path=item.path,
+                            parent_node=parent_node,
+                        )
+        else:
+            # remove unmanaged nodes
+            for node in self._iter_tree_nodes():
+                if (
+                    node.data not in self.paths.managed_dirs | self.paths.managed_files
+                    and node is not self.root
+                ):
+                    node.remove()
