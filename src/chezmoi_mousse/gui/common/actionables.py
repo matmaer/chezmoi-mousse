@@ -22,6 +22,7 @@ __all__ = [
     "FlatButtonsVertical",
     "OpButton",
     "OperateButtons",
+    "RefreshTreeButton",
     "SwitchSlider",
     "TabButton",
     "TabButtons",
