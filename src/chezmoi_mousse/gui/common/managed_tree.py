@@ -89,13 +89,14 @@ class ManagedTree(Tree[Path]):
         self.root.expand()
         self.root.allow_expand = False  # prevent from being collapsed when we select it
 
-        self.status_color = {
+        self.status_color: dict[StatusCode | PathKind, ColorVar] = {
             StatusCode.Added: ColorVar.text_success,
             StatusCode.Deleted: ColorVar.text_error,
             StatusCode.Modified: ColorVar.text_warning,
             StatusCode.N_DIR: ColorVar.text_secondary,
             StatusCode.Run: ColorVar.bogus,
             StatusCode.Space: ColorVar.dimmed,
+            PathKind.UNMANAGED: ColorVar.text_error_dark,
         }
 
     @property
@@ -113,16 +114,14 @@ class ManagedTree(Tree[Path]):
             yield node
             queue.extend(node.children)
 
-    def _get_parent_node(self, path: Path) -> TreeNode[Path] | None:
+    def _get_tree_node(self, path: Path, *, parent_node: bool) -> TreeNode[Path] | None:
         for node in self._iter_tree_nodes():
-            if node.data is not None and node.data == path.parent:
-                return node
-        return None
-
-    def _get_tree_node(self, path: Path) -> TreeNode[Path] | None:
-        for node in self._iter_tree_nodes():
-            if node.data == path:
-                return node
+            if parent_node:
+                if node.data == path.parent:
+                    return node
+            else:
+                if node.data == path:
+                    return node
         return None
 
     def _snapshot_tree_state(self) -> ManagedTreeState:
@@ -189,7 +188,7 @@ class ManagedTree(Tree[Path]):
     ) -> TreeNode[Path]:
 
         # Avoid inserting an existing node twice or more.
-        tree_node = self._get_tree_node(path)
+        tree_node = self._get_tree_node(path, parent_node=False)
         if tree_node is not None:
             return tree_node
 
@@ -261,12 +260,12 @@ class ManagedTree(Tree[Path]):
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged:
             for path in self.paths.unchanged_tree_dirs:
-                parent_node = self._get_parent_node(path)
+                parent_node = self._get_tree_node(path, parent_node=True)
                 if parent_node is not None:
                     self._insert_node(dir_node=True, path=path, parent_node=parent_node)
 
             for path in self.paths.unchanged_files:
-                parent_node = self._get_parent_node(path)
+                parent_node = self._get_tree_node(path, parent_node=True)
                 if parent_node is not None:
                     self._insert_node(
                         dir_node=False, path=path, parent_node=parent_node
@@ -274,11 +273,11 @@ class ManagedTree(Tree[Path]):
 
         else:
             for path in self.paths.unchanged_tree_dirs:
-                node = self._get_tree_node(path)
+                node = self._get_tree_node(path, parent_node=False)
                 if node is not None:
                     node.remove()
             for path in self.paths.unchanged_files:
-                node = self._get_tree_node(path)
+                node = self._get_tree_node(path, parent_node=False)
                 if node is not None:
                     node.remove()
 
