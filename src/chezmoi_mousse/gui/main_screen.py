@@ -104,7 +104,7 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal(btn_enum=None)
         await self.app.push_screen(self.loading_modal)
         await self._update_trees().wait()
-        await self._log_all_cmd_results(
+        await self._log_cmd_results(
             self.app.cmattr.cmd_results.splash_results_list
         ).wait()
         self.loading_modal.dismiss()
@@ -133,7 +133,7 @@ class MainScreen(Screen[None]):
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
         cmd_results: list[CommandResult] = await self.loading_modal.dismiss()
-        await self._log_all_cmd_results(cmd_results).wait()
+        await self._log_cmd_results(cmd_results).wait()
 
     #####################
     # UI update workers #
@@ -141,11 +141,10 @@ class MainScreen(Screen[None]):
 
     @work
     @min_wait
-    async def _log_all_cmd_results(self, cmd_results: list[CommandResult]) -> None:
+    async def _log_cmd_results(self, cmd_results: list[CommandResult]) -> None:
         self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
-        for result in cmd_results:
-            self.cmd_log.cmd_results = [result]
-            self.app_log.cmd_results = [result]
+        self.cmd_log.cmd_results = cmd_results
+        self.app_log.cmd_results = cmd_results
 
     @work
     @min_wait
@@ -177,7 +176,9 @@ class MainScreen(Screen[None]):
     #####################
 
     @on(LogCmdResultMsg)
-    def _log_cmd_results(self, msg: LogCmdResultMsg) -> None:
+    def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
+        """Currently used by contents.py, diffs.py, and git_log.py to log command
+        results for their respective commands."""
         msg.stop()
         self.app_log.cmd_results = [msg.cmd_result]
         self.cmd_log.cmd_results = [msg.cmd_result]
