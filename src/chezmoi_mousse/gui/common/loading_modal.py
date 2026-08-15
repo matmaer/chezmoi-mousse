@@ -75,17 +75,13 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
         self.command_results.append(Commands.run_read_cmd(read_cmd))
 
-    @work(thread=True, exit_on_error=False)
+    @work(thread=True)
     @min_wait
     async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
-        if btn_enum.path_arg == self.app.cmattr.dest_dir:
-            return
-        elif self.app.cmattr.dry_run is None:
-            dry_run = False
-        else:
-            dry_run = self.app.cmattr.dry_run
         self.command_results.append(
             Commands.run_write_cmd(
-                btn_enum.write_cmd, dry_run=dry_run, path_arg=btn_enum.path_arg
+                btn_enum.write_cmd,
+                dry_run=self.app.cmattr.dry_run,
+                path_arg=btn_enum.path_arg,
             )
         )

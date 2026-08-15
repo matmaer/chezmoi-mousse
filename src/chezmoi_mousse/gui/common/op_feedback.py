@@ -36,11 +36,7 @@ class OperateInfo(Static):
         self.display = False
         self.dest_dir = self.app.cmattr.dest_dir
 
-    def update_review_info(self, button: OpButton, dry_run: bool | None) -> None:
-        if dry_run is None:
-            raise ValueError(
-                f"Trying to review {button.btn_enum.write_cmd} with dry run being None"
-            )
+    def update_review_info(self, button: OpButton, dry_run: bool) -> None:
         self.current_button = button
         info_lines: list[str] = []
         # TODO: append pretty cmd
