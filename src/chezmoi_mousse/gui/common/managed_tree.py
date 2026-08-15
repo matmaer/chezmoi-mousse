@@ -164,7 +164,46 @@ class ManagedTree(Tree[Path]):
             italic = " italic"
         return f"[{color}{italic}]{node_path.name}[/]"
 
-    def update_tree(self) -> None: ...
+    def update_tree(self) -> None:
+        self._populate_tree_bfs()
+
+    def _populate_tree_bfs(self) -> None:
+        """Populates the tree structure, dynamically creating any missing parent
+        directory nodes top-down on demand."""
+        nodes_by_path: dict[Path, TreeNode[Path]] = {self.paths.dest_dir: self.root}
+
+        # Combine directories and files into a single queue. (path, is_directory)
+        items_tuple = [(p, True) for p in self.paths.tree_status_dirs]
+        items_tuple.extend((p, False) for p in self.paths.status_files)
+
+        queue: deque[tuple[Path, bool]] = deque(items_tuple)
+
+        while queue:
+            path, is_dir = queue.popleft()
+
+            # 1. Walk up to locate the nearest parent node already present in the tree
+            missing_parents: list[Path] = []
+            curr_parent = path.parent
+
+            while (
+                curr_parent > self.paths.dest_dir and curr_parent not in nodes_by_path
+            ):
+                missing_parents.append(curr_parent)
+                curr_parent = curr_parent.parent
+
+            # 2. If intermediate directories are missing, push them back to the
+            #    front of the queue as directories first, followed by the current item.
+            if missing_parents:
+                queue.appendleft((path, is_dir))
+                queue.extendleft((p, True) for p in missing_parents)
+                continue
+
+            # 3. Insert the node now that its parent node is guaranteed to exist
+            parent_node = nodes_by_path[curr_parent]
+            node = self._insert_node(
+                dir_node=is_dir, path=path, parent_node=parent_node
+            )
+            nodes_by_path[path] = node
 
     def _insert_node(
         self, dir_node: bool, path: Path, parent_node: TreeNode[Path]
