@@ -14,7 +14,7 @@ from textual.widgets import Switch, TabbedContent, TabPane
 from chezmoi_mousse.gui.common.actionables import (
     DirContentBtn,
     FlatButton,
-    OpButton,
+    RefreshTreeButton,
     SwitchSlider,
     TabButton,
 )
@@ -63,7 +63,7 @@ async def refresh_trees(pilot: Pilot[str], active_pane: TabPane) -> None:
     if not isinstance(active_pane, (ApplyTab, ReAddTab, AddTab)):
         return
     refresh_tree_btn = active_pane.query_one(
-        active_pane.ids.op_btn.refresh_tree_q, OpButton
+        active_pane.ids.op_btn.refresh_tree_q, RefreshTreeButton
     )
     await click_and_wait(pilot, refresh_tree_btn)
 
