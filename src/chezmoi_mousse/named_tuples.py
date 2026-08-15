@@ -24,33 +24,6 @@ class CommandResult(NamedTuple):
 
 
 class ManagedTreePaths(NamedTuple):
-    """
-    dest_dir, # the destination directory path
-
-    managed_dirs: a mapping of managed directories to their PathKind
-    managed_files: a mapping of managed files to their PathKind
-    Possible PathKind values:
-        PathKind.EXISTS_FALSE
-        PathKind.EXISTS_TRUE
-        PathKind.SYMLINK
-        PathKind.UNHANDLED
-
-    n_dirs: a frozenset of dirs which don't have a status but have status descendants
-    status_dirs: a mapping of status directories to their StatusCode
-    status_files: a mapping of status files to their StatusCode
-    Possible StatusCode values (StatusCode.Space is excluded):
-        Added = "A"
-        Deleted = "D"
-        Modified = "M"
-        Run = "R"
-
-    no_managed_paths: boolean indicating if there are no managed paths
-    no_status_paths: boolean indicating if there are no status paths
-    tree_status_dirs: mapping of dirs to their StatusCode, including StatusCode.N_DIR
-    unchanged_dirs: a frozenset of dirs with StatusCode.Space
-    unchanged_files: a frozenset of files with StatusCode.Space
-    """
-
     dest_dir: Path
     managed_dirs: PathKindMap
     managed_files: PathKindMap
