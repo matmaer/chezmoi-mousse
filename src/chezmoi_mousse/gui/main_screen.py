@@ -77,7 +77,6 @@ class MainScreen(Screen[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.first_start = True
         self.run_cmd_results: list[CommandResult] = []
         self.app_log = self.query_one(self.app.cmattr.logs_id.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(self.app.cmattr.logs_id.richlog.cmd_q, CmdLog)
@@ -92,26 +91,14 @@ class MainScreen(Screen[None]):
         self.operate_info = self.query_exactly_one(OperateInfo)
         self.command_output = self.query_exactly_one(CommandOutput)
         self.command_output.display = False
-        if self.first_start:
-            self._first_time_startup()
+        self._push_loading_modal(btn_enum=None)
 
     ###########################################
     # Push modal methods with their callbacks #
     ###########################################
 
     @work
-    async def _first_time_startup(self) -> None:
-        self.loading_modal = LoadingModal(btn_enum=None)
-        await self.app.push_screen(self.loading_modal)
-        await self._update_trees().wait()
-        await self._log_cmd_results(
-            self.app.cmattr.cmd_results.splash_results_list
-        ).wait()
-        self.loading_modal.dismiss()
-        self._first_start = False
-
-    @work
-    async def _push_loading_modal(self, btn_enum: OpBtnEnum) -> None:
+    async def _push_loading_modal(self, btn_enum: OpBtnEnum | None) -> None:
         self.loading_modal = LoadingModal(btn_enum=btn_enum)
         await self.app.push_screen(self.loading_modal)
 
@@ -132,8 +119,16 @@ class MainScreen(Screen[None]):
                 self.notify("Changed managed paths found, refreshing data.")
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
+        elif btn_enum is None:
+            await self._log_cmd_results(
+                self.app.cmattr.cmd_results.splash_results_list
+            ).wait()
+            await self._update_trees().wait()
+            await self.loading_modal.dismiss()
+            return
         cmd_results: list[CommandResult] = await self.loading_modal.dismiss()
         await self._log_cmd_results(cmd_results).wait()
+        await self.loading_modal.dismiss()
 
     #####################
     # UI update workers #
