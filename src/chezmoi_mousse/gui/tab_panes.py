@@ -41,6 +41,7 @@ from .common.actionables import (
     SwitchSlider,
     TabButtons,
 )
+from .common.ascii_constants import FLOW_DIAGRAM
 from .common.contents import ContentsView
 from .common.doctor_data import DoctorTable, PwMgrInfoView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -256,37 +257,6 @@ class ConfigTab(TabPane):
             self.switcher.current = self.ids.container.template_data
         elif event.button.label == FlatBtnLabel.diagram:
             self.switcher.current = self.ids.container.diagram
-
-
-FLOW_DIAGRAM = """\
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│home directory│    │ working copy │    │  local repo  │    │ remote repo  │
-└──────┬───────┘    └──────┬───────┘    └──────┬───────┘    └──────┬───────┘
-       │                   │                   │                   │
-       │                   │                   │                   │
-       │     Add Tab       │    autoCommit     │     git push      │
-       │   Re-Add Tab      │──────────────────>│──────────────────>│
-       │──────────────────>│                   │                   │
-       │                   │                autopush               │
-       │                   │──────────────────────────────────────>│
-       │                   │                   │                   │
-       │                   │                   │                   │
-       │     Apply Tab     │     chezmoi init & chezmoi git pull   │
-       │<──────────────────│<──────────────────────────────────────│
-       │                   │                   │                   │
-       │     Diff View     │                   │                   │
-       │<─ ─ ─ ─ ─ ─ ─ ─ ─>│                   │                   │
-       │                   │                   │                   │
-       │                   │    chezmoi init & chezmoi git pull    │
-       │                   │<──────────────────────────────────────│
-       │                   │                   │                   │
-       │        chezmoi init --one-shot & chezmoi init --apply     │
-       │<──────────────────────────────────────────────────────────│
-       │                   │                   │                   │
-┌──────┴───────┐    ┌──────┴───────────────────┴───────┐    ┌──────┴───────┐
-│ destination  │    │    target state / source state   │    │  git remote  │
-└──────────────┘    └──────────────────────────────────┘    └──────────────┘
-"""
 
 
 class DebugTab(TabPane):

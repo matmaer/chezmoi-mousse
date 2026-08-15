@@ -22,23 +22,13 @@ from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar
 
+from .common.ascii_constants import SPLASH_ASCII
+
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["SplashScreen"]
 
-SPLASH_ASCII = """\
- _______________________________ ___________________._
-|       |   |   |    ___|___    |    '    |       |   |
-|    ===|       |     __|     __|         |   |   |   |
-|       |   |   |       |       |   |ˇ|   |       |   |
-`-------^---^---^-------^-------^---' '---^-------^---'
-   ____ ____ _______ ___ ___ _______ _______ _______
-  |    ˇ    |       |   |   |    ___|    ___|    ___|
-  |         |   |   |   |   |__     |__     |     __|
-  |   |ˇ|   |       |       |       |       |       |
-  '---' '---^-------^-------^-------^-------^-------'
-""".replace("===", "=\u200b=\u200b=").splitlines()
 
 SPLASH_WIDTH = len(max(SPLASH_ASCII, key=len))
 LOG_MSG_WIDTH = SPLASH_WIDTH - 13
