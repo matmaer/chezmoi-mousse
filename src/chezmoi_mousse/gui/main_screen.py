@@ -15,7 +15,13 @@ from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import Chars, OpBtnLabel, TabLabel, Tcss
 
-from .common.actionables import DirContentBtn, OpButton, OperateButtons, SwitchSlider
+from .common.actionables import (
+    DirContentBtn,
+    OpButton,
+    OperateButtons,
+    RefreshTreeButton,
+    SwitchSlider,
+)
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -91,21 +97,23 @@ class MainScreen(Screen[None]):
         self.operate_info = self.query_exactly_one(OperateInfo)
         self.command_output = self.query_exactly_one(CommandOutput)
         self.command_output.display = False
-        self._push_loading_modal(btn_enum=None)
+        self._push_loading_modal(btn_data=None)
 
     ###########################################
     # Push modal methods with their callbacks #
     ###########################################
 
     @work
-    async def _push_loading_modal(self, btn_enum: OpBtnEnum | None) -> None:
-        self.loading_modal = LoadingModal(btn_enum=btn_enum)
+    async def _push_loading_modal(
+        self, btn_data: OpBtnEnum | RefreshTreeButton | None
+    ) -> None:
+        self.loading_modal = LoadingModal(btn_data=btn_data)
         await self.app.push_screen(self.loading_modal)
 
-        if btn_enum in OpBtnEnum.run_btn_enums():
-            await self.loading_modal.run_write_command(btn_enum).wait()
+        if btn_data in OpBtnEnum.run_btn_enums():
+            await self.loading_modal.run_write_command(btn_data).wait()
             await self.command_output.update_cmd_output().wait()
-        elif btn_enum == OpBtnEnum.refresh_tree:
+        elif isinstance(btn_data, RefreshTreeButton):
             if self.app.cmattr.changes.no_changes:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
@@ -117,16 +125,17 @@ class MainScreen(Screen[None]):
                 await self.command_output.update_cmd_output().wait()
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
-        elif btn_enum is None:
+        elif btn_data is None:
             await self._log_cmd_results(
                 self.app.cmattr.cmd_results.splash_results_list
             ).wait()
             await self._update_trees().wait()
             await self.loading_modal.dismiss()
             return
+        else:
+            raise NotImplementedError(f"Not implemented for {btn_data}")
         cmd_results: list[CommandResult] = await self.loading_modal.dismiss()
         await self._log_cmd_results(cmd_results).wait()
-        await self.loading_modal.dismiss()
 
     #####################
     # UI update workers #
@@ -187,9 +196,8 @@ class MainScreen(Screen[None]):
             self.command_output.reset_widgets()
             self.operate_info.update_review_info(event.button, self.app.cmattr.dry_run)
             return
-        elif (
-            event.button.btn_enum in OpBtnEnum.run_btn_enums()
-            or event.button.btn_enum == OpBtnEnum.refresh_tree
+        elif event.button.btn_enum in OpBtnEnum.run_btn_enums() or isinstance(
+            event.button, RefreshTreeButton
         ):
             self.command_output.reset_widgets()
             self._push_loading_modal(event.button.btn_enum)
@@ -282,53 +290,54 @@ class MainScreen(Screen[None]):
             raise NotImplementedError(f"Not implemented for {app_ids.tab_label}")
         right_side.display = display
 
-    def _set_button_display(self, button: OpButton) -> None:
+    def _set_button_display(self, btn_data: OpButton | RefreshTreeButton) -> None:
         op_button_group = self.query_one(
-            button.app_ids.container.operate_buttons_q, OperateButtons
+            btn_data.app_ids.container.operate_buttons_q, OperateButtons
         )
         op_buttons: list[OpButton] = [
             b
             for b in op_button_group.query_children().results()
             if isinstance(b, OpButton)
         ]
-        cancel_btn = self.query_one(button.app_ids.op_btn.cancel_q, OpButton)
-        run_buttons = [b for b in op_buttons if b.id in button.app_ids.run_btn_ids]
+        cancel_btn = self.query_one(btn_data.app_ids.op_btn.cancel_q, OpButton)
+        run_buttons = [b for b in op_buttons if b.id in btn_data.app_ids.run_btn_ids]
         review_buttons = [
-            b for b in op_buttons if b.id in button.app_ids.review_btn_ids
+            b for b in op_buttons if b.id in btn_data.app_ids.review_btn_ids
         ]
-        if button.id in (
-            button.app_ids.op_btn.refresh_tree,
-            button.app_ids.op_btn.cancel,
+        if btn_data.id in (
+            btn_data.app_ids.op_btn.refresh_tree,
+            btn_data.app_ids.op_btn.cancel,
         ):
             cancel_btn.display = False
             for btn in run_buttons:
                 btn.display = False
             for btn in review_buttons:
                 btn.display = True
-        elif button in review_buttons:
+        elif isinstance(btn_data, RefreshTreeButton) or btn_data in review_buttons:
             for btn in review_buttons:
                 btn.display = False
             for btn in run_buttons:
-                btn.disabled = False
-            run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(button.label)))
-            # now lookup the button widget in self.run_buttons with the
-            # corresponding enum
-            btn_widget: OpButton = next(
-                b for b in run_buttons if b.btn_enum == run_btn_enum
-            )
-            btn_widget.display = True
-            cancel_btn.display = True
-        elif button in run_buttons:
+                btn.display = False
+            if isinstance(btn_data, RefreshTreeButton):
+                run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(btn_data.label)))
+                # now lookup the button widget in self.run_buttons with the
+                # corresponding enum
+                btn_widget: OpButton = next(
+                    b for b in run_buttons if b.btn_enum == run_btn_enum
+                )
+                btn_widget.display = True
+                cancel_btn.display = True
+        elif btn_data in run_buttons:
             cancel_btn.display = False
-            button.disabled = True
-        elif button.btn_enum == OpBtnEnum.refresh_tree:
+            btn_data.disabled = True
+        elif isinstance(btn_data, RefreshTreeButton):
             for btn in op_buttons:
                 btn.display = False
 
-        self._set_button_display(button)
-        if button.btn_enum is OpBtnEnum.refresh_tree:
-            self._set_left_side_display(button.app_ids, True)
-            self._set_right_side_display(button.app_ids, True)
+        self._set_button_display(btn_data)
+        if isinstance(btn_data, RefreshTreeButton):
+            self._set_left_side_display(btn_data.app_ids, True)
+            self._set_right_side_display(btn_data.app_ids, True)
             self.main_tabs.display = True
             self.op_feed_back.display = False
             self.command_output.display = False
@@ -336,12 +345,12 @@ class MainScreen(Screen[None]):
             return
         self.op_feed_back.display = True
         self.main_tabs.display = False
-        self._set_left_side_display(button.app_ids, False)
-        if button.btn_enum in OpBtnEnum.review_btn_enums():
+        self._set_left_side_display(btn_data.app_ids, False)
+        if btn_data.btn_enum in OpBtnEnum.review_btn_enums():
             self.command_output.display = False
             self.operate_info.display = True
-            self._set_right_side_display(button.app_ids, True)
-        elif button.btn_enum in OpBtnEnum.run_btn_enums():
+            self._set_right_side_display(btn_data.app_ids, True)
+        elif btn_data.btn_enum in OpBtnEnum.run_btn_enums():
             self.command_output.display = True
             self.operate_info.display = False
-            self._set_right_side_display(button.app_ids, False)
+            self._set_right_side_display(btn_data.app_ids, False)

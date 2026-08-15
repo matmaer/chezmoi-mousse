@@ -16,6 +16,8 @@ from chezmoi_mousse.functions import Commands, min_wait
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar
 
+from .actionables import RefreshTreeButton
+
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -40,8 +42,8 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
 
     label_text: reactive[str] = reactive("Loading...")
 
-    def __init__(self, *, btn_enum: OpBtnEnum | None) -> None:
-        self.btn_enum: OpBtnEnum | None = btn_enum
+    def __init__(self, *, btn_data: OpBtnEnum | RefreshTreeButton | None) -> None:
+        self.btn_data = btn_data
         super().__init__()
 
     def compose(self) -> ComposeResult:

@@ -57,7 +57,6 @@ class AppIds:
             return {
                 self.op_btn.add_review: OpBtnEnum.add_review,
                 self.op_btn.add_run: OpBtnEnum.add_run,
-                self.op_btn.refresh_tree: OpBtnEnum.refresh_tree,
             }
         _forget_destroy_buttons = {
             self.op_btn.destroy_review: OpBtnEnum.destroy_review,
@@ -70,14 +69,12 @@ class AppIds:
                 **_forget_destroy_buttons,
                 self.op_btn.apply_review: OpBtnEnum.apply_review,
                 self.op_btn.apply_run: OpBtnEnum.apply_run,
-                self.op_btn.refresh_tree: OpBtnEnum.refresh_tree,
             }
         elif self.tab_label == TabLabel.re_add:
             return {
                 **_forget_destroy_buttons,
                 self.op_btn.re_add_review: OpBtnEnum.re_add_review,
                 self.op_btn.re_add_run: OpBtnEnum.re_add_run,
-                self.op_btn.refresh_tree: OpBtnEnum.refresh_tree,
             }
         else:
             raise ValueError(f"Unexpected tab_label {self.tab_label} for op_btn_map")

@@ -24,7 +24,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.debug.test_paths import TestPaths
-from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.str_enums import (
     ColorVar,
     FlatBtnLabel,
@@ -38,6 +37,7 @@ from .common.actionables import (
     FlatButtonsVertical,
     OpButton,
     OperateButtons,
+    RefreshTreeButton,
     SwitchSlider,
     TabButtons,
 )
@@ -68,11 +68,7 @@ class AddTab(TabPane):
         with Horizontal():
             yield Vertical(
                 FilteredDirTree(dest_dir=self.app.cmattr.dest_dir),
-                OpButton(
-                    btn_enum=OpBtnEnum.refresh_tree,
-                    btn_id=self.ids.op_btn.refresh_tree,
-                    app_ids=self.ids,
-                ),
+                RefreshTreeButton(self.ids),
                 id=self.ids.container.left_side,
                 classes=Tcss.tab_left_vertical,
             )

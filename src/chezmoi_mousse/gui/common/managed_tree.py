@@ -13,7 +13,6 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
-from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import (
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-from .actionables import OpButton
+from .actionables import RefreshTreeButton
 from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
@@ -46,11 +45,7 @@ class DestDirTree(Vertical):
     def compose(self) -> ComposeResult:
         yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
         yield ManagedTree(self.app_ids)
-        yield OpButton(
-            btn_enum=OpBtnEnum.refresh_tree,
-            btn_id=self.app_ids.op_btn.refresh_tree,
-            app_ids=self.app_ids,
-        )
+        yield RefreshTreeButton(self.app_ids)
 
 
 @dataclass(slots=True, frozen=True)

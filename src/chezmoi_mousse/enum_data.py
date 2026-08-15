@@ -12,16 +12,14 @@ __all__ = ["OpBtnEnum", "SwitchEnum"]
 @dataclass(slots=True)
 class OpBtnData:
     label: str
-    write_cmd: WriteCmd | None = None
-    op_info_string: str | None = None
-    op_info_title: str | None = None
+    write_cmd: WriteCmd
+    op_info_string: str
+    op_info_title: str
     op_info_subtitle: str | None = None
     path_arg: "Path | None" = None
 
 
 class OpBtnEnum(Enum):
-
-    refresh_tree = OpBtnData(label=OpBtnLabel.refresh_tree)
 
     add_review = OpBtnData(
         label=OpBtnLabel.add_review,
@@ -99,14 +97,10 @@ class OpBtnEnum(Enum):
 
     @property
     def write_cmd(self) -> WriteCmd:
-        if self.value.write_cmd is None:
-            raise ValueError(f"OpBtnEnum member {self.name} has no write_cmd")
         return self.value.write_cmd
 
     @property
     def op_info_string(self) -> str:
-        if self.value.op_info_string is None:
-            raise ValueError(f"OpBtnEnum member {self.name} has no op_info_string")
         return self.value.op_info_string
 
     @property
@@ -114,7 +108,7 @@ class OpBtnEnum(Enum):
         return self.value.op_info_subtitle
 
     @property
-    def op_info_title(self) -> str | None:
+    def op_info_title(self) -> str:
         return self.value.op_info_title
 
     @property
