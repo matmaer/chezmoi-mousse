@@ -181,7 +181,7 @@ class SplashScreen(Screen[None]):
     @work(name=WorkerName.update_managed_paths)
     async def _create_managed_paths_instance(self) -> None:
         ResultCollector.managed_paths_instance = ManagedPaths(
-            _dest_dir=ResultCollector.parsed_dump_config["destDir"],
+            _dest_dir=Path(ResultCollector.parsed_dump_config["destDir"]),
             _managed_dirs_result=ResultCollector.managed_dirs,
             _managed_files_result=ResultCollector.managed_files,
             _status_dirs_result=ResultCollector.status_dirs,
