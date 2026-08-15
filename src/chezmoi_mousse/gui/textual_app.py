@@ -18,7 +18,6 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     Chars,
     ColorVar,
-    StatusCode,
     TabLabel,
 )
 
@@ -106,32 +105,8 @@ class ChezmoiGui(App[str]):
         self.theme = "chezmoi-mousse-dark"
         self._run_splash_screen()
 
-    def get_color(self, str_enum_member: ColorVar | StatusCode | None) -> str:
-        """If str_enum_member is None, return the bogus color (pure yellow) to indicate
-        an error.
-
-        Otherwise, return the color value from theme_variables.
-        """
-        bogus = ColorVar.bogus.value
-
-        if isinstance(str_enum_member, StatusCode):
-            mapping = {
-                StatusCode.Added: ColorVar.text_success,
-                StatusCode.Deleted: ColorVar.text_error,
-                StatusCode.Modified: ColorVar.text_warning,
-                StatusCode.N_DIR: ColorVar.text_secondary,
-                StatusCode.Run: ColorVar.bogus,
-                StatusCode.Space: ColorVar.dimmed,
-            }
-            color_var = mapping.get(str_enum_member, ColorVar.bogus)
-        elif isinstance(str_enum_member, ColorVar):
-            color_var = str_enum_member
-        elif str_enum_member is None:
-            return bogus
-        else:
-            return bogus
-
-        return self.theme_variables.get(color_var.value, bogus)
+    def get_color(self, color_var: ColorVar) -> str:
+        return self.theme_variables.get(color_var.value, ColorVar.bogus.value)
 
     @work
     async def _run_splash_screen(self) -> None:

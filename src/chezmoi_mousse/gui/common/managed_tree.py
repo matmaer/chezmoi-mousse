@@ -115,6 +115,15 @@ class ManagedTree(Tree[Path]):
         self.root.expand()
         self.root.allow_expand = False  # prevent from being collapsed
 
+        self.status_color = {
+            StatusCode.Added: ColorVar.text_success,
+            StatusCode.Deleted: ColorVar.text_error,
+            StatusCode.Modified: ColorVar.text_warning,
+            StatusCode.N_DIR: ColorVar.text_secondary,
+            StatusCode.Run: ColorVar.bogus,
+            StatusCode.Space: ColorVar.dimmed,
+        }
+
     @property
     def paths(self) -> ManagedTreePaths:
         return (
@@ -171,9 +180,9 @@ class ManagedTree(Tree[Path]):
         if managed_kind is None:
             color = self.app.get_color(ColorVar.ready)
         elif status_code is not None:
-            color = self.app.get_color(status_code)
+            color = self.app.get_color(self.status_color[status_code])
         else:
-            color = self.app.get_color(StatusCode.Space)
+            color = self.app.get_color(ColorVar.dimmed)
         # determine if the label should be italic or not
         italic = ""
         if managed_kind == PathKind.EXISTS_FALSE:
