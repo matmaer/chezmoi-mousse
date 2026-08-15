@@ -146,8 +146,7 @@ class OpBtnLabel(StrEnum):
     log_memory = "Log Memory Usage"
     re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
-    refresh_tree = "Refresh Trees"
-    reload = "Reload"
+    refresh_tree = "Refresh Tree"
     remove_paths = "Remove Test Paths"
 
     @property

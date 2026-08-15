@@ -65,9 +65,7 @@ async def refresh_trees(pilot: Pilot[str], active_pane: TabPane) -> None:
     refresh_tree_btn = active_pane.query_one(
         active_pane.ids.op_btn.refresh_tree_q, OpButton
     )
-    reload_button = active_pane.query_one(active_pane.ids.op_btn.reload_q, OpButton)
     await click_and_wait(pilot, refresh_tree_btn)
-    await click_and_wait(pilot, reload_button)
 
 
 async def toggle_switches(pilot: Pilot[str], active_pane: TabPane) -> None:

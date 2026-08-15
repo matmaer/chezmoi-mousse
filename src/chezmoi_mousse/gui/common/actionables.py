@@ -68,11 +68,22 @@ class FlatButtonsVertical(Vertical):
 
 
 class CancelButton(Button):
-    def __init__(self, tab_ids: AppIds) -> None:
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
         super().__init__(
             classes=Tcss.operate_button,
-            id=tab_ids.op_btn.cancel,
+            id=self.app_ids.op_btn.cancel,
             label=OpBtnLabel.cancel,
+        )
+
+
+class RefreshTreeButton(Button):
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
+        super().__init__(
+            classes=Tcss.refresh_button,
+            id=self.app_ids.op_btn.refresh_tree,
+            label=OpBtnLabel.refresh_tree,
         )
 
 
@@ -98,7 +109,6 @@ class OpButton(Button):
             OpBtnEnum.destroy_run,
             OpBtnEnum.forget_run,
             OpBtnEnum.re_add_run,
-            OpBtnEnum.reload,
         ):
             self.display = False
 
@@ -106,20 +116,20 @@ class OpButton(Button):
 class OperateButtons(HorizontalGroup):
 
     def __init__(self, ids: AppIds) -> None:
-        self.tab_ids = ids
+        self.app_ids = ids
         super().__init__(id=ids.container.operate_buttons, classes=Tcss.op_btn_group)
 
     def compose(self) -> ComposeResult:
-        for btn_id, btn_enum in self.tab_ids.op_btn_map.items():
-            yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.tab_ids)
-        yield CancelButton(tab_ids=self.tab_ids)
+        for btn_id, btn_enum in self.app_ids.op_btn_map.items():
+            yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.app_ids)
+        yield CancelButton(app_ids=self.app_ids)
 
     def on_mount(self) -> None:
-        cancel_btn = self.query_one(self.tab_ids.op_btn.cancel_q, CancelButton)
+        cancel_btn = self.query_one(self.app_ids.op_btn.cancel_q, CancelButton)
         cancel_btn.display = False
 
     def set_path_arg(self, path: Path) -> None:
-        for btn_enum in self.tab_ids.op_btn_map.values():
+        for btn_enum in self.app_ids.op_btn_map.values():
             btn_enum.path_arg = path
 
 

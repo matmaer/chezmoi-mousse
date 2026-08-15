@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
+from chezmoi_mousse.enum_data import OpBtnEnum
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -49,3 +51,11 @@ class CurrentNodeMsg(Message):
     @property
     def is_dest_dir(self) -> bool:
         return self.path == self._dest_dir
+
+
+class OpBtnMsg(Message):
+    def __init__(self, ids: AppIds, *, btn_enum: OpBtnEnum, btn_id: str) -> None:
+        self.ids = ids
+        self.btn_enum: OpBtnEnum = btn_enum
+        self.btn_id: str = btn_id
+        super().__init__()

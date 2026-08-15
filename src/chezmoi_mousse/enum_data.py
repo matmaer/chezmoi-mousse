@@ -22,7 +22,6 @@ class OpBtnData:
 class OpBtnEnum(Enum):
 
     refresh_tree = OpBtnData(label=OpBtnLabel.refresh_tree)
-    reload = OpBtnData(label=OpBtnLabel.reload)
 
     add_review = OpBtnData(
         label=OpBtnLabel.add_review,

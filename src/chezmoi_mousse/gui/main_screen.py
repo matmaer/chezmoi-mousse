@@ -106,10 +106,6 @@ class MainScreen(Screen[None]):
             await self.loading_modal.run_write_command(btn_enum).wait()
             await self.command_output.update_cmd_output().wait()
         elif btn_enum == OpBtnEnum.refresh_tree:
-            await self.loading_modal.run_managed_commands().wait()
-            await self.command_output.update_cmd_output().wait()
-            await self._update_trees().wait()
-        elif btn_enum == OpBtnEnum.reload:
             if self.app.cmattr.changes.no_changes:
                 self.notify(
                     "No changed managed paths found, skipping refresh.",
@@ -117,6 +113,8 @@ class MainScreen(Screen[None]):
                 )
             else:
                 self.notify("Changed managed paths found, refreshing data.")
+                await self.loading_modal.run_managed_commands().wait()
+                await self.command_output.update_cmd_output().wait()
                 await self._purge_views_cache().wait()
                 await self._update_trees().wait()
         elif btn_enum is None:
@@ -189,13 +187,11 @@ class MainScreen(Screen[None]):
             self.command_output.reset_widgets()
             self.operate_info.update_review_info(event.button, self.app.cmattr.dry_run)
             return
-        if event.button.btn_enum == OpBtnEnum.reload:
-            self.command_output.reset_widgets()
-            self._push_loading_modal(OpBtnEnum.reload)
         elif (
             event.button.btn_enum in OpBtnEnum.run_btn_enums()
             or event.button.btn_enum == OpBtnEnum.refresh_tree
         ):
+            self.command_output.reset_widgets()
             self._push_loading_modal(event.button.btn_enum)
 
     @on(DirContentBtn.Pressed)
@@ -295,14 +291,15 @@ class MainScreen(Screen[None]):
             for b in op_button_group.query_children().results()
             if isinstance(b, OpButton)
         ]
-        reload_btn = self.query_one(button.app_ids.op_btn.reload_q, OpButton)
         cancel_btn = self.query_one(button.app_ids.op_btn.cancel_q, OpButton)
         run_buttons = [b for b in op_buttons if b.id in button.app_ids.run_btn_ids]
         review_buttons = [
             b for b in op_buttons if b.id in button.app_ids.review_btn_ids
         ]
-        if button.id in (button.app_ids.op_btn.reload, button.app_ids.op_btn.cancel):
-            reload_btn.display = False
+        if button.id in (
+            button.app_ids.op_btn.refresh_tree,
+            button.app_ids.op_btn.cancel,
+        ):
             cancel_btn.display = False
             for btn in run_buttons:
                 btn.display = False
@@ -323,15 +320,13 @@ class MainScreen(Screen[None]):
             cancel_btn.display = True
         elif button in run_buttons:
             cancel_btn.display = False
-            reload_btn.display = True
             button.disabled = True
         elif button.btn_enum == OpBtnEnum.refresh_tree:
             for btn in op_buttons:
                 btn.display = False
-            reload_btn.display = True
 
         self._set_button_display(button)
-        if button.btn_enum is OpBtnEnum.reload:
+        if button.btn_enum is OpBtnEnum.refresh_tree:
             self._set_left_side_display(button.app_ids, True)
             self._set_right_side_display(button.app_ids, True)
             self.main_tabs.display = True
@@ -346,10 +341,7 @@ class MainScreen(Screen[None]):
             self.command_output.display = False
             self.operate_info.display = True
             self._set_right_side_display(button.app_ids, True)
-        elif (
-            button.btn_enum in OpBtnEnum.run_btn_enums()
-            or button.btn_enum == OpBtnEnum.refresh_tree
-        ):
+        elif button.btn_enum in OpBtnEnum.run_btn_enums():
             self.command_output.display = True
             self.operate_info.display = False
             self._set_right_side_display(button.app_ids, False)
