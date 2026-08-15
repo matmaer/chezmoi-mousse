@@ -55,9 +55,9 @@ class DestDirTree(Vertical):
 @dataclass(slots=True, frozen=True)
 class ManagedTreeState:
     root_node: TreeNode[Path]
-    all_dir_nodes: TreeNodeDict
+    expanded_dir_nodes: TreeNodeDict
     all_file_nodes: TreeNodeDict
-    selected_node: TreeNode[Path] | None
+    selected_node: TreeNode[Path]
     show_unchanged: bool
     show_unmanaged: bool
     expand_all: bool
@@ -114,19 +114,20 @@ class ManagedTree(Tree[Path]):
             queue.extend(node.children)
 
     def _snapshot_tree_state(self) -> ManagedTreeState:
-        current_dir_nodes: TreeNodeDict = {}
+        expanded_dir_nodes: TreeNodeDict = {}
         current_file_nodes: TreeNodeDict = {}
+        selected_node = self.cursor_node if self.cursor_node is not None else self.root
         for node in self._iter_tree_nodes():
             if node.data is not None:
-                if node.allow_expand:
-                    current_dir_nodes[node.data] = node
+                if node.allow_expand and node.is_expanded:
+                    expanded_dir_nodes[node.data] = node
                 else:
                     current_file_nodes[node.data] = node
         return ManagedTreeState(
             root_node=self.root,
-            all_dir_nodes=current_dir_nodes,
+            expanded_dir_nodes=expanded_dir_nodes,
             all_file_nodes=current_file_nodes,
-            selected_node=self.cursor_node,
+            selected_node=selected_node,
             show_unchanged=self.show_unchanged,
             show_unmanaged=self.show_unmanaged,
             expand_all=self.expand_all,
