@@ -35,6 +35,7 @@ class ManagedTreePaths(NamedTuple):
     tree_status_dirs: StatusMap
     unchanged_dirs: frozenset[Path]
     unchanged_files: frozenset[Path]
+    unchanged_tree_dirs: frozenset[Path]
 
 
 class ReadCmdGroups(NamedTuple):

@@ -260,13 +260,10 @@ class ManagedTree(Tree[Path]):
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged:
-            for path in self.paths.unchanged_dirs:
-                if path not in self.paths.n_dirs:
-                    parent_node = self._get_parent_node(path)
-                    if parent_node is not None:
-                        self._insert_node(
-                            dir_node=True, path=path, parent_node=parent_node
-                        )
+            for path in self.paths.unchanged_tree_dirs:
+                parent_node = self._get_parent_node(path)
+                if parent_node is not None:
+                    self._insert_node(dir_node=True, path=path, parent_node=parent_node)
 
             for path in self.paths.unchanged_files:
                 parent_node = self._get_parent_node(path)
@@ -276,11 +273,10 @@ class ManagedTree(Tree[Path]):
                     )
 
         else:
-            for path in self.paths.unchanged_dirs:
-                if path not in self.paths.n_dirs:
-                    node = self._get_tree_node(path)
-                    if node is not None:
-                        node.remove()
+            for path in self.paths.unchanged_tree_dirs:
+                node = self._get_tree_node(path)
+                if node is not None:
+                    node.remove()
             for path in self.paths.unchanged_files:
                 node = self._get_tree_node(path)
                 if node is not None:

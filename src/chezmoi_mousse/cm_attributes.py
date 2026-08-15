@@ -163,6 +163,12 @@ class ManagedPaths:
             and parent != self._dest_dir
         )
 
+        _unchanged_dirs = frozenset(
+            path
+            for path in self.managed_dirs
+            if path not in status_dirs and path not in status_files
+        )
+
         return ManagedTreePaths(
             dest_dir=self._dest_dir,
             managed_dirs=self.managed_dirs,
@@ -173,15 +179,14 @@ class ManagedPaths:
             status_dirs=status_dirs,
             status_files=status_files,
             tree_status_dirs=self._get_tree_status_map(dirs_map, _n_dirs),
-            unchanged_dirs=frozenset(
-                path
-                for path in self.managed_dirs
-                if path not in status_dirs and path not in status_files
-            ),
+            unchanged_dirs=_unchanged_dirs,
             unchanged_files=frozenset(
                 path
                 for path in self.managed_files
                 if path not in status_dirs and path not in status_files
+            ),
+            unchanged_tree_dirs=frozenset(
+                path for path in _unchanged_dirs if path not in _n_dirs
             ),
         )
 
