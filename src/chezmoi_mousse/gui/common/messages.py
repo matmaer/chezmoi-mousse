@@ -30,7 +30,7 @@ class CurrentNodeMsg(Message):
         path: Path,
         no_changed_paths: bool,
         has_status: bool,
-        is_ndir: bool,
+        is_n_dir: bool,
         dest_dir: Path,
         is_unmanaged: bool,
     ) -> None:
@@ -38,7 +38,7 @@ class CurrentNodeMsg(Message):
         self.path = path
         self.no_changed_paths = no_changed_paths
         self.has_status = has_status
-        self.is_ndir = is_ndir
+        self.is_n_dir = is_n_dir
         self._dest_dir = dest_dir
         self.is_unmanaged = is_unmanaged
         super().__init__()

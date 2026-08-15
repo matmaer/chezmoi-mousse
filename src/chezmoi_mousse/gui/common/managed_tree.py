@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -48,15 +48,17 @@ class DestDirTree(Vertical):
         yield RefreshTreeButton(self.app_ids)
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class ManagedTreeState:
     root_node: TreeNode[Path]
-    current_dir_nodes: TreeNodeDict
-    current_file_nodes: TreeNodeDict
     selected_node: TreeNode[Path]
-    show_unchanged: bool
-    show_unmanaged: bool
-    expand_all: bool
+    current_dir_nodes: set[TreeNode[Path]] = field(default_factory=lambda: set())
+    current_file_nodes: set[TreeNode[Path]] = field(default_factory=lambda: set())
+    visible_dir_nodes: set[TreeNode[Path]] = field(default_factory=lambda: set())
+    visible_file_nodes: set[TreeNode[Path]] = field(default_factory=lambda: set())
+    show_unchanged: bool = False
+    show_unmanaged: bool = False
+    expand_all: bool = False
 
 
 class ManagedTree(Tree[Path]):
@@ -80,10 +82,11 @@ class ManagedTree(Tree[Path]):
 
         # configure root node
         self.root.data = self.app.cmattr.dest_dir
-        color = self.app.theme_variables["text-primary"]
-        self.root.label = f"[{color} bold]{self.app.cmattr.dest_dir.name}[/]"
+        color = self.app.get_color(ColorVar.text_primary)
+        self.root.label = f"[{color}]{self.app.cmattr.dest_dir.name}[/]"
         self.root.expand()
         self.root.allow_expand = False  # prevent from being collapsed when we select it
+        self.select_node(self.root)
 
         self.status_color: dict[StatusCode | PathKind, ColorVar] = {
             StatusCode.Added: ColorVar.text_success,
@@ -94,7 +97,7 @@ class ManagedTree(Tree[Path]):
             StatusCode.Space: ColorVar.dimmed,
             PathKind.UNMANAGED: ColorVar.text_error_dark,
         }
-        self.tree_snapshot: ManagedTreeState = self._snapshot_tree_state()
+        self.state = ManagedTreeState(root_node=self.root, selected_node=self.root)
 
     @property
     def paths(self) -> ManagedTreePaths:
@@ -111,7 +114,11 @@ class ManagedTree(Tree[Path]):
             yield node
             queue.extend(node.children)
 
-    def _get_tree_node(self, path: Path, *, parent_node: bool) -> TreeNode[Path] | None:
+    def _get_tree_node(
+        self, path: Path | None, *, parent_node: bool
+    ) -> TreeNode[Path] | None:
+        if path is None:
+            return None
         for node in self._iter_tree_nodes():
             if parent_node:
                 if node.data == path.parent:
@@ -121,50 +128,60 @@ class ManagedTree(Tree[Path]):
                     return node
         return None
 
-    def _snapshot_tree_state(self) -> ManagedTreeState:
-        current_dir_nodes: TreeNodeDict = {}
-        current_file_nodes: TreeNodeDict = {}
-        selected_node = self.cursor_node if self.cursor_node is not None else self.root
+    def _get_node_children(self, node: TreeNode[Path]) -> list[TreeNode[Path]]:
+        # get all children of a node, including the children of its children
+        children: list[TreeNode[Path]] = []
+        queue: deque[TreeNode[Path]] = deque([node])
+        while queue:
+            current_node = queue.popleft()
+            children.append(current_node)
+            queue.extend(current_node.children)
+        return children
+
+    def _best_effort_state_restore(self, old_state: ManagedTreeState) -> None:
+        """After we do write operations, which may change the tree structure, we try to
+        restore the previous state of the tree as best as we can.
+
+        After write operations, or refresh tree requests, we call .update_tree() from
+        other parts of the code. This will rebuild the tree structure, but we want to
+        keep the previous state as best as we can.
+        """
+        # 1. We fold all non visible nodes, if they still exist
+        for node in old_state.current_dir_nodes:
+            if node.data in self.paths.tree_status_dirs:
+                new_node = self._get_tree_node(node.data, parent_node=False)
+                if new_node is not None:
+                    if node.is_expanded:
+                        new_node.expand()
+                    else:
+                        new_node.collapse()
+
+        # 2. We try to reselect the previously selected node, if it still exists
+        node = self._get_tree_node(old_state.selected_node.data, parent_node=False)
+        if node is not None:
+            self.select_node(node)
+        else:
+            self.select_node(self.root)
+
+        # 3. We update the current state of the tree
+        self._update_state()
+
+    def _update_state(self) -> None:
+        current_dir_nodes: set[TreeNode[Path]] = set()
+        current_file_nodes: set[TreeNode[Path]] = set()
         for node in self._iter_tree_nodes():
             if node.data is not None:
                 if node.allow_expand and node.is_expanded:
-                    current_dir_nodes[node.data] = node
+                    current_dir_nodes.add(node)
                 else:
-                    current_file_nodes[node.data] = node
-        return ManagedTreeState(
-            root_node=self.root,
-            current_dir_nodes=current_dir_nodes,
-            current_file_nodes=current_file_nodes,
-            selected_node=selected_node,
-            show_unchanged=self.show_unchanged,
-            show_unmanaged=self.show_unmanaged,
-            expand_all=self.expand_all,
-        )
+                    current_file_nodes.add(node)
 
-    def _get_node_label(
-        self,
-        node_path: Path,
-        managed_kind: PathKind | None,
-        status_code: StatusCode | None,
-    ) -> str:
-        # determine the color for the node
-        if managed_kind is None:
-            color = self.app.get_color(ColorVar.ready)
-        elif status_code is not None:
-            color = self.app.get_color(self.status_color[status_code])
-        else:
-            color = self.app.get_color(ColorVar.dimmed)
-        # determine if the label should be italic or not
-        italic = ""
-        if managed_kind == PathKind.EXISTS_FALSE:
-            italic = " italic"
-        return f"[{color}{italic}]{node_path.name}[/]"
+        self.state.current_dir_nodes = current_dir_nodes
+        self.state.current_file_nodes = current_file_nodes
 
     def update_tree(self) -> None:
-        self.tree_snapshot = self._snapshot_tree_state()
-        self._populate_tree_bfs()
+        old_state = self.state
 
-    def _populate_tree_bfs(self) -> None:
         # Stores mapping of Path -> created tree node
         nodes_by_path: TreeNodeDict = {self.paths.dest_dir: self.root}
 
@@ -181,9 +198,29 @@ class ManagedTree(Tree[Path]):
             parent_node = nodes_by_path[file_path.parent]
             self._insert_node(dir_node=False, path=file_path, parent_node=parent_node)
 
+        # Try to restore the previous state of the tree
+        self._best_effort_state_restore(old_state)
+
     def _insert_node(
         self, dir_node: bool, path: Path, parent_node: TreeNode[Path]
     ) -> TreeNode[Path]:
+        def _get_node_label(
+            node_path: Path,
+            managed_kind: PathKind | None,
+            status_code: StatusCode | None,
+        ) -> str:
+            # determine the color for the node
+            if managed_kind is None:
+                color = self.app.get_color(ColorVar.ready)
+            elif status_code is not None:
+                color = self.app.get_color(self.status_color[status_code])
+            else:
+                color = self.app.get_color(ColorVar.dimmed)
+            # determine if the label should be italic or not
+            italic = ""
+            if managed_kind == PathKind.EXISTS_FALSE:
+                italic = " italic"
+            return f"[{color}{italic}]{node_path.name}[/]"
 
         # Avoid inserting an existing node twice or more.
         tree_node = self._get_tree_node(path, parent_node=False)
@@ -219,7 +256,7 @@ class ManagedTree(Tree[Path]):
                 break
 
         node = parent_node.add(
-            self._get_node_label(path, managed_kind, status_code),
+            _get_node_label(path, managed_kind, status_code),
             data=path,
             before=before,
             allow_expand=dir_node,
@@ -231,13 +268,29 @@ class ManagedTree(Tree[Path]):
     # #################################
 
     @on(Tree.NodeCollapsed)
-    def update_collapsed(self) -> None: ...
+    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
+        if self.expand_all or self.show_unmanaged:
+            return
+        node_children = self._get_node_children(event.node)
+        for child in node_children:
+            if child in self.state.visible_dir_nodes:
+                self.state.visible_dir_nodes.remove(child)
+            if child in self.state.visible_file_nodes:
+                self.state.visible_file_nodes.remove(child)
 
     @on(Tree.NodeExpanded)
-    def update_expanded(self) -> None: ...
+    def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
+        if self.expand_all or self.show_unmanaged:
+            return
+        for child in event.node.children:
+            if child.allow_expand:
+                self.state.visible_dir_nodes.add(child)
+            else:
+                self.state.visible_file_nodes.add(child)
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
+        self.state.selected_node = event.node
         if event.node.data is None:
             raise RuntimeError("Node data is None, which is unexpected.")
         is_unmanaged = (
@@ -248,20 +301,21 @@ class ManagedTree(Tree[Path]):
             event.node.data in self.paths.status_files
             or event.node.data in self.paths.status_dirs
         )
-        is_ndir = event.node.data in self.paths.n_dirs
+        is_n_dir = event.node.data in self.paths.n_dirs
         self.post_message(
             CurrentNodeMsg(
                 ids=self.app_ids,
                 path=event.node.data,
                 no_changed_paths=self.paths.no_status_paths,
                 has_status=has_status,
-                is_ndir=is_ndir,
+                is_n_dir=is_n_dir,
                 dest_dir=self.paths.dest_dir,
                 is_unmanaged=is_unmanaged,
             )
         )
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
+        self.state.show_unchanged = show_unchanged
         if show_unchanged:
             for path in self.paths.unchanged_tree_dirs:
                 parent_node = self._get_tree_node(path, parent_node=True)
@@ -286,13 +340,19 @@ class ManagedTree(Tree[Path]):
                     node.remove()
 
     def watch_expand_all(self, expand_all: bool) -> None:
+        self.state.expand_all = expand_all
         if expand_all is True:
             self.root.expand_all()
         else:
-            self.root.collapse_all()
-            self.root.expand()  # keep root expanded
+            # we return to the previous state
+            for node in self.state.visible_dir_nodes:
+                if not node.is_expanded:
+                    node.expand()
+                else:
+                    node.collapse()
 
     def watch_show_unmanaged(self, show_unmanaged: bool) -> None:
+        self.state.show_unmanaged = show_unmanaged
         if show_unmanaged:
             expanded_dirs = [self.paths.dest_dir]
             expanded_dirs += [
