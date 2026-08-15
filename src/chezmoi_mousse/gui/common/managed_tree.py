@@ -168,42 +168,21 @@ class ManagedTree(Tree[Path]):
         self._populate_tree_bfs()
 
     def _populate_tree_bfs(self) -> None:
-        """Populates the tree structure, dynamically creating any missing parent
-        directory nodes top-down on demand."""
-        nodes_by_path: dict[Path, TreeNode[Path]] = {self.paths.dest_dir: self.root}
+        # Stores mapping of Path -> created tree node
+        nodes_by_path: TreeNodeDict = {self.paths.dest_dir: self.root}
 
-        # Combine directories and files into a single queue. (path, is_directory)
-        items_tuple = [(p, True) for p in self.paths.tree_status_dirs]
-        items_tuple.extend((p, False) for p in self.paths.status_files)
-
-        queue: deque[tuple[Path, bool]] = deque(items_tuple)
-
-        while queue:
-            path, is_dir = queue.popleft()
-
-            # 1. Walk up to locate the nearest parent node already present in the tree
-            missing_parents: list[Path] = []
-            curr_parent = path.parent
-
-            while (
-                curr_parent > self.paths.dest_dir and curr_parent not in nodes_by_path
-            ):
-                missing_parents.append(curr_parent)
-                curr_parent = curr_parent.parent
-
-            # 2. If intermediate directories are missing, push them back to the
-            #    front of the queue as directories first, followed by the current item.
-            if missing_parents:
-                queue.appendleft((path, is_dir))
-                queue.extendleft((p, True) for p in missing_parents)
-                continue
-
-            # 3. Insert the node now that its parent node is guaranteed to exist
-            parent_node = nodes_by_path[curr_parent]
-            node = self._insert_node(
-                dir_node=is_dir, path=path, parent_node=parent_node
+        # Add all directory nodes
+        for path in self.paths.tree_status_dirs:
+            parent_node = nodes_by_path[path.parent]
+            node: TreeNode[Path] = self._insert_node(
+                dir_node=True, path=path, parent_node=parent_node
             )
             nodes_by_path[path] = node
+
+        # Add all status file nodes
+        for file_path in self.paths.status_files:
+            parent_node = nodes_by_path[file_path.parent]
+            self._insert_node(dir_node=False, path=file_path, parent_node=parent_node)
 
     def _insert_node(
         self, dir_node: bool, path: Path, parent_node: TreeNode[Path]
