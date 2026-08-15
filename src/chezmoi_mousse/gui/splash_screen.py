@@ -176,6 +176,8 @@ class SplashScreen(Screen[None]):
         msg = self._run_chezmoi_command(command)
         self.app.call_from_thread(self.splash_log.write, msg)
 
+    # Non-threaded Workers for tasks that are not worth creating a thread for
+
     @work(name=WorkerName.update_managed_paths)
     async def _create_managed_paths_instance(self) -> None:
         ResultCollector.managed_paths_instance = ManagedPaths(
@@ -187,8 +189,6 @@ class SplashScreen(Screen[None]):
         )
         msg = self._get_log_msg(prefix=WorkerName.update_managed_paths, returncode=None)
         self.splash_log.write(msg)
-
-    # Non-threaded Command Workers for tasks that are not worth creating a thread for
 
     @work(name=WorkerName.parse_json_outputs)
     async def _parse_json_outputs(self) -> None:
