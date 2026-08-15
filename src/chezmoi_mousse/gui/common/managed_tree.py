@@ -59,6 +59,41 @@ class ManagedTreeState:
     expand_all: bool = False
 
 
+@dataclass(slots=True)
+class TreeDiff:
+    removed_managed: set[Path] = field(default_factory=lambda: set())
+    added_managed: set[Path] = field(default_factory=lambda: set())
+    changed_status: dict[Path, tuple[StatusCode | None, StatusCode | None]] = field(
+        default_factory=lambda: {}
+    )
+
+
+@dataclass(slots=True)
+class TreeSnapshot:
+    managed_paths: set[Path] = field(default_factory=lambda: set())
+    status_map: dict[Path, StatusCode] = field(default_factory=lambda: {})
+
+    def diff_against(self, new_snapshot: TreeSnapshot) -> TreeDiff:
+        """Calculates the changes between the current snapshot and a new snapshot."""
+        removed_managed = self.managed_paths - new_snapshot.managed_paths
+        added_managed = new_snapshot.managed_paths - self.managed_paths
+
+        changed_status: dict[Path, tuple[StatusCode | None, StatusCode | None]] = {}
+        retained = self.managed_paths & new_snapshot.managed_paths
+
+        for path in retained:
+            old_code = self.status_map.get(path)
+            new_code = new_snapshot.status_map.get(path)
+            if old_code != new_code:
+                changed_status[path] = (old_code, new_code)
+
+        return TreeDiff(
+            removed_managed=removed_managed,
+            added_managed=added_managed,
+            changed_status=changed_status,
+        )
+
+
 class ManagedTree(Tree[Path]):
 
     if TYPE_CHECKING:
@@ -223,6 +258,13 @@ class ManagedTree(Tree[Path]):
             if node.data == target_path:
                 return node
         return None
+
+    def get_current_snapshot(self) -> TreeSnapshot:
+        """Returns a snapshot of current managed paths and statuses prior to an
+        operation."""
+        managed_paths = set(self.paths.managed_dirs | self.paths.managed_files)
+        status_map = {**self.paths.tree_status_dirs, **self.paths.status_files}
+        return TreeSnapshot(managed_paths=managed_paths, status_map=status_map)
 
     def update_tree(self) -> None:
         """Rebuilds the tree structure from current chezmoi paths and restores state."""
