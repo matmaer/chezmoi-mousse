@@ -164,82 +164,48 @@ class ManagedTree(Tree[Path]):
             italic = " italic"
         return f"[{color}{italic}]{node_path.name}[/]"
 
-    def update_tree(self) -> None:
-        current_state = self._snapshot_tree_state()
-        for dir_path in self.paths.tree_status_dirs:
-            parent_path = dir_path.parent
-            parent_node = current_state.all_dir_nodes.get(parent_path, self.root)
-            self._insert_dir_node(parent_node, dir_path)
-        for file_path in self.paths.status_files:
-            parent_path = file_path.parent
-            parent_node = current_state.all_dir_nodes.get(parent_path, self.root)
-            self._insert_file_node(
-                parent_node, file_path
-            )  # update state after adding files
-
-    def _insert_dir_node(self, parent_node: TreeNode[Path], dir_path: Path) -> None:
-        """Inserts a child directory node for a given parent alphabetically."""
-        # determine before_node value
-        dir_children = (c for c in parent_node.children if c.allow_expand)
-        before_node = next(
-            (
-                n
-                for n in dir_children
-                if n.data is not None and n.data.name.lower() > dir_path.name.lower()
-            ),
-            None,
-        )
-        # look up the dir_path in self.paths.managed_dirs to get the PathKind
-        managed_kind = self.paths.managed_dirs.get(dir_path, None)
-        # look up the dir_path in self.paths.tree_status_dirs to get the StatusCode
-        status_code = self.paths.tree_status_dirs.get(dir_path, None)
-
-        # call _insert_node
-        self._insert_node(
-            allow_expand=True,
-            before_node=before_node,
-            data=dir_path,
-            label=self._get_node_label(dir_path, managed_kind, status_code),
-            parent_node=parent_node,
-        )
-
-    def _insert_file_node(self, parent_node: TreeNode[Path], file_path: Path) -> None:
-        """Inserts a file node for a given parent alphabetically."""
-        file_children = (c for c in parent_node.children if not c.allow_expand)
-        before_node = next(
-            (
-                n
-                for n in file_children
-                if n.data is not None and n.data.name.lower() > file_path.name.lower()
-            ),
-            None,
-        )
-        # look up the file_path in self.paths.managed_files to get the PathKind
-        managed_kind = self.paths.managed_files.get(file_path, None)
-        # look up the file_path in self.paths.status_files to get the StatusCode
-        status_code = self.paths.status_files.get(file_path, None)
-
-        # call _insert_node
-        self._insert_node(
-            allow_expand=False,
-            before_node=before_node,
-            data=file_path,
-            label=self._get_node_label(file_path, managed_kind, status_code),
-            parent_node=parent_node,
-        )
+    def update_tree(self) -> None: ...
 
     def _insert_node(
-        self,
-        allow_expand: bool,
-        before_node: TreeNode[Path] | None,
-        data: Path,
-        label: str,
-        parent_node: TreeNode[Path],
-    ) -> None:
-        state = self._snapshot_tree_state()
-        if data in state.all_dir_nodes or data in state.all_file_nodes:
-            return  # node already exists, do not insert again
-        parent_node.add(label, data=data, before=before_node, allow_expand=allow_expand)
+        self, dir_node: bool, path: Path, parent_node: TreeNode[Path]
+    ) -> TreeNode[Path]:
+        managed_kind = (
+            self.paths.managed_dirs.get(path, None)
+            if dir_node
+            else self.paths.managed_files.get(path, None)
+        )
+        status_code = (
+            self.paths.tree_status_dirs.get(path, None)
+            if dir_node
+            else self.paths.status_files.get(path, None)
+        )
+
+        # Assumes each sibling block is already sorted alphabetically:
+        # directories first, then files.
+        insert_index = len(parent_node.children)
+        for index, child in enumerate(parent_node.children):
+            if child.data is None:
+                continue
+
+            if dir_node:
+                if child.allow_expand and child.data.name.lower() > path.name.lower():
+                    insert_index = index
+                    break
+            else:
+                if (
+                    not child.allow_expand
+                    and child.data.name.lower() > path.name.lower()
+                ):
+                    insert_index = index
+                    break
+
+        node = parent_node.add(
+            self._get_node_label(path, managed_kind, status_code),
+            data=path,
+            before=insert_index,
+            allow_expand=dir_node,
+        )
+        return node
 
     # #################################
     # # Watchers and message handling #
