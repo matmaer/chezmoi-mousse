@@ -25,7 +25,12 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from collections.abc import Awaitable
 
-    from chezmoi_mousse.cm_types import MinWaitReturn, ParsedJson, StrTuple
+    from chezmoi_mousse.cm_types import (
+        MinWaitReturn,
+        ParsedJson,
+        ScanDirResult,
+        StrTuple,
+    )
     from chezmoi_mousse.enum_data import OpBtnEnum
     from chezmoi_mousse.gui.common.loading_modal import LoadingModal
 
@@ -203,9 +208,7 @@ class CheckPath:
 
     @staticmethod
     @typed_lru_cache(maxsize=1000)
-    def os_scan_dir(
-        dir_path: Path, managed_dir: bool = False
-    ) -> list[ScanDirItem] | PathKind:
+    def os_scan_dir(dir_path: Path, *, managed_dir: bool = False) -> ScanDirResult:
         scan_dir_items: list[ScanDirItem] = []
         # str(dir_path) to reduce possible exceptions which would be raised by pathlib
         try:
@@ -246,6 +249,9 @@ class CheckPath:
             else:
                 matches_unwanted = True
 
+            if matches_unwanted and managed_dir:
+                continue
+
             scan_dir_items.append(
                 ScanDirItem(
                     scanned_dir=dir_path,
@@ -283,18 +289,41 @@ class CheckPath:
 
     @staticmethod
     def _is_large(file_path: Path) -> bool:
-        # check if it's a large file, typically not a dot file
-        return file_path.stat().st_size > 1024 * 1024  # 1 MiB
+        try:
+            return file_path.stat().st_size > 512 * 1024  # half a megabyte
+        except OSError:
+            return True  # if we can't stat it, return True to treat it as unwanted
 
     @staticmethod
     def _is_binary(file_path: Path) -> bool:
-        # check if the file looks like a binary
         try:
-            with Path.open(file_path, "rb") as f:
-                chunk = f.read(1024)  # Read only first KiB
-            return b"\x00" in chunk  # typically the case for binary files
+            with file_path.open("rb") as f:
+                data = f.read(1024)
         except OSError:
-            return True
+            return True  # if we can't read it, return True to treat it as unwanted
+
+        if not data:
+            return False  # empty files are not considered binary
+
+        if b"\x00" in data:
+            return True  # null byte found, likely binary
+
+        try:
+            text = data.decode("utf-8-sig")  # decode with BOM handling
+        except UnicodeDecodeError:
+            return True  # likely binary
+
+        for char in text:
+            if char in "\t\n\r":
+                continue  # allow common whitespace characters
+
+            code = ord(char)
+            if 32 <= code <= 126 or code >= 127:
+                continue  # allow printable ASCII and extended characters
+
+            return True  # non-printable character found, likely binary
+
+        return False  # no non-printable characters found, likely text
 
     @staticmethod
     def _is_bad_suffix(file_path: Path) -> bool:
