@@ -100,6 +100,11 @@ class AppLife:
             raise ValueError(f"Write commands require dry flag; received dry={dry}")
         return f"chezmoi --dry-run {verb_str}" if dry is True else f"chezmoi {verb_str}"
 
+    @staticmethod
+    @typed_lru_cache()
+    def strip_empty_lines(text: str) -> str:
+        return "\n".join([line for line in text.splitlines() if line.strip()])
+
 
 class Commands:
 
@@ -116,10 +121,6 @@ class Commands:
         return subprocess.run(
             run_args, capture_output=True, shell=False, text=True, timeout=time_out
         )
-
-    @staticmethod
-    def _strip_empty_lines(text: str) -> str:
-        return "\n".join([line for line in text.splitlines() if line.strip()])
 
     @staticmethod
     def run_read_cmd(cmd: ReadCmd, path_arg: Path | None = None) -> CommandResult:
@@ -142,8 +143,8 @@ class Commands:
             pretty_cmd=pretty_read_cmd,
             path_arg=path_arg,
             returncode=cp.returncode,
-            std_err=Commands._strip_empty_lines(cp.stderr),
-            std_out=Commands._strip_empty_lines(cp.stdout),
+            std_err=AppLife.strip_empty_lines(cp.stderr),
+            std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
 
@@ -175,8 +176,8 @@ class Commands:
             pretty_cmd=pretty_write_cmd,
             path_arg=path_arg,
             returncode=cp.returncode,
-            std_err=Commands._strip_empty_lines(cp.stderr),
-            std_out=Commands._strip_empty_lines(cp.stdout),
+            std_err=AppLife.strip_empty_lines(cp.stderr),
+            std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
 
