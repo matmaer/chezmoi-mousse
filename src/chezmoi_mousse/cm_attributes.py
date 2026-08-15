@@ -222,32 +222,30 @@ class CmAttributes:
     logs_id = AppIds(TabLabel.logs)
     re_add_id = AppIds(TabLabel.re_add)
 
+    read_cmd_groups = ReadCmdGroups(
+        splash_only=[
+            ReadCmd.doctor,
+            ReadCmd.git_log,
+            ReadCmd.cat_config,
+            ReadCmd.ignored,
+            ReadCmd.git_remote,
+        ],
+        json_output=[ReadCmd.dump_config, ReadCmd.template_data],
+        managed=[
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+        ],
+    )
+
+    dry_run: bool = True
+
+    changes: ChangedPaths = ChangedPaths()
+
     dest_dir: Path = field(init=False)
     auto_add: bool = field(init=False)
     auto_commit: bool = field(init=False)
     auto_push: bool = field(init=False)
     cmd_results: ResultCollector = field(init=False)
     paths: ManagedPaths = field(init=False)
-
-    read_cmd_groups: ReadCmdGroups = field(
-        default=ReadCmdGroups(
-            splash_only=[
-                ReadCmd.doctor,
-                ReadCmd.git_log,
-                ReadCmd.cat_config,
-                ReadCmd.ignored,
-                ReadCmd.git_remote,
-            ],
-            json_output=[ReadCmd.dump_config, ReadCmd.template_data],
-            managed=[
-                ReadCmd.managed_dirs,
-                ReadCmd.managed_files,
-                ReadCmd.status_dirs,
-                ReadCmd.status_files,
-            ],
-        ),
-        repr=False,
-    )
-
-    dry_run: bool | None = None
-    changes: ChangedPaths = ChangedPaths()
