@@ -87,7 +87,7 @@ class ManagedTree(Tree[Path]):
         color = self.app.theme_variables["text-primary"]
         self.root.label = f"[{color} bold]{self.app.cmattr.dest_dir.name}[/]"
         self.root.expand()
-        self.root.allow_expand = False  # prevent from being collapsed
+        self.root.allow_expand = False  # prevent from being collapsed when we select it
 
         self.status_color = {
             StatusCode.Added: ColorVar.text_success,
@@ -113,6 +113,18 @@ class ManagedTree(Tree[Path]):
             yield node
             queue.extend(node.children)
 
+    def _get_parent_node(self, path: Path) -> TreeNode[Path] | None:
+        for node in self._iter_tree_nodes():
+            if node.data is not None and node.data == path.parent:
+                return node
+        return None
+
+    def _get_tree_node(self, path: Path) -> TreeNode[Path] | None:
+        for node in self._iter_tree_nodes():
+            if node.data == path:
+                return node
+        return None
+
     def _snapshot_tree_state(self) -> ManagedTreeState:
         expanded_dir_nodes: TreeNodeDict = {}
         current_file_nodes: TreeNodeDict = {}
@@ -132,18 +144,6 @@ class ManagedTree(Tree[Path]):
             show_unmanaged=self.show_unmanaged,
             expand_all=self.expand_all,
         )
-
-    def _add_unchanged_nodes(self) -> None:
-        """First add unchanged directories, then add unchanged files.
-
-        This ensures that all parent directories are present before adding files.
-        """
-        ...
-
-    def _remove_unchanged_nodes(self) -> None:
-        """Removes unchanged nodes from the tree, first the files, then the directories
-        if they no longer contain any files."""
-        ...
 
     def _get_node_label(
         self,
@@ -187,6 +187,12 @@ class ManagedTree(Tree[Path]):
     def _insert_node(
         self, dir_node: bool, path: Path, parent_node: TreeNode[Path]
     ) -> TreeNode[Path]:
+
+        # Avoid inserting an existing node twice or more.
+        tree_node = self._get_tree_node(path)
+        if tree_node is not None:
+            return tree_node
+
         managed_kind = (
             self.paths.managed_dirs.get(path, None)
             if dir_node
@@ -198,29 +204,27 @@ class ManagedTree(Tree[Path]):
             else self.paths.status_files.get(path, None)
         )
 
-        # Assumes each sibling block is already sorted alphabetically:
-        # directories first, then files.
-        insert_index = len(parent_node.children)
+        before = len(parent_node.children)
+
         for index, child in enumerate(parent_node.children):
             if child.data is None:
-                continue
+                raise RuntimeError("Child node data is None, which is unexpected.")
 
-            if dir_node:
-                if child.allow_expand and child.data.name.lower() > path.name.lower():
-                    insert_index = index
+            new_is_dir = dir_node
+
+            # directories first, then files
+            if child.allow_expand != new_is_dir:
+                if new_is_dir:
+                    before = index
                     break
-            else:
-                if (
-                    not child.allow_expand
-                    and child.data.name.lower() > path.name.lower()
-                ):
-                    insert_index = index
-                    break
+            elif child.data.name.lower() > path.name.lower():
+                before = index
+                break
 
         node = parent_node.add(
             self._get_node_label(path, managed_kind, status_code),
             data=path,
-            before=insert_index,
+            before=before,
             allow_expand=dir_node,
         )
         return node
@@ -256,15 +260,38 @@ class ManagedTree(Tree[Path]):
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged:
-            self._add_unchanged_nodes()
+            for path in self.paths.unchanged_dirs:
+                if path not in self.paths.n_dirs:
+                    parent_node = self._get_parent_node(path)
+                    if parent_node is not None:
+                        self._insert_node(
+                            dir_node=True, path=path, parent_node=parent_node
+                        )
+
+            for path in self.paths.unchanged_files:
+                parent_node = self._get_parent_node(path)
+                if parent_node is not None:
+                    self._insert_node(
+                        dir_node=False, path=path, parent_node=parent_node
+                    )
+
         else:
-            self._remove_unchanged_nodes()
+            for path in self.paths.unchanged_dirs:
+                if path not in self.paths.n_dirs:
+                    node = self._get_tree_node(path)
+                    if node is not None:
+                        node.remove()
+            for path in self.paths.unchanged_files:
+                node = self._get_tree_node(path)
+                if node is not None:
+                    node.remove()
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all is True:
             self.root.expand_all()
         else:
             self.root.collapse_all()
+            self.root.expand()  # keep root expanded
 
     def watch_show_unmanaged(self) -> None:
         self.notify("Not implemented yet: show_unmanaged watcher")

@@ -343,12 +343,3 @@ class CheckPath:
             or CheckPath._is_git_objects_dir(dir_path)
             or CheckPath._dir_has_many_children(dir_path)
         )
-
-    # used by ManagedTree
-
-    @staticmethod
-    @typed_lru_cache(maxsize=500)
-    def unchanged_paths_in(
-        dir_path: Path, unchanged: frozenset[Path]
-    ) -> frozenset[Path]:
-        return frozenset(path for path in unchanged if path.parent == dir_path)
