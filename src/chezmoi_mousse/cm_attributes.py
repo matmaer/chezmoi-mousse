@@ -133,32 +133,14 @@ class ManagedPaths:
         return MappingProxyType(dict(sorted(temp_dict.items())))
 
     def _get_tree_status_map(
-        self, dirs_map: StatusMap, n_dirs: frozenset[Path]
+        self, status_dirs: StatusMap, n_dirs: frozenset[Path]
     ) -> StatusMap:
-        temp_dict: dict[Path, StatusCode] = {}
-
-        # In the dirs_map, set StatusCode.N_DIR for all paths present in n_dirs.
-        for path, status in dirs_map.items():
-            if path in n_dirs:
-                temp_dict[path] = StatusCode.N_DIR
-            else:
-                temp_dict[path] = status
-        # Remove all remaining paths in the temp_dict which have StatusCode.Space
-        temp_dict = {k: v for k, v in temp_dict.items() if v != StatusCode.Space}
-
-        return MappingProxyType(dict(sorted(temp_dict.items())))
+        tree_status_dirs: dict[Path, StatusCode] = dict(status_dirs)
+        for path in n_dirs:
+            tree_status_dirs[path] = StatusCode.N_DIR
+        return MappingProxyType(dict(sorted(tree_status_dirs.items())))
 
     def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
-        """Results accessed by the ManagedTree classes for Apply and ReAdd tab context.
-
-        destDir, managed dirs and managed files are the same for both contexts.
-
-        Status dirs, status files and n_dirs are different for each context. (n_dirs
-        contain status paths at any depth but don't have a status themselves)
-
-        We access them via the cached properties apply_tree_paths and re_add_tree_paths
-        which call this method, in the ManagedTree class.
-        """
         dirs_map: StatusMap = self._get_status_map(
             self._status_dirs_result.std_out.splitlines(), status_col
         )
@@ -174,9 +156,11 @@ class ManagedPaths:
 
         _n_dirs = frozenset(
             parent
-            for path in (status_dirs.keys() | status_files.keys())
+            for path in (status_dirs | status_files)
             for parent in path.parents
-            if parent not in status_dirs and parent.is_relative_to(self._dest_dir)
+            if parent not in status_dirs
+            and parent.is_relative_to(self._dest_dir)
+            and parent != self._dest_dir
         )
 
         return ManagedTreePaths(
