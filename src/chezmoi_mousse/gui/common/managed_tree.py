@@ -94,6 +94,7 @@ class ManagedTree(Tree[Path]):
             StatusCode.Space: ColorVar.dimmed,
             PathKind.UNMANAGED: ColorVar.text_error_dark,
         }
+        self.tree_snapshot: ManagedTreeState = self._snapshot_tree_state()
 
     @property
     def paths(self) -> ManagedTreePaths:
@@ -160,6 +161,7 @@ class ManagedTree(Tree[Path]):
         return f"[{color}{italic}]{node_path.name}[/]"
 
     def update_tree(self) -> None:
+        self.tree_snapshot = self._snapshot_tree_state()
         self._populate_tree_bfs()
 
     def _populate_tree_bfs(self) -> None:
