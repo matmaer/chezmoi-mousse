@@ -62,32 +62,6 @@ class ManagedTreeState:
     show_unmanaged: bool
     expand_all: bool
 
-    @property
-    def expanded_dir_nodes(self) -> TreeNodeDict:
-        return {
-            p: n
-            for p, n in self.all_dir_nodes.items()
-            if n.parent is not None and n.parent.is_expanded
-        }
-
-    @property
-    def visible_dir_nodes(self) -> TreeNodeDict:
-        return {
-            p: n
-            for p, n in self.expanded_dir_nodes.items()
-            if n.parent is not None
-            and n.parent.is_expanded
-            or n.parent is self.root_node
-        }
-
-    @property
-    def visible_file_nodes(self) -> TreeNodeDict:
-        return {
-            p: n
-            for p, n in self.all_file_nodes.items()
-            if n.parent is not None and n.parent in self.visible_dir_nodes.values()
-        }
-
 
 class ManagedTree(Tree[Path]):
 
