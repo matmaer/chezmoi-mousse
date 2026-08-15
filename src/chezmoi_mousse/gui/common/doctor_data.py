@@ -25,35 +25,39 @@ class DoctorTable(DataTable[Text]):
         app = getters.app(ChezmoiGui)
 
     def __init__(self) -> None:
-        super().__init__(cursor_type="row")
+        super().__init__(cursor_type="row", show_cursor=False)
 
     def on_mount(self) -> None:
-        self._populate_table(self.app.cmattr.cmd_results.doctor.std_out.splitlines())
-
-    @work
-    async def _populate_table(self, doctor_lines: list[str]) -> None:
-        dr_style = {
+        self.row_color = {
             "ok": self.app.get_color(ColorVar.text_success),
             "info": self.app.get_color(ColorVar.info),
             "warning": self.app.get_color(ColorVar.text_warning),
             "failed": self.app.get_color(ColorVar.text_error),
             "error": self.app.get_color(ColorVar.text_error),
         }
+        self._populate_table(self.app.cmattr.cmd_results.doctor.std_out.splitlines())
+
+    @work
+    async def _populate_table(self, doctor_lines: list[str]) -> None:
         self.add_columns(*doctor_lines[0].split())
 
         for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
             if row[0] == "info" and "not found in $PATH" in row[2]:
-                new_row = [Text(cell_text, style=dr_style["info"]) for cell_text in row]
+                new_row = [
+                    Text(cell_text, style=self.row_color["info"]) for cell_text in row
+                ]
                 self.add_row(*new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
                 new_row = [
-                    Text(cell_text, style=f"{dr_style[row[0]]}") for cell_text in row
+                    Text(cell_text, style=f"{self.row_color[row[0]]}")
+                    for cell_text in row
                 ]
                 self.add_row(*new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
-                    Text(cell_text, style=dr_style["warning"]) for cell_text in row
+                    Text(cell_text, style=self.row_color["warning"])
+                    for cell_text in row
                 ]
                 self.add_row(*new_row)
             else:
