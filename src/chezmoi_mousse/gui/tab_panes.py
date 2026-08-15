@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from textual import getters, on
+from textual import getters, on, work
 from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
@@ -24,10 +24,12 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse.debug.test_paths import TestPaths
+from chezmoi_mousse.named_tuples import PwMgrData
 from chezmoi_mousse.str_enums import (
     ColorVar,
     FlatBtnLabel,
     OpBtnLabel,
+    PwMgrStrings,
     SectionLabel,
     TabLabel,
     Tcss,
@@ -43,7 +45,7 @@ from .common.actionables import (
 )
 from .common.ascii_constants import FLOW_DIAGRAM
 from .common.contents import ContentsView
-from .common.doctor_data import DoctorTable, PwMgrInfoView
+from .common.doctor_data import DoctorTable, PwCollapsible, PwMgrInfo
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog, DebugLog
 from .common.managed_tree import DestDirTree, ManagedTree
@@ -145,74 +147,12 @@ class ApplyTab(TabPane):
             self.managed_tree.expand_all = event.value
 
 
-class CatConfigView(Vertical):
+class ConfigTab(TabPane):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
     class CatConfigStatic(Static): ...
-
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.cat_config_output, classes=Tcss.main_section_label)
-        yield self.CatConfigStatic("Loading...")
-
-    def on_mount(self) -> None:
-        static = self.query_exactly_one(self.CatConfigStatic)
-        static.update(
-            "\n".join(
-                line
-                for line in self.app.cmattr.cmd_results.cat_config.std_out.splitlines()
-            )
-        )
-
-
-class IgnoredView(Vertical):
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    def compose(self) -> ComposeResult:
-
-        yield Label(SectionLabel.ignored_output, classes=Tcss.main_section_label)
-        yield ScrollableContainer(Pretty("Loading..."))
-
-    def on_mount(self) -> None:
-        pretty_ignored: Pretty = self.query_exactly_one(Pretty)
-        pretty_ignored.update(self.app.cmattr.cmd_results.ignored.std_out.splitlines())
-
-
-class DiagramView(Vertical):
-
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.diagram, classes=Tcss.main_section_label)
-        yield Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram)
-
-
-class DoctorTableView(Vertical):
-
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.doctor_output, classes=Tcss.main_section_label)
-        yield DoctorTable()
-
-
-class TemplateDataView(Vertical):
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    def compose(self) -> ComposeResult:
-        yield Label(SectionLabel.template_data_output, classes=Tcss.main_section_label)
-        yield ScrollableContainer(Pretty("Updating..."))
-
-    def on_mount(self) -> None:
-        pretty_widget = self.query_exactly_one(Pretty)
-        pretty_widget.update(self.app.cmattr.cmd_results.parsed_template_data)
-
-
-class ConfigTab(TabPane):
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
 
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.config, title=TabLabel.config)
@@ -232,15 +172,103 @@ class ConfigTab(TabPane):
                 ),
             )
             with ContentSwitcher(initial=self.ids.container.doctor):
-                yield DoctorTableView(id=self.ids.container.doctor)
-                yield PwMgrInfoView(id=self.ids.container.pw_mgr_info)
-                yield CatConfigView(id=self.ids.container.cat_config)
-                yield IgnoredView(id=self.ids.container.ignored)
-                yield TemplateDataView(id=self.ids.container.template_data)
-                yield DiagramView(id=self.ids.container.diagram)
+                yield Vertical(
+                    Label(SectionLabel.doctor_output, classes=Tcss.main_section_label),
+                    DoctorTable(),
+                    id=self.ids.container.doctor,
+                )
+                yield Vertical(
+                    Label(
+                        SectionLabel.password_managers, classes=Tcss.main_section_label
+                    ),
+                    id=self.ids.container.pw_mgr_info,
+                )
+                yield Vertical(
+                    Label(
+                        SectionLabel.cat_config_output, classes=Tcss.main_section_label
+                    ),
+                    self.CatConfigStatic("Loading..."),
+                    id=self.ids.container.cat_config,
+                )
+                yield Vertical(
+                    Label(SectionLabel.ignored_output, classes=Tcss.main_section_label),
+                    ScrollableContainer(Pretty("Loading...")),
+                    id=self.ids.container.ignored,
+                )
+                yield Vertical(
+                    Label(
+                        SectionLabel.template_data_output,
+                        classes=Tcss.main_section_label,
+                    ),
+                    ScrollableContainer(Pretty("Loading...")),
+                    id=self.ids.container.template_data,
+                )
+                yield Vertical(
+                    Label(SectionLabel.diagram, classes=Tcss.main_section_label),
+                    Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
+                    id=self.ids.container.diagram,
+                )
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
+        self._load_views()
+
+    def _get_pw_mgr_data(self, doctor_check: str) -> PwMgrData:
+        for member in PwMgrInfo:
+            if member.value.doctor_check == doctor_check:
+                return member.value
+        raise ValueError(f"No PwMgrInfo member for doctor_check '{doctor_check}'")
+
+    @work
+    async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:
+        pw_mgr_info = self.query_one(self.ids.container.pw_mgr_info_q, Vertical)
+
+        pw_mgr_entries: list[tuple[PwMgrData, str]] = []
+        all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrInfo]
+
+        for line in doctor_lines[1:]:  # Skip header line
+            row = tuple(line.split(maxsplit=2))
+            if row[1] not in all_pw_mgr_commands:
+                continue
+            pw_mgr_data = self._get_pw_mgr_data(row[1])
+            pw_mgr_entries.append((pw_mgr_data, row[2]))
+
+        for pw_mgr_data, doctor_message in pw_mgr_entries:
+            pw_collapsible = PwCollapsible(
+                pw_mgr_data=pw_mgr_data, dr_message=doctor_message
+            )
+            pw_mgr_info.mount(pw_collapsible)
+        pw_mgr_info.mount(Static(f"\n{PwMgrStrings.info_warning}"))
+
+    @work
+    async def _load_views(self) -> None:
+        doctor_view = self.query_one(self.ids.container.doctor_q, Vertical)
+        doctor_table = doctor_view.query_exactly_one(DoctorTable)
+        doctor_table.populate_table(
+            self.app.cmattr.cmd_results.doctor.std_out.splitlines()
+        )
+
+        self._populate_pw_mgr_info(
+            self.app.cmattr.cmd_results.doctor.std_out.splitlines()
+        )
+
+        cat_config_static = self.query_exactly_one(self.CatConfigStatic)
+        cat_config_static.update(
+            "\n".join(
+                line
+                for line in self.app.cmattr.cmd_results.cat_config.std_out.splitlines()
+            )
+        )
+
+        ignored_view = self.query_one(self.ids.container.ignored_q, Vertical)
+        pretty_ignored = ignored_view.query_exactly_one(Pretty)
+        pretty_ignored.update(self.app.cmattr.cmd_results.ignored.std_out.splitlines())
+
+        template_data_view = self.query_one(
+            self.ids.container.template_data_q, Vertical
+        )
+        template_data_pretty = template_data_view.query_exactly_one(Pretty)
+        template_data_pretty.update(self.app.cmattr.cmd_results.parsed_template_data)
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:

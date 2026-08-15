@@ -14,6 +14,7 @@ __all__ = [
     "OpInfoString",
     "PathFilters",
     "PathKind",
+    "PwMgrStrings",
     "RichLogName",
     "SectionLabel",
     "StatusCode",
@@ -336,6 +337,33 @@ class PathKind(StrEnum):
     UNMANAGED = auto()
 
 
+class PwMgrStrings(StrEnum):
+    confusing = (
+        "Check your package manager which implementation is used as there are"
+        " confusingly similar named packages."
+    )
+    fully_open_source = (
+        "Fully open source and auditable worldwide. No third party trust"
+        " required. But beware of your supply chain: package manager, certificate"
+        " authority, maintainers reputation, etc."
+    )
+    info_warning = (
+        f"[${ColorVar.text_warning}]{Chars.warning_sign} The additional info is "
+        "provided but may not be up-to-date or correct. Please contribute to improve "
+        f"this.{Chars.warning_sign}[/]"
+    )
+    not_documented = "Not yet documented in chezmoi mousse."
+    not_open_source = (
+        "Not open source, cannot be audited but it's ok if you trust this third"
+        " party to handle your secrets securely and cannot access them."
+    )
+    source_available = (
+        "The code is publicly available. No third party trust required. But"
+        " beware of your supply chain: package manager, certificate authority,"
+        " maintainers reputation and so on."
+    )
+
+
 class RichLogName(StrEnum):
     app_logger = auto()
     cmd_logger = auto()
@@ -357,6 +385,7 @@ class SectionLabel(StrEnum):
     paths_with_status = "Paths with Status"
     project_description = "Project Description"
     project_link = "Project Link"
+    pw_mgr_additional_info = "Additional Info"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"

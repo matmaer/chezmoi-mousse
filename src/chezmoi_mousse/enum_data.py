@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import NamedTuple
 
 from chezmoi_mousse.cm_command import WriteCmd
+from chezmoi_mousse.named_tuples import SwitchData
 from chezmoi_mousse.str_enums import OpBtnLabel, OpInfoString, SwitchLabel
 
 __all__ = ["OpBtnEnum", "SwitchEnum"]
@@ -149,11 +149,6 @@ class OpBtnEnum(Enum):
             cls.forget_run,
             cls.re_add_run,
         }
-
-
-class SwitchData(NamedTuple):
-    label: str
-    enabled_tooltip: str
 
 
 class SwitchEnum(Enum):

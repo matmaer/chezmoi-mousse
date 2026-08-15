@@ -9,7 +9,14 @@ if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import PathKindMap, StatusMap
 
 
-__all__ = ["CommandResult", "ManagedTreePaths", "ReadCmdGroups", "ScanDirItem"]
+__all__ = [
+    "CommandResult",
+    "ManagedTreePaths",
+    "PwMgrData",
+    "ReadCmdGroups",
+    "ScanDirItem",
+    "SwitchData",
+]
 
 
 class CommandResult(NamedTuple):
@@ -38,6 +45,13 @@ class ManagedTreePaths(NamedTuple):
     unchanged_tree_dirs: frozenset[Path]
 
 
+class PwMgrData(NamedTuple):
+    description: str
+    doctor_check: str
+    link: str
+    info: str
+
+
 class ReadCmdGroups(NamedTuple):
     splash_only: list[ReadCmd]
     json_output: list[ReadCmd]
@@ -64,3 +78,8 @@ class ScanDirItem(NamedTuple):
     # set by the os_scan_dir function
     sibling_count: int
     matches_unwanted: bool
+
+
+class SwitchData(NamedTuple):
+    label: str
+    enabled_tooltip: str
