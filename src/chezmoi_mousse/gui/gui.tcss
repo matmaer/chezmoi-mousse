@@ -109,7 +109,7 @@ AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 2;
 }
 
-AddedPaths, RemovedPaths, ChangedStatusPaths {
+AddedManaged, RemovedManaged, ChangedStatus {
     background-tint: $surface;
     background: $surface;
     color: $text-muted;

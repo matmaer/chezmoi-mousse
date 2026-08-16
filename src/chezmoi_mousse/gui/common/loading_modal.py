@@ -53,7 +53,6 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
 
     def on_mount(self) -> None:
         self.command_results: list[CommandResult] = []
-        self.app.cmattr.changes.clear_changes()
 
     def watch_label_text(self, label_text: str | None) -> None:
         if label_text is None:

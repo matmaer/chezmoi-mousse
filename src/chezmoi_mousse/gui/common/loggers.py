@@ -11,6 +11,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
+from chezmoi_mousse.cm_attributes import ChangedPaths
 from chezmoi_mousse.str_enums import Chars, ColorVar, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
@@ -130,6 +131,25 @@ class AppLog(RichLoggers):
         self.write_dimmed(LogString.app_log_initialized)
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
+
+    def log_changes(self, changes: ChangedPaths) -> None:
+        if changes.added_managed:
+            self.write_ready(LogString.added_managed)
+            for path in changes.added_managed:
+                self.write_info(str(path))
+            self.write_ready(LogString.added_managed.end)
+
+        if changes.removed_managed:
+            self.write_ready(LogString.removed_managed)
+            for path in changes.removed_managed:
+                self.write_info(str(path))
+            self.write_ready(LogString.removed_managed.end)
+
+        if changes.changed_status:
+            self.write_ready(LogString.changed_status)
+            for path in changes.changed_status:
+                self.write_info(str(path))
+            self.write_ready(LogString.changed_status.end)
 
     def watch_cmd_results(self, cmd_results: list[CommandResult] | None) -> None:
         if cmd_results is None:

@@ -12,10 +12,16 @@ from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths, ReadCmd
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson, PathKindMap, StatusMap
+    from chezmoi_mousse.cm_types import (
+        ChangedStatus,
+        ParsedJson,
+        PathKindMap,
+        StatusMap,
+        StatusPairDict,
+    )
 
 
-__all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
+__all__ = ["ChangedPaths", "CmAttributes", "ManagedPaths", "ResultCollector"]
 
 
 @dataclass(slots=True)
@@ -58,23 +64,17 @@ class ResultCollector:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ChangedPaths:
-    added_paths: list[Path] = field(default_factory=lambda: [])
-    changed_status_paths: list[Path] = field(default_factory=lambda: [])
-    removed_paths: list[Path] = field(default_factory=lambda: [])
+    added_managed: list[Path] = field(default_factory=lambda: [])
+    changed_status: ChangedStatus = field(default_factory=lambda: {})
+    removed_managed: list[Path] = field(default_factory=lambda: [])
 
     @property
     def no_changes(self) -> bool:
         return (
-            not self.added_paths
-            and not self.changed_status_paths
-            and not self.removed_paths
+            not self.added_managed
+            and not self.changed_status
+            and not self.removed_managed
         )
-
-    @classmethod
-    def clear_changes(cls) -> None:
-        cls.added_paths: list[Path] = []
-        cls.changed_status_paths: list[Path] = []
-        cls.removed_paths: list[Path] = []
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -200,6 +200,49 @@ class ManagedPaths:
     def re_add_tree_paths(self) -> ManagedTreePaths:
         return self._create_managed_tree_paths_instance(status_col=0)
 
+    # return snapshot data
+    def get_current_snapshot(self) -> TreeSnapshot:
+        """Returns snapshot data for the tree's current state."""
+        status_lines = (
+            self._status_dirs_result.std_out.splitlines()
+            + self._status_files_result.std_out.splitlines()
+        )
+        managed_paths = set(self.managed_dirs) | set(self.managed_files)
+        status_pairs: StatusPairDict = {
+            Path(line[3:]): line[0:2] for line in status_lines
+        }
+        return TreeSnapshot(managed_paths=managed_paths, status_pairs=status_pairs)
+
+
+@dataclass(slots=True)
+class TreeSnapshot:
+    managed_paths: set[Path] = field(default_factory=lambda: set())
+    status_pairs: StatusPairDict = field(default_factory=lambda: {})
+
+    def diff_against(self, new_snapshot: TreeSnapshot) -> ChangedPaths:
+        """Calculates the changes between the current snapshot and a new snapshot."""
+        removed_managed = self.managed_paths - new_snapshot.managed_paths
+        added_managed = new_snapshot.managed_paths - self.managed_paths
+
+        changed_status: ChangedStatus = {}
+
+        # Check for status changes among all paths that remained managed
+        intersection = self.managed_paths & new_snapshot.managed_paths
+
+        for path in intersection:
+            # Missing paths in status_pairs default to "  " (unchanged)
+            old_code = self.status_pairs.get(path, "  ")
+            new_code = new_snapshot.status_pairs.get(path, "  ")
+
+            if old_code != new_code:
+                changed_status[path] = (old_code, new_code)
+
+        return ChangedPaths(
+            added_managed=sorted(added_managed),
+            changed_status=changed_status,
+            removed_managed=sorted(removed_managed),
+        )
+
 
 @dataclass
 class CmAttributes:
@@ -229,6 +272,13 @@ class CmAttributes:
     )
 
     dry_run: bool = True
+
+    old_snapshot: TreeSnapshot = field(
+        default_factory=lambda: TreeSnapshot(managed_paths=set(), status_pairs={})
+    )
+    new_snapshot: TreeSnapshot = field(
+        default_factory=lambda: TreeSnapshot(managed_paths=set(), status_pairs={})
+    )
 
     changes: ChangedPaths = ChangedPaths()
 

@@ -67,56 +67,54 @@ class OperateInfo(Static):
 
 class CommandOutput(ScrollableContainer):
 
-    class AddedPaths(Static): ...
+    class AddedManaged(Static): ...
 
-    class RemovedPaths(Static): ...
+    class RemovedManaged(Static): ...
 
-    class ChangedStatusPaths(Static): ...
+    class ChangedStatus(Static): ...
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
-        yield Label("Added paths", classes=Tcss.sub_section_label)
-        yield self.AddedPaths(classes=Tcss.info)
-        yield Label("Removed paths", classes=Tcss.sub_section_label)
-        yield self.RemovedPaths(classes=Tcss.info)
+        yield Label("Added managed paths", classes=Tcss.sub_section_label)
+        yield self.AddedManaged(classes=Tcss.info)
+        yield Label("Removed managed paths", classes=Tcss.sub_section_label)
+        yield self.RemovedManaged(classes=Tcss.info)
         yield Label("Changed status paths", classes=Tcss.sub_section_label)
-        yield self.ChangedStatusPaths(classes=Tcss.info)
+        yield self.ChangedStatus(classes=Tcss.info)
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self.added_paths = self.query_exactly_one(self.AddedPaths)
-        self.removed_paths = self.query_exactly_one(self.RemovedPaths)
-        self.changed_status = self.query_exactly_one(self.ChangedStatusPaths)
+        self.added_managed = self.query_exactly_one(self.AddedManaged)
+        self.removed_managed = self.query_exactly_one(self.RemovedManaged)
+        self.changed_status = self.query_exactly_one(self.ChangedStatus)
         self.reset_widgets()
 
     @work
     async def reset_widgets(self) -> None:
-        self.added_paths.update("")
-        self.removed_paths.update("")
+        self.added_managed.update("")
+        self.removed_managed.update("")
         self.changed_status.update("")
         self.query_children(Collapsible).remove()
 
     @work
     async def update_cmd_output(self) -> None:
-        if self.app.cmattr.changes.added_paths:
-            self.added_paths.update(
-                "\n".join([str(p) for p in self.app.cmattr.changes.added_paths])
+        if self.app.cmattr.changes.added_managed:
+            self.added_managed.update(
+                "\n".join([str(p) for p in self.app.cmattr.changes.added_managed])
             )
         else:
-            self.added_paths.update("No added paths")
-        if self.app.cmattr.changes.removed_paths:
-            self.removed_paths.update(
-                "\n".join([str(p) for p in self.app.cmattr.changes.removed_paths])
+            self.added_managed.update("No added paths")
+        if self.app.cmattr.changes.removed_managed:
+            self.removed_managed.update(
+                "\n".join([str(p) for p in self.app.cmattr.changes.removed_managed])
             )
         else:
-            self.removed_paths.update("No removed paths")
-        if self.app.cmattr.changes.changed_status_paths:
+            self.removed_managed.update("No removed paths")
+        if self.app.cmattr.changes.changed_status:
             self.changed_status.update(
-                "\n".join(
-                    [str(p) for p in self.app.cmattr.changes.changed_status_paths]
-                )
+                "\n".join([str(p) for p in self.app.cmattr.changes.changed_status])
             )
         else:
             self.changed_status.update("No changed status paths")

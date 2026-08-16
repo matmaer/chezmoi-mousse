@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
+    type ChangedStatus = dict[Path, tuple[str, str]]  # old, new
     type MinWaitReturn = Callable[..., Awaitable[CommandResult | None]]
     type ParsedJson = dict[str, Any]
     type PathKindMap = MappingProxyType[Path, PathKind]
@@ -22,10 +23,11 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "ChangedStatus",
     "MinWaitReturn",
-    "ScanDirResult",
     "ParsedJson",
     "PathKindMap",
+    "ScanDirResult",
     "StatusMap",
     "StatusPairDict",
     "StrTuple",
