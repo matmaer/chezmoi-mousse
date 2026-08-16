@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, NamedTuple
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_command import ReadCmd
     from chezmoi_mousse.cm_types import PathKindMap, StatusMap
 
 
@@ -13,7 +12,6 @@ __all__ = [
     "CommandResult",
     "ManagedTreePaths",
     "PwMgrData",
-    "ReadCmdGroups",
     "ScanDirItem",
     "SwitchData",
 ]
@@ -50,16 +48,6 @@ class PwMgrData(NamedTuple):
     doctor_check: str
     link: str
     info: str
-
-
-class ReadCmdGroups(NamedTuple):
-    splash_only: list[ReadCmd]
-    json_output: list[ReadCmd]
-    managed: list[ReadCmd]
-
-    @property
-    def commands_count(self) -> int:
-        return len(self.splash_only + self.json_output + self.managed)
 
 
 class ScanDirItem(NamedTuple):

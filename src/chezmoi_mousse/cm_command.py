@@ -24,6 +24,26 @@ class ReadCmd(Enum):
     status_files = ("status", VerbArgs.path_style_absolute, VerbArgs.include_files)
     template_data = ("data", VerbArgs.format_json)
 
+    @classmethod
+    def splash_only_commands(cls) -> tuple[ReadCmd, ...]:
+        return (cls.cat_config, cls.doctor, cls.git_log, cls.git_remote, cls.ignored)
+
+    @classmethod
+    def json_parsable_commands(cls) -> tuple[ReadCmd, ...]:
+        return (cls.dump_config, cls.template_data)
+
+    @classmethod
+    def managed_commands(cls) -> tuple[ReadCmd, ...]:
+        return (cls.managed_dirs, cls.managed_files, cls.status_dirs, cls.status_files)
+
+    @classmethod
+    def grouped_commands_count(cls) -> int:
+        return len(
+            cls.json_parsable_commands()
+            + cls.managed_commands()
+            + cls.splash_only_commands()
+        )
+
 
 class WriteCmd(Enum):
     add = ("add",)

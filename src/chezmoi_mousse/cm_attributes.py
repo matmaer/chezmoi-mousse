@@ -7,8 +7,8 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, ClassVar
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
-from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths, ReadCmdGroups
+from chezmoi_mousse.cm_command import WriteCmd
+from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
@@ -272,23 +272,6 @@ class CmAttributes:
     debug_id = AppIds(TabLabel.debug)
     logs_id = AppIds(TabLabel.logs)
     re_add_id = AppIds(TabLabel.re_add)
-
-    read_cmd_groups = ReadCmdGroups(
-        splash_only=[
-            ReadCmd.doctor,
-            ReadCmd.git_log,
-            ReadCmd.cat_config,
-            ReadCmd.ignored,
-            ReadCmd.git_remote,
-        ],
-        json_output=[ReadCmd.dump_config, ReadCmd.template_data],
-        managed=[
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-        ],
-    )
 
     dry_run: bool = True
 

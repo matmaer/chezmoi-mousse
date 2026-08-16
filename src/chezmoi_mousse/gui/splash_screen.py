@@ -122,9 +122,7 @@ class SplashScreen(Screen[None]):
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
         self.splash_log.styles.margin = 2
-        self.splash_log.styles.height = (
-            self.app.cmattr.read_cmd_groups.commands_count + 3
-        )
+        self.splash_log.styles.height = ReadCmd.grouped_commands_count() + 3
 
         self.primary_color = self.app.get_color(ColorVar.text_primary)
         self.success_color = self.app.get_color(ColorVar.text_success)
@@ -213,16 +211,13 @@ class SplashScreen(Screen[None]):
 
         # Dispatch command workers and store worker instances for awaiting later.
         json_workers = [
-            self._run_json_output_cmd(cmd)
-            for cmd in self.app.cmattr.read_cmd_groups.json_output
+            self._run_json_output_cmd(cmd) for cmd in ReadCmd.json_parsable_commands()
         ]
         managed_workers = [
-            self._run_managed_cmd(cmd)
-            for cmd in self.app.cmattr.read_cmd_groups.managed
+            self._run_managed_cmd(cmd) for cmd in ReadCmd.managed_commands()
         ]
         splash_workers = [
-            self._run_splash_cmd(cmd)
-            for cmd in self.app.cmattr.read_cmd_groups.splash_only
+            self._run_splash_cmd(cmd) for cmd in ReadCmd.splash_only_commands()
         ]
 
         # Await JSON output read commands and then parse them.

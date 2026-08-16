@@ -55,8 +55,8 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
-        for read_cmd in self.app.cmattr.read_cmd_groups.managed:
-            self.label.update(f"Running chezmoi {ReadCmd.name}")
+        for read_cmd in ReadCmd.managed_commands():
+            self.label.update(f"Running chezmoi {read_cmd.name}")
             await self._run_read_command(read_cmd).wait()
 
     @work
