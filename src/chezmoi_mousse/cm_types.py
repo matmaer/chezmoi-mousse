@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     type PathKindMap = MappingProxyType[Path, PathKind]
     type ScanDirResult = list[ScanDirItem] | PathKind
     type StatusMap = MappingProxyType[Path, StatusCode]
+    type StatusPairDict = dict[Path, str]  # str containing the status pair
     type StrTuple = tuple[str, ...]
     type TreeNodeDict = dict[Path, TreeNode[Path]]
 
@@ -26,6 +27,7 @@ __all__ = [
     "ParsedJson",
     "PathKindMap",
     "StatusMap",
+    "StatusPairDict",
     "StrTuple",
     "TreeNodeDict",
 ]
