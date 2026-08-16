@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
@@ -24,32 +24,32 @@ if TYPE_CHECKING:
 __all__ = ["ChangedPaths", "CmAttributes", "ManagedPaths", "ResultCollector"]
 
 
-@dataclass(slots=True)
 class ResultCollector:
 
-    cat_config: CommandResult = field(init=False)
-    doctor: CommandResult = field(init=False)
-    dump_config: CommandResult = field(init=False)
-    git_log: CommandResult = field(init=False)
-    git_remote: CommandResult = field(init=False)
-    ignored: CommandResult = field(init=False)
-    managed_dirs: CommandResult = field(init=False)
-    managed_files: CommandResult = field(init=False)
-    status_dirs: CommandResult = field(init=False)
-    status_files: CommandResult = field(init=False)
-    template_data: CommandResult = field(init=False)
+    # chezmoi ReadCmd results
+    cat_config: ClassVar[CommandResult]
+    doctor: ClassVar[CommandResult]
+    dump_config: ClassVar[CommandResult]
+    git_log: ClassVar[CommandResult]
+    git_remote: ClassVar[CommandResult]
+    ignored: ClassVar[CommandResult]
+    managed_dirs: ClassVar[CommandResult]
+    managed_files: ClassVar[CommandResult]
+    status_dirs: ClassVar[CommandResult]
+    status_files: ClassVar[CommandResult]
+    template_data: ClassVar[CommandResult]
+
+    # chezmoi WriteCmd results
+    add: ClassVar[CommandResult]
+    apply: ClassVar[CommandResult]
+    destroy: ClassVar[CommandResult]
+    forget: ClassVar[CommandResult]
+    re_add: ClassVar[CommandResult]
 
     # Processed json results in SplashScreen
-    parsed_dump_config: ParsedJson = field(init=False)
-    parsed_template_data: ParsedJson = field(init=False)
-    managed_paths_instance: ManagedPaths = field(init=False)
-
-    # WriteCmd results
-    add: CommandResult = field(init=False)
-    apply: CommandResult = field(init=False)
-    destroy: CommandResult = field(init=False)
-    forget: CommandResult = field(init=False)
-    re_add: CommandResult = field(init=False)
+    parsed_dump_config: ParsedJson
+    parsed_template_data: ParsedJson
+    managed_paths_instance: ManagedPaths
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @classmethod
@@ -264,6 +264,8 @@ class TreeSnapshot:
 @dataclass
 class CmAttributes:
 
+    result_collector: ClassVar[type[ResultCollector]] = ResultCollector
+
     add_id = AppIds(TabLabel.add)
     apply_id = AppIds(TabLabel.apply)
     config_id = AppIds(TabLabel.config)
@@ -289,13 +291,6 @@ class CmAttributes:
     )
 
     dry_run: bool = True
-
-    old_snapshot: TreeSnapshot = field(
-        default_factory=lambda: TreeSnapshot(managed_paths=set(), status_pairs={})
-    )
-    new_snapshot: TreeSnapshot = field(
-        default_factory=lambda: TreeSnapshot(managed_paths=set(), status_pairs={})
-    )
 
     changes: ChangedPaths = ChangedPaths()
 
