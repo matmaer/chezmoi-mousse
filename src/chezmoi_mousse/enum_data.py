@@ -2,9 +2,14 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-from chezmoi_mousse.cm_command import WriteCmd
 from chezmoi_mousse.named_tuples import PwMgrData, SwitchData
-from chezmoi_mousse.str_enums import OpBtnLabel, OpInfoString, PwMgrInfo, SwitchLabel
+from chezmoi_mousse.str_enums import (
+    OpBtnLabel,
+    OpInfoString,
+    PwMgrInfo,
+    SwitchLabel,
+    WriteCmd,
+)
 
 __all__ = ["OpBtnEnum", "PwMgrEnum", "SwitchEnum"]
 

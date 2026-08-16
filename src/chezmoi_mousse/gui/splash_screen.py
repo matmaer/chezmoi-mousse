@@ -17,10 +17,9 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_attributes import ManagedPaths, ResultCollector
-from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
-from chezmoi_mousse.str_enums import ColorVar
+from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 
 from .common.ascii_constants import SPLASH_ASCII
 

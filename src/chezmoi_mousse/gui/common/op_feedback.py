@@ -8,9 +8,8 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.cm_command import WriteCmd
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.str_enums import OpInfoString, Tcss
+from chezmoi_mousse.str_enums import OpInfoString, Tcss, WriteCmd
 
 from .actionables import OpButton
 

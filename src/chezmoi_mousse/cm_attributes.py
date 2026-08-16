@@ -7,9 +7,8 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, ClassVar
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_command import WriteCmd
 from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import (
