@@ -12,6 +12,7 @@ from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
+from chezmoi_mousse.cm_attributes import ResultCollector
 from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
@@ -142,7 +143,7 @@ class Commands:
             else f"{pretty_read_cmd_wop} {path_arg})"
         )
 
-        return CommandResult(
+        result = CommandResult(
             dry_run=None,
             full_cmd_str=full_cmd_str,
             pretty_cmd=pretty_read_cmd,
@@ -152,6 +153,8 @@ class Commands:
             std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
+        setattr(ResultCollector, cmd.name, result)
+        return result
 
     @staticmethod
     def run_write_cmd(

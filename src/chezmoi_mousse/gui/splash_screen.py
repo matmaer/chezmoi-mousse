@@ -146,7 +146,6 @@ class SplashScreen(Screen[None]):
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
         result: CommandResult = Commands.run_read_cmd(command)
-        setattr(ResultCollector, command.name, result)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
     # Threaded Command Workers
