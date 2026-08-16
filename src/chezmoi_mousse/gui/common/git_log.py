@@ -33,7 +33,7 @@ class GitLogView(Container):
     def _create_datatable_container(
         self, git_log_lines: list[str]
     ) -> ScrollableContainer:
-        data_table = DataTable[str](cursor_type="row")
+        data_table = DataTable[str](cursor_type="row", show_cursor=False)
 
         def add_row_with_style(columns: list[str], log_color: ColorVar) -> None:
             color = self.app.get_color(log_color)
