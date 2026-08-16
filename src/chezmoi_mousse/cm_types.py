@@ -12,9 +12,9 @@ if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
     type MinWaitReturn = Callable[..., Awaitable[CommandResult | None]]
-    type ScanDirResult = list[ScanDirItem] | PathKind
     type ParsedJson = dict[str, Any]
     type PathKindMap = MappingProxyType[Path, PathKind]
+    type ScanDirResult = list[ScanDirItem] | PathKind
     type StatusMap = MappingProxyType[Path, StatusCode]
     type StrTuple = tuple[str, ...]
     type TreeNodeDict = dict[Path, TreeNode[Path]]
