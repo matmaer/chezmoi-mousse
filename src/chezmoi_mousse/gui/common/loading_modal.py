@@ -13,7 +13,6 @@ from textual.widgets import Label, LoadingIndicator
 from chezmoi_mousse.cm_command import ReadCmd
 from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.functions import Commands, min_wait
-from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar
 
 from .actionables import RefreshTreeButton
@@ -35,7 +34,7 @@ class LoadingLabel(StrEnum):
         return f"[${ColorVar.text}]{self.value}[/]"
 
 
-class LoadingModal(ModalScreen[list[CommandResult]]):
+class LoadingModal(ModalScreen[None]):
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -52,36 +51,38 @@ class LoadingModal(ModalScreen[list[CommandResult]]):
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
-        self.command_results: list[CommandResult] = []
-
-    def watch_label_text(self, label_text: str | None) -> None:
-        if label_text is None:
-            return
-        label = self.query_exactly_one(Label)
-        label.update(label_text)
+        self.label = self.query_exactly_one(Label)
 
     @work
     async def run_managed_commands(self) -> None:
         for read_cmd in self.app.cmattr.read_cmd_groups.managed:
+            self.label.update(f"Running chezmoi {ReadCmd.name}")
             await self._run_read_command(read_cmd).wait()
 
     @work
-    async def run_write_command(self, btn_enum: OpBtnEnum) -> None:
+    async def run_write_cmd_and_managed_commands(self, btn_enum: OpBtnEnum) -> None:
+        label_text = ["Running chezmoi"]
+        if self.app.cmattr.dry_run is True:
+            label_text.append("--dry-run")
+        if btn_enum.path_arg is not None:
+            label_text.append(f"{btn_enum.path_arg}")
+        self.label.update(" ".join(label_text + [btn_enum.write_cmd.name]))
         await self._run_write_command(btn_enum).wait()
         await self.run_managed_commands().wait()
 
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        self.command_results.append(Commands.run_read_cmd(read_cmd))
+        Commands.run_read_cmd(read_cmd)
 
     @work(thread=True)
     @min_wait
     async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
-        self.command_results.append(
-            Commands.run_write_cmd(
-                btn_enum.write_cmd,
-                dry_run=self.app.cmattr.dry_run,
-                path_arg=btn_enum.path_arg,
-            )
+        Commands.run_write_cmd(
+            btn_enum.write_cmd,
+            dry_run=self.app.cmattr.dry_run,
+            path_arg=btn_enum.path_arg,
         )
+
+    def watch_label_text(self, label_text: str) -> None:
+        self.label.update(label_text)

@@ -11,6 +11,7 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
+from chezmoi_mousse.cm_attributes import ResultCollector
 from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import Chars, OpBtnLabel, TabLabel, Tcss
@@ -110,32 +111,25 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal(btn_data=btn_data)
         await self.app.push_screen(self.loading_modal)
 
+        results_to_log: list[CommandResult] = []
         if btn_data in OpBtnEnum.run_btn_enums():
-            await self.loading_modal.run_write_command(btn_data).wait()
-            await self.command_output.update_cmd_output().wait()
+            await self.loading_modal.run_write_cmd_and_managed_commands(btn_data).wait()
+            results_to_log.append(
+                ResultCollector.get_write_cmd_result(btn_data.value.write_cmd)
+            )
         elif isinstance(btn_data, RefreshTreeButton):
-            if self.app.cmattr.changes.no_changes:
-                self.notify(
-                    "No changed managed paths found, skipping refresh.",
-                    severity="warning",
-                )
-            else:
-                self.notify("Changed managed paths found, refreshing data.")
-                await self.loading_modal.run_managed_commands().wait()
-                await self.command_output.update_cmd_output().wait()
-                await self._purge_views_cache().wait()
-                await self._update_trees().wait()
+            await self.loading_modal.run_managed_commands().wait()
         elif btn_data is None:
-            await self._log_cmd_results(
-                self.app.cmattr.cmd_results.splash_results_list
-            ).wait()
-            await self._update_trees().wait()
-            await self.loading_modal.dismiss()
-            return
+            results_to_log = ResultCollector.splash_results()
         else:
             raise NotImplementedError(f"Not implemented for {btn_data}")
-        cmd_results: list[CommandResult] = await self.loading_modal.dismiss()
-        await self._log_cmd_results(cmd_results).wait()
+        if btn_data is not None:  # either a run or refresh tree button was pressed
+            results_to_log.extend(ResultCollector.managed_cmd_results())
+            await self.command_output.update_cmd_output().wait()
+            await self._purge_views_cache().wait()
+        await self._update_trees().wait()
+        await self._log_cmd_results(results_to_log).wait()
+        await self.loading_modal.dismiss()
 
     #####################
     # UI update workers #

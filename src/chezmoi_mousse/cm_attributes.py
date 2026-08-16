@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_command import ReadCmd
+from chezmoi_mousse.cm_command import ReadCmd, WriteCmd
 from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths, ReadCmdGroups
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
@@ -52,31 +52,31 @@ class ResultCollector:
     re_add: CommandResult = field(init=False)
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
-    @property
-    def splash_results_list(self) -> list[CommandResult]:
+    @classmethod
+    def splash_results(cls) -> list[CommandResult]:
         return [
-            self.cat_config,
-            self.doctor,
-            self.dump_config,
-            self.git_log,
-            self.git_remote,
-            self.ignored,
-            self.managed_dirs,
-            self.managed_files,
-            self.status_dirs,
-            self.status_files,
-            self.template_data,
+            cls.cat_config,
+            cls.doctor,
+            cls.dump_config,
+            cls.git_log,
+            cls.git_remote,
+            cls.ignored,
+            cls.managed_dirs,
+            cls.managed_files,
+            cls.status_dirs,
+            cls.status_files,
+            cls.template_data,
         ]
 
     # Used to retrieve results after the 'Refresh Tree' button was clicked
-    @property
-    def managed_cmd_results(self) -> dict[ReadCmd, CommandResult]:
-        return {
-            ReadCmd.managed_dirs: self.managed_dirs,
-            ReadCmd.managed_files: self.managed_files,
-            ReadCmd.status_dirs: self.status_dirs,
-            ReadCmd.status_files: self.status_files,
-        }
+    @classmethod
+    def managed_cmd_results(cls) -> list[CommandResult]:
+        return [cls.managed_dirs, cls.managed_files, cls.status_dirs, cls.status_files]
+
+    @classmethod
+    def get_write_cmd_result(cls, cmd_enum: WriteCmd) -> CommandResult:
+        """Returns the CommandResult for a given command name."""
+        return getattr(cls, cmd_enum.name)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
