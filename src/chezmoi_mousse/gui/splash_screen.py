@@ -202,11 +202,6 @@ class SplashScreen(Screen[None]):
         ]
         self.app.cmattr.cmd_results = ResultCollector()
         self.app.cmattr.paths = ResultCollector.managed_paths_instance
-        self.app.cmattr.old_snapshot = self.app.cmattr.paths.get_current_snapshot()
-        self.app.cmattr.new_snapshot = self.app.cmattr.paths.get_current_snapshot()
-        self.app.cmattr.changes = self.app.cmattr.old_snapshot.diff_against(
-            self.app.cmattr.new_snapshot
-        )
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)
 

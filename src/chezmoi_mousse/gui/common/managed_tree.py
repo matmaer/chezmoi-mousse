@@ -259,13 +259,6 @@ class ManagedTree(Tree[Path]):
                 return node
         return None
 
-    def get_current_snapshot(self) -> TreeSnapshot:
-        """Returns a snapshot of current managed paths and statuses prior to an
-        operation."""
-        managed_paths = set(self.paths.managed_dirs | self.paths.managed_files)
-        status_map = {**self.paths.tree_status_dirs, **self.paths.status_files}
-        return TreeSnapshot(managed_paths=managed_paths, status_map=status_map)
-
     def update_tree(self) -> None:
         """Rebuilds the tree structure from current chezmoi paths and restores state."""
         self.root.remove_children()
