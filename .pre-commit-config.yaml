@@ -1,41 +1,13 @@
----
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.12.5
     hooks:
       - id: uv-lock
-      - id: uv-export
-        args: ["--no-dev"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.8
-    hooks:
-      - id: docformatter
-        files: ^src/
-
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-      - id: python-check-blanket-noqa
-      - id: python-check-blanket-type-ignore
-      - id: text-unicode-replacement-char
-      - id: python-use-type-annotations
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.3
-    hooks:
-      - id: codespell
-        files: ^src/
-        args: ["--toml", "pyproject.toml"]
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
-    hooks:
       - id: check-added-large-files
       - id: check-ast
       - id: check-case-conflict
@@ -46,14 +18,16 @@ repos:
       - id: debug-statements
       - id: detect-private-key
 
-  # When running with --fix, Ruff's lint hook should be placed BEFORE Black
-  # as Ruff's fix behavior can output code changes that require reformatting.
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        files: ^src/
+        args: ["--toml", "pyproject.toml"]
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.3
     hooks:
       - id: ruff-check
-
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.5.1
-    hooks:
-      - id: black
+        args: ["--fix"]
+      - id: ruff-format
