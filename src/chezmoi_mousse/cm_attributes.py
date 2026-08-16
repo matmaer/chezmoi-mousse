@@ -39,10 +39,17 @@ class ResultCollector:
     status_files: CommandResult = field(init=False)
     template_data: CommandResult = field(init=False)
 
-    # Processed ReadCmd results in SplashScreen
+    # Processed json results in SplashScreen
     parsed_dump_config: ParsedJson = field(init=False)
     parsed_template_data: ParsedJson = field(init=False)
     managed_paths_instance: ManagedPaths = field(init=False)
+
+    # WriteCmd results
+    add: CommandResult = field(init=False)
+    apply: CommandResult = field(init=False)
+    destroy: CommandResult = field(init=False)
+    forget: CommandResult = field(init=False)
+    re_add: CommandResult = field(init=False)
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @property
@@ -60,6 +67,16 @@ class ResultCollector:
             self.status_files,
             self.template_data,
         ]
+
+    # Used to retrieve results after the 'Refresh Tree' button was clicked
+    @property
+    def managed_cmd_results(self) -> dict[ReadCmd, CommandResult]:
+        return {
+            ReadCmd.managed_dirs: self.managed_dirs,
+            ReadCmd.managed_files: self.managed_files,
+            ReadCmd.status_dirs: self.status_dirs,
+            ReadCmd.status_files: self.status_files,
+        }
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

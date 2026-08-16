@@ -178,7 +178,7 @@ class Commands:
             else f"{pretty_write_cmd_wop} {path_arg})"
         )
 
-        return CommandResult(
+        result = CommandResult(
             dry_run=dry_run,
             full_cmd_str=full_cmd_str,
             pretty_cmd=pretty_write_cmd,
@@ -188,6 +188,8 @@ class Commands:
             std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
+        setattr(ResultCollector, cmd.name, result)
+        return result
 
     @staticmethod
     def json_loads(str_to_parse: str) -> ParsedJson:
