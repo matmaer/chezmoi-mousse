@@ -34,7 +34,6 @@ class OperateInfo(Static):
 
     def on_mount(self) -> None:
         self.display = False
-        self.dest_dir = self.app.cmattr.dest_dir
 
     def update_review_info(self, button: OpButton, dry_run: bool) -> None:
         self.current_button = button
