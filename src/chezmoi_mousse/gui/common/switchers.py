@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
 from chezmoi_mousse.str_enums import TabLabel
@@ -33,8 +33,6 @@ class ViewSwitcher(Vertical):
             yield GitLogView(self.ids)
 
     def on_mount(self) -> None:
-        self.view_switcher = self.query_exactly_one(ContentSwitcher)
-        self.tab_buttons = self.query_exactly_one(Horizontal)
         self.content_switcher = self.query_exactly_one(ContentSwitcher)
 
     @on(TabButton.Pressed)
