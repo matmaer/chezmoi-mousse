@@ -25,7 +25,6 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -37,7 +36,6 @@ __all__ = ["ManagedTree", "DestDirTree"]
 
 
 class DestDirTree(Vertical):
-
     def __init__(self, ids: AppIds) -> None:
         self.app_ids = ids
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
@@ -59,43 +57,7 @@ class ManagedTreeState:
     expand_all: bool = False
 
 
-@dataclass(slots=True)
-class TreeDiff:
-    removed_managed: set[Path] = field(default_factory=lambda: set())
-    added_managed: set[Path] = field(default_factory=lambda: set())
-    changed_status: dict[Path, tuple[StatusCode | None, StatusCode | None]] = field(
-        default_factory=lambda: {}
-    )
-
-
-@dataclass(slots=True)
-class TreeSnapshot:
-    managed_paths: set[Path] = field(default_factory=lambda: set())
-    status_map: dict[Path, StatusCode] = field(default_factory=lambda: {})
-
-    def diff_against(self, new_snapshot: TreeSnapshot) -> TreeDiff:
-        """Calculates the changes between the current snapshot and a new snapshot."""
-        removed_managed = self.managed_paths - new_snapshot.managed_paths
-        added_managed = new_snapshot.managed_paths - self.managed_paths
-
-        changed_status: dict[Path, tuple[StatusCode | None, StatusCode | None]] = {}
-        retained = self.managed_paths & new_snapshot.managed_paths
-
-        for path in retained:
-            old_code = self.status_map.get(path)
-            new_code = new_snapshot.status_map.get(path)
-            if old_code != new_code:
-                changed_status[path] = (old_code, new_code)
-
-        return TreeDiff(
-            removed_managed=removed_managed,
-            added_managed=added_managed,
-            changed_status=changed_status,
-        )
-
-
 class ManagedTree(Tree[Path]):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 

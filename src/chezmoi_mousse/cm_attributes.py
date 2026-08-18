@@ -11,16 +11,10 @@ from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel, WriteCmd
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import (
-        ChangedStatus,
-        ParsedJson,
-        PathKindMap,
-        StatusMap,
-        StatusPairDict,
-    )
+    from chezmoi_mousse.cm_types import ParsedJson, PathKindMap, StatusMap
 
 
-__all__ = ["ChangedPaths", "CmAttributes", "ManagedPaths", "ResultCollector"]
+__all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
 
 
 class ResultCollector:
@@ -80,26 +74,6 @@ class ResultCollector:
     def get_write_cmd_result(cls, cmd_enum: WriteCmd) -> CommandResult:
         """Returns the CommandResult for a given command name."""
         return getattr(cls, cmd_enum.name)
-
-    @classmethod
-    def update_managed_results(cls) -> ChangedPaths: ...
-
-    # TREAT SNAPSHOT AND DIFF HERE
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class ChangedPaths:
-    added_managed: list[Path] = field(default_factory=lambda: [])
-    changed_status: ChangedStatus = field(default_factory=lambda: {})
-    removed_managed: list[Path] = field(default_factory=lambda: [])
-
-    @property
-    def no_changes(self) -> bool:
-        return (
-            not self.added_managed
-            and not self.changed_status
-            and not self.removed_managed
-        )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -221,49 +195,6 @@ class ManagedPaths:
     def re_add_tree_paths(self) -> ManagedTreePaths:
         return self._create_managed_tree_paths_instance(status_col=0)
 
-    # return snapshot data
-    def get_current_snapshot(self) -> TreeSnapshot:
-        """Returns snapshot data for the tree's current state."""
-        status_lines = (
-            self.rc.status_dirs_result.std_out.splitlines()
-            + self.rc.status_files_result.std_out.splitlines()
-        )
-        managed_paths = set(self.managed_dirs) | set(self.managed_files)
-        status_pairs: StatusPairDict = {
-            Path(line[3:]): line[0:2] for line in status_lines
-        }
-        return TreeSnapshot(managed_paths=managed_paths, status_pairs=status_pairs)
-
-
-@dataclass(slots=True)
-class TreeSnapshot:
-    managed_paths: set[Path] = field(default_factory=lambda: set())
-    status_pairs: StatusPairDict = field(default_factory=lambda: {})
-
-    def diff_against(self, new_snapshot: TreeSnapshot) -> ChangedPaths:
-        """Calculates the changes between the current snapshot and a new snapshot."""
-        removed_managed = self.managed_paths - new_snapshot.managed_paths
-        added_managed = new_snapshot.managed_paths - self.managed_paths
-
-        changed_status: ChangedStatus = {}
-
-        # Check for status changes among all paths that remained managed
-        intersection = self.managed_paths & new_snapshot.managed_paths
-
-        for path in intersection:
-            # Missing paths in status_pairs default to "  " (unchanged)
-            old_code = self.status_pairs.get(path, "  ")
-            new_code = new_snapshot.status_pairs.get(path, "  ")
-
-            if old_code != new_code:
-                changed_status[path] = (old_code, new_code)
-
-        return ChangedPaths(
-            added_managed=sorted(added_managed),
-            changed_status=changed_status,
-            removed_managed=sorted(removed_managed),
-        )
-
 
 @dataclass
 class CmAttributes:
@@ -277,8 +208,6 @@ class CmAttributes:
     re_add_id = AppIds(TabLabel.re_add)
 
     dry_run: bool = True
-
-    changes: ChangedPaths = ChangedPaths()
 
     dest_dir: Path = field(init=False)
     auto_add: bool = field(init=False)

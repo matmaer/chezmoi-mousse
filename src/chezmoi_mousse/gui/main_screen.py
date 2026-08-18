@@ -44,7 +44,6 @@ __all__ = ["MainScreen", "CustomHeader"]
 
 
 class CustomHeader(Header):
-
     dry_run: reactive[bool] = reactive(True)
     dry_run_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
     live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
@@ -65,7 +64,6 @@ class CustomHeader(Header):
 
 
 class MainScreen(Screen[None]):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -125,7 +123,6 @@ class MainScreen(Screen[None]):
             raise NotImplementedError(f"Not implemented for {btn_data}")
         if btn_data is not None:  # either a run or refresh tree button was pressed
             results_to_log.extend(ResultCollector.managed_cmd_results())
-            await self.command_output.update_cmd_output().wait()
             await self._purge_views_cache().wait()
         await self._update_trees().wait()
         await self._log_cmd_results(results_to_log).wait()

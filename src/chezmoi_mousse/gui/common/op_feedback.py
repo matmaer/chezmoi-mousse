@@ -20,7 +20,6 @@ __all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
 
 
 class OperateInfo(Static):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -64,7 +63,6 @@ class OperateInfo(Static):
 
 
 class CommandOutput(ScrollableContainer):
-
     class AddedManaged(Static): ...
 
     class RemovedManaged(Static): ...
@@ -96,30 +94,8 @@ class CommandOutput(ScrollableContainer):
         self.changed_status.update("")
         self.query_children(Collapsible).remove()
 
-    @work
-    async def update_cmd_output(self) -> None:
-        if self.app.cmattr.changes.added_managed:
-            self.added_managed.update(
-                "\n".join([str(p) for p in self.app.cmattr.changes.added_managed])
-            )
-        else:
-            self.added_managed.update("No added paths")
-        if self.app.cmattr.changes.removed_managed:
-            self.removed_managed.update(
-                "\n".join([str(p) for p in self.app.cmattr.changes.removed_managed])
-            )
-        else:
-            self.removed_managed.update("No removed paths")
-        if self.app.cmattr.changes.changed_status:
-            self.changed_status.update(
-                "\n".join([str(p) for p in self.app.cmattr.changes.changed_status])
-            )
-        else:
-            self.changed_status.update("No changed status paths")
-
 
 class OpFeedBack(Vertical):
-
     def compose(self) -> ComposeResult:
         yield OperateInfo()
         yield CommandOutput()
