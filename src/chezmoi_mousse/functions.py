@@ -227,13 +227,14 @@ class Commands:
     @typed_lru_cache(maxsize=500)
     def get_highlighted_chezmoi_cat_output(
         file_path: Path,
-    ) -> Text:
-        f_contents = Commands.run_read_cmd(cmd=ReadCmd.cat, path_arg=file_path).std_out
+    ) -> tuple[Text, CommandResult]:
+        cmd_result = Commands.run_read_cmd(cmd=ReadCmd.cat, path_arg=file_path)
+        f_contents = cmd_result.std_out
         if not f_contents.strip():
             f_contents = "File is empty or contains only whitespace"
         f_contents = Text(f_contents)
         ReprHighlighter().highlight(f_contents)
-        return f_contents
+        return (f_contents, cmd_result)
 
     @staticmethod
     @typed_lru_cache(maxsize=500)

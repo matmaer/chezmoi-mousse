@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -26,13 +25,6 @@ OUTPUT_LIMIT = 40
 class DirPathsView(Container):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-
-    class ContentStr(StrEnum):
-        cannot_decode = "Path cannot be decoded as UTF-8:"
-        empty_or_only_whitespace = "File is empty or contains only whitespace."
-        permission_denied = "Permission denied to read file"
-        read_error = "Error reading path"
-        truncated = "\n--- File content truncated to"
 
     show_path: reactive[Path | None] = reactive(None, init=False)
 

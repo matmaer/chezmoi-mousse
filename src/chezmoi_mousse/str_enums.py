@@ -378,14 +378,17 @@ class RichLogName(StrEnum):
 
 class SectionLabel(StrEnum):
     cat_config_output = "Cat Config Output"
+    chezmoi_cat_output = "Chezmoi cat output"
     debug_log = " Debug Log "
     dest_dir = "Destination directory"
     diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
     dom_nodes = " DOM Nodes "
+    read_file_output = "Read file from disk output"
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
     managed_dir = "Managed directory"
+    managed_file = "Managed file"
     memory_usage = " Memory Usage "
     password_managers = "Password Manager Information"
     paths_with_status = "Paths with Status"
@@ -397,6 +400,7 @@ class SectionLabel(StrEnum):
     template_data_output = "Chezmoi Data Output"
     test_paths = " Test Paths "
     unmanaged_dir = "Unmanaged directory"
+    unmanaged_file = "Unmanaged file"
 
 
 class StatusCode(StrEnum):
