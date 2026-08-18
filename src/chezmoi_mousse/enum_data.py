@@ -25,7 +25,6 @@ class OpBtnData:
 
 
 class OpBtnEnum(Enum):
-
     add_review = OpBtnData(
         label=OpBtnLabel.add_review,
         write_cmd=WriteCmd.add,
@@ -265,7 +264,6 @@ class PwMgrEnum(Enum):
 
 
 class SwitchEnum(Enum):
-
     # Apply and Re-Add tab
     show_unchanged = SwitchData(
         label=SwitchLabel.show_unchanged,

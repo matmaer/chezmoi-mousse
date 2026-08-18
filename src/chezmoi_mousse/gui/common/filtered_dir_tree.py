@@ -17,11 +17,10 @@ if TYPE_CHECKING:
 
 __all__ = ["FilteredDirTree"]
 
-GIT_OBJECT_DIR: str = f"{os.sep}{Path(".git", "objects")}{os.sep}"
+GIT_OBJECT_DIR: str = f"{os.sep}{Path('.git', 'objects')}{os.sep}"
 
 
 class FilteredDirTree(DirectoryTree):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 

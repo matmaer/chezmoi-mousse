@@ -7,7 +7,6 @@ from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 
 class DebugStatementDetector(ast.NodeVisitor):
-
     def __init__(self) -> None:
         self.current_file: str = ""
         self.class_stack: list[str] = []

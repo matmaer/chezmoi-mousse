@@ -21,7 +21,6 @@ __all__ = ["ViewSwitcher"]
 
 
 class ViewSwitcher(Vertical):
-
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.right_side)
         self.ids = ids

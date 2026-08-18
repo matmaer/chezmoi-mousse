@@ -21,7 +21,6 @@ __all__ = ["GitLogView"]
 
 
 class GitLogView(Container):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 

@@ -29,7 +29,6 @@ OUTPUT_LIMIT = 40
 
 
 class ContentsView(Container):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 

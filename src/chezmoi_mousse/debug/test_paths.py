@@ -171,7 +171,6 @@ class AllTestPaths:
 
 
 class TestPaths:
-
     def __init__(self) -> None:
         self.all_paths = AllTestPaths()
 

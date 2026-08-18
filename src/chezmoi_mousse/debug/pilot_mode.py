@@ -27,7 +27,6 @@ from chezmoi_mousse.str_enums import TabLabel
 __all__ = ["run_with_pilot"]
 
 if TYPE_CHECKING:
-
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -118,7 +117,6 @@ def app_is_ready(pilot: Pilot[str]) -> bool:
 async def start_pilot_mode(app: ChezmoiGui) -> None:
 
     async with app.run_test(headless=False, notifications=True) as pilot:
-
         while not isinstance(pilot.app.screen, MainScreen):
             await pilot_chill(pilot)
 

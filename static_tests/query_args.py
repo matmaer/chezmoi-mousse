@@ -12,7 +12,6 @@ class QueryOneCallDetector(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> None:
         if isinstance(node.func, ast.Attribute) and node.func.attr == "query_one":
-
             first_arg = node.args[0]
             first_arg_str: str = ""
 

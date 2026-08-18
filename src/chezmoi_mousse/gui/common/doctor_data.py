@@ -18,7 +18,6 @@ __all__ = ["DoctorTable", "PwCollapsible"]
 
 
 class DoctorTable(DataTable[Text]):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -66,7 +65,6 @@ class DoctorTable(DataTable[Text]):
 
 
 class PwCollapsible(Collapsible):
-
     def __init__(self, pw_mgr_data: PwMgrData, dr_message: str) -> None:
         self.pw_mgr_data = pw_mgr_data
         self.dr_message = dr_message

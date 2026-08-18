@@ -217,7 +217,6 @@ class OpInfoString(StrEnum):
 
 
 class PathFilters(Enum):
-
     UNWANTED_DIRS = (
         ".build",
         ".bundle",

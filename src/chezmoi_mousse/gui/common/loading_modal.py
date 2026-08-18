@@ -34,7 +34,6 @@ class LoadingLabel(StrEnum):
 
 
 class LoadingModal(ModalScreen[None]):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 

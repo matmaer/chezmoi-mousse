@@ -48,7 +48,6 @@ class FlatButton(Button):
 
 
 class FlatButtonsVertical(Vertical):
-
     def __init__(self, ids: AppIds, *, labels: tuple[FlatBtnLabel, ...]) -> None:
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
         self.ids = ids
@@ -89,7 +88,6 @@ class RefreshTreeButton(Button):
 
 
 class OpButton(Button):
-
     def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: AppIds) -> None:
         super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
         self.btn_enum: OpBtnEnum = btn_enum
@@ -112,7 +110,6 @@ class OpButton(Button):
 
 
 class OperateButtons(HorizontalGroup):
-
     def __init__(self, ids: AppIds) -> None:
         self.app_ids = ids
         super().__init__(id=ids.container.operate_buttons, classes=Tcss.op_btn_group)
@@ -132,7 +129,6 @@ class OperateButtons(HorizontalGroup):
 
 
 class SwitchWithLabel(HorizontalGroup):
-
     def __init__(self, ids: AppIds, *, switch_enum: SwitchEnum) -> None:
         super().__init__()
         self.switch_enum = switch_enum
@@ -167,7 +163,6 @@ class SwitchSlider(VerticalGroup):
 
 
 class TabButton(Button):
-
     def __init__(self, *, app_ids: AppIds, label: TabLabel) -> None:
         super().__init__(classes=Tcss.tab_button, label=label)
         self.app_ids = app_ids

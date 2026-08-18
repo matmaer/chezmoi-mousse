@@ -6,7 +6,6 @@ __all__ = ["DebugUtils"]
 
 
 class DebugUtils:
-
     @staticmethod
     def clear_stacktrace() -> None:
         path = Path(tempfile.gettempdir()) / "chezmoi_gui_stacktrace.log"
