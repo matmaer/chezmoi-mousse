@@ -86,7 +86,9 @@ ban-relative-imports = "parents"
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-skip-magic-trailing-comma = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.codespell]
 check-filenames = true
