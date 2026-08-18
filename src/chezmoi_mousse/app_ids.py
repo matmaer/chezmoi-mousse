@@ -66,15 +66,15 @@ class AppIds:
         }
         if self.tab_label == TabLabel.apply:
             return {
-                **_forget_destroy_buttons,
                 self.op_btn.apply_review: OpBtnEnum.apply_review,
                 self.op_btn.apply_run: OpBtnEnum.apply_run,
+                **_forget_destroy_buttons,
             }
         elif self.tab_label == TabLabel.re_add:
             return {
-                **_forget_destroy_buttons,
                 self.op_btn.re_add_review: OpBtnEnum.re_add_review,
                 self.op_btn.re_add_run: OpBtnEnum.re_add_run,
+                **_forget_destroy_buttons,
             }
         else:
             raise ValueError(f"Unexpected tab_label {self.tab_label} for op_btn_map")
