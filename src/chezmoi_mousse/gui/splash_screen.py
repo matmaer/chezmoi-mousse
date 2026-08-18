@@ -63,7 +63,6 @@ class WorkerName(StrEnum):
 
 
 class AnimatedFade(Static):
-
     def on_mount(self) -> None:
         self.step_count = 0
         self.styles.height = len(SPLASH_ASCII)
@@ -85,7 +84,6 @@ class AnimatedFade(Static):
 
 
 class SplashScreen(Screen[None]):
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -167,20 +165,18 @@ class SplashScreen(Screen[None]):
     @work(name=WorkerName.update_managed_paths)
     async def _create_managed_paths_instance(self) -> None:
         ResultCollector.managed_paths_instance = ManagedPaths(
-            _dest_dir=Path(ResultCollector.parsed_dump_config["destDir"]),
-            _managed_dirs_result=ResultCollector.managed_dirs,
-            _managed_files_result=ResultCollector.managed_files,
-            _status_dirs_result=ResultCollector.status_dirs,
-            _status_files_result=ResultCollector.status_files,
+            _dest_dir=Path(ResultCollector.parsed_dump_config["destDir"])
         )
         msg = self._get_log_msg(prefix=WorkerName.update_managed_paths, returncode=None)
         self.splash_log.write(msg)
 
     @work(name=WorkerName.parse_json_outputs)
     async def _parse_json_outputs(self) -> None:
-        parsed_dump_config = Commands.json_loads(ResultCollector.dump_config.std_out)
+        parsed_dump_config = Commands.json_loads(
+            ResultCollector.dump_config_result.std_out
+        )
         parsed_template_data = Commands.json_loads(
-            ResultCollector.template_data.std_out
+            ResultCollector.template_data_result.std_out
         )
         ResultCollector.parsed_dump_config = parsed_dump_config
         ResultCollector.parsed_template_data = parsed_template_data
@@ -197,7 +193,6 @@ class SplashScreen(Screen[None]):
         self.app.cmattr.auto_push = ResultCollector.parsed_dump_config["git"][
             "autopush"
         ]
-        self.app.cmattr.cmd_results = ResultCollector()
         self.app.cmattr.paths = ResultCollector.managed_paths_instance
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)

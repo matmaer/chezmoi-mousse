@@ -24,19 +24,18 @@ __all__ = ["ChangedPaths", "CmAttributes", "ManagedPaths", "ResultCollector"]
 
 
 class ResultCollector:
-
     # chezmoi ReadCmd results
-    cat_config: ClassVar[CommandResult]
-    doctor: ClassVar[CommandResult]
-    dump_config: ClassVar[CommandResult]
-    git_log: ClassVar[CommandResult]
-    git_remote: ClassVar[CommandResult]
-    ignored: ClassVar[CommandResult]
-    managed_dirs: ClassVar[CommandResult]
-    managed_files: ClassVar[CommandResult]
-    status_dirs: ClassVar[CommandResult]
-    status_files: ClassVar[CommandResult]
-    template_data: ClassVar[CommandResult]
+    cat_config_result: ClassVar[CommandResult]
+    doctor_result: ClassVar[CommandResult]
+    dump_config_result: ClassVar[CommandResult]
+    git_log_result: ClassVar[CommandResult]
+    git_remote_result: ClassVar[CommandResult]
+    ignored_result: ClassVar[CommandResult]
+    managed_dirs_result: ClassVar[CommandResult]
+    managed_files_result: ClassVar[CommandResult]
+    status_dirs_result: ClassVar[CommandResult]
+    status_files_result: ClassVar[CommandResult]
+    template_data_result: ClassVar[CommandResult]
 
     # chezmoi WriteCmd results
     add: ClassVar[CommandResult]
@@ -54,28 +53,38 @@ class ResultCollector:
     @classmethod
     def splash_results(cls) -> list[CommandResult]:
         return [
-            cls.cat_config,
-            cls.doctor,
-            cls.dump_config,
-            cls.git_log,
-            cls.git_remote,
-            cls.ignored,
-            cls.managed_dirs,
-            cls.managed_files,
-            cls.status_dirs,
-            cls.status_files,
-            cls.template_data,
+            cls.cat_config_result,
+            cls.doctor_result,
+            cls.dump_config_result,
+            cls.git_log_result,
+            cls.git_remote_result,
+            cls.ignored_result,
+            cls.managed_dirs_result,
+            cls.managed_files_result,
+            cls.status_dirs_result,
+            cls.status_files_result,
+            cls.template_data_result,
         ]
 
     # Used to retrieve results after the 'Refresh Tree' button was clicked
     @classmethod
     def managed_cmd_results(cls) -> list[CommandResult]:
-        return [cls.managed_dirs, cls.managed_files, cls.status_dirs, cls.status_files]
+        return [
+            cls.managed_dirs_result,
+            cls.managed_files_result,
+            cls.status_dirs_result,
+            cls.status_files_result,
+        ]
 
     @classmethod
     def get_write_cmd_result(cls, cmd_enum: WriteCmd) -> CommandResult:
         """Returns the CommandResult for a given command name."""
         return getattr(cls, cmd_enum.name)
+
+    @classmethod
+    def update_managed_results(cls) -> ChangedPaths: ...
+
+    # TREAT SNAPSHOT AND DIFF HERE
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -95,12 +104,8 @@ class ChangedPaths:
 
 @dataclass(frozen=True, kw_only=True)
 class ManagedPaths:
-
+    rc: ClassVar[type[ResultCollector]] = ResultCollector
     _dest_dir: Path
-    _managed_dirs_result: CommandResult
-    _managed_files_result: CommandResult
-    _status_dirs_result: CommandResult
-    _status_files_result: CommandResult
 
     def __post_init__(self) -> None:
         # warm all public cached_property attributes
@@ -126,13 +131,13 @@ class ManagedPaths:
     @cached_property
     def managed_dirs(self) -> PathKindMap:
         return self._get_managed_path_kind_map(
-            self._managed_dirs_result.std_out.splitlines()
+            self.rc.managed_dirs_result.std_out.splitlines()
         )
 
     @cached_property
     def managed_files(self) -> PathKindMap:
         return self._get_managed_path_kind_map(
-            self._managed_files_result.std_out.splitlines()
+            self.rc.managed_files_result.std_out.splitlines()
         )
 
     # not cached, fast boolean logic
@@ -158,13 +163,13 @@ class ManagedPaths:
 
     def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
         dirs_map: StatusMap = self._get_status_map(
-            self._status_dirs_result.std_out.splitlines(), status_col
+            self.rc.status_dirs_result.std_out.splitlines(), status_col
         )
         status_dirs: StatusMap = MappingProxyType(
             {k: v for k, v in dirs_map.items() if v != StatusCode.Space}
         )
         files_map: StatusMap = self._get_status_map(
-            self._status_files_result.std_out.splitlines(), status_col
+            self.rc.status_files_result.std_out.splitlines(), status_col
         )
         status_files: StatusMap = MappingProxyType(
             {k: v for k, v in files_map.items() if v != StatusCode.Space}
@@ -220,8 +225,8 @@ class ManagedPaths:
     def get_current_snapshot(self) -> TreeSnapshot:
         """Returns snapshot data for the tree's current state."""
         status_lines = (
-            self._status_dirs_result.std_out.splitlines()
-            + self._status_files_result.std_out.splitlines()
+            self.rc.status_dirs_result.std_out.splitlines()
+            + self.rc.status_files_result.std_out.splitlines()
         )
         managed_paths = set(self.managed_dirs) | set(self.managed_files)
         status_pairs: StatusPairDict = {
@@ -262,8 +267,7 @@ class TreeSnapshot:
 
 @dataclass
 class CmAttributes:
-
-    result_collector: ClassVar[type[ResultCollector]] = ResultCollector
+    rc: ClassVar[type[ResultCollector]] = ResultCollector
 
     add_id = AppIds(TabLabel.add)
     apply_id = AppIds(TabLabel.apply)
@@ -280,5 +284,4 @@ class CmAttributes:
     auto_add: bool = field(init=False)
     auto_commit: bool = field(init=False)
     auto_push: bool = field(init=False)
-    cmd_results: ResultCollector = field(init=False)
     paths: ManagedPaths = field(init=False)

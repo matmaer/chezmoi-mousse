@@ -57,7 +57,6 @@ chezmoi_mousse_light = Theme(
 
 
 class ChezmoiGui(App[str]):
-
     BINDINGS: ClassVar = [
         Binding(
             "ctrl+q",
@@ -284,7 +283,9 @@ class ChezmoiGui(App[str]):
         )
 
     def check_action(
-        self, action: str, parameters: tuple[object, ...]  # noqa: ARG002
+        self,
+        action: str,
+        parameters: tuple[object, ...],  # noqa: ARG002
     ) -> bool | None:
         if action == BindingAction.toggle_switch_slider:
             if isinstance(self.screen, MainScreen):
@@ -315,7 +316,6 @@ class ChezmoiGui(App[str]):
 
 
 class CustomScrollBarRender(ScrollBarRender):
-
     HORIZONTAL_BARS: ClassVar[list[str]] = [Chars.lower_3_8ths_block] * 7 + [" "]
 
     @classmethod

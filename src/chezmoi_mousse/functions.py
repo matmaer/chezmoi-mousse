@@ -114,7 +114,6 @@ class AppLife:
 
 
 class Commands:
-
     @staticmethod
     def _subprocess_run(
         args_tuple: StrTuple, *, path: Path | None, time_out: int
@@ -154,7 +153,7 @@ class Commands:
             std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(ResultCollector, cmd.name, result)
+        setattr(ResultCollector, f"{cmd.name}_result", result)
         return result
 
     @staticmethod
@@ -211,7 +210,6 @@ class Commands:
 
 
 class CheckPath:
-
     @staticmethod
     @typed_lru_cache(maxsize=1000)
     def os_scan_dir(dir_path: Path, *, managed_dir: bool = False) -> ScanDirResult:
