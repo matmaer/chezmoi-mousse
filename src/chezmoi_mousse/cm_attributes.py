@@ -195,6 +195,10 @@ class ManagedPaths:
     def re_add_tree_paths(self) -> ManagedTreePaths:
         return self._create_managed_tree_paths_instance(status_col=0)
 
+    @cached_property
+    def managed_paths_set(self) -> frozenset[Path]:
+        return frozenset(self.managed_dirs | self.managed_files)
+
 
 @dataclass
 class CmAttributes:

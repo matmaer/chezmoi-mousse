@@ -75,9 +75,7 @@ class GitLogView(Container):
         if (
             show_path != self.app.cmattr.dest_dir
             and show_path is not None
-            and show_path
-            not in self.app.cmattr.paths.managed_dirs
-            | self.app.cmattr.paths.managed_files
+            and show_path not in self.app.cmattr.paths.managed_paths_set
         ):
             container = self._create_unmanaged_path_container(show_path)
             self.mount(container)
