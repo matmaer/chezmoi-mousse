@@ -198,19 +198,12 @@ class MainScreen(Screen[None]):
         if isinstance(event.button, DirContentBtn):
             event.stop()
             _ = self.query_one(event.button.app_ids.managed_tree_q, ManagedTree)
+            self.notify(f"Not yet implemented {type(DirContentBtn)}")
             return
 
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
-        if msg.is_unmanaged:
-            # TODO: handle unmanaged paths, currently just notify and return
-            self.notify(
-                f"Selected path {msg.path} is unmanaged, not yet implemented.",
-                severity="warning",
-            )
-            return
-
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         self.query_exactly_one(
             msg.ids.container.right_side_q, ViewSwitcher

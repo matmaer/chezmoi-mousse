@@ -384,7 +384,7 @@ Static {
   &.info {
     background-tint: $surface;
     background: $surface;
-    color: $text-muted;
+    color: $text;
     padding: 0 1;
   }
   &.operate_info {

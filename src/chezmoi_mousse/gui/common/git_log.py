@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from textual import getters
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Label, Static
 
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.str_enums import ColorVar
+from chezmoi_mousse.str_enums import ColorVar, SectionLabel, Tcss
 
 from .messages import LogCmdResultMsg
 
@@ -28,6 +28,17 @@ class GitLogView(Container):
 
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.git_log)
+
+    def _create_unmanaged_path_container(self, path: Path) -> ScrollableContainer:
+        widgets: list[Static | Label] = []
+        widgets.append(
+            Label(SectionLabel.unmanaged_dir, classes=Tcss.main_section_label)
+        )
+        widgets.append(Label(str(path), classes=Tcss.sub_section_label))
+        widgets.append(
+            Static("<- Click a managed path to see the git log.", classes=Tcss.info)
+        )
+        return ScrollableContainer(*widgets)
 
     def _create_datatable_container(
         self, git_log_lines: list[str]
@@ -59,8 +70,18 @@ class GitLogView(Container):
         return ScrollableContainer(data_table)
 
     def watch_show_path(self, show_path: Path | None) -> None:
-        path_arg = None if show_path == self.app.cmattr.dest_dir else show_path
         self.remove_children()
+        if (
+            show_path is not None
+            and show_path
+            not in self.app.cmattr.paths.managed_dirs
+            | self.app.cmattr.paths.managed_files
+        ):
+            container = self._create_unmanaged_path_container(show_path)
+            self.mount(container)
+            return
+
+        path_arg = None if show_path == self.app.cmattr.dest_dir else show_path
         cmd_result = Commands.run_chezmoi_git_log(path_arg)
         self.post_message(LogCmdResultMsg(cmd_result))
         container = self._create_datatable_container(cmd_result.std_out.splitlines())
