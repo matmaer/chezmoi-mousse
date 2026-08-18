@@ -12,6 +12,9 @@ from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
+from rich.highlighter import ReprHighlighter
+from rich.text import Text
+
 from chezmoi_mousse.cm_attributes import ResultCollector
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
@@ -194,6 +197,42 @@ class Commands:
     @staticmethod
     def json_loads(str_to_parse: str) -> ParsedJson:
         return json.loads(str_to_parse)
+
+    @staticmethod
+    @typed_lru_cache(maxsize=500)
+    def get_highlighted_file_contents(file_path: Path) -> Text:
+        if file_path.is_dir():
+            raise ValueError(
+                f"Trying to get file contents for a directory: {file_path}"
+            )
+        try:
+            max_chars = 500000
+            with file_path.open("r", encoding="utf-8") as f:
+                # Over-read by 1 char to test truncation in 1 I/O operation
+                data = f.read(max_chars + 1)
+            truncated = len(data) > max_chars
+            f_contents = data[:max_chars]
+            if not f_contents.strip():
+                f_contents = "File is empty or contains only whitespace"
+            elif truncated:
+                f_contents += f"\n--- Read file limited to {max_chars} characters ---"
+        except (PermissionError, OSError, UnicodeDecodeError) as e:
+            f_contents = str(e)
+        f_contents = Text(f_contents)
+        ReprHighlighter().highlight(f_contents)
+        return f_contents
+
+    @staticmethod
+    @typed_lru_cache(maxsize=500)
+    def get_highlighted_chezmoi_cat_output(
+        file_path: Path,
+    ) -> Text:
+        f_contents = Commands.run_read_cmd(cmd=ReadCmd.cat, path_arg=file_path).std_out
+        if not f_contents.strip():
+            f_contents = "File is empty or contains only whitespace"
+        f_contents = Text(f_contents)
+        ReprHighlighter().highlight(f_contents)
+        return f_contents
 
     @staticmethod
     @typed_lru_cache(maxsize=500)
