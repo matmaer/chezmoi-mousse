@@ -213,6 +213,15 @@ class CheckPath:
     @staticmethod
     @typed_lru_cache(maxsize=1000)
     def os_scan_dir(dir_path: Path, *, managed_dir: bool = False) -> ScanDirResult:
+
+        if not dir_path.is_absolute():
+            raise ValueError(
+                (
+                    "This function should only be called with absolute paths as we ",
+                    "are caching the results.",
+                )
+            )
+
         scan_dir_items: list[ScanDirItem] = []
         # str(dir_path) to reduce possible exceptions which would be raised by pathlib
         try:

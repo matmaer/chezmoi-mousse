@@ -71,8 +71,10 @@ class GitLogView(Container):
 
     def watch_show_path(self, show_path: Path | None) -> None:
         self.remove_children()
+        path_arg = None if show_path == self.app.cmattr.dest_dir else show_path
         if (
-            show_path is not None
+            show_path != self.app.cmattr.dest_dir
+            and show_path is not None
             and show_path
             not in self.app.cmattr.paths.managed_dirs
             | self.app.cmattr.paths.managed_files
@@ -80,8 +82,6 @@ class GitLogView(Container):
             container = self._create_unmanaged_path_container(show_path)
             self.mount(container)
             return
-
-        path_arg = None if show_path == self.app.cmattr.dest_dir else show_path
         cmd_result = Commands.run_chezmoi_git_log(path_arg)
         self.post_message(LogCmdResultMsg(cmd_result))
         container = self._create_datatable_container(cmd_result.std_out.splitlines())
