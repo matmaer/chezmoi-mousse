@@ -58,7 +58,6 @@ class GroupName(StrEnum):
 
 class WorkerName(StrEnum):
     parse_json_outputs = "parse json outputs"
-    update_managed_paths = "update managed paths"
     set_cm_attributes = "set cmattr"
 
 
@@ -165,14 +164,6 @@ class SplashScreen(Screen[None]):
 
     # Non-threaded Workers for tasks that are not worth creating a thread for
 
-    @work(name=WorkerName.update_managed_paths)
-    async def _create_managed_paths_instance(self) -> None:
-        ResultCollector.managed_paths_instance = ManagedPaths(
-            _dest_dir=Path(ResultCollector.parsed_dump_config["destDir"])
-        )
-        msg = self._get_log_msg(prefix=WorkerName.update_managed_paths, returncode=None)
-        self.splash_log.write(msg)
-
     @work(name=WorkerName.parse_json_outputs)
     async def _parse_json_outputs(self) -> None:
         parsed_dump_config = Commands.json_loads(
@@ -196,7 +187,9 @@ class SplashScreen(Screen[None]):
         self.app.cmattr.auto_push = ResultCollector.parsed_dump_config["git"][
             "autopush"
         ]
-        self.app.cmattr.paths = ResultCollector.managed_paths_instance
+        self.app.cmattr.paths = ManagedPaths(
+            _dest_dir=Path(ResultCollector.parsed_dump_config["destDir"])
+        )
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)
 
@@ -217,24 +210,20 @@ class SplashScreen(Screen[None]):
         managed_workers = [
             self._run_managed_cmd(cmd) for cmd in ReadCmd.managed_commands()
         ]
-        splash_workers = [
-            self._run_splash_cmd(cmd) for cmd in ReadCmd.splash_only_commands()
-        ]
 
         # Await JSON output read commands and then parse them.
         for worker in json_workers:
             await worker.wait()
         await self._parse_json_outputs().wait()
 
-        # Await Managed paths read commands and then create the cmattr.paths instance.
+        # Await Managed paths read commands and then set the cmattr attributes
         for worker in managed_workers:
             await worker.wait()
-        await self._create_managed_paths_instance().wait()
+        await self._set_cm_attributes().wait()
 
-        # Wait for remaining splash commands, if any, before setting all cm attributes.
+        # Wait for remaining splash commands, if any
         for worker in splash_workers:
             await worker.wait()
-        await self._set_cm_attributes().wait()
 
         # Only dismiss after a completed fade cycle
         while (

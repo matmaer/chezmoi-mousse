@@ -34,7 +34,6 @@ class ResultCollector:
     # Processed json results in SplashScreen
     parsed_dump_config: ParsedJson
     parsed_template_data: ParsedJson
-    managed_paths_instance: ManagedPaths
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @classmethod
