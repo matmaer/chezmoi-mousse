@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel, WriteCmd
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson, PathKindMap, StatusMap
@@ -18,11 +18,11 @@ __all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
 
 
 class ResultCollector:
-    # chezmoi ReadCmd results
+    # chezmoi ReadCmd results which do not require arguments or which require the path
+    # arg to be None if ran on the dest dir, eg git_log
     cat_config_result: ClassVar[CommandResult]
     doctor_result: ClassVar[CommandResult]
     dump_config_result: ClassVar[CommandResult]
-    git_log_result: ClassVar[CommandResult]
     git_remote_result: ClassVar[CommandResult]
     ignored_result: ClassVar[CommandResult]
     managed_dirs_result: ClassVar[CommandResult]
@@ -30,13 +30,6 @@ class ResultCollector:
     status_dirs_result: ClassVar[CommandResult]
     status_files_result: ClassVar[CommandResult]
     template_data_result: ClassVar[CommandResult]
-
-    # chezmoi WriteCmd results
-    add: ClassVar[CommandResult]
-    apply: ClassVar[CommandResult]
-    destroy: ClassVar[CommandResult]
-    forget: ClassVar[CommandResult]
-    re_add: ClassVar[CommandResult]
 
     # Processed json results in SplashScreen
     parsed_dump_config: ParsedJson
@@ -50,7 +43,6 @@ class ResultCollector:
             cls.cat_config_result,
             cls.doctor_result,
             cls.dump_config_result,
-            cls.git_log_result,
             cls.git_remote_result,
             cls.ignored_result,
             cls.managed_dirs_result,
@@ -69,11 +61,6 @@ class ResultCollector:
             cls.status_dirs_result,
             cls.status_files_result,
         ]
-
-    @classmethod
-    def get_write_cmd_result(cls, cmd_enum: WriteCmd) -> CommandResult:
-        """Returns the CommandResult for a given command name."""
-        return getattr(cls, cmd_enum.name)
 
 
 @dataclass(frozen=True, kw_only=True)

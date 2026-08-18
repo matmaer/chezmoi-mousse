@@ -112,9 +112,6 @@ class MainScreen(Screen[None]):
         results_to_log: list[CommandResult] = []
         if btn_data in OpBtnEnum.run_btn_enums():
             await self.loading_modal.run_write_cmd_and_managed_commands(btn_data).wait()
-            results_to_log.append(
-                ResultCollector.get_write_cmd_result(btn_data.value.write_cmd)
-            )
         elif isinstance(btn_data, RefreshTreeButton):
             await self.loading_modal.run_managed_commands().wait()
         elif btn_data is None:

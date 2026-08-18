@@ -119,7 +119,7 @@ class SplashScreen(Screen[None]):
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
         self.splash_log.styles.margin = 2
-        self.splash_log.styles.height = ReadCmd.grouped_commands_count() + 3
+        self.splash_log.styles.height = ReadCmd.grouped_commands_count() + 4
 
         self.primary_color = self.app.get_color(ColorVar.text_primary)
         self.success_color = self.app.get_color(ColorVar.text_success)
@@ -140,7 +140,10 @@ class SplashScreen(Screen[None]):
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        result: CommandResult = Commands.run_read_cmd(command)
+        if command is ReadCmd.git_log:
+            result: CommandResult = Commands.run_chezmoi_git_log(None)
+        else:
+            result: CommandResult = Commands.run_read_cmd(command)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
     # Threaded Command Workers
@@ -204,6 +207,10 @@ class SplashScreen(Screen[None]):
         self.fade_timer.resume()
 
         # Dispatch command workers and store worker instances for awaiting later.
+        splash_workers = [
+            self._run_splash_cmd(cmd)
+            for cmd in ReadCmd.splash_only_commands() + (ReadCmd.git_log,)
+        ]
         json_workers = [
             self._run_json_output_cmd(cmd) for cmd in ReadCmd.json_parsable_commands()
         ]

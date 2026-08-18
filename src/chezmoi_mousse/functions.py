@@ -156,7 +156,8 @@ class Commands:
             std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(ResultCollector, f"{cmd.name}_result", result)
+        if path_arg is None:
+            setattr(ResultCollector, f"{cmd.name}_result", result)
         return result
 
     @staticmethod
@@ -236,7 +237,7 @@ class Commands:
 
     @staticmethod
     @typed_lru_cache(maxsize=500)
-    def run_chezmoi_git_log(path_arg: Path | None = None) -> CommandResult:
+    def run_chezmoi_git_log(path_arg: Path | None) -> CommandResult:
         if path_arg is None:
             return Commands.run_read_cmd(ReadCmd.git_log, path_arg=path_arg)
         else:
