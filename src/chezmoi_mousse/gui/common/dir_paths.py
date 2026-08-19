@@ -47,7 +47,7 @@ class DirPathsView(Container):
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
             widgets.append(
-                Static("<- Click a path to see its contents.", classes=Tcss.added)
+                Static("<- Click a directory path to see its paths.", classes=Tcss.info)
             )
         unmanaged_dirs: list[str] = []
         unmanaged_files: list[str] = []
