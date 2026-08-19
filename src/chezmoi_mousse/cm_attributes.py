@@ -61,11 +61,14 @@ class ResultCollector:
             cls.status_files_result,
         ]
 
+    @classmethod
+    def get_dest_dir(cls) -> Path:
+        return Path(ResultCollector.parsed_dump_config["destDir"])
+
 
 @dataclass(frozen=True, kw_only=True)
 class ManagedPaths:
     rc: ClassVar[type[ResultCollector]] = ResultCollector
-    _dest_dir: Path
 
     def __post_init__(self) -> None:
         # warm all public cached_property attributes
@@ -87,6 +90,10 @@ class ManagedPaths:
 
         # sort the temp_dict by path
         return MappingProxyType(dict(sorted(temp_dict.items())))
+
+    @cached_property
+    def _dest_dir(self) -> Path:
+        return self.rc.get_dest_dir()
 
     @cached_property
     def managed_dirs(self) -> PathKindMap:

@@ -187,9 +187,7 @@ class SplashScreen(Screen[None]):
         self.app.cmattr.auto_push = ResultCollector.parsed_dump_config["git"][
             "autopush"
         ]
-        self.app.cmattr.paths = ManagedPaths(
-            _dest_dir=Path(ResultCollector.parsed_dump_config["destDir"])
-        )
+        self.app.cmattr.paths = ManagedPaths()
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)
 
