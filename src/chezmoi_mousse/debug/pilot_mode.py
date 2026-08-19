@@ -19,7 +19,7 @@ from chezmoi_mousse.gui.common.actionables import (
     TabButton,
 )
 from chezmoi_mousse.gui.common.diffs import DiffView
-from chezmoi_mousse.gui.common.loading_modal import LoadingModal
+from chezmoi_mousse.gui.common.operate_modal import LoadingModal
 from chezmoi_mousse.gui.main_screen import MainScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.str_enums import TabLabel

@@ -36,7 +36,7 @@ if TYPE_CHECKING:
         StrTuple,
     )
     from chezmoi_mousse.gui.common.actionables import ReviewButton
-    from chezmoi_mousse.gui.common.loading_modal import LoadingModal
+    from chezmoi_mousse.gui.common.operate_modal import LoadingModal
 
 __all__ = ("min_wait", "AppLife", "Commands", "CheckPath", "ResultCollector")
 

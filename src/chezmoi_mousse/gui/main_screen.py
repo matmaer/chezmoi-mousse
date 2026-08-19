@@ -23,10 +23,10 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
-from .common.loading_modal import LoadingModal
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg
+from .common.operate_modal import LoadingModal
 from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
