@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 from enum import StrEnum, auto
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -179,14 +178,6 @@ class SplashScreen(Screen[None]):
 
     @work(name=WorkerName.set_cm_attributes)
     async def _set_cm_attributes(self) -> None:
-        self.app.cmattr.dest_dir = Path(ResultCollector.parsed_dump_config["destDir"])
-        self.app.cmattr.auto_add = ResultCollector.parsed_dump_config["git"]["autoadd"]
-        self.app.cmattr.auto_commit = ResultCollector.parsed_dump_config["git"][
-            "autocommit"
-        ]
-        self.app.cmattr.auto_push = ResultCollector.parsed_dump_config["git"][
-            "autopush"
-        ]
         self.app.cmattr.paths = ManagedPaths()
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
         self.splash_log.write(msg)

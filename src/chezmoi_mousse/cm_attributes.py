@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.functions import ResultCollector
@@ -20,8 +20,6 @@ __all__ = ["CmAttributes", "ManagedPaths"]
 
 @dataclass(frozen=True, kw_only=True)
 class ManagedPaths:
-    rc: ClassVar[type[ResultCollector]] = ResultCollector
-
     def __post_init__(self) -> None:
         # warm all public cached_property attributes
         for attr_name, value in type(self).__dict__.items():
@@ -45,18 +43,18 @@ class ManagedPaths:
 
     @cached_property
     def _dest_dir(self) -> Path:
-        return self.rc.get_dest_dir()
+        return ResultCollector.get_dest_dir()
 
     @cached_property
     def managed_dirs(self) -> PathKindMap:
         return self._get_managed_path_kind_map(
-            self.rc.managed_dirs_result.std_out.splitlines()
+            ResultCollector.managed_dirs_result.std_out.splitlines()
         )
 
     @cached_property
     def managed_files(self) -> PathKindMap:
         return self._get_managed_path_kind_map(
-            self.rc.managed_files_result.std_out.splitlines()
+            ResultCollector.managed_files_result.std_out.splitlines()
         )
 
     # not cached, fast boolean logic
@@ -82,13 +80,13 @@ class ManagedPaths:
 
     def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
         dirs_map: StatusMap = self._get_status_map(
-            self.rc.status_dirs_result.std_out.splitlines(), status_col
+            ResultCollector.status_dirs_result.std_out.splitlines(), status_col
         )
         status_dirs: StatusMap = MappingProxyType(
             {k: v for k, v in dirs_map.items() if v != StatusCode.Space}
         )
         files_map: StatusMap = self._get_status_map(
-            self.rc.status_files_result.std_out.splitlines(), status_col
+            ResultCollector.status_files_result.std_out.splitlines(), status_col
         )
         status_files: StatusMap = MappingProxyType(
             {k: v for k, v in files_map.items() if v != StatusCode.Space}
@@ -147,8 +145,6 @@ class ManagedPaths:
 
 @dataclass
 class CmAttributes:
-    rc: ClassVar[type[ResultCollector]] = ResultCollector
-
     add_id = AppIds(TabLabel.add)
     apply_id = AppIds(TabLabel.apply)
     config_id = AppIds(TabLabel.config)
@@ -158,8 +154,20 @@ class CmAttributes:
 
     dry_run: bool = True
 
-    dest_dir: Path = field(init=False)
-    auto_add: bool = field(init=False)
-    auto_commit: bool = field(init=False)
-    auto_push: bool = field(init=False)
+    @cached_property
+    def dest_dir(self) -> Path:
+        return Path(ResultCollector.parsed_dump_config["destDir"])
+
+    @cached_property
+    def auto_add(self) -> bool:
+        return ResultCollector.parsed_dump_config["git"]["autoadd"]
+
+    @cached_property
+    def auto_commit(self) -> bool:
+        return ResultCollector.parsed_dump_config["git"]["autocommit"]
+
+    @cached_property
+    def auto_push(self) -> bool:
+        return ResultCollector.parsed_dump_config["git"]["autocommit"]
+
     paths: ManagedPaths = field(init=False)
