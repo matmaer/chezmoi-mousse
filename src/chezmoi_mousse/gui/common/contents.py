@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.str_enums import SectionLabel, Tcss
+from chezmoi_mousse.str_enums import PathKind, SectionLabel, Tcss
 
 from .messages import LogCmdResultMsg
 
@@ -44,7 +44,6 @@ class ContentsView(Container):
             widgets.append(
                 Label(SectionLabel.unmanaged_dir, classes=Tcss.main_section_label)
             )
-        widgets.append(Label(str(dir_path), classes=Tcss.sub_section_label))
         widgets.append(
             Static("<- Click a file path to see its contents.", classes=Tcss.info)
         )
@@ -52,10 +51,16 @@ class ContentsView(Container):
 
     def _create_file_container(self, file_path: Path) -> ScrollableContainer:
         widgets: list[Label | Static] = []
-        if file_path in self.app.cmattr.paths.managed_files and not file_path.exists():
+        if file_path in self.app.cmattr.paths.managed_files:
             widgets.append(
                 Label(SectionLabel.managed_file, classes=Tcss.main_section_label)
             )
+        else:
+            widgets.append(
+                Label(SectionLabel.unmanaged_file, classes=Tcss.main_section_label)
+            )
+
+        if self.app.cmattr.paths.managed_files.get(file_path) is PathKind.EXISTS_FALSE:
             widgets.append(
                 Label(SectionLabel.chezmoi_cat_output, classes=Tcss.sub_section_label)
             )
@@ -64,10 +69,6 @@ class ContentsView(Container):
             )
             self.post_message(LogCmdResultMsg(cmd_result))
             widgets.append(Static(f_content))
-        elif file_path not in self.app.cmattr.paths.managed_files:
-            widgets.append(
-                Label(SectionLabel.unmanaged_file, classes=Tcss.main_section_label)
-            )
         else:
             widgets.append(
                 Label(SectionLabel.read_file_output, classes=Tcss.sub_section_label)
