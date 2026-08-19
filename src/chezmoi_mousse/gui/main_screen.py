@@ -12,12 +12,11 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse.functions import ResultCollector, min_wait
-from chezmoi_mousse.str_enums import Chars, LoadingLabel, TabLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, LoadingLabel, Tcss
 
 from .common.actionables import (
     DirContentBtn,
     ReviewBtnGroup,
-    SwitchSlider,
 )
 from .common.contents import ContentsView
 from .common.diffs import DiffView
@@ -25,13 +24,12 @@ from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
-from .common.messages import CurrentNodeMsg, LogCmdResultMsg
+from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReviewBtnMsg
 from .common.operate_modal import LoadingModal
 from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.dataclass_types import ReviewBtnData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
@@ -151,22 +149,6 @@ class MainScreen(Screen[None]):
     # Message handling  #
     #####################
 
-    @on(LogCmdResultMsg)
-    def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
-        """Currently used by contents.py, diffs.py, and git_log.py to log command
-        results for their respective commands."""
-        msg.stop()
-        self.app_log.cmd_results = [msg.cmd_result]
-        self.cmd_log.cmd_results = [msg.cmd_result]
-
-    @on(DirContentBtn.Pressed)
-    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
-        if isinstance(event.button, DirContentBtn):
-            event.stop()
-            _ = self.query_one(event.button.app_ids.managed_tree_q, ManagedTree)
-            self.notify(f"Not yet implemented {type(DirContentBtn)}")
-            return
-
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
@@ -183,22 +165,22 @@ class MainScreen(Screen[None]):
             msg.ids.container.operate_buttons_q, ReviewBtnGroup
         ).set_path_arg(msg.path)
 
-        ########################
-        # Widget display logic #
-        ########################
+    @on(DirContentBtn.Pressed)
+    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
+        if isinstance(event.button, DirContentBtn):
+            event.stop()
+            _ = self.query_one(event.button.app_ids.managed_tree_q, ManagedTree)
+            self.notify(f"Not yet implemented {type(DirContentBtn)}")
+            return
 
-    def _set_left_side_display(self, app_ids: AppIds, display: bool) -> None:
-        left_side = self.query_one(app_ids.container.left_side_q, Vertical)
-        left_side.display = display
-        switch_slider = self.query_one(app_ids.switch_slider_q, SwitchSlider)
-        switch_slider.display = display
+    @on(LogCmdResultMsg)
+    def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
+        """Currently used by contents.py, diffs.py, and git_log.py to log command
+        results for their respective commands."""
+        msg.stop()
+        self.app_log.cmd_results = [msg.cmd_result]
+        self.cmd_log.cmd_results = [msg.cmd_result]
 
-    def _set_right_side_display(self, app_ids: AppIds, display: bool) -> None:
-        right_side: Vertical | ContentsView | None = None
-        if app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
-            right_side = self.query_one(app_ids.container.right_side_q, Vertical)
-        elif app_ids.tab_label == TabLabel.add:
-            right_side = self.query_one(app_ids.container.contents_q, ContentsView)
-        else:
-            raise NotImplementedError(f"Not implemented for {app_ids.tab_label}")
-        right_side.display = display
+    @on(ReviewBtnMsg)
+    def handle_review_button(self, msg: ReviewBtnMsg) -> None:
+        self.notify(f"Pressed {msg.btn.bd.btn_id}")
