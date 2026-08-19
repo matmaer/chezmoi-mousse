@@ -22,7 +22,6 @@ class AppIds:
         "richlog",
         "switch",
         "switch_slider",
-        "switch_slider_q",
     )
 
     def __init__(self, tab_label: TabLabel) -> None:
@@ -34,7 +33,6 @@ class AppIds:
         self.richlog = RichLogIds(self)
         self.switch = SwitchIds(self)
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
-        self.switch_slider_q = f"#{self.switch_slider}"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.tab_label.name}_{name.name}"
