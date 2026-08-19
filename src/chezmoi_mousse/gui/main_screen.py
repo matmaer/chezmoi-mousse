@@ -11,9 +11,8 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.cm_attributes import ResultCollector
 from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.functions import min_wait
+from chezmoi_mousse.functions import ResultCollector, min_wait
 from chezmoi_mousse.str_enums import Chars, OpBtnLabel, TabLabel, Tcss
 
 from .common.actionables import (

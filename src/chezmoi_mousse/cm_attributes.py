@@ -7,63 +7,15 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, ClassVar
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
+from chezmoi_mousse.functions import ResultCollector
+from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson, PathKindMap, StatusMap
+    from chezmoi_mousse.cm_types import PathKindMap, StatusMap
 
 
-__all__ = ["CmAttributes", "ManagedPaths", "ResultCollector"]
-
-
-class ResultCollector:
-    # chezmoi ReadCmd results which do not require arguments or which require the path
-    # arg to be None if ran on the dest dir, eg git_log
-    cat_config_result: ClassVar[CommandResult]
-    doctor_result: ClassVar[CommandResult]
-    dump_config_result: ClassVar[CommandResult]
-    git_remote_result: ClassVar[CommandResult]
-    ignored_result: ClassVar[CommandResult]
-    managed_dirs_result: ClassVar[CommandResult]
-    managed_files_result: ClassVar[CommandResult]
-    status_dirs_result: ClassVar[CommandResult]
-    status_files_result: ClassVar[CommandResult]
-    template_data_result: ClassVar[CommandResult]
-
-    # Processed json results in SplashScreen
-    parsed_dump_config: ParsedJson
-    parsed_template_data: ParsedJson
-
-    # Used for logging after the splash screen is disimissed and we push the MainScreen
-    @classmethod
-    def splash_results(cls) -> list[CommandResult]:
-        return [
-            cls.cat_config_result,
-            cls.doctor_result,
-            cls.dump_config_result,
-            cls.git_remote_result,
-            cls.ignored_result,
-            cls.managed_dirs_result,
-            cls.managed_files_result,
-            cls.status_dirs_result,
-            cls.status_files_result,
-            cls.template_data_result,
-        ]
-
-    # Used to retrieve results after the 'Refresh Tree' button was clicked
-    @classmethod
-    def managed_cmd_results(cls) -> list[CommandResult]:
-        return [
-            cls.managed_dirs_result,
-            cls.managed_files_result,
-            cls.status_dirs_result,
-            cls.status_files_result,
-        ]
-
-    @classmethod
-    def get_dest_dir(cls) -> Path:
-        return Path(ResultCollector.parsed_dump_config["destDir"])
+__all__ = ["CmAttributes", "ManagedPaths"]
 
 
 @dataclass(frozen=True, kw_only=True)
