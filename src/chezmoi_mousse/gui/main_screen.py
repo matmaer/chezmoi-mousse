@@ -12,7 +12,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse.functions import ResultCollector, min_wait
-from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, LoadingLabel, TabLabel, Tcss
 
 from .common.actionables import (
     DirContentBtn,
@@ -23,7 +23,7 @@ from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
-from .common.loading_modal import LoadingLabel, LoadingModal
+from .common.loading_modal import LoadingModal
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg
@@ -118,14 +118,14 @@ class MainScreen(Screen[None]):
     @work
     @min_wait
     async def _log_cmd_results(self, cmd_results: list[CommandResult]) -> None:
-        self.loading_modal.label_text = LoadingLabel.log_cmd_results.with_color
+        self.loading_modal.label_text = LoadingLabel.log_cmd_results
         self.cmd_log.cmd_results = cmd_results
         self.app_log.cmd_results = cmd_results
 
     @work
     @min_wait
     async def _purge_views_cache(self) -> None:
-        self.loading_modal.label_text = LoadingLabel.purge_cache.with_color
+        self.loading_modal.label_text = LoadingLabel.purge_cache
         all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
             self.query(DiffView).results(),
             self.query(ContentsView).results(),
@@ -137,7 +137,7 @@ class MainScreen(Screen[None]):
     @work
     @min_wait
     async def _update_trees(self) -> None:
-        self.loading_modal.label_text = LoadingLabel.update_trees.with_color
+        self.loading_modal.label_text = LoadingLabel.update_trees
         self.apply_managed_tree.update_tree()
         self.apply_managed_tree.refresh()
         self.re_add_managed_tree.update_tree()

@@ -9,6 +9,7 @@ __all__ = [
     "ContainerName",
     "FlatBtnLabel",
     "GlobalArgs",
+    "LoadingLabel",
     "LogString",
     "OpBtnLabel",
     "OpInfoString",
@@ -112,6 +113,13 @@ class FlatBtnLabel(StrEnum):
     template_data = "Template Data"
     test_paths = "Test Paths"
     memory_usage = "Memory Usage"
+
+
+class LoadingLabel(StrEnum):
+    loading = "Loading"  # the initial label
+    log_cmd_results = "Logging command results"
+    purge_cache = "Purge cached data"
+    update_trees = "Update Trees"
 
 
 class LogString(StrEnum):

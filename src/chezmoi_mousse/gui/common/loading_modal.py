@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,23 +12,12 @@ from textual.widgets import Label, LoadingIndicator
 
 from chezmoi_mousse.dataclass_types import ReviewBtnData
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
-from chezmoi_mousse.str_enums import ColorVar, ReadCmd, WriteCmd
+from chezmoi_mousse.str_enums import LoadingLabel, ReadCmd, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-__all__ = ["LoadingLabel", "LoadingModal"]
-
-
-class LoadingLabel(StrEnum):
-    loading = "Loading"  # the initial label
-    log_cmd_results = "Logging command results"
-    purge_cache = "Purge cached data"
-    update_trees = "Update Trees"
-
-    @property
-    def with_color(self) -> str:
-        return f"[${ColorVar.text}]{self.value}[/]"
+__all__ = ["LoadingModal"]
 
 
 class LoadingModal(ModalScreen[None]):
@@ -51,7 +39,7 @@ class LoadingModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with VerticalGroup():
-            yield Label(LoadingLabel.loading.with_color)
+            yield Label(LoadingLabel.loading)
             yield LoadingIndicator()
 
     def on_mount(self) -> None:
