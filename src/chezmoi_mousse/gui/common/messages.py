@@ -4,16 +4,16 @@ from typing import TYPE_CHECKING
 
 from textual.message import Message
 
-from chezmoi_mousse.enum_data import OpBtnEnum
-
 if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.named_tuples import CommandResult
 
+    from .actionables import ReviewButton
 
-__all__ = ["LogCmdResultMsg", "CurrentNodeMsg"]
+
+__all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReviewBtnMsg"]
 
 
 class LogCmdResultMsg(Message):
@@ -53,9 +53,7 @@ class CurrentNodeMsg(Message):
         return self.path == self._dest_dir
 
 
-class OpBtnMsg(Message):
-    def __init__(self, ids: AppIds, *, btn_enum: OpBtnEnum, btn_id: str) -> None:
-        self.ids = ids
-        self.btn_enum: OpBtnEnum = btn_enum
-        self.btn_id: str = btn_id
+class ReviewBtnMsg(Message):
+    def __init__(self, review_btn: ReviewButton) -> None:
+        self.btn: ReviewButton = review_btn
         super().__init__()

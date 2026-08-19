@@ -7,26 +7,48 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, Label, Switch
 
-from chezmoi_mousse.enum_data import OpBtnEnum, SwitchEnum
-from chezmoi_mousse.str_enums import FlatBtnLabel, OpBtnLabel, TabLabel, Tcss
+from chezmoi_mousse.app_ids import AppIds
+from chezmoi_mousse.dataclass_types import ReviewBtnData, RunBtnData
+from chezmoi_mousse.enum_data import SwitchEnum
+from chezmoi_mousse.str_enums import (
+    FlatBtnLabel,
+    OpBtnLabel,
+    OpInfoString,
+    TabLabel,
+    Tcss,
+    WriteCmd,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.cm_types import ReviewBtnDict, RunBtnDict
 
 
 __all__ = [
+    "CancelButton",
     "DirContentBtn",
     "FlatButton",
     "FlatButtonsVertical",
-    "OpButton",
-    "OperateButtons",
     "RefreshTreeButton",
+    "ReviewBtnGroup",
+    "ReviewButton",
+    "RunButton",
+    "RunBtnGroup",
     "SwitchSlider",
     "TabButton",
     "TabButtons",
 ]
+
+
+class CancelButton(Button):
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
+        super().__init__(
+            classes=Tcss.operate_button,
+            id=self.app_ids.op_btn.cancel,
+            label=OpBtnLabel.cancel,
+        )
 
 
 class DirContentBtn(Button):
@@ -67,16 +89,6 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class CancelButton(Button):
-    def __init__(self, app_ids: AppIds) -> None:
-        self.app_ids = app_ids
-        super().__init__(
-            classes=Tcss.operate_button,
-            id=self.app_ids.op_btn.cancel,
-            label=OpBtnLabel.cancel,
-        )
-
-
 class RefreshTreeButton(Button):
     def __init__(self, app_ids: AppIds) -> None:
         self.app_ids = app_ids
@@ -87,45 +99,153 @@ class RefreshTreeButton(Button):
         )
 
 
-class OpButton(Button):
-    def __init__(self, *, btn_id: str, btn_enum: OpBtnEnum, app_ids: AppIds) -> None:
-        super().__init__(classes=Tcss.operate_button, id=btn_id, label=btn_enum.label)
-        self.btn_enum: OpBtnEnum = btn_enum
-        self.btn_id: str = btn_id
-        self.app_ids = app_ids
-        if btn_enum in (
-            OpBtnEnum.destroy_review,
-            OpBtnEnum.forget_review,
-            OpBtnEnum.add_review,
-        ):
-            self.disabled = True
-        elif btn_enum in (
-            OpBtnEnum.add_run,
-            OpBtnEnum.apply_run,
-            OpBtnEnum.destroy_run,
-            OpBtnEnum.forget_run,
-            OpBtnEnum.re_add_run,
-        ):
-            self.display = False
-
-
-class OperateButtons(HorizontalGroup):
-    def __init__(self, ids: AppIds) -> None:
-        self.app_ids = ids
-        super().__init__(id=ids.container.operate_buttons, classes=Tcss.op_btn_group)
-
-    def compose(self) -> ComposeResult:
-        for btn_id, btn_enum in self.app_ids.op_btn_map.items():
-            yield OpButton(btn_id=btn_id, btn_enum=btn_enum, app_ids=self.app_ids)
-        yield CancelButton(app_ids=self.app_ids)
+class ReviewButton(Button):
+    def __init__(self, btn_label: OpBtnLabel, btn_data: ReviewBtnData) -> None:
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
+        )
 
     def on_mount(self) -> None:
-        cancel_btn = self.query_one(self.app_ids.op_btn.cancel_q, CancelButton)
-        cancel_btn.display = False
+        self.disabled = True
+
+
+class ReviewBtnGroup(HorizontalGroup):
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
+        self.review_buttons: ReviewBtnDict = self._get_review_buttons(app_ids)
+        super().__init__(
+            id=app_ids.container.operate_buttons, classes=Tcss.op_btn_group
+        )
+
+    def compose(self) -> ComposeResult:
+        for btn_label, btn_data in self.review_buttons.items():
+            yield ReviewButton(btn_label=btn_label, btn_data=btn_data)
 
     def set_path_arg(self, path: Path) -> None:
-        for btn_enum in self.app_ids.op_btn_map.values():
-            btn_enum.path_arg = path
+        buttons = self.query_children(ReviewButton)
+        for btn in buttons:
+            btn.bd.path_arg = path
+
+    def _get_review_buttons(self, app_ids: AppIds) -> ReviewBtnDict:
+        if app_ids.tab_label == TabLabel.add:
+            add_review_data = ReviewBtnData(
+                ids=app_ids,
+                btn_id=app_ids.op_btn.add_review,
+                btn_qid=app_ids.op_btn.add_review_q,
+                write_cmd=WriteCmd.add,
+                op_info_string=OpInfoString.add_path_info,
+                op_info_subtitle=OpInfoString.add_subtitle,
+            )
+            return {
+                OpBtnLabel.add_review: add_review_data,
+            }
+        forget_review_data = ReviewBtnData(
+            ids=app_ids,
+            btn_id=app_ids.op_btn.forget_review,
+            btn_qid=app_ids.op_btn.forget_review_q,
+            write_cmd=WriteCmd.forget,
+            op_info_string=OpInfoString.forget_path_info,
+            op_info_subtitle=OpInfoString.forget_subtitle,
+        )
+        destroy_review_data = ReviewBtnData(
+            ids=app_ids,
+            btn_id=app_ids.op_btn.destroy_review,
+            btn_qid=app_ids.op_btn.destroy_review_q,
+            write_cmd=WriteCmd.destroy,
+            op_info_string=OpInfoString.destroy_path_info,
+            op_info_subtitle=OpInfoString.destroy_subtitle,
+        )
+        _forget_destroy_buttons = {
+            OpBtnLabel.forget_review: forget_review_data,
+            OpBtnLabel.destroy_review: destroy_review_data,
+        }
+        if app_ids.tab_label == TabLabel.apply:
+            apply_review_data = ReviewBtnData(
+                ids=app_ids,
+                btn_id=app_ids.op_btn.apply_review,
+                btn_qid=app_ids.op_btn.apply_review_q,
+                write_cmd=WriteCmd.apply,
+                op_info_string=OpInfoString.apply_path_info,
+                op_info_subtitle=OpInfoString.apply_subtitle,
+            )
+            return {
+                OpBtnLabel.apply_review: apply_review_data,
+                **_forget_destroy_buttons,
+            }
+        elif app_ids.tab_label == TabLabel.re_add:
+            op_btn_data = ReviewBtnData(
+                ids=app_ids,
+                btn_id=app_ids.op_btn.re_add_review,
+                btn_qid=app_ids.op_btn.re_add_review_q,
+                write_cmd=WriteCmd.re_add,
+                op_info_string=OpInfoString.re_add_path_info,
+                op_info_subtitle=OpInfoString.re_add_subtitle,
+            )
+            return {OpBtnLabel.re_add_review: op_btn_data, **_forget_destroy_buttons}
+        else:
+            raise ValueError(f"Unexpected tab_label {app_ids.tab_label}")
+
+
+class RunButton(Button):
+    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
+        )
+
+
+class RunBtnGroup(HorizontalGroup):
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
+        self.run_buttons: RunBtnDict = self._get_run_buttons(app_ids)
+        super().__init__(
+            id=app_ids.container.operate_buttons, classes=Tcss.op_btn_group
+        )
+
+    def compose(self) -> ComposeResult:
+        for btn_label, btn_data in self.run_buttons.items():
+            yield RunButton(btn_label=btn_label, btn_data=btn_data)
+        yield CancelButton(app_ids=self.app_ids)
+
+    def _get_run_buttons(self, app_ids: AppIds) -> RunBtnDict:
+        if app_ids.tab_label == TabLabel.add:
+            add_run_data = RunBtnData(
+                btn_id=app_ids.op_btn.add_run,
+                btn_qid=app_ids.op_btn.add_run_q,
+            )
+            return {
+                OpBtnLabel.add_run: add_run_data,
+            }
+        forget_run_data = RunBtnData(
+            btn_id=app_ids.op_btn.forget_run,
+            btn_qid=app_ids.op_btn.forget_run_q,
+        )
+        destroy_run_data = RunBtnData(
+            btn_id=app_ids.op_btn.destroy_run,
+            btn_qid=app_ids.op_btn.destroy_run_q,
+        )
+        _forget_destroy_buttons = {
+            OpBtnLabel.forget_run: forget_run_data,
+            OpBtnLabel.destroy_run: destroy_run_data,
+        }
+        if app_ids.tab_label == TabLabel.apply:
+            apply_run_data = RunBtnData(
+                btn_id=app_ids.op_btn.apply_run,
+                btn_qid=app_ids.op_btn.apply_run_q,
+            )
+            return {
+                OpBtnLabel.apply_run: apply_run_data,
+                **_forget_destroy_buttons,
+            }
+        elif app_ids.tab_label == TabLabel.re_add:
+            op_btn_data = RunBtnData(
+                btn_id=app_ids.op_btn.re_add_run,
+                btn_qid=app_ids.op_btn.re_add_run_q,
+            )
+            return {OpBtnLabel.re_add_run: op_btn_data, **_forget_destroy_buttons}
+        else:
+            raise ValueError(f"Unexpected tab_label {app_ids.tab_label}")
 
 
 class SwitchWithLabel(HorizontalGroup):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from chezmoi_mousse.enum_data import OpBtnEnum, SwitchEnum
+from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
     ContainerName,
     FlatBtnLabel,
@@ -14,24 +14,24 @@ __all__ = ["AppIds"]
 
 class AppIds:
     __slots__ = (
+        "tab_label",
         "container",
-        "managed_tree_q",
         "managed_tree",
+        "managed_tree_q",
         "op_btn",
         "richlog",
-        "switch_slider_q",
-        "switch_slider",
         "switch",
-        "tab_label",
+        "switch_slider",
+        "switch_slider_q",
     )
 
     def __init__(self, tab_label: TabLabel) -> None:
         self.tab_label = tab_label
         self.container = ContainerIds(self)
-        self.richlog = RichLogIds(self)
         self.managed_tree = f"{self.tab_label.name}_managed_tree"
         self.managed_tree_q = f"#{self.managed_tree}"
         self.op_btn = OperateButtonIds(self)
+        self.richlog = RichLogIds(self)
         self.switch = SwitchIds(self)
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
         self.switch_slider_q = f"#{self.switch_slider}"
@@ -50,62 +50,6 @@ class AppIds:
 
     def richlog_id(self, qid: str = "", *, richlog: RichLogName) -> str:
         return f"{qid}{self.tab_label.name}_{richlog.name}"
-
-    @property
-    def op_btn_map(self) -> dict[str, OpBtnEnum]:
-        if self.tab_label == TabLabel.add:
-            return {
-                self.op_btn.add_review: OpBtnEnum.add_review,
-                self.op_btn.add_run: OpBtnEnum.add_run,
-            }
-        _forget_destroy_buttons = {
-            self.op_btn.destroy_review: OpBtnEnum.destroy_review,
-            self.op_btn.destroy_run: OpBtnEnum.destroy_run,
-            self.op_btn.forget_review: OpBtnEnum.forget_review,
-            self.op_btn.forget_run: OpBtnEnum.forget_run,
-        }
-        if self.tab_label == TabLabel.apply:
-            return {
-                self.op_btn.apply_review: OpBtnEnum.apply_review,
-                self.op_btn.apply_run: OpBtnEnum.apply_run,
-                **_forget_destroy_buttons,
-            }
-        elif self.tab_label == TabLabel.re_add:
-            return {
-                self.op_btn.re_add_review: OpBtnEnum.re_add_review,
-                self.op_btn.re_add_run: OpBtnEnum.re_add_run,
-                **_forget_destroy_buttons,
-            }
-        else:
-            raise ValueError(f"Unexpected tab_label {self.tab_label} for op_btn_map")
-
-    @property
-    def run_btn_ids(self) -> set[str]:
-        return {
-            btn_id
-            for btn_id, btn_enum in self.op_btn_map.items()
-            if "Run" in getattr(btn_enum, "label", "")
-        }
-
-    @property
-    def review_btn_ids(self) -> set[str]:
-        return {
-            btn_id
-            for btn_id, btn_enum in self.op_btn_map.items()
-            if "Review" in getattr(btn_enum, "label", "")
-        }
-
-    @property
-    def review_btn_qids(self) -> set[str]:
-        return {
-            f"#{btn_id}"
-            for btn_id, btn_enum in self.op_btn_map.items()
-            if "Review" in getattr(btn_enum, "label", "")
-        }
-
-    @property
-    def forget_destroy_review_btn_qids(self) -> set[str]:
-        return {self.op_btn.forget_review_q, self.op_btn.destroy_review_q}
 
 
 class ContainerIds:

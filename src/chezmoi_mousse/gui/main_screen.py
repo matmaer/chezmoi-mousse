@@ -9,17 +9,14 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
-from textual.widgets import Button, Footer, Header, Static, TabbedContent, Tabs
+from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.functions import ResultCollector, min_wait
-from chezmoi_mousse.str_enums import Chars, OpBtnLabel, TabLabel, Tcss
+from chezmoi_mousse.str_enums import Chars, TabLabel, Tcss
 
 from .common.actionables import (
     DirContentBtn,
-    OpButton,
-    OperateButtons,
-    RefreshTreeButton,
+    ReviewBtnGroup,
     SwitchSlider,
 )
 from .common.contents import ContentsView
@@ -35,6 +32,7 @@ from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.dataclass_types import ReviewBtnData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
@@ -88,7 +86,7 @@ class MainScreen(Screen[None]):
         self.re_add_managed_tree = self.query_one(
             self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
         )
-        self._push_loading_modal(btn_data=None)
+        self._push_loading_modal(run_data=None, first_run=True)
 
     ###########################################
     # Push modal methods with their callbacks #
@@ -96,21 +94,17 @@ class MainScreen(Screen[None]):
 
     @work
     async def _push_loading_modal(
-        self, btn_data: OpBtnEnum | RefreshTreeButton | None
+        self, run_data: ReviewBtnData | None, first_run: bool = False
     ) -> None:
-        self.loading_modal = LoadingModal(btn_data=btn_data)
+        self.loading_modal = LoadingModal(run_data=run_data)
         await self.app.push_screen(self.loading_modal)
 
         results_to_log: list[CommandResult] = []
-        if btn_data in OpBtnEnum.run_btn_enums():
-            await self.loading_modal.run_write_cmd_and_managed_commands(btn_data).wait()
-        elif isinstance(btn_data, RefreshTreeButton):
+        if run_data is None:
             await self.loading_modal.run_managed_commands().wait()
-        elif btn_data is None:
+        elif first_run:
             results_to_log = ResultCollector.splash_results()
-        else:
-            raise NotImplementedError(f"Not implemented for {btn_data}")
-        if btn_data is not None:  # either a run or refresh tree button was pressed
+        if run_data is not None:  # either a run or refresh tree button was pressed
             results_to_log.extend(ResultCollector.managed_cmd_results())
             await self._purge_views_cache().wait()
         await self._update_trees().wait()
@@ -165,14 +159,6 @@ class MainScreen(Screen[None]):
         self.app_log.cmd_results = [msg.cmd_result]
         self.cmd_log.cmd_results = [msg.cmd_result]
 
-    @on(OpButton.Pressed)
-    def handle_operate_btn_msg(self, event: OpButton.Pressed) -> None:
-        if not isinstance(event.button, OpButton):
-            return
-        else:
-            event.stop()
-        self._set_button_display(event.button)
-
     @on(DirContentBtn.Pressed)
     def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
         if isinstance(event.button, DirContentBtn):
@@ -194,45 +180,8 @@ class MainScreen(Screen[None]):
         self.query_one(msg.ids.container.git_log_q, GitLogView).show_path = msg.path
         # Set path_arg for the btn_enums for subsequent operations
         self.query_one(
-            msg.ids.container.operate_buttons_q, OperateButtons
+            msg.ids.container.operate_buttons_q, ReviewBtnGroup
         ).set_path_arg(msg.path)
-
-        # always disable all buttons if no managed paths
-        if not self.app.cmattr.paths.no_managed_paths:
-            for btn_id_q in msg.ids.review_btn_qids:
-                self.query_one(btn_id_q, Button).disabled = True
-
-        if msg.no_changed_paths:
-            for btn_id_q in (
-                b
-                for b in msg.ids.review_btn_qids
-                if b not in msg.ids.forget_destroy_review_btn_qids
-                and not msg.is_dest_dir
-            ):
-                self.query_one(btn_id_q, Button).disabled = True
-
-        # Enable/disable all review buttons
-        if msg.path in self.app.cmattr.paths.managed_dirs:
-            for btn_id_q in msg.ids.review_btn_qids:
-                self.query_one(btn_id_q, Button).disabled = False
-        else:
-            for btn_id_q in msg.ids.review_btn_qids:
-                self.query_one(btn_id_q, Button).disabled = True
-        # Enable/disable Forget and Destroy button, is enabled with or without status
-        for btn_id_q in msg.ids.forget_destroy_review_btn_qids:
-            if msg.is_dest_dir:
-                self.query_one(btn_id_q, Button).disabled = True
-            elif not msg.has_status:
-                self.query_one(btn_id_q, Button).disabled = False
-
-        # disable apply and re-add review button if no unchanged paths
-        if msg.ids.tab_label == TabLabel.apply:
-            review_btn = self.query_one(msg.ids.op_btn.apply_review_q, OpButton)
-        elif msg.ids.tab_label == TabLabel.re_add:
-            review_btn = self.query_one(msg.ids.op_btn.re_add_review_q, OpButton)
-        else:
-            return
-        review_btn.disabled = True
 
         ########################
         # Widget display logic #
@@ -253,56 +202,3 @@ class MainScreen(Screen[None]):
         else:
             raise NotImplementedError(f"Not implemented for {app_ids.tab_label}")
         right_side.display = display
-
-    def _set_button_display(self, btn_data: OpButton | RefreshTreeButton) -> None:
-        op_button_group = self.query_one(
-            btn_data.app_ids.container.operate_buttons_q, OperateButtons
-        )
-        op_buttons: list[OpButton] = [
-            b
-            for b in op_button_group.query_children().results()
-            if isinstance(b, OpButton)
-        ]
-        cancel_btn = self.query_one(btn_data.app_ids.op_btn.cancel_q, OpButton)
-        run_buttons = [b for b in op_buttons if b.id in btn_data.app_ids.run_btn_ids]
-        review_buttons = [
-            b for b in op_buttons if b.id in btn_data.app_ids.review_btn_ids
-        ]
-        if btn_data.id in (
-            btn_data.app_ids.op_btn.refresh_tree,
-            btn_data.app_ids.op_btn.cancel,
-        ):
-            cancel_btn.display = False
-            for btn in run_buttons:
-                btn.display = False
-            for btn in review_buttons:
-                btn.display = True
-        elif isinstance(btn_data, RefreshTreeButton) or btn_data in review_buttons:
-            for btn in review_buttons:
-                btn.display = False
-            for btn in run_buttons:
-                btn.display = False
-            if isinstance(btn_data, RefreshTreeButton):
-                run_btn_enum = OpBtnEnum.review_to_run(OpBtnLabel(str(btn_data.label)))
-                # now lookup the button widget in self.run_buttons with the
-                # corresponding enum
-                btn_widget: OpButton = next(
-                    b for b in run_buttons if b.btn_enum == run_btn_enum
-                )
-                btn_widget.display = True
-                cancel_btn.display = True
-        elif btn_data in run_buttons:
-            cancel_btn.display = False
-            btn_data.disabled = True
-        elif isinstance(btn_data, RefreshTreeButton):
-            for btn in op_buttons:
-                btn.display = False
-
-        self._set_button_display(btn_data)
-        if isinstance(btn_data, RefreshTreeButton):
-            self._set_left_side_display(btn_data.app_ids, True)
-            self._set_right_side_display(btn_data.app_ids, True)
-            self.main_tabs.display = True
-            return
-        self.main_tabs.display = False
-        self._set_left_side_display(btn_data.app_ids, False)

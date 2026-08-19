@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import getters, work
@@ -10,11 +11,9 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 
-from chezmoi_mousse.enum_data import OpBtnEnum
-from chezmoi_mousse.functions import Commands, min_wait
-from chezmoi_mousse.str_enums import ColorVar, ReadCmd
-
-from .actionables import RefreshTreeButton
+from chezmoi_mousse.dataclass_types import ReviewBtnData
+from chezmoi_mousse.functions import AppLife, Commands, min_wait
+from chezmoi_mousse.str_enums import ColorVar, ReadCmd, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -39,8 +38,15 @@ class LoadingModal(ModalScreen[None]):
 
     label_text: reactive[str] = reactive("Loading...")
 
-    def __init__(self, *, btn_data: OpBtnEnum | RefreshTreeButton | None) -> None:
-        self.btn_data = btn_data
+    def __init__(
+        self,
+        run_data: ReviewBtnData | None,
+    ) -> None:
+        self.run_data = run_data
+        if run_data is None:
+            self.path_arg = None
+        else:
+            self.path_arg = run_data.path_arg
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -51,21 +57,25 @@ class LoadingModal(ModalScreen[None]):
     def on_mount(self) -> None:
         self.label = self.query_exactly_one(Label)
 
+    def _update_label(self, cmd: ReadCmd | WriteCmd, path_arg: Path | None) -> None:
+        if path_arg is None:
+            path = ""
+        else:
+            path = str(path_arg.relative_to(self.app.cmattr.dest_dir))
+        label_text = "Running command:\n"
+        label_text += AppLife.cmd_str_wop(cmd, dry=None, pretty=True) + f" {path}"
+        self.label.update(label_text)
+
     @work
     async def run_managed_commands(self) -> None:
         for read_cmd in ReadCmd.managed_commands():
-            self.label.update(f"Running chezmoi {read_cmd.name}")
+            self._update_label(read_cmd, None)
             await self._run_read_command(read_cmd).wait()
 
     @work
-    async def run_write_cmd_and_managed_commands(self, btn_enum: OpBtnEnum) -> None:
-        label_text = ["Running chezmoi"]
-        if self.app.cmattr.dry_run is True:
-            label_text.append("--dry-run")
-        if btn_enum.path_arg is not None:
-            label_text.append(f"{btn_enum.path_arg}")
-        self.label.update(" ".join(label_text + [btn_enum.write_cmd.name]))
-        await self._run_write_command(btn_enum).wait()
+    async def run_write_cmd_and_managed_commands(self, run_data: ReviewBtnData) -> None:
+        self._update_label(run_data.write_cmd, None)
+        await self._run_write_command(run_data.write_cmd).wait()
         await self.run_managed_commands().wait()
 
     @work(thread=True)
@@ -75,11 +85,11 @@ class LoadingModal(ModalScreen[None]):
 
     @work(thread=True)
     @min_wait
-    async def _run_write_command(self, btn_enum: OpBtnEnum) -> None:
+    async def _run_write_command(self, run_data: ReviewBtnData) -> None:
         Commands.run_write_cmd(
-            btn_enum.write_cmd,
+            run_data.write_cmd,
             dry_run=self.app.cmattr.dry_run,
-            path_arg=btn_enum.path_arg,
+            path_arg=self.path_arg,
         )
 
     def watch_label_text(self, label_text: str) -> None:

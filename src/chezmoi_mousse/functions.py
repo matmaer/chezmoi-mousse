@@ -35,16 +35,16 @@ if TYPE_CHECKING:
         ScanDirResult,
         StrTuple,
     )
-    from chezmoi_mousse.enum_data import OpBtnEnum
+    from chezmoi_mousse.gui.common.actionables import ReviewButton
     from chezmoi_mousse.gui.common.loading_modal import LoadingModal
 
-__all__ = ("Commands", "CheckPath", "ResultCollector", "min_wait")
+__all__ = ("min_wait", "AppLife", "Commands", "CheckPath", "ResultCollector")
 
 
 def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
-    async def wrapper(self: LoadingModal, *args: OpBtnEnum) -> None:
+    async def wrapper(self: LoadingModal, *args: ReviewButton) -> None:
         min_wait_time = 0.2
         start_time = time.monotonic()
         await func(self, *args)

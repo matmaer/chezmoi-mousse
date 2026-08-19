@@ -39,9 +39,9 @@ from chezmoi_mousse.str_enums import (
 
 from .common.actionables import (
     FlatButtonsVertical,
-    OpButton,
-    OperateButtons,
     RefreshTreeButton,
+    ReviewBtnGroup,
+    ReviewButton,
     SwitchSlider,
     TabButtons,
 )
@@ -78,7 +78,7 @@ class AddTab(TabPane):
             )
             with Vertical():
                 yield ContentsView(self.ids)
-                yield OperateButtons(self.ids)
+                yield ReviewBtnGroup(self.ids)
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
@@ -87,7 +87,7 @@ class AddTab(TabPane):
         self.contents_view.add_class(Tcss.add_tab_contents_view)
         self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
         self.contents_view.show_path = self.app.cmattr.dest_dir
-        self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, OpButton)
+        self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, ReviewButton)
 
     @on(DirectoryTree.FileSelected)
     @on(DirectoryTree.DirectorySelected)
@@ -102,11 +102,11 @@ class AddTab(TabPane):
             self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
-        # Set path_arg for the btn_enums in OperateMode
-        operate_buttons = self.query_one(
-            self.ids.container.operate_buttons_q, OperateButtons
+        # Set path_arg
+        review_op_buttons = self.query_one(
+            self.ids.container.operate_buttons_q, ReviewBtnGroup
         )
-        operate_buttons.set_path_arg(event.node.data.path)
+        review_op_buttons.set_path_arg(event.node.data.path)
         if isinstance(event, DirectoryTree.DirectorySelected):
             self.add_review_btn.disabled = True
         else:  # isinstance(event, DirectoryTree.FileSelected):
@@ -130,7 +130,7 @@ class ApplyTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield DestDirTree(self.ids)
-            yield Vertical(ViewSwitcher(self.ids), OperateButtons(self.ids))
+            yield Vertical(ViewSwitcher(self.ids), ReviewBtnGroup(self.ids))
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
@@ -533,7 +533,7 @@ class ReAddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield DestDirTree(self.ids)
-            yield Vertical(ViewSwitcher(self.ids), OperateButtons(self.ids))
+            yield Vertical(ViewSwitcher(self.ids), ReviewBtnGroup(self.ids))
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:

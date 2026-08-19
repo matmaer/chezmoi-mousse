@@ -148,6 +148,7 @@ OperateModal {
 }
 
 LoadingModal {
+  align: center middle;
   &>VerticalGroup {
     border: round $warning-darken-2;
     min-width: 70;
