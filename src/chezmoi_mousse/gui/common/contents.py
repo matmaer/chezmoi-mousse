@@ -36,6 +36,10 @@ class ContentsView(Container):
             widgets.append(
                 Label(SectionLabel.dest_dir, classes=Tcss.main_section_label)
             )
+            if self.app.cmattr.paths.no_managed_paths:
+                widgets.append(
+                    Static("No managed paths yet, click the Add tab to add some paths.")
+                )
         elif dir_path in self.app.cmattr.paths.managed_dirs:
             widgets.append(
                 Label(SectionLabel.managed_dir, classes=Tcss.main_section_label)

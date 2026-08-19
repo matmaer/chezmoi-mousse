@@ -112,7 +112,6 @@ class ManagedPaths:
             managed_dirs=self.managed_dirs,
             managed_files=self.managed_files,
             n_dirs=_n_dirs,
-            no_managed_paths=self.no_managed_paths,
             no_status_paths=(not status_dirs and not status_files),
             status_dirs=status_dirs,
             status_files=status_files,
