@@ -6,17 +6,18 @@ from textual import getters, work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import Collapsible, Label, Static
 
 from chezmoi_mousse.enum_data import OpBtnEnum
 from chezmoi_mousse.str_enums import OpInfoString, Tcss, WriteCmd
 
-from .actionables import OpButton
+from .actionables import OpButton, RefreshTreeButton
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-__all__ = ["CommandOutput", "OpFeedBack", "OperateInfo"]
+__all__ = ["OperateModal"]
 
 
 class OperateInfo(Static):
@@ -33,7 +34,7 @@ class OperateInfo(Static):
     def on_mount(self) -> None:
         self.display = False
 
-    def update_review_info(self, button: OpButton, dry_run: bool) -> None:
+    def _update_review_info(self, button: OpButton, dry_run: bool) -> None:
         self.current_button = button
         info_lines: list[str] = []
         # TODO: append pretty cmd
@@ -59,7 +60,7 @@ class OperateInfo(Static):
     def watch_dry_run(self, dry_run: bool) -> None:
         if not self.display:
             return
-        self.update_review_info(self.current_button, dry_run)
+        self._update_review_info(self.current_button, dry_run)
 
 
 class CommandOutput(ScrollableContainer):
@@ -85,20 +86,20 @@ class CommandOutput(ScrollableContainer):
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
-        self.reset_widgets()
+        self._reset_widgets()
 
     @work
-    async def reset_widgets(self) -> None:
+    async def _reset_widgets(self) -> None:
         self.added_managed.update("")
         self.removed_managed.update("")
         self.changed_status.update("")
         self.query_children(Collapsible).remove()
 
 
-class OpFeedBack(Vertical):
-    def compose(self) -> ComposeResult:
-        yield OperateInfo()
-        yield CommandOutput()
+class OperateModal(ModalScreen[None]):
+    def __init__(self, btn: OpButton | RefreshTreeButton) -> None:
+        self.bnt = btn
+        super().__init__()
 
-    def on_mount(self) -> None:
-        self.display = False
+    def compose(self) -> ComposeResult:
+        yield Vertical(OperateInfo(), CommandOutput())

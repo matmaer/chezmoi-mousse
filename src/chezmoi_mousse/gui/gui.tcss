@@ -139,15 +139,15 @@ FlatButtonsVertical {
   width: auto;
 }
 
-OpFeedBack {
-  height: auto;
+OperateModal {
+  align: center middle;
+  margin: 2 4 2 4;
   &>ScrollableContainer {
     height: auto;
   }
 }
 
 LoadingModal {
-  align: center middle;
   &>VerticalGroup {
     border: round $warning-darken-2;
     min-width: 70;

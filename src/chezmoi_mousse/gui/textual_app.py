@@ -23,7 +23,7 @@ from chezmoi_mousse.str_enums import (
 
 from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
 from .common.managed_tree import DestDirTree
-from .common.op_feedback import OperateInfo, OpFeedBack
+from .common.operate_modal import OperateModal
 from .main_screen import CustomHeader, MainScreen
 from .splash_screen import SplashScreen
 from .tab_panes import AddTab, ApplyTab, ReAddTab
@@ -192,7 +192,6 @@ class ChezmoiGui(App[str]):
             binding_action=BindingAction.toggle_dry_run, new_description=new_description
         )
         self.screen.query_exactly_one(CustomHeader).dry_run = self.cmattr.dry_run
-        self.screen.query_exactly_one(OperateInfo).dry_run = self.cmattr.dry_run
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
@@ -302,10 +301,8 @@ class ChezmoiGui(App[str]):
             return False
 
         elif action == BindingAction.toggle_maximized:
-            return not (
-                isinstance(self.screen, MainScreen)
-                and self.screen.query_exactly_one(OpFeedBack).display is True
-            )
+            if isinstance(self.screen, OperateModal):
+                return False
 
         return True
 

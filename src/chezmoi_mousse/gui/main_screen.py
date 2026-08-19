@@ -30,7 +30,6 @@ from .common.loading_modal import LoadingLabel, LoadingModal
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg
-from .common.op_feedback import CommandOutput, OperateInfo, OpFeedBack
 from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
@@ -68,7 +67,6 @@ class MainScreen(Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield CustomHeader()
-        yield OpFeedBack()
 
         with Vertical(), TabbedContent():
             yield ApplyTab(self.app.cmattr.apply_id)
@@ -90,10 +88,6 @@ class MainScreen(Screen[None]):
         self.re_add_managed_tree = self.query_one(
             self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
         )
-        self.op_feed_back = self.query_exactly_one(OpFeedBack)
-        self.operate_info = self.query_exactly_one(OperateInfo)
-        self.command_output = self.query_exactly_one(CommandOutput)
-        self.command_output.display = False
         self._push_loading_modal(btn_data=None)
 
     ###########################################
@@ -178,15 +172,6 @@ class MainScreen(Screen[None]):
         else:
             event.stop()
         self._set_button_display(event.button)
-        if event.button.btn_enum in OpBtnEnum.review_btn_enums():
-            self.command_output.reset_widgets()
-            self.operate_info.update_review_info(event.button, self.app.cmattr.dry_run)
-            return
-        elif event.button.btn_enum in OpBtnEnum.run_btn_enums() or isinstance(
-            event.button, RefreshTreeButton
-        ):
-            self.command_output.reset_widgets()
-            self._push_loading_modal(event.button.btn_enum)
 
     @on(DirContentBtn.Pressed)
     def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
@@ -318,18 +303,6 @@ class MainScreen(Screen[None]):
             self._set_left_side_display(btn_data.app_ids, True)
             self._set_right_side_display(btn_data.app_ids, True)
             self.main_tabs.display = True
-            self.op_feed_back.display = False
-            self.command_output.display = False
-            self.operate_info.display = False
             return
-        self.op_feed_back.display = True
         self.main_tabs.display = False
         self._set_left_side_display(btn_data.app_ids, False)
-        if btn_data.btn_enum in OpBtnEnum.review_btn_enums():
-            self.command_output.display = False
-            self.operate_info.display = True
-            self._set_right_side_display(btn_data.app_ids, True)
-        elif btn_data.btn_enum in OpBtnEnum.run_btn_enums():
-            self.command_output.display = True
-            self.operate_info.display = False
-            self._set_right_side_display(btn_data.app_ids, False)
