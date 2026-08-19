@@ -81,7 +81,6 @@ class MainScreen(Screen[None]):
         yield Footer()
 
     def on_mount(self) -> None:
-        self.run_cmd_results: list[CommandResult] = []
         self.app_log = self.query_one(self.app.cmattr.logs_id.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(self.app.cmattr.logs_id.richlog.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
