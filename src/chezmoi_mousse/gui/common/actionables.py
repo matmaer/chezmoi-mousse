@@ -32,14 +32,14 @@ __all__ = [
     "DirContentBtn",
     "ExitOpModalBtn",
     "FlatBtn",
-    "FlatButtonsVertical",
     "RefreshBtn",
-    "ReviewBtnGroup",
     "ReviewBtn",
     "RunBtn",
+    "TabBtn",
+    "FlatButtonsVertical",
+    "ReviewBtnGroup",
     "RunBtnGroup",
     "SwitchSlider",
-    "TabBtn",
     "TabButtons",
 ]
 
@@ -71,6 +71,41 @@ class FlatBtn(Button):
         )
 
 
+class RefreshBtn(Button):
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
+        super().__init__(
+            classes=Tcss.refresh_button,
+            id=self.app_ids.op_btn.refresh_tree,
+            label=OpBtnLabel.refresh_trees,
+        )
+
+
+class ReviewBtn(Button):
+    def __init__(
+        self, app_ids: AppIds, btn_label: OpBtnLabel, btn_data: ReviewBtnData
+    ) -> None:
+        self.app_ids = app_ids
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
+        )
+
+
+class RunBtn(Button):
+    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
+        )
+
+
+class TabBtn(Button):
+    def __init__(self, *, app_ids: AppIds, label: TabLabel) -> None:
+        super().__init__(classes=Tcss.tab_button, label=label)
+        self.app_ids = app_ids
+
+
 class FlatButtonsVertical(Vertical):
     def __init__(self, ids: AppIds, *, labels: tuple[FlatBtnLabel, ...]) -> None:
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
@@ -89,35 +124,6 @@ class FlatButtonsVertical(Vertical):
         for btn in self.query(Button).results():
             btn.remove_class(Tcss.last_clicked_flat_btn)
         event.button.add_class(Tcss.last_clicked_flat_btn)
-
-
-class RefreshBtn(Button):
-    def __init__(self, app_ids: AppIds) -> None:
-        self.app_ids = app_ids
-        super().__init__(
-            classes=Tcss.refresh_button,
-            id=self.app_ids.op_btn.refresh_tree,
-            label=OpBtnLabel.refresh_trees,
-        )
-
-
-class RunBtn(Button):
-    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
-        self.bd = btn_data
-        super().__init__(
-            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
-        )
-
-
-class ReviewBtn(Button):
-    def __init__(
-        self, app_ids: AppIds, btn_label: OpBtnLabel, btn_data: ReviewBtnData
-    ) -> None:
-        self.app_ids = app_ids
-        self.bd = btn_data
-        super().__init__(
-            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
-        )
 
 
 class ToggleDryRunBtn(Button):
@@ -337,12 +343,6 @@ class SwitchSlider(VerticalGroup):
 
     def on_mount(self) -> None:
         self.query_children(HorizontalGroup).last().styles.padding = 0
-
-
-class TabBtn(Button):
-    def __init__(self, *, app_ids: AppIds, label: TabLabel) -> None:
-        super().__init__(classes=Tcss.tab_button, label=label)
-        self.app_ids = app_ids
 
 
 class TabButtons(Horizontal):
