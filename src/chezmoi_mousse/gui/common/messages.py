@@ -48,10 +48,6 @@ class CurrentNodeMsg(Message):
         rel_path_border = f" {self.path.relative_to(self._dest_dir)} "
         return rel_path_border if self.path != self._dest_dir else f" {self._dest_dir} "
 
-    @property
-    def is_dest_dir(self) -> bool:
-        return self.path == self._dest_dir
-
 
 class ReviewBtnMsg(Message):
     def __init__(self, review_btn: ReviewButton) -> None:
