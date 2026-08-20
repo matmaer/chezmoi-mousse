@@ -80,7 +80,9 @@ class GitLogView(Container):
             container = self._create_unmanaged_path_container(show_path)
             self.mount(container)
             return
-        cmd_result = Commands.run_chezmoi_git_log(path_arg)
-        self.post_message(LogCmdResultMsg(cmd_result))
-        container = self._create_datatable_container(cmd_result.std_out.splitlines())
+        cmd_results = Commands.run_chezmoi_git_log(path_arg)
+        self.post_message(LogCmdResultMsg(cmd_results))
+        container = self._create_datatable_container(
+            cmd_results[-1].std_out.splitlines()
+        )
         self.mount(container)

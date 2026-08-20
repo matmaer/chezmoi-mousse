@@ -139,9 +139,9 @@ class SplashScreen(Screen[None]):
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
         if command is ReadCmd.git_log:
-            result: CommandResult = Commands.run_chezmoi_git_log(None)
+            result: CommandResult = Commands.run_chezmoi_git_log(None)[-1]
         else:
-            result: CommandResult = Commands.run_read_cmd(command)
+            result: CommandResult = Commands.run_read_cmd(command, path_arg=None)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
 
     # Threaded Command Workers
@@ -172,6 +172,7 @@ class SplashScreen(Screen[None]):
             ResultCollector.template_data_result.std_out
         )
         ResultCollector.parsed_dump_config = parsed_dump_config
+        Commands.dest_dir = ResultCollector.get_dest_dir()
         ResultCollector.parsed_template_data = parsed_template_data
         msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
         self.splash_log.write(msg)

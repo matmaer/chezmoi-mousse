@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import ModalScreen
-from textual.widgets import Collapsible, Label, LoadingIndicator, Static
+from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse.dataclass_types import ReviewBtnData
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
@@ -39,35 +39,49 @@ class LoadingModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    label_text: reactive[str] = reactive("Loading...")
+    label_text: reactive[str | None] = reactive(None)
 
     def __init__(
         self,
-        run_data: ReviewBtnData | None,
+        *,
+        operation: ReviewBtn | RefreshBtn | None,
+        path_arg: Path | None,
+        dry_run: bool | None = None,
     ) -> None:
-        self.run_data = run_data
-        if run_data is None:
-            self.path_arg = None
-        else:
-            self.path_arg = run_data.path_arg
+        self.operation = operation
+        self.path_arg = path_arg
+        self.dry_run = dry_run
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup():
-            yield Label(LoadingLabel.loading)
-            yield LoadingIndicator()
+        yield (VerticalGroup(Label(LoadingLabel.loading), LoadingIndicator()))
 
     def on_mount(self) -> None:
-        self.label = self.query_exactly_one(Label)
+        if self.operation is None:
+            return
+        self._dispatch_commands()
 
     def _update_label(self, cmd: ReadCmd | WriteCmd, path_arg: Path | None) -> None:
-        if path_arg is None:
-            path = ""
-        else:
-            path = str(path_arg.relative_to(self.app.cmattr.dest_dir))
+        label = self.query_exactly_one(Label)
         label_text = "Running command:\n"
-        label_text += AppLife.cmd_str_wop(cmd, dry=None, pretty=True) + f" {path}"
-        self.label.update(label_text)
+        label_text += AppLife.pretty_cmd(cmd, dry=None, path=path_arg)
+        label.update(label_text)
+
+    def _take_managed_snapshot(self) -> None: ...
+
+    @work
+    async def _dispatch_commands(self) -> None:
+        if isinstance(self.operation, RefreshBtn):
+            await self.run_managed_commands().wait()
+        elif isinstance(self.operation, ReviewBtn):
+            label = self.query_exactly_one(Label)
+            write_cmd = self.operation.bd.write_cmd
+            pretty_cmd = AppLife.pretty_cmd(
+                write_cmd, dry=self.dry_run, path=self.path_arg
+            )
+            label.update(pretty_cmd)
+            await self._run_write_command(write_cmd).wait()
+            await self.run_managed_commands().wait()
 
     @work
     async def run_managed_commands(self) -> None:
@@ -75,16 +89,10 @@ class LoadingModal(ModalScreen[None]):
             self._update_label(read_cmd, None)
             await self._run_read_command(read_cmd).wait()
 
-    @work
-    async def run_write_cmd_and_managed_commands(self, run_data: ReviewBtnData) -> None:
-        self._update_label(run_data.write_cmd, None)
-        await self._run_write_command(run_data.write_cmd).wait()
-        await self.run_managed_commands().wait()
-
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        Commands.run_read_cmd(read_cmd)
+        Commands.run_read_cmd(read_cmd, path_arg=None)
 
     @work(thread=True)
     @min_wait
@@ -96,7 +104,10 @@ class LoadingModal(ModalScreen[None]):
         )
 
     def watch_label_text(self, label_text: str) -> None:
-        self.label.update(label_text)
+        if self.label_text is None:
+            return
+        label = self.query_exactly_one(Label)
+        label.update(label_text)
 
 
 class OperateInfo(Static):
@@ -162,17 +173,9 @@ class CommandOutput(ScrollableContainer):
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
-        self._reset_widgets()
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
-
-    @work
-    async def _reset_widgets(self) -> None:
-        self.added_managed.update("")
-        self.removed_managed.update("")
-        self.changed_status.update("")
-        self.query_children(Collapsible).remove()
 
 
 class OperateModal(ModalScreen[None]):
@@ -182,6 +185,10 @@ class OperateModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         yield Vertical(OperateInfo(), CommandOutput(), RunBtnGroup(self.pressed_btn))
+
+    def on_mount(self) -> None:
+        cmd_output = self.query_exactly_one(CommandOutput)
+        cmd_output.display = False
 
     @on(RunBtn.Pressed)
     def handle_run_button(self, event: RunBtn.Pressed) -> None:

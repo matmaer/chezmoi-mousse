@@ -71,7 +71,7 @@ class ContentsView(Container):
             f_content, cmd_result = Commands.get_highlighted_chezmoi_cat_output(
                 file_path
             )
-            self.post_message(LogCmdResultMsg(cmd_result))
+            self.post_message(LogCmdResultMsg([cmd_result]))
             widgets.append(Static(f_content))
         else:
             widgets.append(

@@ -27,7 +27,8 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.dataclass_types import ReviewBtnData
+    from pathlib import Path
+
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
@@ -81,29 +82,39 @@ class MainScreen(Screen[None]):
         self.re_add_managed_tree = self.query_one(
             self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
         )
-        self._push_loading_modal(run_data=None, first_run=True)
+        self._first_startup()
 
     ###########################################
     # Push modal methods with their callbacks #
     ###########################################
 
     @work
+    async def _first_startup(self) -> None:
+        self.loading_modal = LoadingModal(operation=None, path_arg=None, dry_run=None)
+        await self._update_trees_loading().wait()
+        await self._log_cmd_results_loading(ResultCollector.splash_results()).wait()
+        await self.loading_modal.dismiss()
+
+    @work
     async def _push_loading_modal(
-        self, run_data: ReviewBtnData | None, first_run: bool = False
+        self,
+        operation: ReviewBtn | RefreshBtn,
+        path_arg: Path | None,
+        dry_run: bool | None = None,
     ) -> None:
-        self.loading_modal = LoadingModal(run_data=run_data)
+        self.loading_modal = LoadingModal(
+            operation=operation, path_arg=path_arg, dry_run=dry_run
+        )
         await self.app.push_screen(self.loading_modal)
 
         results_to_log: list[CommandResult] = []
-        if run_data is None:
+
+        if isinstance(operation, RefreshBtn):
             await self.loading_modal.run_managed_commands().wait()
-        elif first_run:
-            results_to_log = ResultCollector.splash_results()
-        if run_data is not None:  # either a run or refresh tree button was pressed
-            results_to_log.extend(ResultCollector.managed_cmd_results())
-            await self._purge_views_cache().wait()
-        await self._update_trees().wait()
-        await self._log_cmd_results(results_to_log).wait()
+        results_to_log.extend(ResultCollector.managed_cmd_results())
+        await self._purge_views_cache_loading().wait()
+        await self._update_trees_loading().wait()
+        await self._log_cmd_results_loading(results_to_log).wait()
         await self.loading_modal.dismiss()
 
     @work
@@ -116,14 +127,14 @@ class MainScreen(Screen[None]):
 
     @work
     @min_wait
-    async def _log_cmd_results(self, cmd_results: list[CommandResult]) -> None:
+    async def _log_cmd_results_loading(self, cmd_results: list[CommandResult]) -> None:
         self.loading_modal.label_text = LoadingLabel.log_cmd_results
         self.cmd_log.cmd_results = cmd_results
         self.app_log.cmd_results = cmd_results
 
     @work
     @min_wait
-    async def _purge_views_cache(self) -> None:
+    async def _purge_views_cache_loading(self) -> None:
         self.loading_modal.label_text = LoadingLabel.purge_cache
         all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
             self.query(DiffView).results(),
@@ -135,7 +146,7 @@ class MainScreen(Screen[None]):
 
     @work
     @min_wait
-    async def _update_trees(self) -> None:
+    async def _update_trees_loading(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees
         self.apply_managed_tree.update_tree()
         self.apply_managed_tree.refresh()
@@ -179,8 +190,8 @@ class MainScreen(Screen[None]):
         """Currently used by contents.py, diffs.py, and git_log.py to log command
         results for their respective commands."""
         msg.stop()
-        self.app_log.cmd_results = [msg.cmd_result]
-        self.cmd_log.cmd_results = [msg.cmd_result]
+        self.app_log.cmd_results = msg.cmd_result
+        self.cmd_log.cmd_results = msg.cmd_result
 
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:

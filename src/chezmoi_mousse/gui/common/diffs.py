@@ -46,7 +46,7 @@ class DiffView(Container):
             diff_result = Commands.run_read_cmd(ReadCmd.diff, path_arg=path)
         else:  # re-add tab
             diff_result = Commands.run_read_cmd(ReadCmd.diff_reverse, path_arg=path)
-        self.post_message(LogCmdResultMsg(diff_result))
+        self.post_message(LogCmdResultMsg([diff_result]))
         if not diff_result.std_out.splitlines():
             return [Static("No diff output available.", classes=Tcss.info)]
         else:

@@ -17,7 +17,7 @@ __all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReviewBtnMsg"]
 
 
 class LogCmdResultMsg(Message):
-    def __init__(self, cmd_result: CommandResult) -> None:
+    def __init__(self, cmd_result: list[CommandResult]) -> None:
         self.cmd_result = cmd_result
         super().__init__()
 
