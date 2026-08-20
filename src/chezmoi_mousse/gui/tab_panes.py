@@ -46,6 +46,7 @@ from .common.actionables import (
     TabButtons,
 )
 from .common.ascii_constants import FLOW_DIAGRAM
+from .common.components import CatConfigStatic
 from .common.contents import ContentsView
 from .common.doctor_data import DoctorTable, PwCollapsible
 from .common.filtered_dir_tree import FilteredDirTree
@@ -148,8 +149,6 @@ class ApplyTab(TabPane):
 
 
 class ConfigTab(TabPane):
-    class CatConfigStatic(Static): ...
-
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.config, title=TabLabel.config)
         self.ids = ids
@@ -183,7 +182,7 @@ class ConfigTab(TabPane):
                     Label(
                         SectionLabel.cat_config_output, classes=Tcss.main_section_label
                     ),
-                    self.CatConfigStatic("Loading..."),
+                    CatConfigStatic("Loading..."),
                     id=self.ids.container.cat_config,
                 )
                 yield Vertical(
@@ -244,7 +243,7 @@ class ConfigTab(TabPane):
 
         self._populate_pw_mgr_info(ResultCollector.doctor_result.std_out.splitlines())
 
-        cat_config_static = self.query_exactly_one(self.CatConfigStatic)
+        cat_config_static = self.query_exactly_one(CatConfigStatic)
         cat_config_static.update(
             "\n".join(
                 line

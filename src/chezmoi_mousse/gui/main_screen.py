@@ -91,6 +91,7 @@ class MainScreen(Screen[None]):
     @work
     async def _first_startup(self) -> None:
         self.loading_modal = LoadingModal(operation=None, path_arg=None, dry_run=None)
+        await self.app.push_screen(self.loading_modal)
         await self._update_trees_loading().wait()
         await self._log_cmd_results_loading(ResultCollector.splash_results()).wait()
         await self.loading_modal.dismiss()

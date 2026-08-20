@@ -50,7 +50,7 @@ class CmdResultCollapsible(Collapsible):
         contents: list[Label | Static] = [
             Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
         ]
-        contents.extend([Label(result.full_cmd_str, classes=Tcss.full_cmd)])
+        contents.extend([Label(result.full_cmd, classes=Tcss.full_cmd)])
         contents.extend(
             [
                 Label(SectionLabel.stdout_output, classes=Tcss.sub_section_label),
@@ -133,7 +133,7 @@ class AppLog(RichLoggers):
         for cmd_result in cmd_results:
             if cmd_result.returncode == 0:
                 self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
-            if "doctor" in cmd_result.full_cmd_str:
+            if "doctor" in cmd_result.full_cmd:
                 first_col: list[str] = [
                     line.split()[0]
                     for line in cmd_result.std_out.splitlines()

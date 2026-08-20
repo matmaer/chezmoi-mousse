@@ -12,8 +12,10 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CatConfigStatic",
-    "MainSectionLabel",
+    "DiffLinesContainer",
     "FlatSectionLabel",
+    "InfoStatic",
+    "MainSectionLabel",
     "SubSectionLabel",
 ]
 
@@ -47,6 +49,9 @@ class DiffLineStatic(Static): ...
 class InfoStatic(Static):
     def __init__(self, text: str = "") -> None:
         super().__init__(text, classes=Tcss.info)
+
+
+class HighlightedStatic(Static): ...
 
 
 # Container subclasses

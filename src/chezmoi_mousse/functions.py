@@ -119,7 +119,7 @@ class AppLife:
         cmd: ReadCmd | WriteCmd, *, dry: bool | None, path: Path | None
     ) -> str:
         rel_path = Commands.rel_path(path) if path is not None else ""
-        return f"{AppLife._cmd_str_wop(cmd, dry, pretty=True)}{rel_path}"
+        return f"{AppLife._cmd_str_wop(cmd, dry, pretty=True)} {rel_path}"
 
     @staticmethod
     @typed_lru_cache()
@@ -219,7 +219,7 @@ class Commands:
 
         result = CommandResult(
             dry_run=None,
-            full_cmd_str=f"{AppLife.full_cmd(cmd, dry=None, path=path_arg)}",
+            full_cmd=f"{AppLife.full_cmd(cmd, dry=None, path=path_arg)}",
             pretty_cmd=f"{AppLife.pretty_cmd(cmd, dry=None, path=path_arg)}",
             path_arg=path_arg,
             returncode=cp.returncode,
@@ -246,7 +246,7 @@ class Commands:
 
         result = CommandResult(
             dry_run=dry_run,
-            full_cmd_str=f"{AppLife.full_cmd(cmd, dry=None, path=path_arg)}",
+            full_cmd=f"{AppLife.full_cmd(cmd, dry=None, path=path_arg)}",
             pretty_cmd=AppLife.pretty_cmd(cmd, dry=None, path=path_arg),
             path_arg=path_arg,
             returncode=cp.returncode,
@@ -316,6 +316,11 @@ class Commands:
                 )
             )
         return results
+
+    @staticmethod
+    @typed_lru_cache()
+    def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
+        return Commands.run_read_cmd(diff_cmd, path_arg=path)
 
 
 class CheckPath:

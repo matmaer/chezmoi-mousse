@@ -19,7 +19,7 @@ __all__ = [
 
 class CommandResult(NamedTuple):
     dry_run: bool | None
-    full_cmd_str: str
+    full_cmd: str
     path_arg: Path | None
     pretty_cmd: str
     returncode: int
@@ -40,6 +40,10 @@ class ManagedTreePaths(NamedTuple):
     unchanged_dirs: frozenset[Path]
     unchanged_files: frozenset[Path]
     unchanged_tree_dirs: frozenset[Path]
+
+    @property
+    def status_paths_set(self) -> frozenset[Path]:
+        return frozenset(self.status_dirs | self.status_files)
 
 
 class PwMgrData(NamedTuple):
