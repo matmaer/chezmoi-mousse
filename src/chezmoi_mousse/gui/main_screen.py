@@ -14,7 +14,13 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 from chezmoi_mousse.functions import ResultCollector, min_wait
 from chezmoi_mousse.str_enums import Chars, LoadingLabel, Tcss
 
-from .common.actionables import DirContentBtn, RefreshBtn, ReviewBtn, ReviewBtnGroup
+from .common.actionables import (
+    DirContentBtn,
+    ExitOpModalBtn,
+    RefreshBtn,
+    ReviewBtn,
+    ReviewBtnGroup,
+)
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -185,6 +191,9 @@ class MainScreen(Screen[None]):
             _ = self.query_one(event.button.app_ids.managed_tree_q, ManagedTree)
             self.notify(f"Not yet implemented {type(DirContentBtn)}")
             return
+
+    @on(ExitOpModalBtn.Pressed)
+    def handle_exit_op_modal_btn(self, event: ExitOpModalBtn.Pressed) -> None: ...
 
     @on(LogCmdResultMsg)
     def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
