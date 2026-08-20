@@ -12,14 +12,19 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse.functions import ResultCollector, min_wait
-from chezmoi_mousse.str_enums import Chars, LoadingLabel, Tcss
+from chezmoi_mousse.str_enums import (
+    Chars,
+    LoadingLabel,
+    OpBtnLabel,
+    TabLabel,
+    Tcss,
+    WriteCmd,
+)
 
 from .common.actionables import (
     DirContentBtn,
     ExitOpModalBtn,
     RefreshBtn,
-    ReviewBtn,
-    ReviewBtnGroup,
 )
 from .common.contents import ContentsView
 from .common.diffs import DiffView
@@ -105,7 +110,7 @@ class MainScreen(Screen[None]):
     @work
     async def _push_loading_modal(
         self,
-        operation: ReviewBtn | RefreshBtn,
+        operation: WriteCmd | RefreshBtn,
         path_arg: Path | None,
         dry_run: bool | None = None,
     ) -> None:
@@ -125,8 +130,8 @@ class MainScreen(Screen[None]):
         await self.loading_modal.dismiss()
 
     @work
-    async def _push_operate_modal(self, review_btn: ReviewBtn | RefreshBtn) -> None:
-        await self.app.push_screen(OperateModal(review_btn))
+    async def _push_operate_modal(self, labels: tuple[OpBtnLabel, ...]) -> None:
+        await self.app.push_screen(OperateModal(labels))
 
     #####################
     # UI update workers #
@@ -171,18 +176,23 @@ class MainScreen(Screen[None]):
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
         msg.stop()
+        # Keep track of selected paths for each tab
+        if msg.app_ids.tab_label == TabLabel.add:
+            ResultCollector.add_path = msg.path
+        elif msg.app_ids.tab_label == TabLabel.apply:
+            ResultCollector.apply_path = msg.path
+        elif msg.app_ids.tab_label == TabLabel.re_add:
+            ResultCollector.re_add_path = msg.path
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         self.query_exactly_one(
-            msg.ids.container.right_side_q, ViewSwitcher
+            msg.app_ids.container.right_side_q, ViewSwitcher
         ).border_subtitle = msg.border_path
         # Update diff_view, contents_view, and git_log_view with the new path
-        self.query_one(msg.ids.container.diff_q, DiffView).show_path = msg.path
-        self.query_one(msg.ids.container.contents_q, ContentsView).show_path = msg.path
-        self.query_one(msg.ids.container.git_log_q, GitLogView).show_path = msg.path
-        # Set path_arg for the btn_enums for subsequent operations
+        self.query_one(msg.app_ids.container.diff_q, DiffView).show_path = msg.path
         self.query_one(
-            msg.ids.container.operate_buttons_q, ReviewBtnGroup
-        ).set_path_arg(msg.path)
+            msg.app_ids.container.contents_q, ContentsView
+        ).show_path = msg.path
+        self.query_one(msg.app_ids.container.git_log_q, GitLogView).show_path = msg.path
 
     @on(DirContentBtn.Pressed)
     def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
@@ -205,4 +215,6 @@ class MainScreen(Screen[None]):
 
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:
-        self._push_operate_modal(msg.review_button)
+        self._push_operate_modal(
+            (OpBtnLabel.add_dry_run, msg.review_button.btn_label, OpBtnLabel.cancel)
+        )

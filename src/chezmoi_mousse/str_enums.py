@@ -166,7 +166,33 @@ class OpBtnLabel(StrEnum):
     re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
     refresh_trees = "Refresh Trees"
+    reload = "Reload"
     remove_paths = "Remove Test Paths"
+
+    @classmethod
+    def dry_run_set(cls) -> frozenset["OpBtnLabel"]:
+        return frozenset({OpBtnLabel.add_dry_run, OpBtnLabel.remove_dry_run})
+
+    @classmethod
+    def exit_modal_set(cls) -> frozenset["OpBtnLabel"]:
+        return frozenset({OpBtnLabel.cancel, OpBtnLabel.close, OpBtnLabel.reload})
+
+    @classmethod
+    def run_btn_set(cls) -> frozenset["OpBtnLabel"]:
+        return frozenset(
+            {OpBtnLabel.add_run, OpBtnLabel.apply_run, OpBtnLabel.re_add_run}
+        )
+
+    # classmethod which maps each review button to its corresponding run button
+    @classmethod
+    def review_to_run_map(cls) -> dict["OpBtnLabel", "OpBtnLabel"]:
+        return {
+            cls.add_review: cls.add_run,
+            cls.apply_review: cls.apply_run,
+            cls.re_add_review: cls.re_add_run,
+            cls.destroy_review: cls.destroy_run,
+            cls.forget_review: cls.forget_run,
+        }
 
     @property
     def normalized_label(self) -> str:

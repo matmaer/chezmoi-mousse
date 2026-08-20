@@ -10,7 +10,6 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
-from chezmoi_mousse.dataclass_types import ReviewBtnData
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
 from chezmoi_mousse.str_enums import (
     LoadingLabel,
@@ -44,7 +43,7 @@ class LoadingModal(ModalScreen[None]):
     def __init__(
         self,
         *,
-        operation: ReviewBtn | RefreshBtn | None,
+        operation: WriteCmd | RefreshBtn | None,
         path_arg: Path | None,
         dry_run: bool | None = None,
     ) -> None:
@@ -73,14 +72,8 @@ class LoadingModal(ModalScreen[None]):
     async def _dispatch_commands(self) -> None:
         if isinstance(self.operation, RefreshBtn):
             await self.run_managed_commands().wait()
-        elif isinstance(self.operation, ReviewBtn):
-            label = self.query_exactly_one(Label)
-            write_cmd = self.operation.bd.write_cmd
-            pretty_cmd = AppLife.pretty_cmd(
-                write_cmd, dry=self.dry_run, path=self.path_arg
-            )
-            label.update(pretty_cmd)
-            await self._run_write_command(write_cmd).wait()
+        elif isinstance(self.operation, WriteCmd):
+            await self._run_write_command(self.operation).wait()
             await self.run_managed_commands().wait()
 
     @work
@@ -96,9 +89,9 @@ class LoadingModal(ModalScreen[None]):
 
     @work(thread=True)
     @min_wait
-    async def _run_write_command(self, run_data: ReviewBtnData) -> None:
+    async def _run_write_command(self, write_cmd: WriteCmd) -> None:
         Commands.run_write_cmd(
-            run_data.write_cmd,
+            write_cmd,
             dry_run=self.app.cmattr.dry_run,
             path_arg=self.path_arg,
         )
@@ -129,7 +122,6 @@ class OperateInfo(Static):
         info_lines: list[str] = []
         # TODO: append pretty cmd
         info_lines.append(f"Will run command with dry run {dry_run}")
-        info_lines.append(button.bd.op_info_string)
         if button.label is not OpBtnLabel.apply_review:
             if self.app.cmattr.auto_add is True:
                 info_lines.append(OpInfoString.auto_commit)
@@ -145,7 +137,6 @@ class OperateInfo(Static):
             info_lines.append(msg)
         self.update("\n".join(info_lines))
         self.border_title = OpInfoString.ready_to_run
-        self.border_subtitle = button.bd.op_info_subtitle
 
     def watch_dry_run(self, dry_run: bool) -> None:
         if not self.display:
@@ -179,12 +170,15 @@ class CommandOutput(ScrollableContainer):
 
 
 class OperateModal(ModalScreen[None]):
-    def __init__(self, pressed_btn: ReviewBtn | RefreshBtn) -> None:
-        self.pressed_btn = pressed_btn
+    def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
+        self.labels = labels
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Vertical(OperateInfo(), CommandOutput(), RunBtnGroup(self.pressed_btn))
+        with Vertical():
+            yield OperateInfo()
+            yield CommandOutput()
+            yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:
         cmd_output = self.query_exactly_one(CommandOutput)

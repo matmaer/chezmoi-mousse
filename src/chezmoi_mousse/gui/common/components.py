@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from textual.containers import Container
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.str_enums import SectionLabel, Tcss
-
-if TYPE_CHECKING:
-    pass
 
 __all__ = [
     "CatConfigStatic",

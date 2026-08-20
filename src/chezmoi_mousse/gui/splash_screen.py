@@ -168,11 +168,14 @@ class SplashScreen(Screen[None]):
         parsed_dump_config = Commands.json_loads(
             ResultCollector.dump_config_result.std_out
         )
+        ResultCollector.parsed_dump_config = parsed_dump_config
+        Commands.dest_dir = ResultCollector.get_dest_dir()
+        ResultCollector.add_path = ResultCollector.get_dest_dir()
+        ResultCollector.apply_path = ResultCollector.get_dest_dir()
+        ResultCollector.re_add_path = ResultCollector.get_dest_dir()
         parsed_template_data = Commands.json_loads(
             ResultCollector.template_data_result.std_out
         )
-        ResultCollector.parsed_dump_config = parsed_dump_config
-        Commands.dest_dir = ResultCollector.get_dest_dir()
         ResultCollector.parsed_template_data = parsed_template_data
         msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
         self.splash_log.write(msg)

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.functions import ResultCollector
 from chezmoi_mousse.named_tuples import ManagedTreePaths
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import OpBtnLabel, PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import PathKindMap, StatusMap
@@ -170,3 +170,8 @@ class CmAttributes:
         return ResultCollector.parsed_dump_config["git"]["autocommit"]
 
     paths: ManagedPaths = field(init=False)
+
+    def get_dry_run_btn_label(self) -> OpBtnLabel:
+        if self.dry_run is True:
+            return OpBtnLabel.remove_dry_run
+        return OpBtnLabel.add_dry_run

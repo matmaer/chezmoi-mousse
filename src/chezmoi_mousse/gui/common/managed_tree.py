@@ -302,14 +302,11 @@ class ManagedTree(Tree[Path]):
             event.node.data in self.paths.status_files
             or event.node.data in self.paths.status_dirs
         )
-        is_n_dir = event.node.data in self.paths.n_dirs
         self.post_message(
             CurrentNodeMsg(
-                ids=self.app_ids,
+                app_ids=self.app_ids,
                 path=event.node.data,
-                no_changed_paths=self.paths.no_status_paths,
                 has_status=has_status,
-                is_n_dir=is_n_dir,
                 dest_dir=self.paths.dest_dir,
                 is_unmanaged=is_unmanaged,
             )

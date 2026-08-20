@@ -155,6 +155,11 @@ class ResultCollector:
     parsed_dump_config: ParsedJson
     parsed_template_data: ParsedJson
 
+    # Keep track of the selected path by tab
+    add_path: ClassVar[Path]
+    apply_path: ClassVar[Path]
+    re_add_path: ClassVar[Path]
+
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @classmethod
     def splash_results(cls) -> list[CommandResult]:

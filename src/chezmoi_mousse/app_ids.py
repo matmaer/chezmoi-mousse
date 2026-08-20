@@ -133,6 +133,9 @@ class OperateButtonIds:
         self.refresh_tree: str = ids.op_btn_id(operation=OpBtnLabel.refresh_trees)
         self.refresh_tree_q: str = f"#{self.refresh_tree}"
 
+        self.reload: str = ids.op_btn_id(operation=OpBtnLabel.reload)
+        self.reload_q: str = f"#{self.reload}"
+
         self.toggle_dry_run: str = ids.op_btn_id(operation=OpBtnLabel.add_dry_run)
         self.toggle_dry_run_q: str = f"#{self.toggle_dry_run}"
 

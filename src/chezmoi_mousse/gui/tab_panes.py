@@ -79,7 +79,7 @@ class AddTab(TabPane):
             )
             with Vertical():
                 yield ContentsView(self.ids)
-                yield ReviewBtnGroup(self.ids)
+                yield ReviewBtnGroup(self.ids, (OpBtnLabel.add_review,))
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
@@ -103,15 +103,6 @@ class AddTab(TabPane):
             self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
-        # Set path_arg
-        review_op_buttons = self.query_one(
-            self.ids.container.operate_buttons_q, ReviewBtnGroup
-        )
-        review_op_buttons.set_path_arg(event.node.data.path)
-        if isinstance(event, DirectoryTree.DirectorySelected):
-            self.add_review_btn.disabled = True
-        else:  # isinstance(event, DirectoryTree.FileSelected):
-            self.add_review_btn.disabled = False
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
@@ -131,7 +122,17 @@ class ApplyTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield DestDirTree(self.ids)
-            yield Vertical(ViewSwitcher(self.ids), ReviewBtnGroup(self.ids))
+            yield Vertical(
+                ViewSwitcher(self.ids),
+                ReviewBtnGroup(
+                    self.ids,
+                    (
+                        OpBtnLabel.apply_review,
+                        OpBtnLabel.forget_review,
+                        OpBtnLabel.destroy_review,
+                    ),
+                ),
+            )
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
@@ -532,7 +533,17 @@ class ReAddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield DestDirTree(self.ids)
-            yield Vertical(ViewSwitcher(self.ids), ReviewBtnGroup(self.ids))
+            yield Vertical(
+                ViewSwitcher(self.ids),
+                ReviewBtnGroup(
+                    self.ids,
+                    (
+                        OpBtnLabel.re_add_review,
+                        OpBtnLabel.forget_review,
+                        OpBtnLabel.destroy_review,
+                    ),
+                ),
+            )
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
