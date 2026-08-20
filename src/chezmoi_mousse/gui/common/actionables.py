@@ -87,9 +87,42 @@ class ReviewBtn(Button):
     ) -> None:
         self.app_ids = app_ids
         self.bd = btn_data
+        self.btn_label = btn_label
         super().__init__(
             classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
         )
+
+    @property
+    def review_to_run(self) -> RunBtn:
+        mapping = {
+            OpBtnLabel.add_review: (
+                OpBtnLabel.add_run,
+                self.app_ids.op_btn.add_run,
+                self.app_ids.op_btn.add_run_q,
+            ),
+            OpBtnLabel.apply_review: (
+                OpBtnLabel.apply_run,
+                self.app_ids.op_btn.apply_run,
+                self.app_ids.op_btn.apply_run_q,
+            ),
+            OpBtnLabel.destroy_review: (
+                OpBtnLabel.destroy_run,
+                self.app_ids.op_btn.destroy_run,
+                self.app_ids.op_btn.destroy_run_q,
+            ),
+            OpBtnLabel.forget_review: (
+                OpBtnLabel.forget_run,
+                self.app_ids.op_btn.forget_run,
+                self.app_ids.op_btn.forget_run_q,
+            ),
+            OpBtnLabel.re_add_review: (
+                OpBtnLabel.re_add_run,
+                self.app_ids.op_btn.re_add_run,
+                self.app_ids.op_btn.re_add_run_q,
+            ),
+        }
+        run_label, btn_id, btn_qid = mapping[self.btn_label]
+        return RunBtn(run_label, RunBtnData(btn_id=btn_id, btn_qid=btn_qid))
 
 
 class RunBtn(Button):
