@@ -21,7 +21,7 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-from .actionables import RefreshTreeButton, ReviewButton
+from .actionables import ReviewButton, RunBtnGroup
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -170,9 +170,9 @@ class CommandOutput(ScrollableContainer):
 
 
 class OperateModal(ModalScreen[None]):
-    def __init__(self, btn: ReviewButton | RefreshTreeButton) -> None:
-        self.bnt = btn
+    def __init__(self, review_btn: ReviewButton | None) -> None:
+        self.review_btn = review_btn
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Vertical(OperateInfo(), CommandOutput())
+        yield Vertical(OperateInfo(), CommandOutput(), RunBtnGroup(self.review_btn))

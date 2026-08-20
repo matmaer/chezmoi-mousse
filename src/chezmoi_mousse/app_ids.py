@@ -112,13 +112,13 @@ class OperateButtonIds:
         self.apply_run: str = ids.op_btn_id(operation=OpBtnLabel.apply_run)
         self.apply_run_q: str = f"#{self.apply_run}"
 
-        self.cancel: str = ids.op_btn_id(operation=OpBtnLabel.cancel)
-        self.cancel_q: str = f"#{self.cancel}"
-
         self.destroy_review: str = ids.op_btn_id(operation=OpBtnLabel.destroy_review)
         self.destroy_review_q: str = f"#{self.destroy_review}"
         self.destroy_run: str = ids.op_btn_id(operation=OpBtnLabel.destroy_run)
         self.destroy_run_q: str = f"#{self.destroy_run}"
+
+        self.exit_op_modal: str = ids.op_btn_id(operation=OpBtnLabel.cancel)
+        self.exit_op_modal_q: str = f"#{self.exit_op_modal}"
 
         self.forget_review: str = ids.op_btn_id(operation=OpBtnLabel.forget_review)
         self.forget_review_q: str = f"#{self.forget_review}"
@@ -130,7 +130,7 @@ class OperateButtonIds:
         self.re_add_run: str = ids.op_btn_id(operation=OpBtnLabel.re_add_run)
         self.re_add_run_q: str = f"#{self.re_add_run}"
 
-        self.refresh_tree: str = ids.op_btn_id(operation=OpBtnLabel.refresh_tree)
+        self.refresh_tree: str = ids.op_btn_id(operation=OpBtnLabel.refresh_trees)
         self.refresh_tree_q: str = f"#{self.refresh_tree}"
 
         # for test_paths only

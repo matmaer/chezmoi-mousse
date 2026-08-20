@@ -150,6 +150,7 @@ class OpBtnLabel(StrEnum):
     apply_review = "Review Apply Path"
     apply_run = "Run Chezmoi Apply"
     cancel = "Cancel"
+    close = "Close"
     create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
     destroy_review = "Review Destroy Path"
@@ -160,7 +161,7 @@ class OpBtnLabel(StrEnum):
     log_memory = "Log Memory Usage"
     re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
-    refresh_tree = "Refresh Tree"
+    refresh_trees = "Refresh Trees"
     remove_paths = "Remove Test Paths"
 
     @property
