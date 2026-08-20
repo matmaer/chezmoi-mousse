@@ -162,6 +162,7 @@ class OpBtnLabel(StrEnum):
     forget_run = "Run Chezmoi Forget"
     list_test_paths = "List Test Paths"
     log_memory = "Log Memory Usage"
+    not_set = "Not Set"
     re_add_review = "Review Re-Add Path"
     re_add_run = "Run Chezmoi Re-Add"
     refresh_trees = "Refresh Trees"
