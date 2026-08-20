@@ -12,9 +12,9 @@ from textual.widgets import Label, Static
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import (
-    InfoStaticString,
     ReadCmd,
     SectionLabel,
+    StaticString,
     TabLabel,
     Tcss,
 )
@@ -117,7 +117,7 @@ class DiffView(ScrollableContainer):
                 self.sub_section_label.update(SectionLabel.no_managed_paths)
             else:
                 self.sub_section_label.update(SectionLabel.dest_dir_diff)
-            self.info_static.update(InfoStaticString.click_path_with_status)
+            self.info_static.update(StaticString.click_path_with_status)
 
         elif path in self.app.cmattr.paths.managed_paths_set:
             if path in self.paths.managed_dirs:
@@ -125,12 +125,12 @@ class DiffView(ScrollableContainer):
             elif path in self.paths.managed_files:
                 self.main_section_label.update(SectionLabel.managed_file)
             self.sub_section_label.update(SectionLabel.managed_no_status)
-            self.info_static.update(InfoStaticString.click_path_with_status)
+            self.info_static.update(StaticString.click_path_with_status)
 
         elif path in self.paths.n_dirs:
             self.main_section_label.update(SectionLabel.managed_dir)
             self.sub_section_label.update(SectionLabel.n_dir)
-            self.info_static.update(InfoStaticString.click_path_with_status)
+            self.info_static.update(StaticString.click_path_with_status)
 
         else:
             if path.is_dir():
@@ -138,7 +138,7 @@ class DiffView(ScrollableContainer):
             elif path.is_file():
                 self.main_section_label.update(SectionLabel.unmanaged_file)
             self.sub_section_label.update(str(path))
-            self.info_static.update(InfoStaticString.click_path_with_status)
+            self.info_static.update(StaticString.click_path_with_status)
 
         self.diff_lines.display = False
         self.flat_section_label.display = False

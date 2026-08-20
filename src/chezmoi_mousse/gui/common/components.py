@@ -14,6 +14,7 @@ __all__ = [
     "CatConfigStatic",
     "DiffLinesContainer",
     "FlatSectionLabel",
+    "HighlightedStatic",
     "InfoStatic",
     "MainSectionLabel",
     "SubSectionLabel",

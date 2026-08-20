@@ -9,7 +9,7 @@ __all__ = [
     "ContainerName",
     "FlatBtnLabel",
     "GlobalArgs",
-    "InfoStaticString",
+    "StaticString",
     "LoadingLabel",
     "LogString",
     "OpBtnLabel",
@@ -114,10 +114,6 @@ class FlatBtnLabel(StrEnum):
     template_data = "Template Data"
     test_paths = "Test Paths"
     memory_usage = "Memory Usage"
-
-
-class InfoStaticString(StrEnum):
-    click_path_with_status = "<- click a path with a status to see its diff"
 
 
 class LoadingLabel(StrEnum):
@@ -394,20 +390,22 @@ class RichLogName(StrEnum):
 
 class SectionLabel(StrEnum):
     cat_config_output = "Cat Config Output"
-    chezmoi_cat_output = "Chezmoi cat output"
+    chezmoi_cat_output = "Chezmoi Cat output"
     debug_log = " Debug Log "
-    dest_dir = "Destination directory"
-    dest_dir_diff = "this is the root of the chezmoi repository and never has a status"
+    dest_dir = "Destination Directory"
+    dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
     diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
     dom_nodes = " DOM Nodes "
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
-    managed_dir = "Managed directory"
-    n_dir = "managed directory which contains nested status paths"
-    managed_file = "Managed file"
-    managed_no_status = "the path is managed but has no status for this context"
+    managed_dir = "Managed Directory"
+    managed_file = "Managed File"
+    managed_no_status = "The path is managed but has no status for this context"
     memory_usage = " Memory Usage "
+    n_dir = "Managed directory which contains nested status paths"
+    no_managed_paths = "No managed paths yet"
+    no_status_paths = "No paths with a status"
     not_set = "Not Set"
     password_managers = "Password Manager Information"
     paths_with_status = "Paths with Status"
@@ -419,8 +417,13 @@ class SectionLabel(StrEnum):
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
     test_paths = " Test Paths "
-    unmanaged_dir = "Unmanaged directory"
-    unmanaged_file = "Unmanaged file"
+    unmanaged_dir = "Unmanaged Directory"
+    unmanaged_file = "Unmanaged File"
+
+
+class StaticString(StrEnum):
+    click_path_with_status = "<- click a path with a status to see its diff"
+    click_file_for_contents = "<- Click a file path to see its contents"
 
 
 class StatusCode(StrEnum):
