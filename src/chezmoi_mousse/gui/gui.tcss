@@ -141,7 +141,10 @@ FlatButtonsVertical {
 
 OperateModal {
   align: center middle;
-  margin: 2 4 2 4;
+  &>Vertical {
+    margin: 1 2 1 2;
+    border: round $warning-darken-2;
+  }
   &>ScrollableContainer {
     height: auto;
   }

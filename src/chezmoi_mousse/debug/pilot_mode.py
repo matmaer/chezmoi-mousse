@@ -13,10 +13,10 @@ from textual.widgets import Switch, TabbedContent, TabPane
 
 from chezmoi_mousse.gui.common.actionables import (
     DirContentBtn,
-    FlatButton,
-    RefreshTreeButton,
+    FlatBtn,
+    RefreshBtn,
     SwitchSlider,
-    TabButton,
+    TabBtn,
 )
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.operate_modal import LoadingModal
@@ -62,7 +62,7 @@ async def refresh_trees(pilot: Pilot[str], active_pane: TabPane) -> None:
     if not isinstance(active_pane, (ApplyTab, ReAddTab, AddTab)):
         return
     refresh_tree_btn = active_pane.query_one(
-        active_pane.ids.op_btn.refresh_tree_q, RefreshTreeButton
+        active_pane.ids.op_btn.refresh_tree_q, RefreshBtn
     )
     await click_and_wait(pilot, refresh_tree_btn)
 
@@ -83,10 +83,10 @@ async def toggle_switches(pilot: Pilot[str], active_pane: TabPane) -> None:
 
 
 async def click_content_switcher_buttons(pilot: Pilot[str], tab_pane: TabPane) -> None:
-    tab_buttons = tuple(tab_pane.query(TabButton).results())
+    tab_buttons = tuple(tab_pane.query(TabBtn).results())
     for tab_button in tab_buttons[1:]:
         await click_and_wait(pilot, tab_button)
-    flat_buttons = tuple(tab_pane.query(FlatButton).results())
+    flat_buttons = tuple(tab_pane.query(FlatBtn).results())
     for flat_button in flat_buttons[1:]:
         await click_and_wait(pilot, flat_button)
 

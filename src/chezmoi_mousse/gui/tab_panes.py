@@ -39,9 +39,9 @@ from chezmoi_mousse.str_enums import (
 
 from .common.actionables import (
     FlatButtonsVertical,
-    RefreshTreeButton,
+    RefreshBtn,
+    ReviewBtn,
     ReviewBtnGroup,
-    ReviewButton,
     SwitchSlider,
     TabButtons,
 )
@@ -72,7 +72,7 @@ class AddTab(TabPane):
         with Horizontal():
             yield Vertical(
                 FilteredDirTree(dest_dir=self.app.cmattr.dest_dir),
-                RefreshTreeButton(self.ids),
+                RefreshBtn(self.ids),
                 id=self.ids.container.left_side,
                 classes=Tcss.tab_left_vertical,
             )
@@ -87,7 +87,7 @@ class AddTab(TabPane):
         self.contents_view.add_class(Tcss.add_tab_contents_view)
         self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
         self.contents_view.show_path = self.app.cmattr.dest_dir
-        self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, ReviewButton)
+        self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, ReviewBtn)
 
     @on(DirectoryTree.FileSelected)
     @on(DirectoryTree.DirectorySelected)

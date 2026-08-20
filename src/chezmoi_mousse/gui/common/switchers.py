@@ -9,7 +9,7 @@ from textual.widgets import ContentSwitcher
 
 from chezmoi_mousse.str_enums import TabLabel
 
-from .actionables import TabButton, TabButtons
+from .actionables import TabBtn, TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLogView
@@ -35,9 +35,9 @@ class ViewSwitcher(Vertical):
     def on_mount(self) -> None:
         self.content_switcher = self.query_exactly_one(ContentSwitcher)
 
-    @on(TabButton.Pressed)
-    def switch_view(self, event: TabButton.Pressed) -> None:
-        if isinstance(event.button, TabButton):
+    @on(TabBtn.Pressed)
+    def switch_view(self, event: TabBtn.Pressed) -> None:
+        if isinstance(event.button, TabBtn):
             event.stop()
             if event.button.label == TabLabel.contents:
                 self.content_switcher.current = self.ids.container.contents

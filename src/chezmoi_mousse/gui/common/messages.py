@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.named_tuples import CommandResult
 
-    from .actionables import ReviewButton
+    from .actionables import ReviewBtn
 
 
 __all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReviewBtnMsg"]
@@ -50,6 +50,6 @@ class CurrentNodeMsg(Message):
 
 
 class ReviewBtnMsg(Message):
-    def __init__(self, review_btn: ReviewButton) -> None:
-        self.btn: ReviewButton = review_btn
+    def __init__(self, review_btn: ReviewBtn) -> None:
+        self.review_button: ReviewBtn = review_btn
         super().__init__()

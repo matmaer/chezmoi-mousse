@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-from .actionables import RefreshTreeButton
+from .actionables import RefreshBtn
 from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree", "DestDirTree"]
@@ -43,7 +43,7 @@ class DestDirTree(Vertical):
     def compose(self) -> ComposeResult:
         yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
         yield ManagedTree(self.app_ids)
-        yield RefreshTreeButton(self.app_ids)
+        yield RefreshBtn(self.app_ids)
 
 
 @dataclass(slots=True)

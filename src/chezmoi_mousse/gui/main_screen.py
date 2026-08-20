@@ -14,10 +14,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 from chezmoi_mousse.functions import ResultCollector, min_wait
 from chezmoi_mousse.str_enums import Chars, LoadingLabel, Tcss
 
-from .common.actionables import (
-    DirContentBtn,
-    ReviewBtnGroup,
-)
+from .common.actionables import DirContentBtn, RefreshBtn, ReviewBtn, ReviewBtnGroup
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
@@ -25,7 +22,7 @@ from .common.git_log import GitLogView
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReviewBtnMsg
-from .common.operate_modal import LoadingModal
+from .common.operate_modal import LoadingModal, OperateModal
 from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
@@ -109,6 +106,10 @@ class MainScreen(Screen[None]):
         await self._log_cmd_results(results_to_log).wait()
         await self.loading_modal.dismiss()
 
+    @work
+    async def _push_operate_modal(self, review_btn: ReviewBtn | RefreshBtn) -> None:
+        await self.app.push_screen(OperateModal(review_btn))
+
     #####################
     # UI update workers #
     #####################
@@ -183,4 +184,4 @@ class MainScreen(Screen[None]):
 
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:
-        self.notify(f"Pressed {msg.btn.bd.btn_id}")
+        self._push_operate_modal(msg.review_button)

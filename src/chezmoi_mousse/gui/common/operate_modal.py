@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters, work
+from textual import getters, on, work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.reactive import reactive
@@ -21,7 +21,13 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-from .actionables import ReviewButton, RunBtnGroup
+from .actionables import (
+    ExitOpModalBtn,
+    RefreshBtn,
+    ReviewBtn,
+    RunBtn,
+    RunBtnGroup,
+)
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -98,7 +104,7 @@ class OperateInfo(Static):
         app = getters.app(ChezmoiGui)
 
     dry_run: reactive[bool] = reactive(False)
-    current_button: ReviewButton
+    current_button: ReviewBtn
 
     def __init__(self) -> None:
         self.current_command: WriteCmd | None = None
@@ -107,7 +113,7 @@ class OperateInfo(Static):
     def on_mount(self) -> None:
         self.display = False
 
-    def _update_review_info(self, button: ReviewButton, dry_run: bool) -> None:
+    def _update_review_info(self, button: ReviewBtn, dry_run: bool) -> None:
         self.current_button = button
         info_lines: list[str] = []
         # TODO: append pretty cmd
@@ -156,10 +162,10 @@ class CommandOutput(ScrollableContainer):
         yield Label("Command output", classes=Tcss.main_section_label)
 
     def on_mount(self) -> None:
+        self._reset_widgets()
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
-        self._reset_widgets()
 
     @work
     async def _reset_widgets(self) -> None:
@@ -170,9 +176,22 @@ class CommandOutput(ScrollableContainer):
 
 
 class OperateModal(ModalScreen[None]):
-    def __init__(self, review_btn: ReviewButton | None) -> None:
-        self.review_btn = review_btn
+    def __init__(self, pressed_btn: ReviewBtn | RefreshBtn) -> None:
+        self.pressed_btn = pressed_btn
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield Vertical(OperateInfo(), CommandOutput(), RunBtnGroup(self.review_btn))
+        yield Vertical(OperateInfo(), CommandOutput(), RunBtnGroup(self.pressed_btn))
+
+    @on(RunBtn.Pressed)
+    def handle_run_button(self, event: RunBtn.Pressed) -> None:
+        if isinstance(event.button, RunBtn):
+            event.stop()
+            run_btn_group = self.query_exactly_one(RunBtnGroup)
+            run_btn_group.update_run_buttons_after_run_command(changes=False)
+
+    @on(ExitOpModalBtn.Pressed)
+    def handle_exit_modal(self, event: ExitOpModalBtn.Pressed) -> None:
+        if isinstance(event.button, ExitOpModalBtn):
+            event.stop()
+            self.dismiss()

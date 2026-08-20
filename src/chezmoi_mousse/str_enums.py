@@ -145,6 +145,8 @@ class LogString(StrEnum):
 
 
 class OpBtnLabel(StrEnum):
+    add_dry_run = BindingDescription.add_dry_run
+    remove_dry_run = BindingDescription.remove_dry_run
     add_review = "Review Add Path"
     add_run = "Run Chezmoi Add"
     apply_review = "Review Apply Path"

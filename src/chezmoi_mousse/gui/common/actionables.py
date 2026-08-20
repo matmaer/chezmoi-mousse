@@ -11,7 +11,6 @@ from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.dataclass_types import ReviewBtnData, RunBtnData
 from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
-    BindingDescription,
     FlatBtnLabel,
     OpBtnLabel,
     OpInfoString,
@@ -20,42 +19,29 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
+from .messages import ReviewBtnMsg
+
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_types import ReviewBtnDict, RunBtnDict
+    from chezmoi_mousse.cm_types import ReviewBtnDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 __all__ = [
     "DirContentBtn",
-    "FlatButton",
+    "ExitOpModalBtn",
+    "FlatBtn",
     "FlatButtonsVertical",
-    "RefreshTreeButton",
+    "RefreshBtn",
     "ReviewBtnGroup",
-    "ReviewButton",
-    "RunButton",
+    "ReviewBtn",
+    "RunBtn",
     "RunBtnGroup",
     "SwitchSlider",
-    "TabButton",
+    "TabBtn",
     "TabButtons",
 ]
-
-
-class ExitOpModalBtn(Button):
-    def __init__(self) -> None:
-        super().__init__(
-            classes=Tcss.operate_button,
-            label=OpBtnLabel.cancel,
-        )
-
-
-class ToggleDryRunBtn(Button):
-    def __init__(self) -> None:
-        super().__init__(
-            classes=Tcss.operate_button,
-            label="not set",
-        )
 
 
 class DirContentBtn(Button):
@@ -65,7 +51,16 @@ class DirContentBtn(Button):
         self.app_ids = app_ids
 
 
-class FlatButton(Button):
+class ExitOpModalBtn(Button):
+    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button,
+            label=btn_label,
+        )
+
+
+class FlatBtn(Button):
     def __init__(self, ids: AppIds, *, btn_label: FlatBtnLabel) -> None:
         super().__init__(
             classes=Tcss.flat_button,
@@ -84,19 +79,19 @@ class FlatButtonsVertical(Vertical):
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
-            yield FlatButton(self.ids, btn_label=label)
+            yield FlatBtn(self.ids, btn_label=label)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
 
-    @on(FlatButton.Pressed, Tcss.flat_button.dot_prefix)
-    def update_tcss_classes(self, event: FlatButton.Pressed) -> None:
+    @on(FlatBtn.Pressed, Tcss.flat_button.dot_prefix)
+    def update_tcss_classes(self, event: FlatBtn.Pressed) -> None:
         for btn in self.query(Button).results():
             btn.remove_class(Tcss.last_clicked_flat_btn)
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class RefreshTreeButton(Button):
+class RefreshBtn(Button):
     def __init__(self, app_ids: AppIds) -> None:
         self.app_ids = app_ids
         super().__init__(
@@ -106,7 +101,15 @@ class RefreshTreeButton(Button):
         )
 
 
-class ReviewButton(Button):
+class RunBtn(Button):
+    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
+        )
+
+
+class ReviewBtn(Button):
     def __init__(
         self, app_ids: AppIds, btn_label: OpBtnLabel, btn_data: ReviewBtnData
     ) -> None:
@@ -114,6 +117,15 @@ class ReviewButton(Button):
         self.bd = btn_data
         super().__init__(
             classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
+        )
+
+
+class ToggleDryRunBtn(Button):
+    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
+        self.bd = btn_data
+        super().__init__(
+            classes=Tcss.operate_button,
+            label=btn_label,
         )
 
 
@@ -127,10 +139,10 @@ class ReviewBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label, btn_data in self.review_buttons.items():
-            yield ReviewButton(self.app_ids, btn_label=btn_label, btn_data=btn_data)
+            yield ReviewBtn(self.app_ids, btn_label=btn_label, btn_data=btn_data)
 
     def set_path_arg(self, path: Path) -> None:
-        buttons = self.query_children(ReviewButton)
+        buttons = self.query_children(ReviewBtn)
         for btn in buttons:
             btn.bd.path_arg = path
 
@@ -193,102 +205,104 @@ class ReviewBtnGroup(HorizontalGroup):
         else:
             raise ValueError(f"Unexpected tab_label {app_ids.tab_label}")
 
-
-class RunButton(Button):
-    def __init__(self, btn_label: OpBtnLabel, btn_data: RunBtnData) -> None:
-        self.bd = btn_data
-        super().__init__(
-            classes=Tcss.operate_button, id=btn_data.btn_id, label=btn_label
-        )
+    @on(ReviewBtn.Pressed)
+    def handle_review_btn_pressed(self, event: ReviewBtn.Pressed) -> None:
+        if isinstance(event.button, ReviewBtn):
+            event.stop()
+            self.post_message(ReviewBtnMsg(event.button))
 
 
 class RunBtnGroup(HorizontalGroup):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, btn_pressed: ReviewButton | None) -> None:
+    def __init__(self, btn_pressed: ReviewBtn | RefreshBtn) -> None:
         self.btn = btn_pressed
         super().__init__(
             classes=Tcss.op_btn_group,
         )
 
     def on_mount(self) -> None:
-        if isinstance(self.btn, ReviewButton):
-            self.run_buttons: RunBtnDict = self._get_run_buttons(self.btn.app_ids)
-            for btn_label, btn_data in self.run_buttons.items():
-                self.mount(RunButton(btn_label=btn_label, btn_data=btn_data))
-            self.mount(ExitOpModalBtn())
+        if isinstance(self.btn, ReviewBtn):
+            toggle_dry_run_btn = self._get_toggle_dry_run_btn(self.btn.app_ids)
+            run_button = self._get_run_button(self.btn)
+            exit_op_modal_btn = self._get_exit_op_modal_btn(OpBtnLabel.cancel)
+            self.mount_all((toggle_dry_run_btn, run_button, exit_op_modal_btn))
         else:
-            self.mount(ExitOpModalBtn())
-            # TODO: update via reactive label to 'refresh trees' if there were changes
-            self.query_exactly_one(ExitOpModalBtn).label = OpBtnLabel.close
-        self.mount(ToggleDryRunBtn())
-        self._set_toggle_dry_run_btn_label(self.app.cmattr.dry_run)
-
-    def _set_toggle_dry_run_btn_label(self, dry_run: bool) -> None:
-        btn = self.query_exactly_one(ToggleDryRunBtn)
-        btn.label = (
-            BindingDescription.add_dry_run
-            if dry_run is False
-            else BindingDescription.remove_dry_run
-        )
+            exit_op_modal_btn = self._get_exit_op_modal_btn(OpBtnLabel.close)
+            self.mount(exit_op_modal_btn)
 
     def update_run_buttons_after_run_command(self, changes: bool) -> None:
-        for btn in self.query_children(RunButton):
+        for btn in self.query_children(RunBtn):
             btn.disabled = True
         if changes:
             self.query_exactly_one(ExitOpModalBtn).label = OpBtnLabel.refresh_trees
         else:
             self.query_exactly_one(ExitOpModalBtn).label = OpBtnLabel.close
 
-    def _get_run_buttons(self, app_ids: AppIds) -> RunBtnDict:
-        if app_ids.tab_label == TabLabel.add:
-            add_run_data = RunBtnData(
-                btn_id=app_ids.op_btn.add_run,
-                btn_qid=app_ids.op_btn.add_run_q,
-            )
-            return {
-                OpBtnLabel.add_run: add_run_data,
-            }
-        forget_run_data = RunBtnData(
-            btn_id=app_ids.op_btn.forget_run,
-            btn_qid=app_ids.op_btn.forget_run_q,
+    def _get_toggle_dry_run_label(self, dry_run: bool) -> OpBtnLabel:
+        return OpBtnLabel.add_dry_run if dry_run is True else OpBtnLabel.remove_dry_run
+
+    def _get_exit_op_modal_btn(self, btn_label: OpBtnLabel) -> ExitOpModalBtn:
+        return ExitOpModalBtn(
+            btn_label,
+            RunBtnData(
+                btn_id=self.btn.app_ids.op_btn.exit_op_modal,
+                btn_qid=self.btn.app_ids.op_btn.exit_op_modal_q,
+            ),
         )
-        destroy_run_data = RunBtnData(
-            btn_id=app_ids.op_btn.destroy_run,
-            btn_qid=app_ids.op_btn.destroy_run_q,
+
+    def _get_toggle_dry_run_btn(self, app_ids: AppIds) -> ToggleDryRunBtn:
+        return ToggleDryRunBtn(
+            self._get_toggle_dry_run_label(self.app.cmattr.dry_run),
+            RunBtnData(
+                btn_id=app_ids.op_btn.toggle_dry_run,
+                btn_qid=app_ids.op_btn.toggle_dry_run_q,
+            ),
         )
-        _forget_destroy_buttons = {
-            OpBtnLabel.forget_run: forget_run_data,
-            OpBtnLabel.destroy_run: destroy_run_data,
-        }
-        if app_ids.tab_label == TabLabel.apply:
-            apply_run_data = RunBtnData(
-                btn_id=app_ids.op_btn.apply_run,
-                btn_qid=app_ids.op_btn.apply_run_q,
+
+    def _get_run_button(self, btn: ReviewBtn) -> RunBtn:
+        if btn.label == OpBtnLabel.add_review:
+            data = RunBtnData(
+                btn_id=btn.app_ids.op_btn.add_run,
+                btn_qid=btn.app_ids.op_btn.add_run_q,
             )
-            return {
-                OpBtnLabel.apply_run: apply_run_data,
-                **_forget_destroy_buttons,
-            }
-        elif app_ids.tab_label == TabLabel.re_add:
-            op_btn_data = RunBtnData(
-                btn_id=app_ids.op_btn.re_add_run,
-                btn_qid=app_ids.op_btn.re_add_run_q,
+            return RunBtn(OpBtnLabel.add_run, data)
+        elif btn.label == OpBtnLabel.apply_review:
+            data = RunBtnData(
+                btn_id=btn.app_ids.op_btn.apply_run,
+                btn_qid=btn.app_ids.op_btn.apply_run_q,
             )
-            return {OpBtnLabel.re_add_run: op_btn_data, **_forget_destroy_buttons}
+            return RunBtn(OpBtnLabel.apply_run, data)
+        elif btn.label == OpBtnLabel.destroy_review:
+            data = RunBtnData(
+                btn_id=btn.app_ids.op_btn.destroy_run,
+                btn_qid=btn.app_ids.op_btn.destroy_run_q,
+            )
+            return RunBtn(OpBtnLabel.destroy_run, data)
+        elif btn.label == OpBtnLabel.forget_review:
+            data = RunBtnData(
+                btn_id=btn.app_ids.op_btn.forget_run,
+                btn_qid=btn.app_ids.op_btn.forget_run_q,
+            )
+            return RunBtn(OpBtnLabel.forget_run, data)
+        elif btn.label == OpBtnLabel.re_add_review:
+            data = RunBtnData(
+                btn_id=btn.app_ids.op_btn.re_add_run,
+                btn_qid=btn.app_ids.op_btn.re_add_run_q,
+            )
+            return RunBtn(OpBtnLabel.re_add_run, data)
         else:
-            raise ValueError(f"Unexpected tab_label {app_ids.tab_label}")
+            raise ValueError(f"Unexpected button label {btn.label}")
 
     @on(ToggleDryRunBtn.Pressed)
-    def handle_toggle_dry_run_pressed(self, event: ToggleDryRunBtn.Pressed) -> None:
-        if (
-            self.app.cmattr.dry_run
-            and event.button.label != BindingDescription.remove_dry_run
-        ):
+    def _handle_toggle_dry_run_pressed(self, event: ToggleDryRunBtn.Pressed) -> None:
+        event.stop()
+        if self.app.cmattr.dry_run and event.button.label != OpBtnLabel.remove_dry_run:
             self.notify("dry run out of sync", severity="error")
         self.app.cmattr.dry_run = not self.app.cmattr.dry_run
-        self._set_toggle_dry_run_btn_label(self.app.cmattr.dry_run)
+        dry_run_btn = self.query_exactly_one(ToggleDryRunBtn)
+        dry_run_btn.label = self._get_toggle_dry_run_label(self.app.cmattr.dry_run)
 
 
 class SwitchWithLabel(HorizontalGroup):
@@ -325,7 +339,7 @@ class SwitchSlider(VerticalGroup):
         self.query_children(HorizontalGroup).last().styles.padding = 0
 
 
-class TabButton(Button):
+class TabBtn(Button):
     def __init__(self, *, app_ids: AppIds, label: TabLabel) -> None:
         super().__init__(classes=Tcss.tab_button, label=label)
         self.app_ids = app_ids
@@ -340,13 +354,13 @@ class TabButtons(Horizontal):
     def compose(self) -> ComposeResult:
         for btn_enum in self.buttons:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield TabButton(app_ids=self.tab_ids, label=btn_enum)
+                yield TabBtn(app_ids=self.tab_ids, label=btn_enum)
 
     def on_mount(self) -> None:
-        self.query(TabButton).first().add_class(Tcss.last_clicked_tab_btn)
+        self.query(TabBtn).first().add_class(Tcss.last_clicked_tab_btn)
 
-    @on(TabButton.Pressed)
-    def update_tcss_classes(self, event: TabButton.Pressed) -> None:
-        for btn in self.query(TabButton).results():
+    @on(TabBtn.Pressed)
+    def update_tcss_classes(self, event: TabBtn.Pressed) -> None:
+        for btn in self.query(TabBtn).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
         event.button.add_class(Tcss.last_clicked_tab_btn)
