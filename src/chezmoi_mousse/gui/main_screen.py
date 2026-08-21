@@ -159,11 +159,11 @@ class MainScreen(Screen[None]):
         msg.stop()
         # Keep track of selected paths for each tab
         if msg.app_ids.tab_label == TabLabel.add:
-            CmdResults.add_path = msg.path
+            self.app.cmattr.add_path = msg.path
         elif msg.app_ids.tab_label == TabLabel.apply:
-            CmdResults.apply_path = msg.path
+            self.app.cmattr.apply_path = msg.path
         elif msg.app_ids.tab_label == TabLabel.re_add:
-            CmdResults.re_add_path = msg.path
+            self.app.cmattr.re_add_path = msg.path
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         self.query_exactly_one(
             msg.app_ids.container.right_side_q, ViewSwitcher

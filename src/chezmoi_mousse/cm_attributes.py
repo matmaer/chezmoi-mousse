@@ -144,6 +144,11 @@ class ManagedPaths:
 
 @dataclass
 class CmAttributes:
+    # Keep track of the selected path by tab
+    add_path: Path | None = None
+    apply_path: Path | None = None
+    re_add_path: Path | None = None
+
     add_id = AppIds(TabLabel.add)
     apply_id = AppIds(TabLabel.apply)
     config_id = AppIds(TabLabel.config)

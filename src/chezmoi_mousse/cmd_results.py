@@ -67,11 +67,6 @@ class CmdResults:
     parsed_dump_config: ClassVar[ParsedJson]
     parsed_template_data: ClassVar[ParsedJson]
 
-    # Keep track of the selected path by tab
-    add_path: ClassVar[Path]
-    apply_path: ClassVar[Path]
-    re_add_path: ClassVar[Path]
-
     # Store a snapshot which we can compare with new values in the result fields
     _managed_snapshot: ClassVar[ResultsSnapshot] = ResultsSnapshot()
     # To retrieve the current changes, updated by store_changed_paths

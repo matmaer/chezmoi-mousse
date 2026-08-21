@@ -169,9 +169,6 @@ class SplashScreen(Screen[None]):
         parsed_dump_config = Commands.json_loads(CmdResults.dump_config_result.std_out)
         CmdResults.parsed_dump_config = parsed_dump_config
         Commands.dest_dir = CmdResults.get_dest_dir()
-        CmdResults.add_path = CmdResults.get_dest_dir()
-        CmdResults.apply_path = CmdResults.get_dest_dir()
-        CmdResults.re_add_path = CmdResults.get_dest_dir()
         parsed_template_data = Commands.json_loads(
             CmdResults.template_data_result.std_out
         )
@@ -183,6 +180,9 @@ class SplashScreen(Screen[None]):
     async def _set_cm_attributes(self) -> None:
         self.app.cmattr.paths = ManagedPaths()
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
+        self.app.cmattr.add_path = CmdResults.get_dest_dir()
+        self.app.cmattr.apply_path = CmdResults.get_dest_dir()
+        self.app.cmattr.re_add_path = CmdResults.get_dest_dir()
         self.splash_log.write(msg)
 
     # Sequential Orchestration Pipeline
