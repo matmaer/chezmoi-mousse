@@ -11,7 +11,8 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.functions import ResultCollector, min_wait
+from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
     LoadingLabel,

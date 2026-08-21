@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.functions import ResultCollector
+from chezmoi_mousse.cmd_results import ResultCollector
 from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import OpBtnLabel, PathKind, StatusCode, TabLabel
 

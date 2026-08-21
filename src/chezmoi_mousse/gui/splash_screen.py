@@ -16,7 +16,8 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_attributes import ManagedPaths
-from chezmoi_mousse.functions import Commands, ResultCollector
+from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 

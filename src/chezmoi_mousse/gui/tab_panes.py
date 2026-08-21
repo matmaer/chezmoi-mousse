@@ -23,9 +23,9 @@ from textual.widgets import (
     TabPane,
 )
 
+from chezmoi_mousse.cmd_results import ResultCollector
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.enum_data import PwMgrEnum
-from chezmoi_mousse.functions import ResultCollector
 from chezmoi_mousse.named_tuples import PwMgrData
 from chezmoi_mousse.str_enums import (
     ColorVar,
