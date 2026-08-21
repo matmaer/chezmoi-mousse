@@ -150,10 +150,13 @@ class RunBtnGroup(HorizontalGroup):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self) -> None:
+    def __init__(self, btn_labels: tuple[OpBtnLabel, ...]) -> None:
+        self.btn_labels = btn_labels
         super().__init__(classes=Tcss.op_btn_group)
 
-    def compose(self) -> ComposeResult: ...
+    def compose(self) -> ComposeResult:
+        for btn_label in self.btn_labels:
+            yield RunBtn(btn_label=btn_label)
 
     def on_mount(self) -> None: ...
 

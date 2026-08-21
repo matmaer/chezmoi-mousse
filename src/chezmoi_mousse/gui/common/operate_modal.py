@@ -22,11 +22,7 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-from .actionables import (
-    ExitModalBtn,
-    ReviewBtn,
-    RunBtn,
-)
+from .actionables import ExitModalBtn, ReviewBtn, RunBtn, RunBtnGroup
 from .components import MainSectionLabel, SubSectionLabel
 
 if TYPE_CHECKING:
@@ -168,6 +164,7 @@ class OperateModal(ModalScreen[None]):
         with Vertical():
             yield OperateInfo()
             yield CommandOutput()
+            yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:
         operate_info = self.query_exactly_one(OperateInfo)
