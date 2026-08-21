@@ -21,11 +21,10 @@ from chezmoi_mousse.str_enums import (
 )
 
 from .actionables import (
-    ExitOpModalBtn,
+    ExitModalBtn,
     RefreshBtn,
     ReviewBtn,
     RunBtn,
-    RunBtnGroup,
 )
 
 if TYPE_CHECKING:
@@ -60,12 +59,6 @@ class LoadingModal(ModalScreen[None]):
             return
         self._dispatch_commands()
 
-    def _update_label(self, cmd: ReadCmd | WriteCmd, path_arg: Path | None) -> None:
-        label = self.query_exactly_one(Label)
-        label_text = "Running command:\n"
-        label_text += AppLife.pretty_cmd(cmd, dry=None, path=path_arg)
-        label.update(label_text)
-
     def _take_managed_snapshot(self) -> None: ...
 
     @work
@@ -78,9 +71,9 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
-        for read_cmd in ReadCmd.managed_commands():
-            self._update_label(read_cmd, None)
-            await self._run_read_command(read_cmd).wait()
+        for cmd in ReadCmd.managed_commands():
+            self.label_text = f"Running: {AppLife.pretty_cmd(cmd, dry=None, path=None)}"
+            await self._run_read_command(cmd).wait()
 
     @work(thread=True)
     @min_wait
@@ -178,7 +171,6 @@ class OperateModal(ModalScreen[None]):
         with Vertical():
             yield OperateInfo()
             yield CommandOutput()
-            yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:
         cmd_output = self.query_exactly_one(CommandOutput)
@@ -186,13 +178,8 @@ class OperateModal(ModalScreen[None]):
 
     @on(RunBtn.Pressed)
     def handle_run_button(self, event: RunBtn.Pressed) -> None:
-        if isinstance(event.button, RunBtn):
-            event.stop()
-            run_btn_group = self.query_exactly_one(RunBtnGroup)
-            run_btn_group.update_run_buttons_after_run_command(changes=False)
+        self.notify(f"btn pressed {event.button}")
 
-    @on(ExitOpModalBtn.Pressed)
-    def handle_exit_modal(self, event: ExitOpModalBtn.Pressed) -> None:
-        if isinstance(event.button, ExitOpModalBtn):
-            event.stop()
-            self.dismiss()
+    @on(ExitModalBtn.Pressed)
+    def handle_exit_modal(self, event: ExitModalBtn.Pressed) -> None:
+        self.notify(f"btn pressed {event.button}")

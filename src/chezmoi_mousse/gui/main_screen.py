@@ -23,7 +23,7 @@ from chezmoi_mousse.str_enums import (
 
 from .common.actionables import (
     DirContentBtn,
-    ExitOpModalBtn,
+    ExitModalBtn,
     RefreshBtn,
 )
 from .common.contents import ContentsView
@@ -202,8 +202,8 @@ class MainScreen(Screen[None]):
             self.notify(f"Not yet implemented {type(DirContentBtn)}")
             return
 
-    @on(ExitOpModalBtn.Pressed)
-    def handle_exit_op_modal_btn(self, event: ExitOpModalBtn.Pressed) -> None: ...
+    @on(ExitModalBtn.Pressed)
+    def handle_exit_op_modal_btn(self, event: ExitModalBtn.Pressed) -> None: ...
 
     @on(LogCmdResultMsg)
     def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
@@ -213,8 +213,17 @@ class MainScreen(Screen[None]):
         self.app_log.cmd_results = msg.cmd_result
         self.cmd_log.cmd_results = msg.cmd_result
 
+    @on(RefreshBtn.Pressed)
+    async def handle_refresh_button(self) -> None:
+        self.loading_modal = LoadingModal(operation=None, path_arg=None, dry_run=None)
+        await self.app.push_screen(self.loading_modal)
+        await self.loading_modal.run_managed_commands().wait()
+        await self._update_trees_loading().wait()
+        await self._log_cmd_results_loading(
+            ResultCollector.managed_cmd_results()
+        ).wait()
+        await self.loading_modal.dismiss()
+
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:
-        self._push_operate_modal(
-            (OpBtnLabel.add_dry_run, msg.review_button.btn_label, OpBtnLabel.cancel)
-        )
+        self.notify(f"Not yet implemented for {msg}")

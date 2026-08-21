@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DirContentBtn",
-    "ExitOpModalBtn",
+    "ExitModalBtn",
     "FlatBtn",
     "RefreshBtn",
     "ReviewBtn",
@@ -47,16 +47,11 @@ class DirContentBtn(Button):
         self.app_ids = app_ids
 
 
-class ExitOpModalBtn(Button):
-    def __init__(self, app_ids: AppIds, btn_label: OpBtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        self.btn_id = self.app_ids.op_btn.toggle_dry_run
-        self.btn_q = self.app_ids.op_btn.toggle_dry_run_q
+class ExitModalBtn(Button):
+    def __init__(self, btn_label: OpBtnLabel) -> None:
         super().__init__(
             classes=Tcss.operate_button,
-            id=self.btn_id,
-            label=self.btn_label,
+            label=btn_label,
         )
 
 
@@ -86,17 +81,24 @@ class RefreshBtn(Button):
 class ReviewBtn(Button):
     def __init__(self, app_ids: AppIds, btn_label: OpBtnLabel) -> None:
         self.app_ids = app_ids
-        self.btn_label = btn_label
         super().__init__(
             classes=Tcss.operate_button,
-            id=self.app_ids.op_btn_id(operation=self.btn_label),
-            label=self.btn_label,
+            id=self.app_ids.op_btn_id(operation=btn_label),
+            label=btn_label,
         )
 
 
 class RunBtn(Button):
     def __init__(self, btn_label: OpBtnLabel) -> None:
         super().__init__(label=btn_label, classes=Tcss.operate_button)
+
+
+class DryRunBtn(Button):
+    def __init__(self, btn_label: OpBtnLabel) -> None:
+        super().__init__(
+            classes=Tcss.operate_button,
+            label=btn_label,
+        )
 
 
 class TabBtn(Button):
@@ -125,15 +127,6 @@ class FlatButtonsVertical(Vertical):
         event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class ToggleDryRunBtn(Button):
-    def __init__(self, btn_label: OpBtnLabel) -> None:
-        self.btn_label = btn_label
-        super().__init__(
-            classes=Tcss.operate_button,
-            label=self.btn_label,
-        )
-
-
 class ReviewBtnGroup(HorizontalGroup):
     def __init__(self, app_ids: AppIds, labels: tuple[OpBtnLabel, ...]) -> None:
         self.app_ids = app_ids
@@ -157,33 +150,19 @@ class RunBtnGroup(HorizontalGroup):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
-        self.labels = labels
+    def __init__(self) -> None:
         super().__init__(classes=Tcss.op_btn_group)
 
-    def compose(self) -> ComposeResult:
-        for btn_label in self.labels:
-            yield RunBtn(btn_label=btn_label)
+    def compose(self) -> ComposeResult: ...
 
-    def update_run_buttons_after_run_command(self, changes: bool) -> None:
-        for btn in self.query_children(RunBtn):
-            btn.disabled = True
-        if changes:
-            self.query_exactly_one(ExitOpModalBtn).label = OpBtnLabel.refresh_trees
-        else:
-            self.query_exactly_one(ExitOpModalBtn).label = OpBtnLabel.close
+    def on_mount(self) -> None: ...
 
-    def _get_toggle_dry_run_label(self, dry_run: bool) -> OpBtnLabel:
-        return OpBtnLabel.add_dry_run if dry_run is True else OpBtnLabel.remove_dry_run
-
-    @on(ToggleDryRunBtn.Pressed)
-    def _handle_toggle_dry_run_pressed(self, event: ToggleDryRunBtn.Pressed) -> None:
+    @on(DryRunBtn.Pressed)
+    def _handle_toggle_dry_run_pressed(self, event: DryRunBtn.Pressed) -> None:
         event.stop()
-        if self.app.cmattr.dry_run and event.button.label != OpBtnLabel.remove_dry_run:
-            self.notify("dry run out of sync", severity="error")
         self.app.cmattr.dry_run = not self.app.cmattr.dry_run
-        dry_run_btn = self.query_exactly_one(ToggleDryRunBtn)
-        dry_run_btn.label = self._get_toggle_dry_run_label(self.app.cmattr.dry_run)
+        dry_run_btn = self.query_exactly_one(DryRunBtn)
+        dry_run_btn.label = self.app.cmattr.get_dry_run_btn_label()
 
 
 class SwitchWithLabel(HorizontalGroup):
