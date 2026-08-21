@@ -20,6 +20,7 @@ from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
     GlobalArgs,
+    OpBtnLabel,
     PathFilters,
     PathKind,
     ReadCmd,
@@ -122,7 +123,13 @@ class AppLife:
 
 class Commands:
     dest_dir: Path | None = None
-    dry_run: bool | None = None
+    dry_run: bool = True
+
+    @staticmethod
+    def get_dry_run_btn_label() -> OpBtnLabel:
+        if Commands.dry_run is True:
+            return OpBtnLabel.remove_dry_run
+        return OpBtnLabel.add_dry_run
 
     @staticmethod
     def rel_path(path: Path) -> str:

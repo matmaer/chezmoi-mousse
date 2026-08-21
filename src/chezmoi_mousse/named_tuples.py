@@ -18,7 +18,7 @@ __all__ = [
 
 
 class CommandResult(NamedTuple):
-    dry_run: bool | None
+    dry_run: bool
     full_cmd: str
     path_arg: Path | None
     pretty_cmd: str

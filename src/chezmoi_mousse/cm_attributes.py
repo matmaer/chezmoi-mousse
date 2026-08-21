@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.named_tuples import ManagedTreePaths
-from chezmoi_mousse.str_enums import OpBtnLabel, PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import PathKindMap, StatusMap
@@ -151,8 +151,6 @@ class CmAttributes:
     logs_id = AppIds(TabLabel.logs)
     re_add_id = AppIds(TabLabel.re_add)
 
-    dry_run: bool = True
-
     @cached_property
     def dest_dir(self) -> Path:
         return Path(CmdResults.parsed_dump_config["destDir"])
@@ -170,8 +168,3 @@ class CmAttributes:
         return CmdResults.parsed_dump_config["git"]["autocommit"]
 
     paths: ManagedPaths = field(init=False)
-
-    def get_dry_run_btn_label(self) -> OpBtnLabel:
-        if self.dry_run is True:
-            return OpBtnLabel.remove_dry_run
-        return OpBtnLabel.add_dry_run
