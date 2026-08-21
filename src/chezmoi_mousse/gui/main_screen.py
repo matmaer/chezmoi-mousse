@@ -12,7 +12,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse.cmd_results import CmdResults
-from chezmoi_mousse.functions import min_wait
+from chezmoi_mousse.functions import Commands, min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
     LoadingLabel,
@@ -22,18 +22,18 @@ from chezmoi_mousse.str_enums import (
     Tcss,
 )
 
-from .common.actionables import (
-    DirContentBtn,
-    ExitModalBtn,
-    RefreshBtn,
-)
 from .common.contents import ContentsView
 from .common.diffs import DiffView
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
-from .common.messages import CurrentNodeMsg, LogCmdResultMsg, ReviewBtnMsg
+from .common.messages import (
+    CurrentNodeMsg,
+    LogCmdResultMsg,
+    RefreshBtnMsg,
+    ReviewBtnMsg,
+)
 from .common.operate_modal import LoadingModal, OperateModal
 from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
@@ -55,7 +55,6 @@ class CustomHeader(Header):
 
     def watch_dry_run(self, dry_run: bool) -> None:
         if dry_run is False:
-            # TODO: check if we can just set screen title
             self.screen.title = self.dry_run_mode
             header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.add_class(Tcss.live_run_color)
@@ -176,17 +175,6 @@ class MainScreen(Screen[None]):
         ).show_path = msg.path
         self.query_one(msg.app_ids.container.git_log_q, GitLogView).show_path = msg.path
 
-    @on(DirContentBtn.Pressed)
-    def handle_path_in_dir_node_pressed(self, event: DirContentBtn.Pressed) -> None:
-        if isinstance(event.button, DirContentBtn):
-            event.stop()
-            _ = self.query_one(event.button.app_ids.managed_tree_q, ManagedTree)
-            self.notify(f"Not yet implemented {type(DirContentBtn)}")
-            return
-
-    @on(ExitModalBtn.Pressed)
-    def handle_exit_op_modal_btn(self, event: ExitModalBtn.Pressed) -> None: ...
-
     @on(LogCmdResultMsg)
     def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
         """Currently used by contents.py, diffs.py, and git_log.py to log command
@@ -195,7 +183,7 @@ class MainScreen(Screen[None]):
         self.app_log.cmd_results = msg.cmd_result
         self.cmd_log.cmd_results = msg.cmd_result
 
-    @on(RefreshBtn.Pressed)
+    @on(RefreshBtnMsg)
     async def handle_refresh_button(self) -> None:
         CmdResults.store_current_snapshot()
         self.loading_modal = LoadingModal()
@@ -205,8 +193,9 @@ class MainScreen(Screen[None]):
         if CmdResults.changed_paths.no_changes:
             self.notify(NotifyMsg.no_managed_changes)
             await self._reload_directory_tree_loading().wait()
-            self.notify(NotifyMsg.add_tab_tree_reloaded)
-            self.loading_modal.dismiss()
+            if self.tabbed_content.active == TabLabel.add:
+                self.notify(NotifyMsg.add_tab_tree_reloaded)
+            await self.loading_modal.dismiss()
             return
         # We have changes, push the OperateModal to show these with a close button
         self.app.push_screen(OperateModal((OpBtnLabel.close,)))
@@ -216,7 +205,18 @@ class MainScreen(Screen[None]):
         await self._reload_directory_tree_loading().wait()
         await self._purge_views_cache().wait()
         await self._log_cmd_results_loading(CmdResults.managed_cmd_results()).wait()
+        self.loading_modal.dismiss()
 
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:
-        self.notify(f"Not yet implemented for {msg}")
+        run_btn_label = msg.review_button.btn_label.review_to_run
+        dry_run_btn_label = Commands.get_dry_run_btn_label()
+        self.app.push_screen(
+            OperateModal(
+                (
+                    dry_run_btn_label,
+                    run_btn_label,
+                    OpBtnLabel.cancel,
+                )
+            )
+        )

@@ -100,7 +100,10 @@ class AppLife:
             verb_str = " ".join([a for a in cmd.value if a not in AppLife._ugly_args()])
         else:
             verb_str = " ".join(cmd.value)
-        base_cmd = "chezmoi --dry-run" if Commands.dry_run is True else "chezmoi"
+        if isinstance(cmd, ReadCmd):
+            base_cmd = "chezmoi"
+        else:
+            base_cmd = "chezmoi --dry-run" if Commands.dry_run is True else "chezmoi"
         return f"{base_cmd} {verb_str}"
 
     @staticmethod

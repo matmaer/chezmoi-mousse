@@ -22,8 +22,9 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-from .actionables import ExitModalBtn, ReviewBtn, RunBtn, RunBtnGroup
+from .actionables import RunBtn, RunBtnGroup
 from .components import MainSectionLabel, SubSectionLabel
+from .messages import ExitModalBtnMsg, RunBtnMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -81,21 +82,21 @@ class OperateInfo(Static):
         app = getters.app(ChezmoiGui)
 
     dry_run: reactive[bool] = reactive(False)
-    current_button: ReviewBtn
 
-    def __init__(self) -> None:
-        self.current_command: WriteCmd | None = None
+    def __init__(self, btn_label: OpBtnLabel) -> None:
+        self.btn_label = btn_label
         super().__init__(classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
-        self.display = False
+        self._update_review_info()
 
-    def _update_review_info(self, button: ReviewBtn, dry_run: bool) -> None:
-        self.current_button = button
+    def _update_review_info(self) -> None:
         info_lines: list[str] = []
-        # TODO: append pretty cmd
-        info_lines.append(f"Will run command with dry run {dry_run}")
-        if button.label is not OpBtnLabel.apply_review:
+        if self.dry_run:
+            info_lines.append(OpInfoString.dry_run_notice)
+        else:
+            info_lines.append(OpInfoString.live_run_notice)
+        if self.btn_label is not OpBtnLabel.apply_run:
             if self.app.cmattr.auto_add is True:
                 info_lines.append(OpInfoString.auto_commit)
             if self.app.cmattr.auto_commit is True:
@@ -109,12 +110,12 @@ class OperateInfo(Static):
             )
             info_lines.append(msg)
         self.update("\n".join(info_lines))
-        self.border_title = OpInfoString.ready_to_run
+        self.border_title = OpInfoString.ready_to_run_title
 
-    def watch_dry_run(self, dry_run: bool) -> None:
+    def watch_dry_run(self) -> None:
         if not self.display:
             return
-        self._update_review_info(self.current_button, dry_run)
+        self._update_review_info()
 
 
 class CommandOutput(ScrollableContainer):
@@ -158,24 +159,33 @@ class CommandOutput(ScrollableContainer):
 class OperateModal(ModalScreen[None]):
     def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
         self.labels = labels
+        print([str(label) for label in self.labels])
+        self.operate_label = next(
+            label for label in self.labels if label in OpBtnLabel.run_btn_set()
+        )
+        print(self.operate_label)
         super().__init__()
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield OperateInfo()
+            yield OperateInfo(self.operate_label)
             yield CommandOutput()
             yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:
         operate_info = self.query_exactly_one(OperateInfo)
+        command_output = self.query_exactly_one(CommandOutput)
         if len(self.labels) == 1 and self.labels[0] == OpBtnLabel.close:
             # condition after a refresh trees operation
             operate_info.display = False
+        else:
+            command_output.display = False
 
-    @on(RunBtn.Pressed)
+    @on(RunBtnMsg)
     def handle_run_button(self, event: RunBtn.Pressed) -> None:
         self.notify(f"btn pressed {event.button}")
 
-    @on(ExitModalBtn.Pressed)
-    def handle_exit_modal(self, event: ExitModalBtn.Pressed) -> None:
-        self.notify(f"btn pressed {event.button}")
+    @on(ExitModalBtnMsg)
+    def _handle_exit_modal(self, event: ExitModalBtnMsg) -> None:
+        event.stop()
+        self.dismiss()

@@ -185,14 +185,32 @@ class OpBtnLabel(StrEnum):
         return frozenset({OpBtnLabel.cancel, OpBtnLabel.close, OpBtnLabel.reload})
 
     @classmethod
+    def review_btn_set(cls) -> frozenset["OpBtnLabel"]:
+        return frozenset(
+            {
+                OpBtnLabel.add_review,
+                OpBtnLabel.apply_review,
+                OpBtnLabel.destroy_review,
+                OpBtnLabel.forget_review,
+                OpBtnLabel.re_add_review,
+            }
+        )
+
+    @classmethod
     def run_btn_set(cls) -> frozenset["OpBtnLabel"]:
         return frozenset(
-            {OpBtnLabel.add_run, OpBtnLabel.apply_run, OpBtnLabel.re_add_run}
+            {
+                OpBtnLabel.add_run,
+                OpBtnLabel.apply_run,
+                OpBtnLabel.destroy_run,
+                OpBtnLabel.forget_run,
+                OpBtnLabel.re_add_run,
+            }
         )
 
     # classmethod which maps each review button to its corresponding run button
     @classmethod
-    def review_to_run_map(cls) -> dict["OpBtnLabel", "OpBtnLabel"]:
+    def _review_to_run_map(cls) -> dict["OpBtnLabel", "OpBtnLabel"]:
         return {
             cls.add_review: cls.add_run,
             cls.apply_review: cls.apply_run,
@@ -200,6 +218,10 @@ class OpBtnLabel(StrEnum):
             cls.destroy_review: cls.destroy_run,
             cls.forget_review: cls.forget_run,
         }
+
+    @property
+    def review_to_run(self) -> "OpBtnLabel":
+        return self._review_to_run_map()[self]
 
     @property
     def normalized_label(self) -> str:
@@ -216,14 +238,14 @@ class OpInfoString(StrEnum):
         f"[${ColorVar.dimmed}]Add new targets to the source state. If adding a "
         "directory, it will be recursed in.[/]"
     )
-    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
+    add_subtitle = f" local path {Chars.right_arrow} chezmoi repo "
     apply_path_info = (
         f"[${ColorVar.dimmed}]Chezmoi will ensure that the path is in the target "
-        "state. The command will run without prompting. "
+        "state. The command will run without prompting.\n"
         "For targets modified since chezmoi last wrote it. If adding a "
         "directory, it will be recursed in.[/]"
     )
-    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
+    apply_subtitle = f" chezmoi repo {Chars.right_arrow} path on disk "
     auto_add = (
         f"[${ColorVar.text_success}]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
         "paths will be added to the chezmoi repository."
@@ -244,22 +266,31 @@ class OpInfoString(StrEnum):
         "MAKE SURE YOU HAVE A BACKUP![/]"
     )
     destroy_subtitle = (
-        f"[${ColorVar.text_error}]{Chars.x_mark}[/] delete on disk and in chezmoi repo "
+        f"[${ColorVar.text_error}]{Chars.x_mark} delete on disk and in chezmoi repo "
         f"[${ColorVar.text_error}]{Chars.x_mark}[/]"
     )
-    forget_path_info = (
-        f"[${ColorVar.dimmed}]Remove from the source state, i.e. stop managing them.[/]"
+    dry_run_notice = (
+        "Ready to run command with --dry-run flag, no changes will be made to the "
+        "chezmoi repository, the paths below will be unaffected."
     )
-    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
-    ready_to_run = f"[${ColorVar.text}]Ready to run[/]"
-    run_completed = f"[${ColorVar.text}]Command completed[/]"
+    forget_path_info = (
+        f"[${ColorVar.dimmed}] Remove from the source state, i.e. stop managing them."
+        "[/]"
+    )
+    forget_subtitle = f" leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark} "
+    live_run_notice = (
+        f"[${ColorVar.text_warning}]{Chars.warning_sign} Ready to run command live!"
+        f"The paths below will be affected.{Chars.warning_sign}[/]"
+    )
+    ready_to_run_title = " ready to run "
+    run_completed_title = " command completed "
     re_add_path_info = (
         f"[${ColorVar.dimmed}]Re-add modified files in the target state, preserving "
         "any encrypted_ attributes. chezmoi will not overwrite templates, and "
         "all entries that are not files are ignored. If adding a directory, it"
         " will be recursed in.[/]"
     )
-    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
+    re_add_subtitle = f" path on disk {Chars.right_arrow} overwrite chezmoi repo "
 
 
 class PathFilters(Enum):

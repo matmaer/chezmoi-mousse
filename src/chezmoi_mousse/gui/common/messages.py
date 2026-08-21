@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual.message import Message
+from textual.widgets import Button
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -13,13 +14,17 @@ if TYPE_CHECKING:
     from .actionables import ReviewBtn
 
 
-__all__ = ["LogCmdResultMsg", "CurrentNodeMsg", "ReviewBtnMsg"]
-
-
-class LogCmdResultMsg(Message):
-    def __init__(self, cmd_result: list[CommandResult]) -> None:
-        self.cmd_result = cmd_result
-        super().__init__()
+__all__ = [
+    "CurrentNodeMsg",
+    "DirContentBtnMsg",
+    "DryRunBtnMsg",
+    "ExitModalBtnMsg",
+    "LogCmdResultMsg",
+    "RefreshBtnMsg",
+    "ReviewBtnMsg",
+    "RunBtnMsg",
+    "TabBtnMsg",
+]
 
 
 class CurrentNodeMsg(Message):
@@ -45,7 +50,49 @@ class CurrentNodeMsg(Message):
         return rel_path_border if self.path != self._dest_dir else f" {self._dest_dir} "
 
 
+class DirContentBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
+class DryRunBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
+class ExitModalBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
+class LogCmdResultMsg(Message):
+    def __init__(self, cmd_result: list[CommandResult]) -> None:
+        self.cmd_result = cmd_result
+        super().__init__()
+
+
+class RefreshBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
 class ReviewBtnMsg(Message):
     def __init__(self, review_btn: ReviewBtn) -> None:
         self.review_button: ReviewBtn = review_btn
+        super().__init__()
+
+
+class RunBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
+class TabBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
         super().__init__()
