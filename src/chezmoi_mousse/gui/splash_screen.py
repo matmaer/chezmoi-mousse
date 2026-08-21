@@ -16,7 +16,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.cm_attributes import ManagedPaths
-from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
@@ -166,18 +166,16 @@ class SplashScreen(Screen[None]):
 
     @work(name=WorkerName.parse_json_outputs)
     async def _parse_json_outputs(self) -> None:
-        parsed_dump_config = Commands.json_loads(
-            ResultCollector.dump_config_result.std_out
-        )
-        ResultCollector.parsed_dump_config = parsed_dump_config
-        Commands.dest_dir = ResultCollector.get_dest_dir()
-        ResultCollector.add_path = ResultCollector.get_dest_dir()
-        ResultCollector.apply_path = ResultCollector.get_dest_dir()
-        ResultCollector.re_add_path = ResultCollector.get_dest_dir()
+        parsed_dump_config = Commands.json_loads(CmdResults.dump_config_result.std_out)
+        CmdResults.parsed_dump_config = parsed_dump_config
+        Commands.dest_dir = CmdResults.get_dest_dir()
+        CmdResults.add_path = CmdResults.get_dest_dir()
+        CmdResults.apply_path = CmdResults.get_dest_dir()
+        CmdResults.re_add_path = CmdResults.get_dest_dir()
         parsed_template_data = Commands.json_loads(
-            ResultCollector.template_data_result.std_out
+            CmdResults.template_data_result.std_out
         )
-        ResultCollector.parsed_template_data = parsed_template_data
+        CmdResults.parsed_template_data = parsed_template_data
         msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
         self.splash_log.write(msg)
 

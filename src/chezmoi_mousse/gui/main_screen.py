@@ -11,7 +11,7 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
@@ -105,7 +105,7 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal(operation=None, path_arg=None, dry_run=None)
         await self.app.push_screen(self.loading_modal)
         await self._update_trees_loading().wait()
-        await self._log_cmd_results_loading(ResultCollector.splash_results()).wait()
+        await self._log_cmd_results_loading(CmdResults.splash_results()).wait()
         await self.loading_modal.dismiss()
 
     @work
@@ -124,7 +124,7 @@ class MainScreen(Screen[None]):
 
         if isinstance(operation, RefreshBtn):
             await self.loading_modal.run_managed_commands().wait()
-        results_to_log.extend(ResultCollector.managed_cmd_results())
+        results_to_log.extend(CmdResults.managed_cmd_results())
         await self._purge_views_cache_loading().wait()
         await self._update_trees_loading().wait()
         await self._log_cmd_results_loading(results_to_log).wait()
@@ -179,11 +179,11 @@ class MainScreen(Screen[None]):
         msg.stop()
         # Keep track of selected paths for each tab
         if msg.app_ids.tab_label == TabLabel.add:
-            ResultCollector.add_path = msg.path
+            CmdResults.add_path = msg.path
         elif msg.app_ids.tab_label == TabLabel.apply:
-            ResultCollector.apply_path = msg.path
+            CmdResults.apply_path = msg.path
         elif msg.app_ids.tab_label == TabLabel.re_add:
-            ResultCollector.re_add_path = msg.path
+            CmdResults.re_add_path = msg.path
         # Update the border subtitle for the tab buttons in the ViewSwitcher
         self.query_exactly_one(
             msg.app_ids.container.right_side_q, ViewSwitcher
@@ -220,9 +220,7 @@ class MainScreen(Screen[None]):
         await self.app.push_screen(self.loading_modal)
         await self.loading_modal.run_managed_commands().wait()
         await self._update_trees_loading().wait()
-        await self._log_cmd_results_loading(
-            ResultCollector.managed_cmd_results()
-        ).wait()
+        await self._log_cmd_results_loading(CmdResults.managed_cmd_results()).wait()
         await self.loading_modal.dismiss()
 
     @on(ReviewBtnMsg)

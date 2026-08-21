@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, cast
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
-from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
@@ -177,7 +177,7 @@ class Commands:
             std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(ResultCollector, f"{cmd.name}_result", result)
+        setattr(CmdResults, f"{cmd.name}_result", result)
         return result
 
     @staticmethod
@@ -204,7 +204,7 @@ class Commands:
             std_out=AppLife.strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(ResultCollector, cmd.name, result)
+        setattr(CmdResults, cmd.name, result)
         return result
 
     @staticmethod

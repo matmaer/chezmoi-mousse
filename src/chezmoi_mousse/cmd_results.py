@@ -9,7 +9,10 @@ from chezmoi_mousse.named_tuples import CommandResult
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson
 
-__all__ = ("ResultCollector",)
+__all__ = (
+    "ChangedPaths",
+    "CmdResults",
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -33,7 +36,7 @@ class ManagedSnapshot:
     status_paths: dict[Path, str] = field(default_factory=lambda: {})
 
 
-class ResultCollector:
+class CmdResults:
     # chezmoi ReadCmd results which do not require arguments or which require the path
     # arg to be None if ran on the dest dir, eg git_log
     cat_config_result: ClassVar[CommandResult]
@@ -89,7 +92,7 @@ class ResultCollector:
 
     @classmethod
     def get_dest_dir(cls) -> Path:
-        return Path(ResultCollector.parsed_dump_config["destDir"])
+        return Path(CmdResults.parsed_dump_config["destDir"])
 
     @classmethod
     def _get_managed_snapshot(cls) -> ManagedSnapshot:

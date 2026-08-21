@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import OpBtnLabel, PathKind, StatusCode, TabLabel
 
@@ -43,18 +43,18 @@ class ManagedPaths:
 
     @cached_property
     def _dest_dir(self) -> Path:
-        return ResultCollector.get_dest_dir()
+        return CmdResults.get_dest_dir()
 
     @cached_property
     def managed_dirs(self) -> PathKindMap:
         return self._get_managed_path_kind_map(
-            ResultCollector.managed_dirs_result.std_out.splitlines()
+            CmdResults.managed_dirs_result.std_out.splitlines()
         )
 
     @cached_property
     def managed_files(self) -> PathKindMap:
         return self._get_managed_path_kind_map(
-            ResultCollector.managed_files_result.std_out.splitlines()
+            CmdResults.managed_files_result.std_out.splitlines()
         )
 
     # not cached, fast boolean logic
@@ -80,13 +80,13 @@ class ManagedPaths:
 
     def _create_managed_tree_paths_instance(self, status_col: int) -> ManagedTreePaths:
         dirs_map: StatusMap = self._get_status_map(
-            ResultCollector.status_dirs_result.std_out.splitlines(), status_col
+            CmdResults.status_dirs_result.std_out.splitlines(), status_col
         )
         status_dirs: StatusMap = MappingProxyType(
             {k: v for k, v in dirs_map.items() if v != StatusCode.Space}
         )
         files_map: StatusMap = self._get_status_map(
-            ResultCollector.status_files_result.std_out.splitlines(), status_col
+            CmdResults.status_files_result.std_out.splitlines(), status_col
         )
         status_files: StatusMap = MappingProxyType(
             {k: v for k, v in files_map.items() if v != StatusCode.Space}
@@ -155,19 +155,19 @@ class CmAttributes:
 
     @cached_property
     def dest_dir(self) -> Path:
-        return Path(ResultCollector.parsed_dump_config["destDir"])
+        return Path(CmdResults.parsed_dump_config["destDir"])
 
     @cached_property
     def auto_add(self) -> bool:
-        return ResultCollector.parsed_dump_config["git"]["autoadd"]
+        return CmdResults.parsed_dump_config["git"]["autoadd"]
 
     @cached_property
     def auto_commit(self) -> bool:
-        return ResultCollector.parsed_dump_config["git"]["autocommit"]
+        return CmdResults.parsed_dump_config["git"]["autocommit"]
 
     @cached_property
     def auto_push(self) -> bool:
-        return ResultCollector.parsed_dump_config["git"]["autocommit"]
+        return CmdResults.parsed_dump_config["git"]["autocommit"]
 
     paths: ManagedPaths = field(init=False)
 

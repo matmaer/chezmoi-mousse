@@ -23,7 +23,7 @@ from textual.widgets import (
     TabPane,
 )
 
-from chezmoi_mousse.cmd_results import ResultCollector
+from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.enum_data import PwMgrEnum
 from chezmoi_mousse.named_tuples import PwMgrData
@@ -240,27 +240,26 @@ class ConfigTab(TabPane):
     async def _load_views(self) -> None:
         doctor_view = self.query_one(self.ids.container.doctor_q, Vertical)
         doctor_table = doctor_view.query_exactly_one(DoctorTable)
-        doctor_table.populate_table(ResultCollector.doctor_result.std_out.splitlines())
+        doctor_table.populate_table(CmdResults.doctor_result.std_out.splitlines())
 
-        self._populate_pw_mgr_info(ResultCollector.doctor_result.std_out.splitlines())
+        self._populate_pw_mgr_info(CmdResults.doctor_result.std_out.splitlines())
 
         cat_config_static = self.query_exactly_one(CatConfigStatic)
         cat_config_static.update(
             "\n".join(
-                line
-                for line in (ResultCollector.cat_config_result.std_out.splitlines())
+                line for line in (CmdResults.cat_config_result.std_out.splitlines())
             )
         )
 
         ignored_view = self.query_one(self.ids.container.ignored_q, Vertical)
         pretty_ignored = ignored_view.query_exactly_one(Pretty)
-        pretty_ignored.update(ResultCollector.ignored_result.std_out.splitlines())
+        pretty_ignored.update(CmdResults.ignored_result.std_out.splitlines())
 
         template_data_view = self.query_one(
             self.ids.container.template_data_q, Vertical
         )
         template_data_pretty = template_data_view.query_exactly_one(Pretty)
-        template_data_pretty.update(ResultCollector.parsed_template_data)
+        template_data_pretty.update(CmdResults.parsed_template_data)
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
