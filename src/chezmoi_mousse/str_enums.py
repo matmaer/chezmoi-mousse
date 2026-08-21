@@ -14,6 +14,7 @@ __all__ = [
     "LogString",
     "OpBtnLabel",
     "OpInfoString",
+    "NotifyMsg",
     "PathFilters",
     "PathKind",
     "PwMgrInfo",
@@ -120,7 +121,8 @@ class LoadingLabel(StrEnum):
     loading = "Loading"  # the initial label
     log_cmd_results = "Logging command results"
     purge_cache = "Purge cached data"
-    update_trees = "Update Trees"
+    update_trees = "Update Managed Trees"
+    reload_dir_tree = "Reloading Add tab directory tree"
 
 
 class LogString(StrEnum):
@@ -143,6 +145,11 @@ class LogString(StrEnum):
     @property
     def end(self) -> str:
         return "-" * len(self)
+
+
+class NotifyMsg(StrEnum):
+    add_tab_tree_reloaded = "Add tab directory tree reloaded."
+    no_managed_changes = "No managed or status paths changed."
 
 
 class OpBtnLabel(StrEnum):
@@ -416,8 +423,12 @@ class RichLogName(StrEnum):
 
 
 class SectionLabel(StrEnum):
+    added_managed_paths = "Added managed paths"
     cat_config_output = "Cat Config Output"
+    changed_paths = "Changed Paths"
+    changed_status_paths = "Changed status paths"
     chezmoi_cat_output = "Chezmoi Cat output"
+    command_outputs = "Command Output"
     debug_log = " Debug Log "
     dest_dir = "Destination Directory"
     dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
@@ -440,6 +451,7 @@ class SectionLabel(StrEnum):
     project_link = "Project Link"
     pw_mgr_additional_info = "Additional Info"
     read_file_output = "Read file from disk output"
+    removed_managed_paths = "Removed managed paths"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"

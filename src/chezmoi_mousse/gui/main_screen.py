@@ -16,10 +16,10 @@ from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
     LoadingLabel,
+    NotifyMsg,
     OpBtnLabel,
     TabLabel,
     Tcss,
-    WriteCmd,
 )
 
 from .common.actionables import (
@@ -39,8 +39,6 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
@@ -94,6 +92,7 @@ class MainScreen(Screen[None]):
         self.re_add_managed_tree = self.query_one(
             self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
         )
+        self.tabbed_content = self.query_exactly_one(TabbedContent)
         self._first_startup()
 
     ###########################################
@@ -102,37 +101,11 @@ class MainScreen(Screen[None]):
 
     @work
     async def _first_startup(self) -> None:
-        self.loading_modal = LoadingModal(operation=None, path_arg=None, dry_run=None)
+        self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
-        await self._update_trees_loading().wait()
+        await self._update_managed_trees_loading().wait()
         await self._log_cmd_results_loading(CmdResults.splash_results()).wait()
         await self.loading_modal.dismiss()
-
-    @work
-    async def _push_loading_modal(
-        self,
-        operation: WriteCmd | RefreshBtn,
-        path_arg: Path | None,
-        dry_run: bool | None = None,
-    ) -> None:
-        self.loading_modal = LoadingModal(
-            operation=operation, path_arg=path_arg, dry_run=dry_run
-        )
-        await self.app.push_screen(self.loading_modal)
-
-        results_to_log: list[CommandResult] = []
-
-        if isinstance(operation, RefreshBtn):
-            await self.loading_modal.run_managed_commands().wait()
-        results_to_log.extend(CmdResults.managed_cmd_results())
-        await self._purge_views_cache_loading().wait()
-        await self._update_trees_loading().wait()
-        await self._log_cmd_results_loading(results_to_log).wait()
-        await self.loading_modal.dismiss()
-
-    @work
-    async def _push_operate_modal(self, labels: tuple[OpBtnLabel, ...]) -> None:
-        await self.app.push_screen(OperateModal(labels))
 
     #####################
     # UI update workers #
@@ -146,8 +119,7 @@ class MainScreen(Screen[None]):
         self.app_log.cmd_results = cmd_results
 
     @work
-    @min_wait
-    async def _purge_views_cache_loading(self) -> None:
+    async def _purge_views_cache(self) -> None:
         self.loading_modal.label_text = LoadingLabel.purge_cache
         all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
             self.query(DiffView).results(),
@@ -159,12 +131,21 @@ class MainScreen(Screen[None]):
 
     @work
     @min_wait
-    async def _update_trees_loading(self) -> None:
+    async def _update_managed_trees_loading(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees
         self.apply_managed_tree.update_tree()
         self.apply_managed_tree.refresh()
         self.re_add_managed_tree.update_tree()
         self.re_add_managed_tree.refresh()
+        # Update FilteredDirTree
+        dir_tree = self.query_exactly_one(FilteredDirTree)
+        dir_tree.reload()
+        dir_tree.refresh()
+
+    @work
+    @min_wait
+    async def _reload_directory_tree_loading(self) -> None:
+        self.loading_modal.label_text = LoadingLabel.reload_dir_tree
         # Update FilteredDirTree
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
@@ -216,12 +197,25 @@ class MainScreen(Screen[None]):
 
     @on(RefreshBtn.Pressed)
     async def handle_refresh_button(self) -> None:
-        self.loading_modal = LoadingModal(operation=None, path_arg=None, dry_run=None)
+        CmdResults.store_current_snapshot()
+        self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         await self.loading_modal.run_managed_commands().wait()
-        await self._update_trees_loading().wait()
+        CmdResults.update_changed_paths()
+        if CmdResults.changed_paths.no_changes:
+            self.notify(NotifyMsg.no_managed_changes)
+            await self._reload_directory_tree_loading().wait()
+            self.notify(NotifyMsg.add_tab_tree_reloaded)
+            self.loading_modal.dismiss()
+            return
+        # We have changes, push the OperateModal to show these with a close button
+        self.app.push_screen(OperateModal((OpBtnLabel.close,)))
+        # Meanwhile we continue updates for the loading modal, which will become visible
+        # if the Operate modal is dismissed before this is ready
+        await self._update_managed_trees_loading().wait()
+        await self._reload_directory_tree_loading().wait()
+        await self._purge_views_cache().wait()
         await self._log_cmd_results_loading(CmdResults.managed_cmd_results()).wait()
-        await self.loading_modal.dismiss()
 
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:

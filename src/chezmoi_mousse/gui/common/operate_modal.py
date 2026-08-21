@@ -10,22 +10,24 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
+from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
 from chezmoi_mousse.str_enums import (
     LoadingLabel,
     OpBtnLabel,
     OpInfoString,
     ReadCmd,
+    SectionLabel,
     Tcss,
     WriteCmd,
 )
 
 from .actionables import (
     ExitModalBtn,
-    RefreshBtn,
     ReviewBtn,
     RunBtn,
 )
+from .components import MainSectionLabel, SubSectionLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -34,45 +36,28 @@ __all__ = ["LoadingModal", "OperateModal"]
 
 
 class LoadingModal(ModalScreen[None]):
+    """
+    A modal screen that displays a loading indicator and a label.
+    The screen does not dismiss on its own, and must be dismissed by the parent screen.
+    """
+
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
     label_text: reactive[str | None] = reactive(None)
 
-    def __init__(
-        self,
-        *,
-        operation: WriteCmd | RefreshBtn | None,
-        path_arg: Path | None,
-        dry_run: bool | None = None,
-    ) -> None:
-        self.operation = operation
-        self.path_arg = path_arg
-        self.dry_run = dry_run
-        super().__init__()
-
     def compose(self) -> ComposeResult:
         yield (VerticalGroup(Label(LoadingLabel.loading), LoadingIndicator()))
 
-    def on_mount(self) -> None:
-        if self.operation is None:
-            return
-        self._dispatch_commands()
-
-    def _take_managed_snapshot(self) -> None: ...
-
     @work
-    async def _dispatch_commands(self) -> None:
-        if isinstance(self.operation, RefreshBtn):
-            await self.run_managed_commands().wait()
-        elif isinstance(self.operation, WriteCmd):
-            await self._run_write_command(self.operation).wait()
-            await self.run_managed_commands().wait()
+    async def run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
+        await self._run_write_command(write_cmd, path_arg).wait()
+        await self.run_managed_commands().wait()
 
     @work
     async def run_managed_commands(self) -> None:
         for cmd in ReadCmd.managed_commands():
-            self.label_text = f"Running: {AppLife.pretty_cmd(cmd, dry=None, path=None)}"
+            self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
 
     @work(thread=True)
@@ -82,11 +67,10 @@ class LoadingModal(ModalScreen[None]):
 
     @work(thread=True)
     @min_wait
-    async def _run_write_command(self, write_cmd: WriteCmd) -> None:
+    async def _run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
         Commands.run_write_cmd(
             write_cmd,
-            dry_run=self.app.cmattr.dry_run,
-            path_arg=self.path_arg,
+            path_arg=path_arg,
         )
 
     def watch_label_text(self, label_text: str) -> None:
@@ -148,18 +132,31 @@ class CommandOutput(ScrollableContainer):
         app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
-        yield Label("Added managed paths", classes=Tcss.sub_section_label)
+        yield MainSectionLabel(SectionLabel.changed_paths)
+        yield SubSectionLabel(SectionLabel.added_managed_paths)
         yield self.AddedManaged(classes=Tcss.info)
-        yield Label("Removed managed paths", classes=Tcss.sub_section_label)
+        yield SubSectionLabel(SectionLabel.removed_managed_paths)
         yield self.RemovedManaged(classes=Tcss.info)
-        yield Label("Changed status paths", classes=Tcss.sub_section_label)
+        yield SubSectionLabel(SectionLabel.changed_status_paths)
         yield self.ChangedStatus(classes=Tcss.info)
-        yield Label("Command output", classes=Tcss.main_section_label)
+        yield SubSectionLabel(SectionLabel.command_outputs)
 
     def on_mount(self) -> None:
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
+        if not CmdResults.changed_paths.added_managed:
+            self.added_managed.update("No added managed paths")
+        if not CmdResults.changed_paths.removed_managed:
+            self.removed_managed.update("No removed managed paths")
+        if not CmdResults.changed_paths.changed_status:
+            self.changed_status.update("No changed status paths")
+        if CmdResults.changed_paths.added_managed:
+            self.added_managed.update(CmdResults.changed_paths.added_managed_str)
+        if CmdResults.changed_paths.removed_managed:
+            self.removed_managed.update(CmdResults.changed_paths.removed_managed_str)
+        if CmdResults.changed_paths.changed_status:
+            self.changed_status.update(CmdResults.changed_paths.changed_status_str)
 
 
 class OperateModal(ModalScreen[None]):
@@ -173,8 +170,10 @@ class OperateModal(ModalScreen[None]):
             yield CommandOutput()
 
     def on_mount(self) -> None:
-        cmd_output = self.query_exactly_one(CommandOutput)
-        cmd_output.display = False
+        operate_info = self.query_exactly_one(OperateInfo)
+        if len(self.labels) == 1 and self.labels[0] == OpBtnLabel.close:
+            # condition after a refresh trees operation
+            operate_info.display = False
 
     @on(RunBtn.Pressed)
     def handle_run_button(self, event: RunBtn.Pressed) -> None:

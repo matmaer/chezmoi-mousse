@@ -46,7 +46,7 @@ def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
     async def wrapper(self: LoadingModal, *args: ReviewBtn) -> None:
-        min_wait_time = 0.2
+        min_wait_time = 0.3
         start_time = time.monotonic()
         await func(self, *args)
         elapsed = time.monotonic() - start_time
@@ -94,42 +94,25 @@ class AppLife:
 
     @staticmethod
     @typed_lru_cache()
-    def check_valid_dry_arg(cmd: ReadCmd | WriteCmd, dry: bool | None) -> None:
-        if isinstance(cmd, ReadCmd):
-            if dry is not None:
-                msg = f"Expected None for dry-run flag for {cmd}, received dry={dry}"
-                raise ValueError(msg)
-        elif dry is None:
-            msg = f"Expected a bool for dry-run flag for {cmd}, received dry={dry}"
-            raise ValueError(msg)
-
-    @staticmethod
-    @typed_lru_cache()
-    def _cmd_str_wop(cmd: ReadCmd | WriteCmd, dry: bool | None, pretty: bool) -> str:
-        AppLife.check_valid_dry_arg(cmd, dry)
+    def _cmd_str_wop(cmd: ReadCmd | WriteCmd, pretty: bool) -> str:
         if pretty is True:
             verb_str = " ".join([a for a in cmd.value if a not in AppLife._ugly_args()])
         else:
             verb_str = " ".join(cmd.value)
-        base_cmd = "chezmoi --dry-run" if dry is True else "chezmoi"
+        base_cmd = "chezmoi --dry-run" if Commands.dry_run is True else "chezmoi"
         return f"{base_cmd} {verb_str}"
 
     @staticmethod
     @typed_lru_cache()
-    def pretty_cmd(
-        cmd: ReadCmd | WriteCmd, *, dry: bool | None, path: Path | None
-    ) -> str:
+    def pretty_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         rel_path = Commands.rel_path(path) if path is not None else ""
-        return f"{AppLife._cmd_str_wop(cmd, dry, pretty=True)} {rel_path}"
+        return f"{AppLife._cmd_str_wop(cmd, pretty=True)} {rel_path}"
 
     @staticmethod
     @typed_lru_cache()
-    def full_cmd(
-        cmd: ReadCmd | WriteCmd, *, dry: bool | None, path: Path | None
-    ) -> str:
-        AppLife.check_valid_dry_arg(cmd, dry)
+    def full_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         path_str = str(path) if path is not None else ""
-        return f"{AppLife._cmd_str_wop(cmd, dry, pretty=False)} {path_str}"
+        return f"{AppLife._cmd_str_wop(cmd, pretty=False)} {path_str}"
 
     @staticmethod
     @typed_lru_cache()
@@ -139,6 +122,7 @@ class AppLife:
 
 class Commands:
     dest_dir: Path | None = None
+    dry_run: bool | None = None
 
     @staticmethod
     def rel_path(path: Path) -> str:
@@ -168,9 +152,9 @@ class Commands:
         )
 
         result = CommandResult(
-            dry_run=None,
-            full_cmd=f"{AppLife.full_cmd(cmd, dry=None, path=path_arg)}",
-            pretty_cmd=f"{AppLife.pretty_cmd(cmd, dry=None, path=path_arg)}",
+            dry_run=Commands.dry_run,
+            full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
+            pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
             path_arg=path_arg,
             returncode=cp.returncode,
             std_err=AppLife.strip_empty_lines(cp.stderr),
@@ -181,13 +165,10 @@ class Commands:
         return result
 
     @staticmethod
-    def run_write_cmd(
-        cmd: WriteCmd, dry_run: bool, path_arg: Path | None
-    ) -> CommandResult:
-        AppLife.check_valid_dry_arg(cmd, dry_run)
+    def run_write_cmd(cmd: WriteCmd, path_arg: Path) -> CommandResult:
         args_tuple: StrTuple = (
             ("chezmoi", "--dry-run") + cmd.value
-            if dry_run is True
+            if Commands.dry_run is True
             else ("chezmoi",) + cmd.value
         )
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
@@ -195,9 +176,9 @@ class Commands:
         )
 
         result = CommandResult(
-            dry_run=dry_run,
-            full_cmd=f"{AppLife.full_cmd(cmd, dry=None, path=path_arg)}",
-            pretty_cmd=AppLife.pretty_cmd(cmd, dry=None, path=path_arg),
+            dry_run=Commands.dry_run,
+            full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
+            pretty_cmd=AppLife.pretty_cmd(cmd, path=path_arg),
             path_arg=path_arg,
             returncode=cp.returncode,
             std_err=AppLife.strip_empty_lines(cp.stderr),

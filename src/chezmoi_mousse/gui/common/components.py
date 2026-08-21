@@ -19,18 +19,18 @@ __all__ = [
 
 
 class MainSectionLabel(Label):
-    def __init__(self) -> None:
-        super().__init__(SectionLabel.not_set, classes=Tcss.main_section_label)
+    def __init__(self, section_label: SectionLabel = SectionLabel.not_set) -> None:
+        super().__init__(section_label, classes=Tcss.main_section_label)
 
 
 class FlatSectionLabel(Label):
-    def __init__(self) -> None:
-        super().__init__(SectionLabel.not_set, classes=Tcss.flat_section_label)
+    def __init__(self, section_label: SectionLabel = SectionLabel.not_set) -> None:
+        super().__init__(section_label, classes=Tcss.flat_section_label)
 
 
 class SubSectionLabel(Label):
-    def __init__(self) -> None:
-        super().__init__(SectionLabel.not_set, classes=Tcss.sub_section_label)
+    def __init__(self, section_label: SectionLabel = SectionLabel.not_set) -> None:
+        super().__init__(section_label, classes=Tcss.sub_section_label)
 
 
 # Static subclasses

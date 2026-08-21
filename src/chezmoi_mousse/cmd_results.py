@@ -9,10 +9,7 @@ from chezmoi_mousse.named_tuples import CommandResult
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson
 
-__all__ = (
-    "ChangedPaths",
-    "CmdResults",
-)
+__all__ = ("CmdResults",)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -22,16 +19,31 @@ class ChangedPaths:
     removed_managed: list[Path] = field(default_factory=lambda: [])
 
     @property
+    def added_managed_str(self) -> str:
+        return "\n".join(str(p) for p in self.added_managed)
+
+    @property
+    def changed_status_str(self) -> str:
+        return "\n".join(
+            f"{p}:\nold status pair: '{old}' -> new status pair: '{new}'"
+            for p, (old, new) in self.changed_status.items()
+        )
+
+    @property
+    def removed_managed_str(self) -> str:
+        return "\n".join(str(p) for p in self.removed_managed)
+
+    @property
     def no_changes(self) -> bool:
         return (
             not self.added_managed
             and not self.changed_status
             and not self.removed_managed
-        )
+        )  # Empty lists and dicts are falsy
 
 
 @dataclass(slots=True, frozen=True)
-class ManagedSnapshot:
+class ResultsSnapshot:
     managed_paths: set[Path] = field(default_factory=lambda: set())
     status_paths: dict[Path, str] = field(default_factory=lambda: {})
 
@@ -52,8 +64,8 @@ class CmdResults:
     template_data_result: ClassVar[CommandResult]
 
     # Processed json results in SplashScreen
-    parsed_dump_config: ParsedJson
-    parsed_template_data: ParsedJson
+    parsed_dump_config: ClassVar[ParsedJson]
+    parsed_template_data: ClassVar[ParsedJson]
 
     # Keep track of the selected path by tab
     add_path: ClassVar[Path]
@@ -61,7 +73,9 @@ class CmdResults:
     re_add_path: ClassVar[Path]
 
     # Store a snapshot which we can compare with new values in the result fields
-    _managed_snapshot: ClassVar[ManagedSnapshot] = ManagedSnapshot()
+    _managed_snapshot: ClassVar[ResultsSnapshot] = ResultsSnapshot()
+    # To retrieve the current changes, updated by store_changed_paths
+    changed_paths: ClassVar[ChangedPaths] = ChangedPaths()
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @classmethod
@@ -95,13 +109,13 @@ class CmdResults:
         return Path(CmdResults.parsed_dump_config["destDir"])
 
     @classmethod
-    def _get_managed_snapshot(cls) -> ManagedSnapshot:
+    def _create_results_snapshot(cls) -> ResultsSnapshot:
         managed_dirs = cls.managed_dirs_result.std_out.splitlines()
         managed_files = cls.managed_files_result.std_out.splitlines()
         status_dirs = cls.status_dirs_result.std_out.splitlines()
         status_files = cls.status_files_result.std_out.splitlines()
 
-        return ManagedSnapshot(
+        return ResultsSnapshot(
             managed_paths={Path(line) for line in managed_dirs + managed_files if line},
             status_paths={
                 Path(line[3:]): line[:2] for line in status_dirs + status_files
@@ -110,11 +124,11 @@ class CmdResults:
 
     @classmethod
     def store_current_snapshot(cls) -> None:
-        cls._managed_snapshot = cls._get_managed_snapshot()
+        cls._managed_snapshot = cls._create_results_snapshot()
 
     @classmethod
-    def get_changed_paths(cls) -> ChangedPaths:
-        new_snapshot = cls._get_managed_snapshot()
+    def update_changed_paths(cls) -> None:
+        new_snapshot = cls._create_results_snapshot()
         removed_managed = (
             cls._managed_snapshot.managed_paths - new_snapshot.managed_paths
         )
@@ -133,7 +147,7 @@ class CmdResults:
             if old_code != new_code:
                 changed_status[path] = (old_code, new_code)
 
-        return ChangedPaths(
+        cls.changed_paths = ChangedPaths(
             added_managed=sorted(added_managed),
             changed_status=changed_status,
             removed_managed=sorted(removed_managed),
