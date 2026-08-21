@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
@@ -12,12 +12,25 @@ if TYPE_CHECKING:
 __all__ = ("ResultCollector",)
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ChangedPaths:
+    added_managed: list[Path] = field(default_factory=lambda: [])
+    changed_status: dict[Path, tuple[str, str]] = field(default_factory=lambda: {})
+    removed_managed: list[Path] = field(default_factory=lambda: [])
+
+    @property
+    def no_changes(self) -> bool:
+        return (
+            not self.added_managed
+            and not self.changed_status
+            and not self.removed_managed
+        )
+
+
 @dataclass(slots=True, frozen=True)
 class ManagedSnapshot:
-    managed_dirs: set[Path]
-    managed_files: set[Path]
-    status_dirs: set[str]
-    status_files: set[str]
+    managed_paths: set[Path] = field(default_factory=lambda: set())
+    status_paths: dict[Path, str] = field(default_factory=lambda: {})
 
 
 class ResultCollector:
@@ -43,6 +56,9 @@ class ResultCollector:
     add_path: ClassVar[Path]
     apply_path: ClassVar[Path]
     re_add_path: ClassVar[Path]
+
+    # Store a snapshot which we can compare with new values in the result fields
+    _managed_snapshot: ClassVar[ManagedSnapshot] = ManagedSnapshot()
 
     # Used for logging after the splash screen is disimissed and we push the MainScreen
     @classmethod
@@ -76,5 +92,46 @@ class ResultCollector:
         return Path(ResultCollector.parsed_dump_config["destDir"])
 
     @classmethod
-    def get_managed_results_snapshot(cls) -> Path:
-        return Path(ResultCollector.parsed_dump_config["destDir"])
+    def _get_managed_snapshot(cls) -> ManagedSnapshot:
+        managed_dirs = cls.managed_dirs_result.std_out.splitlines()
+        managed_files = cls.managed_files_result.std_out.splitlines()
+        status_dirs = cls.status_dirs_result.std_out.splitlines()
+        status_files = cls.status_files_result.std_out.splitlines()
+
+        return ManagedSnapshot(
+            managed_paths={Path(line) for line in managed_dirs + managed_files if line},
+            status_paths={
+                Path(line[3:]): line[:2] for line in status_dirs + status_files
+            },
+        )
+
+    @classmethod
+    def store_current_snapshot(cls) -> None:
+        cls._managed_snapshot = cls._get_managed_snapshot()
+
+    @classmethod
+    def get_changed_paths(cls) -> ChangedPaths:
+        new_snapshot = cls._get_managed_snapshot()
+        removed_managed = (
+            cls._managed_snapshot.managed_paths - new_snapshot.managed_paths
+        )
+        added_managed = new_snapshot.managed_paths - cls._managed_snapshot.managed_paths
+
+        changed_status: dict[Path, tuple[str, str]] = {}
+
+        # Check for status changes among all paths that remained managed
+        intersection = cls._managed_snapshot.managed_paths & new_snapshot.managed_paths
+
+        for path in intersection:
+            # Missing paths in status_pairs default to "  " (unchanged)
+            old_code = cls._managed_snapshot.status_paths.get(path, "  ")
+            new_code = new_snapshot.status_paths.get(path, "  ")
+
+            if old_code != new_code:
+                changed_status[path] = (old_code, new_code)
+
+        return ChangedPaths(
+            added_managed=sorted(added_managed),
+            changed_status=changed_status,
+            removed_managed=sorted(removed_managed),
+        )
