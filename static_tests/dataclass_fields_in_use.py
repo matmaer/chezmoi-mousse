@@ -7,16 +7,19 @@ from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 
 def is_dataclass(class_def: ast.ClassDef) -> bool:
-    return any(
-        (isinstance(d, ast.Name) and d.id == "dataclass")
-        or (isinstance(d, ast.Attribute) and d.attr == "dataclass")
-        or (
-            isinstance(d, ast.Call)
-            and isinstance(d.func, ast.Name)
-            and d.func.id == "dataclass"
-        )
-        for d in class_def.decorator_list
-    )
+    for d in class_def.decorator_list:
+        # Check direct decorators: @dataclass or @dataclasses.dataclass
+        if isinstance(d, ast.Name) and d.id == "dataclass":
+            return True
+        if isinstance(d, ast.Attribute) and d.attr == "dataclass":
+            return True
+        # Check parameterized decorators: @dataclass(...) or @dataclasses.dataclass(...)
+        if isinstance(d, ast.Call):
+            if isinstance(d.func, ast.Name) and d.func.id == "dataclass":
+                return True
+            if isinstance(d.func, ast.Attribute) and d.func.attr == "dataclass":
+                return True
+    return False
 
 
 class UnusedFieldDetector(ast.NodeVisitor):

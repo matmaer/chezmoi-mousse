@@ -8,28 +8,26 @@ from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 def find_duplicate_assignments_in_class(
     class_def: ast.ClassDef,
 ) -> dict[tuple[str, str], list[int]]:
-    assignments: dict[tuple[str, str], list[int]] = {}
-    instance_var_assignments: dict[tuple[str, str], dict[str, list[int]]] = {}
 
-    def collect_assignments(
-        nodes: list[ast.stmt], method_name: str | None = None
-    ) -> None:
+    duplicates: dict[tuple[str, str], list[int]] = {}
+    class_assignments: dict[tuple[str, str], list[int]] = {}
+    method_assignments: dict[str, dict[tuple[str, str], list[int]]] = {}
+
+    # Helper function to extract assignments from a list of statement nodes
+    def scan_body(nodes: list[ast.stmt], method_name: str | None) -> None:
         for item in nodes:
             if isinstance(item, ast.Assign) and len(item.targets) == 1:
                 target = item.targets[0]
                 attr_name = None
-                is_instance_var = False
 
-                # Check for self.x = value assignments
+                # Check self.x
                 if (
                     isinstance(target, ast.Attribute)
                     and isinstance(target.value, ast.Name)
                     and target.value.id == "self"
                 ):
                     attr_name = target.attr
-                    is_instance_var = True
-
-                # Check for x = value assignments
+                # Check x
                 elif isinstance(target, ast.Name):
                     attr_name = target.id
 
@@ -39,26 +37,31 @@ def find_duplicate_assignments_in_class(
                     value_str = ast.unparse(item.value)
                     key = (attr_name, value_str)
 
-                    if is_instance_var and method_name:
-                        # Track instance variables by method
-                        instance_var_assignments.setdefault(key, {}).setdefault(
-                            method_name, []
+                    if method_name is not None:
+                        # Dict per method to avoid cross-method false positives
+                        method_assignments.setdefault(method_name, {}).setdefault(
+                            key, []
                         ).append(item.lineno)
                     else:
-                        # Regular assignments (non-instance or class-level)
-                        assignments.setdefault(key, []).append(item.lineno)
+                        class_assignments.setdefault(key, []).append(item.lineno)
+
             elif isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                collect_assignments(item.body, item.name)
+                scan_body(item.body, item.name)
 
-    collect_assignments(class_def.body)
+    scan_body(class_def.body, None)
 
-    # Only report instance variable duplicates within the same method
-    for key, methods in instance_var_assignments.items():
-        for line_numbers in methods.values():
+    # Collect class-level duplicate lines (must be duplicated at class-level)
+    for key, line_numbers in class_assignments.items():
+        if len(line_numbers) > 1:
+            duplicates[key] = line_numbers
+
+    # Collect method-level duplicate lines (must be duplicated within the same method)
+    for _method_name, assignments in method_assignments.items():
+        for key, line_numbers in assignments.items():
             if len(line_numbers) > 1:
-                assignments.setdefault(key, []).extend(line_numbers)
+                duplicates.setdefault(key, []).extend(line_numbers)
 
-    return assignments
+    return duplicates
 
 
 def test_duplicate_assignments() -> None:

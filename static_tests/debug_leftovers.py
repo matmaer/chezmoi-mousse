@@ -25,15 +25,21 @@ class DebugStatementDetector(ast.NodeVisitor):
         # Check for print(...)
         is_print = isinstance(node.func, ast.Name) and node.func.id == "print"
 
-        # Check for debug_log(...) or obj.debug_log(...)
-        is_debug_log = isinstance(node.func, ast.Attribute) and (
-            (
-                isinstance(node.func.value, ast.Name)
-                and node.func.value.id == "debug_log"
-            )
-            or (
-                isinstance(node.func.value, ast.Attribute)
-                and node.func.value.attr == "debug_log"
+        # Check for direct debug_log calls, self.debug_log attributes, etc.
+        is_debug_log = (
+            isinstance(node.func, ast.Name) and node.func.id == "debug_log"
+        ) or (
+            isinstance(node.func, ast.Attribute)
+            and (
+                node.func.attr == "debug_log"
+                or (
+                    isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "debug_log"
+                )
+                or (
+                    isinstance(node.func.value, ast.Attribute)
+                    and node.func.value.attr == "debug_log"
+                )
             )
         )
 

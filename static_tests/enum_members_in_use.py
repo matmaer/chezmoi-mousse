@@ -61,6 +61,25 @@ class UnusedEnumMemberDetector(ast.NodeVisitor):
             self._mark_all_enum_members_used(enum_name)
         self.generic_visit(node)
 
+    def visit_comprehension(self, node: ast.comprehension) -> None:
+        # Check if we are iterating in a list/set/dict comprehension
+        # or generator expression (e.g., [x for x in SomeEnum])
+        if isinstance(node.iter, ast.Name):
+            self._mark_all_enum_members_used(node.iter.id)
+        self.generic_visit(node)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        # Check if we are converting an Enum to a list/set/tuple/etc. or taking its len:
+        # e.g., list(SomeEnum) or len(SomeEnum)
+        if (
+            isinstance(node.func, ast.Name)
+            and node.func.id in ("list", "set", "tuple", "iter", "len", "dict")
+            and node.args
+            and isinstance(node.args[0], ast.Name)
+        ):
+            self._mark_all_enum_members_used(node.args[0].id)
+        self.generic_visit(node)
+
     def _mark_all_enum_members_used(self, enum_name: str) -> None:
         # Helper to find any keys starting with "EnumName." and register them as used
         prefix = f"{enum_name}."

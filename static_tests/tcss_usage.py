@@ -7,7 +7,7 @@ import pytest
 from chezmoi_mousse.str_enums import Tcss
 from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
-with Path.open(Path("src", "chezmoi_mousse", "gui", "gui.tcss")) as f:
+with Path("src", "chezmoi_mousse", "gui", "gui.tcss").open(encoding="utf-8") as f:
     tcss_lines: list[str] = [
         line for line in f.read().splitlines() if not line.startswith(("/", "#"))
     ]
