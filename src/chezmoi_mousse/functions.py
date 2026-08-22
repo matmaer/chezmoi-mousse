@@ -49,10 +49,10 @@ def min_wait(
 ) -> MinWaitReturn:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
-    async def wrapper(self: LoadingModal, *args: Any) -> Any:
+    async def wrapper(self: LoadingModal, *args: Any, **kwargs: Any) -> Any:
         min_wait_time = 0.3
         start_time = time.monotonic()
-        res = await func(self, *args)
+        res = await func(self, *args, **kwargs)
         elapsed = time.monotonic() - start_time
         if elapsed < min_wait_time:
             await sleep(min_wait_time - elapsed)
