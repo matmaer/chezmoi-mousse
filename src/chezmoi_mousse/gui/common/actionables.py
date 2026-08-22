@@ -201,12 +201,8 @@ class RunBtnGroup(HorizontalGroup):
             elif btn_label in OpBtnLabel.exit_modal_set():
                 yield ExitModalBtn(btn_label)
 
-    def on_mount(self) -> None: ...
-
     @on(DryRunBtnMsg)
-    def _handle_toggle_dry_run_pressed(self, event: DryRunBtn.Pressed) -> None:
-        event.stop()
-        Commands.live_run = not Commands.live_run
+    def _update_dry_run_btn_label(self) -> None:
         dry_run_btn = self.query_exactly_one(DryRunBtn)
         dry_run_btn.label = Commands.get_dry_run_btn_label()
 
