@@ -98,7 +98,7 @@ class OperateInfo(Static):
             info_lines.append(OpInfoString.live_run_notice)
         if self.btn_label is not OpBtnLabel.apply_run:
             if self.app.cmattr.auto_add is True:
-                info_lines.append(OpInfoString.auto_commit)
+                info_lines.append(OpInfoString.auto_add)
             if self.app.cmattr.auto_commit is True:
                 info_lines.append(OpInfoString.auto_commit)
             if self.app.cmattr.auto_push is True:
