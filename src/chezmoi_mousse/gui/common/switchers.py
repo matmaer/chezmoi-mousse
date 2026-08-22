@@ -13,6 +13,7 @@ from .actionables import TabBtn, TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLogView
+from .messages import TabBtnMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
@@ -35,13 +36,13 @@ class ViewSwitcher(Vertical):
     def on_mount(self) -> None:
         self.content_switcher = self.query_exactly_one(ContentSwitcher)
 
-    @on(TabBtn.Pressed)
-    def switch_view(self, event: TabBtn.Pressed) -> None:
-        if isinstance(event.button, TabBtn):
-            event.stop()
-            if event.button.label == TabLabel.contents:
+    @on(TabBtnMsg)
+    def switch_view(self, msg: TabBtnMsg) -> None:
+        if isinstance(msg.button, TabBtn):
+            msg.stop()
+            if msg.button.label == TabLabel.contents:
                 self.content_switcher.current = self.ids.container.contents
-            elif event.button.label == TabLabel.diff:
+            elif msg.button.label == TabLabel.diff:
                 self.content_switcher.current = self.ids.container.diff
-            elif event.button.label == TabLabel.git_log:
+            elif msg.button.label == TabLabel.git_log:
                 self.content_switcher.current = self.ids.container.git_log

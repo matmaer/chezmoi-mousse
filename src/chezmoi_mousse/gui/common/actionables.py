@@ -255,8 +255,8 @@ class TabButtons(Horizontal):
         self.query(TabBtn).first().add_class(Tcss.last_clicked_tab_btn)
 
     @on(TabBtnMsg)
-    def update_tcss_classes(self, event: TabBtn.Pressed) -> None:
-        # dont call event.stop() because it's also processed in the content switcher
+    def update_tcss_classes(self, msg: TabBtnMsg) -> None:
+        # dont call msg.stop() because it's also processed in the content switcher
         for btn in self.query(TabBtn).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
-        event.button.add_class(Tcss.last_clicked_tab_btn)
+        msg.button.add_class(Tcss.last_clicked_tab_btn)

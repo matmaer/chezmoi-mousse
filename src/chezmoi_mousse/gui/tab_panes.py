@@ -52,6 +52,7 @@ from .common.doctor_data import DoctorTable, PwCollapsible
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog, DebugLog
 from .common.managed_tree import DestDirTree, ManagedTree
+from .common.messages import TabBtnMsg
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
@@ -513,12 +514,12 @@ class LogsTab(TabPane):
         self.tab_buttons = self.query_exactly_one(TabButtons)
         self.switcher = self.query_exactly_one(ContentSwitcher)
 
-    @on(Button.Pressed)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == TabLabel.app_log:
+    @on(TabBtnMsg)
+    def switch_content(self, msg: TabBtnMsg) -> None:
+        msg.stop()
+        if msg.button.label == TabLabel.app_log:
             self.switcher.current = self.app_ids.richlog.app
-        elif event.button.label == TabLabel.cmd_log:
+        elif msg.button.label == TabLabel.cmd_log:
             self.switcher.current = self.app_ids.richlog.cmd
 
 

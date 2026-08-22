@@ -208,6 +208,6 @@ class OperateModal(ModalScreen[None]):
             command_output.display = False
 
     @on(ExitModalBtnMsg)
-    def _handle_exit_modal(self, event: ExitModalBtnMsg) -> None:
-        event.stop()
+    def _handle_exit_modal(self, msg: ExitModalBtnMsg) -> None:
+        msg.stop()
         self.dismiss()
