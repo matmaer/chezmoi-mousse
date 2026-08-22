@@ -83,7 +83,7 @@ class DiffView(ScrollableContainer):
         self.diff_lines = self.query_exactly_one(DiffLinesContainer)
         self.diff_lines.display = False
 
-        self._update_widgets(self.paths.dest_dir)
+        self._update_widgets(self.app.cmattr.dest_dir)
 
     @property
     def paths(self) -> ManagedTreePaths:
@@ -111,7 +111,7 @@ class DiffView(ScrollableContainer):
             self.info_static.display = False
             return
 
-        if path == self.paths.dest_dir:
+        if path == self.app.cmattr.dest_dir:
             self.main_section_label.update(SectionLabel.dest_dir)
             if self.app.cmattr.paths.no_managed_paths:
                 self.sub_section_label.update(SectionLabel.no_managed_paths)

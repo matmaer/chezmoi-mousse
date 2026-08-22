@@ -108,7 +108,6 @@ class ManagedPaths:
         )
 
         return ManagedTreePaths(
-            dest_dir=self._dest_dir,
             managed_dirs=self.managed_dirs,
             managed_files=self.managed_files,
             n_dirs=_n_dirs,

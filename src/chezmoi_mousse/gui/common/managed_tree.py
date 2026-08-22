@@ -172,7 +172,7 @@ class ManagedTree(Tree[Path]):
                 self._insert_node(dir_node=False, path=path, parent_node=parent_node)
 
     def _populate_unmanaged_nodes(self) -> None:
-        expanded_dirs = [self.paths.dest_dir]
+        expanded_dirs = [self.app.cmattr.dest_dir]
         expanded_dirs += [
             node.data
             for node in self._iter_tree_nodes()
@@ -226,7 +226,7 @@ class ManagedTree(Tree[Path]):
         self.root.remove_children()
 
         # Add status directories and files to root node
-        nodes_by_path: TreeNodeDict = {self.paths.dest_dir: self.root}
+        nodes_by_path: TreeNodeDict = {self.app.cmattr.dest_dir: self.root}
 
         for path in self.paths.tree_status_dirs:
             parent_node = nodes_by_path.get(path.parent, self.root)
@@ -307,7 +307,6 @@ class ManagedTree(Tree[Path]):
                 app_ids=self.app_ids,
                 path=event.node.data,
                 has_status=has_status,
-                dest_dir=self.paths.dest_dir,
                 is_unmanaged=is_unmanaged,
             )
         )

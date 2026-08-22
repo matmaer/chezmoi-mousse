@@ -165,9 +165,13 @@ class MainScreen(Screen[None]):
         elif msg.app_ids.tab_label == TabLabel.re_add:
             self.app.cmattr.re_add_path = msg.path
         # Update the border subtitle for the tab buttons in the ViewSwitcher
+        if msg.path != self.app.cmattr.dest_dir:
+            pretty_path = msg.path.relative_to(self.app.cmattr.dest_dir)
+        else:
+            pretty_path = msg.path
         self.query_exactly_one(
             msg.app_ids.container.right_side_q, ViewSwitcher
-        ).border_subtitle = msg.border_path
+        ).border_subtitle = f" {pretty_path} "
         # Update diff_view, contents_view, and git_log_view with the new path
         self.query_one(msg.app_ids.container.diff_q, DiffView).show_path = msg.path
         self.query_one(

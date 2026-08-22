@@ -34,20 +34,13 @@ class CurrentNodeMsg(Message):
         app_ids: AppIds,
         path: Path,
         has_status: bool,
-        dest_dir: Path,
         is_unmanaged: bool,
     ) -> None:
         self.app_ids = app_ids
         self.path = path
         self.has_status = has_status
-        self._dest_dir = dest_dir
         self.is_unmanaged = is_unmanaged
         super().__init__()
-
-    @property
-    def border_path(self) -> str:
-        rel_path_border = f" {self.path.relative_to(self._dest_dir)} "
-        return rel_path_border if self.path != self._dest_dir else f" {self._dest_dir} "
 
 
 class DirContentBtnMsg(Message):

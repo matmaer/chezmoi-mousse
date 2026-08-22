@@ -36,7 +36,6 @@ class CommandResult(NamedTuple):
 
 
 class ManagedTreePaths(NamedTuple):
-    dest_dir: Path
     managed_dirs: PathKindMap
     managed_files: PathKindMap
     n_dirs: frozenset[Path]
