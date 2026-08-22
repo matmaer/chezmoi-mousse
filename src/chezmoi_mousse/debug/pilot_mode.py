@@ -34,8 +34,8 @@ async def pilot_chill(pilot: Pilot[str]) -> None:
 
     await pilot.wait_for_scheduled_animations()
     while isinstance(pilot.app.screen, LoadingModal):
-        await pilot.pause(0.2)
-    await pilot.pause(0.2)
+        await pilot.pause(0.1)
+    await pilot.pause(0.1)
 
 
 async def click_and_wait(pilot: Pilot[str], widget: Widget) -> None:
@@ -108,12 +108,6 @@ def run_with_pilot(app: ChezmoiGui) -> None:
     asyncio.run(start_pilot_mode(app))
 
 
-def app_is_ready(pilot: Pilot[str]) -> bool:
-    return isinstance(pilot.app.screen, MainScreen) and all(
-        worker.is_finished for worker in pilot.app.screen.workers
-    )
-
-
 async def start_pilot_mode(app: ChezmoiGui) -> None:
 
     async with app.run_test(headless=False, notifications=True) as pilot:
@@ -122,7 +116,19 @@ async def start_pilot_mode(app: ChezmoiGui) -> None:
 
         await pilot_chill(pilot)
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
-        for label in TabLabel.main_tabs():
+
+        tabs_to_check = [
+            TabLabel.apply,
+            TabLabel.re_add,
+            TabLabel.add,
+            TabLabel.logs,
+            TabLabel.config,
+        ]
+
+        if "debug" in app.features:
+            tabs_to_check.append(TabLabel.debug)
+
+        for label in tabs_to_check:
             tab = tabbed_content.get_tab(label)
             await click_and_wait(pilot, tab)
             await toggle_binding(pilot, "M")
@@ -137,4 +143,8 @@ async def start_pilot_mode(app: ChezmoiGui) -> None:
             await refresh_trees(pilot, tab_pane)
         tab = tabbed_content.get_tab(TabLabel.apply)
         await click_and_wait(pilot, tab)
+
+        if pilot.app.devtools and pilot.app.devtools.session:
+            await pilot.app.devtools.session.close()
+
         await pilot.exit("Pilot mode completed\n")
