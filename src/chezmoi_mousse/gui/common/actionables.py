@@ -223,7 +223,7 @@ class SwitchSlider(VerticalGroup):
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.switch_slider, classes="-visible")
         if ids.tab_label in (TabLabel.apply, TabLabel.re_add):
-            self.switches = (
+            self.switches: tuple[SwitchEnum, ...] = (
                 SwitchEnum.show_unchanged,
                 SwitchEnum.show_unmanaged,
                 SwitchEnum.expand_all,

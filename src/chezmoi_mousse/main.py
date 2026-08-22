@@ -7,7 +7,7 @@ from chezmoi_mousse.gui.textual_app import ChezmoiGui
 __all__ = ["run_app"]
 
 
-def check_if_we_can_run() -> str | None:
+def check_if_we_can_run() -> None:
     import shutil
     import sys
 

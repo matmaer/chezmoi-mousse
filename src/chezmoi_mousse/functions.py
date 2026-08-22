@@ -287,9 +287,9 @@ class Commands:
                 f_contents += f"\n--- Read file limited to {max_chars} characters ---"
         except (PermissionError, OSError, UnicodeDecodeError) as e:
             f_contents = str(e)
-        f_contents = Text(f_contents)
-        ReprHighlighter().highlight(f_contents)
-        return f_contents
+        text_contents = Text(f_contents)
+        ReprHighlighter().highlight(text_contents)
+        return text_contents
 
     @staticmethod
     @typed_lru_cache(maxsize=500)
@@ -300,9 +300,9 @@ class Commands:
         f_contents = cmd_result.std_out
         if not f_contents.strip():
             f_contents = "File is empty or contains only whitespace"
-        f_contents = Text(f_contents)
-        ReprHighlighter().highlight(f_contents)
-        return (f_contents, cmd_result)
+        text_contents = Text(f_contents)
+        ReprHighlighter().highlight(text_contents)
+        return (text_contents, cmd_result)
 
     @staticmethod
     @typed_lru_cache(maxsize=500)
