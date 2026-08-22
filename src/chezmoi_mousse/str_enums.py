@@ -612,6 +612,7 @@ class GlobalArgs(Enum):
         "--use-builtin-git=true",
     )
     dry_run = "--dry-run=true"
+    verbose = "--verbose=true"
 
 
 class VerbArgs(StrEnum):
