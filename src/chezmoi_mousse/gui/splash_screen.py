@@ -178,9 +178,9 @@ class SplashScreen(Screen[None]):
     async def _set_cm_attributes(self) -> None:
         self.app.cmattr.paths = ManagedPaths()
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
-        self.app.cmattr.add_path = store.get_dest_dir()
-        self.app.cmattr.apply_path = store.get_dest_dir()
-        self.app.cmattr.re_add_path = store.get_dest_dir()
+        store.add_path = store.get_dest_dir()
+        store.apply_path = store.get_dest_dir()
+        store.re_add_path = store.get_dest_dir()
         self.splash_log.write(msg)
 
     # Sequential Orchestration Pipeline

@@ -74,6 +74,11 @@ parsed_template_data: ParsedJson = {}
 _managed_snapshot: ResultsSnapshot = ResultsSnapshot()
 changed_paths: ChangedPaths = ChangedPaths()
 
+# Keep track of the selected path by tab
+add_path: Path | None = None
+apply_path: Path | None = None
+re_add_path: Path | None = None
+
 
 # Functions
 def splash_results() -> list[CommandResult]:
