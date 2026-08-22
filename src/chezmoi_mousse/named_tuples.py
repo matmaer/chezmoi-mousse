@@ -9,12 +9,19 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "AffectedPaths",
     "CommandResult",
     "ManagedTreePaths",
     "PwMgrData",
     "ScanDirItem",
     "SwitchData",
 ]
+
+
+class AffectedPaths(NamedTuple):
+    paths: list[Path]
+    pretty_cmd: str
+    std_err: str
 
 
 class CommandResult(NamedTuple):

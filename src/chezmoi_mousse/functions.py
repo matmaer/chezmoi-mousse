@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import time
 from asyncio import sleep
@@ -16,7 +17,7 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
 from chezmoi_mousse.cmd_results import CmdResults
-from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
+from chezmoi_mousse.named_tuples import AffectedPaths, CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
     GlobalArgs,
@@ -79,7 +80,7 @@ class AppLife:
 
     @staticmethod
     @typed_lru_cache()
-    def _ugly_args() -> set[str]:
+    def ugly_args() -> set[str]:
         ugly_args: set[str] = set()
         ugly_args.update(
             GlobalArgs.global_defaults.value,
@@ -95,9 +96,9 @@ class AppLife:
 
     @staticmethod
     @typed_lru_cache()
-    def _cmd_str_wop(cmd: ReadCmd | WriteCmd, pretty: bool) -> str:
+    def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
         if pretty is True:
-            verb_str = " ".join([a for a in cmd.value if a not in AppLife._ugly_args()])
+            verb_str = " ".join([a for a in cmd.value if a not in AppLife.ugly_args()])
         else:
             verb_str = " ".join(cmd.value)
         if isinstance(cmd, ReadCmd):
@@ -118,11 +119,6 @@ class AppLife:
         path_str = str(path) if path is not None else ""
         return f"{AppLife._cmd_str_wop(cmd, pretty=False)} {path_str}"
 
-    @staticmethod
-    @typed_lru_cache()
-    def strip_empty_lines(text: str) -> str:
-        return "\n".join([line for line in text.splitlines() if line.strip()])
-
 
 class Commands:
     dest_dir: Path | None = None
@@ -137,8 +133,14 @@ class Commands:
     @staticmethod
     def rel_path(path: Path) -> str:
         if Commands.dest_dir is None:
-            return str(path)  # we need this when we start the app for the first time
+            raise RuntimeError(
+                "Trying to calculate a path relative to the destDir before it's known"
+            )
         return str(path.relative_to(Commands.dest_dir))
+
+    @staticmethod
+    def _strip_empty_lines(text: str) -> str:
+        return "\n".join([line for line in text.splitlines() if line.strip()])
 
     @staticmethod
     def _subprocess_run(
@@ -155,6 +157,68 @@ class Commands:
         )
 
     @staticmethod
+    def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
+
+        if Commands.dest_dir is None:
+            raise RuntimeError("Trying to get affected paths before destDir is known")
+
+        # Only works for apply and re-add, not for add, forget and destroy
+        if path == Commands.dest_dir and write_cmd in (
+            WriteCmd.add,
+            WriteCmd.destroy,
+            WriteCmd.forget,
+        ):
+            return AffectedPaths(
+                paths=[],
+                pretty_cmd=f"Cannot run chezmoi on the destDir for {write_cmd.name}",
+                std_err="No stderr, subprocess didn't run",
+            )
+
+        # Matches standard git diff paths (capturing the target path in group 1)
+        path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
+        affected_paths_str: set[str] = set()
+
+        args_tuple: StrTuple = (
+            ("chezmoi",)
+            + GlobalArgs.global_defaults.value
+            + (
+                GlobalArgs.verbose.value,
+                GlobalArgs.dry_run.value,
+            )
+            + (write_cmd.value)
+        )
+        if path != Commands.dest_dir:
+            args_tuple += (str(path),)
+
+        with subprocess.Popen(
+            args_tuple,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=False,
+        ) as process:
+            # Stream stdout line-by-line for low memory overhead
+            if process.stdout is not None:
+                for line in process.stdout:
+                    match = path_pattern.match(line)
+                    if match:
+                        affected_paths_str.add(match.group(1))
+
+            # Read any remaining stderr output after stdout completes
+            stderr_output = process.stderr.read() if process.stderr is not None else ""
+
+            # Ensure child process terminates and populates process.returncode
+            process.wait()
+
+        rel_path = Commands.rel_path(path) if path != Commands.dest_dir else ""
+        verb_str = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
+        return AffectedPaths(
+            paths=[Path(path_str) for path_str in affected_paths_str],
+            pretty_cmd=f"chezmoi {verb_str} {rel_path}",
+            std_err=stderr_output,
+        )
+
+    @staticmethod
     def run_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
         args_tuple: StrTuple = ("chezmoi",) + cmd.value
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
@@ -167,8 +231,8 @@ class Commands:
             pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
             path_arg=path_arg,
             returncode=cp.returncode,
-            std_err=AppLife.strip_empty_lines(cp.stderr),
-            std_out=AppLife.strip_empty_lines(cp.stdout),
+            std_err=Commands._strip_empty_lines(cp.stderr),
+            std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
         setattr(CmdResults, f"{cmd.name}_result", result)
@@ -191,8 +255,8 @@ class Commands:
             pretty_cmd=AppLife.pretty_cmd(cmd, path=path_arg),
             path_arg=path_arg,
             returncode=cp.returncode,
-            std_err=AppLife.strip_empty_lines(cp.stderr),
-            std_out=AppLife.strip_empty_lines(cp.stdout),
+            std_err=Commands._strip_empty_lines(cp.stderr),
+            std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
         setattr(CmdResults, cmd.name, result)
