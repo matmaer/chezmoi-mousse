@@ -61,7 +61,7 @@ def min_wait(
     return wrapper
 
 
-def typed_lru_cache[**FuncParams, FuncReturn](
+def _typed_lru_cache[**FuncParams, FuncReturn](
     *, maxsize: int = 128, typed: bool = False
 ) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
     def decorator(
@@ -82,7 +82,7 @@ class AppLife:
     """Contains caches never to be cleared during the application its life."""
 
     @staticmethod
-    @typed_lru_cache()
+    @_typed_lru_cache()
     def ugly_args() -> set[str]:
         ugly_args: set[str] = set()
         ugly_args.update(
@@ -98,7 +98,7 @@ class AppLife:
         return ugly_args
 
     @staticmethod
-    @typed_lru_cache()
+    @_typed_lru_cache()
     def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
         if pretty is True:
             verb_str = " ".join([a for a in cmd.value if a not in AppLife.ugly_args()])
@@ -111,13 +111,13 @@ class AppLife:
         return f"{base_cmd} {verb_str}"
 
     @staticmethod
-    @typed_lru_cache()
+    @_typed_lru_cache()
     def pretty_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         rel_path = Commands.rel_path(path) if path is not None else ""
         return f"{AppLife._cmd_str_wop(cmd, pretty=True)} {rel_path}"
 
     @staticmethod
-    @typed_lru_cache()
+    @_typed_lru_cache()
     def full_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         path_str = str(path) if path is not None else ""
         return f"{AppLife._cmd_str_wop(cmd, pretty=False)} {path_str}"
@@ -268,7 +268,7 @@ class Commands:
         return json.loads(str_to_parse)
 
     @staticmethod
-    @typed_lru_cache(maxsize=500)
+    @_typed_lru_cache(maxsize=500)
     def get_highlighted_file_contents(file_path: Path) -> Text:
         if file_path.is_dir():
             raise ValueError(
@@ -292,7 +292,7 @@ class Commands:
         return text_contents
 
     @staticmethod
-    @typed_lru_cache(maxsize=500)
+    @_typed_lru_cache(maxsize=500)
     def get_highlighted_chezmoi_cat_output(
         file_path: Path,
     ) -> tuple[Text, CommandResult]:
@@ -305,7 +305,7 @@ class Commands:
         return (text_contents, cmd_result)
 
     @staticmethod
-    @typed_lru_cache(maxsize=500)
+    @_typed_lru_cache(maxsize=500)
     def run_chezmoi_git_log(path_arg: Path | None) -> list[CommandResult]:
         results: list[CommandResult] = []
         if path_arg is None:
@@ -324,14 +324,14 @@ class Commands:
         return results
 
     @staticmethod
-    @typed_lru_cache()
+    @_typed_lru_cache()
     def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
         return Commands.run_read_cmd(diff_cmd, path_arg=path)
 
 
 class CheckPath:
     @staticmethod
-    @typed_lru_cache(maxsize=1000)
+    @_typed_lru_cache(maxsize=1000)
     def os_scan_dir(dir_path: Path, *, managed_dir: bool = False) -> ScanDirResult:
 
         if not dir_path.is_absolute():
@@ -413,7 +413,7 @@ class CheckPath:
     # functions for file paths
 
     @staticmethod
-    @typed_lru_cache(maxsize=4000)
+    @_typed_lru_cache(maxsize=4000)
     def _is_sensitive(file_path: Path) -> bool:
         return (
             file_path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
@@ -463,7 +463,7 @@ class CheckPath:
         return file_path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
 
     @staticmethod
-    @typed_lru_cache(maxsize=4000)
+    @_typed_lru_cache(maxsize=4000)
     def is_unwanted_file(file_path: Path) -> bool:
         return (
             CheckPath._looks_like_cache(file_path)
@@ -497,7 +497,7 @@ class CheckPath:
             return False
 
     @staticmethod
-    @typed_lru_cache(maxsize=4000)
+    @_typed_lru_cache(maxsize=4000)
     def is_unwanted_dir(dir_path: Path) -> bool:
         return (
             CheckPath._looks_like_cache(dir_path)

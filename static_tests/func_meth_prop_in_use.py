@@ -13,25 +13,29 @@ class UnusedMethodDetector(ast.NodeVisitor):
     def __init__(self) -> None:
         self.current_file: str = ""
         self.current_class: str | None = None
+        self.function_depth: int = 0  # Tracks function nesting level
 
         # Map of (class_name, method_name) -> (file_path, lineno, is_property)
         self.defined_methods: dict[tuple[str, str], tuple[str, int, bool]] = {}
 
+        # Map of (file_path, func_name) -> lineno
+        self.defined_module_functions: dict[tuple[str, str], int] = {}
+
         # Map of method_name -> set of class_names where it is used
-        # None represents global scope
+        # None represents global/module scope
         self.usages: dict[str, set[str | None]] = {}
 
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        # Skip definitions and tracking inside excluded classes completely
-        if node.name in EXCLUDE_CLASSES:
-            # We still visit children normally so that any references/usages
-            # inside these skipped classes are still caught code-wide
-            self.generic_visit(node)
-            return
+        # Map of func_name -> set of file_paths where it is referenced
+        self.file_usages: dict[str, set[str]] = {}
 
-        # Save old class context to support nested classes perfectly
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
         old_class = self.current_class
         self.current_class = node.name
+
+        # Skip definitions inside excluded classes completely
+        if node.name in EXCLUDE_CLASSES:
+            self.current_class = old_class
+            return
 
         for item in node.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -65,7 +69,7 @@ class UnusedMethodDetector(ast.NodeVisitor):
                     elif isinstance(dec, ast.Attribute):
                         dec_name = dec.attr
 
-                    # # Parameterized decorators (e.g., @on(OpButton.Pressed))
+                    # Parameterized decorators (e.g., @on(OpButton.Pressed))
                     elif isinstance(dec, ast.Call):
                         if isinstance(dec.func, ast.Name):
                             dec_name = dec.func.id
@@ -93,20 +97,49 @@ class UnusedMethodDetector(ast.NodeVisitor):
         self.generic_visit(node)
         self.current_class = old_class
 
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._handle_function_def(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        self._handle_function_def(node)
+
+    def _handle_function_def(
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef
+    ) -> None:
+        # Ignore inner nested functions defined inside other functions/methods
+        if self.function_depth > 0:
+            self.function_depth += 1
+            self.generic_visit(node)
+            self.function_depth -= 1
+            return
+
+        self.function_depth += 1
+
+        # Track top-level module functions only (outside any class definition)
+        if self.current_class is None and not (
+            node.name.startswith("__") and node.name.endswith("__")
+        ):
+            self.defined_module_functions[(self.current_file, node.name)] = node.lineno
+
+        self.generic_visit(node)
+        self.function_depth -= 1
+
     def visit_Attribute(self, node: ast.Attribute) -> None:
         # Captures method calls and property access via dot notation
-        # (e.g., self.foo, obj.bar)
-        self.usages.setdefault(node.attr, set()).add(self.current_class)
+        if self.current_class not in EXCLUDE_CLASSES:
+            self.usages.setdefault(node.attr, set()).add(self.current_class)
+            self.file_usages.setdefault(node.attr, set()).add(self.current_file)
         self.generic_visit(node)
 
     def visit_Name(self, node: ast.Name) -> None:
-        # Captures references to methods passed directly by name inside the class body
-        if isinstance(node.ctx, ast.Load):
+        # Captures references to methods/functions passed directly by name
+        if isinstance(node.ctx, ast.Load) and self.current_class not in EXCLUDE_CLASSES:
             self.usages.setdefault(node.id, set()).add(self.current_class)
+            self.file_usages.setdefault(node.id, set()).add(self.current_file)
         self.generic_visit(node)
 
 
-def test_class_methods() -> None:
+def test_functions_and_methods_in_use() -> None:
     detector = UnusedMethodDetector()
 
     # Collect definitions and usages across the codebase
@@ -119,6 +152,7 @@ def test_class_methods() -> None:
     unused_properties: list[str] = []
     unused_functions: list[str] = []
 
+    # 1. Check Class Methods
     for (class_name, method_name), (
         file,
         line,
@@ -140,11 +174,21 @@ def test_class_methods() -> None:
                     f"{method_name} in {class_name} ({file}:{line})"
                 )
 
-    # Build the single combined reporting block
+    # 2. Check Top-Level Module Functions
+    for (file, func_name), line in detector.defined_module_functions.items():
+        file_usages = detector.file_usages.get(func_name, set())
+
+        if not file_usages:
+            unused_functions.append(f"{func_name}() in module ({file}:{line})")
+        else:
+            # Used only inside the module file where it was defined
+            if file_usages == {file} and not func_name.startswith("_"):
+                should_be_private.append(f"{func_name}() in module ({file}:{line})")
+
     error_lines: list[str] = []
 
     if should_be_private:
-        error_lines.append("\nFound methods that should be private:")
+        error_lines.append("\nFound methods/functions that should be private:")
         error_lines.extend(f"  - {item}" for item in should_be_private)
 
     if unused_properties:
@@ -152,7 +196,7 @@ def test_class_methods() -> None:
         error_lines.extend(f"  - {item}" for item in unused_properties)
 
     if unused_functions:
-        error_lines.append("\nUnused functions:")
+        error_lines.append("\nUnused functions/methods:")
         error_lines.extend(f"  - {item}" for item in unused_functions)
 
     if error_lines:

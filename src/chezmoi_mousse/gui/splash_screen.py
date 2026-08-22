@@ -33,7 +33,7 @@ SPLASH_WIDTH = len(max(SPLASH_ASCII, key=len))
 LOG_MSG_WIDTH = SPLASH_WIDTH - 13
 
 
-def create_fade_line_styles() -> deque[Style]:
+def _create_fade_line_styles() -> deque[Style]:
     start_color = "#0178D4"
     end_color = "#F187FB"
     fade: list[str] = [start_color] * 10
@@ -47,7 +47,7 @@ def create_fade_line_styles() -> deque[Style]:
     return fade_line_styles
 
 
-FADE_LINE_STYLES: deque[Style] = create_fade_line_styles()
+FADE_LINE_STYLES: deque[Style] = _create_fade_line_styles()
 
 
 class GroupName(StrEnum):
