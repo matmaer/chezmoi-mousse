@@ -19,6 +19,7 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     Chars,
     ColorVar,
+    OpBtnLabel,
     TabLabel,
 )
 
@@ -85,7 +86,10 @@ class ChezmoiGui(App[str]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS: ClassVar = {"main_screen": MainScreen}
+    SCREENS: ClassVar = {
+        "main_screen": MainScreen,
+        "operate_modal": lambda: OperateModal((OpBtnLabel.cancel,)),
+    }
 
     cmattr: ClassVar[CmAttributes] = CmAttributes()
 
