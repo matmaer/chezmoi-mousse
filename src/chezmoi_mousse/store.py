@@ -4,7 +4,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.named_tuples import CommandResult
+from chezmoi_mousse.str_enums import TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson
@@ -44,6 +46,14 @@ class ChangedPaths:
 class ResultsSnapshot:
     managed_paths: set[Path] = field(default_factory=lambda: set())
     status_paths: dict[Path, str] = field(default_factory=lambda: {})
+
+
+add_id = AppIds(TabLabel.add)
+apply_id = AppIds(TabLabel.apply)
+config_id = AppIds(TabLabel.config)
+debug_id = AppIds(TabLabel.debug)
+logs_id = AppIds(TabLabel.logs)
+re_add_id = AppIds(TabLabel.re_add)
 
 
 cat_config_result = CommandResult.empty()

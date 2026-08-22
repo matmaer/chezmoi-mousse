@@ -12,6 +12,7 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
+from chezmoi_mousse import store
 from chezmoi_mousse.cm_attributes import CmAttributes
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import (
@@ -252,35 +253,35 @@ class ChezmoiGui(App[str]):
 
         if active_tab == TabLabel.apply:
             left_side = self.screen.query_one(
-                self.cmattr.apply_id.container.left_side_q, DestDirTree
+                store.apply_id.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.cmattr.apply_id.container.operate_buttons_q
+                store.apply_id.container.operate_buttons_q
             )
         elif active_tab == TabLabel.re_add:
             left_side = self.screen.query_one(
-                self.cmattr.re_add_id.container.left_side_q, DestDirTree
+                store.re_add_id.container.left_side_q, DestDirTree
             )
             operation_buttons = self.screen.query_one(
-                self.cmattr.re_add_id.container.operate_buttons_q
+                store.re_add_id.container.operate_buttons_q
             )
         elif active_tab == TabLabel.add:
             left_side = self.screen.query_one(
-                self.cmattr.add_id.container.left_side_q, Vertical
+                store.add_id.container.left_side_q, Vertical
             )
             operation_buttons = self.screen.query_one(
-                self.cmattr.add_id.container.operate_buttons_q
+                store.add_id.container.operate_buttons_q
             )
         elif active_tab == TabLabel.logs:
             logs_tab_buttons = self.screen.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab == TabLabel.config:
             left_side = self.screen.query_one(
-                self.cmattr.config_id.container.left_side_q, FlatButtonsVertical
+                store.config_id.container.left_side_q, FlatButtonsVertical
             )
         elif active_tab == TabLabel.debug:
             left_side = self.screen.query_one(
-                self.cmattr.debug_id.container.left_side_q, FlatButtonsVertical
+                store.debug_id.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:

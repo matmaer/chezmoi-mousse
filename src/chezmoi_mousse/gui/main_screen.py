@@ -74,24 +74,24 @@ class MainScreen(Screen[None]):
         yield CustomHeader()
 
         with Vertical(), TabbedContent():
-            yield ApplyTab(self.app.cmattr.apply_id)
-            yield ReAddTab(self.app.cmattr.re_add_id)
-            yield AddTab(self.app.cmattr.add_id)
-            yield LogsTab(self.app.cmattr.logs_id)
-            yield ConfigTab(self.app.cmattr.config_id)
+            yield ApplyTab(store.apply_id)
+            yield ReAddTab(store.re_add_id)
+            yield AddTab(store.add_id)
+            yield LogsTab(store.logs_id)
+            yield ConfigTab(store.config_id)
             if "debug" in self.app.features:
-                yield DebugTab(self.app.cmattr.debug_id)
+                yield DebugTab(store.debug_id)
         yield Footer()
 
     def on_mount(self) -> None:
-        self.app_log = self.query_one(self.app.cmattr.logs_id.richlog.app_q, AppLog)
-        self.cmd_log = self.query_one(self.app.cmattr.logs_id.richlog.cmd_q, CmdLog)
+        self.app_log = self.query_one(store.logs_id.richlog.app_q, AppLog)
+        self.cmd_log = self.query_one(store.logs_id.richlog.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
         self.apply_managed_tree = self.query_one(
-            self.app.cmattr.apply_id.managed_tree_q, ManagedTree
+            store.apply_id.managed_tree_q, ManagedTree
         )
         self.re_add_managed_tree = self.query_one(
-            self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
+            store.re_add_id.managed_tree_q, ManagedTree
         )
         self.tabbed_content = self.query_exactly_one(TabbedContent)
         self._listen_to_command_results()

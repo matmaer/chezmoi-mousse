@@ -11,6 +11,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
+from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import Chars, ColorVar, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
@@ -117,9 +118,7 @@ class AppLog(RichLoggers):
     cmd_results: reactive[list[CommandResult] | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
-        super().__init__(
-            id=self.app.cmattr.logs_id.richlog.app, markup=True, max_lines=10000
-        )
+        super().__init__(id=store.logs_id.richlog.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
         self.write_dimmed(LogString.app_log_initialized)

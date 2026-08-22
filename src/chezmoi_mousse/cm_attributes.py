@@ -7,9 +7,8 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.named_tuples import ManagedTreePaths
-from chezmoi_mousse.str_enums import PathKind, StatusCode, TabLabel
+from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import PathKindMap, StatusMap
@@ -143,13 +142,6 @@ class ManagedPaths:
 
 @dataclass
 class CmAttributes:
-    add_id = AppIds(TabLabel.add)
-    apply_id = AppIds(TabLabel.apply)
-    config_id = AppIds(TabLabel.config)
-    debug_id = AppIds(TabLabel.debug)
-    logs_id = AppIds(TabLabel.logs)
-    re_add_id = AppIds(TabLabel.re_add)
-
     @cached_property
     def dest_dir(self) -> Path:
         return Path(store.parsed_dump_config["destDir"])
