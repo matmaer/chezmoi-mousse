@@ -50,10 +50,9 @@ class LoadingModal(ModalScreen[None]):
         await self.run_managed_commands().wait()
 
     @work
-    async def run_affected_paths(self) -> None:
-        for cmd in ReadCmd.managed_commands():
-            self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
-            await self._run_affected_paths(cmd).wait()
+    async def run_affected_paths(self, write_cmd: WriteCmd, path_arg: Path) -> None:
+        self.label_text = "Gathering affected paths"
+        await self._run_affected_paths(write_cmd, path_arg).wait()
 
     @work
     async def run_managed_commands(self) -> None:
