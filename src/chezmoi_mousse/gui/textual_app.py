@@ -24,12 +24,12 @@ from chezmoi_mousse.str_enums import (
 )
 
 from .common.actionables import (
-    DryRunBtnMsg,
     FlatButtonsVertical,
     SwitchSlider,
     TabButtons,
 )
 from .common.managed_tree import DestDirTree
+from .common.messages import DryRunBtnMsg
 from .common.operate_modal import OperateModal
 from .main_screen import CustomHeader, MainScreen
 from .splash_screen import SplashScreen
