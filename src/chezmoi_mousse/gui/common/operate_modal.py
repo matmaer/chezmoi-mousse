@@ -85,6 +85,9 @@ class OperateInfo(Static):
         super().__init__(classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
+        self.cmd_info_fields = OpInfoString.get_cmd_info_fields(self.btn_label)
+        self.border_title = self.cmd_info_fields.border_title
+        self.border_subtitle = self.cmd_info_fields.border_subtitle
         self._update_review_info()
 
     def _update_review_info(self) -> None:
@@ -102,8 +105,8 @@ class OperateInfo(Static):
                 info_lines.append(OpInfoString.auto_push)
         else:
             info_lines.append(OpInfoString.auto_settings_not_applicable)
+        info_lines.append(self.cmd_info_fields.cmd_description)
         self.update("\n".join(info_lines))
-        self.border_title = OpInfoString.ready_to_run_title
 
     def watch_dry_run(self) -> None:
         if not self.display:

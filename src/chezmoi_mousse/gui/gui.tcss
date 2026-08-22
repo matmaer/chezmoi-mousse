@@ -393,7 +393,6 @@ Static {
   }
   &.operate_info {
     border-subtitle-align: center;
-    border-title-align: center;
     border: round $foreground;
     height: auto;
     padding: 0 1;

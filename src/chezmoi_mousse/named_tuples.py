@@ -13,6 +13,7 @@ __all__ = [
     "CommandResult",
     "ManagedTreePaths",
     "PwMgrData",
+    "RunCommandInfo",
     "ScanDirItem",
     "SwitchData",
 ]
@@ -49,6 +50,12 @@ class ManagedTreePaths(NamedTuple):
     @property
     def status_paths_set(self) -> frozenset[Path]:
         return frozenset(self.status_dirs | self.status_files)
+
+
+class RunCommandInfo(NamedTuple):
+    border_title: str
+    border_subtitle: str
+    cmd_description: str
 
 
 class PwMgrData(NamedTuple):

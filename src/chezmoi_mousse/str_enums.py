@@ -1,5 +1,7 @@
 from enum import Enum, StrEnum, auto
 
+from chezmoi_mousse.named_tuples import RunCommandInfo
+
 __all__ = [
     "BindingAction",
     "BindingDescription",
@@ -55,7 +57,7 @@ class Chars(StrEnum):
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     warning_sign = "\u26a0"  # WARNING SIGN
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
-    # bullet = "\u2022"  # BULLET # noqa: ERA001
+    bullet = "\u2022"  # BULLET # noqa: ERA001
     check_mark = "\u2714"  # HEAVY CHECK MARK
     # gear = "\u2699"  # GEAR # noqa: ERA001
     # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
@@ -223,66 +225,95 @@ class OpBtnLabel(StrEnum):
 
 class OpInfoString(StrEnum):
     add_path_info = (
-        f"[${ColorVar.dimmed}]Add new targets to the source state. If adding a "
-        "directory, it will be recursed in.[/]"
+        f"[${ColorVar.info}]{Chars.bullet} Add new targets to the source state[/]"
     )
-    add_subtitle = f" local path {Chars.right_arrow} chezmoi repo "
+    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
     apply_path_info = (
-        f"[${ColorVar.dimmed}]Chezmoi will ensure that the path is in the target "
-        "state. The command will run without prompting.\n"
-        "For targets modified since chezmoi last wrote it. If adding a "
-        "directory, it will be recursed in.[/]"
+        f"[${ColorVar.info}]{Chars.bullet} Chezmoi will ensure that the path is in the "
+        "target state. The command will run without prompting. For targets modified "
+        "since chezmoi last wrote it[/]"
     )
-    apply_subtitle = f" chezmoi repo {Chars.right_arrow} path on disk "
+    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
     auto_add = (
-        f"[${ColorVar.text_success}]{Chars.check_mark} Chezmoi 'autoadd' is enabled: "
-        "paths will be added to the chezmoi repository."
-        f"{Chars.check_mark}[/]"
+        f"{Chars.bullet} [${ColorVar.text_warning}]Chezmoi 'autoadd' is enabled: "
+        "paths will be added to the chezmoi repository[/]"
     )
     auto_commit = (
-        f"[${ColorVar.text_warning}]{Chars.warning_sign} Chezmoi 'autocommit' is "
-        "enabled: paths will be committed to the chezmoi repository "
-        f"{Chars.warning_sign}[/]"
+        f"{Chars.bullet} [${ColorVar.text_warning}]Chezmoi 'autocommit' is "
+        "enabled: paths will be committed to the chezmoi repository[/]"
     )
     auto_push = (
-        f"[${ColorVar.text_error}]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
-        "the updated chezmoi repository will be pushed to the remote (origin) "
-        f"{Chars.warning_sign}[/]"
+        f"{Chars.bullet} [${ColorVar.text_warning}]Chezmoi 'autopush' is enabled: "
+        "the updated chezmoi repository will be pushed to the remote (origin)[/]"
     )
     auto_settings_not_applicable = (
-        "[dim]Apply operation: chezmoi autoadd, autocommit and autopush not "
-        "applicable[/]"
+        f"{Chars.bullet} [dim]Apply operation: chezmoi autoadd, autocommit and "
+        "autopush not applicable[/]"
     )
     destroy_path_info = (
-        f"[${ColorVar.text_error}]Permanently remove the path from disk and chezmoi.\n"
+        f"{Chars.bullet} [${ColorVar.text_error}]Permanently remove the path from disk "
+        "and chezmoi.\n"
         "MAKE SURE YOU HAVE A BACKUP![/]"
     )
     destroy_subtitle = (
-        f"[${ColorVar.text_error}]{Chars.x_mark} delete on disk and in chezmoi repo "
+        f"[${ColorVar.text_error}]{Chars.x_mark}delete on disk and in chezmoi repo"
         f"[${ColorVar.text_error}]{Chars.x_mark}[/]"
     )
     dry_run_notice = (
-        "Ready to run command with --dry-run flag, no changes will be made to the "
-        "chezmoi repository, the paths below will be unaffected."
+        f"{Chars.bullet} [${ColorVar.text_secondary}]--dry-run flag is active, no "
+        "changes will be made to the chezmoi repository[/]"
     )
     forget_path_info = (
-        f"[${ColorVar.dimmed}] Remove from the source state, i.e. stop managing them "
-        "[/]"
+        f"{Chars.bullet} [${ColorVar.info}]Remove from the source state, i.e. stop "
+        "managing them[/]"
     )
-    forget_subtitle = f" leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark} "
+    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
     live_run_notice = (
-        f"[${ColorVar.text_warning}]{Chars.warning_sign} Ready to run command live! "
-        f"The paths below will be affected {Chars.warning_sign}[/]"
+        f"{Chars.bullet} [${ColorVar.text_warning}]Command will run live! The paths "
+        "below will be affected![/]"
     )
-    ready_to_run_title = " ready to run "
-    run_completed_title = " command completed "
+    run_completed_title = "command completed"
     re_add_path_info = (
-        f"[${ColorVar.dimmed}]Re-add modified files in the target state, preserving "
-        "any encrypted_ attributes. chezmoi will not overwrite templates, and "
-        "all entries that are not files are ignored. If adding a directory, it"
-        " will be recursed in.[/]"
+        f"{Chars.bullet} [${ColorVar.info}]Re-add modified files in the target state, "
+        "preserving any encrypted_ attributes. chezmoi will not overwrite templates, "
+        "and all entries that are not files are ignored[/]"
     )
-    re_add_subtitle = f" path on disk {Chars.right_arrow} overwrite chezmoi repo "
+    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
+
+    @classmethod
+    def get_cmd_info_fields(cls, btn_label: OpBtnLabel) -> RunCommandInfo:
+        if btn_label is OpBtnLabel.add_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.add_run,
+                border_subtitle=cls.add_subtitle,
+                cmd_description=cls.add_path_info,
+            )
+        elif btn_label is OpBtnLabel.apply_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.apply_run,
+                border_subtitle=cls.apply_subtitle,
+                cmd_description=cls.apply_path_info,
+            )
+        elif btn_label is OpBtnLabel.destroy_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.destroy_run,
+                border_subtitle=cls.destroy_subtitle,
+                cmd_description=cls.destroy_path_info,
+            )
+        elif btn_label is OpBtnLabel.forget_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.forget_run,
+                border_subtitle=cls.forget_subtitle,
+                cmd_description=cls.forget_path_info,
+            )
+        elif btn_label is OpBtnLabel.re_add_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.re_add_run,
+                border_subtitle=cls.re_add_subtitle,
+                cmd_description=cls.re_add_path_info,
+            )
+        else:
+            raise ValueError(f"No run cmd info fields available for {btn_label}")
 
 
 class PathFilters(Enum):
