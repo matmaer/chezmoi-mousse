@@ -1,10 +1,11 @@
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fmatmaer%2Fchezmoi-mousse%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)
 [![Framework: Textual](https://img.shields.io/badge/framework-Textual-5967FF?logo=textual)](https://www.textualize.io/)
-[![Black](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=black&logo=black)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
-> [!NOTE]
+> [!WARNING]
 > Do not run the app from the current head, we are implementing a new workflow to avoid this issue in the future, use the pre build binary instead (linux only).
+
+> [!NOTE]
 > It's safe to use the app to visualize your `chezmoi` repository, as no write operations are enabled by default.
 > See the [Use Case](#use-case) to disable dry-run or [Test](#test) first with dummy files.
 > The app is not packaged yet but you can simply run it as a `Python` module, see the [Start](#start) section.

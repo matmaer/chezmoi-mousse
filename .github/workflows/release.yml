@@ -23,9 +23,7 @@ jobs:
           enable-cache: true
 
       - name: Set up Python "3.13"
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: "pyproject.toml"
+        run: uv python install 3.13
 
       - name: Install system dependencies for Nuitka
         run: |

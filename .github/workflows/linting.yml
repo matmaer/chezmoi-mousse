@@ -1,4 +1,4 @@
-name: Lint (ruff + black)
+name: Lint and Format (ruff)
 on:
   push:
     branches:
@@ -20,10 +20,10 @@ jobs:
         enable-cache: true
     - name: Set up Python ${{ matrix.python-version }}
       run: uv python install ${{ matrix.python-version }}
-    - name: Run ruff
-      run: uv run ruff check src/
-    - name: Run black
-      run: uv run black --check src/
+    - name: Run ruff check
+      run: uv run ruff check .
+    - name: Run ruff format
+      run: uv run ruff format --check .
     - name: Verify app can be imported
       run: uv run python -c "import chezmoi_mousse; print('Import successful')"
       env:
