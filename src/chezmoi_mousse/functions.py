@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import re
 import subprocess
 import time
@@ -41,7 +42,9 @@ if TYPE_CHECKING:
     )
     from chezmoi_mousse.gui.common.operate_modal import LoadingModal
 
-__all__ = ("min_wait", "AppLife", "Commands", "CheckPath")
+__all__ = ("min_wait", "results_queue", "AppLife", "Commands", "CheckPath")
+
+results_queue: queue.Queue[CommandResult] = queue.Queue()
 
 
 def min_wait(
@@ -238,6 +241,7 @@ class Commands:
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
         setattr(store, f"{cmd.name}_result", result)
+        results_queue.put(result)
         return result
 
     @staticmethod
@@ -261,6 +265,7 @@ class Commands:
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
         setattr(store, cmd.name, result)
+        results_queue.put(result)
         return result
 
     @staticmethod
@@ -295,14 +300,14 @@ class Commands:
     @_typed_lru_cache(maxsize=500)
     def get_highlighted_chezmoi_cat_output(
         file_path: Path,
-    ) -> tuple[Text, CommandResult]:
+    ) -> Text:
         cmd_result = Commands.run_read_cmd(ReadCmd.cat, path_arg=file_path)
         f_contents = cmd_result.std_out
         if not f_contents.strip():
             f_contents = "File is empty or contains only whitespace"
         text_contents = Text(f_contents)
         ReprHighlighter().highlight(text_contents)
-        return (text_contents, cmd_result)
+        return text_contents
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)

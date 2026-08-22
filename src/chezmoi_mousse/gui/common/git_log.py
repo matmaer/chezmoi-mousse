@@ -11,8 +11,6 @@ from textual.widgets import DataTable, Label, Static
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import ColorVar, SectionLabel, Tcss
 
-from .messages import LogCmdResultMsg
-
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -81,7 +79,6 @@ class GitLogView(Container):
             self.mount(container)
             return
         cmd_results = Commands.run_chezmoi_git_log(path_arg)
-        self.post_message(LogCmdResultMsg(cmd_results))
         container = self._create_datatable_container(
             cmd_results[-1].std_out.splitlines()
         )

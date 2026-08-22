@@ -121,7 +121,6 @@ class FlatBtnLabel(StrEnum):
 
 class LoadingLabel(StrEnum):
     loading = "Loading"  # the initial label
-    log_cmd_results = "Logging command results"
     purge_cache = "Purge cached data"
     update_trees = "Update Managed Trees"
     reload_dir_tree = "Reloading Add tab directory tree"

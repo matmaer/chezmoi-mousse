@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.named_tuples import CommandResult
 
     from .actionables import ReviewBtn
 
@@ -19,7 +18,6 @@ __all__ = [
     "DirContentBtnMsg",
     "DryRunBtnMsg",
     "ExitModalBtnMsg",
-    "LogCmdResultMsg",
     "RefreshBtnMsg",
     "ReviewBtnMsg",
     "RunBtnMsg",
@@ -58,12 +56,6 @@ class DryRunBtnMsg(Message):
 class ExitModalBtnMsg(Message):
     def __init__(self, button: Button) -> None:
         self.button = button
-        super().__init__()
-
-
-class LogCmdResultMsg(Message):
-    def __init__(self, cmd_result: list[CommandResult]) -> None:
-        self.cmd_result = cmd_result
         super().__init__()
 
 

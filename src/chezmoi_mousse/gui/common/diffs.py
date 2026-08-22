@@ -26,7 +26,6 @@ from .components import (
     MainSectionLabel,
     SubSectionLabel,
 )
-from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -97,7 +96,6 @@ class DiffView(ScrollableContainer):
 
         if path in self.paths.status_paths_set:
             diff_result = Commands.run_chezmoi_diff(self.diff_cmd, path)
-            self.post_message(LogCmdResultMsg([diff_result]))
 
             self.main_section_label.update(str(diff_result.full_cmd))
 

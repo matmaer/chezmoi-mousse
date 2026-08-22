@@ -21,7 +21,6 @@ from .components import (
     MainSectionLabel,
     SubSectionLabel,
 )
-from .messages import LogCmdResultMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
@@ -93,8 +92,7 @@ class ContentsView(ScrollableContainer):
         else:
             self.main_section_label.update(SectionLabel.unmanaged_file)
         if self.app.cmattr.paths.managed_files.get(path) is PathKind.EXISTS_FALSE:
-            f_content, cmd_result = Commands.get_highlighted_chezmoi_cat_output(path)
-            self.post_message(LogCmdResultMsg([cmd_result]))
+            f_content = Commands.get_highlighted_chezmoi_cat_output(path)
             self.highlighted_static.update(f_content)
             self.sub_section_label.update(SectionLabel.chezmoi_cat_output)
         else:

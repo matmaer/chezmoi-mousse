@@ -12,7 +12,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands, min_wait
+from chezmoi_mousse.functions import Commands, min_wait, results_queue
 from chezmoi_mousse.str_enums import (
     Chars,
     LoadingLabel,
@@ -30,7 +30,6 @@ from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import ManagedTree
 from .common.messages import (
     CurrentNodeMsg,
-    LogCmdResultMsg,
     RefreshBtnMsg,
     ReviewBtnMsg,
 )
@@ -95,7 +94,22 @@ class MainScreen(Screen[None]):
             self.app.cmattr.re_add_id.managed_tree_q, ManagedTree
         )
         self.tabbed_content = self.query_exactly_one(TabbedContent)
+        self._listen_to_command_results()
         self._first_startup()
+
+    def on_unmount(self) -> None:
+        results_queue.shutdown(immediate=True)
+
+    @work(thread=True)
+    def _listen_to_command_results(self) -> None:
+        while True:
+            result: CommandResult = results_queue.get()
+            self.app.call_from_thread(self._log_command_result, result)
+            results_queue.task_done()
+
+    def _log_command_result(self, result: CommandResult) -> None:
+        self.app_log.cmd_results = [result]
+        self.cmd_log.cmd_results = [result]
 
     ###########################################
     # Push modal methods with their callbacks #
@@ -105,20 +119,12 @@ class MainScreen(Screen[None]):
     async def _first_startup(self) -> None:
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
-        await self._update_managed_trees_loading().wait()
-        await self._log_cmd_results_loading(store.splash_results()).wait()
+        self._update_managed_trees_loading()
         await self.loading_modal.dismiss()
 
     #####################
     # UI update workers #
     #####################
-
-    @work
-    @min_wait
-    async def _log_cmd_results_loading(self, cmd_results: list[CommandResult]) -> None:
-        self.loading_modal.label_text = LoadingLabel.log_cmd_results
-        self.cmd_log.cmd_results = cmd_results
-        self.app_log.cmd_results = cmd_results
 
     @work
     async def _purge_views_cache(self) -> None:
@@ -139,10 +145,6 @@ class MainScreen(Screen[None]):
         self.apply_managed_tree.refresh()
         self.re_add_managed_tree.update_tree()
         self.re_add_managed_tree.refresh()
-        # Update FilteredDirTree
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.reload()
-        dir_tree.refresh()
 
     @work
     @min_wait
@@ -182,14 +184,6 @@ class MainScreen(Screen[None]):
         ).show_path = msg.path
         self.query_one(msg.app_ids.container.git_log_q, GitLogView).show_path = msg.path
 
-    @on(LogCmdResultMsg)
-    def handle_log_cmd_result_msg(self, msg: LogCmdResultMsg) -> None:
-        """Currently used by contents.py, diffs.py, and git_log.py to log command
-        results for their respective commands."""
-        msg.stop()
-        self.app_log.cmd_results = msg.cmd_result
-        self.cmd_log.cmd_results = msg.cmd_result
-
     @on(RefreshBtnMsg)
     async def handle_refresh_button(self) -> None:
         await store.store_current_snapshot()
@@ -211,7 +205,6 @@ class MainScreen(Screen[None]):
         await self._update_managed_trees_loading().wait()
         await self._reload_directory_tree_loading().wait()
         await self._purge_views_cache().wait()
-        await self._log_cmd_results_loading(store.managed_cmd_results()).wait()
         self.loading_modal.dismiss()
 
     @on(ReviewBtnMsg)
