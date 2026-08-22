@@ -79,7 +79,7 @@ class ChezmoiGui(App[str]):
         Binding(
             key="D,d",
             action=BindingAction.toggle_dry_run,
-            description=BindingDescription.remove_dry_run,
+            description=BindingDescription.enable_live_run,
         ),
     ]
 
@@ -183,16 +183,16 @@ class ChezmoiGui(App[str]):
     def action_toggle_dry_run(self) -> None:
         if not isinstance(self.screen, MainScreen):
             return
-        Commands.dry_run = not Commands.dry_run
+        Commands.live_run = not Commands.live_run
         new_description = (
-            BindingDescription.remove_dry_run
-            if Commands.dry_run is True
-            else BindingDescription.add_dry_run
+            BindingDescription.switch_to_dry_run
+            if Commands.live_run is True
+            else BindingDescription.enable_live_run
         )
         self._update_binding_description(
             binding_action=BindingAction.toggle_dry_run, new_description=new_description
         )
-        self.screen.query_exactly_one(CustomHeader).dry_run = Commands.dry_run
+        self.screen.query_exactly_one(CustomHeader).live_run = Commands.live_run
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):

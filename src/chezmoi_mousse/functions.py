@@ -104,7 +104,7 @@ class AppLife:
         if isinstance(cmd, ReadCmd):
             base_cmd = "chezmoi"
         else:
-            base_cmd = "chezmoi --dry-run" if Commands.dry_run is True else "chezmoi"
+            base_cmd = "chezmoi --dry-run" if Commands.live_run is False else "chezmoi"
         return f"{base_cmd} {verb_str}"
 
     @staticmethod
@@ -122,13 +122,13 @@ class AppLife:
 
 class Commands:
     dest_dir: Path | None = None
-    dry_run: bool = True
+    live_run: bool = False
 
     @staticmethod
     def get_dry_run_btn_label() -> OpBtnLabel:
-        if Commands.dry_run is True:
-            return OpBtnLabel.remove_dry_run
-        return OpBtnLabel.add_dry_run
+        if Commands.live_run is False:
+            return OpBtnLabel.enable_live_run
+        return OpBtnLabel.switch_to_dry_run
 
     @staticmethod
     def rel_path(path: Path) -> str:
@@ -226,7 +226,6 @@ class Commands:
         )
 
         result = CommandResult(
-            dry_run=Commands.dry_run,
             full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
             pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
             path_arg=path_arg,
@@ -242,7 +241,7 @@ class Commands:
     def run_write_cmd(cmd: WriteCmd, path_arg: Path) -> CommandResult:
         args_tuple: StrTuple = (
             ("chezmoi", "--dry-run") + cmd.value
-            if Commands.dry_run is True
+            if Commands.live_run is False
             else ("chezmoi",) + cmd.value
         )
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
@@ -250,7 +249,6 @@ class Commands:
         )
 
         result = CommandResult(
-            dry_run=Commands.dry_run,
             full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
             pretty_cmd=AppLife.pretty_cmd(cmd, path=path_arg),
             path_arg=path_arg,

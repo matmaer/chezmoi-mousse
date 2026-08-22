@@ -206,7 +206,7 @@ class RunBtnGroup(HorizontalGroup):
     @on(DryRunBtnMsg)
     def _handle_toggle_dry_run_pressed(self, event: DryRunBtn.Pressed) -> None:
         event.stop()
-        Commands.dry_run = not Commands.dry_run
+        Commands.live_run = not Commands.live_run
         dry_run_btn = self.query_exactly_one(DryRunBtn)
         dry_run_btn.label = Commands.get_dry_run_btn_label()
 

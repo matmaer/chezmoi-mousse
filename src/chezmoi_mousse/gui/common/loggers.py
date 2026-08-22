@@ -44,9 +44,8 @@ class CmdResultCollapsible(Collapsible):
         return f"{time} [{color}]{cmd_str}[/] (returncode {code})"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
-        dry_run_str = "(dry run)" if result.dry_run else ""
-        curated_std_out = result.std_out or f"{LogString.no_stdout} {dry_run_str}"
-        curated_std_err = result.std_err or f"{LogString.no_stderr} {dry_run_str}"
+        curated_std_out = result.std_out or f"{LogString.no_stdout}"
+        curated_std_err = result.std_err or f"{LogString.no_stderr}"
         contents: list[Label | Static] = [
             Label(SectionLabel.full_cmd, classes=Tcss.sub_section_label)
         ]

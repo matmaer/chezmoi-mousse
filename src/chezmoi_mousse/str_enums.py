@@ -43,8 +43,8 @@ class BindingDescription(StrEnum):
     maximize = "Maximize"
     minimize = "Minimize"
     show_filters = "Show filters"
-    remove_dry_run = "Remove --dry-run"
-    add_dry_run = "Add --dry-run"
+    enable_live_run = "Enable live run"
+    switch_to_dry_run = "Switch to dry run"
 
 
 class Chars(StrEnum):
@@ -153,8 +153,8 @@ class NotifyMsg(StrEnum):
 
 
 class OpBtnLabel(StrEnum):
-    add_dry_run = BindingDescription.add_dry_run
-    remove_dry_run = BindingDescription.remove_dry_run
+    enable_live_run = BindingDescription.enable_live_run
+    switch_to_dry_run = BindingDescription.switch_to_dry_run
     add_review = "Review Add Path"
     add_run = "Run Chezmoi Add"
     apply_review = "Review Apply Path"
@@ -178,7 +178,7 @@ class OpBtnLabel(StrEnum):
 
     @classmethod
     def dry_run_set(cls) -> frozenset["OpBtnLabel"]:
-        return frozenset({OpBtnLabel.add_dry_run, OpBtnLabel.remove_dry_run})
+        return frozenset({OpBtnLabel.enable_live_run, OpBtnLabel.switch_to_dry_run})
 
     @classmethod
     def exit_modal_set(cls) -> frozenset["OpBtnLabel"]:

@@ -81,7 +81,7 @@ class OperateInfo(Static):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    dry_run: reactive[bool] = reactive(True)
+    live_run: reactive[bool] = reactive(False)
 
     def __init__(self, btn_label: OpBtnLabel) -> None:
         self.btn_label = btn_label
@@ -92,7 +92,7 @@ class OperateInfo(Static):
 
     def _update_review_info(self) -> None:
         info_lines: list[str] = []
-        if self.dry_run:
+        if self.live_run is False:
             info_lines.append(OpInfoString.dry_run_notice)
         else:
             info_lines.append(OpInfoString.live_run_notice)

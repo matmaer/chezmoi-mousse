@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from itertools import chain
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from textual import getters, on, work
 from textual.app import ComposeResult
@@ -46,20 +46,23 @@ __all__ = ["MainScreen", "CustomHeader"]
 
 
 class CustomHeader(Header):
-    dry_run: reactive[bool] = reactive(True)
-    dry_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
-    live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
+    DRY_MODE: ClassVar[str] = (
+        "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
+    )
+    LIVE_MODE: ClassVar[str] = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
+
+    live_run: reactive[bool] = reactive(False)
 
     def on_mount(self) -> None:
         self.icon = Chars.burger
 
-    def watch_dry_run(self, dry_run: bool) -> None:
-        if dry_run is False:
-            self.screen.title = self.live_mode
+    def watch_live_run(self, live_run: bool) -> None:
+        if live_run is True:
+            self.screen.title = self.LIVE_MODE
             header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.add_class(Tcss.live_run_color)
-        if dry_run is True:
-            self.screen.title = self.dry_mode
+        if live_run is False:
+            self.screen.title = self.DRY_MODE
             header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.remove_class(Tcss.live_run_color)
 

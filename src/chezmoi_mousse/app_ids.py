@@ -136,7 +136,7 @@ class OperateButtonIds:
         self.reload: str = ids.op_btn_id(operation=OpBtnLabel.reload)
         self.reload_q: str = f"#{self.reload}"
 
-        self.toggle_dry_run: str = ids.op_btn_id(operation=OpBtnLabel.add_dry_run)
+        self.toggle_dry_run: str = ids.op_btn_id(operation=OpBtnLabel.enable_live_run)
         self.toggle_dry_run_q: str = f"#{self.toggle_dry_run}"
 
         # for test_paths only
