@@ -50,6 +50,12 @@ class LoadingModal(ModalScreen[None]):
         await self.run_managed_commands().wait()
 
     @work
+    async def run_affected_paths(self) -> None:
+        for cmd in ReadCmd.managed_commands():
+            self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
+            await self._run_affected_paths(cmd).wait()
+
+    @work
     async def run_managed_commands(self) -> None:
         for cmd in ReadCmd.managed_commands():
             self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
@@ -67,6 +73,13 @@ class LoadingModal(ModalScreen[None]):
             write_cmd,
             path_arg=path_arg,
         )
+
+    @work(thread=True)
+    @min_wait
+    async def _run_affected_paths(
+        self, write_cmd: WriteCmd, path: Path
+    ) -> AffectedPaths:
+        return await Commands.get_affected_paths(write_cmd, path)
 
     def watch_label_text(self, label_text: str) -> None:
         if self.label_text is None:
@@ -163,8 +176,8 @@ class AffectedPathsReview(ScrollableContainer):
         self.info_static = self.query_exactly_one(InfoStatic)
         self.sub_section_label = self.query_exactly_one(SubSectionLabel)
 
-    def update_affected_paths(self, write_cmd: WriteCmd, path: Path) -> None:
-        result: AffectedPaths = Commands.get_affected_paths(write_cmd, path)
+    async def update_affected_paths(self, write_cmd: WriteCmd, path: Path) -> None:
+        result: AffectedPaths = await Commands.get_affected_paths(write_cmd, path)
         self.sub_section_label.update(result.pretty_cmd)
         self.info_static.update(result.path_strings)
 
@@ -187,9 +200,11 @@ class OperateModal(ModalScreen[None]):
     def on_mount(self) -> None:
         operate_info = self.query_exactly_one(OperateInfo)
         command_output = self.query_exactly_one(CommandOutput)
+        affected_paths_review = self.query_exactly_one(AffectedPathsReview)
         if len(self.labels) == 1 and self.labels[0] == OpBtnLabel.close:
             # condition after a refresh trees operation
             operate_info.display = False
+            affected_paths_review.display = False
         else:
             command_output.display = False
 
