@@ -137,8 +137,6 @@ class ChezmoiGui(App[str]):
         return tab_pane
 
     def _get_switch_slider_widget(self) -> SwitchSlider | None:
-        if not isinstance(self.screen, MainScreen):
-            return None
         current_tab_widget = self._get_tab_widget()
         if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
             return current_tab_widget.query_exactly_one(SwitchSlider)
@@ -163,6 +161,8 @@ class ChezmoiGui(App[str]):
     def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
+        if not isinstance(self.screen, MainScreen):
+            return
         if event.tabbed_content.active in (
             TabLabel.apply,
             TabLabel.re_add,
@@ -219,8 +219,6 @@ class ChezmoiGui(App[str]):
         main_screen.query_exactly_one(CustomHeader).live_run = Commands.live_run
 
     def action_toggle_switch_slider(self) -> None:
-        if not isinstance(self.screen, MainScreen):
-            return
         slider: SwitchSlider | None = self._get_switch_slider_widget()
         if slider is None:
             return
@@ -237,8 +235,6 @@ class ChezmoiGui(App[str]):
         slider.toggle_class("-visible")
 
     def action_toggle_maximized(self) -> None:
-        if not isinstance(self.screen, MainScreen):
-            return
         active_tab = self.screen.query_exactly_one(TabbedContent).active
         left_side: DestDirTree | Vertical | FlatButtonsVertical | None = None
         operation_buttons = None
@@ -311,23 +307,15 @@ class ChezmoiGui(App[str]):
         action: str,
         parameters: tuple[object, ...],  # noqa: ARG002
     ) -> bool | None:
+        if not isinstance(self.screen, MainScreen):
+            return
         if action == BindingAction.toggle_switch_slider:
-            if isinstance(self.screen, MainScreen):
-                header = self.screen.query_exactly_one(CustomHeader)
-                switch_slider = self._get_switch_slider_widget()
-                if (
-                    switch_slider is None
-                    or header.display is False
-                    or switch_slider.display is False
-                ):
-                    return False
-                active_tab = self.screen.query_exactly_one(TabbedContent).active
-                return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)
-            return False
-
-        elif action == BindingAction.toggle_maximized:
-            if isinstance(self.screen, OperateModal):
+            header = self.screen.query_exactly_one(CustomHeader)
+            switch_slider = self._get_switch_slider_widget()
+            if switch_slider is None or header.display is False:
                 return False
+            active_tab = self.screen.query_exactly_one(TabbedContent).active
+            return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)
 
         return True
 
