@@ -31,6 +31,7 @@ from chezmoi_mousse.str_enums import (
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable
+    from typing import Any
 
     from chezmoi_mousse.cm_types import (
         MinWaitReturn,
@@ -38,22 +39,24 @@ if TYPE_CHECKING:
         ScanDirResult,
         StrTuple,
     )
-    from chezmoi_mousse.gui.common.actionables import ReviewBtn
     from chezmoi_mousse.gui.common.operate_modal import LoadingModal
 
 __all__ = ("min_wait", "AppLife", "Commands", "CheckPath")
 
 
-def min_wait(func: Callable[..., Awaitable[None]]) -> MinWaitReturn:
+def min_wait(
+    func: Callable[..., Awaitable[Any]],
+) -> MinWaitReturn:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
-    async def wrapper(self: LoadingModal, *args: ReviewBtn) -> None:
+    async def wrapper(self: LoadingModal, *args: Any) -> Any:
         min_wait_time = 0.3
         start_time = time.monotonic()
-        await func(self, *args)
+        res = await func(self, *args)
         elapsed = time.monotonic() - start_time
         if elapsed < min_wait_time:
             await sleep(min_wait_time - elapsed)
+        return res
 
     return wrapper
 
@@ -157,7 +160,7 @@ class Commands:
         )
 
     @staticmethod
-    def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
+    async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
 
         if Commands.dest_dir is None:
             raise RuntimeError("Trying to get affected paths before destDir is known")

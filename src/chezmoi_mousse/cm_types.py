@@ -8,10 +8,10 @@ if TYPE_CHECKING:
 
     from textual.widgets.tree import TreeNode
 
-    from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
+    from chezmoi_mousse.named_tuples import AffectedPaths, CommandResult, ScanDirItem
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
-    type MinWaitReturn = Callable[..., Awaitable[CommandResult | None]]
+    type MinWaitReturn = Callable[..., Awaitable[AffectedPaths | CommandResult | None]]
     type ParsedJson = dict[str, Any]
     type PathKindMap = MappingProxyType[Path, PathKind]
     type ScanDirResult = list[ScanDirItem] | PathKind
