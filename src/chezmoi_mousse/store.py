@@ -80,23 +80,6 @@ apply_path: Path | None = None
 re_add_path: Path | None = None
 
 
-# Functions
-def splash_results() -> list[CommandResult]:
-    return [
-        cat_config_result,
-        doctor_result,
-        dump_config_result,
-        git_log_result,
-        git_remote_result,
-        ignored_result,
-        managed_dirs_result,
-        managed_files_result,
-        status_dirs_result,
-        status_files_result,
-        template_data_result,
-    ]
-
-
 def managed_cmd_results() -> list[CommandResult]:
     return [
         managed_dirs_result,
