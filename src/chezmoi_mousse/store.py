@@ -80,15 +80,6 @@ apply_path: Path | None = None
 re_add_path: Path | None = None
 
 
-def managed_cmd_results() -> list[CommandResult]:
-    return [
-        managed_dirs_result,
-        managed_files_result,
-        status_dirs_result,
-        status_files_result,
-    ]
-
-
 def get_dest_dir() -> Path:
     return Path(parsed_dump_config["destDir"])
 
