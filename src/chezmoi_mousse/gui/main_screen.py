@@ -11,7 +11,7 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
-from chezmoi_mousse.cmd_results import CmdResults
+from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands, min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
@@ -106,7 +106,7 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         await self._update_managed_trees_loading().wait()
-        await self._log_cmd_results_loading(CmdResults.splash_results()).wait()
+        await self._log_cmd_results_loading(store.splash_results()).wait()
         await self.loading_modal.dismiss()
 
     #####################
@@ -192,12 +192,12 @@ class MainScreen(Screen[None]):
 
     @on(RefreshBtnMsg)
     async def handle_refresh_button(self) -> None:
-        await CmdResults.store_current_snapshot()
+        await store.store_current_snapshot()
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         await self.loading_modal.run_managed_commands().wait()
-        await CmdResults.update_changed_paths()
-        if CmdResults.changed_paths.no_changes:
+        await store.update_changed_paths()
+        if store.changed_paths.no_changes:
             self.notify(NotifyMsg.no_managed_changes)
             await self._reload_directory_tree_loading().wait()
             if self.tabbed_content.active == TabLabel.add:
@@ -211,7 +211,7 @@ class MainScreen(Screen[None]):
         await self._update_managed_trees_loading().wait()
         await self._reload_directory_tree_loading().wait()
         await self._purge_views_cache().wait()
-        await self._log_cmd_results_loading(CmdResults.managed_cmd_results()).wait()
+        await self._log_cmd_results_loading(store.managed_cmd_results()).wait()
         self.loading_modal.dismiss()
 
     @on(ReviewBtnMsg)

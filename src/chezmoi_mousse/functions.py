@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, cast
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
-from chezmoi_mousse.cmd_results import CmdResults
+from chezmoi_mousse import store
 from chezmoi_mousse.named_tuples import AffectedPaths, CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
@@ -237,7 +237,7 @@ class Commands:
             std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(CmdResults, f"{cmd.name}_result", result)
+        setattr(store, f"{cmd.name}_result", result)
         return result
 
     @staticmethod
@@ -260,7 +260,7 @@ class Commands:
             std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(CmdResults, cmd.name, result)
+        setattr(store, cmd.name, result)
         return result
 
     @staticmethod

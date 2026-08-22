@@ -10,7 +10,7 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
-from chezmoi_mousse.cmd_results import CmdResults
+from chezmoi_mousse import store
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
 from chezmoi_mousse.named_tuples import AffectedPaths
 from chezmoi_mousse.str_enums import (
@@ -148,18 +148,18 @@ class CommandOutput(ScrollableContainer):
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
-        if not CmdResults.changed_paths.added_managed:
+        if not store.changed_paths.added_managed:
             self.added_managed.update("No added managed paths")
-        if not CmdResults.changed_paths.removed_managed:
+        if not store.changed_paths.removed_managed:
             self.removed_managed.update("No removed managed paths")
-        if not CmdResults.changed_paths.changed_status:
+        if not store.changed_paths.changed_status:
             self.changed_status.update("No changed status paths")
-        if CmdResults.changed_paths.added_managed:
-            self.added_managed.update(CmdResults.changed_paths.added_managed_str)
-        if CmdResults.changed_paths.removed_managed:
-            self.removed_managed.update(CmdResults.changed_paths.removed_managed_str)
-        if CmdResults.changed_paths.changed_status:
-            self.changed_status.update(CmdResults.changed_paths.changed_status_str)
+        if store.changed_paths.added_managed:
+            self.added_managed.update(store.changed_paths.added_managed_str)
+        if store.changed_paths.removed_managed:
+            self.removed_managed.update(store.changed_paths.removed_managed_str)
+        if store.changed_paths.changed_status:
+            self.changed_status.update(store.changed_paths.changed_status_str)
 
 
 class AffectedPathsReview(ScrollableContainer):

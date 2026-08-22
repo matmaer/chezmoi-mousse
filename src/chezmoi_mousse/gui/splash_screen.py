@@ -15,8 +15,8 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
+from chezmoi_mousse import store
 from chezmoi_mousse.cm_attributes import ManagedPaths
-from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
@@ -166,13 +166,11 @@ class SplashScreen(Screen[None]):
 
     @work(name=WorkerName.parse_json_outputs)
     async def _parse_json_outputs(self) -> None:
-        parsed_dump_config = Commands.json_loads(CmdResults.dump_config_result.std_out)
-        CmdResults.parsed_dump_config = parsed_dump_config
-        Commands.dest_dir = CmdResults.get_dest_dir()
-        parsed_template_data = Commands.json_loads(
-            CmdResults.template_data_result.std_out
-        )
-        CmdResults.parsed_template_data = parsed_template_data
+        parsed_dump_config = Commands.json_loads(store.dump_config_result.std_out)
+        store.parsed_dump_config = parsed_dump_config
+        Commands.dest_dir = store.get_dest_dir()
+        parsed_template_data = Commands.json_loads(store.template_data_result.std_out)
+        store.parsed_template_data = parsed_template_data
         msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
         self.splash_log.write(msg)
 
@@ -180,9 +178,9 @@ class SplashScreen(Screen[None]):
     async def _set_cm_attributes(self) -> None:
         self.app.cmattr.paths = ManagedPaths()
         msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
-        self.app.cmattr.add_path = CmdResults.get_dest_dir()
-        self.app.cmattr.apply_path = CmdResults.get_dest_dir()
-        self.app.cmattr.re_add_path = CmdResults.get_dest_dir()
+        self.app.cmattr.add_path = store.get_dest_dir()
+        self.app.cmattr.apply_path = store.get_dest_dir()
+        self.app.cmattr.re_add_path = store.get_dest_dir()
         self.splash_log.write(msg)
 
     # Sequential Orchestration Pipeline
