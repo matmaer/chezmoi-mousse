@@ -81,7 +81,7 @@ class OperateInfo(Static):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    dry_run: reactive[bool] = reactive(False)
+    dry_run: reactive[bool] = reactive(True)
 
     def __init__(self, btn_label: OpBtnLabel) -> None:
         self.btn_label = btn_label
@@ -104,11 +104,7 @@ class OperateInfo(Static):
             if self.app.cmattr.auto_push is True:
                 info_lines.append(OpInfoString.auto_push)
         else:
-            msg = (
-                "[dim]Apply operation: chezmoi autoadd, autocommit and autopush not "
-                "applicable[/]"
-            )
-            info_lines.append(msg)
+            info_lines.append(OpInfoString.auto_settings_not_applicable)
         self.update("\n".join(info_lines))
         self.border_title = OpInfoString.ready_to_run_title
 

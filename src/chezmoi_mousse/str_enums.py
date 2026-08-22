@@ -261,6 +261,10 @@ class OpInfoString(StrEnum):
         "the updated chezmoi repository will be pushed to the remote (origin) "
         f"{Chars.warning_sign}[/]"
     )
+    auto_settings_not_applicable = (
+        "[dim]Apply operation: chezmoi autoadd, autocommit and autopush not "
+        "applicable[/]"
+    )
     destroy_path_info = (
         f"[${ColorVar.text_error}]Permanently remove the path from disk and chezmoi.\n"
         "MAKE SURE YOU HAVE A BACKUP![/]"
