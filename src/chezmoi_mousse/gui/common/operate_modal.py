@@ -12,6 +12,7 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse.cmd_results import CmdResults
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
+from chezmoi_mousse.named_tuples import AffectedPaths
 from chezmoi_mousse.str_enums import (
     LoadingLabel,
     OpBtnLabel,
@@ -23,7 +24,7 @@ from chezmoi_mousse.str_enums import (
 )
 
 from .actionables import RunBtnGroup
-from .components import MainSectionLabel, SubSectionLabel
+from .components import InfoStatic, MainSectionLabel, SubSectionLabel
 from .messages import ExitModalBtnMsg
 
 if TYPE_CHECKING:
@@ -149,6 +150,25 @@ class CommandOutput(ScrollableContainer):
             self.changed_status.update(CmdResults.changed_paths.changed_status_str)
 
 
+class AffectedPathsReview(ScrollableContainer):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel(SectionLabel.affected_paths)
+        yield SubSectionLabel()
+        yield InfoStatic()
+
+    def on_mount(self) -> None:
+        self.info_static = self.query_exactly_one(InfoStatic)
+        self.sub_section_label = self.query_exactly_one(SubSectionLabel)
+
+    def update_affected_paths(self, write_cmd: WriteCmd, path: Path) -> None:
+        result: AffectedPaths = Commands.get_affected_paths(write_cmd, path)
+        self.sub_section_label.update(result.pretty_cmd)
+        self.info_static.update(result.path_strings)
+
+
 class OperateModal(ModalScreen[None]):
     def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
         self.labels = labels
@@ -161,6 +181,7 @@ class OperateModal(ModalScreen[None]):
         with Vertical():
             yield OperateInfo(self.operate_label)
             yield CommandOutput()
+            yield AffectedPathsReview()
             yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:

@@ -38,7 +38,6 @@ __all__ = [
     "FlatBtn",
     "RefreshBtn",
     "ReviewBtn",
-    "RunBtn",
     "TabBtn",
     "FlatButtonsVertical",
     "ReviewBtnGroup",

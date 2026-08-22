@@ -24,6 +24,10 @@ class AffectedPaths(NamedTuple):
     pretty_cmd: str
     std_err: str
 
+    @property
+    def path_strings(self) -> str:
+        return " ".join(str(p) for p in self.paths)
+
 
 class CommandResult(NamedTuple):
     full_cmd: str

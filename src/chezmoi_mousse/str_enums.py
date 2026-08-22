@@ -58,7 +58,7 @@ class Chars(StrEnum):
     warning_sign = "\u26a0"  # WARNING SIGN
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
     bullet = "\u2022"  # BULLET # noqa: ERA001
-    check_mark = "\u2714"  # HEAVY CHECK MARK
+    # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
     # gear = "\u2699"  # GEAR # noqa: ERA001
     # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
     # heavy_line_left = "\u2578"  # BOX DRAWINGS HEAVY LEFT  # noqa: ERA001
@@ -272,7 +272,6 @@ class OpInfoString(StrEnum):
         f"{Chars.bullet} [${ColorVar.text_warning}]Command will run live! The paths "
         "below will be affected![/]"
     )
-    run_completed_title = "command completed"
     re_add_path_info = (
         f"{Chars.bullet} [${ColorVar.info}]Re-add modified files in the target state, "
         "preserving any encrypted_ attributes. chezmoi will not overwrite templates, "
@@ -478,6 +477,7 @@ class RichLogName(StrEnum):
 
 class SectionLabel(StrEnum):
     added_managed_paths = "Added managed paths"
+    affected_paths = "Paths affected by the command"
     cat_config_output = "Cat Config Output"
     changed_paths = "Changed Paths"
     changed_status_paths = "Changed status paths"
