@@ -538,10 +538,6 @@ class TabLabel(StrEnum):
     diff = "Diff"
     git_log = "Git-Log"
 
-    @classmethod  # TODO: avoid class methods in Enum classes
-    def main_tabs(cls) -> tuple["TabLabel", ...]:
-        return (cls.apply, cls.re_add, cls.add, cls.logs, cls.config, cls.debug)
-
 
 class Tcss(StrEnum):
     add_tab_contents_view = auto()
