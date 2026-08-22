@@ -38,9 +38,6 @@ class LoadingModal(ModalScreen[None]):
     The screen does not dismiss on its own, and must be dismissed by the parent screen.
     """
 
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     label_text: reactive[str | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
@@ -120,9 +117,6 @@ class CommandOutput(ScrollableContainer):
     class RemovedManaged(Static): ...
 
     class ChangedStatus(Static): ...
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabel.changed_paths)
