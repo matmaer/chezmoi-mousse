@@ -170,6 +170,6 @@ class CmAttributes:
 
     @cached_property
     def auto_push(self) -> bool:
-        return CmdResults.parsed_dump_config["git"]["autocommit"]
+        return CmdResults.parsed_dump_config["git"]["autopush"]
 
     paths: ManagedPaths = field(init=False)
