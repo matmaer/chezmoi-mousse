@@ -253,12 +253,12 @@ class OpInfoString(StrEnum):
     )
     auto_commit = (
         f"[${ColorVar.text_warning}]{Chars.warning_sign} Chezmoi 'autocommit' is "
-        "enabled: paths will be committed to the chezmoi repository. "
+        "enabled: paths will be committed to the chezmoi repository "
         f"{Chars.warning_sign}[/]"
     )
     auto_push = (
         f"[${ColorVar.text_error}]{Chars.warning_sign} Chezmoi 'autopush' is enabled: "
-        "the updated chezmoi repository will be pushed to the remote (origin)."
+        "the updated chezmoi repository will be pushed to the remote (origin) "
         f"{Chars.warning_sign}[/]"
     )
     destroy_path_info = (
@@ -274,13 +274,13 @@ class OpInfoString(StrEnum):
         "chezmoi repository, the paths below will be unaffected."
     )
     forget_path_info = (
-        f"[${ColorVar.dimmed}] Remove from the source state, i.e. stop managing them."
+        f"[${ColorVar.dimmed}] Remove from the source state, i.e. stop managing them "
         "[/]"
     )
     forget_subtitle = f" leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark} "
     live_run_notice = (
-        f"[${ColorVar.text_warning}]{Chars.warning_sign} Ready to run command live!"
-        f"The paths below will be affected.{Chars.warning_sign}[/]"
+        f"[${ColorVar.text_warning}]{Chars.warning_sign} Ready to run command live! "
+        f"The paths below will be affected {Chars.warning_sign}[/]"
     )
     ready_to_run_title = " ready to run "
     run_completed_title = " command completed "
