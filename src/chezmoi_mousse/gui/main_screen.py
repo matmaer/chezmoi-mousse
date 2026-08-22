@@ -47,7 +47,7 @@ __all__ = ["MainScreen", "CustomHeader"]
 
 class CustomHeader(Header):
     dry_run: reactive[bool] = reactive(True)
-    dry_run_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
+    dry_mode = "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
     live_mode = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
 
     def on_mount(self) -> None:
@@ -55,11 +55,11 @@ class CustomHeader(Header):
 
     def watch_dry_run(self, dry_run: bool) -> None:
         if dry_run is False:
-            self.screen.title = self.dry_run_mode
+            self.screen.title = self.live_mode
             header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.add_class(Tcss.live_run_color)
         if dry_run is True:
-            self.screen.title = self.live_mode
+            self.screen.title = self.dry_mode
             header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.remove_class(Tcss.live_run_color)
 
