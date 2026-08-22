@@ -118,11 +118,11 @@ class CmdResults:
         )
 
     @classmethod
-    def store_current_snapshot(cls) -> None:
+    async def store_current_snapshot(cls) -> None:
         cls._managed_snapshot = cls._create_results_snapshot()
 
     @classmethod
-    def update_changed_paths(cls) -> None:
+    async def update_changed_paths(cls) -> None:
         new_snapshot = cls._create_results_snapshot()
         removed_managed = (
             cls._managed_snapshot.managed_paths - new_snapshot.managed_paths
