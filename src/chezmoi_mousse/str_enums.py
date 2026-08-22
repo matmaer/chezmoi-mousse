@@ -185,18 +185,6 @@ class OpBtnLabel(StrEnum):
         return frozenset({OpBtnLabel.cancel, OpBtnLabel.close, OpBtnLabel.reload})
 
     @classmethod
-    def review_btn_set(cls) -> frozenset["OpBtnLabel"]:
-        return frozenset(
-            {
-                OpBtnLabel.add_review,
-                OpBtnLabel.apply_review,
-                OpBtnLabel.destroy_review,
-                OpBtnLabel.forget_review,
-                OpBtnLabel.re_add_review,
-            }
-        )
-
-    @classmethod
     def run_btn_set(cls) -> frozenset["OpBtnLabel"]:
         return frozenset(
             {
