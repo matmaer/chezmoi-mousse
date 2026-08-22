@@ -46,27 +46,17 @@ class ResultsSnapshot:
     status_paths: dict[Path, str] = field(default_factory=lambda: {})
 
 
-EMPTY_CMD_RESULT = CommandResult(
-    full_cmd="",
-    path_arg=None,
-    pretty_cmd="",
-    returncode=0,
-    std_err="",
-    std_out="",
-    time_stamp="",
-)
-
-cat_config_result: CommandResult = EMPTY_CMD_RESULT
-doctor_result: CommandResult = EMPTY_CMD_RESULT
-dump_config_result: CommandResult = EMPTY_CMD_RESULT
-git_log_result: CommandResult = EMPTY_CMD_RESULT
-git_remote_result: CommandResult = EMPTY_CMD_RESULT
-ignored_result: CommandResult = EMPTY_CMD_RESULT
-managed_dirs_result: CommandResult = EMPTY_CMD_RESULT
-managed_files_result: CommandResult = EMPTY_CMD_RESULT
-status_dirs_result: CommandResult = EMPTY_CMD_RESULT
-status_files_result: CommandResult = EMPTY_CMD_RESULT
-template_data_result: CommandResult = EMPTY_CMD_RESULT
+cat_config_result = CommandResult.empty()
+doctor_result = CommandResult.empty()
+dump_config_result = CommandResult.empty()
+git_log_result = CommandResult.empty()
+git_remote_result = CommandResult.empty()
+ignored_result = CommandResult.empty()
+managed_dirs_result = CommandResult.empty()
+managed_files_result = CommandResult.empty()
+status_dirs_result = CommandResult.empty()
+status_files_result = CommandResult.empty()
+template_data_result = CommandResult.empty()
 
 parsed_dump_config: ParsedJson = {}
 parsed_template_data: ParsedJson = {}

@@ -38,6 +38,18 @@ class CommandResult(NamedTuple):
     std_out: str
     time_stamp: str
 
+    @classmethod
+    def empty(cls) -> CommandResult:
+        return cls(
+            full_cmd="",
+            path_arg=None,
+            pretty_cmd="",
+            returncode=0,
+            std_err="",
+            std_out="",
+            time_stamp="",
+        )
+
 
 class ManagedTreePaths(NamedTuple):
     managed_dirs: PathKindMap
