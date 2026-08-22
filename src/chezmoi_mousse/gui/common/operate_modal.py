@@ -127,11 +127,11 @@ class CommandOutput(ScrollableContainer):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabel.changed_paths)
         yield SubSectionLabel(SectionLabel.added_managed_paths)
-        yield self.AddedManaged(classes=Tcss.info)
+        yield CommandOutput.AddedManaged(classes=Tcss.info)
         yield SubSectionLabel(SectionLabel.removed_managed_paths)
-        yield self.RemovedManaged(classes=Tcss.info)
+        yield CommandOutput.RemovedManaged(classes=Tcss.info)
         yield SubSectionLabel(SectionLabel.changed_status_paths)
-        yield self.ChangedStatus(classes=Tcss.info)
+        yield CommandOutput.ChangedStatus(classes=Tcss.info)
         yield SubSectionLabel(SectionLabel.command_outputs)
 
     def on_mount(self) -> None:
