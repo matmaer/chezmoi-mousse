@@ -155,11 +155,9 @@ class CommandOutput(ScrollableContainer):
 class OperateModal(ModalScreen[None]):
     def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
         self.labels = labels
-        print([str(label) for label in self.labels])
         self.operate_label = next(
             label for label in self.labels if label in OpBtnLabel.run_btn_set()
         )
-        print(self.operate_label)
         super().__init__()
 
     def compose(self) -> ComposeResult:
