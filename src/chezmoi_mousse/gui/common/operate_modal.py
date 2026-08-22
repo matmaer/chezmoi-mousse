@@ -22,9 +22,9 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-from .actionables import RunBtn, RunBtnGroup
+from .actionables import RunBtnGroup
 from .components import MainSectionLabel, SubSectionLabel
-from .messages import ExitModalBtnMsg, RunBtnMsg
+from .messages import ExitModalBtnMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -176,10 +176,6 @@ class OperateModal(ModalScreen[None]):
             operate_info.display = False
         else:
             command_output.display = False
-
-    @on(RunBtnMsg)
-    def handle_run_button(self, event: RunBtn.Pressed) -> None:
-        self.notify(f"btn pressed {event.button}")
 
     @on(ExitModalBtnMsg)
     def _handle_exit_modal(self, event: ExitModalBtnMsg) -> None:

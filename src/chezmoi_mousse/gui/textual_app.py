@@ -23,7 +23,12 @@ from chezmoi_mousse.str_enums import (
     TabLabel,
 )
 
-from .common.actionables import FlatButtonsVertical, SwitchSlider, TabButtons
+from .common.actionables import (
+    DryRunBtnMsg,
+    FlatButtonsVertical,
+    SwitchSlider,
+    TabButtons,
+)
 from .common.managed_tree import DestDirTree
 from .common.operate_modal import OperateModal
 from .main_screen import CustomHeader, MainScreen
@@ -139,9 +144,20 @@ class ChezmoiGui(App[str]):
             return current_tab_widget.query_exactly_one(SwitchSlider)
         return None
 
-    ##################
-    # Action Methods #
-    ##################
+    def _get_main_screen(self) -> MainScreen:
+        for screen in self.screen_stack:
+            if isinstance(screen, MainScreen):
+                return screen
+        else:
+            raise RuntimeError("there is no main screen")
+
+    ####################
+    # Message Handling #
+    ####################
+
+    @on(DryRunBtnMsg)
+    def _handle_toggle_dry_run_pressed(self) -> None:
+        self.action_toggle_dry_run()
 
     @on(TabbedContent.TabActivated)
     def tab_update_switch_slider_binding(
@@ -184,9 +200,12 @@ class ChezmoiGui(App[str]):
                 break
         self.refresh_bindings()
 
+    ##################
+    # Action Methods #
+    ##################
+
     def action_toggle_dry_run(self) -> None:
-        if not isinstance(self.screen, MainScreen):
-            return
+        main_screen = self._get_main_screen()
         Commands.live_run = not Commands.live_run
         new_description = (
             BindingDescription.switch_to_dry_run
@@ -194,9 +213,10 @@ class ChezmoiGui(App[str]):
             else BindingDescription.enable_live_run
         )
         self._update_binding_description(
-            binding_action=BindingAction.toggle_dry_run, new_description=new_description
+            binding_action=BindingAction.toggle_dry_run,
+            new_description=new_description,
         )
-        self.screen.query_exactly_one(CustomHeader).live_run = Commands.live_run
+        main_screen.query_exactly_one(CustomHeader).live_run = Commands.live_run
 
     def action_toggle_switch_slider(self) -> None:
         if not isinstance(self.screen, MainScreen):
