@@ -69,9 +69,9 @@ class DiffView(ScrollableContainer):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel()
         yield SubSectionLabel()
+        yield FlatSectionLabel()
         yield InfoStatic()
         yield DiffLinesContainer()
-        yield FlatSectionLabel()
 
     def on_mount(self) -> None:
         self.info_static = self.query_exactly_one(InfoStatic)
