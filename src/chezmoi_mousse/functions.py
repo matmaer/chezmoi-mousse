@@ -298,7 +298,7 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache()
-    def get_source_path(path_arg: Path) -> CommandResult:
+    def _get_source_path(path_arg: Path) -> CommandResult:
         return Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
 
     @staticmethod
@@ -307,7 +307,7 @@ class Commands:
         if path_arg is None:
             return Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
         else:
-            source_path_result = Commands.get_source_path(path_arg)
+            source_path_result = Commands._get_source_path(path_arg)
             return Commands.run_read_cmd(
                 cmd=ReadCmd.git_log,
                 path_arg=Path(source_path_result.std_out),

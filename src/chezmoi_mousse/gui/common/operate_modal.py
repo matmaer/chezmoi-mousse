@@ -88,7 +88,7 @@ class OperateInfo(Static):
         super().__init__(classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
-        self.cmd_info_fields = self.get_cmd_info_fields(self.btn_label)
+        self.cmd_info_fields = self._get_cmd_info_fields(self.btn_label)
         self.border_title = self.cmd_info_fields.border_title
         self.border_subtitle = self.cmd_info_fields.border_subtitle
         self._update_review_info()
@@ -116,7 +116,7 @@ class OperateInfo(Static):
             return
         self._update_review_info()
 
-    def get_cmd_info_fields(self, btn_label: OpBtnLabel) -> RunCommandInfo:
+    def _get_cmd_info_fields(self, btn_label: OpBtnLabel) -> RunCommandInfo:
         if btn_label is OpBtnLabel.add_run:
             return RunCommandInfo(
                 border_title=OpBtnLabel.add_run,

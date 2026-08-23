@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
-__all__ = ["AppLog", "CmdLog"]
+__all__ = ["AppLog", "CmdLog", "RichLoggers"]
 
 
 class CmdResultCollapsible(Collapsible):

@@ -475,7 +475,6 @@ class SectionLabel(StrEnum):
     test_paths = " Test Paths "
     unmanaged_dir = "Unmanaged Directory"
     unmanaged_file = "Unmanaged File"
-    unmanaged_path = "Unmanaged Path"
 
 
 class StaticString(StrEnum):
