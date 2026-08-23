@@ -126,7 +126,7 @@ class ReviewBtn(Button):
     @on(Button.Pressed)
     def _send_message(self, event: ReviewBtn.Pressed) -> None:
         event.stop()
-        self.post_message(ReviewBtnMsg(self))
+        self.post_message(ReviewBtnMsg(self.app_ids.tab_label, self))
 
 
 class RunBtn(Button):
