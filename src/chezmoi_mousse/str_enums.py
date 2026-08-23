@@ -119,6 +119,7 @@ class FlatBtnLabel(StrEnum):
 
 class LoadingLabel(StrEnum):
     loading = "Loading"  # the initial label
+    get_affected_paths = "Getting affected paths"
     purge_cache = "Purge cached data"
     update_trees = "Update Managed Trees"
     reload_dir_tree = "Reloading Add tab directory tree"
@@ -637,3 +638,14 @@ class WriteCmd(Enum):
     destroy = ("destroy",)
     forget = ("forget",)
     re_add = ("re-add",)
+
+    @classmethod
+    def get_write_cmd(cls, op_btn_label: OpBtnLabel) -> "WriteCmd":
+        mapping = {
+            OpBtnLabel.add_run: cls.add,
+            OpBtnLabel.apply_run: cls.apply,
+            OpBtnLabel.destroy_run: cls.destroy,
+            OpBtnLabel.forget_run: cls.forget,
+            OpBtnLabel.re_add_run: cls.re_add,
+        }
+        return mapping[op_btn_label]
