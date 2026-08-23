@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, NamedTuple
 
+from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -30,6 +32,7 @@ class AffectedPaths(NamedTuple):
 
 
 class CommandResult(NamedTuple):
+    cmd_enum: WriteCmd | ReadCmd | None
     full_cmd: str
     path_arg: Path | None
     pretty_cmd: str
@@ -41,6 +44,7 @@ class CommandResult(NamedTuple):
     @classmethod
     def empty(cls) -> CommandResult:
         return cls(
+            cmd_enum=None,
             full_cmd="",
             path_arg=None,
             pretty_cmd="",

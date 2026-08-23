@@ -232,9 +232,10 @@ class Commands:
         )
 
         result = CommandResult(
+            cmd_enum=cmd,
             full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
-            pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
             path_arg=path_arg,
+            pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
             returncode=cp.returncode,
             std_err=Commands._strip_empty_lines(cp.stderr),
             std_out=Commands._strip_empty_lines(cp.stdout),
@@ -256,9 +257,10 @@ class Commands:
         )
 
         result = CommandResult(
+            cmd_enum=cmd,
             full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
-            pretty_cmd=AppLife.pretty_cmd(cmd, path=path_arg),
             path_arg=path_arg,
+            pretty_cmd=AppLife.pretty_cmd(cmd, path=path_arg),
             returncode=cp.returncode,
             std_err=Commands._strip_empty_lines(cp.stderr),
             std_out=Commands._strip_empty_lines(cp.stdout),
