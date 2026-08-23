@@ -118,17 +118,7 @@ class ApplyTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield DestDirTree(self.ids)
-            yield Vertical(
-                ViewSwitcher(self.ids),
-                ReviewBtnGroup(
-                    self.ids,
-                    (
-                        OpBtnLabel.apply_review,
-                        OpBtnLabel.forget_review,
-                        OpBtnLabel.destroy_review,
-                    ),
-                ),
-            )
+            yield ViewSwitcher(self.ids)
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:
@@ -305,17 +295,7 @@ class ReAddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield DestDirTree(self.ids)
-            yield Vertical(
-                ViewSwitcher(self.ids),
-                ReviewBtnGroup(
-                    self.ids,
-                    (
-                        OpBtnLabel.re_add_review,
-                        OpBtnLabel.forget_review,
-                        OpBtnLabel.destroy_review,
-                    ),
-                ),
-            )
+            yield ViewSwitcher(self.ids)
         yield SwitchSlider(self.ids)
 
     def on_mount(self) -> None:

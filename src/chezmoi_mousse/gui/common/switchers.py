@@ -7,9 +7,9 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
-from chezmoi_mousse.str_enums import TabLabel
+from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
-from .actionables import TabBtn, TabButtons
+from .actionables import ReviewBtnGroup, TabBtn, TabButtons
 from .contents import ContentsView
 from .diffs import DiffView
 from .git_log import GitLogView
@@ -32,6 +32,14 @@ class ViewSwitcher(Vertical):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
             yield GitLogView(self.ids)
+        yield ReviewBtnGroup(
+            self.ids,
+            (
+                OpBtnLabel.apply_review,
+                OpBtnLabel.forget_review,
+                OpBtnLabel.destroy_review,
+            ),
+        )
 
     def on_mount(self) -> None:
         self.content_switcher = self.query_exactly_one(ContentSwitcher)
