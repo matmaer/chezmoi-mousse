@@ -13,6 +13,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Tree
 from textual.widgets.tree import TreeNode
 
+from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import (
@@ -76,9 +77,9 @@ class ManagedTree(Tree[Path]):
         self.guide_depth: int = 3
 
         # configure root node
-        self.root.data = self.app.cmattr.dest_dir
+        self.root.data = store.cfg.dest_dir
         color = self.app.get_color(ColorVar.text_primary)
-        self.root.label = f"[{color}]{self.app.cmattr.dest_dir.name}[/]"
+        self.root.label = f"[{color}]{store.cfg.dest_dir.name}[/]"
         self.root.expand()
         self.root.allow_expand = False
         self.select_node(self.root)
@@ -172,7 +173,7 @@ class ManagedTree(Tree[Path]):
                 self._insert_node(dir_node=False, path=path, parent_node=parent_node)
 
     def _populate_unmanaged_nodes(self) -> None:
-        expanded_dirs = [self.app.cmattr.dest_dir]
+        expanded_dirs = [store.cfg.dest_dir]
         expanded_dirs += [
             node.data
             for node in self._iter_tree_nodes()
@@ -226,7 +227,7 @@ class ManagedTree(Tree[Path]):
         self.root.remove_children()
 
         # Add status directories and files to root node
-        nodes_by_path: TreeNodeDict = {self.app.cmattr.dest_dir: self.root}
+        nodes_by_path: TreeNodeDict = {store.cfg.dest_dir: self.root}
 
         for path in self.paths.tree_status_dirs:
             parent_node = nodes_by_path.get(path.parent, self.root)

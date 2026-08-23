@@ -92,8 +92,8 @@ class ManagedPaths:
             for path in (status_dirs | status_files)
             for parent in path.parents
             if parent not in status_dirs
-            and parent.is_relative_to(store.dest_dir)
-            and parent != store.dest_dir
+            and parent.is_relative_to(store.cfg.dest_dir)
+            and parent != store.cfg.dest_dir
         )
 
         _unchanged_dirs = frozenset(
@@ -138,20 +138,4 @@ class ManagedPaths:
 
 @dataclass
 class CmAttributes:
-    @cached_property
-    def dest_dir(self) -> Path:
-        return Path(store.parsed_dump_config["destDir"])
-
-    @cached_property
-    def auto_add(self) -> bool:
-        return store.parsed_dump_config["git"]["autoadd"]
-
-    @cached_property
-    def auto_commit(self) -> bool:
-        return store.parsed_dump_config["git"]["autocommit"]
-
-    @cached_property
-    def auto_push(self) -> bool:
-        return store.parsed_dump_config["git"]["autopush"]
-
     paths: ManagedPaths = field(init=False)

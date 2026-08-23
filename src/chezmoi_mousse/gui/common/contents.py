@@ -8,6 +8,7 @@ from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 
+from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import (
     PathKind,
@@ -62,14 +63,14 @@ class ContentsView(ScrollableContainer):
 
     def _is_dir(self, path: Path) -> bool:
         return (
-            path == self.app.cmattr.dest_dir
+            path == store.cfg.dest_dir
             or path in self._managed_paths.managed_dirs
             or path.is_dir()
         )
 
     def _set_dir_contents(self, path: Path) -> None:
         # main label
-        if path == self.app.cmattr.dest_dir:
+        if path == store.cfg.dest_dir:
             self.main_section_label.update(SectionLabel.dest_dir)
         elif path in self.app.cmattr.paths.managed_dirs:
             self.main_section_label.update(SectionLabel.managed_dir)

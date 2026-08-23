@@ -68,7 +68,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(dest_dir=self.app.cmattr.dest_dir),
+                FilteredDirTree(dest_dir=store.cfg.dest_dir),
                 RefreshBtn(self.ids),
                 id=self.ids.container.left_side,
                 classes=Tcss.tab_left_vertical,
@@ -82,8 +82,8 @@ class AddTab(TabPane):
         self.dir_tree = self.query_exactly_one(FilteredDirTree)
         self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
         self.contents_view.add_class(Tcss.add_tab_contents_view)
-        self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
-        self.contents_view.show_path = self.app.cmattr.dest_dir
+        self.contents_view.border_title = f" {store.cfg.dest_dir} "
+        self.contents_view.show_path = store.cfg.dest_dir
         self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, ReviewBtn)
 
     @on(DirectoryTree.FileSelected)
@@ -95,8 +95,8 @@ class AddTab(TabPane):
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
         self.contents_view.show_path = event.node.data.path
-        if event.node.data.path == self.app.cmattr.dest_dir:
-            self.contents_view.border_title = f" {self.app.cmattr.dest_dir} "
+        if event.node.data.path == store.cfg.dest_dir:
+            self.contents_view.border_title = f" {store.cfg.dest_dir} "
         else:
             self.contents_view.border_title = f" {event.node.data.path.name} "
 

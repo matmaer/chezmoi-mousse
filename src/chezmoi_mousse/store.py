@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.named_tuples import CommandResult
+from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
 if TYPE_CHECKING:
@@ -55,6 +55,7 @@ debug_id = AppIds(TabLabel.debug)
 logs_id = AppIds(TabLabel.logs)
 re_add_id = AppIds(TabLabel.re_add)
 
+cfg = ParsedDumpConfig()
 
 cat_config_result = CommandResult.empty()
 doctor_result = CommandResult.empty()
@@ -89,15 +90,6 @@ def get_tab_path(btn_label: OpBtnLabel) -> Path | None:
         return re_add_path
     else:
         raise ValueError(f"Invalid button label: {btn_label}")
-
-
-def __getattr__(name: str) -> Path:
-    if name == "dest_dir":
-        dest_dir = parsed_dump_config.get("destDir")
-        if dest_dir is None:
-            raise RuntimeError("dest_dir has not been set yet")
-        return Path(dest_dir)
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def _create_results_snapshot() -> ResultsSnapshot:

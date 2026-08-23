@@ -100,11 +100,11 @@ class OperateInfo(Static):
         else:
             info_lines.append(OpInfoString.live_run_notice)
         if self.btn_label is not OpBtnLabel.apply_run:
-            if self.app.cmattr.auto_add is True:
+            if store.cfg.auto_add is True:
                 info_lines.append(OpInfoString.auto_add)
-            if self.app.cmattr.auto_commit is True:
+            if store.cfg.auto_commit is True:
                 info_lines.append(OpInfoString.auto_commit)
-            if self.app.cmattr.auto_push is True:
+            if store.cfg.auto_push is True:
                 info_lines.append(OpInfoString.auto_push)
         else:
             info_lines.append(OpInfoString.auto_settings_not_applicable)
@@ -249,7 +249,7 @@ class OperateModal(ModalScreen[None]):
         write_cmd = WriteCmd.get_write_cmd(self.operate_label)
         tab_path = store.get_tab_path(self.operate_label)
         if tab_path is None:
-            tab_path = store.dest_dir
+            tab_path = store.cfg.dest_dir
         result: AffectedPaths = Commands.get_affected_paths(write_cmd, tab_path)
         self.affected_paths_review.affected_paths = result
         self.loading_modal.dismiss()

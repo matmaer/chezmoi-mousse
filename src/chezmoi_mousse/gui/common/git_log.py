@@ -69,11 +69,11 @@ class GitLogView(Container):
         if show_path is None:
             return
         if (
-            show_path != self.app.cmattr.dest_dir
+            show_path != store.cfg.dest_dir
             and show_path not in self.app.cmattr.paths.managed_paths_set
         ):
             return
-        if show_path == self.app.cmattr.dest_dir:
+        if show_path == store.cfg.dest_dir:
             self.flat_section_label.update(store.git_log_result.pretty_cmd)
             self._update_datatable(store.git_log_result.std_out.splitlines())
         else:

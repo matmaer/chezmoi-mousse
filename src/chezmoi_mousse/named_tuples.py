@@ -14,6 +14,7 @@ __all__ = [
     "AffectedPaths",
     "CommandResult",
     "ManagedTreePaths",
+    "ParsedDumpConfig",
     "PwMgrData",
     "RunCommandInfo",
     "ScanDirItem",
@@ -70,6 +71,37 @@ class ManagedTreePaths(NamedTuple):
     @property
     def status_paths_set(self) -> frozenset[Path]:
         return frozenset(self.status_dirs | self.status_files)
+
+
+class ParsedDumpConfig(NamedTuple):
+    dest_dir_path: Path | None = None
+    auto_add_bool: bool | None = None
+    auto_commit_bool: bool | None = None
+    auto_push_bool: bool | None = None
+
+    @property
+    def dest_dir(self) -> Path:
+        if self.dest_dir_path is None:
+            raise RuntimeError("Accessing dest_dir before the config is parsed")
+        return self.dest_dir_path
+
+    @property
+    def auto_add(self) -> bool:
+        if self.auto_add_bool is None:
+            raise RuntimeError("Accessing auto_add before the config is parsed")
+        return self.auto_add_bool
+
+    @property
+    def auto_commit(self) -> bool:
+        if self.auto_commit_bool is None:
+            raise RuntimeError("Accessing auto_commit before the config is parsed")
+        return self.auto_commit_bool
+
+    @property
+    def auto_push(self) -> bool:
+        if self.auto_push_bool is None:
+            raise RuntimeError("Accessing auto_push before the config is parsed")
+        return self.auto_push_bool
 
 
 class RunCommandInfo(NamedTuple):

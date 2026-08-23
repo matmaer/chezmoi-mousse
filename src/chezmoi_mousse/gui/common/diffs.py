@@ -9,6 +9,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
+from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import (
@@ -82,7 +83,7 @@ class DiffView(ScrollableContainer):
         self.diff_lines = self.query_exactly_one(DiffLinesContainer)
         self.diff_lines.display = False
 
-        self._update_widgets(self.app.cmattr.dest_dir)
+        self._update_widgets(store.cfg.dest_dir)
 
     @property
     def paths(self) -> ManagedTreePaths:
@@ -109,7 +110,7 @@ class DiffView(ScrollableContainer):
             self.info_static.display = False
             return
 
-        if path == self.app.cmattr.dest_dir:
+        if path == store.cfg.dest_dir:
             self.main_section_label.update(SectionLabel.dest_dir)
             if self.app.cmattr.paths.no_managed_paths:
                 self.sub_section_label.update(SectionLabel.no_managed_paths)

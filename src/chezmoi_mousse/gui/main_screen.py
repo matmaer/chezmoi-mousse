@@ -172,8 +172,8 @@ class MainScreen(Screen[None]):
         elif msg.app_ids.tab_label == TabLabel.re_add:
             store.re_add_path = msg.path
         # Update the border subtitle for the tab buttons in the ViewSwitcher
-        if msg.path != self.app.cmattr.dest_dir:
-            pretty_path = msg.path.relative_to(self.app.cmattr.dest_dir)
+        if msg.path != store.cfg.dest_dir:
+            pretty_path = msg.path.relative_to(store.cfg.dest_dir)
         else:
             pretty_path = msg.path
         self.query_exactly_one(

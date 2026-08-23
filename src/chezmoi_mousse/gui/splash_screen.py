@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import deque
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -18,7 +19,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse import store
 from chezmoi_mousse.cm_attributes import ManagedPaths
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.named_tuples import CommandResult
+from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 
 from .common.ascii_constants import SPLASH_ASCII
@@ -139,7 +140,13 @@ class SplashScreen(Screen[None]):
         msg = self._get_log_msg(prefix="parse dump-config", returncode=None)
         self.splash_log.write(msg)
         store.parsed_dump_config = json.loads(store.dump_config_result.std_out)
-        _ = store.dest_dir  # force dest_dir to be set
+
+        store.cfg = ParsedDumpConfig(
+            dest_dir_path=Path(store.parsed_dump_config["destDir"]),
+            auto_add_bool=store.parsed_dump_config["git"]["autoadd"],
+            auto_commit_bool=store.parsed_dump_config["git"]["autocommit"],
+            auto_push_bool=store.parsed_dump_config["git"]["autopush"],
+        )
 
     @work
     async def _run_and_parse_template_data(self) -> None:
@@ -152,9 +159,9 @@ class SplashScreen(Screen[None]):
     async def _process_managed(self) -> None:
         msg = self._get_log_msg(prefix="process managed paths", returncode=None)
         self.splash_log.write(msg)
-        store.add_path = store.dest_dir
-        store.apply_path = store.dest_dir
-        store.re_add_path = store.dest_dir
+        store.add_path = store.cfg.dest_dir
+        store.apply_path = store.cfg.dest_dir
+        store.re_add_path = store.cfg.dest_dir
         self.app.cmattr.paths = ManagedPaths()
 
     @work

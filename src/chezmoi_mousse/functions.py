@@ -135,7 +135,7 @@ class Commands:
 
     @staticmethod
     def rel_path(path: Path) -> str:
-        return str(path.relative_to(store.dest_dir))
+        return str(path.relative_to(store.cfg.dest_dir))
 
     @staticmethod
     def _strip_empty_lines(text: str) -> str:
@@ -158,7 +158,7 @@ class Commands:
     @staticmethod
     def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
         # Only works for apply and re-add, not for add, forget and destroy
-        if path == store.dest_dir and write_cmd in (
+        if path == store.cfg.dest_dir and write_cmd in (
             WriteCmd.add,
             WriteCmd.destroy,
             WriteCmd.forget,
@@ -182,7 +182,7 @@ class Commands:
             )
             + (write_cmd.value)
         )
-        if path != store.dest_dir:
+        if path != store.cfg.dest_dir:
             args_tuple += (str(path),)
 
         with subprocess.Popen(
@@ -205,7 +205,7 @@ class Commands:
             # Ensure child process terminates and populates process.returncode
             process.wait()
 
-        rel_path = Commands.rel_path(path) if path != store.dest_dir else ""
+        rel_path = Commands.rel_path(path) if path != store.cfg.dest_dir else ""
         pretty_cmd = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
         return AffectedPaths(
             paths=sorted([Path(path_str) for path_str in affected_paths_str]),
