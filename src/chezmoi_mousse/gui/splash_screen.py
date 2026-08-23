@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from collections import deque
-from enum import StrEnum, auto
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -48,17 +48,6 @@ def _create_fade_line_styles() -> deque[Style]:
 
 
 FADE_LINE_STYLES: deque[Style] = _create_fade_line_styles()
-
-
-class GroupName(StrEnum):
-    json_output_group = auto()
-    managed_cmd_group = auto()
-    splash_cmd_group = auto()
-
-
-class WorkerName(StrEnum):
-    parse_json_outputs = "parse json outputs"
-    set_cm_attributes = "set cmattr"
 
 
 class AnimatedFade(Static):
@@ -118,7 +107,7 @@ class SplashScreen(Screen[None]):
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.text_align = "center"
         self.splash_log.styles.margin = 2
-        self.splash_log.styles.height = ReadCmd.grouped_commands_count() + 4
+        self.splash_log.styles.height = len(ReadCmd)
 
         self.primary_color = self.app.get_color(ColorVar.text_primary)
         self.success_color = self.app.get_color(ColorVar.text_success)
@@ -138,50 +127,37 @@ class SplashScreen(Screen[None]):
             color = self.warning_color
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
-    def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        if command is ReadCmd.git_log:
-            result: CommandResult = Commands.run_chezmoi_git_log(None)
-        else:
-            result: CommandResult = Commands.run_read_cmd(command, path_arg=None)
-        return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
-
-    # Threaded Command Workers
-
-    @work(thread=True, group=GroupName.splash_cmd_group)
-    def _run_splash_cmd(self, command: ReadCmd) -> None:
-        msg = self._run_chezmoi_command(command)
-        self.app.call_from_thread(self.splash_log.write, msg)
-
-    @work(thread=True, group=GroupName.managed_cmd_group)
-    def _run_managed_cmd(self, command: ReadCmd) -> None:
-        msg = self._run_chezmoi_command(command)
-        self.app.call_from_thread(self.splash_log.write, msg)
-
-    @work(thread=True, group=GroupName.json_output_group)
-    def _run_json_output_cmd(self, command: ReadCmd) -> None:
-        msg = self._run_chezmoi_command(command)
+    @work(thread=True)
+    def _run_chezmoi_command(self, command: ReadCmd) -> None:
+        result: CommandResult = Commands.run_read_cmd(command, path_arg=None)
+        msg = self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
         self.app.call_from_thread(self.splash_log.write, msg)
 
     # Non-threaded Workers for tasks that are not worth creating a thread for
 
-    @work(name=WorkerName.parse_json_outputs)
-    async def _parse_json_outputs(self) -> None:
-        parsed_dump_config = Commands.json_loads(store.dump_config_result.std_out)
-        store.parsed_dump_config = parsed_dump_config
-        Commands.dest_dir = store.get_dest_dir()
-        parsed_template_data = Commands.json_loads(store.template_data_result.std_out)
-        store.parsed_template_data = parsed_template_data
-        msg = self._get_log_msg(prefix=WorkerName.parse_json_outputs, returncode=None)
+    @work
+    async def _run_and_parse_dump_config(self) -> None:
+        await self._run_chezmoi_command(ReadCmd.dump_config).wait()
+        msg = self._get_log_msg(prefix="parse dump-config", returncode=None)
         self.splash_log.write(msg)
+        store.parsed_dump_config = json.loads(store.dump_config_result.std_out)
+        _ = store.dest_dir  # force dest_dir to be set
 
-    @work(name=WorkerName.set_cm_attributes)
-    async def _set_cm_attributes(self) -> None:
-        self.app.cmattr.paths = ManagedPaths()
-        msg = self._get_log_msg(prefix=WorkerName.set_cm_attributes, returncode=None)
-        store.add_path = store.get_dest_dir()
-        store.apply_path = store.get_dest_dir()
-        store.re_add_path = store.get_dest_dir()
+    @work
+    async def _run_and_parse_template_data(self) -> None:
+        await self._run_chezmoi_command(ReadCmd.template_data).wait()
+        msg = self._get_log_msg(prefix="parse template data", returncode=None)
         self.splash_log.write(msg)
+        store.parsed_template_data = json.loads(store.template_data_result.std_out)
+
+    @work
+    async def _process_managed(self) -> None:
+        msg = self._get_log_msg(prefix="process managed paths", returncode=None)
+        self.splash_log.write(msg)
+        store.add_path = store.dest_dir
+        store.apply_path = store.dest_dir
+        store.re_add_path = store.dest_dir
+        self.app.cmattr.paths = ManagedPaths()
 
     # Sequential Orchestration Pipeline
 
@@ -189,29 +165,26 @@ class SplashScreen(Screen[None]):
     async def _run_all_tasks(self) -> None:
         self.fade_timer.resume()
 
-        # Dispatch command workers and store worker instances for awaiting later.
-        splash_workers = [
-            self._run_splash_cmd(cmd)
-            for cmd in ReadCmd.splash_only_commands() + (ReadCmd.git_log,)
-        ]
-        json_workers = [
-            self._run_json_output_cmd(cmd) for cmd in ReadCmd.json_parsable_commands()
-        ]
+        # First, run dump-config before anything else can start
+        await self._run_and_parse_dump_config().wait()
+
+        # Now launch all other workers in parallel
         managed_workers = [
-            self._run_managed_cmd(cmd) for cmd in ReadCmd.managed_commands()
+            self._run_chezmoi_command(cmd) for cmd in ReadCmd.managed_commands()
+        ]
+        template_worker = self._run_and_parse_template_data()
+        splash_workers = [
+            self._run_chezmoi_command(cmd) for cmd in ReadCmd.splash_only_commands()
         ]
 
-        # Await JSON output read commands and then parse them.
-        for worker in json_workers:
-            await worker.wait()
-        await self._parse_json_outputs().wait()
-
-        # Await Managed paths read commands and then set the cmattr attributes
+        # Wait for all managed workers to finish
         for worker in managed_workers:
             await worker.wait()
-        await self._set_cm_attributes().wait()
+        # Now processing managed paths can run safely
+        await self._process_managed().wait()
 
-        # Wait for remaining splash commands, if any
+        # Wait for the remaining tasks to finish
+        await template_worker.wait()
         for worker in splash_workers:
             await worker.wait()
 
