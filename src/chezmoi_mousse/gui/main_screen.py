@@ -19,12 +19,14 @@ from chezmoi_mousse.str_enums import (
     LoadingLabel,
     NotifyMsg,
     OpBtnLabel,
+    ReadCmd,
     TabLabel,
     Tcss,
 )
 
 from .common.contents import ContentsView
 from .common.diffs import DiffView
+from .common.doctor_data import DoctorTable
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.git_log import GitLogView
 from .common.loggers import AppLog, CmdLog
@@ -85,6 +87,7 @@ class MainScreen(Screen[None]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.doctor_table = self.query_exactly_one(DoctorTable)
         self.app_log = self.query_one(store.logs_id.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(store.logs_id.richlog.cmd_q, CmdLog)
         self.main_tabs = self.query_exactly_one(Tabs)
@@ -105,6 +108,28 @@ class MainScreen(Screen[None]):
     def _listen_to_command_results(self) -> None:
         while True:
             result: CommandResult = results_queue.get()
+            if result.cmd_enum is ReadCmd.doctor:
+                self.app.call_from_thread(
+                    self.doctor_table.populate_table, result.std_out
+                )
+                self.app.call_from_thread(
+                    self.query_one(ConfigTab).populate_pw_mgr_info
+                )
+            elif result.cmd_enum is ReadCmd.cat_config:
+                self.app.call_from_thread(
+                    self.query_one(ConfigTab.CatConfigStatic).update,
+                    result.std_out,
+                )
+            elif result.cmd_enum is ReadCmd.ignored:
+                self.app.call_from_thread(
+                    self.query_one(ConfigTab.PrettyIgnored).update,
+                    result.std_out,
+                )
+            elif result.cmd_enum is ReadCmd.template_data:
+                self.app.call_from_thread(
+                    self.query_one(ConfigTab.PrettyTemplateData).update,
+                    store.parsed_template_data,
+                )
             self.app.call_from_thread(self._log_command_result, result)
             results_queue.task_done()
 

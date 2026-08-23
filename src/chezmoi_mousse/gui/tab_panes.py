@@ -13,7 +13,6 @@ from textual.widgets import (
     Button,
     ContentSwitcher,
     DirectoryTree,
-    Label,
     Pretty,
     Static,
     Switch,
@@ -41,8 +40,7 @@ from .common.actionables import (
     TabButtons,
 )
 from .common.ascii_constants import FLOW_DIAGRAM
-from .common.components import CatConfigStatic
-from .common.contents import ContentsView
+from .common.contents import ContentsView, MainSectionLabel
 from .common.doctor_data import DoctorTable, PwCollapsible
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog
@@ -136,6 +134,14 @@ class ApplyTab(TabPane):
 
 
 class ConfigTab(TabPane):
+    class CatConfigStatic(Static): ...
+
+    class PrettyIgnored(Pretty): ...
+
+    class PrettyTemplateData(Pretty): ...
+
+    class PwMgrContainer(ScrollableContainer): ...
+
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.config, title=TabLabel.config)
         self.ids = ids
@@ -155,64 +161,57 @@ class ConfigTab(TabPane):
             )
             with ContentSwitcher(initial=self.ids.container.doctor):
                 yield Vertical(
-                    Label(SectionLabel.doctor_output, classes=Tcss.main_section_label),
+                    MainSectionLabel(SectionLabel.doctor_output),
                     DoctorTable(),
                     id=self.ids.container.doctor,
                 )
                 yield Vertical(
-                    Label(
-                        SectionLabel.password_managers, classes=Tcss.main_section_label
-                    ),
+                    MainSectionLabel(SectionLabel.password_managers),
+                    ConfigTab.PwMgrContainer(),
                     id=self.ids.container.pw_mgr_info,
                 )
                 yield Vertical(
-                    Label(
-                        SectionLabel.cat_config_output, classes=Tcss.main_section_label
-                    ),
-                    CatConfigStatic("Loading..."),
+                    MainSectionLabel(SectionLabel.cat_config_output),
+                    ConfigTab.CatConfigStatic("Loading..."),
                     id=self.ids.container.cat_config,
                 )
                 yield Vertical(
-                    Label(SectionLabel.ignored_output, classes=Tcss.main_section_label),
-                    ScrollableContainer(Pretty("Loading...")),
+                    MainSectionLabel(SectionLabel.ignored_output),
+                    ScrollableContainer(ConfigTab.PrettyIgnored("Loading...")),
                     id=self.ids.container.ignored,
                 )
                 yield Vertical(
-                    Label(
-                        SectionLabel.template_data_output,
-                        classes=Tcss.main_section_label,
-                    ),
-                    ScrollableContainer(Pretty("Loading...")),
+                    MainSectionLabel(SectionLabel.template_data_output),
+                    ScrollableContainer(ConfigTab.PrettyTemplateData("Loading...")),
                     id=self.ids.container.template_data,
                 )
                 yield Vertical(
-                    Label(SectionLabel.diagram, classes=Tcss.main_section_label),
+                    MainSectionLabel(SectionLabel.diagram),
                     Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
                     id=self.ids.container.diagram,
                 )
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self._load_views()
-
-    def _get_pw_mgr_data(self, doctor_check: str) -> PwMgrData:
-        for member in PwMgrEnum:
-            if member.value.doctor_check == doctor_check:
-                return PwMgrEnum[member.name].value
-        raise ValueError(f"No PwMgrEnum member for doctor_check '{doctor_check}'")
 
     @work
-    async def _populate_pw_mgr_info(self, doctor_lines: list[str]) -> None:
-        pw_mgr_info = self.query_one(self.ids.container.pw_mgr_info_q, Vertical)
+    async def populate_pw_mgr_info(self) -> None:
+        def get_pw_mgr_data(doctor_check: str) -> PwMgrData:
+            for member in PwMgrEnum:
+                if member.value.doctor_check == doctor_check:
+                    return PwMgrEnum[member.name].value
+            raise ValueError(f"No PwMgrEnum member for doctor_check '{doctor_check}'")
+
+        pw_mgr_info = self.query_one(ConfigTab.PwMgrContainer)
 
         pw_mgr_entries: list[tuple[PwMgrData, str]] = []
         all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrEnum]
 
-        for line in doctor_lines[1:]:  # Skip header line
+        for line in store.doctor_result.std_out.splitlines()[1:]:  # Skip header line
             row = tuple(line.split(maxsplit=2))
             if row[1] not in all_pw_mgr_commands:
                 continue
-            pw_mgr_data = self._get_pw_mgr_data(row[1])
+            pw_mgr_data = get_pw_mgr_data(row[1])
             pw_mgr_entries.append((pw_mgr_data, row[2]))
 
         for pw_mgr_data, doctor_message in pw_mgr_entries:
@@ -221,29 +220,6 @@ class ConfigTab(TabPane):
             )
             pw_mgr_info.mount(pw_collapsible)
         pw_mgr_info.mount(Static(f"\n{PwMgrInfo.info_warning}"))
-
-    @work
-    async def _load_views(self) -> None:
-        doctor_view = self.query_one(self.ids.container.doctor_q, Vertical)
-        doctor_table = doctor_view.query_exactly_one(DoctorTable)
-        doctor_table.populate_table(store.doctor_result.std_out.splitlines())
-
-        self._populate_pw_mgr_info(store.doctor_result.std_out.splitlines())
-
-        cat_config_static = self.query_exactly_one(CatConfigStatic)
-        cat_config_static.update(
-            "\n".join(line for line in (store.cat_config_result.std_out.splitlines()))
-        )
-
-        ignored_view = self.query_one(self.ids.container.ignored_q, Vertical)
-        pretty_ignored = ignored_view.query_exactly_one(Pretty)
-        pretty_ignored.update(store.ignored_result.std_out.splitlines())
-
-        template_data_view = self.query_one(
-            self.ids.container.template_data_q, Vertical
-        )
-        template_data_pretty = template_data_view.query_exactly_one(Pretty)
-        template_data_pretty.update(store.parsed_template_data)
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:

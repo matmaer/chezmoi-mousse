@@ -6,7 +6,6 @@ from textual.widgets import Label, Static
 from chezmoi_mousse.str_enums import SectionLabel, Tcss
 
 __all__ = [
-    "CatConfigStatic",
     "DiffLinesContainer",
     "FlatSectionLabel",
     "HighlightedStatic",
@@ -36,9 +35,6 @@ class SubSectionLabel(Label):
 
 
 # Static subclasses
-
-
-class CatConfigStatic(Static): ...
 
 
 class DiffLineStatic(Static): ...
