@@ -70,13 +70,11 @@ class CmdLog(ScrollableContainer):
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.richlog.cmd)
 
-    cmd_results: reactive[list[CommandResult] | None] = reactive(None, init=False)
+    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
-    def watch_cmd_results(self, cmd_results: list[CommandResult] | None) -> None:
-        if cmd_results is None:
-            return
-        for result in cmd_results:
-            self.mount(CmdResultCollapsible(cmd_result=result))
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is not None:
+            self.mount(CmdResultCollapsible(cmd_result=cmd_result))
 
 
 class RichLoggers(RichLog):
@@ -90,7 +88,7 @@ class RichLoggers(RichLog):
 
     def write_cmd(self, pretty_cmd: str, returncode: int) -> None:
         color = ColorVar.text_success if returncode == 0 else ColorVar.text_warning
-        self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode}", color))
+        self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode})", color))
 
     def write_dimmed(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.dimmed))
@@ -115,7 +113,7 @@ class AppLog(RichLoggers):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    cmd_results: reactive[list[CommandResult] | None] = reactive(None, init=False)
+    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
         super().__init__(id=store.logs_id.richlog.app, markup=True, max_lines=10000)
@@ -125,35 +123,34 @@ class AppLog(RichLoggers):
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
 
-    def watch_cmd_results(self, cmd_results: list[CommandResult] | None) -> None:
-        if cmd_results is None:
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
             return
-        for cmd_result in cmd_results:
-            if cmd_result.returncode == 0:
-                self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
-            if "doctor" in cmd_result.full_cmd:
-                first_col: list[str] = [
-                    line.split()[0]
-                    for line in cmd_result.std_out.splitlines()
-                    if line.strip() != ""
-                ]
-                self.write_ready(LogString.doctor_section)
-                nothing_serious = True
-                if "error" in first_col:
-                    self.write_error(LogString.doctor_errors_found)
-                    nothing_serious = False
-                if "failed" in first_col:
-                    self.write_error(LogString.doctor_failed_found)
-                    nothing_serious = False
-                if "warning" in first_col:
-                    self.write_warning(LogString.doctor_warnings_found)
-                if "not set" in cmd_result.std_out:
-                    self.write_warning(LogString.doctor_not_set_found)
-                if nothing_serious:
-                    self.write_success(LogString.doctor_no_issue_found)
-                else:
-                    self.write_success(LogString.doctor_minor_issues_found)
-                self.write_ready(LogString.doctor_section.end)
+        if cmd_result.returncode == 0:
+            self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
+        if "doctor" in cmd_result.full_cmd:
+            first_col: list[str] = [
+                line.split()[0]
+                for line in cmd_result.std_out.splitlines()
+                if line.strip() != ""
+            ]
+            self.write_ready(LogString.doctor_section)
+            nothing_serious = True
+            if "error" in first_col:
+                self.write_error(LogString.doctor_errors_found)
+                nothing_serious = False
+            if "failed" in first_col:
+                self.write_error(LogString.doctor_failed_found)
+                nothing_serious = False
+            if "warning" in first_col:
+                self.write_warning(LogString.doctor_warnings_found)
+            if "not set" in cmd_result.std_out:
+                self.write_warning(LogString.doctor_not_set_found)
+            if nothing_serious:
+                self.write_success(LogString.doctor_no_issue_found)
+            else:
+                self.write_success(LogString.doctor_minor_issues_found)
+            self.write_ready(LogString.doctor_section.end)
 
 
 class DebugLog(RichLoggers):

@@ -107,9 +107,10 @@ class MainScreen(Screen[None]):
             self.app.call_from_thread(self._log_command_result, result)
             results_queue.task_done()
 
-    def _log_command_result(self, result: CommandResult) -> None:
-        self.app_log.cmd_results = [result]
-        self.cmd_log.cmd_results = [result]
+    @work
+    async def _log_command_result(self, result: CommandResult) -> None:
+        self.app_log.cmd_result = result
+        self.cmd_log.cmd_result = result
 
     ###########################################
     # Push modal methods with their callbacks #
