@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from textual.message import Message
 from textual.widgets import Button
 
+from chezmoi_mousse.str_enums import TabLabel
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -66,7 +68,8 @@ class RefreshBtnMsg(Message):
 
 
 class ReviewBtnMsg(Message):
-    def __init__(self, review_btn: ReviewBtn) -> None:
+    def __init__(self, tab_label: TabLabel, review_btn: ReviewBtn) -> None:
+        self.tab_label = tab_label
         self.review_button: ReviewBtn = review_btn
         super().__init__()
 
