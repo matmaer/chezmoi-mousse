@@ -24,7 +24,9 @@ class MainSectionLabel(Label):
 
 
 class FlatSectionLabel(Label):
-    def __init__(self, section_label: SectionLabel = SectionLabel.not_set) -> None:
+    def __init__(
+        self, section_label: SectionLabel | str = SectionLabel.not_set
+    ) -> None:
         super().__init__(section_label, classes=Tcss.flat_section_label)
 
 
