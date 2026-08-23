@@ -125,7 +125,6 @@ class AppLife:
 
 
 class Commands:
-    dest_dir: Path | None = None
     live_run: bool = False
 
     @staticmethod
@@ -136,11 +135,7 @@ class Commands:
 
     @staticmethod
     def rel_path(path: Path) -> str:
-        if Commands.dest_dir is None:
-            raise RuntimeError(
-                "Trying to calculate a path relative to the destDir before it's known"
-            )
-        return str(path.relative_to(Commands.dest_dir))
+        return str(path.relative_to(store.dest_dir))
 
     @staticmethod
     def _strip_empty_lines(text: str) -> str:
@@ -162,12 +157,8 @@ class Commands:
 
     @staticmethod
     async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
-
-        if Commands.dest_dir is None:
-            raise RuntimeError("Trying to get affected paths before destDir is known")
-
         # Only works for apply and re-add, not for add, forget and destroy
-        if path == Commands.dest_dir and write_cmd in (
+        if path == store.dest_dir and write_cmd in (
             WriteCmd.add,
             WriteCmd.destroy,
             WriteCmd.forget,
@@ -191,7 +182,7 @@ class Commands:
             )
             + (write_cmd.value)
         )
-        if path != Commands.dest_dir:
+        if path != store.dest_dir:
             args_tuple += (str(path),)
 
         with subprocess.Popen(
@@ -214,7 +205,7 @@ class Commands:
             # Ensure child process terminates and populates process.returncode
             process.wait()
 
-        rel_path = Commands.rel_path(path) if path != Commands.dest_dir else ""
+        rel_path = Commands.rel_path(path) if path != store.dest_dir else ""
         verb_str = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
         return AffectedPaths(
             paths=[Path(path_str) for path_str in affected_paths_str],
