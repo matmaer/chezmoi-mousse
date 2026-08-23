@@ -80,8 +80,13 @@ apply_path: Path | None = None
 re_add_path: Path | None = None
 
 
-def get_dest_dir() -> Path:
-    return Path(parsed_dump_config["destDir"])
+def __getattr__(name: str) -> Path:
+    if name == "dest_dir":
+        dest_dir = parsed_dump_config.get("destDir")
+        if dest_dir is None:
+            raise RuntimeError("dest_dir has not been set yet")
+        return Path(dest_dir)
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
 def _create_results_snapshot() -> ResultsSnapshot:

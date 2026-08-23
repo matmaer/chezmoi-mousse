@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import queue
 import re
@@ -36,7 +35,6 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.cm_types import (
         MinWaitReturn,
-        ParsedJson,
         ScanDirResult,
         StrTuple,
     )
@@ -269,10 +267,6 @@ class Commands:
         setattr(store, cmd.name, result)
         results_queue.put(result)
         return result
-
-    @staticmethod
-    def json_loads(str_to_parse: str) -> ParsedJson:
-        return json.loads(str_to_parse)
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)
