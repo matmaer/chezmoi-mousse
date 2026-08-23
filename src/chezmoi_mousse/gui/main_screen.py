@@ -12,6 +12,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
+from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.functions import Commands, min_wait, results_queue
 from chezmoi_mousse.str_enums import (
     Chars,
@@ -35,7 +36,7 @@ from .common.messages import (
 )
 from .common.operate_modal import LoadingModal, OperateModal
 from .common.switchers import ViewSwitcher
-from .tab_panes import AddTab, ApplyTab, ConfigTab, DebugTab, LogsTab, ReAddTab
+from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui

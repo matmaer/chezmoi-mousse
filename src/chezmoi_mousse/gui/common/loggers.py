@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import inspect
-import os
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from rich.markup import escape
 from textual import getters
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
@@ -15,14 +12,11 @@ from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import Chars, ColorVar, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-    from typing import Any
-
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
-__all__ = ["AppLog", "CmdLog", "DebugLog"]
+__all__ = ["AppLog", "CmdLog"]
 
 
 class CmdResultCollapsible(Collapsible):
@@ -151,94 +145,3 @@ class AppLog(RichLoggers):
             else:
                 self.write_success(LogString.doctor_minor_issues_found)
             self.write_ready(LogString.doctor_section.end)
-
-
-class DebugLog(RichLoggers):
-    def __init__(self, *, ids: AppIds) -> None:
-        super().__init__(id=ids.richlog.debug, markup=True, max_lines=10000, wrap=True)
-
-    def on_mount(self) -> None:
-        self.write_ready(LogString.debug_log_initialized)
-
-    def write_dimmed(self, message: str) -> None:
-        escaped_lines = [
-            f"[dim]{escape(line)}[/]"
-            for line in message.splitlines()
-            if line.strip() != ""
-        ]
-        self.write("  \n".join(escaped_lines))
-
-    def mro(self, mro: tuple[type, ...]) -> None:
-        """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
-        self.write_info("Method Resolution Order:")
-
-        exclude = {
-            "typing.Generic",
-            "builtins.object",
-            "textual.dom.DOMNode",
-            "textual.message_pump.MessagePump",
-        }
-
-        pretty_mro = " -> ".join(
-            f"{qname}\n"
-            for cls in mro
-            if not any(
-                e in (qname := f"{cls.__module__}.{cls.__qualname__}") for e in exclude
-            )
-        )
-        self.write_dimmed(pretty_mro)
-
-    def list_attr(
-        self,
-        obj: object,
-        *,
-        filter_text: str | None = None,
-        show_method_sources: bool = False,
-    ) -> None:
-        members = [attr for attr in dir(obj) if not attr.startswith("_")]
-        if filter_text is not None:
-            members = [m for m in members if filter_text in m]
-
-        if show_method_sources is True:
-            for member_name in members:
-                member = getattr(obj, member_name)
-                if inspect.isroutine(member):
-                    self.write_info(f"Source for method {member_name}:")
-                    try:
-                        source = inspect.getsource(member)
-                        self.write_dimmed(source)
-                    except OSError as e:
-                        self.write_error("Could not retrieve source")
-                        self.write_dimmed(f"{e}")
-
-        def _type_for(name: str) -> str:
-            try:
-                val = getattr(obj, name)
-                if inspect.isclass(val):
-                    return "class"
-                if inspect.ismodule(val):
-                    return "module"
-                if inspect.isroutine(val):
-                    if show_method_sources is True:
-                        self.callable_source(val)
-                    return str(type(val).__name__)
-                return str(type(val).__name__)
-            except Exception:
-                return "unknown"
-
-        members_with_types = [f"{m}: {_type_for(m)}" for m in members]
-        self.write_info(f"{obj.__class__.__name__} attributes:")
-        self.write_dimmed("\n".join(members_with_types))
-
-    def callable_source(self, callable: Callable[..., Any]) -> None:
-        self.write_info(f"Function source for {callable.__name__}:")
-        try:
-            source = inspect.getsource(callable)
-            self.write_dimmed(source)
-        except OSError as e:
-            self.write_error("Could not retrieve source")
-            self.write_dimmed(f"{e}")
-
-    def print_env_vars(self) -> None:
-        for key, value in os.environ.items():
-            self.write(f"{key}: {value}")

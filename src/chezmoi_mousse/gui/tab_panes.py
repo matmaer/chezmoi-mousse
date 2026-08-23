@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from textual import getters, on, work
 from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
-    HorizontalGroup,
     ScrollableContainer,
     Vertical,
 )
@@ -17,18 +15,15 @@ from textual.widgets import (
     DirectoryTree,
     Label,
     Pretty,
-    RichLog,
     Static,
     Switch,
     TabPane,
 )
 
 from chezmoi_mousse import store
-from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.enum_data import PwMgrEnum
 from chezmoi_mousse.named_tuples import PwMgrData
 from chezmoi_mousse.str_enums import (
-    ColorVar,
     FlatBtnLabel,
     OpBtnLabel,
     PwMgrInfo,
@@ -50,7 +45,7 @@ from .common.components import CatConfigStatic
 from .common.contents import ContentsView
 from .common.doctor_data import DoctorTable, PwCollapsible
 from .common.filtered_dir_tree import FilteredDirTree
-from .common.loggers import AppLog, CmdLog, DebugLog
+from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import DestDirTree, ManagedTree
 from .common.messages import TabBtnMsg
 from .common.switchers import ViewSwitcher
@@ -59,7 +54,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-__all__ = ["AddTab", "ApplyTab", "ConfigTab", "DebugTab", "LogsTab", "ReAddTab"]
+__all__ = ["AddTab", "ApplyTab", "ConfigTab", "LogsTab", "ReAddTab"]
 
 
 class AddTab(TabPane):
@@ -275,227 +270,6 @@ class ConfigTab(TabPane):
             self.switcher.current = self.ids.container.template_data
         elif event.button.label == FlatBtnLabel.diagram:
             self.switcher.current = self.ids.container.diagram
-
-
-class DebugTab(TabPane):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    class TestPathsView(Static): ...
-
-    MiB = 1024 * 1024
-    INTERVAL = 2
-
-    _previous_rss: float = 0.0
-
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=TabLabel.debug, title=TabLabel.debug)
-        self.ids = ids
-
-    def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield FlatButtonsVertical(
-                self.ids,
-                labels=(
-                    FlatBtnLabel.test_paths,
-                    FlatBtnLabel.debug_log,
-                    FlatBtnLabel.dom_nodes,
-                    FlatBtnLabel.memory_usage,
-                ),
-            )
-            with ContentSwitcher(initial=self.ids.container.test_paths_view):
-                yield Vertical(
-                    Label(SectionLabel.test_paths, classes=Tcss.main_section_label),
-                    DebugTab.TestPathsView(classes=Tcss.info),
-                    id=self.ids.container.test_paths_view,
-                )
-                yield Vertical(
-                    Label(SectionLabel.debug_log, classes=Tcss.main_section_label),
-                    DebugLog(ids=self.ids),
-                    id=self.ids.container.debug_log,
-                )
-                yield Vertical(
-                    Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label),
-                    RichLog(
-                        id=self.ids.richlog.dom_nodes, highlight=True, auto_scroll=False
-                    ),
-                    id=self.ids.container.dom_nodes,
-                )
-                yield Vertical(
-                    Label(SectionLabel.memory_usage, classes=Tcss.main_section_label),
-                    RichLog(id=self.ids.richlog.memory, markup=True),
-                    id=self.ids.container.memory_usage,
-                )
-        with HorizontalGroup(
-            id=self.ids.container.operate_buttons, classes=Tcss.op_btn_group
-        ):
-            yield Button(
-                classes=Tcss.operate_button,
-                id=self.ids.op_btn.log_memory,
-                label=OpBtnLabel.log_memory,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=self.ids.op_btn.list_test_paths,
-                label=OpBtnLabel.list_test_paths,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=self.ids.op_btn.create_diffs,
-                label=OpBtnLabel.create_diffs,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=self.ids.op_btn.create_paths,
-                label=OpBtnLabel.create_paths,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=self.ids.op_btn.remove_paths,
-                label=OpBtnLabel.remove_paths,
-            )
-
-    def on_mount(self) -> None:
-        self.test_paths = TestPaths()
-        self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.test_paths_view = self.query_one(self.ids.container.test_paths_view_q)
-        self.test_paths_static = self.query_exactly_one(DebugTab.TestPathsView)
-        self.test_paths_static.update(self._list_existing_test_paths())
-        self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
-        self.memory_logger = self.query_one(self.ids.richlog.memory_q, RichLog)
-        self.mem_log_op_btn = self.query_one(self.ids.op_btn.log_memory_q, Button)
-        self.mem_log_op_btn.display = False
-        self.list_test_paths_op_btn = self.query_one(
-            self.ids.op_btn.list_test_paths_q, Button
-        )
-        self.create_diffs_op_btn = self.query_one(
-            self.ids.op_btn.create_diffs_q, Button
-        )
-        self.create_paths_op_btn = self.query_one(
-            self.ids.op_btn.create_paths_q, Button
-        )
-        self.remove_paths_op_btn = self.query_one(
-            self.ids.op_btn.remove_paths_q, Button
-        )
-        self.test_paths_op_btns = [
-            self.list_test_paths_op_btn,
-            self.create_diffs_op_btn,
-            self.create_paths_op_btn,
-            self.remove_paths_op_btn,
-        ]
-        self.app.call_later(self._log_dom_nodes)
-
-        import psutil
-
-        self._process = psutil.Process()
-        self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
-
-    def _list_existing_test_paths(self) -> str:
-        path_lines = "\n".join(
-            str(p) for p in self.test_paths.get_existing_test_paths()
-        )
-        if path_lines:
-            return path_lines
-        else:
-            return f"[${ColorVar.text_warning} bold]No test paths exist.[/]"
-
-    def _write_to_memory_log(self, auto: bool = True) -> None:
-        mem_info = self._process.memory_info()
-        time = f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
-        rss = mem_info.rss / self.MiB
-        vms = mem_info.vms / self.MiB
-        pc2_increase = rss > self._previous_rss * 1.02
-        pc2_decrease = rss < self._previous_rss * 0.98
-        pc2_change = pc2_increase or pc2_decrease
-        self._previous_rss = rss
-        now_prefix = "Current memory usage log:"
-        pc2_prefix = "Auto log 2 percent delta:"
-        color = (
-            "[cyan bold]"
-            if pc2_increase
-            else "[green bold]"
-            if pc2_decrease
-            else "[yellow bold]"
-        )
-        rss_str = f"{color}{rss:3.0f}[/] MiB rss"
-        vms_str = f"{color}{vms:4.0f}[/] MiB vms"
-        prefix = pc2_prefix if auto else now_prefix
-        if pc2_change and auto or not auto:
-            self.memory_logger.write(f"{time} {prefix} {rss_str} | {vms_str}")
-
-    def _log_dom_nodes(self) -> None:
-        # App dom nodes
-        app_nodes = list(self.app.walk_children())
-        self.dom_node_logger.write(f"self.app DOMNode count: {len(app_nodes)}\n")
-        app_nodes_with_id = [item for item in app_nodes if item.id is not None]
-        app_nodes_without_id = [item for item in app_nodes if item.id is None]
-        self.dom_node_logger.write(f"DOMNodes with id: {len(app_nodes_with_id)}")
-        for item in sorted(app_nodes_with_id, key=str):
-            self.dom_node_logger.write(f"{item}")
-        self.dom_node_logger.write(
-            f"\nDOMNodes without id: {len(app_nodes_without_id)}"
-        )
-        for item in sorted(app_nodes_without_id, key=str):
-            self.dom_node_logger.write(f"{item}")
-        # Screen dom nodes
-        screen_nodes = list(self.screen.walk_children())
-        self.dom_node_logger.write(
-            f"\nself.screen DOMNode count: {len(screen_nodes)}\n"
-        )
-        screen_nodes_with_id = [item for item in screen_nodes if item.id is not None]
-        screen_nodes_without_id = [item for item in screen_nodes if item.id is None]
-        self.dom_node_logger.write(f"DOMNodes with id: {len(screen_nodes_with_id)}")
-        for item in sorted(screen_nodes_with_id, key=str):
-            self.dom_node_logger.write(f"{item}")
-        self.dom_node_logger.write(
-            f"\nDOMNodes without id: {len(screen_nodes_without_id)}"
-        )
-        for item in sorted(screen_nodes_without_id, key=str):
-            self.dom_node_logger.write(f"{item}")
-
-    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == FlatBtnLabel.memory_usage:
-            self.mem_log_op_btn.display = True
-            for btn in self.test_paths_op_btns:
-                btn.display = False
-            self.switcher.current = self.ids.container.memory_usage
-        else:
-            self.mem_log_op_btn.display = False
-            for btn in self.test_paths_op_btns:
-                btn.display = True
-        if event.button.label == FlatBtnLabel.test_paths:
-            self.switcher.current = self.test_paths_view.id
-        elif event.button.label == FlatBtnLabel.debug_log:
-            self.switcher.current = self.ids.container.debug_log
-        elif event.button.label == FlatBtnLabel.dom_nodes:
-            self.switcher.current = self.ids.container.dom_nodes
-
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_operate_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == OpBtnLabel.log_memory.value:
-            self._write_to_memory_log(auto=False)
-            return
-        result: str | list[str] = ""
-        if event.button.label == OpBtnLabel.list_test_paths:
-            result = self._list_existing_test_paths()
-            return
-        if event.button.label == OpBtnLabel.create_diffs:
-            result = self.test_paths.create_diffs()
-        elif event.button.label == OpBtnLabel.create_paths:
-            result = self.test_paths.create_paths_on_disk()
-        elif event.button.label == OpBtnLabel.remove_paths:
-            result = self.test_paths.remove_test_paths()
-        # TODO: self.app.cmattr.update_attributes(ReadCmd.managed_status_commands())
-        if isinstance(result, str):
-            self.test_paths_static.update(result)
-        else:
-            self.test_paths_static.update("\n".join(result))
 
 
 class LogsTab(TabPane):
