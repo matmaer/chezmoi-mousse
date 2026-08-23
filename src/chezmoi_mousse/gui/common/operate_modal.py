@@ -12,7 +12,7 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
-from chezmoi_mousse.named_tuples import AffectedPaths
+from chezmoi_mousse.named_tuples import AffectedPaths, RunCommandInfo
 from chezmoi_mousse.str_enums import (
     LoadingLabel,
     OpBtnLabel,
@@ -98,7 +98,7 @@ class OperateInfo(Static):
         super().__init__(classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
-        self.cmd_info_fields = OpInfoString.get_cmd_info_fields(self.btn_label)
+        self.cmd_info_fields = self.get_cmd_info_fields(self.btn_label)
         self.border_title = self.cmd_info_fields.border_title
         self.border_subtitle = self.cmd_info_fields.border_subtitle
         self._update_review_info()
@@ -125,6 +125,40 @@ class OperateInfo(Static):
         if not self.display:
             return
         self._update_review_info()
+
+    def get_cmd_info_fields(self, btn_label: OpBtnLabel) -> RunCommandInfo:
+        if btn_label is OpBtnLabel.add_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.add_run,
+                border_subtitle=OpInfoString.add_subtitle,
+                cmd_description=OpInfoString.add_path_info,
+            )
+        elif btn_label is OpBtnLabel.apply_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.apply_run,
+                border_subtitle=OpInfoString.apply_subtitle,
+                cmd_description=OpInfoString.apply_path_info,
+            )
+        elif btn_label is OpBtnLabel.destroy_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.destroy_run,
+                border_subtitle=OpInfoString.destroy_subtitle,
+                cmd_description=OpInfoString.destroy_path_info,
+            )
+        elif btn_label is OpBtnLabel.forget_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.forget_run,
+                border_subtitle=OpInfoString.forget_subtitle,
+                cmd_description=OpInfoString.forget_path_info,
+            )
+        elif btn_label is OpBtnLabel.re_add_run:
+            return RunCommandInfo(
+                border_title=OpBtnLabel.re_add_run,
+                border_subtitle=OpInfoString.re_add_subtitle,
+                cmd_description=OpInfoString.re_add_path_info,
+            )
+        else:
+            raise ValueError(f"No run cmd info fields available for {btn_label}")
 
 
 class CommandOutput(ScrollableContainer):

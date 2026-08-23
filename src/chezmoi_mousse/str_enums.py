@@ -1,7 +1,5 @@
 from enum import Enum, StrEnum, auto
 
-from chezmoi_mousse.named_tuples import RunCommandInfo
-
 __all__ = [
     "BindingAction",
     "BindingDescription",
@@ -277,41 +275,6 @@ class OpInfoString(StrEnum):
         "and all entries that are not files are ignored[/]"
     )
     re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
-
-    @classmethod
-    def get_cmd_info_fields(cls, btn_label: OpBtnLabel) -> RunCommandInfo:
-        if btn_label is OpBtnLabel.add_run:
-            return RunCommandInfo(
-                border_title=OpBtnLabel.add_run,
-                border_subtitle=cls.add_subtitle,
-                cmd_description=cls.add_path_info,
-            )
-        elif btn_label is OpBtnLabel.apply_run:
-            return RunCommandInfo(
-                border_title=OpBtnLabel.apply_run,
-                border_subtitle=cls.apply_subtitle,
-                cmd_description=cls.apply_path_info,
-            )
-        elif btn_label is OpBtnLabel.destroy_run:
-            return RunCommandInfo(
-                border_title=OpBtnLabel.destroy_run,
-                border_subtitle=cls.destroy_subtitle,
-                cmd_description=cls.destroy_path_info,
-            )
-        elif btn_label is OpBtnLabel.forget_run:
-            return RunCommandInfo(
-                border_title=OpBtnLabel.forget_run,
-                border_subtitle=cls.forget_subtitle,
-                cmd_description=cls.forget_path_info,
-            )
-        elif btn_label is OpBtnLabel.re_add_run:
-            return RunCommandInfo(
-                border_title=OpBtnLabel.re_add_run,
-                border_subtitle=cls.re_add_subtitle,
-                cmd_description=cls.re_add_path_info,
-            )
-        else:
-            raise ValueError(f"No run cmd info fields available for {btn_label}")
 
 
 class PathFilters(Enum):
