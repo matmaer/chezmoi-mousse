@@ -140,7 +140,7 @@ class SplashScreen(Screen[None]):
 
     def _run_chezmoi_command(self, command: ReadCmd) -> str:
         if command is ReadCmd.git_log:
-            result: CommandResult = Commands.run_chezmoi_git_log(None)[-1]
+            result: CommandResult = Commands.run_chezmoi_git_log(None)
         else:
             result: CommandResult = Commands.run_read_cmd(command, path_arg=None)
         return self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)

@@ -310,23 +310,21 @@ class Commands:
         return text_contents
 
     @staticmethod
+    @_typed_lru_cache()
+    def get_source_path(path_arg: Path) -> CommandResult:
+        return Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
+
+    @staticmethod
     @_typed_lru_cache(maxsize=500)
-    def run_chezmoi_git_log(path_arg: Path | None) -> list[CommandResult]:
-        results: list[CommandResult] = []
+    def run_chezmoi_git_log(path_arg: Path | None) -> CommandResult:
         if path_arg is None:
-            results.append(Commands.run_read_cmd(ReadCmd.git_log, path_arg=path_arg))
+            return Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
         else:
-            source_path_result = Commands.run_read_cmd(
-                cmd=ReadCmd.source_path, path_arg=path_arg
+            source_path_result = Commands.get_source_path(path_arg=path_arg)
+            return Commands.run_read_cmd(
+                cmd=ReadCmd.git_log,
+                path_arg=Path(source_path_result.std_out),
             )
-            results.append(source_path_result)
-            results.append(
-                Commands.run_read_cmd(
-                    cmd=ReadCmd.git_log,
-                    path_arg=Path(source_path_result.std_out),
-                )
-            )
-        return results
 
     @staticmethod
     @_typed_lru_cache()
