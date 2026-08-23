@@ -133,8 +133,6 @@ class SplashScreen(Screen[None]):
         msg = self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    # Non-threaded Workers for tasks that are not worth creating a thread for
-
     @work
     async def _run_and_parse_dump_config(self) -> None:
         await self._run_chezmoi_command(ReadCmd.dump_config).wait()
@@ -158,8 +156,6 @@ class SplashScreen(Screen[None]):
         store.apply_path = store.dest_dir
         store.re_add_path = store.dest_dir
         self.app.cmattr.paths = ManagedPaths()
-
-    # Sequential Orchestration Pipeline
 
     @work
     async def _run_all_tasks(self) -> None:
