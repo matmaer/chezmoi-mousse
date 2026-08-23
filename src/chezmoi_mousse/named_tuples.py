@@ -28,7 +28,7 @@ class AffectedPaths(NamedTuple):
 
     @property
     def path_strings(self) -> str:
-        return " ".join(str(p) for p in self.paths)
+        return "\n".join(str(p) for p in self.paths)
 
 
 class CommandResult(NamedTuple):

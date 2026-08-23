@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.named_tuples import CommandResult
-from chezmoi_mousse.str_enums import TabLabel
+from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
 if TYPE_CHECKING:
     from chezmoi_mousse.cm_types import ParsedJson
@@ -80,15 +80,15 @@ apply_path: Path | None = None
 re_add_path: Path | None = None
 
 
-def get_tab_path(tab_label: TabLabel) -> Path | None:
-    if tab_label == TabLabel.add:
+def get_tab_path(btn_label: OpBtnLabel) -> Path | None:
+    if btn_label == OpBtnLabel.add_run:
         return add_path
-    elif tab_label == TabLabel.apply:
+    elif btn_label == OpBtnLabel.apply_run:
         return apply_path
-    elif tab_label == TabLabel.re_add:
+    elif btn_label == OpBtnLabel.re_add_run:
         return re_add_path
     else:
-        raise ValueError(f"Invalid tab label: {tab_label}")
+        raise ValueError(f"Invalid button label: {btn_label}")
 
 
 def __getattr__(name: str) -> Path:

@@ -156,7 +156,7 @@ class Commands:
         )
 
     @staticmethod
-    async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
+    def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
         # Only works for apply and re-add, not for add, forget and destroy
         if path == store.dest_dir and write_cmd in (
             WriteCmd.add,
@@ -206,10 +206,10 @@ class Commands:
             process.wait()
 
         rel_path = Commands.rel_path(path) if path != store.dest_dir else ""
-        verb_str = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
+        pretty_cmd = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
         return AffectedPaths(
             paths=[Path(path_str) for path_str in affected_paths_str],
-            pretty_cmd=f"chezmoi {verb_str} {rel_path}",
+            pretty_cmd=f"{pretty_cmd} {rel_path}",
             std_err=stderr_output,
         )
 

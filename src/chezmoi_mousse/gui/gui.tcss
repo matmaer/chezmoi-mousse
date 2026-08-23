@@ -386,6 +386,8 @@ Static {
     width: 1fr;
   }
   &.info {
+    border-top: inner $surface;
+    border-bottom: inner $surface;
     background-tint: $surface;
     background: $surface;
     color: $text;

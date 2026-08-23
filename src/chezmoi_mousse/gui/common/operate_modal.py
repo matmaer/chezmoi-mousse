@@ -50,11 +50,6 @@ class LoadingModal(ModalScreen[None]):
         await self.run_managed_commands().wait()
 
     @work
-    async def run_affected_paths(self, write_cmd: WriteCmd, path_arg: Path) -> None:
-        self.label_text = "Gathering affected paths"
-        await self._run_affected_paths(write_cmd, path_arg).wait()
-
-    @work
     async def run_managed_commands(self) -> None:
         for cmd in ReadCmd.managed_commands():
             self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
@@ -72,13 +67,6 @@ class LoadingModal(ModalScreen[None]):
             write_cmd,
             path_arg=path_arg,
         )
-
-    @work(thread=True)
-    @min_wait
-    async def _run_affected_paths(
-        self, write_cmd: WriteCmd, path: Path
-    ) -> AffectedPaths:
-        return await Commands.get_affected_paths(write_cmd, path)
 
     def watch_label_text(self, label_text: str) -> None:
         if self.label_text is None:
@@ -121,7 +109,7 @@ class OperateInfo(Static):
         info_lines.append(self.cmd_info_fields.cmd_description)
         self.update("\n".join(info_lines))
 
-    def watch_dry_run(self) -> None:
+    def watch_live_run(self) -> None:
         if not self.display:
             return
         self._update_review_info()
@@ -161,7 +149,7 @@ class OperateInfo(Static):
             raise ValueError(f"No run cmd info fields available for {btn_label}")
 
 
-class CommandOutput(ScrollableContainer):
+class ChangedPathsOutput(ScrollableContainer):
     class AddedManaged(Static): ...
 
     class RemovedManaged(Static): ...
@@ -171,11 +159,11 @@ class CommandOutput(ScrollableContainer):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabel.changed_paths)
         yield SubSectionLabel(SectionLabel.added_managed_paths)
-        yield CommandOutput.AddedManaged(classes=Tcss.info)
+        yield ChangedPathsOutput.AddedManaged(classes=Tcss.info)
         yield SubSectionLabel(SectionLabel.removed_managed_paths)
-        yield CommandOutput.RemovedManaged(classes=Tcss.info)
+        yield ChangedPathsOutput.RemovedManaged(classes=Tcss.info)
         yield SubSectionLabel(SectionLabel.changed_status_paths)
-        yield CommandOutput.ChangedStatus(classes=Tcss.info)
+        yield ChangedPathsOutput.ChangedStatus(classes=Tcss.info)
         yield SubSectionLabel(SectionLabel.command_outputs)
 
     def on_mount(self) -> None:
@@ -197,8 +185,7 @@ class CommandOutput(ScrollableContainer):
 
 
 class AffectedPathsReview(ScrollableContainer):
-    def __init__(self) -> None:
-        super().__init__()
+    affected_paths: reactive[AffectedPaths | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(SectionLabel.affected_paths)
@@ -209,13 +196,17 @@ class AffectedPathsReview(ScrollableContainer):
         self.info_static = self.query_exactly_one(InfoStatic)
         self.sub_section_label = self.query_exactly_one(SubSectionLabel)
 
-    async def update_affected_paths(self, write_cmd: WriteCmd, path: Path) -> None:
-        result: AffectedPaths = await Commands.get_affected_paths(write_cmd, path)
-        self.sub_section_label.update(result.pretty_cmd)
-        self.info_static.update(result.path_strings)
+    def watch_affected_paths(self, affected_paths: AffectedPaths | None) -> None:
+        if affected_paths is None:
+            return
+        self.sub_section_label.update(affected_paths.pretty_cmd)
+        self.info_static.update(affected_paths.path_strings)
 
 
 class OperateModal(ModalScreen[None]):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
         self.labels = labels
         self.operate_label = next(
@@ -226,22 +217,37 @@ class OperateModal(ModalScreen[None]):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield OperateInfo(self.operate_label)
-            yield CommandOutput()
+            yield ChangedPathsOutput()
             yield AffectedPathsReview()
             yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:
         operate_info = self.query_exactly_one(OperateInfo)
-        command_output = self.query_exactly_one(CommandOutput)
-        affected_paths_review = self.query_exactly_one(AffectedPathsReview)
+        changed_paths_output = self.query_exactly_one(ChangedPathsOutput)
+        self.affected_paths_review = self.query_exactly_one(AffectedPathsReview)
         if len(self.labels) == 1 and self.labels[0] == OpBtnLabel.close:
             # condition after a refresh trees operation
             operate_info.display = False
-            affected_paths_review.display = False
+            self.affected_paths_review.display = False
         else:
-            command_output.display = False
+            changed_paths_output.display = False
+            self._show_affected_paths()
 
     @on(ExitModalBtnMsg)
     def _handle_exit_modal(self, msg: ExitModalBtnMsg) -> None:
         msg.stop()
         self.dismiss()
+
+    @work
+    @min_wait
+    async def _show_affected_paths(self) -> None:
+        self.loading_modal = LoadingModal()
+        self.app.push_screen(self.loading_modal)
+        self.loading_modal.label_text = LoadingLabel.get_affected_paths
+        write_cmd = WriteCmd.get_write_cmd(self.operate_label)
+        tab_path = store.get_tab_path(self.operate_label)
+        if tab_path is None:
+            tab_path = store.dest_dir
+        result: AffectedPaths = Commands.get_affected_paths(write_cmd, tab_path)
+        self.affected_paths_review.affected_paths = result
+        self.loading_modal.dismiss()
