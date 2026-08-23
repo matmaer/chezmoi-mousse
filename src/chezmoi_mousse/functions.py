@@ -208,7 +208,7 @@ class Commands:
         rel_path = Commands.rel_path(path) if path != store.dest_dir else ""
         pretty_cmd = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
         return AffectedPaths(
-            paths=[Path(path_str) for path_str in affected_paths_str],
+            paths=sorted([Path(path_str) for path_str in affected_paths_str]),
             pretty_cmd=f"{pretty_cmd} {rel_path}",
             std_err=stderr_output,
         )
