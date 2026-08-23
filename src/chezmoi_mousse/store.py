@@ -80,6 +80,17 @@ apply_path: Path | None = None
 re_add_path: Path | None = None
 
 
+def get_tab_path(tab_label: TabLabel) -> Path | None:
+    if tab_label == TabLabel.add:
+        return add_path
+    elif tab_label == TabLabel.apply:
+        return apply_path
+    elif tab_label == TabLabel.re_add:
+        return re_add_path
+    else:
+        raise ValueError(f"Invalid tab label: {tab_label}")
+
+
 def __getattr__(name: str) -> Path:
     if name == "dest_dir":
         dest_dir = parsed_dump_config.get("destDir")
