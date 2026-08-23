@@ -51,9 +51,11 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
+        await store.store_current_snapshot()
         for cmd in ReadCmd.managed_commands():
             self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
+        await store.update_changed_paths()
 
     @work(thread=True)
     @min_wait

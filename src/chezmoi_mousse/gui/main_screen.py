@@ -187,11 +187,9 @@ class MainScreen(Screen[None]):
 
     @on(RefreshBtnMsg)
     async def handle_refresh_button(self) -> None:
-        await store.store_current_snapshot()
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         await self.loading_modal.run_managed_commands().wait()
-        await store.update_changed_paths()
         if store.changed_paths.no_changes:
             self.notify(NotifyMsg.no_managed_changes)
             await self._reload_directory_tree_loading().wait()
