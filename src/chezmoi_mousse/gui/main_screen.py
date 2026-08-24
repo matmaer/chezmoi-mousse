@@ -14,7 +14,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.functions import get_dry_run_btn_label, min_wait
+from chezmoi_mousse.functions import min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
     LoadingLabel,
@@ -230,7 +230,11 @@ class MainScreen(Screen[None]):
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:
         run_btn_label = msg.review_button.btn_label.review_to_run
-        dry_run_btn_label = get_dry_run_btn_label()
+        dry_run_btn_label = (
+            OpBtnLabel.switch_to_dry_run
+            if store.live_run is True
+            else OpBtnLabel.enable_live_run
+        )
         self.app.push_screen(
             OperateModal(
                 (

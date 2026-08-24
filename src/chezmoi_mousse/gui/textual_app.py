@@ -13,7 +13,6 @@ from textual.widgets import TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import store
 from chezmoi_mousse.cm_attributes import CmAttributes
-from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -25,6 +24,7 @@ from chezmoi_mousse.str_enums import (
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 from .common.actionables import (
+    DryRunBtn,
     FlatButtonsVertical,
     SwitchSlider,
     TabButtons,
@@ -182,17 +182,24 @@ class ChezmoiGui(App[str]):
 
     def action_toggle_dry_run(self) -> None:
         main_screen = self._get_main_screen()
-        Commands.live_run = not Commands.live_run
+        store.live_run = not store.live_run
         new_description = (
             BindingDescription.switch_to_dry_run
-            if Commands.live_run is True
+            if store.live_run is True
             else BindingDescription.enable_live_run
         )
         self._update_binding_description(
             binding_action=BindingAction.toggle_dry_run,
             new_description=new_description,
         )
-        main_screen.query_exactly_one(CustomHeader).live_run = Commands.live_run
+        main_screen.query_exactly_one(CustomHeader).live_run = store.live_run
+        if isinstance(self.screen, (OperateModal)):
+            dry_run_btn = self.screen.query_exactly_one(DryRunBtn)
+            dry_run_btn.label = (
+                OpBtnLabel.enable_live_run
+                if store.live_run is False
+                else OpBtnLabel.switch_to_dry_run
+            )
 
     def action_toggle_switch_slider(self) -> None:
         slider: SwitchSlider | None = self._get_switch_slider_widget()

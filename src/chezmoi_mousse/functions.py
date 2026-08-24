@@ -27,7 +27,6 @@ from chezmoi_mousse.named_tuples import (
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
     GlobalArgs,
-    OpBtnLabel,
     PathFilters,
     PathKind,
     ReadCmd,
@@ -115,16 +114,8 @@ def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
     if isinstance(cmd, ReadCmd):
         base_cmd = "chezmoi"
     else:
-        base_cmd = "chezmoi --dry-run" if Commands.live_run is False else "chezmoi"
+        base_cmd = "chezmoi --dry-run" if store.live_run is False else "chezmoi"
     return f"{base_cmd} {verb_str}"
-
-
-@staticmethod
-@_typed_lru_cache()
-def get_dry_run_btn_label() -> OpBtnLabel:
-    if Commands.live_run is False:
-        return OpBtnLabel.enable_live_run
-    return OpBtnLabel.switch_to_dry_run
 
 
 class AppLife:
@@ -147,8 +138,6 @@ class AppLife:
 
 
 class Commands:
-    live_run: bool = False
-
     @staticmethod
     def _strip_empty_lines(text: str) -> str:
         return "\n".join([line for line in text.splitlines() if line.strip()])
@@ -301,7 +290,7 @@ class Commands:
     def run_write_cmd(cmd: WriteCmd, path_arg: Path) -> CommandResult:
         args_tuple: StrTuple = (
             ("chezmoi", "--dry-run") + cmd.value
-            if Commands.live_run is False
+            if store.live_run is False
             else ("chezmoi",) + cmd.value
         )
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
