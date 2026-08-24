@@ -10,6 +10,7 @@ __all__ = [
     "CommandResult",
     "ManagedTreePaths",
     "ParsedDumpConfig",
+    "PathStatus",
     "RunCommandInfo",
     "ScanDirItem",
     "SwitchData",

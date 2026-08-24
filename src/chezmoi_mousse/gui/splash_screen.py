@@ -139,11 +139,6 @@ class SplashScreen(Screen[None]):
         msg = self._run_chezmoi_command(cmd)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True)
-    def _run_and_parse_dump_config(self) -> None:
-        msg = self._run_chezmoi_command(ReadCmd.dump_config)
-        self.app.call_from_thread(self.splash_log.write, msg)
-
     @work
     async def _post_process_cmd_results(self) -> None:
         store.update_derived_vars()
