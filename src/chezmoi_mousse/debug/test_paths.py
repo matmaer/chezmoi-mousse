@@ -249,23 +249,31 @@ class TestPaths:
         return [str(file_path)]
 
     def _create_toml_files(self) -> list[str]:
-        import tomlkit
-
         def get_fake_toml_string() -> str:
-            doc = tomlkit.document()
-            doc["title"] = self._faker.sentence(nb_words=6)
-            doc["version"] = self._faker.pyfloat(
-                left_digits=1, right_digits=2, positive=True
+            title = self._faker.sentence(nb_words=6)
+            version = self._faker.pyfloat(left_digits=1, right_digits=2, positive=True)
+            debug = str(self._faker.boolean()).lower()
+
+            # Format lists into TOML array syntax ["item1", "item2"]
+            hosts = ", ".join(f'"{self._faker.hostname()}"' for _ in range(10))
+            ports = ", ".join(str(self._faker.port_number()) for _ in range(10))
+
+            uuid = self._faker.uuid4()
+            date = self._faker.date_time().isoformat()
+            # Escape inner double quotes in the paragraph string if any exist
+            text = self._faker.paragraph(nb_sentences=12).replace('"', '\\"')
+
+            return (
+                f'title = "{title}"\n'
+                f"version = {version}\n"
+                f"debug = {debug}\n"
+                f"hosts = [{hosts}]\n"
+                f"ports = [{ports}]\n\n"
+                f"[some_table]\n"
+                f'id = "{uuid}"\n'
+                f'date = "{date}"\n'
+                f'text = "{text}"\n'
             )
-            doc["debug"] = self._faker.boolean()
-            doc["hosts"] = [self._faker.hostname() for _ in range(10)]
-            doc["ports"] = [self._faker.port_number() for _ in range(10)]
-            some_table = tomlkit.table()
-            some_table["id"] = self._faker.uuid4()
-            some_table["date"] = self._faker.date_time().isoformat()
-            some_table["text"] = self._faker.paragraph(nb_sentences=12)
-            doc["some_table"] = some_table
-            return doc.as_string()
 
         created_files: set[str] = set()
         for file in self.all_paths.toml_files_to_create:

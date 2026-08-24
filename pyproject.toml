@@ -30,7 +30,6 @@ dev = [
     "pytest-timeout",
     "ruff",
     "textual-dev",
-    "tomlkit",
     "twine",
     "types-psutil",
 ]
