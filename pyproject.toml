@@ -75,6 +75,7 @@ select = [
     "PTH",     # Use pathlib
     "RUF012",  # flake8-class-attributes
     "SIM",     # Simplify
+    "TCH",     # flake8-type-checking
     "TID",     # flake8-tidy-imports (bans relative parent imports)
     "UP",      # pyupgrade
     "W",       # pycodestyle
@@ -86,6 +87,10 @@ ban-relative-imports = "parents"
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.ruff.lint.flake8-type-checking]
+# Move imports into TYPE_CHECKING even if they are used in runtime annotations (e.g., function arguments)
+strict = true
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
