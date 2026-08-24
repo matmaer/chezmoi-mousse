@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters, on
-from textual.app import ComposeResult
+from textual import on
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Label, Tree
-from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
@@ -25,6 +22,12 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from textual import getters
+    from textual.app import ComposeResult
+    from textual.widgets.tree import TreeNode
+
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui

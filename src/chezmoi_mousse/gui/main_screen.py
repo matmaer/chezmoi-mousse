@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterator
 from itertools import chain
 from typing import TYPE_CHECKING, ClassVar
 
-from textual import getters, on, work
-from textual.app import ComposeResult
+from textual import on, work
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.screen import Screen
@@ -42,6 +40,11 @@ from .common.switchers import ViewSwitcher
 from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from textual import getters
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 

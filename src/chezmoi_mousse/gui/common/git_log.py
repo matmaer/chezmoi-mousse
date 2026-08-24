@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters
-from textual.app import ComposeResult
 from textual.containers import Container
 from textual.reactive import reactive
 from textual.widgets import DataTable
@@ -16,6 +13,11 @@ from chezmoi_mousse.str_enums import ColorVar
 from .components import FlatSectionLabel
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from textual import getters
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 

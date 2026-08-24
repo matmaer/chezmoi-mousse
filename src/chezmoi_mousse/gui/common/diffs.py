@@ -3,10 +3,9 @@ from __future__ import annotations
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import Label, Static
+from textual.widgets import Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
@@ -28,6 +27,9 @@ from .components import (
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from textual.app import ComposeResult
+    from textual.widgets import Label
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths

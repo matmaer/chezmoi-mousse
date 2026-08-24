@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from textual import getters
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
@@ -12,6 +11,8 @@ from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import Chars, ColorVar, LogString, SectionLabel, Tcss
 
 if TYPE_CHECKING:
+    from textual import getters
+
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult

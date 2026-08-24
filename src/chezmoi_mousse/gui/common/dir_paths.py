@@ -11,11 +11,11 @@ from textual.widgets import Label, Static
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
 
-from .actionables import DirContentBtn
-
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.named_tuples import ManagedTreePaths
+
+    from .actionables import DirContentBtn
 
 
 OUTPUT_LIMIT = 40

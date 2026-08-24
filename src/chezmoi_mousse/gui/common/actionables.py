@@ -3,13 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.app import ComposeResult
 from textual.containers import Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
-    FlatBtnLabel,
     OpBtnLabel,
     TabLabel,
     Tcss,
@@ -28,7 +26,12 @@ from .messages import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.str_enums import (
+        FlatBtnLabel,
+    )
 
 
 __all__ = [

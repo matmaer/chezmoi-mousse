@@ -7,9 +7,8 @@ import random
 from itertools import product
 from typing import TYPE_CHECKING
 
-from textual.pilot import OutOfBounds, Pilot
-from textual.widget import Widget
-from textual.widgets import Switch, TabbedContent, TabPane
+from textual.pilot import OutOfBounds
+from textual.widgets import Switch, TabbedContent
 
 from chezmoi_mousse.gui.common.actionables import (
     DirContentBtn,
@@ -27,6 +26,10 @@ from chezmoi_mousse.str_enums import TabLabel
 __all__ = ["run_with_pilot"]
 
 if TYPE_CHECKING:
+    from textual.pilot import Pilot
+    from textual.widget import Widget
+    from textual.widgets import TabPane
+
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 

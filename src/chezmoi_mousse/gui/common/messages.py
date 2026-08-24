@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual.message import Message
-from textual.widgets import Button
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from textual.widgets import Button
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.str_enums import TabLabel

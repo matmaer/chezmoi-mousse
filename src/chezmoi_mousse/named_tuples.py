@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
-from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
+from chezmoi_mousse.str_enums import StatusCode
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
 
 __all__ = [
     "AffectedPaths",

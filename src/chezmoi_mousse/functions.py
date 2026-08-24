@@ -6,7 +6,6 @@ import re
 import subprocess
 import time
 from asyncio import sleep
-from collections.abc import Callable
 from datetime import datetime
 from functools import lru_cache, wraps
 from itertools import islice
@@ -36,7 +35,7 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable
+    from collections.abc import Awaitable, Callable
     from typing import Any
 
     from chezmoi_mousse.cm_types import (
@@ -75,7 +74,7 @@ def _typed_lru_cache[**FuncParams, FuncReturn](
         func: Callable[FuncParams, FuncReturn],
     ) -> Callable[FuncParams, FuncReturn]:
         return cast(
-            Callable[FuncParams, FuncReturn],
+            "Callable[FuncParams, FuncReturn]",
             lru_cache(maxsize=maxsize, typed=typed)(func),
         )
 

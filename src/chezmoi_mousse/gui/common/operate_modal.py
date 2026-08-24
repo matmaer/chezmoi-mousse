@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters, on, work
-from textual.app import ComposeResult
+from textual import on, work
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import ModalScreen
@@ -28,6 +26,11 @@ from .components import InfoStatic, MainSectionLabel, SubSectionLabel
 from .messages import ExitModalBtnMsg
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from textual import getters
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import AffectedPaths
 

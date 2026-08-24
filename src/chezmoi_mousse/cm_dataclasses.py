@@ -3,10 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.named_tuples import ManagedTreePaths, PathStatus
+from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import StatusCode
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.named_tuples import PathStatus
 
 __all__ = ("Changed",)
 

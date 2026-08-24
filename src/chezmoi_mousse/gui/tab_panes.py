@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
     ScrollableContainer,
@@ -47,6 +46,8 @@ from .common.messages import TabBtnMsg
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.app_ids import AppIds
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "LogsTab", "ReAddTab"]

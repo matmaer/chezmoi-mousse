@@ -6,8 +6,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
-from textual import getters, on
-from textual.app import ComposeResult
+from textual import on
 from textual.containers import (
     Horizontal,
     HorizontalGroup,
@@ -41,6 +40,9 @@ from .test_paths import TestPaths
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
+
+    from textual import getters
+    from textual.app import ComposeResult
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui

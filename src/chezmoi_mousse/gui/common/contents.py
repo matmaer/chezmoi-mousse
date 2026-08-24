@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 
@@ -23,6 +21,10 @@ from .components import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.named_tuples import ManagedTreePaths
 

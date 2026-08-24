@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
     ContainerName,
-    FlatBtnLabel,
     OpBtnLabel,
     RichLogName,
-    TabLabel,
 )
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.str_enums import (
+        FlatBtnLabel,
+        TabLabel,
+    )
 
 __all__ = ["AppIds"]
 

@@ -3,12 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rich.text import Text
-from textual import getters
 from textual.widgets import DataTable
 
 from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
+    from textual import getters
+
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 

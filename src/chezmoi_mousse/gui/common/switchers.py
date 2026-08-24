@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
@@ -16,6 +15,8 @@ from .git_log import GitLogView
 from .messages import TabBtnMsg
 
 if TYPE_CHECKING:
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.app_ids import AppIds
 
 __all__ = ["ViewSwitcher"]

@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import events, getters, work
-from textual.app import ComposeResult
+from textual import events, work
 from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.screen import Screen
@@ -22,6 +21,9 @@ from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 from .common.ascii_constants import SPLASH_ASCII
 
 if TYPE_CHECKING:
+    from textual import getters
+    from textual.app import ComposeResult
+
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
