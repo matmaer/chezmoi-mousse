@@ -51,11 +51,10 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
-        store.store_current_snapshot()
         for cmd in ReadCmd.managed_commands():
             self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
-        store.update_changed_paths()
+        store.paths.update_changed_paths()
 
     @work(thread=True)
     @min_wait
@@ -83,11 +82,14 @@ class OperateInfo(Static):
 
     live_run: reactive[bool] = reactive(False)
 
-    def __init__(self, btn_label: OpBtnLabel) -> None:
+    def __init__(self, btn_label: OpBtnLabel | None) -> None:
         self.btn_label = btn_label
         super().__init__(classes=Tcss.operate_info)
 
     def on_mount(self) -> None:
+        if self.btn_label is None:
+            return
+
         self.cmd_info_fields = self._get_cmd_info_fields(self.btn_label)
         self.border_title = self.cmd_info_fields.border_title
         self.border_subtitle = self.cmd_info_fields.border_subtitle
@@ -172,18 +174,18 @@ class ChangedPathsOutput(ScrollableContainer):
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
-        if not store.changed_paths.added_managed:
+        if not store.paths.added_managed_str:
             self.added_managed.update("No added managed paths")
-        if not store.changed_paths.removed_managed:
+        if not store.paths.removed_managed_str:
             self.removed_managed.update("No removed managed paths")
-        if not store.changed_paths.changed_status:
+        if not store.paths.changed_status_str:
             self.changed_status.update("No changed status paths")
-        if store.changed_paths.added_managed:
-            self.added_managed.update(store.changed_paths.added_managed_str)
-        if store.changed_paths.removed_managed:
-            self.removed_managed.update(store.changed_paths.removed_managed_str)
-        if store.changed_paths.changed_status:
-            self.changed_status.update(store.changed_paths.changed_status_str)
+        if store.paths.added_managed_str:
+            self.added_managed.update(store.paths.added_managed_str)
+        if store.paths.removed_managed_str:
+            self.removed_managed.update(store.paths.removed_managed_str)
+        if store.paths.changed_status_str:
+            self.changed_status.update(store.paths.changed_status_str)
 
 
 class AffectedPathsReview(ScrollableContainer):
@@ -210,10 +212,10 @@ class OperateModal(ModalScreen[None]):
         app = getters.app(ChezmoiGui)
 
     def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
-        self.labels = labels
         self.operate_label = next(
-            label for label in self.labels if label in OpBtnLabel.run_btn_set()
+            (label for label in labels if label in OpBtnLabel.run_btn_set()), None
         )
+        self.labels = labels
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -231,7 +233,7 @@ class OperateModal(ModalScreen[None]):
             # condition after a refresh trees operation
             operate_info.display = False
             self.affected_paths_review.display = False
-        else:
+        elif self.operate_label is not None:
             changed_paths_output.display = False
             self._show_affected_paths()
 
@@ -243,6 +245,8 @@ class OperateModal(ModalScreen[None]):
     @work
     @min_wait
     async def _show_affected_paths(self) -> None:
+        if self.operate_label is None:
+            return
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         self.loading_modal.label_text = LoadingLabel.get_affected_paths
