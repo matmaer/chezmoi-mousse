@@ -53,7 +53,6 @@ class CommandResult(NamedTuple):
 
 class ManagedTreePaths(NamedTuple):
     n_dirs: frozenset[Path]
-    no_status_paths: bool
     status_dirs: dict[Path, StatusCode]
     status_files: dict[Path, StatusCode]
     tree_status_dirs: dict[Path, StatusCode]

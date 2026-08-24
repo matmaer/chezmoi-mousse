@@ -134,7 +134,7 @@ class DirPathsView(Container):
                     classes=Tcss.added,
                 )
             )
-        elif self.paths.no_status_paths:
+        elif not store.status_paths:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )

@@ -24,11 +24,6 @@ class ManagedPaths:
             if isinstance(value, cached_property):
                 getattr(self, attr_name)
 
-    # not cached, fast boolean logic
-    @property
-    def no_managed_paths(self) -> bool:
-        return not store.managed_dirs and not store.managed_files
-
     def _get_status_map(self, lines: list[str], status_col: int) -> dict[Path, str]:
         temp_dict: dict[Path, str] = {}
 
@@ -95,7 +90,6 @@ class ManagedPaths:
 
         return ManagedTreePaths(
             n_dirs=_n_dirs,
-            no_status_paths=(not status_dirs and not status_files),
             status_dirs=status_dirs,
             status_files=status_files,
             tree_status_dirs=self._get_tree_status_map(dirs_map, _n_dirs),

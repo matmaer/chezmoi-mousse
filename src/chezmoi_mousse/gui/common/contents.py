@@ -75,9 +75,9 @@ class ContentsView(ScrollableContainer):
         # sub label
         label = str(path)
         if self.app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
-            if self.app.cmattr.paths.no_managed_paths:
+            if not store.managed_paths:
                 label = SectionLabel.no_managed_paths
-            elif self.paths.no_status_paths:
+            elif not store.status_paths:
                 label = SectionLabel.no_status_paths
         self.sub_section_label.update(label)
         self.highlighted_static.update(StaticString.click_file_for_contents)

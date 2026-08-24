@@ -112,7 +112,7 @@ class DiffView(ScrollableContainer):
 
         if path == store.cfg.dest_dir:
             self.main_section_label.update(SectionLabel.dest_dir)
-            if self.app.cmattr.paths.no_managed_paths:
+            if not store.managed_paths:
                 self.sub_section_label.update(SectionLabel.no_managed_paths)
             else:
                 self.sub_section_label.update(SectionLabel.dest_dir_diff)
