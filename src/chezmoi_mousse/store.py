@@ -69,7 +69,6 @@ status_dirs_result = CommandResult.empty()
 status_files_result = CommandResult.empty()
 template_data_result = CommandResult.empty()
 
-parsed_dump_config: ParsedJson = {}
 parsed_template_data: ParsedJson = {}
 
 _managed_snapshot: ResultsSnapshot = ResultsSnapshot()

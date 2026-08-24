@@ -105,7 +105,7 @@
 /* Type Selector tcss */
 /**********************/
 
-AppLog, CmdLog, ContentsView, DiffView {
+AnimatedFade, AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 2;
 }
 

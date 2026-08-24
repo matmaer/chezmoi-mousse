@@ -106,8 +106,6 @@ class SplashScreen(Screen[None]):
         self.animated_fade = self.query_exactly_one(AnimatedFade)
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.width = "auto"
-        self.splash_log.styles.text_align = "center"
-        self.splash_log.styles.margin = 2
         self.splash_log.styles.height = len(ReadCmd)
 
         self.primary_color = self.app.get_color(ColorVar.text_primary)
@@ -128,69 +126,77 @@ class SplashScreen(Screen[None]):
             color = self.warning_color
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
-    @work(thread=True)
-    def _run_chezmoi_command(self, command: ReadCmd) -> None:
+    def _run_chezmoi_command(self, command: ReadCmd) -> str:
         result: CommandResult = Commands.run_read_cmd(command, path_arg=None)
         msg = self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
+        return msg
+
+    @work(thread=True)
+    def _run_splash_cmd_worker(self, cmd: ReadCmd) -> None:
+        msg = self._run_chezmoi_command(cmd)
         self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work
-    async def _run_and_parse_dump_config(self) -> None:
-        await self._run_chezmoi_command(ReadCmd.dump_config).wait()
-        msg = self._get_log_msg(prefix="parse dump-config", returncode=None)
-        self.splash_log.write(msg)
-        store.parsed_dump_config = json.loads(store.dump_config_result.std_out)
+    @work(thread=True)
+    def _run_managed_cmd_worker(self, cmd: ReadCmd) -> None:
+        msg = self._run_chezmoi_command(cmd)
+        self.app.call_from_thread(self.splash_log.write, msg)
 
+    @work(thread=True)
+    def _run_and_parse_dump_config(self) -> None:
+        msg = self._run_chezmoi_command(ReadCmd.dump_config)
+        self.app.call_from_thread(self.splash_log.write, msg)
+        parsed_dump_config = json.loads(store.dump_config_result.std_out)
         store.cfg = ParsedDumpConfig(
-            dest_dir_path=Path(store.parsed_dump_config["destDir"]),
-            auto_add_bool=store.parsed_dump_config["git"]["autoadd"],
-            auto_commit_bool=store.parsed_dump_config["git"]["autocommit"],
-            auto_push_bool=store.parsed_dump_config["git"]["autopush"],
+            dest_dir_path=Path(parsed_dump_config["destDir"]),
+            auto_add_bool=parsed_dump_config["git"]["autoadd"],
+            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
+            auto_push_bool=parsed_dump_config["git"]["autopush"],
         )
+        msg = self._get_log_msg(prefix="parse dump-config", returncode=None)
+        self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work
-    async def _run_and_parse_template_data(self) -> None:
-        await self._run_chezmoi_command(ReadCmd.template_data).wait()
-        msg = self._get_log_msg(prefix="parse template data", returncode=None)
-        self.splash_log.write(msg)
+    @work(thread=True)
+    def _run_and_parse_template_data(self) -> None:
+        msg = self._run_chezmoi_command(ReadCmd.template_data)
+        self.app.call_from_thread(self.splash_log.write, msg)
         store.parsed_template_data = json.loads(store.template_data_result.std_out)
+        msg = self._get_log_msg(prefix="parse template data", returncode=None)
+        self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work
-    async def _process_managed(self) -> None:
-        msg = self._get_log_msg(prefix="process managed paths", returncode=None)
-        self.splash_log.write(msg)
+    @work(thread=True)
+    def _post_process_cmd_results(self) -> None:
         store.add_path = store.cfg.dest_dir
         store.apply_path = store.cfg.dest_dir
         store.re_add_path = store.cfg.dest_dir
         self.app.cmattr.paths = ManagedPaths()
+        msg = self._get_log_msg(prefix="process command outputs", returncode=None)
+        self.app.call_from_thread(self.splash_log.write, msg)
 
     @work
     async def _run_all_tasks(self) -> None:
         self.fade_timer.resume()
 
-        # First, run dump-config before anything else can start
-        await self._run_and_parse_dump_config().wait()
-
-        # Now launch all other workers in parallel
-        managed_workers = [
-            self._run_chezmoi_command(cmd) for cmd in ReadCmd.managed_commands()
-        ]
-        template_worker = self._run_and_parse_template_data()
+        # start splash workers first (contains chezmoi doctor, most expensive command)
         splash_workers = [
-            self._run_chezmoi_command(cmd) for cmd in ReadCmd.splash_only_commands()
+            self._run_splash_cmd_worker(cmd) for cmd in ReadCmd.splash_only_commands()
         ]
+        # _post_process_cmd_results depends on these
+        post_processing_needed_workers = [self._run_and_parse_dump_config()] + [
+            self._run_managed_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()
+        ]
+        # single remaining worker to start
+        template_worker = self._run_and_parse_template_data()
 
-        # Wait for all managed workers to finish
-        for worker in managed_workers:
+        # Wait for those that must complete before post-processing
+        for worker in post_processing_needed_workers:
             await worker.wait()
-        # Now processing managed paths can run safely
-        await self._process_managed().wait()
+
+        await self._post_process_cmd_results().wait()
 
         # Wait for the remaining tasks to finish
         await template_worker.wait()
         for worker in splash_workers:
             await worker.wait()
-
         # Only dismiss after a completed fade cycle
         while (
             self.animated_fade.step_count < 20
