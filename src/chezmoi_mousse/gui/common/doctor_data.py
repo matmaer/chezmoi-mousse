@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rich.text import Text
-from textual import getters, work
+from textual import getters
 from textual.widgets import DataTable
 
 from chezmoi_mousse.str_enums import ColorVar
@@ -31,8 +31,7 @@ class DoctorTable(DataTable[Text]):
             "error": self.app.get_color(ColorVar.text_error),
         }
 
-    @work
-    async def populate_table(self, doctor_std_out: str) -> None:
+    def populate_table(self, doctor_std_out: str) -> None:
         doctor_lines = doctor_std_out.splitlines()
         if not doctor_lines:
             self.notify("No doctor output available to display.")

@@ -51,11 +51,11 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
-        await store.store_current_snapshot()
+        store.store_current_snapshot()
         for cmd in ReadCmd.managed_commands():
             self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
-        await store.update_changed_paths()
+        store.update_changed_paths()
 
     @work(thread=True)
     @min_wait
@@ -244,7 +244,7 @@ class OperateModal(ModalScreen[None]):
     @min_wait
     async def _show_affected_paths(self) -> None:
         self.loading_modal = LoadingModal()
-        self.app.push_screen(self.loading_modal)
+        await self.app.push_screen(self.loading_modal)
         self.loading_modal.label_text = LoadingLabel.get_affected_paths
         write_cmd = WriteCmd.get_write_cmd(self.operate_label)
         tab_path = store.get_tab_path(self.operate_label)
@@ -252,4 +252,4 @@ class OperateModal(ModalScreen[None]):
             tab_path = store.cfg.dest_dir
         result: AffectedPaths = Commands.get_affected_paths(write_cmd, tab_path)
         self.affected_paths_review.affected_paths = result
-        self.loading_modal.dismiss()
+        await self.loading_modal.dismiss()

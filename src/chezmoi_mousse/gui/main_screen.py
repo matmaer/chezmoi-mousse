@@ -130,8 +130,7 @@ class MainScreen(Screen[None]):
             self.app.call_from_thread(self._log_command_result, result)
             results_queue.task_done()
 
-    @work
-    async def _log_command_result(self, result: CommandResult) -> None:
+    def _log_command_result(self, result: CommandResult) -> None:
         self.app_log.cmd_result = result
         self.cmd_log.cmd_result = result
 
@@ -143,14 +142,13 @@ class MainScreen(Screen[None]):
     async def _first_startup(self) -> None:
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
-        self._update_managed_trees_loading()
+        await self._update_managed_trees_loading()
         await self.loading_modal.dismiss()
 
     #####################
     # UI update workers #
     #####################
 
-    @work
     async def _purge_views_cache(self) -> None:
         self.loading_modal.label_text = LoadingLabel.purge_cache
         all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
@@ -161,7 +159,6 @@ class MainScreen(Screen[None]):
         for view in all_views:
             view.remove_children()
 
-    @work
     @min_wait
     async def _update_managed_trees_loading(self) -> None:
         self.loading_modal.label_text = LoadingLabel.update_trees
@@ -170,7 +167,6 @@ class MainScreen(Screen[None]):
         self.re_add_managed_tree.update_tree()
         self.re_add_managed_tree.refresh()
 
-    @work
     @min_wait
     async def _reload_directory_tree_loading(self) -> None:
         self.loading_modal.label_text = LoadingLabel.reload_dir_tree
@@ -215,7 +211,7 @@ class MainScreen(Screen[None]):
         await self.loading_modal.run_managed_commands().wait()
         if store.changed_paths.no_changes:
             self.notify(NotifyMsg.no_managed_changes)
-            await self._reload_directory_tree_loading().wait()
+            await self._reload_directory_tree_loading()
             if self.tabbed_content.active == TabLabel.add:
                 self.notify(NotifyMsg.add_tab_tree_reloaded)
             await self.loading_modal.dismiss()
@@ -224,9 +220,9 @@ class MainScreen(Screen[None]):
         self.app.push_screen(OperateModal((OpBtnLabel.close,)))
         # Meanwhile we continue updates for the loading modal, which will become visible
         # if the Operate modal is dismissed before this is ready
-        await self._update_managed_trees_loading().wait()
-        await self._reload_directory_tree_loading().wait()
-        await self._purge_views_cache().wait()
+        await self._update_managed_trees_loading()
+        await self._reload_directory_tree_loading()
+        await self._purge_views_cache()
         self.loading_modal.dismiss()
 
     @on(ReviewBtnMsg)

@@ -103,12 +103,12 @@ def _create_results_snapshot() -> ResultsSnapshot:
     )
 
 
-async def store_current_snapshot() -> None:
+def store_current_snapshot() -> None:
     global _managed_snapshot
     _managed_snapshot = _create_results_snapshot()
 
 
-async def update_changed_paths() -> None:
+def update_changed_paths() -> None:
     global changed_paths
     new_snapshot = _create_results_snapshot()
     removed_managed = _managed_snapshot.managed_paths - new_snapshot.managed_paths
