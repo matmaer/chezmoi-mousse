@@ -17,13 +17,13 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse import store
 from chezmoi_mousse.cm_dataclasses import ManagedPaths
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 
 from .common.ascii_constants import SPLASH_ASCII
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import CommandResult
 
 __all__ = ["SplashScreen"]
 

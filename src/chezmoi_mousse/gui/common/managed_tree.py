@@ -15,7 +15,6 @@ from textual.widgets.tree import TreeNode
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
-from chezmoi_mousse.named_tuples import ManagedTreePaths
 from chezmoi_mousse.str_enums import (
     Chars,
     ColorVar,
@@ -29,6 +28,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import ManagedTreePaths
 
 from .actionables import RefreshBtn
 from .messages import CurrentNodeMsg

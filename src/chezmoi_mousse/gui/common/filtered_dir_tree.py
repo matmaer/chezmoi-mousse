@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
@@ -14,7 +12,7 @@ from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.str_enums import Chars
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from collections.abc import Iterable
 
 __all__ = ["FilteredDirTree"]
 
@@ -22,9 +20,6 @@ GIT_OBJECT_DIR: str = f"{os.sep}{Path('.git', 'objects')}{os.sep}"
 
 
 class FilteredDirTree(DirectoryTree):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     ICON_NODE = Chars.tree_collapsed
     ICON_NODE_EXPANDED = Chars.tree_expanded
     ICON_FILE = " "

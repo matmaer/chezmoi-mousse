@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual import getters, on
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
@@ -48,15 +48,11 @@ from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "LogsTab", "ReAddTab"]
 
 
 class AddTab(TabPane):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.add, title=TabLabel.add)
         self.ids = ids

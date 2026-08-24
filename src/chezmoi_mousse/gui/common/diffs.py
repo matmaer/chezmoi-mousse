@@ -3,7 +3,6 @@ from __future__ import annotations
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from textual import getters
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
@@ -11,7 +10,6 @@ from textual.widgets import Label, Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import (
     ReadCmd,
     SectionLabel,
@@ -32,8 +30,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.named_tuples import ManagedTreePaths
+    from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
 
 __all__ = ["DiffView"]
 
@@ -52,9 +49,6 @@ DIFF_TCSS = {
 
 
 class DiffView(ScrollableContainer):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:

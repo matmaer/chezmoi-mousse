@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
@@ -25,16 +24,12 @@ from .components import (
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import ManagedTreePaths
 
 __all__ = ["ContentsView"]
 
 
 class ContentsView(ScrollableContainer):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:

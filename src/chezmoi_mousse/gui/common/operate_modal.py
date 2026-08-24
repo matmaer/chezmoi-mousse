@@ -12,7 +12,7 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import AppLife, Commands, min_wait
-from chezmoi_mousse.named_tuples import AffectedPaths, RunCommandInfo
+from chezmoi_mousse.named_tuples import RunCommandInfo
 from chezmoi_mousse.str_enums import (
     LoadingLabel,
     OpBtnLabel,
@@ -29,6 +29,7 @@ from .messages import ExitModalBtnMsg
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import AffectedPaths
 
 __all__ = ["LoadingModal", "OperateModal"]
 
@@ -77,9 +78,6 @@ class LoadingModal(ModalScreen[None]):
 
 
 class OperateInfo(Static):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     live_run: reactive[bool] = reactive(False)
 
     def __init__(self, btn_label: OpBtnLabel | None) -> None:

@@ -5,12 +5,11 @@ from typing import TYPE_CHECKING
 from textual.message import Message
 from textual.widgets import Button
 
-from chezmoi_mousse.str_enums import TabLabel
-
 if TYPE_CHECKING:
     from pathlib import Path
 
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.str_enums import TabLabel
 
     from .actionables import ReviewBtn
 

@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import getters
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Label, Static
@@ -16,7 +15,6 @@ from .actionables import DirContentBtn
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import ManagedTreePaths
 
 
@@ -24,9 +22,6 @@ OUTPUT_LIMIT = 40
 
 
 class DirPathsView(Container):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
