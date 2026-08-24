@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from itertools import chain
 from typing import TYPE_CHECKING, ClassVar
@@ -123,9 +124,10 @@ class MainScreen(Screen[None]):
                     result.std_out,
                 )
             elif result.cmd_enum is ReadCmd.template_data:
+                parsed_data = json.loads(result.std_out)
                 self.app.call_from_thread(
                     self.query_exactly_one(ConfigTab.PrettyTemplateData).update,
-                    store.parsed_template_data,
+                    parsed_data,
                 )
             self.app.call_from_thread(self._log_command_result, result)
             results_queue.task_done()

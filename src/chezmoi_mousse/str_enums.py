@@ -590,7 +590,14 @@ class ReadCmd(Enum):
     @classmethod
     def splash_only_commands(cls) -> tuple["ReadCmd", ...]:
         # TODO: create function to re-run the loading screen
-        return (cls.cat_config, cls.doctor, cls.git_remote, cls.ignored, cls.git_log)
+        return (
+            cls.doctor,
+            cls.cat_config,
+            cls.git_log,
+            cls.git_remote,
+            cls.ignored,
+            cls.template_data,
+        )
 
     @classmethod
     def managed_commands(cls) -> tuple["ReadCmd", ...]:

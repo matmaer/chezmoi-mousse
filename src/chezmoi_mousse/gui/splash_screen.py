@@ -156,14 +156,6 @@ class SplashScreen(Screen[None]):
         self.app.call_from_thread(self.splash_log.write, msg)
 
     @work(thread=True)
-    def _run_and_parse_template_data(self) -> None:
-        msg = self._run_chezmoi_command(ReadCmd.template_data)
-        self.app.call_from_thread(self.splash_log.write, msg)
-        store.parsed_template_data = json.loads(store.template_data_result.std_out)
-        msg = self._get_log_msg(prefix="parse template data", returncode=None)
-        self.app.call_from_thread(self.splash_log.write, msg)
-
-    @work(thread=True)
     def _post_process_cmd_results(self) -> None:
         store.add_path = store.cfg.dest_dir
         store.apply_path = store.cfg.dest_dir
@@ -184,8 +176,6 @@ class SplashScreen(Screen[None]):
         post_processing_needed_workers = [self._run_and_parse_dump_config()] + [
             self._run_managed_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()
         ]
-        # single remaining worker to start
-        template_worker = self._run_and_parse_template_data()
 
         # Wait for those that must complete before post-processing
         for worker in post_processing_needed_workers:
@@ -194,7 +184,6 @@ class SplashScreen(Screen[None]):
         await self._post_process_cmd_results().wait()
 
         # Wait for the remaining tasks to finish
-        await template_worker.wait()
         for worker in splash_workers:
             await worker.wait()
         # Only dismiss after a completed fade cycle

@@ -2,14 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
-
-if TYPE_CHECKING:
-    from chezmoi_mousse.cm_types import ParsedJson
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -68,8 +64,6 @@ managed_files_result = CommandResult.empty()
 status_dirs_result = CommandResult.empty()
 status_files_result = CommandResult.empty()
 template_data_result = CommandResult.empty()
-
-parsed_template_data: ParsedJson = {}
 
 _managed_snapshot: ResultsSnapshot = ResultsSnapshot()
 changed_paths: ChangedPaths = ChangedPaths()
