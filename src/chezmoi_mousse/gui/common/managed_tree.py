@@ -102,9 +102,9 @@ class ManagedTree(Tree[Path]):
     @property
     def paths(self) -> ManagedTreePaths:
         return (
-            self.app.cmattr.paths.apply_tree_paths
+            store.paths.apply_tree_paths
             if self.app_ids.tab_label == TabLabel.apply
-            else self.app.cmattr.paths.re_add_tree_paths
+            else store.paths.re_add_tree_paths
         )
 
     def _insert_node(

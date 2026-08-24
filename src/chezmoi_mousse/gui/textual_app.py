@@ -12,7 +12,6 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import store
-from chezmoi_mousse.cm_attributes import CmAttributes
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -71,8 +70,6 @@ class ChezmoiGui(App[str]):
         "main_screen": MainScreen,
         "operate_modal": lambda: OperateModal((OpBtnLabel.cancel,)),
     }
-
-    cmattr: ClassVar[CmAttributes] = CmAttributes()
 
     def __init__(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch

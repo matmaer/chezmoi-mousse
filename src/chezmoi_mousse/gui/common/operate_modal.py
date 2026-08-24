@@ -54,7 +54,7 @@ class LoadingModal(ModalScreen[None]):
         for cmd in ReadCmd.managed_commands():
             self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
-        store.paths.update_changed_paths()
+        store.changed.update_changed_paths()
 
     @work(thread=True)
     @min_wait
@@ -174,18 +174,18 @@ class ChangedPathsOutput(ScrollableContainer):
         self.added_managed = self.query_exactly_one(self.AddedManaged)
         self.removed_managed = self.query_exactly_one(self.RemovedManaged)
         self.changed_status = self.query_exactly_one(self.ChangedStatus)
-        if not store.paths.added_managed_str:
+        if not store.changed.added_managed_str:
             self.added_managed.update("No added managed paths")
-        if not store.paths.removed_managed_str:
+        if not store.changed.removed_managed_str:
             self.removed_managed.update("No removed managed paths")
-        if not store.paths.changed_status_str:
+        if not store.changed.changed_status_str:
             self.changed_status.update("No changed status paths")
-        if store.paths.added_managed_str:
-            self.added_managed.update(store.paths.added_managed_str)
-        if store.paths.removed_managed_str:
-            self.removed_managed.update(store.paths.removed_managed_str)
-        if store.paths.changed_status_str:
-            self.changed_status.update(store.paths.changed_status_str)
+        if store.changed.added_managed_str:
+            self.added_managed.update(store.changed.added_managed_str)
+        if store.changed.removed_managed_str:
+            self.removed_managed.update(store.changed.removed_managed_str)
+        if store.changed.changed_status_str:
+            self.changed_status.update(store.changed.changed_status_str)
 
 
 class AffectedPathsReview(ScrollableContainer):

@@ -4,7 +4,7 @@ import queue
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_dataclasses import Changed
+from chezmoi_mousse.cm_dataclasses import Changed, ManagedPaths
 from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
@@ -38,7 +38,7 @@ status_dirs_result = CommandResult.empty()
 status_files_result = CommandResult.empty()
 template_data_result = CommandResult.empty()
 
-paths = Changed()
+changed = Changed()
 
 managed_dirs: PathKindMap = {}
 managed_files: PathKindMap = {}
@@ -47,6 +47,8 @@ status_files: PathStatusMap = {}
 
 managed_paths: frozenset[Path] = frozenset()
 status_paths: frozenset[Path] = frozenset()
+
+paths: ManagedPaths = ManagedPaths()
 
 
 def update_derived_vars() -> None:
