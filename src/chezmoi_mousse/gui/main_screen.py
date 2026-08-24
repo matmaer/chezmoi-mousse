@@ -211,7 +211,7 @@ class MainScreen(Screen[None]):
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
         await self.loading_modal.run_managed_commands().wait()
-        if store.changed_paths.no_changes:
+        if store.paths.no_changed_paths:
             self.notify(NotifyMsg.no_managed_changes)
             await self._reload_directory_tree_loading()
             if self.tabbed_content.active == TabLabel.add:

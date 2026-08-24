@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.gui.cm_dataclasses import ChangedPaths, ResultsSnapshot
+from chezmoi_mousse.cm_dataclasses import Changed
 from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from chezmoi_mousse.cm_types import StatusPairs
+
 
 add_id = AppIds(TabLabel.add)
 apply_id = AppIds(TabLabel.apply)
@@ -28,8 +34,12 @@ status_dirs_result = CommandResult.empty()
 status_files_result = CommandResult.empty()
 template_data_result = CommandResult.empty()
 
-_managed_snapshot: ResultsSnapshot = ResultsSnapshot()
-changed_paths: ChangedPaths = ChangedPaths()
+paths = Changed()
+
+managed_dirs: set[Path] = set()
+managed_files: set[Path] = set()
+status_dirs: StatusPairs = {}
+status_files: StatusPairs = {}
 
 # Keep track of the selected path by tab
 add_path: Path | None = None
@@ -46,44 +56,3 @@ def get_tab_path(btn_label: OpBtnLabel) -> Path | None:
         return re_add_path
     else:
         raise ValueError(f"Invalid button label: {btn_label}")
-
-
-def _create_results_snapshot() -> ResultsSnapshot:
-    managed_dirs = managed_dirs_result.std_out.splitlines()
-    managed_files = managed_files_result.std_out.splitlines()
-    status_dirs = status_dirs_result.std_out.splitlines()
-    status_files = status_files_result.std_out.splitlines()
-
-    return ResultsSnapshot(
-        managed_paths={Path(line) for line in managed_dirs + managed_files if line},
-        status_paths={Path(line[3:]): line[:2] for line in status_dirs + status_files},
-    )
-
-
-def store_current_snapshot() -> None:
-    global _managed_snapshot
-    _managed_snapshot = _create_results_snapshot()
-
-
-def update_changed_paths() -> None:
-    global changed_paths
-    new_snapshot = _create_results_snapshot()
-    removed_managed = _managed_snapshot.managed_paths - new_snapshot.managed_paths
-    added_managed = new_snapshot.managed_paths - _managed_snapshot.managed_paths
-
-    changed_status: dict[Path, tuple[str, str]] = {}
-
-    intersection = _managed_snapshot.managed_paths & new_snapshot.managed_paths
-
-    for path in intersection:
-        old_code = _managed_snapshot.status_paths.get(path, "  ")
-        new_code = new_snapshot.status_paths.get(path, "  ")
-
-        if old_code != new_code:
-            changed_status[path] = (old_code, new_code)
-
-    changed_paths = ChangedPaths(
-        added_managed=sorted(added_managed),
-        changed_status=changed_status,
-        removed_managed=sorted(removed_managed),
-    )

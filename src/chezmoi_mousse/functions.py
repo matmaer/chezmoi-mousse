@@ -231,6 +231,20 @@ class Commands:
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
         setattr(store, f"{cmd.name}_result", result)
+
+        if cmd in (ReadCmd.managed_dirs, ReadCmd.managed_files):
+            setattr(
+                store,
+                cmd.name,
+                {Path(line) for line in result.std_out.splitlines()},
+            )
+        elif cmd in (ReadCmd.status_dirs, ReadCmd.status_files):
+            setattr(
+                store,
+                cmd.name,
+                {Path(line[3:]): line[:2] for line in result.std_out.splitlines()},
+            )
+
         results_queue.put(result)
         return result
 
