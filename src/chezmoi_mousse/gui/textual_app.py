@@ -9,7 +9,6 @@ from textual.app import App
 from textual.binding import Binding
 from textual.containers import Vertical
 from textual.scrollbar import ScrollBar, ScrollBarRender
-from textual.theme import Theme
 from textual.widgets import TabbedContent, TabPane, Tabs
 
 from chezmoi_mousse import store
@@ -23,6 +22,7 @@ from chezmoi_mousse.str_enums import (
     OpBtnLabel,
     TabLabel,
 )
+from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 from .common.actionables import (
     FlatButtonsVertical,
@@ -37,31 +37,6 @@ from .splash_screen import SplashScreen
 from .tab_panes import AddTab, ApplyTab, ReAddTab
 
 __all__ = ["ChezmoiGui"]
-
-
-chezmoi_mousse_dark = Theme(
-    name="chezmoi-mousse-dark",
-    dark=True,
-    accent="#F187FB",
-    background="#000000",
-    error="#ba3c5b",  # textual dark
-    foreground="#DCDCDC",
-    primary="#0178D4",  # textual dark
-    secondary="#004578",  # textual dark
-    surface="#101010",  # see also textual/theme.py
-    success="#4EBF71",  # textual dark
-    warning="#ffa62b",  # textual dark
-)
-
-chezmoi_mousse_light = Theme(
-    name="chezmoi-mousse-light",
-    dark=False,
-    background="#DEDEDE",
-    foreground="#000000",
-    primary="#0060AA",
-    accent="#790084",
-    surface="#B8B8B8",
-)
 
 
 class ChezmoiGui(App[str]):
