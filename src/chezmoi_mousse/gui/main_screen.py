@@ -14,7 +14,7 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.functions import Commands, min_wait, results_queue
+from chezmoi_mousse.functions import get_dry_run_btn_label, min_wait
 from chezmoi_mousse.str_enums import (
     Chars,
     LoadingLabel,
@@ -103,12 +103,12 @@ class MainScreen(Screen[None]):
         self._first_startup()
 
     def on_unmount(self) -> None:
-        results_queue.shutdown(immediate=True)
+        store.results_queue.shutdown(immediate=True)
 
     @work(thread=True)
     def _listen_to_command_results(self) -> None:
         while True:
-            result: CommandResult = results_queue.get()
+            result: CommandResult = store.results_queue.get()
             if result.cmd_enum is ReadCmd.doctor:
                 self.app.call_from_thread(
                     self.doctor_table.populate_table, result.std_out
@@ -130,7 +130,7 @@ class MainScreen(Screen[None]):
                     parsed_data,
                 )
             self.app.call_from_thread(self._log_command_result, result)
-            results_queue.task_done()
+            store.results_queue.task_done()
 
     def _log_command_result(self, result: CommandResult) -> None:
         self.app_log.cmd_result = result
@@ -230,7 +230,7 @@ class MainScreen(Screen[None]):
     @on(ReviewBtnMsg)
     def handle_review_button(self, msg: ReviewBtnMsg) -> None:
         run_btn_label = msg.review_button.btn_label.review_to_run
-        dry_run_btn_label = Commands.get_dry_run_btn_label()
+        dry_run_btn_label = get_dry_run_btn_label()
         self.app.push_screen(
             OperateModal(
                 (

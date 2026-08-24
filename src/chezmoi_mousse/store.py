@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import queue
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
@@ -10,8 +11,11 @@ from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_types import StatusPairs
+    from chezmoi_mousse.cm_types import PathKindMap, PathStatusMap
 
+results_queue: queue.Queue[CommandResult] = queue.Queue()
+
+live_run: bool = False
 
 add_id = AppIds(TabLabel.add)
 apply_id = AppIds(TabLabel.apply)
@@ -36,10 +40,21 @@ template_data_result = CommandResult.empty()
 
 paths = Changed()
 
-managed_dirs: set[Path] = set()
-managed_files: set[Path] = set()
-status_dirs: StatusPairs = {}
-status_files: StatusPairs = {}
+managed_dirs: PathKindMap = {}
+managed_files: PathKindMap = {}
+status_dirs: PathStatusMap = {}
+status_files: PathStatusMap = {}
+
+managed_paths: frozenset[Path] = frozenset()
+status_paths: frozenset[Path] = frozenset()
+
+
+def update_derived_vars() -> None:
+    global managed_paths
+    managed_paths = frozenset(managed_dirs | managed_files)
+    global status_paths
+    status_paths = frozenset(status_dirs | status_files)
+
 
 # Keep track of the selected path by tab
 add_path: Path | None = None

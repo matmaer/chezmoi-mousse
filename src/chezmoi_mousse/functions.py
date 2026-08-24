@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import json
 import os
-import queue
 import re
 import subprocess
 import time
@@ -17,7 +17,13 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
 from chezmoi_mousse import store
-from chezmoi_mousse.named_tuples import AffectedPaths, CommandResult, ScanDirItem
+from chezmoi_mousse.named_tuples import (
+    AffectedPaths,
+    CommandResult,
+    ParsedDumpConfig,
+    PathStatus,
+    ScanDirItem,
+)
 from chezmoi_mousse.str_enums import (
     ChezmoiGitArgs,
     GlobalArgs,
@@ -25,6 +31,7 @@ from chezmoi_mousse.str_enums import (
     PathFilters,
     PathKind,
     ReadCmd,
+    StatusCode,
     VerbArgs,
     WriteCmd,
 )
@@ -35,14 +42,14 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.cm_types import (
         MinWaitReturn,
+        PathKindMap,
+        PathStatusMap,
         ScanDirResult,
         StrTuple,
     )
     from chezmoi_mousse.gui.common.operate_modal import LoadingModal
 
-__all__ = ("min_wait", "results_queue", "AppLife", "Commands", "CheckPath")
-
-results_queue: queue.Queue[CommandResult] = queue.Queue()
+__all__ = ("min_wait", "AppLife", "Commands", "CheckPath")
 
 
 def min_wait(
@@ -76,7 +83,48 @@ def _typed_lru_cache[**FuncParams, FuncReturn](
     return decorator
 
 
-# TODO implement clearing for cached stuff in other classes than AppLife
+@staticmethod
+@_typed_lru_cache()
+def _filter_ugly_args() -> set[str]:
+    ugly_args: set[str] = set()
+    ugly_args.update(
+        GlobalArgs.global_defaults.value,
+        ChezmoiGitArgs.global_args.value,
+        ChezmoiGitArgs.git_log_args.value,
+        (
+            ChezmoiGitArgs.verbose.value,
+            VerbArgs.format_json.value,
+            VerbArgs.path_style_absolute.value,
+        ),
+    )
+    return ugly_args
+
+
+@_typed_lru_cache(maxsize=500)
+def _get_rel_path(path: Path) -> str:
+    return str(path.relative_to(store.cfg.dest_dir))
+
+
+@staticmethod
+@_typed_lru_cache()
+def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
+    if pretty is True:
+        verb_str = " ".join([a for a in cmd.value if a not in _filter_ugly_args()])
+    else:
+        verb_str = " ".join(cmd.value)
+    if isinstance(cmd, ReadCmd):
+        base_cmd = "chezmoi"
+    else:
+        base_cmd = "chezmoi --dry-run" if Commands.live_run is False else "chezmoi"
+    return f"{base_cmd} {verb_str}"
+
+
+@staticmethod
+@_typed_lru_cache()
+def get_dry_run_btn_label() -> OpBtnLabel:
+    if Commands.live_run is False:
+        return OpBtnLabel.enable_live_run
+    return OpBtnLabel.switch_to_dry_run
 
 
 class AppLife:
@@ -84,58 +132,22 @@ class AppLife:
 
     @staticmethod
     @_typed_lru_cache()
-    def ugly_args() -> set[str]:
-        ugly_args: set[str] = set()
-        ugly_args.update(
-            GlobalArgs.global_defaults.value,
-            ChezmoiGitArgs.global_args.value,
-            ChezmoiGitArgs.git_log_args.value,
-            (
-                ChezmoiGitArgs.verbose.value,
-                VerbArgs.format_json.value,
-                VerbArgs.path_style_absolute.value,
-            ),
-        )
-        return ugly_args
-
-    @staticmethod
-    @_typed_lru_cache()
-    def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
-        if pretty is True:
-            verb_str = " ".join([a for a in cmd.value if a not in AppLife.ugly_args()])
-        else:
-            verb_str = " ".join(cmd.value)
-        if isinstance(cmd, ReadCmd):
-            base_cmd = "chezmoi"
-        else:
-            base_cmd = "chezmoi --dry-run" if Commands.live_run is False else "chezmoi"
-        return f"{base_cmd} {verb_str}"
-
-    @staticmethod
-    @_typed_lru_cache()
     def pretty_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
-        rel_path = Commands.rel_path(path) if path is not None else ""
-        return f"{AppLife._cmd_str_wop(cmd, pretty=True)} {rel_path}"
+        rel_path = _get_rel_path(path) if path is not None else ""
+        return f"{_cmd_str_wop(cmd, pretty=True)} {rel_path}"
 
     @staticmethod
     @_typed_lru_cache()
     def full_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         path_str = str(path) if path is not None else ""
-        return f"{AppLife._cmd_str_wop(cmd, pretty=False)} {path_str}"
+        return f"{_cmd_str_wop(cmd, pretty=False)} {path_str}"
+
+
+# TODO implement clearing for cached stuff in other classes than AppLife
 
 
 class Commands:
     live_run: bool = False
-
-    @staticmethod
-    def get_dry_run_btn_label() -> OpBtnLabel:
-        if Commands.live_run is False:
-            return OpBtnLabel.enable_live_run
-        return OpBtnLabel.switch_to_dry_run
-
-    @staticmethod
-    def rel_path(path: Path) -> str:
-        return str(path.relative_to(store.cfg.dest_dir))
 
     @staticmethod
     def _strip_empty_lines(text: str) -> str:
@@ -205,12 +217,51 @@ class Commands:
             # Ensure child process terminates and populates process.returncode
             process.wait()
 
-        rel_path = Commands.rel_path(path) if path != store.cfg.dest_dir else ""
-        pretty_cmd = " ".join([a for a in args_tuple if a not in AppLife.ugly_args()])
+        rel_path = _get_rel_path(path) if path != store.cfg.dest_dir else ""
+        pretty_cmd = " ".join([a for a in args_tuple if a not in _filter_ugly_args()])
         return AffectedPaths(
             paths=sorted([Path(path_str) for path_str in affected_paths_str]),
             pretty_cmd=f"{pretty_cmd} {rel_path}",
             std_err=stderr_output,
+        )
+
+    @staticmethod
+    def _get_managed_map(managed_output: str) -> PathKindMap:
+        temp_dict: dict[Path, PathKind] = {}
+        paths: list[Path] = [Path(line) for line in managed_output.splitlines()]
+
+        for path in paths:
+            if path.is_symlink():
+                temp_dict[path] = PathKind.SYMLINK
+            elif not path.exists():
+                temp_dict[path] = PathKind.EXISTS_FALSE
+            else:
+                temp_dict[path] = PathKind.UNHANDLED
+
+        return dict(sorted(temp_dict.items()))
+
+    @staticmethod
+    def _get_status_map(lines: list[str]) -> PathStatusMap:
+        pairs_dict: dict[Path, str] = {Path(line[3:]): line[:2] for line in lines}
+        path_status_dict: dict[Path, PathStatus] = {}
+
+        for path, pair in pairs_dict.items():
+            path_status_dict[path] = PathStatus(
+                apply_status=StatusCode(pair[1]),
+                re_add_status=StatusCode(pair[0]),
+                status_pair=pair,
+            )
+
+        return dict(sorted(path_status_dict.items()))
+
+    @staticmethod
+    def _parse_dump_config(cmd_output: str) -> None:
+        parsed_dump_config = json.loads(cmd_output)
+        store.cfg = ParsedDumpConfig(
+            dest_dir_path=Path(parsed_dump_config["destDir"]),
+            auto_add_bool=parsed_dump_config["git"]["autoadd"],
+            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
+            auto_push_bool=parsed_dump_config["git"]["autopush"],
         )
 
     @staticmethod
@@ -232,20 +283,18 @@ class Commands:
         )
         setattr(store, f"{cmd.name}_result", result)
 
-        if cmd in (ReadCmd.managed_dirs, ReadCmd.managed_files):
-            setattr(
-                store,
-                cmd.name,
-                {Path(line) for line in result.std_out.splitlines()},
-            )
-        elif cmd in (ReadCmd.status_dirs, ReadCmd.status_files):
-            setattr(
-                store,
-                cmd.name,
-                {Path(line[3:]): line[:2] for line in result.std_out.splitlines()},
-            )
+        if cmd is ReadCmd.managed_dirs:
+            store.managed_dirs = Commands._get_managed_map(result.std_out)
+        elif cmd is ReadCmd.managed_files:
+            store.managed_files = Commands._get_managed_map(result.std_out)
+        elif cmd is ReadCmd.dump_config:
+            Commands._parse_dump_config(result.std_out)
+        elif cmd is ReadCmd.status_dirs:
+            store.status_dirs = Commands._get_status_map(result.std_out.splitlines())
+        elif cmd is ReadCmd.status_files:
+            store.status_files = Commands._get_status_map(result.std_out.splitlines())
 
-        results_queue.put(result)
+        store.results_queue.put(result)
         return result
 
     @staticmethod
@@ -270,7 +319,7 @@ class Commands:
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
         setattr(store, cmd.name, result)
-        results_queue.put(result)
+        store.results_queue.put(result)
         return result
 
     @staticmethod

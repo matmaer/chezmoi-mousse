@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from collections import deque
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -19,7 +17,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse import store
 from chezmoi_mousse.cm_attributes import ManagedPaths
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
+from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 
 from .common.ascii_constants import SPLASH_ASCII
@@ -145,24 +143,16 @@ class SplashScreen(Screen[None]):
     def _run_and_parse_dump_config(self) -> None:
         msg = self._run_chezmoi_command(ReadCmd.dump_config)
         self.app.call_from_thread(self.splash_log.write, msg)
-        parsed_dump_config = json.loads(store.dump_config_result.std_out)
-        store.cfg = ParsedDumpConfig(
-            dest_dir_path=Path(parsed_dump_config["destDir"]),
-            auto_add_bool=parsed_dump_config["git"]["autoadd"],
-            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
-            auto_push_bool=parsed_dump_config["git"]["autopush"],
-        )
-        msg = self._get_log_msg(prefix="parse dump-config", returncode=None)
-        self.app.call_from_thread(self.splash_log.write, msg)
 
-    @work(thread=True)
-    def _post_process_cmd_results(self) -> None:
+    @work
+    async def _post_process_cmd_results(self) -> None:
+        store.update_derived_vars()
         store.add_path = store.cfg.dest_dir
         store.apply_path = store.cfg.dest_dir
         store.re_add_path = store.cfg.dest_dir
         self.app.cmattr.paths = ManagedPaths()
         msg = self._get_log_msg(prefix="process command outputs", returncode=None)
-        self.app.call_from_thread(self.splash_log.write, msg)
+        self.splash_log.write(msg)
 
     @work
     async def _run_all_tasks(self) -> None:
@@ -173,19 +163,20 @@ class SplashScreen(Screen[None]):
             self._run_splash_cmd_worker(cmd) for cmd in ReadCmd.splash_only_commands()
         ]
         # _post_process_cmd_results depends on these
-        post_processing_needed_workers = [self._run_and_parse_dump_config()] + [
+        managed_cmd_workers = [
             self._run_managed_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()
         ]
 
-        # Wait for those that must complete before post-processing
-        for worker in post_processing_needed_workers:
+        # TODO: improve after store.py is fully implemented
+
+        for worker in managed_cmd_workers:
+            await worker.wait()
+        for worker in splash_workers:
             await worker.wait()
 
         await self._post_process_cmd_results().wait()
 
         # Wait for the remaining tasks to finish
-        for worker in splash_workers:
-            await worker.wait()
         # Only dismiss after a completed fade cycle
         while (
             self.animated_fade.step_count < 20

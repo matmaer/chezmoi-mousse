@@ -1,14 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple
+from pathlib import Path
+from typing import NamedTuple
 
-from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from chezmoi_mousse.cm_types import PathKindMap, StatusMap
-
+from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
     "AffectedPaths",
@@ -56,20 +51,14 @@ class CommandResult(NamedTuple):
 
 
 class ManagedTreePaths(NamedTuple):
-    managed_dirs: PathKindMap
-    managed_files: PathKindMap
     n_dirs: frozenset[Path]
     no_status_paths: bool
-    status_dirs: StatusMap
-    status_files: StatusMap
-    tree_status_dirs: StatusMap
+    status_dirs: dict[Path, StatusCode]
+    status_files: dict[Path, StatusCode]
+    tree_status_dirs: dict[Path, StatusCode]
     unchanged_dirs: frozenset[Path]
     unchanged_files: frozenset[Path]
     unchanged_tree_dirs: frozenset[Path]
-
-    @property
-    def status_paths_set(self) -> frozenset[Path]:
-        return frozenset(self.status_dirs | self.status_files)
 
 
 class ParsedDumpConfig(NamedTuple):
@@ -101,6 +90,12 @@ class ParsedDumpConfig(NamedTuple):
         if self.auto_push_bool is None:
             raise RuntimeError("Accessing auto_push before the config is parsed")
         return self.auto_push_bool
+
+
+class PathStatus(NamedTuple):
+    apply_status: StatusCode = StatusCode.Space
+    re_add_status: StatusCode = StatusCode.Space
+    status_pair: str = "  "
 
 
 class RunCommandInfo(NamedTuple):

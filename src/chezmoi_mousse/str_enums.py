@@ -592,6 +592,7 @@ class ReadCmd(Enum):
         # TODO: create function to re-run the loading screen
         return (
             cls.doctor,
+            cls.dump_config,
             cls.cat_config,
             cls.git_log,
             cls.git_remote,

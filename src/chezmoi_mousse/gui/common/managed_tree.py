@@ -130,9 +130,9 @@ class ManagedTree(Tree[Path]):
             return tree_node
 
         managed_kind = (
-            self.paths.managed_dirs.get(path, None)
+            store.managed_dirs.get(path, None)
             if dir_node
-            else self.paths.managed_files.get(path, None)
+            else store.managed_files.get(path, None)
         )
         status_code = (
             self.paths.tree_status_dirs.get(path, None)
@@ -186,10 +186,7 @@ class ManagedTree(Tree[Path]):
                 continue
 
             for item in unmanaged:
-                if (
-                    item.path in self.paths.managed_dirs
-                    or item.path in self.paths.managed_files
-                ):
+                if item.path in store.managed_paths:
                     continue
 
                 if not self.show_unchanged and (
@@ -296,8 +293,7 @@ class ManagedTree(Tree[Path]):
         self.state.selected_path = event.node.data
 
         is_unmanaged = (
-            event.node.data not in self.paths.managed_dirs | self.paths.managed_files
-            and event.node is not self.root
+            event.node.data not in store.managed_paths and event.node is not self.root
         )
         has_status = (
             event.node.data in self.paths.status_files
@@ -334,10 +330,7 @@ class ManagedTree(Tree[Path]):
             self._populate_unmanaged_nodes()
         else:
             for node in list(self._iter_tree_nodes()):
-                if (
-                    node.data not in self.paths.managed_dirs | self.paths.managed_files
-                    and node is not self.root
-                ):
+                if node.data not in store.managed_paths and node is not self.root:
                     node.remove()
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:

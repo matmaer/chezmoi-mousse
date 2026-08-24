@@ -54,7 +54,7 @@ class ContentsView(ScrollableContainer):
         self.sub_section_label.update()
 
     @property
-    def _managed_paths(self) -> ManagedTreePaths:
+    def paths(self) -> ManagedTreePaths:
         return (
             self.app.cmattr.paths.apply_tree_paths
             if self.app_ids.tab_label == TabLabel.apply
@@ -62,17 +62,13 @@ class ContentsView(ScrollableContainer):
         )
 
     def _is_dir(self, path: Path) -> bool:
-        return (
-            path == store.cfg.dest_dir
-            or path in self._managed_paths.managed_dirs
-            or path.is_dir()
-        )
+        return path == store.cfg.dest_dir or path in store.managed_dirs or path.is_dir()
 
     def _set_dir_contents(self, path: Path) -> None:
         # main label
         if path == store.cfg.dest_dir:
             self.main_section_label.update(SectionLabel.dest_dir)
-        elif path in self.app.cmattr.paths.managed_dirs:
+        elif path in store.managed_dirs:
             self.main_section_label.update(SectionLabel.managed_dir)
         else:
             self.main_section_label.update(SectionLabel.unmanaged_dir)
@@ -81,18 +77,18 @@ class ContentsView(ScrollableContainer):
         if self.app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
             if self.app.cmattr.paths.no_managed_paths:
                 label = SectionLabel.no_managed_paths
-            elif self._managed_paths.no_status_paths:
+            elif self.paths.no_status_paths:
                 label = SectionLabel.no_status_paths
         self.sub_section_label.update(label)
         self.highlighted_static.update(StaticString.click_file_for_contents)
 
     def _create_file_container(self, path: Path) -> None:
         self.sub_section_label.update(SectionLabel.not_set)
-        if path in self.app.cmattr.paths.managed_files:
+        if path in store.managed_files:
             self.main_section_label.update(SectionLabel.managed_file)
         else:
             self.main_section_label.update(SectionLabel.unmanaged_file)
-        if self.app.cmattr.paths.managed_files.get(path) is PathKind.EXISTS_FALSE:
+        if store.managed_files.get(path) is PathKind.EXISTS_FALSE:
             f_content = Commands.get_highlighted_chezmoi_cat_output(path)
             self.highlighted_static.update(f_content)
             self.sub_section_label.update(SectionLabel.chezmoi_cat_output)

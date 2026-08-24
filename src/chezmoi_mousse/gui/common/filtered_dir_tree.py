@@ -9,6 +9,7 @@ from textual import getters
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
+from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.str_enums import Chars
 
@@ -68,7 +69,7 @@ class FilteredDirTree(DirectoryTree):
         filter_paths: set[Path] = set()
         for p in paths:
             is_dir = p.is_dir()
-            is_managed = bool(p in self.app.cmattr.paths.managed_paths_set)
+            is_managed = bool(p in store.managed_files | store.managed_dirs)
             if is_dir:
                 is_unwanted = CheckPath.is_unwanted_dir(p)
             else:

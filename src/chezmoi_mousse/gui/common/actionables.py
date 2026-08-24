@@ -9,7 +9,7 @@ from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.enum_data import SwitchEnum
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.functions import get_dry_run_btn_label
 from chezmoi_mousse.str_enums import (
     FlatBtnLabel,
     OpBtnLabel,
@@ -203,7 +203,7 @@ class RunBtnGroup(HorizontalGroup):
     @on(DryRunBtnMsg)
     def _update_dry_run_btn_label(self) -> None:
         dry_run_btn = self.query_exactly_one(DryRunBtn)
-        dry_run_btn.label = Commands.get_dry_run_btn_label()
+        dry_run_btn.label = get_dry_run_btn_label()
 
 
 class SwitchWithLabel(HorizontalGroup):

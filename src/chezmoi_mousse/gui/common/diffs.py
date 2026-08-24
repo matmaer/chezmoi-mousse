@@ -95,7 +95,7 @@ class DiffView(ScrollableContainer):
 
     def _update_widgets(self, path: Path) -> None:
 
-        if path in self.paths.status_paths_set:
+        if path in store.status_paths:
             diff_result = Commands.run_chezmoi_diff(self.diff_cmd, path)
 
             self.main_section_label.update(str(diff_result.full_cmd))
@@ -118,10 +118,10 @@ class DiffView(ScrollableContainer):
                 self.sub_section_label.update(SectionLabel.dest_dir_diff)
             self.info_static.update(StaticString.click_path_with_status)
 
-        elif path in self.app.cmattr.paths.managed_paths_set:
-            if path in self.paths.managed_dirs:
+        elif path in store.managed_paths:
+            if path in store.managed_dirs:
                 self.main_section_label.update(SectionLabel.managed_dir)
-            elif path in self.paths.managed_files:
+            elif path in store.managed_files:
                 self.main_section_label.update(SectionLabel.managed_file)
             self.sub_section_label.update(SectionLabel.managed_no_status)
             self.info_static.update(StaticString.click_path_with_status)

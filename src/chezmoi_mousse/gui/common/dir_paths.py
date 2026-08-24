@@ -61,7 +61,7 @@ class DirPathsView(Container):
 
             for name in dirs:
                 path = root_path / name
-                if path not in self.paths.managed_dirs:
+                if path not in store.managed_dirs:
                     unmanaged_dirs.append(str(path.relative_to(store.cfg.dest_dir)))
                     if len(unmanaged_dirs) >= OUTPUT_LIMIT:
                         limited_dirs = True
@@ -73,7 +73,7 @@ class DirPathsView(Container):
             root_path = Path(root)
             for name in files:
                 path = root_path / name
-                if path not in self.paths.managed_files:
+                if path not in store.managed_files:
                     unmanaged_files.append(str(path.relative_to(store.cfg.dest_dir)))
                     if len(unmanaged_files) >= OUTPUT_LIMIT:
                         limited_files = True
@@ -123,7 +123,7 @@ class DirPathsView(Container):
             widgets.append(
                 Label("Destination directory", classes=Tcss.main_section_label)
             )
-        if not self.paths.managed_dirs:
+        if not store.managed_dirs:
             widgets = [
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             ]
@@ -156,7 +156,7 @@ class DirPathsView(Container):
             show_path == store.cfg.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)
-        elif show_path in (store.cfg.dest_dir, self.paths.managed_dirs):
+        elif show_path in (store.cfg.dest_dir, store.managed_dirs):
             container = self._create_managed_dir_container(show_path)
         else:
             raise ValueError(

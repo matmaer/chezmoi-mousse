@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from chezmoi_mousse.named_tuples import PathStatus
+
 __all__ = ("Changed",)
 
 
@@ -11,8 +13,8 @@ class Changed:
     changed_status: dict[Path, tuple[str, str]] = field(default_factory=lambda: {})
     changed_paths: bool = False
 
-    _old_managed_paths: set[Path] = field(default_factory=lambda: set())
-    _old_status_paths: dict[Path, str] = field(default_factory=lambda: {})
+    _old_managed_paths: frozenset[Path] = field(default_factory=lambda: frozenset())
+    _old_status_paths: dict[Path, PathStatus] = field(default_factory=lambda: {})
 
     def update_changed_paths(self) -> None:
         from chezmoi_mousse import store
@@ -21,7 +23,7 @@ class Changed:
         self.removed_managed = []
         self.changed_status = {}
 
-        managed_paths = store.managed_dirs | store.managed_files
+        managed_paths = store.managed_paths
         status_paths = store.status_dirs | store.status_files
         self._old_managed_paths = managed_paths.copy()
         self._old_status_paths = status_paths.copy()
