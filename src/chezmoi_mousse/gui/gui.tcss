@@ -262,10 +262,6 @@ Collapsible {
   border-top: none;
   padding-bottom: 0;
   padding-left: 0;
-  .pw_mgr_group {
-    margin-bottom: 1;
-    margin-right: 1;
-  }
   &> Contents {
     padding: 0 0 1 1;
   }

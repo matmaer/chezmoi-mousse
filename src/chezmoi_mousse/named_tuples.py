@@ -15,7 +15,6 @@ __all__ = [
     "CommandResult",
     "ManagedTreePaths",
     "ParsedDumpConfig",
-    "PwMgrData",
     "RunCommandInfo",
     "ScanDirItem",
     "SwitchData",
@@ -108,13 +107,6 @@ class RunCommandInfo(NamedTuple):
     border_title: str
     border_subtitle: str
     cmd_description: str
-
-
-class PwMgrData(NamedTuple):
-    description: str
-    doctor_check: str
-    link: str
-    info: str
 
 
 class ScanDirItem(NamedTuple):

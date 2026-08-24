@@ -76,8 +76,6 @@ class ContainerIds:
         self.memory_usage_q: str = f"#{self.memory_usage}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
-        self.pw_mgr_info: str = ids.container_id(name=ContainerName.pw_mgr_info)
-        self.pw_mgr_info_q: str = f"#{self.pw_mgr_info}"
         self.right_side: str = ids.container_id(name=ContainerName.right_side)
         self.right_side_q: str = f"#{self.right_side}"
         self.template_data: str = ids.container_id(name=ContainerName.template_data)

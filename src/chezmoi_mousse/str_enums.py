@@ -17,7 +17,6 @@ __all__ = [
     "NotifyMsg",
     "PathFilters",
     "PathKind",
-    "PwMgrInfo",
     "ReadCmd",
     "RichLogName",
     "SectionLabel",
@@ -53,7 +52,7 @@ class Chars(StrEnum):
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
-    warning_sign = "\u26a0"  # WARNING SIGN
+    # warning_sign = "\u26a0"  # WARNING SIGN # noqa: ERA001
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
     bullet = "\u2022"  # BULLET # noqa: ERA001
     # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
@@ -98,7 +97,6 @@ class ContainerName(StrEnum):
     left_side = auto()
     memory_usage = auto()
     operate_buttons = auto()
-    pw_mgr_info = auto()
     right_side = auto()
     template_data = auto()
     test_paths_view = auto()
@@ -111,7 +109,6 @@ class FlatBtnLabel(StrEnum):
     doctor = "Doctor"
     dom_nodes = "DOM Nodes"
     ignored = "Ignored"
-    pw_mgr_info = "Password Managers"
     template_data = "Template Data"
     test_paths = "Test Paths"
     memory_usage = "Memory Usage"
@@ -403,33 +400,6 @@ class PathKind(StrEnum):
     UNMANAGED = auto()
 
 
-class PwMgrInfo(StrEnum):
-    confusing = (
-        "Check your package manager which implementation is used as there are"
-        " confusingly similar named packages."
-    )
-    fully_open_source = (
-        "Fully open source and auditable worldwide. No third party trust"
-        " required. But beware of your supply chain: package manager, certificate"
-        " authority, maintainers reputation, etc."
-    )
-    info_warning = (
-        f"[${ColorVar.text_warning}]{Chars.warning_sign} The additional info is "
-        "provided but may not be up-to-date or correct. Please contribute to improve "
-        f"this.{Chars.warning_sign}[/]"
-    )
-    not_documented = "Not yet documented in chezmoi mousse."
-    not_open_source = (
-        "Not open source, cannot be audited but it's ok if you trust this third"
-        " party to handle your secrets securely and cannot access them."
-    )
-    source_available = (
-        "The code is publicly available. No third party trust required. But"
-        " beware of your supply chain: package manager, certificate authority,"
-        " maintainers reputation and so on."
-    )
-
-
 class RichLogName(StrEnum):
     app_logger = auto()
     cmd_logger = auto()
@@ -462,11 +432,7 @@ class SectionLabel(StrEnum):
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
     not_set = "Not Set"
-    password_managers = "Password Manager Information"
     paths_with_status = "Paths with Status"
-    project_description = "Project Description"
-    project_link = "Project Link"
-    pw_mgr_additional_info = "Additional Info"
     read_file_output = "Read file from disk output"
     removed_managed_paths = "Removed managed paths"
     stderr_output = "Output from stderr"
@@ -541,7 +507,6 @@ class Tcss(StrEnum):
     operate_button = auto()
     op_btn_group = auto()
     operate_info = auto()
-    pw_mgr_group = auto()
     refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()

@@ -4,17 +4,15 @@ from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual import getters, work
-from textual.containers import VerticalGroup
-from textual.widgets import Collapsible, DataTable, Label, Link, Static
+from textual.widgets import DataTable
 
-from chezmoi_mousse.named_tuples import PwMgrData
-from chezmoi_mousse.str_enums import Chars, ColorVar, SectionLabel, Tcss
+from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["DoctorTable", "PwCollapsible"]
+__all__ = ["DoctorTable"]
 
 
 class DoctorTable(DataTable[Text]):
@@ -63,34 +61,3 @@ class DoctorTable(DataTable[Text]):
             else:
                 text_row = [Text(cell_text) for cell_text in row]
                 self.add_row(*text_row)
-
-
-class PwCollapsible(Collapsible):
-    def __init__(self, pw_mgr_data: PwMgrData, dr_message: str) -> None:
-        self.pw_mgr_data = pw_mgr_data
-        self.dr_message = dr_message
-        self.stripped_link = self.pw_mgr_data.link.replace("https://", "").replace(
-            "www.", ""
-        )
-
-        super().__init__(
-            VerticalGroup(
-                Label(SectionLabel.project_link, classes=Tcss.sub_section_label),
-                Link(self.stripped_link, url=self.pw_mgr_data.link),
-                Label(SectionLabel.project_description, classes=Tcss.sub_section_label),
-                Static(self.pw_mgr_data.description, markup=False),
-                Label(
-                    SectionLabel.pw_mgr_additional_info, classes=Tcss.sub_section_label
-                ),
-                Static(self.pw_mgr_data.info, markup=False),
-                classes=Tcss.pw_mgr_group,
-            ),
-            title=(
-                f"[${ColorVar.text_primary}]Doctor check: "
-                f"{self.pw_mgr_data.doctor_check}[/] "
-                f"[{ColorVar.dimmed}]({self.dr_message})[/]"
-            ),
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
-            collapsed=True,
-        )

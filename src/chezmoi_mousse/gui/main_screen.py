@@ -112,22 +112,19 @@ class MainScreen(Screen[None]):
                 self.app.call_from_thread(
                     self.doctor_table.populate_table, result.std_out
                 )
-                self.app.call_from_thread(
-                    self.query_one(ConfigTab).populate_pw_mgr_info
-                )
             elif result.cmd_enum is ReadCmd.cat_config:
                 self.app.call_from_thread(
-                    self.query_one(ConfigTab.CatConfigStatic).update,
+                    self.query_exactly_one(ConfigTab.CatConfigStatic).update,
                     result.std_out,
                 )
             elif result.cmd_enum is ReadCmd.ignored:
                 self.app.call_from_thread(
-                    self.query_one(ConfigTab.PrettyIgnored).update,
+                    self.query_exactly_one(ConfigTab.PrettyIgnored).update,
                     result.std_out,
                 )
             elif result.cmd_enum is ReadCmd.template_data:
                 self.app.call_from_thread(
-                    self.query_one(ConfigTab.PrettyTemplateData).update,
+                    self.query_exactly_one(ConfigTab.PrettyTemplateData).update,
                     store.parsed_template_data,
                 )
             self.app.call_from_thread(self._log_command_result, result)

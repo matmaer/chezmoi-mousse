@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual import getters, on, work
+from textual import getters, on
 from textual.app import ComposeResult
 from textual.containers import (
     Horizontal,
@@ -20,12 +20,9 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store
-from chezmoi_mousse.enum_data import PwMgrEnum
-from chezmoi_mousse.named_tuples import PwMgrData
 from chezmoi_mousse.str_enums import (
     FlatBtnLabel,
     OpBtnLabel,
-    PwMgrInfo,
     SectionLabel,
     TabLabel,
     Tcss,
@@ -40,8 +37,9 @@ from .common.actionables import (
     TabButtons,
 )
 from .common.ascii_constants import FLOW_DIAGRAM
-from .common.contents import ContentsView, MainSectionLabel
-from .common.doctor_data import DoctorTable, PwCollapsible
+from .common.components import MainSectionLabel
+from .common.contents import ContentsView
+from .common.doctor_data import DoctorTable
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import DestDirTree, ManagedTree
@@ -140,8 +138,6 @@ class ConfigTab(TabPane):
 
     class PrettyTemplateData(Pretty): ...
 
-    class PwMgrContainer(ScrollableContainer): ...
-
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=TabLabel.config, title=TabLabel.config)
         self.ids = ids
@@ -152,7 +148,6 @@ class ConfigTab(TabPane):
                 self.ids,
                 labels=(
                     FlatBtnLabel.doctor,
-                    FlatBtnLabel.pw_mgr_info,
                     FlatBtnLabel.cat_config,
                     FlatBtnLabel.ignored,
                     FlatBtnLabel.template_data,
@@ -164,11 +159,6 @@ class ConfigTab(TabPane):
                     MainSectionLabel(SectionLabel.doctor_output),
                     DoctorTable(),
                     id=self.ids.container.doctor,
-                )
-                yield Vertical(
-                    MainSectionLabel(SectionLabel.password_managers),
-                    ConfigTab.PwMgrContainer(),
-                    id=self.ids.container.pw_mgr_info,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.cat_config_output),
@@ -194,40 +184,11 @@ class ConfigTab(TabPane):
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
 
-    @work
-    async def populate_pw_mgr_info(self) -> None:
-        def get_pw_mgr_data(doctor_check: str) -> PwMgrData:
-            for member in PwMgrEnum:
-                if member.value.doctor_check == doctor_check:
-                    return PwMgrEnum[member.name].value
-            raise ValueError(f"No PwMgrEnum member for doctor_check '{doctor_check}'")
-
-        pw_mgr_info = self.query_one(ConfigTab.PwMgrContainer)
-
-        pw_mgr_entries: list[tuple[PwMgrData, str]] = []
-        all_pw_mgr_commands = [pw_mgr.value.doctor_check for pw_mgr in PwMgrEnum]
-
-        for line in store.doctor_result.std_out.splitlines()[1:]:  # Skip header line
-            row = tuple(line.split(maxsplit=2))
-            if row[1] not in all_pw_mgr_commands:
-                continue
-            pw_mgr_data = get_pw_mgr_data(row[1])
-            pw_mgr_entries.append((pw_mgr_data, row[2]))
-
-        for pw_mgr_data, doctor_message in pw_mgr_entries:
-            pw_collapsible = PwCollapsible(
-                pw_mgr_data=pw_mgr_data, dr_message=doctor_message
-            )
-            pw_mgr_info.mount(pw_collapsible)
-        pw_mgr_info.mount(Static(f"\n{PwMgrInfo.info_warning}"))
-
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == FlatBtnLabel.doctor:
             self.switcher.current = self.ids.container.doctor
-        elif event.button.label == FlatBtnLabel.pw_mgr_info:
-            self.switcher.current = self.ids.container.pw_mgr_info
         elif event.button.label == FlatBtnLabel.cat_config:
             self.switcher.current = self.ids.container.cat_config
         elif event.button.label == FlatBtnLabel.ignored:
