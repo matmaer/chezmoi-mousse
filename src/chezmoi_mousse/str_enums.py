@@ -593,19 +593,6 @@ class ReadCmd(Enum):
     template_data = ("data", VerbArgs.format_json)
 
     @classmethod
-    def splash_only_commands(cls) -> tuple["ReadCmd", ...]:
-        # TODO: create function to re-run the loading screen
-        return (
-            cls.doctor,
-            cls.dump_config,
-            cls.cat_config,
-            cls.git_log,
-            cls.git_remote,
-            cls.ignored,
-            cls.template_data,
-        )
-
-    @classmethod
     def managed_commands(cls) -> tuple["ReadCmd", ...]:
         return (cls.managed_dirs, cls.managed_files, cls.status_dirs, cls.status_files)
 

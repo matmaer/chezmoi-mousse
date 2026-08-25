@@ -132,12 +132,7 @@ class SplashScreen(Screen[None]):
         return msg
 
     @work(thread=True)
-    def _run_splash_cmd_worker(self, cmd: ReadCmd) -> None:
-        msg = self._run_chezmoi_command(cmd)
-        self.app.call_from_thread(self.splash_log.write, msg)
-
-    @work(thread=True)
-    def _run_managed_cmd_worker(self, cmd: ReadCmd) -> None:
+    def _run_chezmoi_cmd_worker(self, cmd: ReadCmd) -> None:
         msg = self._run_chezmoi_command(cmd)
         self.app.call_from_thread(self.splash_log.write, msg)
 
@@ -158,24 +153,27 @@ class SplashScreen(Screen[None]):
     @work
     async def _run_all_tasks(self) -> None:
         self.fade_timer.resume()
+        for cmd in (
+            ReadCmd.doctor,
+            ReadCmd.cat_config,
+            ReadCmd.git_log,
+            ReadCmd.git_remote,
+            ReadCmd.ignored,
+            ReadCmd.template_data,
+        ):
+            self._run_chezmoi_cmd_worker(cmd)
 
-        # start splash workers first (contains chezmoi doctor, most expensive command)
-        splash_workers = [
-            self._run_splash_cmd_worker(cmd) for cmd in ReadCmd.splash_only_commands()
-        ]
-        # _post_process_cmd_results depends on these
-        managed_cmd_workers = [
-            self._run_managed_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()
-        ]
+        to_process_workers = [
+            self._run_chezmoi_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()
+        ] + [self._run_chezmoi_cmd_worker(ReadCmd.dump_config)]
 
-        # TODO: improve after store.py is fully implemented
-
-        for worker in managed_cmd_workers:
+        for worker in to_process_workers:
             await worker.wait()
-        for worker in splash_workers:
-            await worker.wait()
-
         await self._post_process_cmd_results().wait()
+
+        for worker in self.workers:
+            if worker.name != "_run_all_tasks":
+                await worker.wait()
 
         # Wait for the remaining tasks to finish
         # Only dismiss after a completed fade cycle
