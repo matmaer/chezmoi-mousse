@@ -12,7 +12,7 @@ from chezmoi_mousse.str_enums import StatusCode
 if TYPE_CHECKING:
     from chezmoi_mousse.named_tuples import PathStatus
 
-__all__ = ("Changed",)
+__all__ = ("Changed", "ManagedPaths")
 
 
 @dataclass(kw_only=True)
