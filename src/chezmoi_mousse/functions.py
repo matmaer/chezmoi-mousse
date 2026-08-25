@@ -20,6 +20,7 @@ from chezmoi_mousse.named_tuples import (
     AffectedPaths,
     CommandResult,
     ParsedDumpConfig,
+    ParsedGitLog,
     ScanDirItem,
 )
 from chezmoi_mousse.str_enums import (
@@ -219,6 +220,41 @@ class Commands:
         )
 
     @staticmethod
+    def _get_cmd_result_instance(
+        cp: subprocess.CompletedProcess[str],
+        *,
+        cmd: ReadCmd | WriteCmd,
+        path_arg: Path | None,
+    ) -> CommandResult:
+        std_err = Commands._strip_empty_lines(cp.stderr)
+        std_out = Commands._strip_empty_lines(cp.stdout)
+        out_txt = ""
+        if not std_out and not std_err:
+            out_txt = "No output from command."
+        elif not std_out and std_err:
+            out_txt = std_err
+        elif std_out and not std_err:
+            out_txt = std_out
+        else:  # result.std_out.strip() and result.std_err.strip():
+            out_lines: list[str] = []
+            out_lines.append("Output on stdout:")
+            out_lines.append(std_out)
+            out_lines.append("Output on stderr:")
+            out_lines.append(std_err)
+            out_txt = "\n\n".join(out_lines)
+        return CommandResult(
+            cmd_enum=cmd,
+            full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
+            out_txt=out_txt,
+            path_arg=path_arg,
+            pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
+            returncode=cp.returncode,
+            std_err=std_err,
+            std_out=std_out,
+            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
+        )
+
+    @staticmethod
     def _get_path_kinds(cmd_output: list[str]) -> dict[Path, PathKind]:
         temp_dict: dict[Path, PathKind] = {}
         paths: list[Path] = [Path(line) for line in cmd_output]
@@ -267,19 +303,8 @@ class Commands:
             args_tuple, path=path_arg, time_out=5
         )
 
-        result = CommandResult(
-            cmd_enum=cmd,
-            full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
-            path_arg=path_arg,
-            pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
-            returncode=cp.returncode,
-            std_err=Commands._strip_empty_lines(cp.stderr),
-            std_out=Commands._strip_empty_lines(cp.stdout),
-            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-        )
+        result = Commands._get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
 
-        if cmd is ReadCmd.dump_config:
-            Commands._parse_dump_config(result.std_out)
         if cmd is ReadCmd.managed_dirs:
             store.managed_dirs = Commands._get_path_kinds(result.std_out.splitlines())
         elif cmd is ReadCmd.managed_files:
@@ -290,7 +315,6 @@ class Commands:
             Commands._store_status_files(result.std_out.splitlines())
 
         store.results_queue.put(result)
-        setattr(store, f"{cmd.name}_result", result)
         return result
 
     @staticmethod
@@ -304,17 +328,7 @@ class Commands:
             args_tuple, path=path_arg, time_out=20
         )
 
-        result = CommandResult(
-            cmd_enum=cmd,
-            full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
-            path_arg=path_arg,
-            pretty_cmd=AppLife.pretty_cmd(cmd, path=path_arg),
-            returncode=cp.returncode,
-            std_err=Commands._strip_empty_lines(cp.stderr),
-            std_out=Commands._strip_empty_lines(cp.stdout),
-            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-        )
-        setattr(store, cmd.name, result)
+        result = Commands._get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
         store.results_queue.put(result)
         return result
 
@@ -359,6 +373,27 @@ class Commands:
     @_typed_lru_cache()
     def _get_source_path(path_arg: Path) -> CommandResult:
         return Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
+
+    @staticmethod
+    @_typed_lru_cache()
+    def _parse_git_log_result(cmd_result: CommandResult) -> ParsedGitLog | str:
+        if cmd_result.returncode != 0:
+            return cmd_result.std_err
+
+        parsed_rows: list[tuple[str, str]] = []
+        no_commit_message = "no commit message"
+
+        for line in cmd_result.std_out.splitlines():
+            rel_date, committer, subject = line.rstrip().split("\x1f", 2)
+            col_one = f"{rel_date} by {committer}"
+            col_two = subject if subject.strip() else no_commit_message
+            parsed_rows.append((col_one, col_two))
+
+        return ParsedGitLog(
+            pretty_cmd=cmd_result.pretty_cmd,
+            parsed_rows=parsed_rows,
+            path_arg=cmd_result.path_arg,
+        )
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)
