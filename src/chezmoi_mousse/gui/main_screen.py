@@ -86,7 +86,7 @@ class MainScreen(Screen[None]):
             yield AddTab(store.add_id)
             yield LogsTab(store.logs_id)
             yield ConfigTab(store.config_id)
-            if "debug" in self.app.features:
+            if store.SHOW_DEBUG_TAB:
                 yield DebugTab(store.debug_id)
         yield Footer()
 

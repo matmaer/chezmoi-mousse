@@ -1,5 +1,8 @@
 import os
+import shutil
+import sys
 
+from chezmoi_mousse import store
 from chezmoi_mousse.debug.pilot_mode import run_with_pilot
 from chezmoi_mousse.debug.utils import DebugUtils
 from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -8,8 +11,6 @@ __all__ = ["run_app"]
 
 
 def _check_if_we_can_run() -> None:
-    import shutil
-    import sys
 
     cm_not_found = "'chezmoi' command not found, see https://chezmoi.io/install/"
     feedback = "Feedback welcome! https://github.com/matmaer/chezmoi-mousse/discussions"
@@ -25,7 +26,10 @@ def _check_if_we_can_run() -> None:
         error_info.append(git_not_found)
     if os.environ.get("CHEZMOI_SUBSHELL") == "1":
         error_info.append(in_subshell)
-    if os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1":
+    if (
+        os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
+        or "--pretend-fail" in sys.argv
+    ):
         error_info.append(pretend_fail)
     if error_info or os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1":
         error_info.append(feedback)
@@ -38,7 +42,7 @@ def run_app() -> None:
 
     try:
         app = ChezmoiGui()
-        if os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1":
+        if store.PILOT_MODE:
             run_with_pilot(app)
         else:
             app.run()
