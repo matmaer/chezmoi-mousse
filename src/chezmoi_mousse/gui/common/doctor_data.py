@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from textual import getters
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["DoctorTable"]
@@ -32,8 +33,10 @@ class DoctorTable(DataTable[Text]):
             "error": self.app.get_color(ColorVar.text_error),
         }
 
-    def populate_table(self, doctor_std_out: str) -> None:
-        doctor_lines = doctor_std_out.splitlines()
+    def populate_table(self, doctor_result: CommandResult) -> None:
+        if doctor_result.returncode != 0:
+            return
+        doctor_lines = doctor_result.std_out.splitlines()
         if not doctor_lines:
             self.notify("No doctor output available to display.")
             return

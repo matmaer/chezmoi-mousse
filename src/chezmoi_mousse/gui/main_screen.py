@@ -113,25 +113,27 @@ class MainScreen(Screen[None]):
         while True:
             result: CommandResult = store.results_queue.get()
             if result.cmd_enum is ReadCmd.doctor:
-                self.app.call_from_thread(
-                    self.doctor_table.populate_table, result.std_out
-                )
+                self.app.call_from_thread(self.doctor_table.populate_table, result)
             elif result.cmd_enum is ReadCmd.cat_config:
                 self.app.call_from_thread(
                     self.query_exactly_one(ConfigTab.CatConfigStatic).update,
-                    result.std_out,
+                    result.out_txt,
                 )
             elif result.cmd_enum is ReadCmd.ignored:
                 self.app.call_from_thread(
                     self.query_exactly_one(ConfigTab.PrettyIgnored).update,
-                    result.std_out,
+                    result.out_txt,
                 )
             elif result.cmd_enum is ReadCmd.template_data:
-                parsed_data = json.loads(result.std_out)
+                try:
+                    parsed_data = json.loads(result.std_out)
+                except Exception as e:
+                    parsed_data = {"Cannot parse JSON": f"{e}"}
                 self.app.call_from_thread(
                     self.query_exactly_one(ConfigTab.PrettyTemplateData).update,
                     parsed_data,
                 )
+
             self.app.call_from_thread(self._log_command_result, result)
             store.results_queue.task_done()
 

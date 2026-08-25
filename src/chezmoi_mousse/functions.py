@@ -305,11 +305,19 @@ class Commands:
 
         result = Commands._get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
 
-        if cmd is ReadCmd.managed_dirs:
+        if cmd is ReadCmd.dump_config:
+            parsed_dump_config = json.loads(result.std_out)
+            store.cfg = ParsedDumpConfig(
+                dest_dir_path=Path(parsed_dump_config["destDir"]),
+                auto_add_bool=parsed_dump_config["git"]["autoadd"],
+                auto_commit_bool=parsed_dump_config["git"]["autocommit"],
+                auto_push_bool=parsed_dump_config["git"]["autopush"],
+            )
+        elif cmd is ReadCmd.managed_dirs:
             store.managed_dirs = Commands._get_path_kinds(result.std_out.splitlines())
         elif cmd is ReadCmd.managed_files:
             store.managed_files = Commands._get_path_kinds(result.std_out.splitlines())
-        if cmd is ReadCmd.status_dirs:
+        elif cmd is ReadCmd.status_dirs:
             Commands._store_status_dirs(result.std_out.splitlines())
         elif cmd is ReadCmd.status_files:
             Commands._store_status_files(result.std_out.splitlines())
