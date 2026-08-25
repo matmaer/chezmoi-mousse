@@ -20,7 +20,6 @@ from chezmoi_mousse.named_tuples import (
     AffectedPaths,
     CommandResult,
     ParsedDumpConfig,
-    ParsedGitLog,
     ScanDirItem,
 )
 from chezmoi_mousse.str_enums import (
@@ -384,10 +383,7 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache()
-    def _parse_git_log_result(cmd_result: CommandResult) -> ParsedGitLog | str:
-        if cmd_result.returncode != 0:
-            return cmd_result.std_err
-
+    def parse_git_log_result(cmd_result: CommandResult) -> list[tuple[str, str]]:
         parsed_rows: list[tuple[str, str]] = []
         no_commit_message = "no commit message"
 
@@ -396,24 +392,24 @@ class Commands:
             col_one = f"{rel_date} by {committer}"
             col_two = subject if subject.strip() else no_commit_message
             parsed_rows.append((col_one, col_two))
-
-        return ParsedGitLog(
-            pretty_cmd=cmd_result.pretty_cmd,
-            parsed_rows=parsed_rows,
-            path_arg=cmd_result.path_arg,
-        )
+        return parsed_rows
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)
-    def run_chezmoi_git_log(path_arg: Path | None) -> CommandResult:
+    def get_chezmoi_git_log(path_arg: Path | None) -> CommandResult:
+        if path_arg == store.cfg.dest_dir:
+            raise ValueError("Not allowed to run chezmoi git with destDir path arg")
         if path_arg is None:
-            return Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
+            result = Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
         else:
             source_path_result = Commands._get_source_path(path_arg)
-            return Commands.run_read_cmd(
+            if source_path_result.returncode != 0:
+                return source_path_result
+            result = Commands.run_read_cmd(
                 cmd=ReadCmd.git_log,
                 path_arg=Path(source_path_result.std_out),
             )
+        return result
 
     @staticmethod
     @_typed_lru_cache()

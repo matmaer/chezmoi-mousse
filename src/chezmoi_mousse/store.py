@@ -9,16 +9,14 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.data_classes import Changed, ChezmoiRepoChecks, StatusPaths
 from chezmoi_mousse.named_tuples import (
-    CommandResult,
     ParsedDumpConfig,
-    ParsedGitLog,
 )
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.named_tuples import ParsedGitLog
+    from chezmoi_mousse.named_tuples import CommandResult
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 
@@ -37,7 +35,6 @@ if SHOW_DEBUG_TAB:
     tracemalloc.start()
 
 results_queue: queue.Queue[CommandResult] = queue.Queue()
-parsed_git_log_queue: queue.Queue[ParsedGitLog] = queue.Queue()
 
 live_run: bool = False
 
@@ -50,18 +47,6 @@ re_add_id = AppIds(TabLabel.re_add)
 
 cfg = ParsedDumpConfig()
 cm_repo_checks = ChezmoiRepoChecks()
-
-cat_config_result = CommandResult.empty()
-doctor_result = CommandResult.empty()
-dump_config_result = CommandResult.empty()
-git_log_result = CommandResult.empty()
-git_remote_result = CommandResult.empty()
-ignored_result = CommandResult.empty()
-managed_dirs_result = CommandResult.empty()
-managed_files_result = CommandResult.empty()
-status_dirs_result = CommandResult.empty()
-status_files_result = CommandResult.empty()
-template_data_result = CommandResult.empty()
 
 changed = Changed()
 

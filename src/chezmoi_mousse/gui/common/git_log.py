@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual.containers import Container
+from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.str_enums import ColorVar
+from chezmoi_mousse.str_enums import ColorVar, SectionLabel
 
-from .components import FlatSectionLabel
+from .components import (
+    FlatSectionLabel,
+    InfoContainer,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -21,14 +22,16 @@ if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
+    from .messages import CurrentNodeMsg
+
 __all__ = ["GitLogView"]
 
 
-class GitLogView(Container):
+class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    show_path: reactive[Path | None] = reactive(None)
+    show_path: reactive[CurrentNodeMsg | None] = reactive(None)
 
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.git_log)
@@ -36,8 +39,10 @@ class GitLogView(Container):
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel()
         yield DataTable[str](fixed_rows=1, show_cursor=False)
+        yield InfoContainer(SectionLabel.unmanaged_dir, SectionLabel.not_set, "")
 
     def on_mount(self) -> None:
+        self.git_log_results: dict[Path, tuple[str, str]]
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table = self.query_exactly_one(DataTable[str])
         self.data_table.add_columns("COMMIT", "MESSAGE")
@@ -67,15 +72,6 @@ class GitLogView(Container):
             else:
                 add_row_with_style(columns, ColorVar.text)
 
-    def watch_show_path(self, show_path: Path | None) -> None:
+    def watch_show_path(self, show_path: CurrentNodeMsg | None) -> None:
         if show_path is None:
             return
-        if show_path not in store.managed_dirs | store.managed_files:
-            return
-        if show_path == store.cfg.dest_dir:
-            self.flat_section_label.update(store.git_log_result.pretty_cmd)
-            self._update_datatable(store.git_log_result.std_out.splitlines())
-        else:
-            cmd_results = Commands.run_chezmoi_git_log(show_path)
-            self.flat_section_label.update(cmd_results.pretty_cmd)
-            self._update_datatable(cmd_results.std_out.splitlines())

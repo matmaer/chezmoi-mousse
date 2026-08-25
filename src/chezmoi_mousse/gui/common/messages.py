@@ -34,11 +34,13 @@ class CurrentNodeMsg(Message):
         app_ids: AppIds,
         path: Path,
         has_status: bool,
+        is_dest_dir: bool,
         is_unmanaged: bool,
     ) -> None:
         self.app_ids = app_ids
         self.path = path
         self.has_status = has_status
+        self.is_dest_dir = is_dest_dir
         self.is_unmanaged = is_unmanaged
         super().__init__()
 

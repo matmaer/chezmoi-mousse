@@ -9,13 +9,12 @@ if TYPE_CHECKING:
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import StatusCode
 
-__all__ = ("Changed", "StatusPaths")
+__all__ = ("Changed", "ChezmoiRepoChecks", "StatusPaths")
 
 
 @dataclass(slots=True)
 class ChezmoiRepoChecks:
     exists_bool: bool | None = None
-    has_added_bool: bool | None = None
     has_commits_bool: bool | None = None
     has_managed_paths_bool: bool | None = None
     has_status_paths_bool: bool | None = None
@@ -25,12 +24,6 @@ class ChezmoiRepoChecks:
         if self.exists_bool is None:
             raise RuntimeError("Accessing exists before it is set")
         return self.exists_bool
-
-    @property
-    def has_added(self) -> bool:
-        if self.has_added_bool is None:
-            raise RuntimeError("Accessing has_added before it is set")
-        return self.has_added_bool
 
     @property
     def has_commits(self) -> bool:

@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from textual.containers import Container
 from textual.widgets import Label, Static
+
+if TYPE_CHECKING:
+    from textual.app import ComposeResult
 
 from chezmoi_mousse.str_enums import SectionLabel, Tcss
 
@@ -9,6 +14,7 @@ __all__ = [
     "DiffLinesContainer",
     "FlatSectionLabel",
     "HighlightedStatic",
+    "InfoContainer",
     "InfoStatic",
     "MainSectionLabel",
     "SubSectionLabel",
@@ -52,3 +58,18 @@ class HighlightedStatic(Static): ...
 
 
 class DiffLinesContainer(Container): ...
+
+
+class InfoContainer(Container):
+    def __init__(
+        self, main_label: SectionLabel, sub_label: SectionLabel, static_text: str
+    ) -> None:
+        self.main_label = main_label
+        self.sub_label = sub_label
+        self.static_text = static_text
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel(self.main_label)
+        yield SubSectionLabel(self.sub_label)
+        yield InfoStatic(self.static_text)

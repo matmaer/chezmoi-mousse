@@ -296,17 +296,17 @@ class ManagedTree(Tree[Path]):
 
         self.state.selected_path = event.node.data
 
-        is_unmanaged = (
-            event.node.data not in self.managed_paths and event.node is not self.root
-        )
         has_status = (
             event.node.data in self.paths.files or event.node.data in self.paths.dirs
         )
+        is_dest_dir = event.node is not self.root
+        is_unmanaged = event.node.data not in self.managed_paths
         self.post_message(
             CurrentNodeMsg(
                 app_ids=self.app_ids,
                 path=event.node.data,
                 has_status=has_status,
+                is_dest_dir=is_dest_dir,
                 is_unmanaged=is_unmanaged,
             )
         )
