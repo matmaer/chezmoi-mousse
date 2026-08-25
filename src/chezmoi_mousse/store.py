@@ -7,13 +7,18 @@ import tracemalloc
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.data_classes import Changed, StatusPaths
-from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
+from chezmoi_mousse.data_classes import Changed, ChezmoiRepoChecks, StatusPaths
+from chezmoi_mousse.named_tuples import (
+    CommandResult,
+    ParsedDumpConfig,
+    ParsedGitLog,
+)
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from chezmoi_mousse.named_tuples import ParsedGitLog
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 
@@ -32,6 +37,7 @@ if SHOW_DEBUG_TAB:
     tracemalloc.start()
 
 results_queue: queue.Queue[CommandResult] = queue.Queue()
+parsed_git_log_queue: queue.Queue[ParsedGitLog] = queue.Queue()
 
 live_run: bool = False
 
@@ -43,6 +49,7 @@ logs_id = AppIds(TabLabel.logs)
 re_add_id = AppIds(TabLabel.re_add)
 
 cfg = ParsedDumpConfig()
+cm_repo_checks = ChezmoiRepoChecks()
 
 cat_config_result = CommandResult.empty()
 doctor_result = CommandResult.empty()

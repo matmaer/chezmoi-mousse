@@ -13,6 +13,7 @@ __all__ = [
     "AffectedPaths",
     "CommandResult",
     "ParsedDumpConfig",
+    "ParsedGitLog",
     "PathStatus",
     "RunCommandInfo",
     "ScanDirItem",
@@ -33,6 +34,7 @@ class AffectedPaths(NamedTuple):
 class CommandResult(NamedTuple):
     cmd_enum: WriteCmd | ReadCmd | None
     full_cmd: str
+    out_txt: str
     path_arg: Path | None
     pretty_cmd: str
     returncode: int
@@ -45,6 +47,7 @@ class CommandResult(NamedTuple):
         return cls(
             cmd_enum=None,
             full_cmd="",
+            out_txt="",
             path_arg=None,
             pretty_cmd="",
             returncode=0,
@@ -83,6 +86,12 @@ class ParsedDumpConfig(NamedTuple):
         if self.auto_push_bool is None:
             raise RuntimeError("Accessing auto_push before the config is parsed")
         return self.auto_push_bool
+
+
+class ParsedGitLog(NamedTuple):
+    pretty_cmd: str
+    path_arg: Path | None
+    parsed_rows: list[tuple[str, str]]
 
 
 class PathStatus(NamedTuple):

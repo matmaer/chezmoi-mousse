@@ -12,6 +12,45 @@ from chezmoi_mousse.str_enums import StatusCode
 __all__ = ("Changed", "StatusPaths")
 
 
+@dataclass(slots=True)
+class ChezmoiRepoChecks:
+    exists_bool: bool | None = None
+    has_added_bool: bool | None = None
+    has_commits_bool: bool | None = None
+    has_managed_paths_bool: bool | None = None
+    has_status_paths_bool: bool | None = None
+
+    @property
+    def exists(self) -> bool:
+        if self.exists_bool is None:
+            raise RuntimeError("Accessing exists before it is set")
+        return self.exists_bool
+
+    @property
+    def has_added(self) -> bool:
+        if self.has_added_bool is None:
+            raise RuntimeError("Accessing has_added before it is set")
+        return self.has_added_bool
+
+    @property
+    def has_commits(self) -> bool:
+        if self.has_commits_bool is None:
+            raise RuntimeError("Accessing has_commits before it is set")
+        return self.has_commits_bool
+
+    @property
+    def has_managed_paths(self) -> bool:
+        if self.has_managed_paths_bool is None:
+            raise RuntimeError("Accessing has_managed_paths before it is set")
+        return self.has_managed_paths_bool
+
+    @property
+    def has_status_paths(self) -> bool:
+        if self.has_status_paths_bool is None:
+            raise RuntimeError("Accessing has_status_paths before it is set")
+        return self.has_status_paths_bool
+
+
 @dataclass(slots=True, kw_only=True)
 class StatusPaths:
     # will be accessible via store.paths
