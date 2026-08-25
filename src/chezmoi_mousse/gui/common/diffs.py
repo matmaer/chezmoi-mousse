@@ -32,7 +32,8 @@ if TYPE_CHECKING:
     from textual.widgets import Label
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.named_tuples import CommandResult, ManagedTreePaths
+    from chezmoi_mousse.data_classes import StatusPaths
+    from chezmoi_mousse.named_tuples import CommandResult
 
 __all__ = ["DiffView"]
 
@@ -82,16 +83,16 @@ class DiffView(ScrollableContainer):
         self._update_widgets(store.cfg.dest_dir)
 
     @property
-    def paths(self) -> ManagedTreePaths:
+    def paths(self) -> StatusPaths:
         return (
-            store.paths.apply_tree_paths
+            store.apply_paths
             if self.app_ids.tab_label == TabLabel.apply
-            else store.paths.re_add_tree_paths
+            else store.re_add_paths
         )
 
     def _update_widgets(self, path: Path) -> None:
 
-        if path in store.status_paths:
+        if path in store.status_dirs_kind and not store.status_files_kind:
             diff_result = Commands.run_chezmoi_diff(self.diff_cmd, path)
 
             self.main_section_label.update(str(diff_result.full_cmd))
@@ -106,15 +107,17 @@ class DiffView(ScrollableContainer):
             self.info_static.display = False
             return
 
+        managed_paths = store.managed_dirs | store.managed_files
+
         if path == store.cfg.dest_dir:
             self.main_section_label.update(SectionLabel.dest_dir)
-            if not store.managed_paths:
+            if not managed_paths:
                 self.sub_section_label.update(SectionLabel.no_managed_paths)
             else:
                 self.sub_section_label.update(SectionLabel.dest_dir_diff)
             self.info_static.update(StaticString.click_path_with_status)
 
-        elif path in store.managed_paths:
+        elif path in managed_paths:
             if path in store.managed_dirs:
                 self.main_section_label.update(SectionLabel.managed_dir)
             elif path in store.managed_files:

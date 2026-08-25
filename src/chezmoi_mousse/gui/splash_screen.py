@@ -14,7 +14,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.cm_dataclasses import ManagedPaths
+from chezmoi_mousse.data_classes import StatusPaths
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 
@@ -143,11 +143,15 @@ class SplashScreen(Screen[None]):
 
     @work
     async def _post_process_cmd_results(self) -> None:
-        store.update_derived_vars()
         store.add_path = store.cfg.dest_dir
         store.apply_path = store.cfg.dest_dir
         store.re_add_path = store.cfg.dest_dir
-        store.paths = ManagedPaths()
+        store.apply_paths = StatusPaths(
+            dirs=store.apply_status_dirs, files=store.apply_status_files
+        )
+        store.re_add_paths = StatusPaths(
+            dirs=store.re_add_status_dirs, files=store.re_add_status_files
+        )
         msg = self._get_log_msg(prefix="process command outputs", returncode=None)
         self.splash_log.write(msg)
 

@@ -26,6 +26,11 @@ class ViewSwitcher(Vertical):
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.right_side)
         self.ids = ids
+        self.run_label = (
+            OpBtnLabel.apply_review
+            if self.ids.tab_label == TabLabel.apply
+            else OpBtnLabel.re_add_review
+        )
 
     def compose(self) -> ComposeResult:
         yield TabButtons(self.ids, (TabLabel.diff, TabLabel.contents, TabLabel.git_log))
@@ -36,7 +41,7 @@ class ViewSwitcher(Vertical):
         yield ReviewBtnGroup(
             self.ids,
             (
-                OpBtnLabel.apply_review,
+                self.run_label,
                 OpBtnLabel.forget_review,
                 OpBtnLabel.destroy_review,
             ),

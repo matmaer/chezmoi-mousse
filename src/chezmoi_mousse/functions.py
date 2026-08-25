@@ -20,7 +20,6 @@ from chezmoi_mousse.named_tuples import (
     AffectedPaths,
     CommandResult,
     ParsedDumpConfig,
-    PathStatus,
     ScanDirItem,
 )
 from chezmoi_mousse.str_enums import (
@@ -38,21 +37,17 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from typing import Any
 
-    from chezmoi_mousse.cm_types import (
-        MinWaitReturn,
-        PathKindMap,
-        PathStatusMap,
-        ScanDirResult,
-        StrTuple,
-    )
     from chezmoi_mousse.gui.common.operate_modal import LoadingModal
+
+
+type ScanDirResult = list[ScanDirItem] | PathKind
 
 __all__ = ("min_wait", "AppLife", "Commands", "CheckPath")
 
 
 def min_wait(
     func: Callable[..., Awaitable[Any]],
-) -> MinWaitReturn:
+) -> Callable[..., Awaitable[AffectedPaths | CommandResult | None]]:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
     async def wrapper(self: LoadingModal, *args: Any, **kwargs: Any) -> Any:
@@ -143,7 +138,7 @@ class Commands:
 
     @staticmethod
     def _subprocess_run(
-        args_tuple: StrTuple, *, path: Path | None, time_out: int
+        args_tuple: tuple[str, ...], *, path: Path | None, time_out: int
     ) -> subprocess.CompletedProcess[str]:
         if path is None:
             run_args = args_tuple
@@ -173,7 +168,7 @@ class Commands:
         path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
         affected_paths_str: set[str] = set()
 
-        args_tuple: StrTuple = (
+        args_tuple: tuple[str, ...] = (
             ("chezmoi",)
             + GlobalArgs.global_defaults.value
             + (
@@ -214,9 +209,19 @@ class Commands:
         )
 
     @staticmethod
-    def _get_managed_map(managed_output: str) -> PathKindMap:
+    def _parse_dump_config(cmd_output: str) -> None:
+        parsed_dump_config = json.loads(cmd_output)
+        store.cfg = ParsedDumpConfig(
+            dest_dir_path=Path(parsed_dump_config["destDir"]),
+            auto_add_bool=parsed_dump_config["git"]["autoadd"],
+            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
+            auto_push_bool=parsed_dump_config["git"]["autopush"],
+        )
+
+    @staticmethod
+    def _get_path_kinds(cmd_output: list[str]) -> dict[Path, PathKind]:
         temp_dict: dict[Path, PathKind] = {}
-        paths: list[Path] = [Path(line) for line in managed_output.splitlines()]
+        paths: list[Path] = [Path(line) for line in cmd_output]
 
         for path in paths:
             if path.is_symlink():
@@ -229,32 +234,35 @@ class Commands:
         return dict(sorted(temp_dict.items()))
 
     @staticmethod
-    def _get_status_map(lines: list[str]) -> PathStatusMap:
-        pairs_dict: dict[Path, str] = {Path(line[3:]): line[:2] for line in lines}
-        path_status_dict: dict[Path, PathStatus] = {}
-
-        for path, pair in pairs_dict.items():
-            path_status_dict[path] = PathStatus(
-                apply_status=StatusCode(pair[1]),
-                re_add_status=StatusCode(pair[0]),
-                status_pair=pair,
-            )
-
-        return dict(sorted(path_status_dict.items()))
+    def _get_status_pairs(cmd_output: list[str]) -> dict[Path, str]:
+        return {Path(line[3:]): line[:2] for line in cmd_output}
 
     @staticmethod
-    def _parse_dump_config(cmd_output: str) -> None:
-        parsed_dump_config = json.loads(cmd_output)
-        store.cfg = ParsedDumpConfig(
-            dest_dir_path=Path(parsed_dump_config["destDir"]),
-            auto_add_bool=parsed_dump_config["git"]["autoadd"],
-            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
-            auto_push_bool=parsed_dump_config["git"]["autopush"],
-        )
+    def _get_status_paths(cmd_output: list[str], column: int) -> dict[Path, StatusCode]:
+        temp_dict = Commands._get_status_pairs(cmd_output)
+        return {
+            Path(path): StatusCode(code[column])
+            for path, code in temp_dict.items()
+            if code[column] != StatusCode.Space
+        }
+
+    @staticmethod
+    def _store_status_dirs(lines: list[str]) -> None:
+        store.status_dirs_kind = Commands._get_path_kinds(lines)
+        store.dir_status_pairs = Commands._get_status_pairs(lines)
+        store.apply_status_dirs = Commands._get_status_paths(lines, 1)
+        store.re_add_status_dirs = Commands._get_status_paths(lines, 0)
+
+    @staticmethod
+    def _store_status_files(lines: list[str]) -> None:
+        store.status_files_kind = Commands._get_path_kinds(lines)
+        store.file_status_pairs = Commands._get_status_pairs(lines)
+        store.apply_status_files = Commands._get_status_paths(lines, 1)
+        store.re_add_status_files = Commands._get_status_paths(lines, 0)
 
     @staticmethod
     def run_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
-        args_tuple: StrTuple = ("chezmoi",) + cmd.value
+        args_tuple: tuple[str, ...] = ("chezmoi",) + cmd.value
         cp: subprocess.CompletedProcess[str] = Commands._subprocess_run(
             args_tuple, path=path_arg, time_out=5
         )
@@ -269,25 +277,25 @@ class Commands:
             std_out=Commands._strip_empty_lines(cp.stdout),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-        setattr(store, f"{cmd.name}_result", result)
 
-        if cmd is ReadCmd.managed_dirs:
-            store.managed_dirs = Commands._get_managed_map(result.std_out)
-        elif cmd is ReadCmd.managed_files:
-            store.managed_files = Commands._get_managed_map(result.std_out)
-        elif cmd is ReadCmd.dump_config:
+        if cmd is ReadCmd.dump_config:
             Commands._parse_dump_config(result.std_out)
-        elif cmd is ReadCmd.status_dirs:
-            store.status_dirs = Commands._get_status_map(result.std_out.splitlines())
+        if cmd is ReadCmd.managed_dirs:
+            store.managed_dirs = Commands._get_path_kinds(result.std_out.splitlines())
+        elif cmd is ReadCmd.managed_files:
+            store.managed_files = Commands._get_path_kinds(result.std_out.splitlines())
+        if cmd is ReadCmd.status_dirs:
+            Commands._store_status_dirs(result.std_out.splitlines())
         elif cmd is ReadCmd.status_files:
-            store.status_files = Commands._get_status_map(result.std_out.splitlines())
+            Commands._store_status_files(result.std_out.splitlines())
 
         store.results_queue.put(result)
+        setattr(store, f"{cmd.name}_result", result)
         return result
 
     @staticmethod
     def run_write_cmd(cmd: WriteCmd, path_arg: Path) -> CommandResult:
-        args_tuple: StrTuple = (
+        args_tuple: tuple[str, ...] = (
             ("chezmoi", "--dry-run") + cmd.value
             if store.live_run is False
             else ("chezmoi",) + cmd.value

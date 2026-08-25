@@ -29,9 +29,9 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.cm_types import ScanDirResult, TreeNodeDict
+    from chezmoi_mousse.data_classes import StatusPaths
+    from chezmoi_mousse.functions import ScanDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.named_tuples import ManagedTreePaths
 
 from .actionables import RefreshBtn
 from .messages import CurrentNodeMsg
@@ -101,13 +101,14 @@ class ManagedTree(Tree[Path]):
         )
         if self.root.data:
             self.state.expanded_paths.add(self.root.data)
+        self.managed_paths = store.managed_dirs | store.managed_files
 
     @property
-    def paths(self) -> ManagedTreePaths:
+    def paths(self) -> StatusPaths:
         return (
-            store.paths.apply_tree_paths
+            store.apply_paths
             if self.app_ids.tab_label == TabLabel.apply
-            else store.paths.re_add_tree_paths
+            else store.re_add_paths
         )
 
     def _insert_node(
@@ -138,9 +139,9 @@ class ManagedTree(Tree[Path]):
             else store.managed_files.get(path, None)
         )
         status_code = (
-            self.paths.tree_status_dirs.get(path, None)
+            self.paths.tree_dirs.get(path, None)
             if dir_node
-            else self.paths.status_files.get(path, None)
+            else self.paths.files.get(path, None)
         )
 
         before = len(parent_node.children)
@@ -165,12 +166,12 @@ class ManagedTree(Tree[Path]):
         )
 
     def _populate_unchanged_nodes(self) -> None:
-        for path in self.paths.unchanged_tree_dirs:
+        for path in self.paths.space_dirs:
             parent_node = self._get_tree_node(path, parent_node=True)
             if parent_node is not None:
                 self._insert_node(dir_node=True, path=path, parent_node=parent_node)
 
-        for path in self.paths.unchanged_files:
+        for path in self.paths.space_files:
             parent_node = self._get_tree_node(path, parent_node=True)
             if parent_node is not None:
                 self._insert_node(dir_node=False, path=path, parent_node=parent_node)
@@ -189,12 +190,12 @@ class ManagedTree(Tree[Path]):
                 continue
 
             for item in unmanaged:
-                if item.path in store.managed_paths:
+                if item.path in self.managed_paths:
                     continue
 
                 if not self.show_unchanged and (
-                    item.path in self.paths.unchanged_tree_dirs
-                    or item.path in self.paths.unchanged_files
+                    item.path in self.paths.space_dirs
+                    or item.path in self.paths.space_files
                 ):
                     continue
 
@@ -227,16 +228,16 @@ class ManagedTree(Tree[Path]):
         self.root.remove_children()
 
         # Add status directories and files to root node
-        nodes_by_path: TreeNodeDict = {store.cfg.dest_dir: self.root}
+        nodes_by_path: dict[Path, TreeNode[Path]] = {store.cfg.dest_dir: self.root}
 
-        for path in self.paths.tree_status_dirs:
+        for path in self.paths.dirs:
             parent_node = nodes_by_path.get(path.parent, self.root)
             node: TreeNode[Path] = self._insert_node(
                 dir_node=True, path=path, parent_node=parent_node
             )
             nodes_by_path[path] = node
 
-        for file_path in self.paths.status_files:
+        for file_path in self.paths.files:
             parent_node = nodes_by_path.get(file_path.parent, self.root)
             self._insert_node(dir_node=False, path=file_path, parent_node=parent_node)
 
@@ -296,11 +297,10 @@ class ManagedTree(Tree[Path]):
         self.state.selected_path = event.node.data
 
         is_unmanaged = (
-            event.node.data not in store.managed_paths and event.node is not self.root
+            event.node.data not in self.managed_paths and event.node is not self.root
         )
         has_status = (
-            event.node.data in self.paths.status_files
-            or event.node.data in self.paths.status_dirs
+            event.node.data in self.paths.files or event.node.data in self.paths.dirs
         )
         self.post_message(
             CurrentNodeMsg(
@@ -333,7 +333,7 @@ class ManagedTree(Tree[Path]):
             self._populate_unmanaged_nodes()
         else:
             for node in list(self._iter_tree_nodes()):
-                if node.data not in store.managed_paths and node is not self.root:
+                if node.data not in self.managed_paths and node is not self.root:
                     node.remove()
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
@@ -341,11 +341,11 @@ class ManagedTree(Tree[Path]):
         if show_unchanged:
             self._populate_unchanged_nodes()
         else:
-            for path in self.paths.unchanged_tree_dirs:
+            for path in self.paths.space_dirs:
                 node = self._get_tree_node(path, parent_node=False)
                 if node is not None:
                     node.remove()
-            for path in self.paths.unchanged_files:
+            for path in self.paths.space_files:
                 node = self._get_tree_node(path, parent_node=False)
                 if node is not None:
                     node.remove()

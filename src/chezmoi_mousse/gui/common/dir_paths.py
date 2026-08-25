@@ -13,7 +13,7 @@ from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.named_tuples import ManagedTreePaths
+    from chezmoi_mousse.data_classes import StatusPaths
 
     from .actionables import DirContentBtn
 
@@ -29,11 +29,11 @@ class DirPathsView(Container):
         super().__init__(id=ids.container.contents)
 
     @property
-    def paths(self) -> ManagedTreePaths:
+    def paths(self) -> StatusPaths:
         return (
-            store.paths.apply_tree_paths
+            store.apply_paths
             if self.app_ids.tab_label == TabLabel.apply
-            else store.paths.re_add_tree_paths
+            else store.re_add_paths
         )
 
     def _create_add_dir_container(self, dir_path: Path) -> ScrollableContainer:
@@ -129,7 +129,7 @@ class DirPathsView(Container):
                     classes=Tcss.added,
                 )
             )
-        elif not store.status_paths:
+        elif not store.status_dirs_kind and not store.status_files_kind:
             widgets.append(
                 Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
             )

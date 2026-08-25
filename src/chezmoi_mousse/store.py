@@ -7,14 +7,14 @@ import tracemalloc
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.cm_dataclasses import Changed, ManagedPaths
+from chezmoi_mousse.data_classes import Changed, StatusPaths
 from chezmoi_mousse.named_tuples import CommandResult, ParsedDumpConfig
 from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.cm_types import PathKindMap, PathStatusMap
+    from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 
 PILOT_MODE = (
@@ -58,22 +58,21 @@ template_data_result = CommandResult.empty()
 
 changed = Changed()
 
-managed_dirs: PathKindMap = {}
-managed_files: PathKindMap = {}
-status_dirs: PathStatusMap = {}
-status_files: PathStatusMap = {}
+managed_dirs: dict[Path, PathKind] = {}
+managed_files: dict[Path, PathKind] = {}
+status_dirs_kind: dict[Path, PathKind] = {}
+status_files_kind: dict[Path, PathKind] = {}
 
-managed_paths: frozenset[Path] = frozenset()
-status_paths: frozenset[Path] = frozenset()
+dir_status_pairs: dict[Path, str] = {}
+file_status_pairs: dict[Path, str] = {}
 
-paths: ManagedPaths = ManagedPaths()
+apply_status_dirs: dict[Path, StatusCode] = {}
+apply_status_files: dict[Path, StatusCode] = {}
+re_add_status_dirs: dict[Path, StatusCode] = {}
+re_add_status_files: dict[Path, StatusCode] = {}
 
-
-def update_derived_vars() -> None:
-    global managed_paths
-    managed_paths = frozenset(managed_dirs | managed_files)
-    global status_paths
-    status_paths = frozenset(status_dirs | status_files)
+apply_paths = StatusPaths(dirs=apply_status_dirs, files=apply_status_files)
+re_add_paths = StatusPaths(dirs=re_add_status_dirs, files=re_add_status_files)
 
 
 # Keep track of the selected path by tab

@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.named_tuples import ManagedTreePaths
+    from chezmoi_mousse.data_classes import StatusPaths
 
 __all__ = ["ContentsView"]
 
@@ -51,11 +51,11 @@ class ContentsView(ScrollableContainer):
         self.sub_section_label.update()
 
     @property
-    def paths(self) -> ManagedTreePaths:
+    def paths(self) -> StatusPaths:
         return (
-            store.paths.apply_tree_paths
+            store.apply_paths
             if self.app_ids.tab_label == TabLabel.apply
-            else store.paths.re_add_tree_paths
+            else store.re_add_paths
         )
 
     def _is_dir(self, path: Path) -> bool:
@@ -72,9 +72,9 @@ class ContentsView(ScrollableContainer):
         # sub label
         label = str(path)
         if self.app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
-            if not store.managed_paths:
+            if not store.managed_dirs | store.managed_files:
                 label = SectionLabel.no_managed_paths
-            elif not store.status_paths:
+            elif not store.status_dirs_kind and not store.status_files_kind:
                 label = SectionLabel.no_status_paths
         self.sub_section_label.update(label)
         self.highlighted_static.update(StaticString.click_file_for_contents)

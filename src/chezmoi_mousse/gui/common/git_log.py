@@ -70,7 +70,7 @@ class GitLogView(Container):
     def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        if show_path != store.cfg.dest_dir and show_path not in store.managed_paths:
+        if show_path not in store.managed_dirs | store.managed_files:
             return
         if show_path == store.cfg.dest_dir:
             self.flat_section_label.update(store.git_log_result.pretty_cmd)

@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 __all__ = [
     "AffectedPaths",
     "CommandResult",
-    "ManagedTreePaths",
     "ParsedDumpConfig",
     "PathStatus",
     "RunCommandInfo",
@@ -53,16 +52,6 @@ class CommandResult(NamedTuple):
             std_out="",
             time_stamp="",
         )
-
-
-class ManagedTreePaths(NamedTuple):
-    n_dirs: frozenset[Path]
-    status_dirs: dict[Path, StatusCode]
-    status_files: dict[Path, StatusCode]
-    tree_status_dirs: dict[Path, StatusCode]
-    unchanged_dirs: frozenset[Path]
-    unchanged_files: frozenset[Path]
-    unchanged_tree_dirs: frozenset[Path]
 
 
 class ParsedDumpConfig(NamedTuple):
