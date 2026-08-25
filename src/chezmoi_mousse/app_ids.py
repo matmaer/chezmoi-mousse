@@ -78,8 +78,8 @@ class ContainerIds:
         self.ignored_q: str = f"#{self.ignored}"
         self.left_side: str = ids.container_id(name=ContainerName.left_side)
         self.left_side_q: str = f"#{self.left_side}"
-        self.memory_usage: str = ids.container_id(name=ContainerName.memory_usage)
-        self.memory_usage_q: str = f"#{self.memory_usage}"
+        self.env_vars: str = ids.container_id(name=ContainerName.env_vars)
+        self.env_vars_q: str = f"#{self.env_vars}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
         self.right_side: str = ids.container_id(name=ContainerName.right_side)
@@ -100,6 +100,8 @@ class RichLogIds:
         self.debug_q: str = f"#{self.debug}"
         self.dom_nodes: str = ids.richlog_id(richlog=RichLogName.dom_node_logger)
         self.dom_nodes_q: str = f"#{self.dom_nodes}"
+        self.env_vars: str = ids.richlog_id(richlog=RichLogName.env_var_logger)
+        self.env_vars_q: str = f"#{self.env_vars}"
         self.memory: str = ids.richlog_id(richlog=RichLogName.memory_usage_logger)
         self.memory_q: str = f"#{self.memory}"
 

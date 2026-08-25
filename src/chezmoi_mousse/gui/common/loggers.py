@@ -91,9 +91,6 @@ class RichLoggers(RichLog):
     def write_error(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.text_error))
 
-    def write_info(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.info))
-
     def write_ready(self, message: str) -> None:
         self.write(self._get_log_line(f"--- {message} ---", ColorVar.ready))
 

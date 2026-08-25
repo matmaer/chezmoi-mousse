@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import inspect
 import os
-from datetime import datetime
+import tracemalloc
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
-from textual import on
+from textual import on, work
 from textual.containers import (
     Horizontal,
     HorizontalGroup,
@@ -56,14 +56,22 @@ class DebugLog(RichLoggers):
 
     def on_mount(self) -> None:
         self.write_ready(LogString.debug_log_initialized)
+        if tracemalloc.is_tracing():
+            self.write_warning(LogString.tracing)
+        else:
+            self.write_error(LogString.not_tracing)
 
-    def write_dimmed(self, message: str) -> None:
+    def write_text_block(self, message: str) -> None:
+        color = self.app.theme_variables[ColorVar.text_block.value]
         escaped_lines = [
-            f"[dim]{escape(line)}[/]"
+            f"[{color}]{escape(line)}[/]"
             for line in message.splitlines()
             if line.strip() != ""
         ]
         self.write("  \n".join(escaped_lines))
+
+    def write_info(self, message: str) -> None:
+        self.write(self._get_log_line(message, ColorVar.info))
 
     def mro(self, mro: tuple[type, ...]) -> None:
         """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
@@ -83,7 +91,7 @@ class DebugLog(RichLoggers):
                 e in (qname := f"{cls.__module__}.{cls.__qualname__}") for e in exclude
             )
         )
-        self.write_dimmed(pretty_mro)
+        self.write_text_block(pretty_mro)
 
     def list_attr(
         self,
@@ -103,10 +111,10 @@ class DebugLog(RichLoggers):
                     self.write_info(f"Source for method {member_name}:")
                     try:
                         source = inspect.getsource(member)
-                        self.write_dimmed(source)
+                        self.write_text_block(source)
                     except OSError as e:
                         self.write_error("Could not retrieve source")
-                        self.write_dimmed(f"{e}")
+                        self.write_text_block(f"{e}")
 
         def _type_for(name: str) -> str:
             try:
@@ -125,20 +133,16 @@ class DebugLog(RichLoggers):
 
         members_with_types = [f"{m}: {_type_for(m)}" for m in members]
         self.write_info(f"{obj.__class__.__name__} attributes:")
-        self.write_dimmed("\n".join(members_with_types))
+        self.write_text_block("\n".join(members_with_types))
 
     def callable_source(self, callable: Callable[..., Any]) -> None:
         self.write_info(f"Function source for {callable.__name__}:")
         try:
             source = inspect.getsource(callable)
-            self.write_dimmed(source)
+            self.write_text_block(source)
         except OSError as e:
             self.write_error("Could not retrieve source")
-            self.write_dimmed(f"{e}")
-
-    def print_env_vars(self) -> None:
-        for key, value in os.environ.items():
-            self.write(f"{key}: {value}")
+            self.write_text_block(f"{e}")
 
 
 class DebugTab(TabPane):
@@ -156,8 +160,8 @@ class DebugTab(TabPane):
         app = getters.app(ChezmoiGui)
 
     def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=TabLabel.debug, title=TabLabel.debug)
         self.ids = ids
+        super().__init__(id=TabLabel.debug, title=TabLabel.debug)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -167,7 +171,7 @@ class DebugTab(TabPane):
                     FlatBtnLabel.test_paths,
                     FlatBtnLabel.debug_log,
                     FlatBtnLabel.dom_nodes,
-                    FlatBtnLabel.memory_usage,
+                    FlatBtnLabel.env_vars,
                 ),
             )
             with ContentSwitcher(initial=self.ids.container.test_paths_view):
@@ -189,9 +193,11 @@ class DebugTab(TabPane):
                     id=self.ids.container.dom_nodes,
                 )
                 yield Vertical(
-                    Label(SectionLabel.memory_usage, classes=Tcss.main_section_label),
-                    RichLog(id=self.ids.richlog.memory, markup=True),
-                    id=self.ids.container.memory_usage,
+                    Label(SectionLabel.env_vars, classes=Tcss.main_section_label),
+                    RichLog(
+                        id=self.ids.richlog.env_vars, highlight=True, auto_scroll=False
+                    ),
+                    id=self.ids.container.env_vars,
                 )
         with HorizontalGroup(
             id=self.ids.container.operate_buttons, classes=Tcss.op_btn_group
@@ -223,15 +229,16 @@ class DebugTab(TabPane):
             )
 
     def on_mount(self) -> None:
+
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.test_paths_view = self.query_one(self.ids.container.test_paths_view_q)
         self.test_paths_static = self.query_exactly_one(DebugTab.TestPathsView)
-        self.test_paths_static.update(self._list_existing_test_paths())
+        self.debug_log = self.query_one(self.ids.richlog.debug_q, DebugLog)
         self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
-        self.memory_logger = self.query_one(self.ids.richlog.memory_q, RichLog)
+        self.env_var_logger = self.query_one(self.ids.richlog.env_vars_q, RichLog)
         self.mem_log_op_btn = self.query_one(self.ids.op_btn.log_memory_q, Button)
-        self.mem_log_op_btn.display = False
+        self.mem_log_op_btn.disabled = True
         self.list_test_paths_op_btn = self.query_one(
             self.ids.op_btn.list_test_paths_q, Button
         )
@@ -250,47 +257,53 @@ class DebugTab(TabPane):
             self.create_paths_op_btn,
             self.remove_paths_op_btn,
         ]
+        self._list_existing_test_paths()
+        self._log_env_vars()
         self.app.call_later(self._log_dom_nodes)
+        self.set_interval(self.INTERVAL, lambda: self._write_to_debug_log(auto=True))
 
-        import psutil
-
-        self._process = psutil.Process()
-        self.set_interval(self.INTERVAL, lambda: self._write_to_memory_log())
-
-    def _list_existing_test_paths(self) -> str:
+    def _list_existing_test_paths(self) -> None:
         path_lines = "\n".join(
             str(p) for p in self.test_paths.get_existing_test_paths()
         )
-        if path_lines:
-            return path_lines
-        else:
-            return f"[${ColorVar.text_warning} bold]No test paths exist.[/]"
+        result = (
+            path_lines
+            if path_lines
+            else f"[${ColorVar.text_warning} bold]No test paths exist.[/]"
+        )
+        self.test_paths_static.update(result)
 
-    def _write_to_memory_log(self, auto: bool = True) -> None:
-        mem_info = self._process.memory_info()
-        time = f"[green]{datetime.now().strftime('%H:%M:%S')}[/]"
-        rss = mem_info.rss / self.MiB
-        vms = mem_info.vms / self.MiB
+    def _write_to_debug_log(self, auto: bool = False) -> None:
+        current_bytes, peak_bytes = tracemalloc.get_traced_memory()
+
+        rss = current_bytes / self.MiB  # Active Python heap allocations
+        vms = peak_bytes / self.MiB  # Peak heap size recorded during tracing
+
         pc2_increase = rss > self._previous_rss * 1.02
         pc2_decrease = rss < self._previous_rss * 0.98
         pc2_change = pc2_increase or pc2_decrease
         self._previous_rss = rss
-        now_prefix = "Current memory usage log:"
-        pc2_prefix = "Auto log 2 percent delta:"
-        color = (
-            "[cyan bold]"
-            if pc2_increase
-            else "[green bold]"
-            if pc2_decrease
-            else "[yellow bold]"
-        )
-        rss_str = f"{color}{rss:3.0f}[/] MiB rss"
-        vms_str = f"{color}{vms:4.0f}[/] MiB vms"
-        prefix = pc2_prefix if auto else now_prefix
-        if pc2_change and auto or not auto:
-            self.memory_logger.write(f"{time} {prefix} {rss_str} | {vms_str}")
+        if pc2_increase:
+            color = "cyan bold"
+        elif pc2_decrease:
+            color = "green bold"
+        elif not pc2_change:
+            color = ColorVar.text_secondary
+        else:
+            color = ColorVar.bogus
 
-    def _log_dom_nodes(self) -> None:
+        rss_str = f"{rss:5.2f} MiB current heap"
+        vms_str = f"{vms:5.2f} MiB peak"
+
+        now_prefix = "Current memory usage log:"
+        auto_prefix = "Auto log 2 percent delta:"
+        prefix = auto_prefix if auto else now_prefix
+
+        if (pc2_change and auto) or not auto:
+            self.debug_log.write(f"[{color}]{prefix} {rss_str} | {vms_str}[/]")
+
+    @work
+    async def _log_dom_nodes(self) -> None:
         # App dom nodes
         app_nodes = list(self.app.walk_children())
         self.dom_node_logger.write(f"self.app DOMNode count: {len(app_nodes)}\n")
@@ -320,16 +333,18 @@ class DebugTab(TabPane):
         for item in sorted(screen_nodes_without_id, key=str):
             self.dom_node_logger.write(f"{item}")
 
+    @work
+    async def _log_env_vars(self) -> None:
+        self.env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
+
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == FlatBtnLabel.memory_usage:
-            self.mem_log_op_btn.display = True
-            for btn in self.test_paths_op_btns:
-                btn.display = False
-            self.switcher.current = self.ids.container.memory_usage
+        if event.button.label == FlatBtnLabel.debug_log:
+            self.mem_log_op_btn.disabled = False
+            self.switcher.current = self.ids.container.debug_log
         else:
-            self.mem_log_op_btn.display = False
+            self.mem_log_op_btn.disabled = True
             for btn in self.test_paths_op_btns:
                 btn.display = True
         if event.button.label == FlatBtnLabel.test_paths:
@@ -338,16 +353,18 @@ class DebugTab(TabPane):
             self.switcher.current = self.ids.container.debug_log
         elif event.button.label == FlatBtnLabel.dom_nodes:
             self.switcher.current = self.ids.container.dom_nodes
+        elif event.button.label == FlatBtnLabel.env_vars:
+            self.switcher.current = self.ids.container.env_vars
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == OpBtnLabel.log_memory.value:
-            self._write_to_memory_log(auto=False)
+            self._write_to_debug_log(auto=False)
             return
         result: str | list[str] = ""
         if event.button.label == OpBtnLabel.list_test_paths:
-            result = self._list_existing_test_paths()
+            self._list_existing_test_paths()
             return
         if event.button.label == OpBtnLabel.create_diffs:
             result = self.test_paths.create_diffs()

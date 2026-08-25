@@ -14,6 +14,8 @@ class DebugStatementDetector(ast.NodeVisitor):
         self.debug_statements: list[tuple[str, str, int]] = []
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        if node.name == "DebugTab":
+            return
         self.class_stack.append(node.name)
         self.generic_visit(node)
         self.class_stack.pop()

@@ -76,6 +76,7 @@ class ColorVar(StrEnum):
     info = "foreground-darken-1"
     ready = "accent-darken-2"
     text = "text"
+    text_block = "foreground-darken-1"
     text_error = "text-error"
     text_error_dark = "text-error-darken-3"
     text_primary = "text-primary"
@@ -92,10 +93,10 @@ class ContainerName(StrEnum):
     diff = auto()
     doctor = auto()
     dom_nodes = auto()
+    env_vars = auto()
     git_ignored = auto()
     git_log = auto()
     left_side = auto()
-    memory_usage = auto()
     operate_buttons = auto()
     right_side = auto()
     template_data = auto()
@@ -108,10 +109,10 @@ class FlatBtnLabel(StrEnum):
     diagram = "Diagram"
     doctor = "Doctor"
     dom_nodes = "DOM Nodes"
+    env_vars = "Env Vars"
     ignored = "Ignored"
     template_data = "Template Data"
     test_paths = "Test Paths"
-    memory_usage = "Memory Usage"
 
 
 class LoadingLabel(StrEnum):
@@ -135,9 +136,12 @@ class LogString(StrEnum):
     doctor_not_set_found = "See the Config tab for commands not set"
     doctor_section = "Chezmoi doctor output"
     doctor_warnings_found = "See the Config tab for warnings"
+    env_vars = "Environment variables"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
+    not_tracing = "tracemalloc is not tracing but the Debug tab is active"
     removed_managed = "New managed paths"
+    tracing = "tracemalloc is tracing"
 
     @property
     def end(self) -> str:
@@ -405,6 +409,7 @@ class RichLogName(StrEnum):
     cmd_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
+    env_var_logger = auto()
     memory_usage_logger = auto()
 
 
@@ -416,18 +421,18 @@ class SectionLabel(StrEnum):
     changed_status_paths = "Changed status paths"
     chezmoi_cat_output = "Chezmoi Cat output"
     command_outputs = "Command Output"
-    debug_log = " Debug Log "
+    debug_log = "Debug Log"
     dest_dir = "Destination Directory"
     dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
     diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
-    dom_nodes = " DOM Nodes "
+    dom_nodes = "DOM Nodes"
+    env_vars = "Environment Variables"
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
     managed_dir = "Managed Directory"
     managed_file = "Managed File"
     managed_no_status = "The path is managed but has no status for this context"
-    memory_usage = " Memory Usage "
     n_dir = "Managed directory which contains nested status paths"
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
