@@ -8,10 +8,9 @@ from textual.reactive import reactive
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import (
+    BtnLabel,
     PathKind,
     SectionLabel,
-    StaticString,
-    TabLabel,
 )
 
 from .components import (
@@ -54,7 +53,7 @@ class ContentsView(ScrollableContainer):
     def paths(self) -> StatusPaths:
         return (
             store.apply_paths
-            if self.app_ids.tab_label == TabLabel.apply
+            if self.app_ids.tab_label == BtnLabel.apply
             else store.re_add_paths
         )
 
@@ -71,13 +70,12 @@ class ContentsView(ScrollableContainer):
             self.main_section_label.update(SectionLabel.unmanaged_dir)
         # sub label
         label = str(path)
-        if self.app_ids.tab_label in (TabLabel.apply, TabLabel.re_add):
+        if self.app_ids.tab_label in (BtnLabel.apply, BtnLabel.re_add):
             if not store.managed_dirs | store.managed_files:
                 label = SectionLabel.no_managed_paths
             elif not store.status_dirs_kind and not store.status_files_kind:
                 label = SectionLabel.no_status_paths
         self.sub_section_label.update(label)
-        self.highlighted_static.update(StaticString.click_file_for_contents)
 
     def _create_file_container(self, path: Path) -> None:
         self.sub_section_label.update(SectionLabel.not_set)

@@ -6,7 +6,7 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
-from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
+from chezmoi_mousse.str_enums import BtnLabel
 
 from .actionables import ReviewBtnGroup, TabBtn, TabButtons
 from .contents import ContentsView
@@ -27,13 +27,13 @@ class ViewSwitcher(Vertical):
         super().__init__(id=ids.container.right_side)
         self.ids = ids
         self.run_label = (
-            OpBtnLabel.apply_review
-            if self.ids.tab_label == TabLabel.apply
-            else OpBtnLabel.re_add_review
+            BtnLabel.apply_review
+            if self.ids.tab_label == BtnLabel.apply
+            else BtnLabel.re_add_review
         )
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(self.ids, (TabLabel.diff, TabLabel.contents, TabLabel.git_log))
+        yield TabButtons(self.ids, (BtnLabel.diff, BtnLabel.contents, BtnLabel.git_log))
         with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
@@ -42,8 +42,8 @@ class ViewSwitcher(Vertical):
             self.ids,
             (
                 self.run_label,
-                OpBtnLabel.forget_review,
-                OpBtnLabel.destroy_review,
+                BtnLabel.forget_review,
+                BtnLabel.destroy_review,
             ),
         )
 
@@ -54,9 +54,9 @@ class ViewSwitcher(Vertical):
     def switch_view(self, msg: TabBtnMsg) -> None:
         if isinstance(msg.button, TabBtn):
             msg.stop()
-            if msg.button.label == TabLabel.contents:
+            if msg.button.label == BtnLabel.contents:
                 self.content_switcher.current = self.ids.container.contents
-            elif msg.button.label == TabLabel.diff:
+            elif msg.button.label == BtnLabel.diff:
                 self.content_switcher.current = self.ids.container.diff
-            elif msg.button.label == TabLabel.git_log:
+            elif msg.button.label == BtnLabel.git_log:
                 self.content_switcher.current = self.ids.container.git_log

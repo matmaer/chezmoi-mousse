@@ -21,17 +21,16 @@ from textual.widgets import (
     TabPane,
 )
 
+from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
 )
 from chezmoi_mousse.gui.common.loggers import RichLoggers
 from chezmoi_mousse.str_enums import (
+    BtnLabel,
     ColorVar,
-    FlatBtnLabel,
     LogString,
-    OpBtnLabel,
     SectionLabel,
-    TabLabel,
     Tcss,
 )
 
@@ -44,15 +43,14 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["DebugTab"]
 
 
 class DebugLog(RichLoggers):
-    def __init__(self, *, ids: AppIds) -> None:
-        super().__init__(id=ids.richlog.debug, markup=True, max_lines=10000, wrap=True)
+    def __init__(self) -> None:
+        super().__init__(markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
         self.write_ready(LogString.debug_log_initialized)
@@ -159,97 +157,108 @@ class DebugTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, ids: AppIds) -> None:
-        self.ids = ids
-        super().__init__(id=TabLabel.debug, title=TabLabel.debug)
+    def __init__(self) -> None:
+        super().__init__(id=BtnLabel.debug.pane_id, title=BtnLabel.debug)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
-                self.ids,
+                store.debug_ids,
                 labels=(
-                    FlatBtnLabel.test_paths,
-                    FlatBtnLabel.debug_log,
-                    FlatBtnLabel.dom_nodes,
-                    FlatBtnLabel.env_vars,
+                    BtnLabel.test_paths,
+                    BtnLabel.debug_log,
+                    BtnLabel.dom_nodes,
+                    BtnLabel.env_vars,
                 ),
             )
-            with ContentSwitcher(initial=self.ids.container.test_paths_view):
+            with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
                 yield Vertical(
                     Label(SectionLabel.test_paths, classes=Tcss.main_section_label),
                     DebugTab.TestPathsView(classes=Tcss.info),
-                    id=self.ids.container.test_paths_view,
+                    id=store.debug_ids.container.test_paths_view,
                 )
                 yield Vertical(
                     Label(SectionLabel.debug_log, classes=Tcss.main_section_label),
-                    DebugLog(ids=self.ids),
-                    id=self.ids.container.debug_log,
+                    DebugLog(),
+                    id=store.debug_ids.container.debug_log,
                 )
                 yield Vertical(
                     Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label),
                     RichLog(
-                        id=self.ids.richlog.dom_nodes, highlight=True, auto_scroll=False
+                        id=store.debug_ids.richlog.dom_nodes,
+                        highlight=True,
+                        auto_scroll=False,
                     ),
-                    id=self.ids.container.dom_nodes,
+                    id=store.debug_ids.container.dom_nodes,
                 )
                 yield Vertical(
                     Label(SectionLabel.env_vars, classes=Tcss.main_section_label),
                     RichLog(
-                        id=self.ids.richlog.env_vars, highlight=True, auto_scroll=False
+                        id=store.debug_ids.richlog.env_vars,
+                        highlight=True,
+                        auto_scroll=False,
                     ),
-                    id=self.ids.container.env_vars,
+                    id=store.debug_ids.container.env_vars,
                 )
         with HorizontalGroup(
-            id=self.ids.container.operate_buttons, classes=Tcss.op_btn_group
+            id=store.debug_ids.container.operate_buttons, classes=Tcss.op_btn_group
         ):
             yield Button(
                 classes=Tcss.operate_button,
-                id=self.ids.op_btn.log_memory,
-                label=OpBtnLabel.log_memory,
+                id=store.debug_ids.op_btn.log_memory,
+                label=BtnLabel.log_memory,
             )
             yield Button(
                 classes=Tcss.operate_button,
-                id=self.ids.op_btn.list_test_paths,
-                label=OpBtnLabel.list_test_paths,
+                id=store.debug_ids.op_btn.list_test_paths,
+                label=BtnLabel.list_test_paths,
             )
             yield Button(
                 classes=Tcss.operate_button,
-                id=self.ids.op_btn.create_diffs,
-                label=OpBtnLabel.create_diffs,
+                id=store.debug_ids.op_btn.create_diffs,
+                label=BtnLabel.create_diffs,
             )
             yield Button(
                 classes=Tcss.operate_button,
-                id=self.ids.op_btn.create_paths,
-                label=OpBtnLabel.create_paths,
+                id=store.debug_ids.op_btn.create_paths,
+                label=BtnLabel.create_paths,
             )
             yield Button(
                 classes=Tcss.operate_button,
-                id=self.ids.op_btn.remove_paths,
-                label=OpBtnLabel.remove_paths,
+                id=store.debug_ids.op_btn.remove_paths,
+                label=BtnLabel.remove_paths,
             )
 
     def on_mount(self) -> None:
 
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.test_paths_view = self.query_one(self.ids.container.test_paths_view_q)
+        self.test_paths_view = self.query_one(
+            store.debug_ids.container.test_paths_view_q
+        )
         self.test_paths_static = self.query_exactly_one(DebugTab.TestPathsView)
-        self.debug_log = self.query_one(self.ids.richlog.debug_q, DebugLog)
-        self.dom_node_logger = self.query_one(self.ids.richlog.dom_nodes_q, RichLog)
-        self.env_var_logger = self.query_one(self.ids.richlog.env_vars_q, RichLog)
-        self.mem_log_op_btn = self.query_one(self.ids.op_btn.log_memory_q, Button)
+        self.debug_log = self.query_exactly_one(DebugLog)
+        self.dom_node_logger = self.query_one(
+            store.debug_ids.richlog.dom_nodes_q, RichLog
+        )
+        self.env_var_logger = self.query_one(
+            store.debug_ids.richlog.env_vars_q, RichLog
+        )
+        self.mem_log_op_btn = self.query_one(
+            store.debug_ids.op_btn.log_memory_q, Button
+        )
         self.mem_log_op_btn.disabled = True
         self.list_test_paths_op_btn = self.query_one(
-            self.ids.op_btn.list_test_paths_q, Button
+            store.debug_ids.op_btn.list_test_paths_q, Button
         )
         self.create_diffs_op_btn = self.query_one(
-            self.ids.op_btn.create_diffs_q, Button
+            store.debug_ids.op_btn.create_diffs_q, Button
         )
         self.create_paths_op_btn = self.query_one(
-            self.ids.op_btn.create_paths_q, Button
+            store.debug_ids.op_btn.create_paths_q, Button
         )
         self.remove_paths_op_btn = self.query_one(
-            self.ids.op_btn.remove_paths_q, Button
+            store.debug_ids.op_btn.remove_paths_q, Button
         )
         self.test_paths_op_btns = [
             self.list_test_paths_op_btn,
@@ -340,37 +349,37 @@ class DebugTab(TabPane):
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == FlatBtnLabel.debug_log:
+        if event.button.label == BtnLabel.debug_log:
             self.mem_log_op_btn.disabled = False
-            self.switcher.current = self.ids.container.debug_log
+            self.switcher.current = store.debug_ids.container.debug_log
         else:
             self.mem_log_op_btn.disabled = True
             for btn in self.test_paths_op_btns:
                 btn.display = True
-        if event.button.label == FlatBtnLabel.test_paths:
+        if event.button.label == BtnLabel.test_paths:
             self.switcher.current = self.test_paths_view.id
-        elif event.button.label == FlatBtnLabel.debug_log:
-            self.switcher.current = self.ids.container.debug_log
-        elif event.button.label == FlatBtnLabel.dom_nodes:
-            self.switcher.current = self.ids.container.dom_nodes
-        elif event.button.label == FlatBtnLabel.env_vars:
-            self.switcher.current = self.ids.container.env_vars
+        elif event.button.label == BtnLabel.debug_log:
+            self.switcher.current = store.debug_ids.container.debug_log
+        elif event.button.label == BtnLabel.dom_nodes:
+            self.switcher.current = store.debug_ids.container.dom_nodes
+        elif event.button.label == BtnLabel.env_vars:
+            self.switcher.current = store.debug_ids.container.env_vars
 
     @on(Button.Pressed, Tcss.operate_button.dot_prefix)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == OpBtnLabel.log_memory.value:
+        if event.button.label == BtnLabel.log_memory.value:
             self._write_to_debug_log(auto=False)
             return
         result: str | list[str] = ""
-        if event.button.label == OpBtnLabel.list_test_paths:
+        if event.button.label == BtnLabel.list_test_paths:
             self._list_existing_test_paths()
             return
-        if event.button.label == OpBtnLabel.create_diffs:
+        if event.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
-        elif event.button.label == OpBtnLabel.create_paths:
+        elif event.button.label == BtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
-        elif event.button.label == OpBtnLabel.remove_paths:
+        elif event.button.label == BtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
         # TODO: self.app.cmattr.update_attributes(ReadCmd.managed_status_commands())
         if isinstance(result, str):

@@ -8,11 +8,11 @@ from textual.widgets import DataTable
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.str_enums import ColorVar, SectionLabel
+from chezmoi_mousse.str_enums import ColorVar
 
 from .components import (
     FlatSectionLabel,
-    InfoContainer,
+    InfoVertical,
 )
 
 if TYPE_CHECKING:
@@ -41,21 +41,21 @@ class GitLogView(Vertical):
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel()
         yield DataTable[str](show_cursor=False)
-        yield InfoContainer(SectionLabel.unmanaged_dir, SectionLabel.not_set, "")
+        yield InfoVertical()
 
     def on_mount(self) -> None:
         self.git_log_results: dict[Path, tuple[str, str]]
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table = self.query_exactly_one(DataTable[str])
         self.data_table.add_columns("COMMIT", "MESSAGE")
-        self.info_container = self.query_exactly_one(InfoContainer)
+        self.info_container = self.query_exactly_one(InfoVertical)
         self.info_container.display = False
 
     def _update_datatable(self, git_log_lines: list[str]) -> None:
         self.data_table.clear()
 
         def add_row_with_style(columns: list[str], log_color: ColorVar) -> None:
-            color = self.app.get_color(log_color)
+            color = self.app.theme_variables[log_color]
             row: list[str] = [f"[{color}]{cell_text}[/]" for cell_text in columns]
             self.data_table.add_row(*row)
 

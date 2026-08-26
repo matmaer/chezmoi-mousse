@@ -11,7 +11,7 @@ from chezmoi_mousse.data_classes import Changed, ChezmoiRepoChecks, StatusPaths
 from chezmoi_mousse.named_tuples import (
     ParsedDumpConfig,
 )
-from chezmoi_mousse.str_enums import OpBtnLabel, TabLabel
+from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -38,17 +38,18 @@ results_queue: queue.Queue[CommandResult] = queue.Queue()
 
 live_run: bool = False
 
-add_id = AppIds(TabLabel.add)
-apply_id = AppIds(TabLabel.apply)
-config_id = AppIds(TabLabel.config)
-debug_id = AppIds(TabLabel.debug)
-logs_id = AppIds(TabLabel.logs)
-re_add_id = AppIds(TabLabel.re_add)
+add_ids = AppIds(BtnLabel.add)
+apply_ids = AppIds(BtnLabel.apply)
+config_ids = AppIds(BtnLabel.config)
+debug_ids = AppIds(BtnLabel.debug)
+logs_ids = AppIds(BtnLabel.logs)
+re_add_ids = AppIds(BtnLabel.re_add)
 
 cfg = ParsedDumpConfig()
 cm_repo_checks = ChezmoiRepoChecks()
 
 changed = Changed()
+
 
 managed_dirs: dict[Path, PathKind] = {}
 managed_files: dict[Path, PathKind] = {}
@@ -73,12 +74,12 @@ apply_path: Path | None = None
 re_add_path: Path | None = None
 
 
-def get_tab_path(btn_label: OpBtnLabel) -> Path | None:
-    if btn_label == OpBtnLabel.add_run:
+def get_tab_path(btn_label: BtnLabel) -> Path | None:
+    if btn_label == BtnLabel.add_run:
         return add_path
-    elif btn_label == OpBtnLabel.apply_run:
+    elif btn_label == BtnLabel.apply_run:
         return apply_path
-    elif btn_label == OpBtnLabel.re_add_run:
+    elif btn_label == BtnLabel.re_add_run:
         return re_add_path
     else:
         raise ValueError(f"Invalid button label: {btn_label}")

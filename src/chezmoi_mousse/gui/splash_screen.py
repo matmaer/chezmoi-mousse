@@ -77,7 +77,6 @@ class SplashScreen(Screen[None]):
         app = getters.app(ChezmoiGui)
 
     def _forward_event(self, event: events.Event) -> None:
-        # Override textual Screen method to prevent refresh when moving mouse
         if isinstance(
             event,
             (
@@ -94,7 +93,6 @@ class SplashScreen(Screen[None]):
             ),
         ):
             return
-        # Allow all other events (keyboard, etc.)
         super()._forward_event(event)
 
     def compose(self) -> ComposeResult:
@@ -108,12 +106,13 @@ class SplashScreen(Screen[None]):
         self.splash_log.styles.width = "auto"
         self.splash_log.styles.height = len(ReadCmd)
 
-        self.primary_color = self.app.get_color(ColorVar.text_primary)
-        self.success_color = self.app.get_color(ColorVar.text_success)
-        self.warning_color = self.app.get_color(ColorVar.text_warning)
+        self.primary_color = self.app.theme_variables[ColorVar.text_primary]
+        self.success_color = self.app.theme_variables[ColorVar.text_success]
+        self.warning_color = self.app.theme_variables[ColorVar.text_warning]
 
-        self.fade_timer = self.query_exactly_one(AnimatedFade).fade_timer
-        self._run_all_tasks()
+        self.fade_timer = self.animated_fade.fade_timer
+        # Run background workflow via Textual worker launcher so UI renders!
+        self.run_worker(self.run_all_tasks())
 
     def _get_log_msg(self, *, prefix: str, returncode: int | None) -> str:
         suffix = "completed"
@@ -126,17 +125,14 @@ class SplashScreen(Screen[None]):
             color = self.warning_color
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
-    def _run_chezmoi_command(self, command: ReadCmd) -> str:
-        result: CommandResult = Commands.run_read_cmd(command, path_arg=None)
+    async def _run_chezmoi_command(self, command: ReadCmd) -> str:
+        result: CommandResult = await asyncio.to_thread(
+            Commands.run_read_cmd, command, path_arg=None
+        )
         msg = self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
+        self.splash_log.write(msg)
         return msg
 
-    @work(thread=True)
-    def _run_chezmoi_cmd_worker(self, cmd: ReadCmd) -> None:
-        msg = self._run_chezmoi_command(cmd)
-        self.app.call_from_thread(self.splash_log.write, msg)
-
-    @work
     async def _post_process_cmd_results(self) -> None:
         store.add_path = store.cfg.dest_dir
         store.apply_path = store.cfg.dest_dir
@@ -150,53 +146,43 @@ class SplashScreen(Screen[None]):
         msg = self._get_log_msg(prefix="process command outputs", returncode=None)
         self.splash_log.write(msg)
 
-    @work
-    async def _run_all_tasks(self) -> None:
+    async def run_all_tasks(self) -> None:
         self.fade_timer.resume()
 
-        result: CommandResult = Commands.run_read_cmd(
-            ReadCmd.git_repo_check, path_arg=None
+        await self._run_chezmoi_command(ReadCmd.dump_config)
+        result: CommandResult = await asyncio.to_thread(
+            Commands.run_read_cmd, ReadCmd.git_repo_check, path_arg=None
         )
         store.cm_repo_checks.exists_bool = result.returncode == 0
+
+        base_cmds = [
+            ReadCmd.doctor,
+            ReadCmd.cat_config,
+            ReadCmd.ignored,
+            ReadCmd.template_data,
+        ]
         if store.cm_repo_checks.exists:
-            self._run_chezmoi_cmd_worker(ReadCmd.git_log)
+            base_cmds.append(ReadCmd.git_log)
+            base_cmds.append(ReadCmd.git_remote)
 
-        if not store.cm_repo_checks.exists:
-            for cmd in (
-                ReadCmd.doctor,
-                ReadCmd.cat_config,
-                ReadCmd.ignored,
-                ReadCmd.template_data,
-            ):
-                self._run_chezmoi_cmd_worker(cmd)
-        else:
-            for cmd in (
-                ReadCmd.doctor,
-                ReadCmd.cat_config,
-                ReadCmd.git_remote,
-                ReadCmd.ignored,
-                ReadCmd.template_data,
-            ):
-                self._run_chezmoi_cmd_worker(cmd)
+        # Execute independent read commands concurrently using TaskGroup
+        async with asyncio.TaskGroup() as tg:
+            for cmd in base_cmds:
+                tg.create_task(self._run_chezmoi_command(cmd))
 
-        to_process_workers = [
-            self._run_chezmoi_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()
-        ] + [self._run_chezmoi_cmd_worker(ReadCmd.dump_config)]
+        # Execute managed commands concurrently
+        async with asyncio.TaskGroup() as tg:
+            for cmd in ReadCmd.managed_commands():
+                tg.create_task(self._run_chezmoi_command(cmd))
 
-        for worker in to_process_workers:
-            await worker.wait()
-        await self._post_process_cmd_results().wait()
+        await self._post_process_cmd_results()
 
-        for worker in self.workers:
-            if worker.name != "_run_all_tasks":
-                await worker.wait()
-
-        # Wait for the remaining tasks to finish
-        # Only dismiss after a completed fade cycle
+    @work
+    async def dismiss_after_fade_loop(self) -> None:
+        # Wait for remaining steps before dismissing
         while (
             self.animated_fade.step_count < 20
             or self.animated_fade.step_count % 20 != 0
         ):
-            await asyncio.sleep(0.05)
-
+            await asyncio.sleep(0.03)
         self.dismiss()

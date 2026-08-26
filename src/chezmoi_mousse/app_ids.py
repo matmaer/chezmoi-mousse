@@ -1,19 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
+    BtnLabel,
     ContainerName,
-    OpBtnLabel,
     RichLogName,
 )
-
-if TYPE_CHECKING:
-    from chezmoi_mousse.str_enums import (
-        FlatBtnLabel,
-        TabLabel,
-    )
 
 __all__ = ["AppIds"]
 
@@ -30,7 +22,7 @@ class AppIds:
         "switch_slider",
     )
 
-    def __init__(self, tab_label: TabLabel) -> None:
+    def __init__(self, tab_label: BtnLabel) -> None:
         self.tab_label = tab_label
         self.container = ContainerIds(self)
         self.managed_tree = f"{self.tab_label.name}_managed_tree"
@@ -41,25 +33,24 @@ class AppIds:
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
-        return f"{qid}{self.tab_label.name}_{name.name}"
+        return f"{qid}{self.tab_label.name}_{name.name}_id"
 
-    def flat_button_id(self, qid: str = "", *, btn: FlatBtnLabel) -> str:
-        return f"{qid}{self.tab_label.name}_{btn.name}_flat_btn"
-
-    def op_btn_id(self, qid: str = "", *, operation: OpBtnLabel) -> str:
-        return f"{qid}{self.tab_label.name}_{operation.normalized_label}_op_btn"
+    def btn_id(self, qid: str = "", *, btn_label: BtnLabel) -> str:
+        return f"{qid}{self.tab_label.name}_{btn_label.name}_btn_id"
 
     def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
-        return f"{qid}{self.tab_label.name}_{switch.name}_switch"
+        return f"{qid}{self.tab_label.name}_{switch.name}_switch_id"
 
     def richlog_id(self, qid: str = "", *, richlog: RichLogName) -> str:
-        return f"{qid}{self.tab_label.name}_{richlog.name}"
+        return f"{qid}{self.tab_label.name}_{richlog.name}_id"
 
 
 class ContainerIds:
     def __init__(self, ids: AppIds) -> None:
         self.cat_config: str = ids.container_id(name=ContainerName.cat_config)
         self.cat_config_q: str = f"#{self.cat_config}"
+        self.cmd_log: str = ids.container_id(name=ContainerName.cmd_log)
+        self.cmd_log_q: str = f"#{self.cmd_log}"
         self.contents: str = ids.container_id(name=ContainerName.contents)
         self.contents_q: str = f"#{self.contents}"
         self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
@@ -94,8 +85,6 @@ class RichLogIds:
     def __init__(self, ids: AppIds) -> None:
         self.app: str = ids.richlog_id(richlog=RichLogName.app_logger)
         self.app_q: str = f"#{self.app}"
-        self.cmd: str = ids.richlog_id(richlog=RichLogName.cmd_logger)
-        self.cmd_q: str = f"#{self.cmd}"
         self.debug: str = ids.richlog_id(richlog=RichLogName.debug_logger)
         self.debug_q: str = f"#{self.debug}"
         self.dom_nodes: str = ids.richlog_id(richlog=RichLogName.dom_node_logger)
@@ -108,53 +97,53 @@ class RichLogIds:
 
 class OperateButtonIds:
     def __init__(self, ids: AppIds) -> None:
-        self.add_review: str = ids.op_btn_id(operation=OpBtnLabel.add_review)
+        self.add_review: str = ids.btn_id(btn_label=BtnLabel.add_review)
         self.add_review_q: str = f"#{self.add_review}"
-        self.add_run: str = ids.op_btn_id(operation=OpBtnLabel.add_run)
+        self.add_run: str = ids.btn_id(btn_label=BtnLabel.add_run)
         self.add_run_q: str = f"#{self.add_run}"
 
-        self.apply_review: str = ids.op_btn_id(operation=OpBtnLabel.apply_review)
+        self.apply_review: str = ids.btn_id(btn_label=BtnLabel.apply_review)
         self.apply_review_q: str = f"#{self.apply_review}"
-        self.apply_run: str = ids.op_btn_id(operation=OpBtnLabel.apply_run)
+        self.apply_run: str = ids.btn_id(btn_label=BtnLabel.apply_run)
         self.apply_run_q: str = f"#{self.apply_run}"
 
-        self.destroy_review: str = ids.op_btn_id(operation=OpBtnLabel.destroy_review)
+        self.destroy_review: str = ids.btn_id(btn_label=BtnLabel.destroy_review)
         self.destroy_review_q: str = f"#{self.destroy_review}"
-        self.destroy_run: str = ids.op_btn_id(operation=OpBtnLabel.destroy_run)
+        self.destroy_run: str = ids.btn_id(btn_label=BtnLabel.destroy_run)
         self.destroy_run_q: str = f"#{self.destroy_run}"
 
-        self.exit_op_modal: str = ids.op_btn_id(operation=OpBtnLabel.cancel)
+        self.exit_op_modal: str = ids.btn_id(btn_label=BtnLabel.cancel)
         self.exit_op_modal_q: str = f"#{self.exit_op_modal}"
 
-        self.forget_review: str = ids.op_btn_id(operation=OpBtnLabel.forget_review)
+        self.forget_review: str = ids.btn_id(btn_label=BtnLabel.forget_review)
         self.forget_review_q: str = f"#{self.forget_review}"
-        self.forget_run: str = ids.op_btn_id(operation=OpBtnLabel.forget_run)
+        self.forget_run: str = ids.btn_id(btn_label=BtnLabel.forget_run)
         self.forget_run_q: str = f"#{self.forget_run}"
 
-        self.re_add_review: str = ids.op_btn_id(operation=OpBtnLabel.re_add_review)
+        self.re_add_review: str = ids.btn_id(btn_label=BtnLabel.re_add_review)
         self.re_add_review_q: str = f"#{self.re_add_review}"
-        self.re_add_run: str = ids.op_btn_id(operation=OpBtnLabel.re_add_run)
+        self.re_add_run: str = ids.btn_id(btn_label=BtnLabel.re_add_run)
         self.re_add_run_q: str = f"#{self.re_add_run}"
 
-        self.refresh_tree: str = ids.op_btn_id(operation=OpBtnLabel.refresh_trees)
+        self.refresh_tree: str = ids.btn_id(btn_label=BtnLabel.refresh_trees)
         self.refresh_tree_q: str = f"#{self.refresh_tree}"
 
-        self.reload: str = ids.op_btn_id(operation=OpBtnLabel.reload)
+        self.reload: str = ids.btn_id(btn_label=BtnLabel.reload)
         self.reload_q: str = f"#{self.reload}"
 
-        self.toggle_dry_run: str = ids.op_btn_id(operation=OpBtnLabel.enable_live_run)
+        self.toggle_dry_run: str = ids.btn_id(btn_label=BtnLabel.enable_live_run)
         self.toggle_dry_run_q: str = f"#{self.toggle_dry_run}"
 
         # for test_paths only
-        self.create_paths: str = ids.op_btn_id(operation=OpBtnLabel.create_paths)
+        self.create_paths: str = ids.btn_id(btn_label=BtnLabel.create_paths)
         self.create_paths_q: str = f"#{self.create_paths}"
-        self.remove_paths: str = ids.op_btn_id(operation=OpBtnLabel.remove_paths)
+        self.remove_paths: str = ids.btn_id(btn_label=BtnLabel.remove_paths)
         self.remove_paths_q: str = f"#{self.remove_paths}"
-        self.list_test_paths: str = ids.op_btn_id(operation=OpBtnLabel.list_test_paths)
+        self.list_test_paths: str = ids.btn_id(btn_label=BtnLabel.list_test_paths)
         self.list_test_paths_q: str = f"#{self.list_test_paths}"
-        self.create_diffs: str = ids.op_btn_id(operation=OpBtnLabel.create_diffs)
+        self.create_diffs: str = ids.btn_id(btn_label=BtnLabel.create_diffs)
         self.create_diffs_q: str = f"#{self.create_diffs}"
-        self.log_memory: str = ids.op_btn_id(operation=OpBtnLabel.log_memory)
+        self.log_memory: str = ids.btn_id(btn_label=BtnLabel.log_memory)
         self.log_memory_q: str = f"#{self.log_memory}"
 
 

@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.str_enums import SectionLabel, TabLabel, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, SectionLabel, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
@@ -32,7 +32,7 @@ class DirPathsView(Container):
     def paths(self) -> StatusPaths:
         return (
             store.apply_paths
-            if self.app_ids.tab_label == TabLabel.apply
+            if self.app_ids.tab_label == BtnLabel.apply
             else store.re_add_paths
         )
 
@@ -147,7 +147,7 @@ class DirPathsView(Container):
         if show_path is None:
             return
         self.remove_children()
-        if self.app_ids.tab_label == TabLabel.add and (
+        if self.app_ids.tab_label == BtnLabel.add and (
             show_path == store.cfg.dest_dir or show_path.is_dir()
         ):
             container = self._create_add_dir_container(show_path)

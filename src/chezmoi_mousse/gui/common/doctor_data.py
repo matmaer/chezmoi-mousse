@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rich.text import Text
+from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse.str_enums import ColorVar
@@ -21,26 +22,29 @@ class DoctorTable(DataTable[Text]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
+
     def __init__(self) -> None:
-        super().__init__(cursor_type="row", show_cursor=False)
+        super().__init__(show_cursor=False)
 
-    def on_mount(self) -> None:
+    def watch_cmd_result(self, cmd_result: CommandResult) -> None:
         self.row_color = {
-            "ok": self.app.get_color(ColorVar.text_success),
-            "info": self.app.get_color(ColorVar.info),
-            "warning": self.app.get_color(ColorVar.text_warning),
-            "failed": self.app.get_color(ColorVar.text_error),
-            "error": self.app.get_color(ColorVar.text_error),
+            "ok": self.app.theme_variables[ColorVar.text_success],
+            "info": self.app.theme_variables[ColorVar.info],
+            "warning": self.app.theme_variables[ColorVar.text_warning],
+            "failed": self.app.theme_variables[ColorVar.text_error],
+            "error": self.app.theme_variables[ColorVar.text_error],
         }
+        doctor_lines = cmd_result.std_out.splitlines()
+        if cmd_result.returncode != 0:
+            self.notify(f"{cmd_result.std_err}", severity="error")
+            return
+        elif not doctor_lines:
+            self.notify("No doctor output available to display.", severity="error")
+            return
 
-    def populate_table(self, doctor_result: CommandResult) -> None:
-        if doctor_result.returncode != 0:
-            return
-        doctor_lines = doctor_result.std_out.splitlines()
-        if not doctor_lines:
-            self.notify("No doctor output available to display.")
-            return
         self.add_columns(*doctor_lines[0].split())
+        rows: list[list[Text]] = []
 
         for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
@@ -48,19 +52,21 @@ class DoctorTable(DataTable[Text]):
                 new_row = [
                     Text(cell_text, style=self.row_color["info"]) for cell_text in row
                 ]
-                self.add_row(*new_row)
+                rows.append(new_row)
             elif row[0] in ["ok", "warning", "error", "failed"]:
                 new_row = [
                     Text(cell_text, style=f"{self.row_color[row[0]]}")
                     for cell_text in row
                 ]
-                self.add_row(*new_row)
+                rows.append(new_row)
             elif row[0] == "info" and row[2] == "not set":
                 new_row = [
                     Text(cell_text, style=self.row_color["warning"])
                     for cell_text in row
                 ]
-                self.add_row(*new_row)
+                rows.append(new_row)
             else:
-                text_row = [Text(cell_text) for cell_text in row]
-                self.add_row(*text_row)
+                new_row = [Text(cell_text) for cell_text in row]
+                rows.append(new_row)
+
+        self.add_rows(rows)

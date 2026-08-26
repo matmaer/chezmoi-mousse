@@ -63,7 +63,7 @@ class CmdResultCollapsible(Collapsible):
 
 class CmdLog(ScrollableContainer):
     def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=ids.richlog.cmd)
+        super().__init__(id=ids.container.cmd_log)
 
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
@@ -108,16 +108,14 @@ class AppLog(RichLoggers):
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
-        super().__init__(id=store.logs_id.richlog.app, markup=True, max_lines=10000)
+        super().__init__(id=store.logs_ids.richlog.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
         self.write_dimmed(LogString.app_log_initialized)
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
 
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is None:
-            return
+    def watch_cmd_result(self, cmd_result: CommandResult) -> None:
         if cmd_result.returncode == 0:
             self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
         if "doctor" in cmd_result.full_cmd:

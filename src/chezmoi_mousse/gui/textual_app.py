@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 import dataclasses
-from typing import ClassVar
+import json
+from functools import partial
+from itertools import chain
+from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
 from rich.segment import Segment, Segments
@@ -8,37 +14,80 @@ from textual import on, work
 from textual.app import App
 from textual.binding import Binding
 from textual.containers import Vertical
+from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
-from textual.widgets import TabbedContent, TabPane, Tabs
+from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
+from chezmoi_mousse.debug.debug_tab import DebugTab
+from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.gui.common.actionables import (
+    DryRunBtn,
+    SwitchSlider,
+)
+from chezmoi_mousse.gui.common.contents import ContentsView
+from chezmoi_mousse.gui.common.diffs import DiffView
+from chezmoi_mousse.gui.common.doctor_data import DoctorTable
+from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
+from chezmoi_mousse.gui.common.git_log import GitLogView
+from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
+from chezmoi_mousse.gui.common.managed_tree import DestDirTree, ManagedTree
+from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
+from chezmoi_mousse.gui.common.operate_modal import OperateModal
+from chezmoi_mousse.gui.common.switchers import ViewSwitcher
+from chezmoi_mousse.gui.splash_screen import SplashScreen
+from chezmoi_mousse.named_tuples import ParsedDumpConfig
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
+    BtnLabel,
     Chars,
-    ColorVar,
-    OpBtnLabel,
-    TabLabel,
+    ReactiveVar,
+    ReadCmd,
+    Tcss,
 )
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
-from .common.actionables import (
-    DryRunBtn,
-    FlatButtonsVertical,
-    SwitchSlider,
-    TabButtons,
-)
-from .common.managed_tree import DestDirTree
-from .common.messages import DryRunBtnMsg
-from .common.operate_modal import OperateModal
-from .main_screen import CustomHeader, MainScreen
-from .splash_screen import SplashScreen
-from .tab_panes import AddTab, ApplyTab, ReAddTab
+from .common.actionables import FlatButtonsVertical, TabButtons
+from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from textual.app import ComposeResult
+    from textual.worker import Worker
+
+    from chezmoi_mousse.named_tuples import CommandResult
+
 
 __all__ = ["ChezmoiGui"]
 
 
+class CustomHeader(Header):
+    DRY_MODE: ClassVar[str] = (
+        "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
+    )
+    LIVE_MODE: ClassVar[str] = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
+
+    live_run: reactive[bool] = reactive(False)
+
+    def on_mount(self) -> None:
+        self.icon = Chars.burger
+
+    def watch_live_run(self, live_run: bool) -> None:
+        if live_run is True:
+            self.screen.title = self.LIVE_MODE
+            header_title = self.query_exactly_one("HeaderTitle", Static)
+            header_title.add_class(Tcss.live_run_color)
+        if live_run is False:
+            self.screen.title = self.DRY_MODE
+            header_title = self.query_exactly_one("HeaderTitle", Static)
+            header_title.remove_class(Tcss.live_run_color)
+
+
 class ChezmoiGui(App[str]):
+    class MainVertical(Vertical): ...
+
     BINDINGS: ClassVar = [
         Binding(
             "ctrl+q",
@@ -66,11 +115,6 @@ class ChezmoiGui(App[str]):
 
     CSS_PATH = "gui.tcss"
 
-    SCREENS: ClassVar = {
-        "main_screen": MainScreen,
-        "operate_modal": lambda: OperateModal((OpBtnLabel.cancel,)),
-    }
-
     def __init__(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
@@ -81,84 +125,183 @@ class ChezmoiGui(App[str]):
         DebugUtils.save_stacktrace()
         super()._handle_exception(error)
 
-    def on_mount(self) -> None:
-        self.register_theme(chezmoi_mousse_light)
-        self.register_theme(chezmoi_mousse_dark)
-        self.theme = "chezmoi-mousse-dark"
-        self._run_splash_screen()
+    def compose(self) -> ComposeResult:
+        yield CustomHeader()
+        yield TabbedContent()
+        yield Footer()
 
-    def get_color(self, color_var: ColorVar) -> str:
-        return self.theme_variables.get(color_var.value, ColorVar.bogus.value)
+    def on_mount(self) -> None:
+        self.run_startup_worker()
+
+    def on_unmount(self) -> None:
+        store.results_queue.shutdown(immediate=True)
 
     @work
-    async def _run_splash_screen(self) -> None:
-        await self.push_screen(SplashScreen(), callback=self._on_splash_dismiss)
+    async def run_startup_worker(self) -> None:
+        self.register_theme(chezmoi_mousse_dark)
+        self.theme = "chezmoi-mousse-dark"
+        splash_screen = SplashScreen()
+        self.register_theme(chezmoi_mousse_light)
+        await self.push_screen(splash_screen)
+        await self._listen_to_command_results().wait()
+        tabbed_content = self.query_exactly_one(TabbedContent)
+        await tabbed_content.add_pane(ApplyTab())
+        await tabbed_content.add_pane(ReAddTab())
+        await tabbed_content.add_pane(AddTab())
+        await tabbed_content.add_pane(LogsTab())
+        await tabbed_content.add_pane(ConfigTab())
+        if store.SHOW_DEBUG_TAB:
+            await tabbed_content.add_pane(DebugTab())
+        await tabbed_content.wait_for_refresh()
+        # await self._update_managed_trees().wait()
+        await splash_screen.dismiss_after_fade_loop().wait()
 
-    def _on_splash_dismiss(self, _: object) -> None:
-        self.push_screen(MainScreen())
+    # #####################
+    # # UI update workers #
+    # #####################
 
-    ######################################################################
-    # Helper methods for message handling and toggling widget visibility #
-    ######################################################################
+    @work(thread=True)
+    def _listen_to_command_results(self) -> None:
+        while True:
+            result: CommandResult = store.results_queue.get()
+            if result.cmd_enum is ReadCmd.doctor:
+                doctor_table = self.query_one(DoctorTable)
+                self.call_from_thread(
+                    setattr, doctor_table, ReactiveVar.cmd_result, result
+                )
+            if result.cmd_enum is ReadCmd.dump_config:
+                self.call_from_thread(self._parse_config, result)
+            if result.cmd_enum is ReadCmd.cat_config:
+                self.call_from_thread(
+                    self.query_exactly_one(ConfigTab.CatConfigStatic).update,
+                    result.out_txt,
+                )
+            if result.cmd_enum is ReadCmd.ignored:
+                self.call_from_thread(
+                    self.query_exactly_one(ConfigTab.PrettyIgnored).update,
+                    result.out_txt,
+                )
+            if result.cmd_enum is ReadCmd.template_data:
+                try:
+                    parsed_data = json.loads(result.std_out)
+                except Exception as e:
+                    parsed_data = {"Cannot parse JSON": f"{e}"}
+                self.call_from_thread(
+                    self.query_exactly_one(ConfigTab.PrettyTemplateData).update,
+                    parsed_data,
+                )
+            app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
+            self.call_from_thread(setattr, app_log, ReactiveVar.cmd_result, result)
+            cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
+            self.call_from_thread(setattr, cmd_log, ReactiveVar.cmd_result, result)
+            store.results_queue.task_done()
 
-    def _get_tab_widget(self) -> TabPane:
-        if not isinstance(self.screen, MainScreen):
-            raise ValueError("get_tab_widget called outside of MainScreen")
-        tab_pane = self.screen.query_exactly_one(TabbedContent).active_pane
-        if tab_pane is None:
-            raise ValueError("No active pane found in TabbedContent")
-        return tab_pane
+    async def _parse_config(self, cmd_result: CommandResult) -> None:
+        parsed_dump_config = json.loads(cmd_result.std_out)
+        store.cfg = ParsedDumpConfig(
+            dest_dir_path=Path(parsed_dump_config["destDir"]),
+            auto_add_bool=parsed_dump_config["git"]["autoadd"],
+            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
+            auto_push_bool=parsed_dump_config["git"]["autopush"],
+        )
 
-    def _get_switch_slider_widget(self) -> SwitchSlider | None:
-        current_tab_widget = self._get_tab_widget()
-        if isinstance(current_tab_widget, (ApplyTab, ReAddTab, AddTab)):
-            return current_tab_widget.query_exactly_one(SwitchSlider)
-        return None
+    async def _purge_views_cache(self) -> None:
+        all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
+            self.query(DiffView).results(),
+            self.query(ContentsView).results(),
+            self.query(GitLogView).results(),
+        )
+        for view in all_views:
+            view.remove_children()
 
-    def _get_main_screen(self) -> MainScreen:
-        for screen in self.screen_stack:
-            if isinstance(screen, MainScreen):
-                return screen
-        else:
-            raise RuntimeError("there is no main screen")
+    @work
+    async def _update_managed_trees(self) -> None:
+        apply_managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
+        apply_managed_tree.update_tree()
+        apply_managed_tree.refresh()
+        re_add_managed_tree = self.query_one(
+            store.re_add_ids.managed_tree_q, ManagedTree
+        )
+        re_add_managed_tree.update_tree()
+        re_add_managed_tree.refresh()
+
+    @work
+    async def _reload_directory_tree_loading(self) -> None:
+        # Update FilteredDirTree
+        dir_tree = self.query_exactly_one(FilteredDirTree)
+        dir_tree.reload()
+        dir_tree.refresh()
+
+    def run_chezmoi_command(self, command: ReadCmd) -> Worker[CommandResult]:
+        return self.run_worker(
+            partial(Commands.run_read_cmd, command, path_arg=None),
+            thread=True,
+            group="chezmoi_commands",
+            name=command.name,
+        )
 
     ####################
     # Message Handling #
     ####################
 
-    @on(DryRunBtnMsg)
-    def _handle_toggle_dry_run_pressed(self) -> None:
-        self.action_toggle_dry_run()
+    @on(CurrentNodeMsg)
+    def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
+        msg.stop()
+        # Keep track of selected paths for each tab
+        if msg.app_ids.tab_label == BtnLabel.add:
+            store.add_path = msg.path
+        elif msg.app_ids.tab_label == BtnLabel.apply:
+            store.apply_path = msg.path
+        elif msg.app_ids.tab_label == BtnLabel.re_add:
+            store.re_add_path = msg.path
+        # Update the border subtitle for the tab buttons in the ViewSwitcher
+        if msg.path != store.cfg.dest_dir:
+            pretty_path = msg.path.relative_to(store.cfg.dest_dir)
+        else:
+            pretty_path = msg.path
+        self.query_exactly_one(
+            msg.app_ids.container.right_side_q, ViewSwitcher
+        ).border_subtitle = f" {pretty_path} "
+        # Update diff_view, contents_view, and git_log_view with the new path
+        self.query_one(msg.app_ids.container.diff_q, DiffView).show_path = msg.path
+        self.query_one(
+            msg.app_ids.container.contents_q, ContentsView
+        ).show_path = msg.path
+        self.query_one(msg.app_ids.container.git_log_q, GitLogView).node_msg = msg
 
     @on(TabbedContent.TabActivated)
     def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
-        if not isinstance(self.screen, MainScreen):
-            return
         if event.tabbed_content.active in (
-            TabLabel.apply,
-            TabLabel.re_add,
-            TabLabel.add,
+            BtnLabel.apply,
+            BtnLabel.re_add,
+            BtnLabel.add,
         ):
-            slider: SwitchSlider | None = self._get_switch_slider_widget()
-            if slider is None:
-                return
-            slider_visible = slider.has_class("-visible")
-            new_description = (
-                BindingDescription.hide_filters
-                if slider_visible is True
-                else BindingDescription.show_filters
-            )
-            self._update_binding_description(
-                binding_action=BindingAction.toggle_switch_slider,
-                new_description=new_description,
-            )
-        self.refresh_bindings()
+            # slider: SwitchSlider | None = self._get_switch_slider_widget()
+            # if slider is None:git
+            #     return
+            # slider_visible = slider.has_class("-visible")
+            # new_description = (
+            #     BindingDescription.hide_filters
+            #     if slider_visible is True
+            #     else BindingDescription.show_filters
+            # )
+            # self._update_binding_description(
+            #     binding_action=BindingAction.toggle_switch_slider,
+            #     new_description=new_description,
+            # )
+            self.refresh_bindings()
+
+    # ##################
+    # # Action Methods #
+    # ##################
 
     def _update_binding_description(
         self, binding_action: BindingAction, new_description: str
     ) -> None:
+        if isinstance(self.screen, SplashScreen):
+            return
         for key, binding in self._bindings:
             if binding.action == binding_action:
                 updated_binding = dataclasses.replace(
@@ -173,12 +316,9 @@ class ChezmoiGui(App[str]):
                 break
         self.refresh_bindings()
 
-    ##################
-    # Action Methods #
-    ##################
-
     def action_toggle_dry_run(self) -> None:
-        main_screen = self._get_main_screen()
+        if isinstance(self.screen, SplashScreen):
+            return
         store.live_run = not store.live_run
         new_description = (
             BindingDescription.switch_to_dry_run
@@ -189,17 +329,22 @@ class ChezmoiGui(App[str]):
             binding_action=BindingAction.toggle_dry_run,
             new_description=new_description,
         )
-        main_screen.query_exactly_one(CustomHeader).live_run = store.live_run
+        self.screen.query_exactly_one(CustomHeader).live_run = store.live_run
         if isinstance(self.screen, (OperateModal)):
             dry_run_btn = self.screen.query_exactly_one(DryRunBtn)
             dry_run_btn.label = (
-                OpBtnLabel.enable_live_run
+                BtnLabel.enable_live_run
                 if store.live_run is False
-                else OpBtnLabel.switch_to_dry_run
+                else BtnLabel.switch_to_dry_run
             )
 
     def action_toggle_switch_slider(self) -> None:
-        slider: SwitchSlider | None = self._get_switch_slider_widget()
+        if isinstance(self.screen, SplashScreen):
+            return
+        slider = None
+        tab_pane = self.query_exactly_one(TabbedContent).active_pane
+        if isinstance(tab_pane, (ApplyTab, ReAddTab, AddTab)):
+            slider = tab_pane.query_exactly_one(SwitchSlider)
         if slider is None:
             return
         slider_visible = slider.has_class("-visible")
@@ -215,52 +360,54 @@ class ChezmoiGui(App[str]):
         slider.toggle_class("-visible")
 
     def action_toggle_maximized(self) -> None:
-        active_tab = self.screen.query_exactly_one(TabbedContent).active
+        if isinstance(self.screen, SplashScreen):
+            return
+        active_tab = self.query_exactly_one(TabbedContent).active
         left_side: DestDirTree | Vertical | FlatButtonsVertical | None = None
         operation_buttons = None
-        switch_slider: SwitchSlider | None = self._get_switch_slider_widget()
+        # switch_slider: SwitchSlider | None = self._get_switch_slider_widget()
         view_switcher_buttons = None
 
-        header = self.screen.query_exactly_one(CustomHeader)
+        header = self.query_exactly_one(CustomHeader)
         header.display = not header.display
-        main_tabs = self.screen.query_exactly_one(Tabs)
+        main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab in (TabLabel.apply, TabLabel.re_add):
-            active_tab_widget = self._get_tab_widget()
-            view_switcher_buttons = active_tab_widget.query(TabButtons).last()
+        if active_tab in (BtnLabel.apply, BtnLabel.re_add):
+            tab_pane = self.query_exactly_one(TabbedContent).active_pane
+            if tab_pane is None:
+                return
+            view_switcher_buttons = tab_pane.query(TabButtons).last()
 
-        if active_tab == TabLabel.apply:
-            left_side = self.screen.query_one(
-                store.apply_id.container.left_side_q, DestDirTree
+        if active_tab == BtnLabel.apply:
+            left_side = self.query_one(
+                store.apply_ids.container.left_side_q, DestDirTree
             )
-            operation_buttons = self.screen.query_one(
-                store.apply_id.container.operate_buttons_q
+            operation_buttons = self.query_one(
+                store.apply_ids.container.operate_buttons_q
             )
-        elif active_tab == TabLabel.re_add:
-            left_side = self.screen.query_one(
-                store.re_add_id.container.left_side_q, DestDirTree
+        elif active_tab == BtnLabel.re_add:
+            left_side = self.query_one(
+                store.re_add_ids.container.left_side_q, DestDirTree
             )
-            operation_buttons = self.screen.query_one(
-                store.re_add_id.container.operate_buttons_q
+            operation_buttons = self.query_one(
+                store.re_add_ids.container.operate_buttons_q
             )
-        elif active_tab == TabLabel.add:
-            left_side = self.screen.query_one(
-                store.add_id.container.left_side_q, Vertical
+        elif active_tab == BtnLabel.add:
+            left_side = self.query_one(store.add_ids.container.left_side_q, Vertical)
+            operation_buttons = self.query_one(
+                store.add_ids.container.operate_buttons_q
             )
-            operation_buttons = self.screen.query_one(
-                store.add_id.container.operate_buttons_q
-            )
-        elif active_tab == TabLabel.logs:
-            logs_tab_buttons = self.screen.query(TabButtons).last()
+        elif active_tab == BtnLabel.logs:
+            logs_tab_buttons = self.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
-        elif active_tab == TabLabel.config:
-            left_side = self.screen.query_one(
-                store.config_id.container.left_side_q, FlatButtonsVertical
+        elif active_tab == BtnLabel.config:
+            left_side = self.query_one(
+                store.config_ids.container.left_side_q, FlatButtonsVertical
             )
-        elif active_tab == TabLabel.debug:
-            left_side = self.screen.query_one(
-                store.debug_id.container.left_side_q, FlatButtonsVertical
+        elif active_tab == BtnLabel.debug:
+            left_side = self.query_one(
+                store.debug_ids.container.left_side_q, FlatButtonsVertical
             )
 
         if left_side is not None:
@@ -269,8 +416,8 @@ class ChezmoiGui(App[str]):
             operation_buttons.display = not operation_buttons.display
         if view_switcher_buttons is not None:
             view_switcher_buttons.display = not view_switcher_buttons.display
-        if switch_slider is not None:
-            switch_slider.display = not switch_slider.display
+        # if switch_slider is not None:
+        #     switch_slider.display = not switch_slider.display
 
         new_description = (
             BindingDescription.maximize
@@ -287,16 +434,14 @@ class ChezmoiGui(App[str]):
         action: str,
         parameters: tuple[object, ...],  # noqa: ARG002
     ) -> bool:
-        if not isinstance(self.screen, MainScreen):
-            return False
+        # if isinstance(self.screen, SplashScreen):
+        #     return False
         if action == BindingAction.toggle_switch_slider:
-            header = self.screen.query_exactly_one(CustomHeader)
-            switch_slider = self._get_switch_slider_widget()
-            if switch_slider is None or header.display is False:
+            active_pane = self.query_exactly_one(TabbedContent).active_pane
+            print(type(active_pane), active_pane)
+            if not isinstance(active_pane, (AddTab, ApplyTab, ReAddTab)):
+                self.refresh_bindings()
                 return False
-            active_tab = self.screen.query_exactly_one(TabbedContent).active
-            return active_tab in (TabLabel.apply, TabLabel.re_add, TabLabel.add)
-
         return True
 
 

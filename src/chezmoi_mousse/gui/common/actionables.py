@@ -8,8 +8,7 @@ from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
-    OpBtnLabel,
-    TabLabel,
+    BtnLabel,
     Tcss,
 )
 
@@ -29,9 +28,6 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.str_enums import (
-        FlatBtnLabel,
-    )
 
 
 __all__ = [
@@ -62,7 +58,7 @@ class DirContentBtn(Button):
 
 
 class DryRunBtn(Button):
-    def __init__(self, btn_label: OpBtnLabel) -> None:
+    def __init__(self, btn_label: BtnLabel) -> None:
         super().__init__(
             classes=Tcss.operate_button,
             label=btn_label,
@@ -75,7 +71,7 @@ class DryRunBtn(Button):
 
 
 class ExitModalBtn(Button):
-    def __init__(self, btn_label: OpBtnLabel) -> None:
+    def __init__(self, btn_label: BtnLabel) -> None:
         super().__init__(
             classes=Tcss.operate_button,
             label=btn_label,
@@ -88,11 +84,11 @@ class ExitModalBtn(Button):
 
 
 class FlatBtn(Button):
-    def __init__(self, ids: AppIds, *, btn_label: FlatBtnLabel) -> None:
+    def __init__(self, ids: AppIds, *, btn_label: BtnLabel) -> None:
         super().__init__(
             classes=Tcss.flat_button,
             flat=True,
-            id=ids.flat_button_id(btn=btn_label),
+            id=ids.btn_id(btn_label=btn_label),
             label=btn_label,
             variant="primary",
         )
@@ -106,7 +102,7 @@ class RefreshBtn(Button):
         super().__init__(
             classes=Tcss.refresh_button,
             id=app_ids.op_btn.refresh_tree,
-            label=OpBtnLabel.refresh_trees,
+            label=BtnLabel.refresh_trees,
         )
 
     @on(Button.Pressed)
@@ -116,12 +112,12 @@ class RefreshBtn(Button):
 
 
 class ReviewBtn(Button):
-    def __init__(self, app_ids: AppIds, btn_label: OpBtnLabel) -> None:
+    def __init__(self, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
         self.btn_label = btn_label
         super().__init__(
             classes=Tcss.operate_button,
-            id=self.app_ids.op_btn_id(operation=btn_label),
+            id=self.app_ids.btn_id(btn_label=btn_label),
             label=btn_label,
         )
 
@@ -132,7 +128,7 @@ class ReviewBtn(Button):
 
 
 class RunBtn(Button):
-    def __init__(self, btn_label: OpBtnLabel) -> None:
+    def __init__(self, btn_label: BtnLabel) -> None:
         super().__init__(label=btn_label, classes=Tcss.operate_button)
 
     @on(Button.Pressed)
@@ -142,7 +138,7 @@ class RunBtn(Button):
 
 
 class TabBtn(Button):
-    def __init__(self, *, app_ids: AppIds, label: TabLabel) -> None:
+    def __init__(self, *, app_ids: AppIds, label: BtnLabel) -> None:
         super().__init__(classes=Tcss.tab_button, label=label)
         self.app_ids = app_ids
 
@@ -153,10 +149,10 @@ class TabBtn(Button):
 
 
 class FlatButtonsVertical(Vertical):
-    def __init__(self, ids: AppIds, *, labels: tuple[FlatBtnLabel, ...]) -> None:
+    def __init__(self, ids: AppIds, *, labels: tuple[BtnLabel, ...]) -> None:
         super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
         self.ids = ids
-        self.labels: tuple[FlatBtnLabel, ...] = labels
+        self.labels: tuple[BtnLabel, ...] = labels
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
@@ -173,7 +169,7 @@ class FlatButtonsVertical(Vertical):
 
 
 class ReviewBtnGroup(HorizontalGroup):
-    def __init__(self, app_ids: AppIds, labels: tuple[OpBtnLabel, ...]) -> None:
+    def __init__(self, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
         self.app_ids = app_ids
         self.labels = labels
         super().__init__(
@@ -186,17 +182,17 @@ class ReviewBtnGroup(HorizontalGroup):
 
 
 class RunBtnGroup(HorizontalGroup):
-    def __init__(self, btn_labels: tuple[OpBtnLabel, ...]) -> None:
+    def __init__(self, btn_labels: tuple[BtnLabel, ...]) -> None:
         self.btn_labels = btn_labels
         super().__init__(classes=Tcss.op_btn_group)
 
     def compose(self) -> ComposeResult:
         for btn_label in self.btn_labels:
-            if btn_label in OpBtnLabel.dry_run_set():
+            if btn_label in BtnLabel.dry_run_set():
                 yield DryRunBtn(btn_label)
-            elif btn_label in OpBtnLabel.run_btn_set():
+            elif btn_label in BtnLabel.run_btn_set():
                 yield RunBtn(btn_label=btn_label)
-            elif btn_label in OpBtnLabel.exit_modal_set():
+            elif btn_label in BtnLabel.exit_modal_set():
                 yield ExitModalBtn(btn_label)
 
 
@@ -216,7 +212,7 @@ class SwitchWithLabel(HorizontalGroup):
 class SwitchSlider(VerticalGroup):
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.switch_slider, classes="-visible")
-        if ids.tab_label in (TabLabel.apply, TabLabel.re_add):
+        if ids.tab_label in (BtnLabel.apply, BtnLabel.re_add):
             self.switches: tuple[SwitchEnum, ...] = (
                 SwitchEnum.show_unchanged,
                 SwitchEnum.show_unmanaged,
@@ -235,7 +231,7 @@ class SwitchSlider(VerticalGroup):
 
 
 class TabButtons(Horizontal):
-    def __init__(self, ids: AppIds, buttons: tuple[TabLabel, ...]) -> None:
+    def __init__(self, ids: AppIds, buttons: tuple[BtnLabel, ...]) -> None:
         self.buttons = buttons
         self.tab_ids = ids
         super().__init__()

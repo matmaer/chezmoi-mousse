@@ -13,11 +13,11 @@ from textual.widgets import Label, Tree
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.str_enums import (
+    BtnLabel,
     Chars,
     ColorVar,
     PathKind,
     StatusCode,
-    TabLabel,
     Tcss,
 )
 
@@ -79,13 +79,6 @@ class ManagedTree(Tree[Path]):
     def on_mount(self) -> None:
         self.guide_depth: int = 3
 
-        # configure root node
-        self.root.data = store.cfg.dest_dir
-        color = self.app.get_color(ColorVar.text_primary)
-        self.root.label = f"[{color}]{store.cfg.dest_dir.name}[/]"
-        self.root.expand()
-        self.root.allow_expand = False
-
         self.status_color: dict[StatusCode | PathKind, ColorVar] = {
             StatusCode.Added: ColorVar.text_success,
             StatusCode.Deleted: ColorVar.text_error,
@@ -105,7 +98,7 @@ class ManagedTree(Tree[Path]):
     def paths(self) -> StatusPaths:
         return (
             store.apply_paths
-            if self.app_ids.tab_label == TabLabel.apply
+            if self.app_ids.tab_label == BtnLabel.apply
             else store.re_add_paths
         )
 
@@ -118,11 +111,11 @@ class ManagedTree(Tree[Path]):
             status_code: StatusCode | None,
         ) -> str:
             if managed_kind is None:
-                color = self.app.get_color(ColorVar.ready)
+                color = self.app.theme_variables[ColorVar.ready]
             elif status_code is not None:
-                color = self.app.get_color(self.status_color[status_code])
+                color = self.app.theme_variables[self.status_color[status_code]]
             else:
-                color = self.app.get_color(ColorVar.dimmed)
+                color = self.app.theme_variables[ColorVar.dimmed]
 
             italic = " italic" if managed_kind == PathKind.EXISTS_FALSE else ""
             return f"[{color}{italic}]{node_path.name}[/]"
@@ -224,7 +217,12 @@ class ManagedTree(Tree[Path]):
     def update_tree(self) -> None:
         """Rebuilds the tree structure from current chezmoi paths and restores state."""
         self.root.remove_children()
-
+        # configure root node
+        self.root.data = store.cfg.dest_dir
+        color = self.app.theme_variables[ColorVar.text_primary]
+        self.root.label = f"[{color}]{store.cfg.dest_dir.name}[/]"
+        self.root.expand()
+        self.root.allow_expand = False
         # Add status directories and files to root node
         nodes_by_path: dict[Path, TreeNode[Path]] = {store.cfg.dest_dir: self.root}
 

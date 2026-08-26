@@ -9,11 +9,11 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.functions import AppLife, Commands, min_wait
+from chezmoi_mousse.functions import Commands, ParseCmd, min_wait
 from chezmoi_mousse.named_tuples import RunCommandInfo
 from chezmoi_mousse.str_enums import (
+    BtnLabel,
     LoadingLabel,
-    OpBtnLabel,
     OpInfoString,
     ReadCmd,
     SectionLabel,
@@ -56,7 +56,7 @@ class LoadingModal(ModalScreen[None]):
     @work
     async def run_managed_commands(self) -> None:
         for cmd in ReadCmd.managed_commands():
-            self.label_text = f"Running: {AppLife.pretty_cmd(cmd, path=None)}"
+            self.label_text = f"Running: {ParseCmd.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
         store.changed.update_changed_paths()
 
@@ -83,7 +83,7 @@ class LoadingModal(ModalScreen[None]):
 class OperateInfo(Static):
     live_run: reactive[bool] = reactive(False)
 
-    def __init__(self, btn_label: OpBtnLabel | None) -> None:
+    def __init__(self, btn_label: BtnLabel | None) -> None:
         self.btn_label = btn_label
         super().__init__(classes=Tcss.operate_info)
 
@@ -102,7 +102,7 @@ class OperateInfo(Static):
             info_lines.append(OpInfoString.dry_run_notice)
         else:
             info_lines.append(OpInfoString.live_run_notice)
-        if self.btn_label is not OpBtnLabel.apply_run:
+        if self.btn_label is not BtnLabel.apply_run:
             if store.cfg.auto_add is True:
                 info_lines.append(OpInfoString.auto_add)
             if store.cfg.auto_commit is True:
@@ -119,34 +119,34 @@ class OperateInfo(Static):
             return
         self._update_review_info()
 
-    def _get_cmd_info_fields(self, btn_label: OpBtnLabel) -> RunCommandInfo:
-        if btn_label is OpBtnLabel.add_run:
+    def _get_cmd_info_fields(self, btn_label: BtnLabel) -> RunCommandInfo:
+        if btn_label is BtnLabel.add_run:
             return RunCommandInfo(
-                border_title=OpBtnLabel.add_run,
+                border_title=BtnLabel.add_run,
                 border_subtitle=OpInfoString.add_subtitle,
                 cmd_description=OpInfoString.add_path_info,
             )
-        elif btn_label is OpBtnLabel.apply_run:
+        elif btn_label is BtnLabel.apply_run:
             return RunCommandInfo(
-                border_title=OpBtnLabel.apply_run,
+                border_title=BtnLabel.apply_run,
                 border_subtitle=OpInfoString.apply_subtitle,
                 cmd_description=OpInfoString.apply_path_info,
             )
-        elif btn_label is OpBtnLabel.destroy_run:
+        elif btn_label is BtnLabel.destroy_run:
             return RunCommandInfo(
-                border_title=OpBtnLabel.destroy_run,
+                border_title=BtnLabel.destroy_run,
                 border_subtitle=OpInfoString.destroy_subtitle,
                 cmd_description=OpInfoString.destroy_path_info,
             )
-        elif btn_label is OpBtnLabel.forget_run:
+        elif btn_label is BtnLabel.forget_run:
             return RunCommandInfo(
-                border_title=OpBtnLabel.forget_run,
+                border_title=BtnLabel.forget_run,
                 border_subtitle=OpInfoString.forget_subtitle,
                 cmd_description=OpInfoString.forget_path_info,
             )
-        elif btn_label is OpBtnLabel.re_add_run:
+        elif btn_label is BtnLabel.re_add_run:
             return RunCommandInfo(
-                border_title=OpBtnLabel.re_add_run,
+                border_title=BtnLabel.re_add_run,
                 border_subtitle=OpInfoString.re_add_subtitle,
                 cmd_description=OpInfoString.re_add_path_info,
             )
@@ -212,9 +212,9 @@ class OperateModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, labels: tuple[OpBtnLabel, ...]) -> None:
+    def __init__(self, labels: tuple[BtnLabel, ...]) -> None:
         self.operate_label = next(
-            (label for label in labels if label in OpBtnLabel.run_btn_set()), None
+            (label for label in labels if label in BtnLabel.run_btn_set()), None
         )
         self.labels = labels
         super().__init__()
@@ -230,8 +230,8 @@ class OperateModal(ModalScreen[None]):
         operate_info = self.query_exactly_one(OperateInfo)
         changed_paths_output = self.query_exactly_one(ChangedPathsOutput)
         self.affected_paths_review = self.query_exactly_one(AffectedPathsReview)
-        if len(self.labels) == 1 and self.labels[0] == OpBtnLabel.close:
-            # condition after a refresh trees operation
+        if len(self.labels) == 1 and self.labels[0] == BtnLabel.close:
+            # condition after a refresh trees btn_label
             operate_info.display = False
             self.affected_paths_review.display = False
         elif self.operate_label is not None:

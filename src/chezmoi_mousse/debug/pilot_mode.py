@@ -19,9 +19,9 @@ from chezmoi_mousse.gui.common.actionables import (
 )
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.operate_modal import LoadingModal
-from chezmoi_mousse.gui.main_screen import MainScreen
+from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
-from chezmoi_mousse.str_enums import TabLabel
+from chezmoi_mousse.str_enums import BtnLabel
 
 __all__ = ["run_with_pilot"]
 
@@ -64,14 +64,12 @@ async def _toggle_binding(pilot: Pilot[str], key: str) -> None:
 async def _refresh_trees(pilot: Pilot[str], active_pane: TabPane) -> None:
     if not isinstance(active_pane, (ApplyTab, ReAddTab, AddTab)):
         return
-    refresh_tree_btn = active_pane.query_one(
-        active_pane.ids.op_btn.refresh_tree_q, RefreshBtn
-    )
+    refresh_tree_btn = active_pane.query_exactly_one(RefreshBtn)
     await _click_and_wait(pilot, refresh_tree_btn)
 
 
 async def _toggle_switches(pilot: Pilot[str], active_pane: TabPane) -> None:
-    if active_pane.id not in (TabLabel.apply, TabLabel.re_add, TabLabel.add):
+    if active_pane.id not in (BtnLabel.apply, BtnLabel.re_add, BtnLabel.add):
         return
     switch_slider = active_pane.query_exactly_one(SwitchSlider)
     switches: tuple[Switch, ...] = tuple(switch_slider.query(Switch))
@@ -95,7 +93,7 @@ async def _click_content_switcher_buttons(pilot: Pilot[str], tab_pane: TabPane) 
 
 
 async def _click_random_path_in_diff_view(pilot: Pilot[str], tab_pane: TabPane) -> None:
-    if tab_pane.id not in (TabLabel.apply, TabLabel.re_add):
+    if tab_pane.id not in (BtnLabel.apply, BtnLabel.re_add):
         return
     diff_view = tab_pane.query_exactly_one(DiffView)
     diff_view_clickable_paths = tuple(diff_view.query(DirContentBtn).results())
@@ -114,22 +112,24 @@ def run_with_pilot(app: ChezmoiGui) -> None:
 async def _start_pilot_mode(app: ChezmoiGui) -> None:
 
     async with app.run_test(headless=False, notifications=True) as pilot:
-        while not isinstance(pilot.app.screen, MainScreen):
+        await asyncio.sleep(0.5)
+        while isinstance(pilot.app.screen, SplashScreen):
+            await asyncio.sleep(0.2)
             await _pilot_chill(pilot)
 
         await _pilot_chill(pilot)
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
 
         tabs_to_check = [
-            TabLabel.apply,
-            TabLabel.re_add,
-            TabLabel.add,
-            TabLabel.logs,
-            TabLabel.config,
+            BtnLabel.apply,
+            BtnLabel.re_add,
+            BtnLabel.add,
+            BtnLabel.logs,
+            BtnLabel.config,
         ]
 
         if "debug" in app.features:
-            tabs_to_check.append(TabLabel.debug)
+            tabs_to_check.append(BtnLabel.debug)
 
         for label in tabs_to_check:
             tab = tabbed_content.get_tab(label)
@@ -144,7 +144,7 @@ async def _start_pilot_mode(app: ChezmoiGui) -> None:
             await _click_content_switcher_buttons(pilot, tab_pane)
             await _toggle_switches(pilot, tab_pane)
             await _refresh_trees(pilot, tab_pane)
-        tab = tabbed_content.get_tab(TabLabel.apply)
+        tab = tabbed_content.get_tab(BtnLabel.apply)
         await _click_and_wait(pilot, tab)
 
         if pilot.app.devtools and pilot.app.devtools.session:

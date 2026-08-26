@@ -16,6 +16,7 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
 from chezmoi_mousse import store
+from chezmoi_mousse.data_classes import StatusPaths
 from chezmoi_mousse.named_tuples import (
     AffectedPaths,
     CommandResult,
@@ -42,7 +43,13 @@ if TYPE_CHECKING:
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ("min_wait", "AppLife", "Commands", "CheckPath", "ScanDirResult")
+__all__ = ("min_wait", "ParseCmd", "Commands", "CheckPath", "ScanDirResult")
+
+# TODO implement clearing for cached stuff upon tree or app reload
+
+##############
+# DECORATORS #
+##############
 
 
 def min_wait(
@@ -76,65 +83,132 @@ def _typed_lru_cache[**FuncParams, FuncReturn](
     return decorator
 
 
-@staticmethod
-@_typed_lru_cache()
-def _filter_ugly_args() -> set[str]:
-    ugly_args: set[str] = set()
-    ugly_args.update(
-        GlobalArgs.global_defaults.value,
-        ChezmoiGitArgs.global_args.value,
-        ChezmoiGitArgs.git_log_args.value,
-        (
-            VerbArgs.format_json.value,
-            VerbArgs.path_style_absolute.value,
-        ),
-    )
-    return ugly_args
+class Helpers:
+    """Only used internally, Helpers is not exported"""
+
+    @staticmethod
+    @_typed_lru_cache()
+    def filter_ugly_args() -> set[str]:
+        ugly_args: set[str] = set()
+        ugly_args.update(
+            GlobalArgs.global_defaults.value,
+            ChezmoiGitArgs.global_args.value,
+            ChezmoiGitArgs.git_log_args.value,
+            (
+                VerbArgs.format_json.value,
+                VerbArgs.path_style_absolute.value,
+            ),
+        )
+        return ugly_args
+
+    @staticmethod
+    @_typed_lru_cache(maxsize=500)
+    def get_rel_path(path: Path) -> str:
+        return str(path.relative_to(store.cfg.dest_dir))
+
+    @staticmethod
+    @_typed_lru_cache()
+    def cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
+        if pretty is True:
+            verb_str = " ".join(
+                [a for a in cmd.value if a not in Helpers.filter_ugly_args()]
+            )
+        else:
+            verb_str = " ".join(cmd.value)
+        if isinstance(cmd, ReadCmd):
+            base_cmd = "chezmoi"
+        else:
+            base_cmd = "chezmoi --dry-run" if store.live_run is False else "chezmoi"
+        return f"{base_cmd} {verb_str}"
 
 
-@_typed_lru_cache(maxsize=500)
-def _get_rel_path(path: Path) -> str:
-    return str(path.relative_to(store.cfg.dest_dir))
-
-
-@staticmethod
-@_typed_lru_cache()
-def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
-    if pretty is True:
-        verb_str = " ".join([a for a in cmd.value if a not in _filter_ugly_args()])
-    else:
-        verb_str = " ".join(cmd.value)
-    if isinstance(cmd, ReadCmd):
-        base_cmd = "chezmoi"
-    else:
-        base_cmd = "chezmoi --dry-run" if store.live_run is False else "chezmoi"
-    return f"{base_cmd} {verb_str}"
-
-
-class AppLife:
-    """Contains caches never to be cleared during the application its life."""
+class ParseCmd:
+    """Contains functions used in the app, which are not dependent on issuing
+    subprocess.run() calls."""
 
     @staticmethod
     @_typed_lru_cache()
     def pretty_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
-        rel_path = _get_rel_path(path) if path is not None else ""
-        return f"{_cmd_str_wop(cmd, pretty=True)} {rel_path}"
+        rel_path = Helpers.get_rel_path(path) if path is not None else ""
+        return f"{Helpers.cmd_str_wop(cmd, pretty=True)} {rel_path}"
 
     @staticmethod
     @_typed_lru_cache()
     def full_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         path_str = str(path) if path is not None else ""
-        return f"{_cmd_str_wop(cmd, pretty=False)} {path_str}"
+        return f"{Helpers.cmd_str_wop(cmd, pretty=False)} {path_str}"
 
 
-# TODO implement clearing for cached stuff in other classes than AppLife
-
-
-class Commands:
+class ProcessOutput:
     @staticmethod
     def _strip_empty_lines(text: str) -> str:
         return "\n".join([line for line in text.splitlines() if line.strip()])
 
+    @staticmethod
+    def get_cmd_result_instance(
+        cp: subprocess.CompletedProcess[str],
+        *,
+        cmd: ReadCmd | WriteCmd,
+        path_arg: Path | None,
+    ) -> CommandResult:
+        std_err = ProcessOutput._strip_empty_lines(cp.stderr)
+        std_out = ProcessOutput._strip_empty_lines(cp.stdout)
+        out_txt = ""
+        if not std_out and not std_err:
+            out_txt = "No output from command."
+        elif not std_out and std_err:
+            out_txt = std_err
+        elif std_out and not std_err:
+            out_txt = std_out
+        else:  # result.std_out.strip() and result.std_err.strip():
+            out_lines: list[str] = []
+            out_lines.append("Output on stdout:")
+            out_lines.append(std_out)
+            out_lines.append("Output on stderr:")
+            out_lines.append(std_err)
+            out_txt = "\n\n".join(out_lines)
+        return CommandResult(
+            cmd_enum=cmd,
+            full_cmd=f"{ParseCmd.full_cmd(cmd, path=path_arg)}",
+            out_txt=out_txt,
+            path_arg=path_arg,
+            pretty_cmd=f"{ParseCmd.pretty_cmd(cmd, path=path_arg)}",
+            returncode=cp.returncode,
+            std_err=std_err,
+            std_out=std_out,
+            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
+        )
+
+    @staticmethod
+    def get_path_kinds(cmd_output: list[str]) -> dict[Path, PathKind]:
+        temp_dict: dict[Path, PathKind] = {}
+        paths: list[Path] = [Path(line) for line in cmd_output]
+
+        for path in paths:
+            if path.is_symlink():
+                temp_dict[path] = PathKind.SYMLINK
+            elif not path.exists():
+                temp_dict[path] = PathKind.EXISTS_FALSE
+            else:
+                temp_dict[path] = PathKind.UNHANDLED
+
+        return dict(sorted(temp_dict.items()))
+
+    @staticmethod
+    def get_status_pairs(cmd_output: list[str]) -> dict[Path, str]:
+        return {Path(line[3:]): line[:2] for line in cmd_output}
+
+    @staticmethod
+    def get_status_paths(cmd_output: list[str], column: int) -> dict[Path, StatusCode]:
+        temp_dict = ProcessOutput.get_status_pairs(cmd_output)
+        return {
+            Path(path): StatusCode(code[column])
+            for path, code in temp_dict.items()
+            if code[column] != StatusCode.Space
+        }
+
+
+class Commands:
     @staticmethod
     def _subprocess_run(
         args_tuple: tuple[str, ...], *, path: Path | None, time_out: int
@@ -199,8 +273,10 @@ class Commands:
             # Ensure child process terminates and populates process.returncode
             process.wait()
 
-        rel_path = _get_rel_path(path) if path != store.cfg.dest_dir else ""
-        pretty_cmd = " ".join([a for a in args_tuple if a not in _filter_ugly_args()])
+        rel_path = Helpers.get_rel_path(path) if path != store.cfg.dest_dir else ""
+        pretty_cmd = " ".join(
+            [a for a in args_tuple if a not in Helpers.filter_ugly_args()]
+        )
         return AffectedPaths(
             paths=sorted([Path(path_str) for path_str in affected_paths_str]),
             pretty_cmd=f"{pretty_cmd} {rel_path}",
@@ -208,81 +284,37 @@ class Commands:
         )
 
     @staticmethod
-    def _get_cmd_result_instance(
-        cp: subprocess.CompletedProcess[str],
-        *,
-        cmd: ReadCmd | WriteCmd,
-        path_arg: Path | None,
-    ) -> CommandResult:
-        std_err = Commands._strip_empty_lines(cp.stderr)
-        std_out = Commands._strip_empty_lines(cp.stdout)
-        out_txt = ""
-        if not std_out and not std_err:
-            out_txt = "No output from command."
-        elif not std_out and std_err:
-            out_txt = std_err
-        elif std_out and not std_err:
-            out_txt = std_out
-        else:  # result.std_out.strip() and result.std_err.strip():
-            out_lines: list[str] = []
-            out_lines.append("Output on stdout:")
-            out_lines.append(std_out)
-            out_lines.append("Output on stderr:")
-            out_lines.append(std_err)
-            out_txt = "\n\n".join(out_lines)
-        return CommandResult(
-            cmd_enum=cmd,
-            full_cmd=f"{AppLife.full_cmd(cmd, path=path_arg)}",
-            out_txt=out_txt,
-            path_arg=path_arg,
-            pretty_cmd=f"{AppLife.pretty_cmd(cmd, path=path_arg)}",
-            returncode=cp.returncode,
-            std_err=std_err,
-            std_out=std_out,
-            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-        )
-
-    @staticmethod
-    def _get_path_kinds(cmd_output: list[str]) -> dict[Path, PathKind]:
-        temp_dict: dict[Path, PathKind] = {}
-        paths: list[Path] = [Path(line) for line in cmd_output]
-
-        for path in paths:
-            if path.is_symlink():
-                temp_dict[path] = PathKind.SYMLINK
-            elif not path.exists():
-                temp_dict[path] = PathKind.EXISTS_FALSE
-            else:
-                temp_dict[path] = PathKind.UNHANDLED
-
-        return dict(sorted(temp_dict.items()))
-
-    @staticmethod
-    def _get_status_pairs(cmd_output: list[str]) -> dict[Path, str]:
-        return {Path(line[3:]): line[:2] for line in cmd_output}
-
-    @staticmethod
-    def _get_status_paths(cmd_output: list[str], column: int) -> dict[Path, StatusCode]:
-        temp_dict = Commands._get_status_pairs(cmd_output)
-        return {
-            Path(path): StatusCode(code[column])
-            for path, code in temp_dict.items()
-            if code[column] != StatusCode.Space
-        }
-
-    @staticmethod
     def _store_status_dirs(lines: list[str]) -> None:
-        store.status_dirs_kind = Commands._get_path_kinds(lines)
-        store.dir_status_pairs = Commands._get_status_pairs(lines)
-        store.apply_status_dirs = Commands._get_status_paths(lines, 1)
-        store.re_add_status_dirs = Commands._get_status_paths(lines, 0)
+        store.status_dirs_kind = ProcessOutput.get_path_kinds(lines)
+        store.dir_status_pairs = ProcessOutput.get_status_pairs(lines)
+        store.apply_status_dirs = ProcessOutput.get_status_paths(lines, 1)
+        store.re_add_status_dirs = ProcessOutput.get_status_paths(lines, 0)
 
     @staticmethod
     def _store_status_files(lines: list[str]) -> None:
-        store.status_files_kind = Commands._get_path_kinds(lines)
-        store.file_status_pairs = Commands._get_status_pairs(lines)
-        store.apply_status_files = Commands._get_status_paths(lines, 1)
-        store.re_add_status_files = Commands._get_status_paths(lines, 0)
+        store.status_files_kind = ProcessOutput.get_path_kinds(lines)
+        store.file_status_pairs = ProcessOutput.get_status_pairs(lines)
+        store.apply_status_files = ProcessOutput.get_status_paths(lines, 1)
+        store.re_add_status_files = ProcessOutput.get_status_paths(lines, 0)
+
+    @staticmethod
+    def _store_parsed_config(std_out: str) -> None:
+        parsed_dump_config = json.loads(std_out)
+        store.cfg = ParsedDumpConfig(
+            dest_dir_path=Path(parsed_dump_config["destDir"]),
+            auto_add_bool=parsed_dump_config["git"]["autoadd"],
+            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
+            auto_push_bool=parsed_dump_config["git"]["autopush"],
+        )
+
+    @staticmethod
+    def _store_status_paths() -> None:
+        store.apply_paths = StatusPaths(
+            dirs=store.apply_status_dirs, files=store.apply_status_files
+        )
+        store.re_add_paths = StatusPaths(
+            dirs=store.re_add_status_dirs, files=store.re_add_status_files
+        )
 
     @staticmethod
     def run_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
@@ -291,20 +323,18 @@ class Commands:
             args_tuple, path=path_arg, time_out=5
         )
 
-        result = Commands._get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
+        result = ProcessOutput.get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
 
         if cmd is ReadCmd.dump_config:
-            parsed_dump_config = json.loads(result.std_out)
-            store.cfg = ParsedDumpConfig(
-                dest_dir_path=Path(parsed_dump_config["destDir"]),
-                auto_add_bool=parsed_dump_config["git"]["autoadd"],
-                auto_commit_bool=parsed_dump_config["git"]["autocommit"],
-                auto_push_bool=parsed_dump_config["git"]["autopush"],
+            store.cfg = Commands._store_parsed_config(result.std_out)
+        if cmd is ReadCmd.managed_dirs:
+            store.managed_dirs = ProcessOutput.get_path_kinds(
+                result.std_out.splitlines()
             )
-        elif cmd is ReadCmd.managed_dirs:
-            store.managed_dirs = Commands._get_path_kinds(result.std_out.splitlines())
         elif cmd is ReadCmd.managed_files:
-            store.managed_files = Commands._get_path_kinds(result.std_out.splitlines())
+            store.managed_files = ProcessOutput.get_path_kinds(
+                result.std_out.splitlines()
+            )
         elif cmd is ReadCmd.status_dirs:
             Commands._store_status_dirs(result.std_out.splitlines())
         elif cmd is ReadCmd.status_files:
@@ -324,7 +354,7 @@ class Commands:
             args_tuple, path=path_arg, time_out=20
         )
 
-        result = Commands._get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
+        result = ProcessOutput.get_cmd_result_instance(cp, cmd=cmd, path_arg=path_arg)
         store.results_queue.put(result)
         return result
 
@@ -338,7 +368,7 @@ class Commands:
         try:
             max_chars = 500000
             with file_path.open("r", encoding="utf-8") as f:
-                # Over-read by 1 char to test truncation in 1 I/O operation
+                # Over-read by 1 char to test truncation in 1 I/O btn_label
                 data = f.read(max_chars + 1)
             truncated = len(data) > max_chars
             f_contents = data[:max_chars]

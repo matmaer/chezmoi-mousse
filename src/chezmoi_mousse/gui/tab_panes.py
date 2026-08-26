@@ -20,17 +20,14 @@ from textual.widgets import (
 
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import (
-    FlatBtnLabel,
-    OpBtnLabel,
+    BtnLabel,
     SectionLabel,
-    TabLabel,
     Tcss,
 )
 
 from .common.actionables import (
     FlatButtonsVertical,
     RefreshBtn,
-    ReviewBtn,
     ReviewBtnGroup,
     SwitchSlider,
     TabButtons,
@@ -48,36 +45,32 @@ from .common.switchers import ViewSwitcher
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.app_ids import AppIds
 
 __all__ = ["AddTab", "ApplyTab", "ConfigTab", "LogsTab", "ReAddTab"]
 
 
 class AddTab(TabPane):
-    def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=TabLabel.add, title=TabLabel.add)
-        self.ids = ids
+    def __init__(self) -> None:
+        super().__init__(id=BtnLabel.add.pane_id, title=BtnLabel.add)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                FilteredDirTree(dest_dir=store.cfg.dest_dir),
-                RefreshBtn(self.ids),
-                id=self.ids.container.left_side,
+                # Lazy(FilteredDirTree(dest_dir=store.cfg.dest_dir)),
+                RefreshBtn(store.add_ids),
+                id=store.add_ids.container.left_side,
                 classes=Tcss.tab_left_vertical,
             )
             with Vertical():
-                yield ContentsView(self.ids)
-                yield ReviewBtnGroup(self.ids, (OpBtnLabel.add_review,))
-        yield SwitchSlider(self.ids)
+                yield ContentsView(store.add_ids)
+                yield ReviewBtnGroup(store.add_ids, (BtnLabel.add_review,))
+        yield SwitchSlider(store.add_ids)
 
-    def on_mount(self) -> None:
-        self.dir_tree = self.query_exactly_one(FilteredDirTree)
-        self.contents_view = self.query_one(self.ids.container.contents_q, ContentsView)
-        self.contents_view.add_class(Tcss.add_tab_contents_view)
-        self.contents_view.border_title = f" {store.cfg.dest_dir} "
-        self.contents_view.show_path = store.cfg.dest_dir
-        self.add_review_btn = self.query_one(self.ids.op_btn.add_review_q, ReviewBtn)
+    # def on_mount(self) -> None:
+    #     self.contents_view = self.query_one(store.add_ids.container.contents_q, ContentsView)
+    #     self.contents_view.add_class(Tcss.add_tab_contents_view)
+    # self.contents_view.border_title = f" {store.cfg.dest_dir} "
+    # self.contents_view.show_path = store.cfg.dest_dir
 
     @on(DirectoryTree.FileSelected)
     @on(DirectoryTree.DirectorySelected)
@@ -85,47 +78,90 @@ class AddTab(TabPane):
         self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
     ) -> None:
         event.stop()
+        contents_view = self.query_one(store.add_ids.container.contents_q, ContentsView)
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
-        self.contents_view.show_path = event.node.data.path
+        contents_view.show_path = event.node.data.path
         if event.node.data.path == store.cfg.dest_dir:
-            self.contents_view.border_title = f" {store.cfg.dest_dir} "
+            contents_view.border_title = f" {store.cfg.dest_dir} "
         else:
-            self.contents_view.border_title = f" {event.node.data.path.name} "
+            contents_view.border_title = f" {event.node.data.path.name} "
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch.show_managed:
-            self.dir_tree.show_managed = event.value
-        elif event.switch.id == self.ids.switch.show_unwanted:
-            self.dir_tree.show_unwanted = event.value
-        self.dir_tree.reload()
+        dir_tree = self.query_exactly_one(FilteredDirTree)
+        if event.switch.id == store.add_ids.switch.show_managed:
+            dir_tree.show_managed = event.value
+        elif event.switch.id == store.add_ids.switch.show_unwanted:
+            dir_tree.show_unwanted = event.value
+        dir_tree.reload()
 
 
 class ApplyTab(TabPane):
-    def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=TabLabel.apply, title=TabLabel.apply)
-        self.ids = ids
+    def __init__(self) -> None:
+        super().__init__(id=BtnLabel.apply.pane_id, title=BtnLabel.apply)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield DestDirTree(self.ids)
-            yield ViewSwitcher(self.ids)
-        yield SwitchSlider(self.ids)
-
-    def on_mount(self) -> None:
-        self.managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+            yield DestDirTree(store.apply_ids)
+            yield ViewSwitcher(store.apply_ids)
+        yield SwitchSlider(store.apply_ids)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        if event.switch.id == self.ids.switch.show_unchanged:
-            self.managed_tree.show_unchanged = event.value
-        elif event.switch.id == self.ids.switch.show_unmanaged:
-            self.managed_tree.show_unmanaged = event.value
-        elif event.switch.id == self.ids.switch.expand_all:
-            self.managed_tree.expand_all = event.value
+        managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
+        if event.switch.id == store.apply_ids.switch.show_unchanged:
+            managed_tree.show_unchanged = event.value
+        elif event.switch.id == store.apply_ids.switch.show_unmanaged:
+            managed_tree.show_unmanaged = event.value
+        elif event.switch.id == store.apply_ids.switch.expand_all:
+            managed_tree.expand_all = event.value
+
+
+class ReAddTab(TabPane):
+    def __init__(self) -> None:
+        super().__init__(id=BtnLabel.re_add.pane_id, title=BtnLabel.re_add)
+
+    def compose(self) -> ComposeResult:
+        with Horizontal():
+            yield DestDirTree(store.re_add_ids)
+            yield ViewSwitcher(store.re_add_ids)
+        yield SwitchSlider(store.re_add_ids)
+
+    @on(Switch.Changed)
+    def handle_tree_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        managed_tree = self.query_one(store.re_add_ids.managed_tree_q, ManagedTree)
+
+        if event.switch.id == store.re_add_ids.switch.show_unchanged:
+            managed_tree.show_unchanged = event.value
+        elif event.switch.id == store.re_add_ids.switch.show_unmanaged:
+            managed_tree.show_unmanaged = event.value
+        elif event.switch.id == store.re_add_ids.switch.expand_all:
+            managed_tree.expand_all = event.value
+
+
+class LogsTab(TabPane):
+    def __init__(self) -> None:
+        super().__init__(id=BtnLabel.logs.pane_id, title=BtnLabel.logs)
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield TabButtons(store.logs_ids, (BtnLabel.cmd_log, BtnLabel.app_log))
+            with ContentSwitcher(initial=store.logs_ids.container.cmd_log):
+                yield CmdLog(store.logs_ids)
+                yield AppLog()
+
+    @on(TabBtnMsg)
+    def switch_content(self, msg: TabBtnMsg) -> None:
+        msg.stop()
+        switcher = self.query_exactly_one(ContentSwitcher)
+        if msg.button.label == BtnLabel.app_log:
+            switcher.current = store.logs_ids.richlog.app
+        elif msg.button.label == BtnLabel.cmd_log:
+            switcher.current = store.logs_ids.container.cmd_log
 
 
 class ConfigTab(TabPane):
@@ -135,112 +171,59 @@ class ConfigTab(TabPane):
 
     class PrettyTemplateData(Pretty): ...
 
-    def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=TabLabel.config, title=TabLabel.config)
-        self.ids = ids
+    def __init__(self) -> None:
+        super().__init__(id=BtnLabel.config.pane_id, title=BtnLabel.config)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
-                self.ids,
+                store.config_ids,
                 labels=(
-                    FlatBtnLabel.doctor,
-                    FlatBtnLabel.cat_config,
-                    FlatBtnLabel.ignored,
-                    FlatBtnLabel.template_data,
-                    FlatBtnLabel.diagram,
+                    BtnLabel.doctor,
+                    BtnLabel.cat_config,
+                    BtnLabel.ignored,
+                    BtnLabel.template_data,
+                    BtnLabel.diagram,
                 ),
             )
-            with ContentSwitcher(initial=self.ids.container.doctor):
+            with ContentSwitcher(initial=store.config_ids.container.doctor):
                 yield Vertical(
                     MainSectionLabel(SectionLabel.doctor_output),
                     DoctorTable(),
-                    id=self.ids.container.doctor,
+                    id=store.config_ids.container.doctor,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.cat_config_output),
                     ConfigTab.CatConfigStatic("Loading..."),
-                    id=self.ids.container.cat_config,
+                    id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.ignored_output),
                     ScrollableContainer(ConfigTab.PrettyIgnored("Loading...")),
-                    id=self.ids.container.ignored,
+                    id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.template_data_output),
                     ScrollableContainer(ConfigTab.PrettyTemplateData("Loading...")),
-                    id=self.ids.container.template_data,
+                    id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.diagram),
                     Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
-                    id=self.ids.container.diagram,
+                    id=store.config_ids.container.diagram,
                 )
-
-    def on_mount(self) -> None:
-        self.switcher = self.query_exactly_one(ContentSwitcher)
 
     @on(Button.Pressed, Tcss.flat_button.dot_prefix)
     def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
-        if event.button.label == FlatBtnLabel.doctor:
-            self.switcher.current = self.ids.container.doctor
-        elif event.button.label == FlatBtnLabel.cat_config:
-            self.switcher.current = self.ids.container.cat_config
-        elif event.button.label == FlatBtnLabel.ignored:
-            self.switcher.current = self.ids.container.ignored
-        elif event.button.label == FlatBtnLabel.template_data:
-            self.switcher.current = self.ids.container.template_data
-        elif event.button.label == FlatBtnLabel.diagram:
-            self.switcher.current = self.ids.container.diagram
-
-
-class LogsTab(TabPane):
-    def __init__(self, ids: AppIds) -> None:
-        self.app_ids = ids
-        super().__init__(id=TabLabel.logs, title=TabLabel.logs)
-
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            yield TabButtons(self.app_ids, (TabLabel.cmd_log, TabLabel.app_log))
-            with ContentSwitcher(initial=self.app_ids.richlog.cmd):
-                yield CmdLog(self.app_ids)
-                yield AppLog()
-
-    def on_mount(self) -> None:
-        self.tab_buttons = self.query_exactly_one(TabButtons)
-        self.switcher = self.query_exactly_one(ContentSwitcher)
-
-    @on(TabBtnMsg)
-    def switch_content(self, msg: TabBtnMsg) -> None:
-        msg.stop()
-        if msg.button.label == TabLabel.app_log:
-            self.switcher.current = self.app_ids.richlog.app
-        elif msg.button.label == TabLabel.cmd_log:
-            self.switcher.current = self.app_ids.richlog.cmd
-
-
-class ReAddTab(TabPane):
-    def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=TabLabel.re_add, title=TabLabel.re_add)
-        self.ids = ids
-
-    def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield DestDirTree(self.ids)
-            yield ViewSwitcher(self.ids)
-        yield SwitchSlider(self.ids)
-
-    def on_mount(self) -> None:
-        self.managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
-
-    @on(Switch.Changed)
-    def handle_tree_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        if event.switch.id == self.ids.switch.show_unchanged:
-            self.managed_tree.show_unchanged = event.value
-        elif event.switch.id == self.ids.switch.show_unmanaged:
-            self.managed_tree.show_unmanaged = event.value
-        elif event.switch.id == self.ids.switch.expand_all:
-            self.managed_tree.expand_all = event.value
+        switcher = self.query_exactly_one(ContentSwitcher)
+        if event.button.label == BtnLabel.doctor:
+            switcher.current = store.config_ids.container.doctor
+        elif event.button.label == BtnLabel.cat_config:
+            switcher.current = store.config_ids.container.cat_config
+        elif event.button.label == BtnLabel.ignored:
+            switcher.current = store.config_ids.container.ignored
+        elif event.button.label == BtnLabel.template_data:
+            switcher.current = store.config_ids.container.template_data
+        elif event.button.label == BtnLabel.diagram:
+            switcher.current = store.config_ids.container.diagram

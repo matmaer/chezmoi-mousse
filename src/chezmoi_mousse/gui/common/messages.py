@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from textual.widgets import Button
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.str_enums import TabLabel
+    from chezmoi_mousse.str_enums import BtnLabel
 
     from .actionables import ReviewBtn
 
@@ -70,7 +70,7 @@ class RefreshBtnMsg(Message):
 
 
 class ReviewBtnMsg(Message):
-    def __init__(self, tab_label: TabLabel, review_btn: ReviewBtn) -> None:
+    def __init__(self, tab_label: BtnLabel, review_btn: ReviewBtn) -> None:
         self.tab_label = tab_label
         self.review_button: ReviewBtn = review_btn
         super().__init__()

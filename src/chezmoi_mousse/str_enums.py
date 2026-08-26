@@ -3,26 +3,25 @@ from enum import Enum, StrEnum, auto
 __all__ = [
     "BindingAction",
     "BindingDescription",
+    "BtnLabel",
     "Chars",
     "ChezmoiGitArgs",
     "ColorVar",
     "ContainerName",
-    "FlatBtnLabel",
     "GlobalArgs",
-    "StaticString",
+    "InfoKind",
     "LoadingLabel",
     "LogString",
-    "OpBtnLabel",
-    "OpInfoString",
     "NotifyMsg",
+    "OpInfoString",
     "PathFilters",
     "PathKind",
+    "ReactiveVar",
     "ReadCmd",
     "RichLogName",
     "SectionLabel",
     "StatusCode",
     "SwitchLabel",
-    "TabLabel",
     "Tcss",
     "VerbArgs",
     "WriteCmd",
@@ -44,6 +43,128 @@ class BindingDescription(StrEnum):
     show_filters = "Show filters"
     enable_live_run = "Enable live run"
     switch_to_dry_run = "Switch to dry run"
+
+
+class BtnLabel(StrEnum):
+    # Placeholder
+    not_set = "Not Set"
+
+    # Main tabs
+    add = "Add"
+    apply = "Apply"
+    config = "Config"
+    debug = "Debug"
+    logs = "Logs"
+    re_add = "Re-Add"
+
+    # Tab buttons for content switcher within a main tab
+    app_log = "Application"
+    cmd_log = "Chezmoi-Commands"
+    contents = "Contents"
+    diff = "Diff"
+    git_log = "Git-Log"
+
+    # Flat button labels
+    cat_config = "Cat Config"
+    debug_log = "Debug Log"
+    diagram = "Diagram"
+    doctor = "Doctor"
+    dom_nodes = "DOM Nodes"
+    env_vars = "Env Vars"
+    ignored = "Ignored"
+    template_data = "Template Data"
+    test_paths = "Test Paths"
+
+    # Triggers chezmoi command labels
+    add_review = "Review Add Path"
+    add_run = "Run Chezmoi Add"
+    apply_review = "Review Apply Path"
+    apply_run = "Run Chezmoi Apply"
+    forget_review = "Review Forget Path"
+    forget_run = "Run Chezmoi Forget"
+    destroy_review = "Review Destroy Path"
+    destroy_run = "Run Chezmoi Destroy"
+    re_add_review = "Review Re-Add Path"
+    re_add_run = "Run Chezmoi Re-Add"
+    refresh_trees = "Refresh Trees"
+    reload = "Reload"
+
+    # Debug tab buttons
+    create_diffs = "Create Diffs"
+    create_paths = "Create Test Paths"
+    list_test_paths = "List Test Paths"
+    log_memory = "Log Memory Usage"
+    remove_paths = "Remove Test Paths"
+
+    # Other
+    cancel = "Cancel"
+    close = "Close"
+    enable_live_run = "Enable live run"
+    switch_to_dry_run = "Switch to dry run"
+
+    @property
+    def pane_id(self) -> str:
+        return f"{self}_pane_id"
+
+    @classmethod
+    def debug_tab_btn_set(cls) -> frozenset["BtnLabel"]:
+        return frozenset(
+            {
+                BtnLabel.create_diffs,
+                BtnLabel.create_paths,
+                BtnLabel.list_test_paths,
+                BtnLabel.log_memory,
+                BtnLabel.remove_paths,
+            }
+        )
+
+    @classmethod
+    def dry_run_set(cls) -> frozenset["BtnLabel"]:
+        return frozenset({BtnLabel.enable_live_run, BtnLabel.switch_to_dry_run})
+
+    @classmethod
+    def exit_modal_set(cls) -> frozenset["BtnLabel"]:
+        return frozenset({BtnLabel.cancel, BtnLabel.close, BtnLabel.reload})
+
+    @classmethod
+    def main_tabs_set(cls) -> frozenset["BtnLabel"]:
+        return frozenset(
+            {
+                BtnLabel.add,
+                BtnLabel.apply,
+                BtnLabel.config,
+                BtnLabel.debug,
+                BtnLabel.logs,
+                BtnLabel.re_add,
+            }
+        )
+
+    @classmethod
+    def run_btn_set(cls) -> frozenset["BtnLabel"]:
+        return frozenset(
+            {
+                BtnLabel.add_run,
+                BtnLabel.apply_run,
+                BtnLabel.destroy_run,
+                BtnLabel.forget_run,
+                BtnLabel.re_add_run,
+            }
+        )
+
+    # classmethod which maps each review button to its corresponding run button
+    @classmethod
+    def _review_to_run_map(cls) -> dict["BtnLabel", "BtnLabel"]:
+        return {
+            cls.add_review: cls.add_run,
+            cls.apply_review: cls.apply_run,
+            cls.re_add_review: cls.re_add_run,
+            cls.destroy_review: cls.destroy_run,
+            cls.forget_review: cls.forget_run,
+        }
+
+    @property
+    def review_to_run(self) -> "BtnLabel":
+        return self._review_to_run_map()[self]
 
 
 class Chars(StrEnum):
@@ -88,6 +209,7 @@ class ColorVar(StrEnum):
 class ContainerName(StrEnum):
     cat_config = auto()
     contents = auto()
+    cmd_log = auto()
     debug_log = auto()
     diagram = auto()
     diff = auto()
@@ -102,17 +224,9 @@ class ContainerName(StrEnum):
     template_data = auto()
     test_paths_view = auto()
 
-
-class FlatBtnLabel(StrEnum):
-    cat_config = "Cat Config"
-    debug_log = "Debug Log"
-    diagram = "Diagram"
-    doctor = "Doctor"
-    dom_nodes = "DOM Nodes"
-    env_vars = "Env Vars"
-    ignored = "Ignored"
-    template_data = "Template Data"
-    test_paths = "Test Paths"
+    @property
+    def container_id(self) -> str:
+        return f"{self}_id"
 
 
 class LoadingLabel(StrEnum):
@@ -148,78 +262,18 @@ class LogString(StrEnum):
         return "-" * len(self)
 
 
+class InfoKind(Enum):
+    # Kind of info mainly
+    contents_view_file = auto()
+    dest_dir_diff = auto()
+    dest_dir_contents = auto()
+    unmanaged_diff = auto()
+    unmanaged_git_log = auto()
+
+
 class NotifyMsg(StrEnum):
     add_tab_tree_reloaded = "Add tab directory tree reloaded."
     no_managed_changes = "No managed or status paths changed."
-
-
-class OpBtnLabel(StrEnum):
-    enable_live_run = BindingDescription.enable_live_run
-    switch_to_dry_run = BindingDescription.switch_to_dry_run
-    add_review = "Review Add Path"
-    add_run = "Run Chezmoi Add"
-    apply_review = "Review Apply Path"
-    apply_run = "Run Chezmoi Apply"
-    cancel = "Cancel"
-    close = "Close"
-    create_diffs = "Create Diffs"
-    create_paths = "Create Test Paths"
-    destroy_review = "Review Destroy Path"
-    destroy_run = "Run Chezmoi Destroy"
-    forget_review = "Review Forget Path"
-    forget_run = "Run Chezmoi Forget"
-    list_test_paths = "List Test Paths"
-    log_memory = "Log Memory Usage"
-    not_set = "Not Set"
-    re_add_review = "Review Re-Add Path"
-    re_add_run = "Run Chezmoi Re-Add"
-    refresh_trees = "Refresh Trees"
-    reload = "Reload"
-    remove_paths = "Remove Test Paths"
-
-    @classmethod
-    def dry_run_set(cls) -> frozenset["OpBtnLabel"]:
-        return frozenset({OpBtnLabel.enable_live_run, OpBtnLabel.switch_to_dry_run})
-
-    @classmethod
-    def exit_modal_set(cls) -> frozenset["OpBtnLabel"]:
-        return frozenset({OpBtnLabel.cancel, OpBtnLabel.close, OpBtnLabel.reload})
-
-    @classmethod
-    def run_btn_set(cls) -> frozenset["OpBtnLabel"]:
-        return frozenset(
-            {
-                OpBtnLabel.add_run,
-                OpBtnLabel.apply_run,
-                OpBtnLabel.destroy_run,
-                OpBtnLabel.forget_run,
-                OpBtnLabel.re_add_run,
-            }
-        )
-
-    # classmethod which maps each review button to its corresponding run button
-    @classmethod
-    def _review_to_run_map(cls) -> dict["OpBtnLabel", "OpBtnLabel"]:
-        return {
-            cls.add_review: cls.add_run,
-            cls.apply_review: cls.apply_run,
-            cls.re_add_review: cls.re_add_run,
-            cls.destroy_review: cls.destroy_run,
-            cls.forget_review: cls.forget_run,
-        }
-
-    @property
-    def review_to_run(self) -> "OpBtnLabel":
-        return self._review_to_run_map()[self]
-
-    @property
-    def normalized_label(self) -> str:
-        return (
-            self.value.replace(" ", "_")
-            .replace("-", "_")
-            .replace("(", "")
-            .replace(")", "")
-        ).lower()
 
 
 class OpInfoString(StrEnum):
@@ -246,7 +300,7 @@ class OpInfoString(StrEnum):
         "the updated chezmoi repository will be pushed to the remote (origin)[/]"
     )
     auto_settings_not_applicable = (
-        f"{Chars.bullet} [dim]Apply operation: chezmoi autoadd, autocommit and "
+        f"{Chars.bullet} [dim]Apply btn_label: chezmoi autoadd, autocommit and "
         "autopush not applicable[/]"
     )
     destroy_path_info = (
@@ -280,6 +334,10 @@ class OpInfoString(StrEnum):
 
 
 class PathFilters(Enum):
+    # TODO: create an ALWAYS_IGNORE category to realistically implement things like
+    # os.walk, os.scandir, pathlib.iterdir and watchdog features to avoid elaborate
+    # exception handling, useless work, and keeping things as lean as possible
+
     UNWANTED_DIRS = (
         ".build",
         ".bundle",
@@ -404,9 +462,12 @@ class PathKind(StrEnum):
     UNMANAGED = auto()
 
 
+class ReactiveVar(StrEnum):
+    cmd_result = auto()
+
+
 class RichLogName(StrEnum):
     app_logger = auto()
-    cmd_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
     env_var_logger = auto()
@@ -448,11 +509,6 @@ class SectionLabel(StrEnum):
     unmanaged_file = "Unmanaged File"
 
 
-class StaticString(StrEnum):
-    click_path_with_status = "<- click a path with a status to see its diff"
-    click_file_for_contents = "<- Click a file path to see its contents"
-
-
 class StatusCode(StrEnum):
     Added = "A"
     Deleted = "D"
@@ -474,22 +530,6 @@ class SwitchLabel(StrEnum):
     # Add Tab
     show_managed = "Show managed paths"
     show_unwanted = "Show unwanted paths"
-
-
-class TabLabel(StrEnum):
-    # Main tabs
-    add = "Add"
-    apply = "Apply"
-    config = "Config"
-    debug = "Debug"
-    logs = "Logs"
-    re_add = "Re-Add"
-    # Tab buttons for content switcher within a main tab
-    app_log = "Application"
-    cmd_log = "Chezmoi-Commands"
-    contents = "Contents"
-    diff = "Diff"
-    git_log = "Git-Log"
 
 
 class Tcss(StrEnum):
@@ -607,12 +647,12 @@ class WriteCmd(Enum):
     re_add = ("re-add",)
 
     @classmethod
-    def get_write_cmd(cls, op_btn_label: OpBtnLabel) -> "WriteCmd":
+    def get_write_cmd(cls, op_btn_label: BtnLabel) -> "WriteCmd":
         mapping = {
-            OpBtnLabel.add_run: cls.add,
-            OpBtnLabel.apply_run: cls.apply,
-            OpBtnLabel.destroy_run: cls.destroy,
-            OpBtnLabel.forget_run: cls.forget,
-            OpBtnLabel.re_add_run: cls.re_add,
+            BtnLabel.add_run: cls.add,
+            BtnLabel.apply_run: cls.apply,
+            BtnLabel.destroy_run: cls.destroy,
+            BtnLabel.forget_run: cls.forget,
+            BtnLabel.re_add_run: cls.re_add,
         }
         return mapping[op_btn_label]

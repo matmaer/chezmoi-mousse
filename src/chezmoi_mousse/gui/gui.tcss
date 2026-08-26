@@ -139,6 +139,11 @@ FlatButtonsVertical {
   width: auto;
 }
 
+InfoVertical {
+  width: 1fr;
+  height: 1fr;
+}
+
 OperateModal {
   align: center middle;
   &>Vertical {
