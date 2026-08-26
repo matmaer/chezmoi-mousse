@@ -288,7 +288,7 @@ class ChezmoiGui(App[str]):
         parameters: tuple[object, ...],  # noqa: ARG002
     ) -> bool:
         if not isinstance(self.screen, MainScreen):
-            return True
+            return False
         if action == BindingAction.toggle_switch_slider:
             header = self.screen.query_exactly_one(CustomHeader)
             switch_slider = self._get_switch_slider_widget()

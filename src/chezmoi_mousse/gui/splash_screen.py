@@ -153,15 +153,31 @@ class SplashScreen(Screen[None]):
     @work
     async def _run_all_tasks(self) -> None:
         self.fade_timer.resume()
-        for cmd in (
-            ReadCmd.doctor,
-            ReadCmd.cat_config,
-            ReadCmd.git_log,
-            ReadCmd.git_remote,
-            ReadCmd.ignored,
-            ReadCmd.template_data,
-        ):
-            self._run_chezmoi_cmd_worker(cmd)
+
+        result: CommandResult = Commands.run_read_cmd(
+            ReadCmd.git_repo_check, path_arg=None
+        )
+        store.cm_repo_checks.exists_bool = result.returncode == 0
+        if store.cm_repo_checks.exists:
+            self._run_chezmoi_cmd_worker(ReadCmd.git_log)
+
+        if not store.cm_repo_checks.exists:
+            for cmd in (
+                ReadCmd.doctor,
+                ReadCmd.cat_config,
+                ReadCmd.ignored,
+                ReadCmd.template_data,
+            ):
+                self._run_chezmoi_cmd_worker(cmd)
+        else:
+            for cmd in (
+                ReadCmd.doctor,
+                ReadCmd.cat_config,
+                ReadCmd.git_remote,
+                ReadCmd.ignored,
+                ReadCmd.template_data,
+            ):
+                self._run_chezmoi_cmd_worker(cmd)
 
         to_process_workers = [
             self._run_chezmoi_cmd_worker(cmd) for cmd in ReadCmd.managed_commands()

@@ -385,10 +385,8 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)
-    def get_chezmoi_git_log(path_arg: Path | None) -> CommandResult:
+    def run_chezmoi_git_log(path_arg: Path) -> CommandResult:
         if path_arg == store.cfg.dest_dir:
-            raise ValueError("Not allowed to run chezmoi git with destDir path arg")
-        if path_arg is None:
             result = Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
         else:
             source_path_result = Commands._get_source_path(path_arg)

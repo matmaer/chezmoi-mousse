@@ -6,6 +6,8 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
+from chezmoi_mousse import store
+from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import ColorVar, SectionLabel
 
 from .components import (
@@ -31,14 +33,14 @@ class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    show_path: reactive[CurrentNodeMsg | None] = reactive(None)
+    node_msg: reactive[CurrentNodeMsg | None] = reactive(None)
 
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.git_log)
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel()
-        yield DataTable[str](fixed_rows=1, show_cursor=False)
+        yield DataTable[str](show_cursor=False)
         yield InfoContainer(SectionLabel.unmanaged_dir, SectionLabel.not_set, "")
 
     def on_mount(self) -> None:
@@ -46,6 +48,8 @@ class GitLogView(Vertical):
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table = self.query_exactly_one(DataTable[str])
         self.data_table.add_columns("COMMIT", "MESSAGE")
+        self.info_container = self.query_exactly_one(InfoContainer)
+        self.info_container.display = False
 
     def _update_datatable(self, git_log_lines: list[str]) -> None:
         self.data_table.clear()
@@ -72,6 +76,10 @@ class GitLogView(Vertical):
             else:
                 add_row_with_style(columns, ColorVar.text)
 
-    def watch_show_path(self, show_path: CurrentNodeMsg | None) -> None:
-        if show_path is None:
+    def watch_node_msg(self, node_msg: CurrentNodeMsg | None) -> None:
+        if node_msg is None:
             return
+        self.flat_section_label.update(str(node_msg.path))
+        if node_msg.path == store.cfg.dest_dir:
+            result = Commands.run_chezmoi_git_log(node_msg.path)
+            self._update_datatable(result.std_out.splitlines())

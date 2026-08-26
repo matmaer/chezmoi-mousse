@@ -209,7 +209,7 @@ class MainScreen(Screen[None]):
         self.query_one(
             msg.app_ids.container.contents_q, ContentsView
         ).show_path = msg.path
-        self.query_one(msg.app_ids.container.git_log_q, GitLogView).show_path = msg
+        self.query_one(msg.app_ids.container.git_log_q, GitLogView).node_msg = msg
 
     @on(RefreshBtnMsg)
     async def handle_refresh_button(self) -> None:

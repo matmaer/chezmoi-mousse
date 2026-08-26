@@ -85,7 +85,6 @@ class ManagedTree(Tree[Path]):
         self.root.label = f"[{color}]{store.cfg.dest_dir.name}[/]"
         self.root.expand()
         self.root.allow_expand = False
-        self.select_node(self.root)
 
         self.status_color: dict[StatusCode | PathKind, ColorVar] = {
             StatusCode.Added: ColorVar.text_success,
