@@ -79,6 +79,16 @@ select = [
     "UP",      # pyupgrade
     "W",       # pycodestyle
 ]
+extend-safe-fixes = [
+    "TCH",     # move imports into TYPE_CHECKING blocks
+    "UP006",   # use standard collections like list[str] instead of typing.List[str]
+    "UP007",   # use X | Y union syntax instead of Optional[X] or Union[X, Y]
+    "C408",    # rewrite dict()/list()/tuple() calls to literals {}, []
+    "RUF013",  # prefer implicit Optional for default None arguments
+    "B006",    # replace mutable default arguments like arg=[] with None
+    "SIM108",  # convert simple if-else blocks into ternary expressions
+    "PTH123",  # convert open() to Path.open()
+]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "parents"
@@ -88,7 +98,6 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.ruff.lint.flake8-type-checking]
-# Move imports into TYPE_CHECKING even if they are used in runtime annotations (e.g., function arguments)
 strict = true
 
 [tool.ruff.lint.isort]
@@ -99,6 +108,8 @@ check-filenames = true
 ignore-words-list = "ReAdd,re-add"
 
 [tool.pyright]
+reportUnknownMemberType = "information"
 typeCheckingMode = "strict"
 pythonVersion = "3.13"
 extraPaths = ["src"]
+include = ["src", "static_tests"]
