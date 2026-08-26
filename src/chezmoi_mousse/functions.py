@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ("min_wait", "AppLife", "Commands", "CheckPath")
+__all__ = ("min_wait", "AppLife", "Commands", "CheckPath", "ScanDirResult")
 
 
 def min_wait(
@@ -85,7 +85,6 @@ def _filter_ugly_args() -> set[str]:
         ChezmoiGitArgs.global_args.value,
         ChezmoiGitArgs.git_log_args.value,
         (
-            ChezmoiGitArgs.verbose.value,
             VerbArgs.format_json.value,
             VerbArgs.path_style_absolute.value,
         ),
@@ -206,16 +205,6 @@ class Commands:
             paths=sorted([Path(path_str) for path_str in affected_paths_str]),
             pretty_cmd=f"{pretty_cmd} {rel_path}",
             std_err=stderr_output,
-        )
-
-    @staticmethod
-    def _parse_dump_config(cmd_output: str) -> None:
-        parsed_dump_config = json.loads(cmd_output)
-        store.cfg = ParsedDumpConfig(
-            dest_dir_path=Path(parsed_dump_config["destDir"]),
-            auto_add_bool=parsed_dump_config["git"]["autoadd"],
-            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
-            auto_push_bool=parsed_dump_config["git"]["autopush"],
         )
 
     @staticmethod
