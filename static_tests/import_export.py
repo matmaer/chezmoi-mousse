@@ -3,10 +3,41 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
+from static_tests._helpers import (
+    MODULE_DIR,
+    ast_parse,
+    get_file_paths,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+def get_export_var_value(module: ast.Module) -> set[str] | None:
+    all_var_value: ast.List | ast.Constant | None = None
+
+    for stmt in module.body:
+        if isinstance(stmt, ast.Assign):
+            for target in stmt.targets:
+                if isinstance(target, ast.Name) and target.id == "__all__":
+                    assert isinstance(stmt.value, (ast.List, ast.Constant))
+                    all_var_value = stmt.value
+
+    if all_var_value is None:
+        return None
+
+    # Handle single string constant: __all__ = "foo"
+    if isinstance(all_var_value, ast.Constant):
+        assert isinstance(all_var_value.value, str)
+        return {all_var_value.value}
+
+    # Handle list assignment: __all__ = ["foo", "bar"]
+    elements: set[str] = set()
+    for elt in all_var_value.elts:
+        assert isinstance(elt, ast.Constant)
+        assert isinstance(elt.value, str)
+        elements.add(elt.value)
+    return elements
 
 
 class AllVariableDetector(ast.NodeVisitor):
@@ -69,33 +100,12 @@ class AllVariableDetector(ast.NodeVisitor):
     def visit_Module(self, node: ast.Module) -> None:
         self.has_all[self.current_module] = False
 
-        # Look for __all__ assignment at the top/module level
-        for stmt in node.body:
-            if isinstance(stmt, ast.Assign):
-                for target in stmt.targets:
-                    if isinstance(target, ast.Name) and target.id == "__all__":
-                        self._process_all_value(self.current_module, stmt.value)
-            elif isinstance(stmt, ast.AnnAssign) and (
-                isinstance(stmt.target, ast.Name)
-                and stmt.target.id == "__all__"
-                and stmt.value
-            ):
-                self._process_all_value(self.current_module, stmt.value)
+        export_var_value: set[str] | None = get_export_var_value(node)
+        if export_var_value is not None:
+            self.has_all[self.current_module] = True
+            self.defined_all[self.current_module] = export_var_value
 
         self.generic_visit(node)
-
-    def _process_all_value(self, module_name: str, value_node: ast.AST) -> None:
-        self.has_all[module_name] = True
-        elements: set[str] = set()
-
-        if isinstance(value_node, (ast.Tuple, ast.List)):
-            for elt in value_node.elts:
-                if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
-                    elements.add(elt.value)
-        elif isinstance(value_node, ast.Constant) and isinstance(value_node.value, str):
-            elements.add(value_node.value)
-
-        self.defined_all[module_name] = elements
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         # Resolve the source module based on absolute vs relative context rules

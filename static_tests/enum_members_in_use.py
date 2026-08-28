@@ -2,7 +2,7 @@ import ast
 
 import pytest
 
-from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
+from static_tests._helpers import MODULE_DIR, ast_parse, get_file_paths
 
 
 def is_enum_class(class_def: ast.ClassDef) -> bool:

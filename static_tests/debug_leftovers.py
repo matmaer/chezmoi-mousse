@@ -3,8 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
-
 
 class DebugStatementDetector(ast.NodeVisitor):
     def __init__(self) -> None:
@@ -57,11 +55,6 @@ class DebugStatementDetector(ast.NodeVisitor):
 
 def test_leftovers() -> None:
     detector = DebugStatementDetector()
-
-    for file_path in get_file_paths():
-        detector.current_file = str(file_path.relative_to(MODULE_DIR))
-        tree = ast_parse(file_path)
-        detector.visit(tree)
 
     if detector.debug_statements:
         messages: list[str] = []

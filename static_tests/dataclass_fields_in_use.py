@@ -1,81 +1,53 @@
 import ast
-from pathlib import Path
-
-import pytest
-
-from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
+from collections.abc import Callable
 
 
-def is_dataclass(class_def: ast.ClassDef) -> bool:
-    for d in class_def.decorator_list:
-        # Check direct decorators: @dataclass or @dataclasses.dataclass
-        if isinstance(d, ast.Name) and d.id == "dataclass":
+def is_dataclass(node: ast.ClassDef) -> bool:
+    for decorator in node.decorator_list:
+        if isinstance(decorator, ast.Name) and decorator.id == "dataclass":
             return True
-        if isinstance(d, ast.Attribute) and d.attr == "dataclass":
-            return True
-        # Check parameterized decorators: @dataclass(...) or @dataclasses.dataclass(...)
-        if isinstance(d, ast.Call):
-            if isinstance(d.func, ast.Name) and d.func.id == "dataclass":
+        if isinstance(decorator, ast.Call):
+            func = decorator.func
+            if isinstance(func, ast.Name) and func.id == "dataclass":
                 return True
-            if isinstance(d.func, ast.Attribute) and d.func.attr == "dataclass":
+            if isinstance(func, ast.Attribute) and func.attr == "dataclass":
                 return True
     return False
 
 
-class UnusedFieldDetector(ast.NodeVisitor):
+class DataclassFieldUsageRule:
     def __init__(self) -> None:
-        self.current_file: str = ""
-        self.current_file_path: Path | None = None
-
-        # Map "ClassName.field_name" to (file_path, lineno)
         self.defined_fields: dict[str, tuple[str, int]] = {}
         self.used_field_names: set[str] = set()
 
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        if is_dataclass(node):
+    def get_rule_data(self, node: ast.AST, file_path: str) -> None:
+        if isinstance(node, ast.ClassDef) and is_dataclass(node):
             for item in node.body:
                 if isinstance(item, ast.AnnAssign) and isinstance(
                     item.target, ast.Name
                 ):
                     field_key = f"{node.name}.{item.target.id}"
-                    self.defined_fields[field_key] = (self.current_file, item.lineno)
+                    self.defined_fields[field_key] = (file_path, item.lineno)
 
-        # Continue walking the tree to find usages inside this class's methods
-        self.generic_visit(node)
+        elif isinstance(node, ast.Attribute):
+            self.used_field_names.add(node.attr)
 
-    def visit_Attribute(self, node: ast.Attribute) -> None:
-        # Catches usages like: config.some_value
-        self.used_field_names.add(node.attr)
-        self.generic_visit(node)
-
-    def visit_keyword(self, node: ast.keyword) -> None:
-        # Catches keyword arguments like: LocalConfig(some_value='foo')
-        if node.arg:
+        elif isinstance(node, ast.keyword) and node.arg:
             self.used_field_names.add(node.arg)
-        self.generic_visit(node)
+
+    def get_issues(self) -> list[str]:
+        unused: list[str] = []
+        for field_key, (file, line) in self.defined_fields.items():
+            class_name, field_name = field_key.split(".")
+
+            if field_name not in self.used_field_names:
+                unused.append(
+                    f"Unused dataclass field '{field_name}' in {class_name} "
+                    f"({file}:{line})"
+                )
+
+        return unused
 
 
-def test_dataclass_fields() -> None:
-    # By passing every file tree to the same visitor instance, the visitor can
-    # accumulate a global map of your entire project, even though each generic_visit
-    # call only ever knows about the single file it is currently walking.
-
-    detector = UnusedFieldDetector()
-
-    # Collect all data across modules
-    for file_path in get_file_paths():
-        detector.current_file = str(file_path.relative_to(MODULE_DIR))
-        tree = ast_parse(file_path)
-        detector.visit(tree)
-
-    # Identify unused fields
-    unused: list[str] = []
-    for field_key, (file, line) in detector.defined_fields.items():
-        class_name, field_name = field_key.split(".")
-
-        if field_name not in detector.used_field_names:
-            unused.append(f"{field_name} in {class_name} ({file}:{line})")
-
-    if unused:
-        error_message = "\nFound unused dataclass fields:\n" + "\n".join(unused)
-        pytest.fail(error_message)
+def test_dataclass_fields(run_ast_rule: Callable[..., list[str]]) -> None:
+    run_ast_rule(DataclassFieldUsageRule())

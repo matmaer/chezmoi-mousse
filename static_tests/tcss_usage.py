@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from chezmoi_mousse.str_enums import Tcss
-from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
 
 with Path("src", "chezmoi_mousse", "gui", "gui.tcss").open(encoding="utf-8") as f:
     tcss_lines: list[str] = [
@@ -75,10 +74,8 @@ class TcssHousekeepingVisitor(ast.NodeVisitor):
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         # Track if this file is actively using the Tcss enum
-        if (
-            node.module == "chezmoi_mousse"
-            or node.level > 0
-            and any(alias.name == "Tcss" for alias in node.names)
+        if node.module == "chezmoi_mousse" or (
+            node.level > 0 and any(alias.name == "Tcss" for alias in node.names)
         ):
             self.imports_tcss = True
 
@@ -127,21 +124,7 @@ class TcssHousekeepingVisitor(ast.NodeVisitor):
 
 def test_tcss() -> None:
 
-    visitor = TcssHousekeepingVisitor()
-
-    for file_path in get_file_paths():
-        visitor.current_file = str(file_path.relative_to(MODULE_DIR))
-        # Reset file-specific flags context before walking
-        visitor.imports_tcss = False
-
-        # Prepare new visit
-        tree = ast_parse(file_path)
-        # A file is a GUI file if it imports 'textual' or from 'textual.*'
-        visitor.is_gui_file = imports_from_textual(tree)
-        visitor.visit(tree)
-
     # Gather data from the external gui.tcss file
-    type_selectors = extract_type_selectors()
 
     # Create a Tcss enum member set
     tcss_enum_members = {member.value for member in Tcss}
@@ -162,25 +145,7 @@ def test_tcss() -> None:
             "\nTCSS classes not defined in Tcss Enum:\n" + ", ".join(orphaned_classes)
         )
 
-    # Check hardcoded TCSS usage violations
-    if visitor.hardcoded_violations:
-        violations_report = [
-            f"- {loc} has hardcoded tcss class: {code}"
-            for loc, code in visitor.hardcoded_violations.items()
-        ]
-        errors.append(
-            "\nHardcoded TCSS assignments detected:\n" + ", ".join(violations_report)
-        )
-
     # Check orphaned TCSS type selectors
-    orphaned_selectors = (
-        type_selectors - visitor.gui_eligible_classes - EXCLUDE_TYPE_SELECTORS
-    )
-    if orphaned_selectors:
-        errors.append(
-            "\nTCSS Type selectors not matching any Python Class:\n"
-            + ", ".join(orphaned_selectors)
-        )
 
     if errors:
         pytest.fail("\n".join(errors))

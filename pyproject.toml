@@ -43,7 +43,6 @@ addopts = [
     "--tb=no",                # Hide long stack traces
     "--capture=no",           # Don't capture stdout (allow prints)
     "--no-header",            # Hide boilerplate intro
-    "-p", "no:cacheprovider", # Disable .pytest_cache generation
     "--timeout=15"            # Fail tests taking longer than 15s
 ]
 testpaths = ["static_tests"]
