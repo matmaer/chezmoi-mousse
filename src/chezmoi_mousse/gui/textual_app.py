@@ -143,7 +143,6 @@ class ChezmoiGui(App[str]):
         splash_screen = SplashScreen()
         self.register_theme(chezmoi_mousse_light)
         await self.push_screen(splash_screen)
-        await self._listen_to_command_results().wait()
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(ApplyTab())
         await tabbed_content.add_pane(ReAddTab())
@@ -152,8 +151,9 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(ConfigTab())
         if store.SHOW_DEBUG_TAB:
             await tabbed_content.add_pane(DebugTab())
+        self._listen_to_command_results()
         await tabbed_content.wait_for_refresh()
-        # await self._update_managed_trees().wait()
+        await self._update_managed_trees().wait()
         await splash_screen.dismiss_after_fade_loop().wait()
 
     # #####################
@@ -273,24 +273,19 @@ class ChezmoiGui(App[str]):
     def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
-        if event.tabbed_content.active in (
-            BtnLabel.apply,
-            BtnLabel.re_add,
-            BtnLabel.add,
-        ):
-            # slider: SwitchSlider | None = self._get_switch_slider_widget()
-            # if slider is None:git
-            #     return
-            # slider_visible = slider.has_class("-visible")
-            # new_description = (
-            #     BindingDescription.hide_filters
-            #     if slider_visible is True
-            #     else BindingDescription.show_filters
-            # )
-            # self._update_binding_description(
-            #     binding_action=BindingAction.toggle_switch_slider,
-            #     new_description=new_description,
-            # )
+        active_pane = event.tabbed_content.active_pane
+        if isinstance(active_pane, (AddTab, ApplyTab, ReAddTab)):
+            slider = active_pane.query_one(SwitchSlider)
+            slider_visible = slider.has_class("-visible")
+            new_description = (
+                BindingDescription.hide_filters
+                if slider_visible is True
+                else BindingDescription.show_filters
+            )
+            self._update_binding_description(
+                binding_action=BindingAction.toggle_switch_slider,
+                new_description=new_description,
+            )
             self.refresh_bindings()
 
     # ##################
@@ -362,10 +357,9 @@ class ChezmoiGui(App[str]):
     def action_toggle_maximized(self) -> None:
         if isinstance(self.screen, SplashScreen):
             return
-        active_tab = self.query_exactly_one(TabbedContent).active
+        active_tab_label = self.query_exactly_one(TabbedContent).active
         left_side: DestDirTree | Vertical | FlatButtonsVertical | None = None
         operation_buttons = None
-        # switch_slider: SwitchSlider | None = self._get_switch_slider_widget()
         view_switcher_buttons = None
 
         header = self.query_exactly_one(CustomHeader)
@@ -373,39 +367,39 @@ class ChezmoiGui(App[str]):
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab in (BtnLabel.apply, BtnLabel.re_add):
+        if active_tab_label in (BtnLabel.apply, BtnLabel.re_add):
             tab_pane = self.query_exactly_one(TabbedContent).active_pane
             if tab_pane is None:
                 return
             view_switcher_buttons = tab_pane.query(TabButtons).last()
 
-        if active_tab == BtnLabel.apply:
+        if active_tab_label == BtnLabel.apply:
             left_side = self.query_one(
                 store.apply_ids.container.left_side_q, DestDirTree
             )
             operation_buttons = self.query_one(
                 store.apply_ids.container.operate_buttons_q
             )
-        elif active_tab == BtnLabel.re_add:
+        elif active_tab_label == BtnLabel.re_add:
             left_side = self.query_one(
                 store.re_add_ids.container.left_side_q, DestDirTree
             )
             operation_buttons = self.query_one(
                 store.re_add_ids.container.operate_buttons_q
             )
-        elif active_tab == BtnLabel.add:
+        elif active_tab_label == BtnLabel.add:
             left_side = self.query_one(store.add_ids.container.left_side_q, Vertical)
             operation_buttons = self.query_one(
                 store.add_ids.container.operate_buttons_q
             )
-        elif active_tab == BtnLabel.logs:
+        elif active_tab_label == BtnLabel.logs:
             logs_tab_buttons = self.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
-        elif active_tab == BtnLabel.config:
+        elif active_tab_label == BtnLabel.config:
             left_side = self.query_one(
                 store.config_ids.container.left_side_q, FlatButtonsVertical
             )
-        elif active_tab == BtnLabel.debug:
+        elif active_tab_label == BtnLabel.debug:
             left_side = self.query_one(
                 store.debug_ids.container.left_side_q, FlatButtonsVertical
             )
@@ -416,8 +410,12 @@ class ChezmoiGui(App[str]):
             operation_buttons.display = not operation_buttons.display
         if view_switcher_buttons is not None:
             view_switcher_buttons.display = not view_switcher_buttons.display
-        # if switch_slider is not None:
-        #     switch_slider.display = not switch_slider.display
+
+        tab_pane = self.query_exactly_one(TabbedContent).active_pane
+        if tab_pane is None:
+            return
+        switch_slider = tab_pane.query_one(SwitchSlider)
+        switch_slider.display = not switch_slider.display
 
         new_description = (
             BindingDescription.maximize
@@ -434,11 +432,10 @@ class ChezmoiGui(App[str]):
         action: str,
         parameters: tuple[object, ...],  # noqa: ARG002
     ) -> bool:
-        # if isinstance(self.screen, SplashScreen):
-        #     return False
+        if isinstance(self.screen, SplashScreen):
+            return False
         if action == BindingAction.toggle_switch_slider:
             active_pane = self.query_exactly_one(TabbedContent).active_pane
-            print(type(active_pane), active_pane)
             if not isinstance(active_pane, (AddTab, ApplyTab, ReAddTab)):
                 self.refresh_bindings()
                 return False
