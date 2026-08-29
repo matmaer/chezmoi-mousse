@@ -197,6 +197,7 @@ class ColorVar(StrEnum):
     info = "foreground-darken-1"
     ready = "accent-darken-2"
     text = "text"
+    text_accent = "text-accent"
     text_block = "foreground-darken-1"
     text_error = "text-error"
     text_error_dark = "text-error-darken-3"
@@ -509,6 +510,16 @@ class SectionLabel(StrEnum):
     unmanaged_file = "Unmanaged File"
 
 
+class SplashStr(StrEnum):
+    completed = auto()
+    found_repo = "create new chezmoi repo"
+    exit_one = auto()
+    exit_other = auto()
+    exit_zero = auto()
+    found_existing_repo = "chezmoi repository exists"
+    reported = auto()
+
+
 class StatusCode(StrEnum):
     Added = "A"
     Deleted = "D"
@@ -640,6 +651,7 @@ class ReadCmd(Enum):
 
 
 class WriteCmd(Enum):
+    init = ("init",)
     add = ("add",)
     apply = ("apply",)
     destroy = ("destroy",)
