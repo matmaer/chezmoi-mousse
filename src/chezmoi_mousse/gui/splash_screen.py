@@ -15,7 +15,7 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_classes import StatusPaths
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.functions import Commands, ParseCmd
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd
 
 from .common.ascii_constants import SPLASH_ASCII
@@ -125,13 +125,13 @@ class SplashScreen(Screen[None]):
             color = self.warning_color
         return f"[{color}]{prefix} {'.' * padding} {suffix}[/{color}]"
 
-    async def _run_chezmoi_command(self, command: ReadCmd) -> str:
+    async def _run_chezmoi_command(self, command: ReadCmd) -> CommandResult:
         result: CommandResult = await asyncio.to_thread(
             Commands.run_read_cmd, command, path_arg=None
         )
         msg = self._get_log_msg(prefix=result.pretty_cmd, returncode=result.returncode)
         self.splash_log.write(msg)
-        return msg
+        return result
 
     async def _post_process_cmd_results(self) -> None:
         store.add_path = store.cfg.dest_dir
@@ -149,10 +149,8 @@ class SplashScreen(Screen[None]):
     async def run_all_tasks(self) -> None:
         self.fade_timer.resume()
 
-        await self._run_chezmoi_command(ReadCmd.dump_config)
-        result: CommandResult = await asyncio.to_thread(
-            Commands.run_read_cmd, ReadCmd.git_repo_check, path_arg=None
-        )
+        result = await self._run_chezmoi_command(ReadCmd.dump_config)
+        store.cfg = ParseCmd.get_dump_config_keys(result.std_out)
         store.cm_repo_checks.exists_bool = result.returncode == 0
 
         base_cmds = [

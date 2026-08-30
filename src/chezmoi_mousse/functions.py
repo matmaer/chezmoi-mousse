@@ -130,7 +130,7 @@ class ParseCmd:
         return f"{ParseCmd._cmd_str_wop(cmd, pretty=False)} {path_str}"
 
     @staticmethod
-    def get_parsed_config(std_out: str) -> DumpConfigKeys:
+    def get_dump_config_keys(std_out: str) -> DumpConfigKeys:
         parsed_dump_config = json.loads(std_out)
         return DumpConfigKeys(
             dest_dir_path=Path(parsed_dump_config["destDir"]),
