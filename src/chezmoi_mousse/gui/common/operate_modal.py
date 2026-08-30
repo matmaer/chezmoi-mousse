@@ -21,7 +21,6 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-from .actionables import RunBtnGroup
 from .components import InfoStatic, MainSectionLabel, SubSectionLabel
 from .messages import ExitModalBtnMsg
 
@@ -55,7 +54,7 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
-        for cmd in ReadCmd.managed_commands():
+        for cmd in ReadCmd.post_operation_commands():
             self.label_text = f"Running: {ParseCmd.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
         store.changed.update_changed_paths()
@@ -63,12 +62,12 @@ class LoadingModal(ModalScreen[None]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        Commands.run_read_cmd(read_cmd, path_arg=None)
+        await Commands.run_read_cmd(read_cmd, path_arg=None)
 
     @work(thread=True)
     @min_wait
     async def _run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
-        Commands.run_write_cmd(
+        await Commands.run_write_cmd(
             write_cmd,
             path_arg=path_arg,
         )
@@ -212,7 +211,7 @@ class OperateModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, labels: tuple[BtnLabel, ...]) -> None:
+    def __init__(self, *, labels: tuple[BtnLabel, ...]) -> None:
         self.operate_label = next(
             (label for label in labels if label in BtnLabel.run_btn_set()), None
         )
@@ -224,7 +223,6 @@ class OperateModal(ModalScreen[None]):
             yield OperateInfo(self.operate_label)
             yield ChangedPathsOutput()
             yield AffectedPathsReview()
-            yield RunBtnGroup(self.labels)
 
     def on_mount(self) -> None:
         operate_info = self.query_exactly_one(OperateInfo)
@@ -255,6 +253,6 @@ class OperateModal(ModalScreen[None]):
         tab_path = store.get_tab_path(self.operate_label)
         if tab_path is None:
             tab_path = store.cfg.dest_dir
-        result: AffectedPaths = Commands.get_affected_paths(write_cmd, tab_path)
+        result: AffectedPaths = await Commands.get_affected_paths(write_cmd, tab_path)
         self.affected_paths_review.affected_paths = result
         await self.loading_modal.dismiss()

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CurrentNodeMsg",
+    "DebugBtnMsg",
     "DirContentBtnMsg",
     "DryRunBtnMsg",
     "ExitModalBtnMsg",
@@ -51,7 +52,19 @@ class DirContentBtnMsg(Message):
         super().__init__()
 
 
+class DebugBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
 class DryRunBtnMsg(Message):
+    def __init__(self, button: Button) -> None:
+        self.button = button
+        super().__init__()
+
+
+class FlatBtnMsg(Message):
     def __init__(self, button: Button) -> None:
         self.button = button
         super().__init__()

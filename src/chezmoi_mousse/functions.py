@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import re
@@ -142,7 +143,22 @@ class ParseCmd:
 
 class Commands:
     @staticmethod
-    def _subprocess_run(
+    async def _subprocess_run(
+        run_args: tuple[str, ...],
+        *,
+        time_out: int,
+    ) -> subprocess.CompletedProcess[str]:
+        return await asyncio.to_thread(
+            subprocess.run,
+            run_args,
+            capture_output=True,
+            shell=False,
+            text=True,
+            timeout=time_out,
+        )
+
+    @staticmethod
+    async def _get_cmd_result(
         args_tuple: tuple[str, ...],
         *,
         path: Path | None,
@@ -155,8 +171,8 @@ class Commands:
             raise ValueError("Calling subprocess.run with a relative path")
         else:
             run_args = args_tuple + (str(path),)
-        cp: subprocess.CompletedProcess[str] = subprocess.run(
-            run_args, capture_output=True, shell=False, text=True, timeout=time_out
+        cp: subprocess.CompletedProcess[str] = await Commands._subprocess_run(
+            run_args, time_out=time_out
         )
 
         std_err = "\n".join([line for line in cp.stderr.splitlines() if line.strip()])
@@ -188,35 +204,14 @@ class Commands:
         )
 
     @staticmethod
-    def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
-        # Only works for apply and re-add, not for add, forget and destroy
-        if path == store.cfg.dest_dir and write_cmd in (
-            WriteCmd.add,
-            WriteCmd.destroy,
-            WriteCmd.forget,
-        ):
-            return AffectedPaths(
-                paths=[],
-                pretty_cmd=f"Cannot run chezmoi on the destDir for {write_cmd.name}",
-                std_err="No stderr, subprocess didn't run",
-            )
+    def _subprocess_get_affected_paths(
+        args_tuple: tuple[str, ...],
+    ) -> tuple[set[str], str, int]:
 
-        # Matches standard git diff paths (capturing the target path in group 1)
-        path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
         affected_paths_str: set[str] = set()
+        path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
 
-        args_tuple: tuple[str, ...] = (
-            ("chezmoi",)
-            + GlobalArgs.global_defaults.value
-            + (
-                GlobalArgs.verbose.value,
-                GlobalArgs.dry_run.value,
-            )
-            + (write_cmd.value)
-        )
-        if path != store.cfg.dest_dir:
-            args_tuple += (str(path),)
-
+        # Launch process
         with subprocess.Popen(
             args_tuple,
             stdout=subprocess.PIPE,
@@ -224,7 +219,7 @@ class Commands:
             text=True,
             shell=False,
         ) as process:
-            # Stream stdout line-by-line for low memory overhead
+            # Stream stdout line-by-line
             if process.stdout is not None:
                 for line in process.stdout:
                     match = path_pattern.match(line)
@@ -234,47 +229,75 @@ class Commands:
             # Read any remaining stderr output after stdout completes
             stderr_output = process.stderr.read() if process.stderr is not None else ""
 
-            # Ensure child process terminates and populates process.returncode
-            process.wait()
+            returncode = process.wait()
+            return affected_paths_str, stderr_output, returncode
+
+    @staticmethod
+    async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
+        path_arg: tuple[str, ...] = (str(path),)
+        # Only works for apply and re-add, not for add, forget and destroy
+        if path == store.cfg.dest_dir and write_cmd in (
+            WriteCmd.add,
+            WriteCmd.destroy,
+            WriteCmd.forget,
+        ):
+            # TODO: disable the chezmoi review button, so it should never happen
+            raise ValueError(f"Cannot run chezmoi on the destDir for {write_cmd.name}")
+        path_arg = () if path == store.cfg.dest_dir else (str(path),)
+
+        # Build command arguments
+        args_tuple: tuple[str, ...] = (
+            ("chezmoi",)
+            + GlobalArgs.global_defaults.value
+            + (
+                GlobalArgs.verbose.value,
+                GlobalArgs.dry_run.value,
+            )
+            + write_cmd.value
+            + path_arg
+        )
 
         rel_path = ParseCmd.get_rel_path(path) if path != store.cfg.dest_dir else ""
         pretty_cmd = " ".join(
             [a for a in args_tuple if a not in ParseCmd.filter_ugly_args()]
         )
+
+        # Offload the blocking streaming execution to a thread worker
+        affected_paths_str, stderr_output, returncode = await asyncio.to_thread(
+            Commands._subprocess_get_affected_paths, args_tuple
+        )
         return AffectedPaths(
             paths=sorted([Path(path_str) for path_str in affected_paths_str]),
             pretty_cmd=f"{pretty_cmd} {rel_path}",
             std_err=stderr_output,
+            returncode=returncode,
         )
 
     @staticmethod
-    def run_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
+    async def run_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
         args_tuple: tuple[str, ...] = ("chezmoi",) + cmd.value
-        cmd_result: CommandResult = Commands._subprocess_run(
+        cmd_result: CommandResult = await Commands._get_cmd_result(
             args_tuple, path=path_arg, time_out=5, cmd_enum=cmd
         )
-        store.results_queue.put(cmd_result)
         return cmd_result
 
     @staticmethod
-    def run_chezmoi_init() -> CommandResult:
-        cmd_result: CommandResult = Commands._subprocess_run(
+    async def run_chezmoi_init() -> CommandResult:
+        cmd_result: CommandResult = await Commands._get_cmd_result(
             ("chezmoi",), path=None, time_out=20, cmd_enum=WriteCmd.init
         )
-        store.results_queue.put(cmd_result)
         return cmd_result
 
     @staticmethod
-    def run_write_cmd(cmd: WriteCmd, path_arg: Path | None) -> CommandResult:
+    async def run_write_cmd(cmd: WriteCmd, path_arg: Path | None) -> CommandResult:
         args_tuple: tuple[str, ...] = (
             ("chezmoi", "--dry-run") + cmd.value
             if store.live_run is False
             else ("chezmoi",) + cmd.value
         )
-        cmd_result: CommandResult = Commands._subprocess_run(
+        cmd_result: CommandResult = await Commands._get_cmd_result(
             args_tuple, path=path_arg, time_out=20, cmd_enum=cmd
         )
-        store.results_queue.put(cmd_result)
         return cmd_result
 
     @staticmethod
@@ -303,10 +326,10 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)
-    def get_highlighted_chezmoi_cat_output(
+    async def get_highlighted_chezmoi_cat_output(
         file_path: Path,
     ) -> Text:
-        cmd_result = Commands.run_read_cmd(ReadCmd.cat, path_arg=file_path)
+        cmd_result = await Commands.run_read_cmd(ReadCmd.cat, path_arg=file_path)
         f_contents = cmd_result.std_out
         if not f_contents.strip():
             f_contents = "File is empty or contains only whitespace"
@@ -316,8 +339,8 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache()
-    def _get_source_path(path_arg: Path) -> CommandResult:
-        return Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
+    async def _get_source_path(path_arg: Path) -> CommandResult:
+        return await Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
 
     @staticmethod
     @_typed_lru_cache()
@@ -334,14 +357,14 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache(maxsize=500)
-    def run_chezmoi_git_log(path_arg: Path) -> CommandResult:
+    async def run_chezmoi_git_log(path_arg: Path) -> CommandResult:
         if path_arg == store.cfg.dest_dir:
-            result = Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
+            result = await Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
         else:
-            source_path_result = Commands._get_source_path(path_arg)
+            source_path_result = await Commands._get_source_path(path_arg)
             if source_path_result.returncode != 0:
                 return source_path_result
-            result = Commands.run_read_cmd(
+            result = await Commands.run_read_cmd(
                 cmd=ReadCmd.git_log,
                 path_arg=Path(source_path_result.std_out),
             )
@@ -349,8 +372,8 @@ class Commands:
 
     @staticmethod
     @_typed_lru_cache()
-    def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
-        return Commands.run_read_cmd(diff_cmd, path_arg=path)
+    async def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
+        return await Commands.run_read_cmd(diff_cmd, path_arg=path)
 
 
 class CheckPath:

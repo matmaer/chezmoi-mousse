@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import queue
 import sys
 import tracemalloc
 from typing import TYPE_CHECKING
@@ -16,7 +15,6 @@ from chezmoi_mousse.str_enums import BtnLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.named_tuples import CommandResult
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 
@@ -33,8 +31,6 @@ SHOW_DEBUG_TAB = (
 
 if SHOW_DEBUG_TAB:
     tracemalloc.start()
-
-results_queue: queue.Queue[CommandResult] = queue.Queue()
 
 live_run: bool = False
 

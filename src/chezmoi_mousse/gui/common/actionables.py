@@ -19,9 +19,11 @@ from chezmoi_mousse.str_enums import (
 )
 
 from .messages import (
+    DebugBtnMsg,
     DirContentBtnMsg,
     DryRunBtnMsg,
     ExitModalBtnMsg,
+    FlatBtnMsg,
     RefreshBtnMsg,
     ReviewBtnMsg,
     RunBtnMsg,
@@ -63,8 +65,24 @@ class DirContentBtn(Button):
         self.post_message(DirContentBtnMsg(self))
 
 
+class DebugBtn(Button):
+    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.app_ids = app_ids
+        super().__init__(
+            id=app_ids.btn_id(btn_label=btn_label),
+            label=btn_label,
+            classes=Tcss.operate_button,
+        )
+
+    @on(Button.Pressed)
+    def _send_message(self, event: DebugBtn.Pressed) -> None:
+        event.stop()
+        self.post_message(DebugBtnMsg(self))
+
+
 class DryRunBtn(Button):
-    def __init__(self, btn_label: BtnLabel) -> None:
+    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.app_ids = app_ids
         super().__init__(
             label=btn_label,
             classes=Tcss.operate_button,
@@ -77,7 +95,8 @@ class DryRunBtn(Button):
 
 
 class ExitModalBtn(Button):
-    def __init__(self, *, btn_label: BtnLabel) -> None:
+    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.app_ids = app_ids
         super().__init__(
             classes=Tcss.operate_button,
             label=btn_label,
@@ -98,6 +117,11 @@ class FlatBtn(Button):
             label=btn_label,
             variant="primary",
         )
+
+    @on(Button.Pressed)
+    def _send_message(self, event: Button.Pressed) -> None:
+        event.stop()
+        self.post_message(FlatBtnMsg(self))
 
 
 class RefreshBtn(Button):
@@ -132,8 +156,13 @@ class ReviewBtn(Button):
 
 
 class RunBtn(Button):
-    def __init__(self, *, btn_label: BtnLabel) -> None:
-        super().__init__(label=btn_label, classes=Tcss.operate_button)
+    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.app_ids = app_ids
+        super().__init__(
+            classes=Tcss.operate_button,
+            id=app_ids.btn_id(btn_label=btn_label),
+            label=btn_label,
+        )
 
     @on(Button.Pressed)
     def _send_message(self, event: RunBtn.Pressed) -> None:
@@ -156,7 +185,7 @@ class FlatButtonsVertical(Container):
     def __init__(self, *, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
         self.app_ids = app_ids
         self.labels: tuple[BtnLabel, ...] = labels
-        super().__init__()
+        super().__init__(id=app_ids.container.flat_buttons)
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
@@ -165,11 +194,11 @@ class FlatButtonsVertical(Container):
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
 
-    @on(FlatBtn.Pressed, Tcss.flat_button.dot_prefix)
-    def update_tcss_classes(self, event: FlatBtn.Pressed) -> None:
+    @on(FlatBtnMsg)
+    def update_tcss_classes(self, msg: FlatBtnMsg) -> None:
         for btn in self.query(Button).results():
             btn.remove_class(Tcss.last_clicked_flat_btn)
-        event.button.add_class(Tcss.last_clicked_flat_btn)
+        msg.button.add_class(Tcss.last_clicked_flat_btn)
 
 
 class ReviewBtnGroup(HorizontalGroup):
@@ -185,19 +214,31 @@ class ReviewBtnGroup(HorizontalGroup):
             yield ReviewBtn(app_ids=self.app_ids, btn_label=btn_label)
 
 
+class DebugBtnGroup(HorizontalGroup):
+    def __init__(self, *, app_ids: AppIds, btn_labels: tuple[BtnLabel, ...]) -> None:
+        self.app_ids = app_ids
+        self.btn_labels = btn_labels
+        super().__init__(classes=Tcss.op_btn_group)
+
+    def compose(self) -> ComposeResult:
+        for btn_label in self.btn_labels:
+            yield DebugBtn(app_ids=self.app_ids, btn_label=btn_label)
+
+
 class RunBtnGroup(HorizontalGroup):
-    def __init__(self, btn_labels: tuple[BtnLabel, ...]) -> None:
+    def __init__(self, *, app_ids: AppIds, btn_labels: tuple[BtnLabel, ...]) -> None:
+        self.app_ids = app_ids
         self.btn_labels = btn_labels
         super().__init__(classes=Tcss.op_btn_group)
 
     def compose(self) -> ComposeResult:
         for btn_label in self.btn_labels:
             if btn_label in BtnLabel.dry_run_set():
-                yield DryRunBtn(btn_label)
+                yield DryRunBtn(app_ids=self.app_ids, btn_label=btn_label)
             elif btn_label in BtnLabel.run_btn_set():
-                yield RunBtn(btn_label=btn_label)
+                yield RunBtn(app_ids=self.app_ids, btn_label=btn_label)
             elif btn_label in BtnLabel.exit_modal_set():
-                yield ExitModalBtn(btn_label=btn_label)
+                yield ExitModalBtn(app_ids=self.app_ids, btn_label=btn_label)
 
 
 class _SwitchWithLabel(HorizontalGroup):

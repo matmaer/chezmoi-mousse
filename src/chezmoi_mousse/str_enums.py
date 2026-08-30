@@ -152,6 +152,18 @@ class BtnLabel(StrEnum):
             }
         )
 
+    @classmethod
+    def debug_btn_set(cls) -> frozenset["BtnLabel"]:
+        return frozenset(
+            {
+                BtnLabel.create_diffs,
+                BtnLabel.create_paths,
+                BtnLabel.list_test_paths,
+                BtnLabel.log_memory,
+                BtnLabel.remove_paths,
+            }
+        )
+
     # classmethod which maps each review button to its corresponding run button
     @classmethod
     def _review_to_run_map(cls) -> dict["BtnLabel", "BtnLabel"]:
@@ -218,6 +230,7 @@ class ContainerName(StrEnum):
     doctor = auto()
     dom_nodes = auto()
     env_vars = auto()
+    flat_buttons = auto()
     git_ignored = auto()
     git_log = auto()
     left_side = auto()
@@ -534,6 +547,7 @@ class SplashLogStr(StrEnum):
     has_no_git_commits = "chezmoi repo has no commits"
     parse_dump_config = "parse dump-config"
     repo_created = "chezmoi repo created"
+    repo_init = "chezmoi repo initialized"
     repo_found = "chezmoi repo found"
     repo_not_found = "chezmoi repo not found"
 
@@ -680,8 +694,23 @@ class ReadCmd(Enum):
     template_data = ("data", VerbArgs.format_json)
 
     @classmethod
-    def managed_commands(cls) -> tuple["ReadCmd", ...]:
-        return (cls.managed_dirs, cls.managed_files, cls.status_dirs, cls.status_files)
+    def post_operation_commands(cls) -> tuple[Self, ...]:
+        return (
+            cls[cls.managed_dirs.name],
+            cls[cls.managed_files.name],
+            cls[cls.status_dirs.name],
+            cls[cls.status_files.name],
+            cls[cls.git_log.name],
+        )
+
+    @classmethod
+    def post_dump_config_commands(cls) -> tuple[Self, ...]:
+        return (
+            cls[cls.doctor.name],
+            cls[cls.cat_config.name],
+            cls[cls.ignored.name],
+            cls[cls.template_data.name],
+        )
 
 
 class WriteCmd(Enum):
@@ -693,12 +722,12 @@ class WriteCmd(Enum):
     re_add = ("re-add",)
 
     @classmethod
-    def get_write_cmd(cls, op_btn_label: BtnLabel) -> "WriteCmd":
+    def get_write_cmd(cls, op_btn_label: BtnLabel) -> Self:
         mapping = {
-            BtnLabel.add_run: cls.add,
-            BtnLabel.apply_run: cls.apply,
-            BtnLabel.destroy_run: cls.destroy,
-            BtnLabel.forget_run: cls.forget,
-            BtnLabel.re_add_run: cls.re_add,
+            BtnLabel.add_run: cls[cls.add.name],
+            BtnLabel.apply_run: cls[cls.apply.name],
+            BtnLabel.destroy_run: cls[cls.destroy.name],
+            BtnLabel.forget_run: cls[cls.forget.name],
+            BtnLabel.re_add_run: cls[cls.re_add.name],
         }
         return mapping[op_btn_label]

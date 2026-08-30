@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import groupby
 from typing import TYPE_CHECKING
 
+from textual import work
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
@@ -87,10 +88,11 @@ class DiffView(ScrollableContainer):
             else store.re_add_paths
         )
 
-    def _update_widgets(self, path: Path) -> None:
+    @work
+    async def _update_widgets(self, path: Path) -> None:
 
         if path in store.status_dirs_kind and not store.status_files_kind:
-            diff_result = Commands.run_chezmoi_diff(self.diff_cmd, path)
+            diff_result = await Commands.run_chezmoi_diff(self.diff_cmd, path)
 
             self.main_section_label.update(str(diff_result.full_cmd))
 

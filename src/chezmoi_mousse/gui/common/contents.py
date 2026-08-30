@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from textual import work
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 
@@ -77,14 +78,15 @@ class ContentsView(ScrollableContainer):
                 label = SectionLabel.no_status_paths
         self.sub_section_label.update(label)
 
-    def _create_file_container(self, path: Path) -> None:
+    @work
+    async def _create_file_container(self, path: Path) -> None:
         self.sub_section_label.update(SectionLabel.not_set)
         if path in store.managed_files:
             self.main_section_label.update(SectionLabel.managed_file)
         else:
             self.main_section_label.update(SectionLabel.unmanaged_file)
         if store.managed_files.get(path) is PathKind.EXISTS_FALSE:
-            f_content = Commands.get_highlighted_chezmoi_cat_output(path)
+            f_content = await Commands.get_highlighted_chezmoi_cat_output(path)
             self.highlighted_static.update(f_content)
             self.sub_section_label.update(SectionLabel.chezmoi_cat_output)
         else:

@@ -9,11 +9,9 @@ from rich.markup import escape
 from textual import on, work
 from textual.containers import (
     Horizontal,
-    HorizontalGroup,
     Vertical,
 )
 from textual.widgets import (
-    Button,
     ContentSwitcher,
     Label,
     RichLog,
@@ -23,9 +21,14 @@ from textual.widgets import (
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import (
+    DebugBtn,
+    DebugBtnGroup,
+    FlatBtn,
+    FlatBtnMsg,
     FlatButtonsVertical,
 )
 from chezmoi_mousse.gui.common.loggers import RichLoggers
+from chezmoi_mousse.gui.common.messages import DebugBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ColorVar,
@@ -200,34 +203,16 @@ class DebugTab(TabPane):
                     ),
                     id=store.debug_ids.container.env_vars,
                 )
-        with HorizontalGroup(
-            id=store.debug_ids.container.operate_buttons, classes=Tcss.op_btn_group
-        ):
-            yield Button(
-                classes=Tcss.operate_button,
-                id=store.debug_ids.op_btn.log_memory,
-                label=BtnLabel.log_memory,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=store.debug_ids.op_btn.list_test_paths,
-                label=BtnLabel.list_test_paths,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=store.debug_ids.op_btn.create_diffs,
-                label=BtnLabel.create_diffs,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=store.debug_ids.op_btn.create_paths,
-                label=BtnLabel.create_paths,
-            )
-            yield Button(
-                classes=Tcss.operate_button,
-                id=store.debug_ids.op_btn.remove_paths,
-                label=BtnLabel.remove_paths,
-            )
+        yield DebugBtnGroup(
+            app_ids=store.debug_ids,
+            btn_labels=(
+                BtnLabel.log_memory,
+                BtnLabel.list_test_paths,
+                BtnLabel.create_diffs,
+                BtnLabel.create_paths,
+                BtnLabel.remove_paths,
+            ),
+        )
 
     def on_mount(self) -> None:
 
@@ -245,20 +230,20 @@ class DebugTab(TabPane):
             store.debug_ids.richlog.env_vars_q, RichLog
         )
         self.mem_log_op_btn = self.query_one(
-            store.debug_ids.op_btn.log_memory_q, Button
+            store.debug_ids.op_btn.log_memory_q, DebugBtn
         )
         self.mem_log_op_btn.disabled = True
         self.list_test_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.list_test_paths_q, Button
+            store.debug_ids.op_btn.list_test_paths_q, DebugBtn
         )
         self.create_diffs_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_diffs_q, Button
+            store.debug_ids.op_btn.create_diffs_q, DebugBtn
         )
         self.create_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_paths_q, Button
+            store.debug_ids.op_btn.create_paths_q, DebugBtn
         )
         self.remove_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.remove_paths_q, Button
+            store.debug_ids.op_btn.remove_paths_q, DebugBtn
         )
         self.test_paths_op_btns = [
             self.list_test_paths_op_btn,
@@ -346,8 +331,10 @@ class DebugTab(TabPane):
     async def _log_env_vars(self) -> None:
         self.env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
 
-    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
-    def switch_content(self, event: Button.Pressed) -> None:
+    @on(FlatBtnMsg)
+    def switch_content(self, event: FlatBtnMsg) -> None:
+        if not isinstance(event.button, FlatBtn):
+            return
         event.stop()
         if event.button.label == BtnLabel.debug_log:
             self.mem_log_op_btn.disabled = False
@@ -365,23 +352,22 @@ class DebugTab(TabPane):
         elif event.button.label == BtnLabel.env_vars:
             self.switcher.current = store.debug_ids.container.env_vars
 
-    @on(Button.Pressed, Tcss.operate_button.dot_prefix)
-    def handle_operate_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == BtnLabel.log_memory.value:
+    @on(DebugBtnMsg)
+    def handle_operate_buttons(self, msg: DebugBtnMsg) -> None:
+        msg.stop()
+        if msg.button.label == BtnLabel.log_memory.value:
             self._write_to_debug_log(auto=False)
             return
         result: str | list[str] = ""
-        if event.button.label == BtnLabel.list_test_paths:
+        if msg.button.label == BtnLabel.list_test_paths:
             self._list_existing_test_paths()
             return
-        if event.button.label == BtnLabel.create_diffs:
+        if msg.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
-        elif event.button.label == BtnLabel.create_paths:
+        elif msg.button.label == BtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
-        elif event.button.label == BtnLabel.remove_paths:
+        elif msg.button.label == BtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
-        # TODO: self.app.cmattr.update_attributes(ReadCmd.managed_status_commands())
         if isinstance(result, str):
             self.test_paths_static.update(result)
         else:

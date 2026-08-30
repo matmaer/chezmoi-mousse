@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from textual import work
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import ColorVar
 
@@ -33,7 +33,7 @@ class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    node_msg: reactive[CurrentNodeMsg | None] = reactive(None)
+    node_msg: reactive[CurrentNodeMsg | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.git_log)
@@ -51,7 +51,11 @@ class GitLogView(Vertical):
         self.info_container = self.query_exactly_one(InfoVertical)
         self.info_container.display = False
 
-    def _update_datatable(self, git_log_lines: list[str]) -> None:
+    @work
+    async def _update_datatable(self, node_msg: CurrentNodeMsg) -> None:
+        result = await Commands.run_chezmoi_git_log(node_msg.path)
+        git_log_lines = result.std_out.splitlines()
+
         self.data_table.clear()
 
         def add_row_with_style(columns: list[str], log_color: ColorVar) -> None:
@@ -80,6 +84,4 @@ class GitLogView(Vertical):
         if node_msg is None:
             return
         self.flat_section_label.update(str(node_msg.path))
-        if node_msg.path == store.cfg.dest_dir:
-            result = Commands.run_chezmoi_git_log(node_msg.path)
-            self._update_datatable(result.std_out.splitlines())
+        self._update_datatable(node_msg)

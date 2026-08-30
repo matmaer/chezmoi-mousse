@@ -9,7 +9,6 @@ from textual.containers import (
     Vertical,
 )
 from textual.widgets import (
-    Button,
     ContentSwitcher,
     DirectoryTree,
     Pretty,
@@ -26,6 +25,7 @@ from chezmoi_mousse.str_enums import (
 )
 
 from .common.actionables import (
+    FlatBtn,
     FlatButtonsVertical,
     RefreshBtn,
     ReviewBtnGroup,
@@ -39,7 +39,7 @@ from .common.doctor_data import DoctorTable
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog
 from .common.managed_tree import DestDirTree, ManagedTree
-from .common.messages import TabBtnMsg
+from .common.messages import FlatBtnMsg, TabBtnMsg
 from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
@@ -216,17 +216,19 @@ class ConfigTab(TabPane):
                     id=store.config_ids.container.diagram,
                 )
 
-    @on(Button.Pressed, Tcss.flat_button.dot_prefix)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
+    @on(FlatBtnMsg)
+    def switch_content(self, msg: FlatBtnMsg) -> None:
+        if not isinstance(msg.button, FlatBtn):
+            return
+        msg.stop()
         switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.label == BtnLabel.doctor:
+        if msg.button.label == BtnLabel.doctor:
             switcher.current = store.config_ids.container.doctor
-        elif event.button.label == BtnLabel.cat_config:
+        elif msg.button.label == BtnLabel.cat_config:
             switcher.current = store.config_ids.container.cat_config
-        elif event.button.label == BtnLabel.ignored:
+        elif msg.button.label == BtnLabel.ignored:
             switcher.current = store.config_ids.container.ignored
-        elif event.button.label == BtnLabel.template_data:
+        elif msg.button.label == BtnLabel.template_data:
             switcher.current = store.config_ids.container.template_data
-        elif event.button.label == BtnLabel.diagram:
+        elif msg.button.label == BtnLabel.diagram:
             switcher.current = store.config_ids.container.diagram

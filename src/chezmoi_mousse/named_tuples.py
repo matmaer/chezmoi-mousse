@@ -24,6 +24,7 @@ class AffectedPaths(NamedTuple):
     paths: list[Path]
     pretty_cmd: str
     std_err: str
+    returncode: int
 
     @property
     def path_strings(self) -> str:

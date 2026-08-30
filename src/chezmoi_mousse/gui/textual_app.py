@@ -3,8 +3,6 @@ from __future__ import annotations
 import dataclasses
 import json
 from functools import partial
-from itertools import chain
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -32,11 +30,10 @@ from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
 from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import DestDirTree, ManagedTree
-from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
+from chezmoi_mousse.gui.common.messages import CurrentNodeMsg, ReviewBtnMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.named_tuples import DumpConfigKeys
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -52,8 +49,6 @@ from .common.actionables import FlatButtonsVertical, TabButtons
 from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from textual.app import ComposeResult
     from textual.worker import Worker
 
@@ -133,8 +128,12 @@ class ChezmoiGui(App[str]):
     def on_mount(self) -> None:
         self.run_startup_worker()
 
-    def on_unmount(self) -> None:
-        store.results_queue.shutdown(immediate=True)
+    @on(ReviewBtnMsg)
+    def handle_review_button(self, msg: ReviewBtnMsg) -> None:
+        msg.stop()
+        self.push_screen(
+            OperateModal(labels=(msg.review_button.btn_label.review_to_run,))
+        )
 
     @work
     async def run_startup_worker(self) -> None:
@@ -143,6 +142,7 @@ class ChezmoiGui(App[str]):
         splash_screen = SplashScreen()
         self.register_theme(chezmoi_mousse_light)
         await self.push_screen(splash_screen)
+        await splash_screen.run_all_tasks()
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(ApplyTab())
         await tabbed_content.add_pane(ReAddTab())
@@ -151,68 +151,36 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(ConfigTab())
         if store.SHOW_DEBUG_TAB:
             await tabbed_content.add_pane(DebugTab())
-        self._listen_to_command_results()
+
         await tabbed_content.wait_for_refresh()
         await self._update_managed_trees().wait()
-        await splash_screen.dismiss_after_fade_loop().wait()
+        await splash_screen.dismiss_after_fade_loop()
 
     # #####################
     # # UI update workers #
     # #####################
 
-    @work(thread=True)
-    def _listen_to_command_results(self) -> None:
-        while True:
-            result: CommandResult = store.results_queue.get()
-            if result.cmd_enum is ReadCmd.doctor:
-                doctor_table = self.query_exactly_one(DoctorTable)
-                self.call_from_thread(
-                    setattr, doctor_table, ReactiveVar.cmd_result, result
-                )
-            if result.cmd_enum is ReadCmd.dump_config:
-                self.call_from_thread(self._parse_config, result)
-            if result.cmd_enum is ReadCmd.cat_config:
-                self.call_from_thread(
-                    self.query_exactly_one(ConfigTab.CatConfigStatic).update,
-                    result.out_txt,
-                )
-            if result.cmd_enum is ReadCmd.ignored:
-                self.call_from_thread(
-                    self.query_exactly_one(ConfigTab.PrettyIgnored).update,
-                    result.out_txt,
-                )
-            if result.cmd_enum is ReadCmd.template_data:
-                try:
-                    parsed_data = json.loads(result.std_out)
-                except Exception as e:
-                    parsed_data = {"Cannot parse JSON": f"{e}"}
-                self.call_from_thread(
-                    self.query_exactly_one(ConfigTab.PrettyTemplateData).update,
-                    parsed_data,
-                )
-            app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
-            self.call_from_thread(setattr, app_log, ReactiveVar.cmd_result, result)
-            cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-            self.call_from_thread(setattr, cmd_log, ReactiveVar.cmd_result, result)
-            store.results_queue.task_done()
-
-    async def _parse_config(self, cmd_result: CommandResult) -> None:
-        parsed_dump_config = json.loads(cmd_result.std_out)
-        store.cfg = DumpConfigKeys(
-            dest_dir_path=Path(parsed_dump_config["destDir"]),
-            auto_add_bool=parsed_dump_config["git"]["autoadd"],
-            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
-            auto_push_bool=parsed_dump_config["git"]["autopush"],
-        )
-
-    async def _purge_views_cache(self) -> None:
-        all_views: Iterator[DiffView | ContentsView | GitLogView] = chain(
-            self.query(DiffView).results(),
-            self.query(ContentsView).results(),
-            self.query(GitLogView).results(),
-        )
-        for view in all_views:
-            view.remove_children()
+    def _listen_to_command_results(self, result: CommandResult) -> None:
+        if result.cmd_enum is ReadCmd.doctor:
+            doctor_table = self.query_exactly_one(DoctorTable)
+            setattr(doctor_table, ReactiveVar.cmd_result, result)
+        if result.cmd_enum is ReadCmd.cat_config:
+            cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
+            cat_config.update(result.out_txt)
+        if result.cmd_enum is ReadCmd.ignored:
+            pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
+            pretty_ignored.update(result.out_txt)
+        if result.cmd_enum is ReadCmd.template_data:
+            try:
+                parsed_data = json.loads(result.std_out)
+            except Exception as e:
+                parsed_data = {"Cannot parse JSON": f"{e}"}
+            pretty_template_data = self.query_exactly_one(ConfigTab.PrettyTemplateData)
+            pretty_template_data.update(parsed_data)
+        app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
+        setattr(app_log, ReactiveVar.cmd_result, result)
+        cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
+        setattr(cmd_log, ReactiveVar.cmd_result, result)
 
     @work
     async def _update_managed_trees(self) -> None:
@@ -246,6 +214,8 @@ class ChezmoiGui(App[str]):
 
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
+        if isinstance(self.screen, SplashScreen):
+            return
         msg.stop()
         # Keep track of selected paths for each tab
         if msg.app_ids.tab_label == BtnLabel.add:
