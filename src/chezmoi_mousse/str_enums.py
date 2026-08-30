@@ -1,4 +1,5 @@
 from enum import Enum, StrEnum, auto
+from typing import Self
 
 __all__ = [
     "BindingAction",
@@ -20,6 +21,7 @@ __all__ = [
     "RichLogName",
     "SectionLabel",
     "StatusCode",
+    "SplashLogStr",
     "SwitchLabel",
     "Tcss",
     "VerbArgs",
@@ -524,6 +526,44 @@ class StatusCode(StrEnum):
     # Fake status code for internal use in the ManagedTree, not returned by chezmoi
     # Used to create the color and to determine if the dir should be displayed or not.
     N_DIR = auto()
+
+
+class SplashLogStr(StrEnum):
+    # Splash log strings, prefixes
+    has_git_commits = "chezmoi repo has commits"
+    has_no_git_commits = "chezmoi repo has no commits"
+    parse_dump_config = "parse dump-config"
+    repo_created = "chezmoi repo created"
+    repo_found = "chezmoi repo found"
+    repo_not_found = "chezmoi repo not found"
+
+    # Splash log strings, suffixes
+    checked = auto()  # for non-problematic non-exit 0 chezmoi commands
+    failed = auto()  # problematic non-exit 0 chezmoi commands, failed non chezmoi
+    reports = auto()  # other
+    parsed = auto()
+    success = auto()  # successful commands
+
+    @classmethod
+    def _suffixes(cls) -> frozenset[Self]:
+        return frozenset(
+            (
+                cls[cls.checked],
+                cls[cls.failed],
+                cls[cls.reports],
+                cls[cls.parsed],
+                cls[cls.success],
+            )
+        )
+
+    @property
+    def padded(self) -> str:
+        if self not in self._suffixes():
+            raise ValueError(f"{self} is not a splash log suffix")
+        # Add padding for splash log suffixes
+        max_length = max(len(str(suffix)) for suffix in self._suffixes())
+        # return the string with spaces on the left
+        return str(self).rjust(max_length)
 
 
 class SwitchLabel(StrEnum):
