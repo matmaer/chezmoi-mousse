@@ -325,7 +325,6 @@ class Commands:
         return text_contents
 
     @staticmethod
-    @_typed_lru_cache(maxsize=500)
     async def get_highlighted_chezmoi_cat_output(
         file_path: Path,
     ) -> Text:
@@ -338,7 +337,6 @@ class Commands:
         return text_contents
 
     @staticmethod
-    @_typed_lru_cache()
     async def _get_source_path(path_arg: Path) -> CommandResult:
         return await Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
 
@@ -356,7 +354,6 @@ class Commands:
         return parsed_rows
 
     @staticmethod
-    @_typed_lru_cache(maxsize=500)
     async def run_chezmoi_git_log(path_arg: Path) -> CommandResult:
         if path_arg == store.cfg.dest_dir:
             result = await Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
@@ -371,7 +368,6 @@ class Commands:
         return result
 
     @staticmethod
-    @_typed_lru_cache()
     async def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
         return await Commands.run_read_cmd(diff_cmd, path_arg=path)
 
