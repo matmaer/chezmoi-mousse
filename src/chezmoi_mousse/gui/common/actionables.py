@@ -110,11 +110,13 @@ class ExitModalBtn(Button):
 
 class FlatBtn(Button):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.btn_label = btn_label
+        self.app_ids = app_ids
         super().__init__(
             classes=Tcss.flat_button,
             flat=True,
-            id=app_ids.btn_id(btn_label=btn_label),
-            label=btn_label,
+            id=app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
             variant="primary",
         )
 
@@ -127,10 +129,11 @@ class FlatBtn(Button):
 class RefreshBtn(Button):
     def __init__(self, *, app_ids: AppIds) -> None:
         self.app_ids = app_ids
+        self.btn_label = BtnLabel.refresh_trees
         super().__init__(
             classes=Tcss.refresh_button,
-            id=app_ids.op_btn.refresh_tree,
-            label=BtnLabel.refresh_trees,
+            id=self.app_ids.op_btn.refresh_tree,
+            label=self.btn_label,
         )
 
     @on(Button.Pressed)
@@ -145,8 +148,8 @@ class ReviewBtn(Button):
         self.btn_label = btn_label
         super().__init__(
             classes=Tcss.operate_button,
-            id=self.app_ids.btn_id(btn_label=btn_label),
-            label=btn_label,
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
         )
 
     @on(Button.Pressed)
@@ -158,10 +161,11 @@ class ReviewBtn(Button):
 class RunBtn(Button):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__(
             classes=Tcss.operate_button,
-            id=app_ids.btn_id(btn_label=btn_label),
-            label=btn_label,
+            id=app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
         )
 
     @on(Button.Pressed)
@@ -171,9 +175,14 @@ class RunBtn(Button):
 
 
 class TabBtn(Button):
-    def __init__(self, *, app_ids: AppIds, label: BtnLabel) -> None:
-        super().__init__(classes=Tcss.tab_button, label=label)
+    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.btn_label = btn_label
         self.app_ids = app_ids
+        super().__init__(
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
+            classes=Tcss.tab_button,
+            label=self.btn_label,
+        )
 
     @on(Button.Pressed)
     def _send_message(self, event: TabBtn.Pressed) -> None:
@@ -196,7 +205,7 @@ class FlatButtonsVertical(Container):
 
     @on(FlatBtnMsg)
     def update_tcss_classes(self, msg: FlatBtnMsg) -> None:
-        for btn in self.query(Button).results():
+        for btn in self.query_children(Button).results():
             btn.remove_class(Tcss.last_clicked_flat_btn)
         msg.button.add_class(Tcss.last_clicked_flat_btn)
 
@@ -282,16 +291,15 @@ class TabButtons(Horizontal):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        for label in self.labels:
+        for btn_label in self.labels:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield TabBtn(app_ids=self.app_ids, label=label)
+                yield TabBtn(app_ids=self.app_ids, btn_label=btn_label)
 
     def on_mount(self) -> None:
         self.query(TabBtn).first().add_class(Tcss.last_clicked_tab_btn)
 
     @on(TabBtnMsg)
     def update_tcss_classes(self, msg: TabBtnMsg) -> None:
-        # dont call msg.stop() because it's also processed in the content switcher
-        for btn in self.query(TabBtn).results():
+        for btn in self.query_children(TabBtn).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
         msg.button.add_class(Tcss.last_clicked_tab_btn)

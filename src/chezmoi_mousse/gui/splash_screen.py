@@ -123,7 +123,7 @@ class SplashScreen(Screen[None]):
         self.splash_log.styles.height = (
             len(ReadCmd.post_dump_config_commands())
             + len(ReadCmd.post_operation_commands())
-            + 6
+            + 9
         )
         self.splash_log.styles.width = LOG_MSG_WIDTH
         self.animated_fade = self.query_exactly_one(AnimatedFade)
