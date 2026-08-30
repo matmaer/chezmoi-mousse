@@ -177,6 +177,9 @@ class ConfigTab(TabPane):
     def __init__(self) -> None:
         super().__init__(id=BtnLabel.config.pane_id, title=BtnLabel.config)
 
+    def on_mount(self) -> None:
+        self.switcher = self.query_exactly_one(ContentSwitcher)
+
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
@@ -221,14 +224,14 @@ class ConfigTab(TabPane):
         if not isinstance(msg.button, FlatBtn):
             return
         msg.stop()
-        switcher = self.query_exactly_one(ContentSwitcher)
-        if msg.button.label == BtnLabel.doctor:
-            switcher.current = store.config_ids.container.doctor
+
+        if msg.button.label == BtnLabel.doctor.value:
+            self.switcher.current = store.config_ids.container.doctor
         elif msg.button.label == BtnLabel.cat_config:
-            switcher.current = store.config_ids.container.cat_config
+            self.switcher.current = store.config_ids.container.cat_config
         elif msg.button.label == BtnLabel.ignored:
-            switcher.current = store.config_ids.container.ignored
+            self.switcher.current = store.config_ids.container.ignored
         elif msg.button.label == BtnLabel.template_data:
-            switcher.current = store.config_ids.container.template_data
+            self.switcher.current = store.config_ids.container.template_data
         elif msg.button.label == BtnLabel.diagram:
-            switcher.current = store.config_ids.container.diagram
+            self.switcher.current = store.config_ids.container.diagram

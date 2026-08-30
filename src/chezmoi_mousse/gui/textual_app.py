@@ -30,7 +30,7 @@ from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
 from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import DestDirTree, ManagedTree
-from chezmoi_mousse.gui.common.messages import CurrentNodeMsg, ReviewBtnMsg
+from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.gui.splash_screen import SplashScreen
@@ -126,23 +126,16 @@ class ChezmoiGui(App[str]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.register_theme(chezmoi_mousse_dark)
+        self.theme = "chezmoi-mousse-dark"
+        self.splash_screen = SplashScreen()
+        self.register_theme(chezmoi_mousse_light)
         self.run_startup_worker()
-
-    @on(ReviewBtnMsg)
-    def handle_review_button(self, msg: ReviewBtnMsg) -> None:
-        msg.stop()
-        self.push_screen(
-            OperateModal(labels=(msg.review_button.btn_label.review_to_run,))
-        )
 
     @work
     async def run_startup_worker(self) -> None:
-        self.register_theme(chezmoi_mousse_dark)
-        self.theme = "chezmoi-mousse-dark"
-        splash_screen = SplashScreen()
-        self.register_theme(chezmoi_mousse_light)
-        await self.push_screen(splash_screen)
-        await splash_screen.run_all_tasks()
+        await self.push_screen(self.splash_screen)
+        await self.splash_screen.run_all_tasks()
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(ApplyTab())
         await tabbed_content.add_pane(ReAddTab())
@@ -154,7 +147,7 @@ class ChezmoiGui(App[str]):
 
         await tabbed_content.wait_for_refresh()
         await self._update_managed_trees().wait()
-        await splash_screen.dismiss_after_fade_loop()
+        await self.splash_screen.dismiss_after_fade_loop()
 
     # #####################
     # # UI update workers #
@@ -308,10 +301,9 @@ class ChezmoiGui(App[str]):
             return
         slider = None
         tab_pane = self.query_exactly_one(TabbedContent).active_pane
-        if isinstance(tab_pane, (ApplyTab, ReAddTab, AddTab)):
-            slider = tab_pane.query_exactly_one(SwitchSlider)
-        if slider is None:
+        if not isinstance(tab_pane, (ApplyTab, ReAddTab, AddTab)):
             return
+        slider = tab_pane.query_exactly_one(SwitchSlider)
         slider_visible = slider.has_class("-visible")
         new_description = (
             BindingDescription.hide_filters
@@ -404,11 +396,14 @@ class ChezmoiGui(App[str]):
     ) -> bool:
         if isinstance(self.screen, SplashScreen):
             return False
+        active_pane = self.query_exactly_one(TabbedContent).active_pane
         if action == BindingAction.toggle_switch_slider:
-            active_pane = self.query_exactly_one(TabbedContent).active_pane
-            if not isinstance(active_pane, (AddTab, ApplyTab, ReAddTab)):
-                self.refresh_bindings()
-                return False
+            return isinstance(active_pane, (AddTab, ApplyTab, ReAddTab))
+        if action == BindingAction.toggle_maximized:
+            return isinstance(
+                active_pane,
+                (AddTab, ApplyTab, ReAddTab, ConfigTab, LogsTab, DebugTab),
+            )
         return True
 
 

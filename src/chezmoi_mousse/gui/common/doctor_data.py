@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rich.text import Text
+from textual import work
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
@@ -27,7 +28,7 @@ class DoctorTable(DataTable[Text]):
     def __init__(self) -> None:
         super().__init__(show_cursor=False)
 
-    def watch_cmd_result(self, cmd_result: CommandResult) -> None:
+    def on_mount(self) -> None:
         self.row_color = {
             "ok": self.app.theme_variables[ColorVar.text_success],
             "info": self.app.theme_variables[ColorVar.info],
@@ -35,6 +36,9 @@ class DoctorTable(DataTable[Text]):
             "failed": self.app.theme_variables[ColorVar.text_error],
             "error": self.app.theme_variables[ColorVar.text_error],
         }
+
+    @work
+    async def populate_dr_table(self, cmd_result: CommandResult) -> None:
         doctor_lines = cmd_result.std_out.splitlines()
         if cmd_result.returncode != 0:
             self.notify(f"{cmd_result.std_err}", severity="error")
@@ -70,3 +74,7 @@ class DoctorTable(DataTable[Text]):
                 rows.append(new_row)
 
         self.add_rows(rows)
+
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is not None:
+            self.populate_dr_table(cmd_result)

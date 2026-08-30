@@ -54,76 +54,104 @@ __all__ = [
 
 
 class DirContentBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: str, path: Path) -> None:
-        super().__init__(label=btn_label)
-        self.path = path
+    def __init__(
+        self, button: Button, app_ids: AppIds, btn_label: BtnLabel, *, path: Path
+    ) -> None:
+        self.button = button
         self.app_ids = app_ids
+        self.btn_label = btn_label
+        self.path = path
+        super().__init__(
+            id=self.app_ids.btn_id(btn_label=self.btn_label), label=self.btn_label
+        )
 
     @on(Button.Pressed)
     def _send_message(self, event: DirContentBtn.Pressed) -> None:
         event.stop()
-        self.post_message(DirContentBtnMsg(self))
+        self.post_message(
+            DirContentBtnMsg(
+                self.button,
+                self.app_ids,
+                self.btn_label,
+                path=self.path,
+            )
+        )
 
 
 class DebugBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+    def __init__(self, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__(
-            id=app_ids.btn_id(btn_label=btn_label),
-            label=btn_label,
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
             classes=Tcss.operate_button,
         )
 
     @on(Button.Pressed)
     def _send_message(self, event: DebugBtn.Pressed) -> None:
         event.stop()
-        self.post_message(DebugBtnMsg(self))
+        self.post_message(DebugBtnMsg(event.button, self.app_ids, self.btn_label))
 
 
 class DryRunBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+    def __init__(self, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__(
-            label=btn_label,
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
             classes=Tcss.operate_button,
         )
 
     @on(Button.Pressed)
     def _send_message(self, event: DryRunBtn.Pressed) -> None:
         event.stop()
-        self.post_message(DryRunBtnMsg(self))
+        self.post_message(
+            DryRunBtnMsg(button=self, app_ids=self.app_ids, btn_label=self.btn_label)
+        )
 
 
 class ExitModalBtn(Button):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__(
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
             classes=Tcss.operate_button,
-            label=btn_label,
         )
 
     @on(Button.Pressed)
     def _send_message(self, event: ExitModalBtn.Pressed) -> None:
         event.stop()
-        self.post_message(ExitModalBtnMsg(self))
+        self.post_message(
+            ExitModalBtnMsg(
+                event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
 
 
 class FlatBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
+    def __init__(self, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.btn_label = btn_label
         self.app_ids = app_ids
         super().__init__(
-            classes=Tcss.flat_button,
             flat=True,
-            id=app_ids.btn_id(btn_label=self.btn_label),
-            label=self.btn_label,
             variant="primary",
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
+            label=self.btn_label,
+            classes=Tcss.flat_button,
         )
 
     @on(Button.Pressed)
-    def _send_message(self, event: Button.Pressed) -> None:
+    def _send_message(self, event: FlatBtn.Pressed) -> None:
         event.stop()
-        self.post_message(FlatBtnMsg(self))
+        self.post_message(
+            FlatBtnMsg(
+                button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
 
 
 class RefreshBtn(Button):
@@ -131,15 +159,19 @@ class RefreshBtn(Button):
         self.app_ids = app_ids
         self.btn_label = BtnLabel.refresh_trees
         super().__init__(
-            classes=Tcss.refresh_button,
-            id=self.app_ids.op_btn.refresh_tree,
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
             label=self.btn_label,
+            classes=Tcss.refresh_button,
         )
 
     @on(Button.Pressed)
     def _send_message(self, event: RefreshBtn.Pressed) -> None:
         event.stop()
-        self.post_message(RefreshBtnMsg(self))
+        self.post_message(
+            RefreshBtnMsg(
+                button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
 
 
 class ReviewBtn(Button):
@@ -153,9 +185,13 @@ class ReviewBtn(Button):
         )
 
     @on(Button.Pressed)
-    def _send_message(self, event: ReviewBtn.Pressed) -> None:
+    def _send_message(self, event: Button.Pressed) -> None:
         event.stop()
-        self.post_message(ReviewBtnMsg(self.app_ids.tab_label, self))
+        self.post_message(
+            ReviewBtnMsg(
+                button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
 
 
 class RunBtn(Button):
@@ -164,14 +200,18 @@ class RunBtn(Button):
         self.btn_label = btn_label
         super().__init__(
             classes=Tcss.operate_button,
-            id=app_ids.btn_id(btn_label=self.btn_label),
+            id=self.app_ids.btn_id(btn_label=self.btn_label),
             label=self.btn_label,
         )
 
     @on(Button.Pressed)
-    def _send_message(self, event: RunBtn.Pressed) -> None:
+    def _send_message(self, event: Button.Pressed) -> None:
         event.stop()
-        self.post_message(RunBtnMsg(self))
+        self.post_message(
+            RunBtnMsg(
+                button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
 
 
 class TabBtn(Button):
@@ -187,7 +227,11 @@ class TabBtn(Button):
     @on(Button.Pressed)
     def _send_message(self, event: TabBtn.Pressed) -> None:
         event.stop()
-        self.post_message(TabBtnMsg(self))
+        self.post_message(
+            TabBtnMsg(
+                button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
 
 
 class FlatButtonsVertical(Container):

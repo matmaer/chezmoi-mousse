@@ -12,8 +12,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.str_enums import BtnLabel
 
-    from .actionables import ReviewBtn
-
 
 __all__ = [
     "CurrentNodeMsg",
@@ -47,55 +45,75 @@ class CurrentNodeMsg(Message):
 
 
 class DirContentBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(
+        self, button: Button, app_ids: AppIds, btn_label: BtnLabel, *, path: Path
+    ) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
+        self.path = path
         super().__init__()
 
 
 class DebugBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
 
 
 class DryRunBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
 
 
 class FlatBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         self.button = button
         super().__init__()
 
 
 class ExitModalBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
 
 
 class RefreshBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
 
 
 class ReviewBtnMsg(Message):
-    def __init__(self, tab_label: BtnLabel, review_btn: ReviewBtn) -> None:
-        self.tab_label = tab_label
-        self.review_button: ReviewBtn = review_btn
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
+        self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
 
 
 class RunBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
 
 
 class TabBtnMsg(Message):
-    def __init__(self, button: Button) -> None:
+    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
+        self.app_ids = app_ids
+        self.btn_label = btn_label
         super().__init__()
