@@ -13,7 +13,6 @@ from chezmoi_mousse.str_enums import Chars, ColorVar, LogString, SectionLabel, T
 if TYPE_CHECKING:
     from textual import getters
 
-    from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
@@ -62,8 +61,8 @@ class CmdResultCollapsible(Collapsible):
 
 
 class CmdLog(ScrollableContainer):
-    def __init__(self, ids: AppIds) -> None:
-        super().__init__(id=ids.container.cmd_log)
+    def __init__(self) -> None:
+        super().__init__(id=store.logs_ids.container.cmd_log)
 
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
@@ -92,7 +91,7 @@ class RichLoggers(RichLog):
         self.write(self._get_log_line(message, ColorVar.text_error))
 
     def write_ready(self, message: str) -> None:
-        self.write(self._get_log_line(f"--- {message} ---", ColorVar.ready))
+        self.write(self._get_log_line(f"--- {message} ---", ColorVar.accent_darken_2))
 
     def write_success(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.text_success))

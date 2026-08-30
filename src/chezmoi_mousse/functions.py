@@ -19,7 +19,7 @@ from chezmoi_mousse import store
 from chezmoi_mousse.named_tuples import (
     AffectedPaths,
     CommandResult,
-    ParsedDumpConfig,
+    DumpConfigKeys,
     ScanDirItem,
 )
 from chezmoi_mousse.str_enums import (
@@ -130,9 +130,9 @@ class ParseCmd:
         return f"{ParseCmd._cmd_str_wop(cmd, pretty=False)} {path_str}"
 
     @staticmethod
-    def get_parsed_config(std_out: str) -> ParsedDumpConfig:
+    def get_parsed_config(std_out: str) -> DumpConfigKeys:
         parsed_dump_config = json.loads(std_out)
-        return ParsedDumpConfig(
+        return DumpConfigKeys(
             dest_dir_path=Path(parsed_dump_config["destDir"]),
             auto_add_bool=parsed_dump_config["git"]["autoadd"],
             auto_commit_bool=parsed_dump_config["git"]["autocommit"],

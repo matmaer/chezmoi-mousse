@@ -47,7 +47,7 @@ class DestDirTree(Vertical):
     def compose(self) -> ComposeResult:
         yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
         yield ManagedTree(self.app_ids)
-        yield RefreshBtn(self.app_ids)
+        yield RefreshBtn(app_ids=self.app_ids)
 
 
 @dataclass(slots=True)
@@ -111,7 +111,7 @@ class ManagedTree(Tree[Path]):
             status_code: StatusCode | None,
         ) -> str:
             if managed_kind is None:
-                color = self.app.theme_variables[ColorVar.ready]
+                color = self.app.theme_variables[ColorVar.accent_darken_2]
             elif status_code is not None:
                 color = self.app.theme_variables[self.status_color[status_code]]
             else:

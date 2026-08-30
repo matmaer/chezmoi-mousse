@@ -12,7 +12,6 @@ __all__ = [
     "InfoKind",
     "LoadingLabel",
     "LogString",
-    "NotifyMsg",
     "OpInfoString",
     "PathFilters",
     "PathKind",
@@ -195,7 +194,7 @@ class ColorVar(StrEnum):
     bogus = "#FFFF00"
     dimmed = "foreground-darken-3"
     info = "foreground-darken-1"
-    ready = "accent-darken-2"
+    accent_darken_2 = "accent-darken-2"
     text = "text"
     text_accent = "text-accent"
     text_block = "foreground-darken-1"
@@ -270,11 +269,6 @@ class InfoKind(Enum):
     dest_dir_contents = auto()
     unmanaged_diff = auto()
     unmanaged_git_log = auto()
-
-
-class NotifyMsg(StrEnum):
-    add_tab_tree_reloaded = "Add tab directory tree reloaded."
-    no_managed_changes = "No managed or status paths changed."
 
 
 class OpInfoString(StrEnum):

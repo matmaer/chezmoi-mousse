@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 __all__ = [
     "AffectedPaths",
     "CommandResult",
-    "ParsedDumpConfig",
+    "DumpConfigKeys",
     "PathStatus",
     "RunCommandInfo",
     "ScanDirItem",
@@ -56,7 +56,7 @@ class CommandResult(NamedTuple):
         )
 
 
-class ParsedDumpConfig(NamedTuple):
+class DumpConfigKeys(NamedTuple):
     dest_dir_path: Path | None = None
     auto_add_bool: bool | None = None
     auto_commit_bool: bool | None = None

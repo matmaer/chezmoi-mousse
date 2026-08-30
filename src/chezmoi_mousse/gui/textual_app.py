@@ -36,7 +36,7 @@ from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.named_tuples import ParsedDumpConfig
+from chezmoi_mousse.named_tuples import DumpConfigKeys
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -165,7 +165,7 @@ class ChezmoiGui(App[str]):
         while True:
             result: CommandResult = store.results_queue.get()
             if result.cmd_enum is ReadCmd.doctor:
-                doctor_table = self.query_one(DoctorTable)
+                doctor_table = self.query_exactly_one(DoctorTable)
                 self.call_from_thread(
                     setattr, doctor_table, ReactiveVar.cmd_result, result
                 )
@@ -198,7 +198,7 @@ class ChezmoiGui(App[str]):
 
     async def _parse_config(self, cmd_result: CommandResult) -> None:
         parsed_dump_config = json.loads(cmd_result.std_out)
-        store.cfg = ParsedDumpConfig(
+        store.cfg = DumpConfigKeys(
             dest_dir_path=Path(parsed_dump_config["destDir"]),
             auto_add_bool=parsed_dump_config["git"]["autoadd"],
             auto_commit_bool=parsed_dump_config["git"]["autocommit"],
@@ -275,7 +275,7 @@ class ChezmoiGui(App[str]):
     ) -> None:
         active_pane = event.tabbed_content.active_pane
         if isinstance(active_pane, (AddTab, ApplyTab, ReAddTab)):
-            slider = active_pane.query_one(SwitchSlider)
+            slider = active_pane.query_exactly_one(SwitchSlider)
             slider_visible = slider.has_class("-visible")
             new_description = (
                 BindingDescription.hide_filters
@@ -414,7 +414,7 @@ class ChezmoiGui(App[str]):
         tab_pane = self.query_exactly_one(TabbedContent).active_pane
         if tab_pane is None:
             return
-        switch_slider = tab_pane.query_one(SwitchSlider)
+        switch_slider = tab_pane.query_exactly_one(SwitchSlider)
         switch_slider.display = not switch_slider.display
 
         new_description = (

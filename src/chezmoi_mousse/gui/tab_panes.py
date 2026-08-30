@@ -56,21 +56,23 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                # Lazy(FilteredDirTree(dest_dir=store.cfg.dest_dir)),
-                RefreshBtn(store.add_ids),
+                # TODO: Lazy(FilteredDirTree(dest_dir=store.cfg.dest_dir)),
+                RefreshBtn(app_ids=store.add_ids),
                 id=store.add_ids.container.left_side,
                 classes=Tcss.tab_left_vertical,
             )
             with Vertical():
                 yield ContentsView(store.add_ids)
-                yield ReviewBtnGroup(store.add_ids, (BtnLabel.add_review,))
-        yield SwitchSlider(store.add_ids)
+                yield ReviewBtnGroup(
+                    app_ids=store.add_ids, labels=(BtnLabel.add_review,)
+                )
+        yield SwitchSlider(app_ids=store.add_ids)
 
-    # def on_mount(self) -> None:
-    #     self.contents_view = self.query_one(store.add_ids.container.contents_q, ContentsView)
-    #     self.contents_view.add_class(Tcss.add_tab_contents_view)
-    # self.contents_view.border_title = f" {store.cfg.dest_dir} "
-    # self.contents_view.show_path = store.cfg.dest_dir
+    def on_mount(self) -> None:
+        self.contents_view = self.query_one(
+            store.add_ids.container.contents_q, ContentsView
+        )
+        self.contents_view.add_class(Tcss.add_tab_contents_view)
 
     @on(DirectoryTree.FileSelected)
     @on(DirectoryTree.DirectorySelected)
@@ -78,14 +80,13 @@ class AddTab(TabPane):
         self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
     ) -> None:
         event.stop()
-        contents_view = self.query_one(store.add_ids.container.contents_q, ContentsView)
         if event.node.data is None:
             raise ValueError("event.node.data is None in update_contents_view")
-        contents_view.show_path = event.node.data.path
+        self.contents_view.show_path = event.node.data.path
         if event.node.data.path == store.cfg.dest_dir:
-            contents_view.border_title = f" {store.cfg.dest_dir} "
+            self.contents_view.border_title = f" {store.cfg.dest_dir} "
         else:
-            contents_view.border_title = f" {event.node.data.path.name} "
+            self.contents_view.border_title = f" {event.node.data.path.name} "
 
     @on(Switch.Changed)
     def handle_filter_switches(self, event: Switch.Changed) -> None:
@@ -106,7 +107,7 @@ class ApplyTab(TabPane):
         with Horizontal():
             yield DestDirTree(store.apply_ids)
             yield ViewSwitcher(store.apply_ids)
-        yield SwitchSlider(store.apply_ids)
+        yield SwitchSlider(app_ids=store.apply_ids)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
@@ -128,7 +129,7 @@ class ReAddTab(TabPane):
         with Horizontal():
             yield DestDirTree(store.re_add_ids)
             yield ViewSwitcher(store.re_add_ids)
-        yield SwitchSlider(store.re_add_ids)
+        yield SwitchSlider(app_ids=store.re_add_ids)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
@@ -149,9 +150,11 @@ class LogsTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield TabButtons(store.logs_ids, (BtnLabel.cmd_log, BtnLabel.app_log))
+            yield TabButtons(
+                app_ids=store.logs_ids, labels=(BtnLabel.cmd_log, BtnLabel.app_log)
+            )
             with ContentSwitcher(initial=store.logs_ids.container.cmd_log):
-                yield CmdLog(store.logs_ids)
+                yield CmdLog()
                 yield AppLog()
 
     @on(TabBtnMsg)
@@ -177,7 +180,7 @@ class ConfigTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
-                store.config_ids,
+                app_ids=store.config_ids,
                 labels=(
                     BtnLabel.doctor,
                     BtnLabel.cat_config,

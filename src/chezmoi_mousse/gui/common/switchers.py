@@ -33,14 +33,17 @@ class ViewSwitcher(Vertical):
         )
 
     def compose(self) -> ComposeResult:
-        yield TabButtons(self.ids, (BtnLabel.diff, BtnLabel.contents, BtnLabel.git_log))
+        yield TabButtons(
+            app_ids=self.ids,
+            labels=(BtnLabel.diff, BtnLabel.contents, BtnLabel.git_log),
+        )
         with ContentSwitcher(initial=self.ids.container.diff):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
             yield GitLogView(self.ids)
         yield ReviewBtnGroup(
-            self.ids,
-            (
+            app_ids=self.ids,
+            labels=(
                 self.run_label,
                 BtnLabel.forget_review,
                 BtnLabel.destroy_review,

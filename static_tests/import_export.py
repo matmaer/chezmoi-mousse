@@ -1,9 +1,12 @@
 import ast
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from static_tests._cached_data import MODULE_DIR, ast_parse, get_file_paths
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class AllVariableDetector(ast.NodeVisitor):

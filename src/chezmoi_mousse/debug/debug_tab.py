@@ -163,7 +163,7 @@ class DebugTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(
-                store.debug_ids,
+                app_ids=store.debug_ids,
                 labels=(
                     BtnLabel.test_paths,
                     BtnLabel.debug_log,

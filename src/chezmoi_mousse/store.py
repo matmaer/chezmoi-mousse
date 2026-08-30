@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.data_classes import Changed, ChezmoiRepoChecks, StatusPaths
 from chezmoi_mousse.named_tuples import (
-    ParsedDumpConfig,
+    DumpConfigKeys,
 )
 from chezmoi_mousse.str_enums import BtnLabel
 
@@ -45,7 +45,7 @@ debug_ids = AppIds(BtnLabel.debug)
 logs_ids = AppIds(BtnLabel.logs)
 re_add_ids = AppIds(BtnLabel.re_add)
 
-cfg = ParsedDumpConfig()
+cfg = DumpConfigKeys()
 cm_repo_checks = ChezmoiRepoChecks()
 
 changed = Changed()

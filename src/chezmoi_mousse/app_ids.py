@@ -24,12 +24,12 @@ class AppIds:
 
     def __init__(self, tab_label: BtnLabel) -> None:
         self.tab_label = tab_label
-        self.container = ContainerIds(self)
+        self.container = _ContainerIds(self)
         self.managed_tree = f"{self.tab_label.name}_managed_tree"
         self.managed_tree_q = f"#{self.managed_tree}"
-        self.op_btn = OperateButtonIds(self)
-        self.richlog = RichLogIds(self)
-        self.switch = SwitchIds(self)
+        self.op_btn = _OperateButtonIds(self)
+        self.richlog = _RichLogIds(self)
+        self.switch = _SwitchIds(self)
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
@@ -45,12 +45,14 @@ class AppIds:
         return f"{qid}{self.tab_label.name}_{richlog.name}_id"
 
 
-class ContainerIds:
+class _ContainerIds:
     def __init__(self, ids: AppIds) -> None:
         self.cat_config: str = ids.container_id(name=ContainerName.cat_config)
         self.cat_config_q: str = f"#{self.cat_config}"
         self.cmd_log: str = ids.container_id(name=ContainerName.cmd_log)
         self.cmd_log_q: str = f"#{self.cmd_log}"
+        self.dump_config: str = ids.container_id(name=ContainerName.contents)
+        self.dump_config_q: str = f"#{self.dump_config}"
         self.contents: str = ids.container_id(name=ContainerName.contents)
         self.contents_q: str = f"#{self.contents}"
         self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
@@ -81,7 +83,7 @@ class ContainerIds:
         self.test_paths_view_q: str = f"#{self.test_paths_view}"
 
 
-class RichLogIds:
+class _RichLogIds:
     def __init__(self, ids: AppIds) -> None:
         self.app: str = ids.richlog_id(richlog=RichLogName.app_logger)
         self.app_q: str = f"#{self.app}"
@@ -95,7 +97,7 @@ class RichLogIds:
         self.memory_q: str = f"#{self.memory}"
 
 
-class OperateButtonIds:
+class _OperateButtonIds:
     def __init__(self, ids: AppIds) -> None:
         self.add_review: str = ids.btn_id(btn_label=BtnLabel.add_review)
         self.add_review_q: str = f"#{self.add_review}"
@@ -147,7 +149,7 @@ class OperateButtonIds:
         self.log_memory_q: str = f"#{self.log_memory}"
 
 
-class SwitchIds:
+class _SwitchIds:
     def __init__(self, ids: AppIds) -> None:
 
         # Apply and Re-Add tab
