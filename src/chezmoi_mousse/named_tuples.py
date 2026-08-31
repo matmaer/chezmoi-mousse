@@ -16,7 +16,6 @@ __all__ = [
     "PathStatus",
     "RunCommandInfo",
     "ScanDirItem",
-    "SwitchData",
 ]
 
 
@@ -116,8 +115,3 @@ class ScanDirItem(NamedTuple):
     # set by the os_scan_dir function
     sibling_count: int
     matches_unwanted: bool
-
-
-class SwitchData(NamedTuple):
-    label: str
-    enabled_tooltip: str

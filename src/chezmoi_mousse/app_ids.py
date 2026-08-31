@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from chezmoi_mousse.enum_data import SwitchEnum
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ContainerName,
+    LabelStr,
     RichLogName,
 )
 
@@ -38,8 +38,8 @@ class AppIds:
     def btn_id(self, qid: str = "", *, btn_label: BtnLabel) -> str:
         return f"{qid}{self.tab_label.name}_{btn_label.name}_btn_id"
 
-    def switch_id(self, qid: str = "", *, switch: SwitchEnum) -> str:
-        return f"{qid}{self.tab_label.name}_{switch.name}_switch_id"
+    def switch_id(self, qid: str = "", *, switch_label: LabelStr) -> str:
+        return f"{qid}{self.tab_label.name}_{switch_label.name}_switch_id"
 
     def richlog_id(self, qid: str = "", *, richlog: RichLogName) -> str:
         return f"{qid}{self.tab_label.name}_{richlog.name}_id"
@@ -155,18 +155,18 @@ class _SwitchIds:
     def __init__(self, ids: AppIds) -> None:
 
         # Apply and Re-Add tab
-        self.show_unchanged: str = ids.switch_id(switch=SwitchEnum.show_unchanged)
+        self.show_unchanged: str = ids.switch_id(switch_label=LabelStr.show_unchanged)
         self.show_unchanged_q: str = f"#{self.show_unchanged}"
 
-        self.show_unmanaged: str = ids.switch_id(switch=SwitchEnum.show_unmanaged)
+        self.show_unmanaged: str = ids.switch_id(switch_label=LabelStr.show_unmanaged)
         self.show_unmanaged_q: str = f"#{self.show_unmanaged}"
 
-        self.expand_all: str = ids.switch_id(switch=SwitchEnum.expand_all)
+        self.expand_all: str = ids.switch_id(switch_label=LabelStr.expand_all)
         self.expand_all_q: str = f"#{self.expand_all}"
 
         # Add tab
-        self.show_managed: str = ids.switch_id(switch=SwitchEnum.show_managed)
+        self.show_managed: str = ids.switch_id(switch_label=LabelStr.show_managed)
         self.show_managed_q: str = f"#{self.show_managed}"
 
-        self.show_unwanted: str = ids.switch_id(switch=SwitchEnum.show_unwanted)
+        self.show_unwanted: str = ids.switch_id(switch_label=LabelStr.show_unwanted)
         self.show_unwanted_q: str = f"#{self.show_unwanted}"

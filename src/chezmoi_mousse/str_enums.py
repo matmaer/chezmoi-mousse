@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum, StrEnum, auto
 from typing import Self
 
@@ -11,6 +13,8 @@ __all__ = [
     "ContainerName",
     "GlobalArgs",
     "InfoKind",
+    "LabelStr",
+    "LogStr",
     "LogStr",
     "OpInfoString",
     "PathFilters",
@@ -18,9 +22,7 @@ __all__ = [
     "ReactiveVar",
     "ReadCmd",
     "RichLogName",
-    "LabelStr",
     "StatusCode",
-    "LogStr",
     "Tcss",
     "VerbArgs",
     "WriteCmd",
@@ -106,7 +108,7 @@ class BtnLabel(StrEnum):
         return f"{self}_pane_id"
 
     @classmethod
-    def debug_tab_btn_set(cls) -> frozenset["BtnLabel"]:
+    def debug_tab_btn_set(cls) -> frozenset[BtnLabel]:
         return frozenset(
             {
                 BtnLabel.create_diffs,
@@ -118,15 +120,15 @@ class BtnLabel(StrEnum):
         )
 
     @classmethod
-    def dry_run_set(cls) -> frozenset["BtnLabel"]:
+    def dry_run_set(cls) -> frozenset[BtnLabel]:
         return frozenset({BtnLabel.enable_live_run, BtnLabel.switch_to_dry_run})
 
     @classmethod
-    def exit_modal_set(cls) -> frozenset["BtnLabel"]:
+    def exit_modal_set(cls) -> frozenset[BtnLabel]:
         return frozenset({BtnLabel.cancel, BtnLabel.close, BtnLabel.reload})
 
     @classmethod
-    def main_tabs_set(cls) -> frozenset["BtnLabel"]:
+    def main_tabs_set(cls) -> frozenset[BtnLabel]:
         return frozenset(
             {
                 BtnLabel.add,
@@ -139,7 +141,7 @@ class BtnLabel(StrEnum):
         )
 
     @classmethod
-    def run_btn_set(cls) -> frozenset["BtnLabel"]:
+    def run_btn_set(cls) -> frozenset[BtnLabel]:
         return frozenset(
             {
                 BtnLabel.add_run,
@@ -151,7 +153,7 @@ class BtnLabel(StrEnum):
         )
 
     @classmethod
-    def debug_btn_set(cls) -> frozenset["BtnLabel"]:
+    def debug_btn_set(cls) -> frozenset[BtnLabel]:
         return frozenset(
             {
                 BtnLabel.create_diffs,
@@ -164,7 +166,7 @@ class BtnLabel(StrEnum):
 
     # classmethod which maps each review button to its corresponding run button
     @classmethod
-    def _review_to_run_map(cls) -> dict["BtnLabel", "BtnLabel"]:
+    def _review_to_run_map(cls) -> dict[BtnLabel, BtnLabel]:
         return {
             cls.add_review: cls.add_run,
             cls.apply_review: cls.apply_run,
@@ -174,7 +176,7 @@ class BtnLabel(StrEnum):
         }
 
     @property
-    def review_to_run(self) -> "BtnLabel":
+    def review_to_run(self) -> BtnLabel:
         return self._review_to_run_map()[self]
 
 
@@ -260,12 +262,17 @@ class LabelStr(StrEnum):
     show_managed = "Show managed paths"
     show_unwanted = "Show unwanted paths"
 
-    # Changed paths widget
+    # Changed paths
     added_managed_paths = "Added managed paths"
-    affected_paths = "Paths affected by the command"
-    cat_config_output = "Cat Config Output"
     changed_paths = "Changed Paths"
     changed_status_paths = "Changed status paths"
+    removed_managed_paths = "Removed managed paths"
+
+    # Other
+    affected_paths = "Paths affected by the command"
+    get_affected_paths = "Getting affected paths"
+    loading = "loading..."  # TODO, eliminate member
+    cat_config_output = "Cat Config Output"
     chezmoi_cat_output = "Chezmoi Cat output"
     command_outputs = "Command Output"
     debug_log = "Debug Log"
@@ -276,9 +283,7 @@ class LabelStr(StrEnum):
     dom_nodes = "DOM Nodes"
     env_vars = "Environment Variables"
     full_cmd = "Full Command"
-    get_affected_paths = "Getting affected paths"
     ignored_output = "Ignored Output"
-    loading = "loading..."  # TODO, eliminate member
     managed_dir = "Managed Directory"
     managed_file = "Managed File"
     managed_no_status = "The path is managed but has no status for this context"
@@ -288,7 +293,6 @@ class LabelStr(StrEnum):
     not_set = "Not Set"
     paths_with_status = "Paths with Status"
     read_file_output = "Read file from disk output"
-    removed_managed_paths = "Removed managed paths"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
