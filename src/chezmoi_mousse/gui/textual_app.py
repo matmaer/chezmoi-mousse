@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import json
-from functools import partial
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -18,7 +16,6 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.gui.common.actionables import (
     DryRunBtn,
     SwitchSlider,
@@ -46,13 +43,11 @@ from chezmoi_mousse.str_enums import (
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 from .common.actionables import FlatButtonsVertical, TabButtons
+from .common.messages import CommandResultMsg
 from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
-    from textual.worker import Worker
-
-    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["ChezmoiGui"]
@@ -135,7 +130,8 @@ class ChezmoiGui(App[str]):
     @work
     async def run_startup_worker(self) -> None:
         await self.push_screen(self.splash_screen)
-        await self.splash_screen.run_all_tasks()
+        await self.splash_screen.run_init_tasks()
+
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(ApplyTab())
         await tabbed_content.add_pane(ReAddTab())
@@ -146,36 +142,40 @@ class ChezmoiGui(App[str]):
             await tabbed_content.add_pane(DebugTab())
 
         await tabbed_content.wait_for_refresh()
-        await self._update_managed_trees().wait()
+        await self._log_pre_mount_cmd_results()
+
+        await self.splash_screen.run_post_init_tasks()
+        await self._update_managed_trees()
         await self.splash_screen.dismiss_after_fade_loop()
 
-    # #####################
-    # # UI update workers #
-    # #####################
+    @on(CommandResultMsg)
+    def _handle_command_result(self, msg: CommandResultMsg) -> None:
 
-    def _listen_to_command_results(self, result: CommandResult) -> None:
-        if result.cmd_enum is ReadCmd.doctor:
-            doctor_table = self.query_exactly_one(DoctorTable)
-            setattr(doctor_table, ReactiveVar.cmd_result, result)
-        if result.cmd_enum is ReadCmd.cat_config:
-            cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
-            cat_config.update(result.out_txt)
-        if result.cmd_enum is ReadCmd.ignored:
-            pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
-            pretty_ignored.update(result.out_txt)
-        if result.cmd_enum is ReadCmd.template_data:
-            try:
-                parsed_data = json.loads(result.std_out)
-            except Exception as e:
-                parsed_data = {"Cannot parse JSON": f"{e}"}
-            pretty_template_data = self.query_exactly_one(ConfigTab.PrettyTemplateData)
-            pretty_template_data.update(parsed_data)
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
-        setattr(app_log, ReactiveVar.cmd_result, result)
+        setattr(app_log, ReactiveVar.cmd_result, msg.cmd_result)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        setattr(cmd_log, ReactiveVar.cmd_result, result)
+        setattr(cmd_log, ReactiveVar.cmd_result, msg.cmd_result)
 
-    @work
+        if msg.cmd_result.cmd_enum is ReadCmd.doctor:
+            doctor_table = self.query_exactly_one(DoctorTable)
+            setattr(doctor_table, ReactiveVar.cmd_result, msg.cmd_result)
+        elif msg.cmd_result.cmd_enum is ReadCmd.cat_config:
+            cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
+            cat_config.update(msg.cmd_result.out_txt)
+        elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
+            pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
+            pretty_ignored.update(msg.cmd_result.out_txt)
+        elif msg.cmd_result.cmd_enum is ReadCmd.template_data:
+            template_data = self.query_exactly_one(ConfigTab)
+            setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
+
+    async def _log_pre_mount_cmd_results(self) -> None:
+        app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
+        cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
+        for cmd in self.splash_screen.pre_mount_cmd_results:
+            setattr(app_log, ReactiveVar.cmd_result, cmd)
+            setattr(cmd_log, ReactiveVar.cmd_result, cmd)
+
     async def _update_managed_trees(self) -> None:
         apply_managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
         apply_managed_tree.update_tree()
@@ -192,18 +192,6 @@ class ChezmoiGui(App[str]):
         dir_tree = self.query_exactly_one(FilteredDirTree)
         dir_tree.reload()
         dir_tree.refresh()
-
-    def run_chezmoi_command(self, command: ReadCmd) -> Worker[CommandResult]:
-        return self.run_worker(
-            partial(Commands.run_read_cmd, command, path_arg=None),
-            thread=True,
-            group="chezmoi_commands",
-            name=command.name,
-        )
-
-    ####################
-    # Message Handling #
-    ####################
 
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:

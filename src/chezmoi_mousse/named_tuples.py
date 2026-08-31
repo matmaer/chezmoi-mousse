@@ -37,7 +37,7 @@ class CommandResult(NamedTuple):
     out_txt: str
     path_arg: Path | None
     pretty_cmd: str
-    returncode: int
+    returncode: int | None
     std_err: str
     std_out: str
     time_stamp: str

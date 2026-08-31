@@ -4,9 +4,9 @@ import asyncio
 import json
 import os
 import re
+import shutil
 import subprocess
 import time
-from asyncio import sleep
 from datetime import datetime
 from functools import lru_cache, wraps
 from itertools import islice
@@ -62,7 +62,7 @@ def min_wait(
         res = await func(self, *args, **kwargs)
         elapsed = time.monotonic() - start_time
         if elapsed < min_wait_time:
-            await sleep(min_wait_time - elapsed)
+            await asyncio.sleep(min_wait_time - elapsed)
         return res
 
     return wrapper
@@ -143,61 +143,74 @@ class ParseCmd:
 
 class Commands:
     @staticmethod
-    async def _subprocess_run(
-        run_args: tuple[str, ...],
-        *,
-        time_out: int,
-    ) -> subprocess.CompletedProcess[str]:
-        return await asyncio.to_thread(
-            subprocess.run,
-            run_args,
-            capture_output=True,
-            shell=False,
-            text=True,
-            timeout=time_out,
+    async def _asyncio_exec(
+        run_args: tuple[str, ...], time_out: int = 10
+    ) -> tuple[str, str, int | None]:
+        cm_exe = shutil.which(run_args[0])
+        if cm_exe is None:
+            raise RuntimeError("chezmoi executable not found in PATH")
+
+        process = await asyncio.create_subprocess_exec(
+            cm_exe,
+            *run_args[1:],
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
 
+        try:
+            async with asyncio.timeout(time_out):
+                stdout_bytes, stderr_bytes = await process.communicate()
+        except TimeoutError as e:
+            process.kill()
+            await process.wait()
+            raise subprocess.TimeoutExpired(
+                cmd=run_args,
+                timeout=time_out,
+            ) from e
+
+        std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
+        std_err = (stderr_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
+
+        return std_out, std_err, process.returncode
+
     @staticmethod
-    async def _get_cmd_result(
+    async def _get_exec_result(
         args_tuple: tuple[str, ...],
         *,
         path: Path | None,
-        time_out: int,
         cmd_enum: ReadCmd | WriteCmd,
     ) -> CommandResult:
+
         if path is None:
             run_args = args_tuple
         elif not path.is_absolute():
-            raise ValueError("Calling subprocess.run with a relative path")
+            raise ValueError("Calling subprocess with a relative path")
         else:
             run_args = args_tuple + (str(path),)
-        cp: subprocess.CompletedProcess[str] = await Commands._subprocess_run(
-            run_args, time_out=time_out
-        )
 
-        std_err = "\n".join([line for line in cp.stderr.splitlines() if line.strip()])
-        std_out = "\n".join([line for line in cp.stdout.splitlines() if line.strip()])
-        out_txt = ""
+        std_out, std_err, result_code = await Commands._asyncio_exec(run_args)
+
         if not std_out and not std_err:
-            out_txt = "No output from command."
-        elif not std_out and std_err:
-            out_txt = std_err
-        elif std_out and not std_err:
-            out_txt = std_out
-        else:  # result.std_out.strip() and result.std_err.strip():
             out_lines: list[str] = []
             out_lines.append("Output on stdout:")
             out_lines.append(std_out)
             out_lines.append("Output on stderr:")
             out_lines.append(std_err)
             out_txt = "\n\n".join(out_lines)
+        elif not std_out and std_err:
+            out_txt = std_err
+        elif std_out and not std_err:
+            out_txt = std_out
+        else:
+            out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
+
         return CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=f"{ParseCmd.full_cmd(cmd_enum, path=path)}",
             out_txt=out_txt,
             path_arg=path,
             pretty_cmd=f"{ParseCmd.pretty_cmd(cmd_enum, path=path)}",
-            returncode=cp.returncode,
+            returncode=result_code,
             std_err=std_err,
             std_out=std_out,
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
@@ -274,17 +287,17 @@ class Commands:
         )
 
     @staticmethod
-    async def run_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
+    async def exec_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
         args_tuple: tuple[str, ...] = ("chezmoi",) + cmd.value
-        cmd_result: CommandResult = await Commands._get_cmd_result(
-            args_tuple, path=path_arg, time_out=5, cmd_enum=cmd
+        cmd_result: CommandResult = await Commands._get_exec_result(
+            args_tuple, path=path_arg, cmd_enum=cmd
         )
         return cmd_result
 
     @staticmethod
     async def run_chezmoi_init() -> CommandResult:
-        cmd_result: CommandResult = await Commands._get_cmd_result(
-            ("chezmoi",), path=None, time_out=20, cmd_enum=WriteCmd.init
+        cmd_result: CommandResult = await Commands._get_exec_result(
+            ("chezmoi",), path=None, cmd_enum=WriteCmd.init
         )
         return cmd_result
 
@@ -295,8 +308,8 @@ class Commands:
             if store.live_run is False
             else ("chezmoi",) + cmd.value
         )
-        cmd_result: CommandResult = await Commands._get_cmd_result(
-            args_tuple, path=path_arg, time_out=20, cmd_enum=cmd
+        cmd_result: CommandResult = await Commands._get_exec_result(
+            args_tuple, path=path_arg, cmd_enum=cmd
         )
         return cmd_result
 
@@ -328,7 +341,7 @@ class Commands:
     async def get_highlighted_chezmoi_cat_output(
         file_path: Path,
     ) -> Text:
-        cmd_result = await Commands.run_read_cmd(ReadCmd.cat, path_arg=file_path)
+        cmd_result = await Commands.exec_read_cmd(ReadCmd.cat, path_arg=file_path)
         f_contents = cmd_result.std_out
         if not f_contents.strip():
             f_contents = "File is empty or contains only whitespace"
@@ -338,7 +351,7 @@ class Commands:
 
     @staticmethod
     async def _get_source_path(path_arg: Path) -> CommandResult:
-        return await Commands.run_read_cmd(ReadCmd.source_path, path_arg=path_arg)
+        return await Commands.exec_read_cmd(ReadCmd.source_path, path_arg=path_arg)
 
     @staticmethod
     @_typed_lru_cache()
@@ -356,12 +369,12 @@ class Commands:
     @staticmethod
     async def run_chezmoi_git_log(path_arg: Path) -> CommandResult:
         if path_arg == store.cfg.dest_dir:
-            result = await Commands.run_read_cmd(ReadCmd.git_log, path_arg=None)
+            result = await Commands.exec_read_cmd(ReadCmd.git_log, path_arg=None)
         else:
             source_path_result = await Commands._get_source_path(path_arg)
             if source_path_result.returncode != 0:
                 return source_path_result
-            result = await Commands.run_read_cmd(
+            result = await Commands.exec_read_cmd(
                 cmd=ReadCmd.git_log,
                 path_arg=Path(source_path_result.std_out),
             )
@@ -369,7 +382,7 @@ class Commands:
 
     @staticmethod
     async def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
-        return await Commands.run_read_cmd(diff_cmd, path_arg=path)
+        return await Commands.exec_read_cmd(diff_cmd, path_arg=path)
 
 
 class CheckPath:

@@ -31,10 +31,15 @@ class CmdResultCollapsible(Collapsible):
             expanded_symbol=Chars.down_triangle,
         )
 
-    def _colored_with_timestamp(self, cmd_str: str, code: int) -> str:
-        color = (
-            f"${ColorVar.text_success}" if code == 0 else f"${ColorVar.text_warning}"
-        )
+    def _colored_with_timestamp(self, cmd_str: str, code: int | None) -> str:
+        if code is None:
+            color = f"${ColorVar.text_error}"
+        else:
+            color = (
+                f"${ColorVar.text_success}"
+                if code == 0
+                else f"${ColorVar.text_warning}"
+            )
         time = f"{datetime.now().strftime('%H:%M:%S')}"
         return f"{time} [{color}]{cmd_str}[/] (returncode {code})"
 

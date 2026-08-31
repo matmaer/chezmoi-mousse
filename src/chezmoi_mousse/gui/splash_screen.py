@@ -22,6 +22,7 @@ from chezmoi_mousse.named_tuples import DumpConfigKeys
 from chezmoi_mousse.str_enums import ColorVar, ReadCmd, SplashLogStr, WriteCmd
 
 from .common.ascii_constants import SPLASH_ASCII
+from .common.messages import CommandResultMsg
 
 if TYPE_CHECKING:
     from textual import getters
@@ -112,6 +113,7 @@ class SplashScreen(Screen[None]):
 
     def on_mount(self) -> None:
         self.chezmoi_repo_found = False
+        self.pre_mount_cmd_results: list[CommandResult] = []
         self.color_map: dict[SplashLogStr | int, str] = {
             SplashLogStr.checked: self.app.theme_variables[ColorVar.text_warning],
             SplashLogStr.failed: self.app.theme_variables[ColorVar.text_error],
@@ -137,8 +139,10 @@ class SplashScreen(Screen[None]):
         msg = f"[{color}]{prefix} {'.' * padding} {suffix.padded}[/{color}]"
         self.splash_log.write(msg)
 
-    async def _splash_run_chezmoi_read_cmd(self, cmd: ReadCmd) -> CommandResult:
-        cr: CommandResult = await Commands.run_read_cmd(cmd, path_arg=None)
+    async def _splash_run_pre_mount_cmd(self, cmd: ReadCmd) -> None:
+        cr: CommandResult = await Commands.exec_read_cmd(cmd, path_arg=None)
+        self.pre_mount_cmd_results.append(cr)
+
         prefix = cr.pretty_cmd
         suffix = SplashLogStr.success if cr.returncode == 0 else SplashLogStr.checked
         self._write_log_msg(prefix=prefix, suffix=suffix)
@@ -177,7 +181,49 @@ class SplashScreen(Screen[None]):
                 self._write_log_msg(
                     prefix=SplashLogStr.has_no_git_commits, suffix=SplashLogStr.reports
                 )
-        return cr
+
+    async def _splash_run_post_mount_cmd(self, cmd: ReadCmd) -> None:
+        cr: CommandResult = await Commands.exec_read_cmd(cmd, path_arg=None)
+        self.app.post_message(CommandResultMsg(cr))
+
+        prefix = cr.pretty_cmd
+        suffix = SplashLogStr.success if cr.returncode == 0 else SplashLogStr.checked
+        self._write_log_msg(prefix=prefix, suffix=suffix)
+
+        if cmd is ReadCmd.dump_config:
+            parsed_std_out = json.loads(cr.std_out)
+            store.cfg = DumpConfigKeys(
+                dest_dir_path=Path(parsed_std_out["destDir"]),
+                auto_add_bool=parsed_std_out["git"]["autoadd"],
+                auto_commit_bool=parsed_std_out["git"]["autocommit"],
+                auto_push_bool=parsed_std_out["git"]["autopush"],
+            )
+            store.add_path = store.cfg.dest_dir_path
+            store.apply_path = store.cfg.dest_dir_path
+            store.re_add_path = store.cfg.dest_dir_path
+            self._write_log_msg(
+                prefix=SplashLogStr.parse_dump_config, suffix=SplashLogStr.reports
+            )
+        elif cmd is ReadCmd.git_remote:
+            if cr.returncode == 0:
+                self.chezmoi_repo_found = True
+                self._write_log_msg(
+                    prefix=SplashLogStr.repo_found, suffix=SplashLogStr.reports
+                )
+            else:
+                self._write_log_msg(
+                    prefix=SplashLogStr.repo_not_found, suffix=SplashLogStr.reports
+                )
+
+        elif cmd is ReadCmd.git_log:
+            if cr.returncode == 0:
+                self._write_log_msg(
+                    prefix=SplashLogStr.has_git_commits, suffix=SplashLogStr.reports
+                )
+            else:
+                self._write_log_msg(
+                    prefix=SplashLogStr.has_no_git_commits, suffix=SplashLogStr.reports
+                )
 
     async def _splash_run_chezmoi_init(self) -> None:
         cr = await Commands.run_write_cmd(WriteCmd.init, path_arg=None)
@@ -192,23 +238,21 @@ class SplashScreen(Screen[None]):
                 prefix=SplashLogStr.repo_init, suffix=SplashLogStr.reports
             )
 
-    async def run_all_tasks(self) -> None:
-        await self._splash_run_chezmoi_read_cmd(ReadCmd.git_remote)
+    async def run_init_tasks(self) -> None:
+        await self._splash_run_pre_mount_cmd(ReadCmd.git_remote)
         await self._splash_run_chezmoi_init()
-        await self._splash_run_chezmoi_read_cmd(ReadCmd.dump_config)
+        await self._splash_run_pre_mount_cmd(ReadCmd.dump_config)
 
-        # Execute independent read commands concurrently using TaskGroup
+    async def run_post_init_tasks(self) -> None:
         async with asyncio.TaskGroup() as tg:
             for cmd in ReadCmd.post_dump_config_commands():
-                tg.create_task(self._splash_run_chezmoi_read_cmd(cmd))
+                tg.create_task(self._splash_run_post_mount_cmd(cmd))
 
-        # Execute managed commands concurrently
         async with asyncio.TaskGroup() as tg:
             for cmd in ReadCmd.post_operation_commands():
-                tg.create_task(self._splash_run_chezmoi_read_cmd(cmd))
+                tg.create_task(self._splash_run_post_mount_cmd(cmd))
 
     async def dismiss_after_fade_loop(self) -> None:
-        # Wait for remaining steps before dismissing
         while (
             self.animated_fade.step_count < 20
             or self.animated_fade.step_count % 20 != 0

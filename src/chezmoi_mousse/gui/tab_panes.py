@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from textual import on
@@ -8,6 +9,7 @@ from textual.containers import (
     ScrollableContainer,
     Vertical,
 )
+from textual.reactive import reactive
 from textual.widgets import (
     ContentSwitcher,
     DirectoryTree,
@@ -56,7 +58,7 @@ class AddTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield Vertical(
-                # TODO: Lazy(FilteredDirTree(dest_dir=store.cfg.dest_dir)),
+                FilteredDirTree(dest_dir=store.cfg.dest_dir),
                 RefreshBtn(app_ids=store.add_ids),
                 id=store.add_ids.container.left_side,
                 classes=Tcss.tab_left_vertical,
@@ -174,6 +176,8 @@ class ConfigTab(TabPane):
 
     class PrettyTemplateData(Pretty): ...
 
+    template_data: reactive[str | None] = reactive(None, init=False)
+
     def __init__(self) -> None:
         super().__init__(id=BtnLabel.config.pane_id, title=BtnLabel.config)
 
@@ -200,17 +204,17 @@ class ConfigTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.cat_config_output),
-                    ConfigTab.CatConfigStatic("Loading..."),
+                    ConfigTab.CatConfigStatic("Not Found"),
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.ignored_output),
-                    ScrollableContainer(ConfigTab.PrettyIgnored("Loading...")),
+                    ScrollableContainer(ConfigTab.PrettyIgnored("Not Found")),
                     id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
                     MainSectionLabel(SectionLabel.template_data_output),
-                    ScrollableContainer(ConfigTab.PrettyTemplateData("Loading...")),
+                    ScrollableContainer(ConfigTab.PrettyTemplateData("Not Found")),
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
@@ -235,3 +239,15 @@ class ConfigTab(TabPane):
             self.switcher.current = store.config_ids.container.template_data
         elif msg.button.label == BtnLabel.diagram:
             self.switcher.current = store.config_ids.container.diagram
+
+    def _parse_template_data(self, template_data: str) -> None:
+        try:
+            parsed_data = json.loads(template_data)
+        except Exception as e:
+            parsed_data = {"Cannot parse JSON": f"{e}"}
+        widget = self.query_exactly_one(ConfigTab.PrettyTemplateData)
+        widget.update(parsed_data)
+
+    def watch_template_data(self, template_data: str | None) -> None:
+        if template_data is not None:
+            self._parse_template_data(template_data)

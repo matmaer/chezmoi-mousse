@@ -474,6 +474,7 @@ class PathKind(StrEnum):
 
 class ReactiveVar(StrEnum):
     cmd_result = auto()
+    template_data = auto()
 
 
 class RichLogName(StrEnum):

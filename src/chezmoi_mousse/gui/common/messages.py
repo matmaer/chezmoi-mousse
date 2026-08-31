@@ -10,10 +10,12 @@ if TYPE_CHECKING:
     from textual.widgets import Button
 
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.named_tuples import CommandResult
     from chezmoi_mousse.str_enums import BtnLabel
 
 
 __all__ = [
+    "CommandResultMsg",
     "CurrentNodeMsg",
     "DebugBtnMsg",
     "DirContentBtnMsg",
@@ -24,6 +26,12 @@ __all__ = [
     "RunBtnMsg",
     "TabBtnMsg",
 ]
+
+
+class CommandResultMsg(Message):
+    def __init__(self, results: CommandResult) -> None:
+        self.cmd_result: CommandResult = results
+        super().__init__()
 
 
 class CurrentNodeMsg(Message):

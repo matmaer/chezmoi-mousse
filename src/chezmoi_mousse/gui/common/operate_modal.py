@@ -62,7 +62,7 @@ class LoadingModal(ModalScreen[None]):
     @work(thread=True)
     @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        await Commands.run_read_cmd(read_cmd, path_arg=None)
+        await Commands.exec_read_cmd(read_cmd, path_arg=None)
 
     @work(thread=True)
     @min_wait

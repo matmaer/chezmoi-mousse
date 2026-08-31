@@ -135,7 +135,7 @@ DoctorTable {
 }
 
 FlatButtonsVertical {
-  padding-right: 1;
+  padding-right: 2;
   width: auto;
 }
 
