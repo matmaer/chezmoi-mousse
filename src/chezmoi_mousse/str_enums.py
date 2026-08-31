@@ -11,7 +11,7 @@ __all__ = [
     "ContainerName",
     "GlobalArgs",
     "InfoKind",
-    "LogString",
+    "LogStr",
     "OpInfoString",
     "PathFilters",
     "PathKind",
@@ -20,7 +20,7 @@ __all__ = [
     "RichLogName",
     "LabelStr",
     "StatusCode",
-    "SplashLogStr",
+    "LogStr",
     "Tcss",
     "VerbArgs",
     "WriteCmd",
@@ -241,31 +241,6 @@ class ContainerName(StrEnum):
         return f"{self}_id"
 
 
-class LogString(StrEnum):
-    added_managed = "New managed paths"
-    app_log_initialized = "Application log initialized"
-    changed_status = "New managed paths"
-    debug_log_initialized = "Debug log initialized"
-    debug_tab_enabled = "Debug tab enabled"
-    doctor_errors_found = "See the Config tab for errors"
-    doctor_failed_found = "See the Config tab for failed checks"
-    doctor_minor_issues_found = "Doctor issues are probably safe to ignore"
-    doctor_no_issue_found = "No warnings, failed or error entries reported"
-    doctor_not_set_found = "See the Config tab for commands not set"
-    doctor_section = "Chezmoi doctor output"
-    doctor_warnings_found = "See the Config tab for warnings"
-    env_vars = "Environment variables"
-    no_stderr = "No output on stderr"
-    no_stdout = "No output on stdout"
-    not_tracing = "tracemalloc is not tracing but the Debug tab is active"
-    removed_managed = "New managed paths"
-    tracing = "tracemalloc is tracing"
-
-    @property
-    def end(self) -> str:
-        return "-" * len(self)
-
-
 class InfoKind(Enum):
     # Kind of info mainly
     contents_view_file = auto()
@@ -320,6 +295,68 @@ class LabelStr(StrEnum):
     test_paths = " Test Paths "
     unmanaged_dir = "Unmanaged Directory"
     unmanaged_file = "Unmanaged File"
+
+
+class LogStr(StrEnum):
+    added_managed = "New managed paths"
+    app_log_initialized = "Application log initialized"
+    changed_status = "New managed paths"
+    debug_log_initialized = "Debug log initialized"
+    debug_tab_enabled = "Debug tab enabled"
+    doctor_errors_found = "See the Config tab for errors"
+    doctor_failed_found = "See the Config tab for failed checks"
+    doctor_minor_issues_found = "Doctor issues are probably safe to ignore"
+    doctor_no_issue_found = "No warnings, failed or error entries reported"
+    doctor_not_set_found = "See the Config tab for commands not set"
+    doctor_section = "Chezmoi doctor output"
+    doctor_warnings_found = "See the Config tab for warnings"
+    env_vars = "Environment variables"
+    no_stderr = "No output on stderr"
+    no_stdout = "No output on stdout"
+    not_tracing = "tracemalloc is not tracing but the Debug tab is active"
+    removed_managed = "New managed paths"
+    tracing = "tracemalloc is tracing"
+
+    @property
+    def end(self) -> str:
+        return "-" * len(self)
+
+    # Splash log strings, prefixes
+    has_git_commits = "chezmoi repo has commits"
+    has_no_git_commits = "chezmoi repo has no commits"
+    parse_dump_config = "parse dump-config"
+    repo_created = "chezmoi repo created"
+    repo_init = "chezmoi repo initialized"
+    repo_found = "chezmoi repo found"
+    repo_not_found = "chezmoi repo not found"
+
+    # Splash log strings, suffixes
+    checked = auto()  # for non-problematic non-exit 0 chezmoi commands
+    failed = auto()  # problematic non-exit 0 chezmoi commands, failed non chezmoi
+    reports = auto()  # other
+    parsed = auto()
+    success = auto()  # successful commands
+
+    @classmethod
+    def _suffixes(cls) -> frozenset[Self]:
+        return frozenset(
+            (
+                cls[cls.checked],
+                cls[cls.failed],
+                cls[cls.reports],
+                cls[cls.parsed],
+                cls[cls.success],
+            )
+        )
+
+    @property
+    def padded(self) -> str:
+        if self not in self._suffixes():
+            raise ValueError(f"{self} is not a splash log suffix")
+        # Add padding for splash log suffixes
+        max_length = max(len(str(suffix)) for suffix in self._suffixes())
+        # return the string with spaces on the left
+        return str(self).rjust(max_length)
 
 
 class OpInfoString(StrEnum):
@@ -531,45 +568,6 @@ class StatusCode(StrEnum):
     # Fake status code for internal use in the ManagedTree, not returned by chezmoi
     # Used to create the color and to determine if the dir should be displayed or not.
     N_DIR = auto()
-
-
-class SplashLogStr(StrEnum):
-    # Splash log strings, prefixes
-    has_git_commits = "chezmoi repo has commits"
-    has_no_git_commits = "chezmoi repo has no commits"
-    parse_dump_config = "parse dump-config"
-    repo_created = "chezmoi repo created"
-    repo_init = "chezmoi repo initialized"
-    repo_found = "chezmoi repo found"
-    repo_not_found = "chezmoi repo not found"
-
-    # Splash log strings, suffixes
-    checked = auto()  # for non-problematic non-exit 0 chezmoi commands
-    failed = auto()  # problematic non-exit 0 chezmoi commands, failed non chezmoi
-    reports = auto()  # other
-    parsed = auto()
-    success = auto()  # successful commands
-
-    @classmethod
-    def _suffixes(cls) -> frozenset[Self]:
-        return frozenset(
-            (
-                cls[cls.checked],
-                cls[cls.failed],
-                cls[cls.reports],
-                cls[cls.parsed],
-                cls[cls.success],
-            )
-        )
-
-    @property
-    def padded(self) -> str:
-        if self not in self._suffixes():
-            raise ValueError(f"{self} is not a splash log suffix")
-        # Add padding for splash log suffixes
-        max_length = max(len(str(suffix)) for suffix in self._suffixes())
-        # return the string with spaces on the left
-        return str(self).rjust(max_length)
 
 
 class Tcss(StrEnum):

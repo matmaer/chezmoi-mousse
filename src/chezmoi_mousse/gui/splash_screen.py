@@ -19,7 +19,7 @@ from textual.widgets import RichLog, Static
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.named_tuples import DumpConfigKeys
-from chezmoi_mousse.str_enums import ColorVar, ReadCmd, SplashLogStr, WriteCmd
+from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, WriteCmd
 
 from .common.ascii_constants import SPLASH_ASCII
 from .common.messages import CommandResultMsg
@@ -108,12 +108,12 @@ class SplashScreen(Screen[None]):
     def on_mount(self) -> None:
         self.chezmoi_repo_found = False
         self.pre_mount_cmd_results: list[CommandResult] = []
-        self.color_map: dict[SplashLogStr | int, str] = {
-            SplashLogStr.checked: self.app.theme_variables[ColorVar.text_warning],
-            SplashLogStr.failed: self.app.theme_variables[ColorVar.text_error],
-            SplashLogStr.reports: self.app.theme_variables[ColorVar.accent_darken_2],
-            SplashLogStr.parsed: self.app.theme_variables[ColorVar.text_success],
-            SplashLogStr.success: self.app.theme_variables[ColorVar.text_primary],
+        self.color_map: dict[LogStr | int, str] = {
+            LogStr.checked: self.app.theme_variables[ColorVar.text_warning],
+            LogStr.failed: self.app.theme_variables[ColorVar.text_error],
+            LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_2],
+            LogStr.parsed: self.app.theme_variables[ColorVar.text_success],
+            LogStr.success: self.app.theme_variables[ColorVar.text_primary],
         }
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.height = (
@@ -125,9 +125,7 @@ class SplashScreen(Screen[None]):
         self.animated_fade = self.query_exactly_one(AnimatedFade)
         self.animated_fade.fade_timer.resume()
 
-    def _write_log_msg(
-        self, *, prefix: SplashLogStr | str, suffix: SplashLogStr
-    ) -> None:
+    def _write_log_msg(self, *, prefix: LogStr | str, suffix: LogStr) -> None:
         padding = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded) - 4
         color = self.color_map[suffix]
         msg = f"[{color}]{prefix} {'.' * padding} {suffix.padded}[/{color}]"
@@ -138,7 +136,7 @@ class SplashScreen(Screen[None]):
         self.pre_mount_cmd_results.append(cr)
 
         prefix = cr.pretty_cmd
-        suffix = SplashLogStr.success if cr.returncode == 0 else SplashLogStr.checked
+        suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
         self._write_log_msg(prefix=prefix, suffix=suffix)
 
         if cmd is ReadCmd.dump_config:
@@ -152,28 +150,22 @@ class SplashScreen(Screen[None]):
             store.add_path = store.cfg.dest_dir_path
             store.apply_path = store.cfg.dest_dir_path
             store.re_add_path = store.cfg.dest_dir_path
-            self._write_log_msg(
-                prefix=SplashLogStr.parse_dump_config, suffix=SplashLogStr.reports
-            )
+            self._write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.reports)
         elif cmd is ReadCmd.git_remote:
             if cr.returncode == 0:
                 self.chezmoi_repo_found = True
-                self._write_log_msg(
-                    prefix=SplashLogStr.repo_found, suffix=SplashLogStr.reports
-                )
+                self._write_log_msg(prefix=LogStr.repo_found, suffix=LogStr.reports)
             else:
-                self._write_log_msg(
-                    prefix=SplashLogStr.repo_not_found, suffix=SplashLogStr.reports
-                )
+                self._write_log_msg(prefix=LogStr.repo_not_found, suffix=LogStr.reports)
 
         elif cmd is ReadCmd.git_log:
             if cr.returncode == 0:
                 self._write_log_msg(
-                    prefix=SplashLogStr.has_git_commits, suffix=SplashLogStr.reports
+                    prefix=LogStr.has_git_commits, suffix=LogStr.reports
                 )
             else:
                 self._write_log_msg(
-                    prefix=SplashLogStr.has_no_git_commits, suffix=SplashLogStr.reports
+                    prefix=LogStr.has_no_git_commits, suffix=LogStr.reports
                 )
 
     async def _splash_run_post_mount_cmd(self, cmd: ReadCmd) -> None:
@@ -181,7 +173,7 @@ class SplashScreen(Screen[None]):
         self.app.post_message(CommandResultMsg(cr))
 
         prefix = cr.pretty_cmd
-        suffix = SplashLogStr.success if cr.returncode == 0 else SplashLogStr.checked
+        suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
         self._write_log_msg(prefix=prefix, suffix=suffix)
 
         if cmd is ReadCmd.dump_config:
@@ -195,42 +187,32 @@ class SplashScreen(Screen[None]):
             store.add_path = store.cfg.dest_dir_path
             store.apply_path = store.cfg.dest_dir_path
             store.re_add_path = store.cfg.dest_dir_path
-            self._write_log_msg(
-                prefix=SplashLogStr.parse_dump_config, suffix=SplashLogStr.reports
-            )
+            self._write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.reports)
         elif cmd is ReadCmd.git_remote:
             if cr.returncode == 0:
                 self.chezmoi_repo_found = True
-                self._write_log_msg(
-                    prefix=SplashLogStr.repo_found, suffix=SplashLogStr.reports
-                )
+                self._write_log_msg(prefix=LogStr.repo_found, suffix=LogStr.reports)
             else:
-                self._write_log_msg(
-                    prefix=SplashLogStr.repo_not_found, suffix=SplashLogStr.reports
-                )
+                self._write_log_msg(prefix=LogStr.repo_not_found, suffix=LogStr.reports)
 
         elif cmd is ReadCmd.git_log:
             if cr.returncode == 0:
                 self._write_log_msg(
-                    prefix=SplashLogStr.has_git_commits, suffix=SplashLogStr.reports
+                    prefix=LogStr.has_git_commits, suffix=LogStr.reports
                 )
             else:
                 self._write_log_msg(
-                    prefix=SplashLogStr.has_no_git_commits, suffix=SplashLogStr.reports
+                    prefix=LogStr.has_no_git_commits, suffix=LogStr.reports
                 )
 
     async def _splash_run_chezmoi_init(self) -> None:
         cr = await Commands.run_write_cmd(WriteCmd.init, path_arg=None)
-        suffix = SplashLogStr.success if cr.returncode == 0 else SplashLogStr.failed
+        suffix = LogStr.success if cr.returncode == 0 else LogStr.failed
         self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
         if self.chezmoi_repo_found:
-            self._write_log_msg(
-                prefix=SplashLogStr.repo_created, suffix=SplashLogStr.reports
-            )
+            self._write_log_msg(prefix=LogStr.repo_created, suffix=LogStr.reports)
         else:
-            self._write_log_msg(
-                prefix=SplashLogStr.repo_init, suffix=SplashLogStr.reports
-            )
+            self._write_log_msg(prefix=LogStr.repo_init, suffix=LogStr.reports)
 
     async def run_init_tasks(self) -> None:
         await self._splash_run_pre_mount_cmd(ReadCmd.git_remote)

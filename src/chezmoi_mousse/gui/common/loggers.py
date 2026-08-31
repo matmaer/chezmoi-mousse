@@ -8,7 +8,7 @@ from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogString, Tcss
+from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
     from textual import getters
@@ -44,8 +44,8 @@ class CmdResultCollapsible(Collapsible):
         return f"{time} [{color}]{cmd_str}[/] (returncode {code})"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
-        curated_std_out = result.std_out or f"{LogString.no_stdout}"
-        curated_std_err = result.std_err or f"{LogString.no_stderr}"
+        curated_std_out = result.std_out or f"{LogStr.no_stdout}"
+        curated_std_err = result.std_err or f"{LogStr.no_stderr}"
         contents: list[Label | Static] = [
             Label(LabelStr.full_cmd, classes=Tcss.sub_section_label)
         ]
@@ -115,9 +115,9 @@ class AppLog(RichLoggers):
         super().__init__(id=store.logs_ids.richlog.app, markup=True, max_lines=10000)
 
     def on_mount(self) -> None:
-        self.write_dimmed(LogString.app_log_initialized)
+        self.write_dimmed(LogStr.app_log_initialized)
         if "debug" in self.app.features:
-            self.write_warning(f"Running textual --dev: {LogString.debug_tab_enabled}")
+            self.write_warning(f"Running textual --dev: {LogStr.debug_tab_enabled}")
 
     def watch_cmd_result(self, cmd_result: CommandResult) -> None:
         if cmd_result.returncode == 0:
@@ -128,20 +128,20 @@ class AppLog(RichLoggers):
                 for line in cmd_result.std_out.splitlines()
                 if line.strip() != ""
             ]
-            self.write_ready(LogString.doctor_section)
+            self.write_ready(LogStr.doctor_section)
             nothing_serious = True
             if "error" in first_col:
-                self.write_error(LogString.doctor_errors_found)
+                self.write_error(LogStr.doctor_errors_found)
                 nothing_serious = False
             if "failed" in first_col:
-                self.write_error(LogString.doctor_failed_found)
+                self.write_error(LogStr.doctor_failed_found)
                 nothing_serious = False
             if "warning" in first_col:
-                self.write_warning(LogString.doctor_warnings_found)
+                self.write_warning(LogStr.doctor_warnings_found)
             if "not set" in cmd_result.std_out:
-                self.write_warning(LogString.doctor_not_set_found)
+                self.write_warning(LogStr.doctor_not_set_found)
             if nothing_serious:
-                self.write_success(LogString.doctor_no_issue_found)
+                self.write_success(LogStr.doctor_no_issue_found)
             else:
-                self.write_success(LogString.doctor_minor_issues_found)
-            self.write_ready(LogString.doctor_section.end)
+                self.write_success(LogStr.doctor_minor_issues_found)
+            self.write_ready(LogStr.doctor_section.end)

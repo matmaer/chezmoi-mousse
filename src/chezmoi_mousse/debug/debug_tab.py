@@ -32,7 +32,7 @@ from chezmoi_mousse.str_enums import (
     BtnLabel,
     ColorVar,
     LabelStr,
-    LogString,
+    LogStr,
     Tcss,
 )
 
@@ -55,11 +55,11 @@ class DebugLog(RichLoggers):
         super().__init__(markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
-        self.write_ready(LogString.debug_log_initialized)
+        self.write_ready(LogStr.debug_log_initialized)
         if tracemalloc.is_tracing():
-            self.write_warning(LogString.tracing)
+            self.write_warning(LogStr.tracing)
         else:
-            self.write_error(LogString.not_tracing)
+            self.write_error(LogStr.not_tracing)
 
     def write_text_block(self, message: str) -> None:
         color = self.app.theme_variables[ColorVar.text_block.value]
