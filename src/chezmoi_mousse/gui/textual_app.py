@@ -16,21 +16,6 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.gui.common.actionables import (
-    DryRunBtn,
-    SwitchSlider,
-)
-from chezmoi_mousse.gui.common.contents import ContentsView
-from chezmoi_mousse.gui.common.diffs import DiffView
-from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
-from chezmoi_mousse.gui.common.git_log import GitLogView
-from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_tree import DestDirTree, ManagedTree
-from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
-from chezmoi_mousse.gui.common.operate_modal import OperateModal
-from chezmoi_mousse.gui.common.switchers import ViewSwitcher
-from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -42,8 +27,24 @@ from chezmoi_mousse.str_enums import (
 )
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
-from .common.actionables import FlatButtonsVertical, TabButtons
-from .common.messages import CommandResultMsg
+from .common.actionables import (
+    DryRunBtn,
+    FlatButtonsVertical,
+    SwitchSlider,
+    TabButtons,
+)
+from .common.components import LeftSideVertical
+from .common.contents import ContentsView
+from .common.diffs import DiffView
+from .common.doctor_data import DoctorTable
+from .common.filtered_dir_tree import FilteredDirTree
+from .common.git_log import GitLogView
+from .common.loggers import AppLog, CmdLog
+from .common.managed_tree import ManagedTree
+from .common.messages import CommandResultMsg, CurrentNodeMsg
+from .common.operate_modal import OperateModal
+from .common.switchers import ViewSwitcher
+from .splash_screen import SplashScreen
 from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
@@ -308,7 +309,7 @@ class ChezmoiGui(App[str]):
         if isinstance(self.screen, SplashScreen):
             return
         active_tab_label = self.query_exactly_one(TabbedContent).active
-        left_side: DestDirTree | Vertical | FlatButtonsVertical | None = None
+        left_side: LeftSideVertical | FlatButtonsVertical | None = None
         operation_buttons = None
         view_switcher_buttons = None
 
@@ -325,20 +326,22 @@ class ChezmoiGui(App[str]):
 
         if active_tab_label == BtnLabel.apply:
             left_side = self.query_one(
-                store.apply_ids.container.left_side_q, DestDirTree
+                store.apply_ids.container.left_side_q, LeftSideVertical
             )
             operation_buttons = self.query_one(
                 store.apply_ids.container.operate_buttons_q
             )
         elif active_tab_label == BtnLabel.re_add:
             left_side = self.query_one(
-                store.re_add_ids.container.left_side_q, DestDirTree
+                store.re_add_ids.container.left_side_q, LeftSideVertical
             )
             operation_buttons = self.query_one(
                 store.re_add_ids.container.operate_buttons_q
             )
         elif active_tab_label == BtnLabel.add:
-            left_side = self.query_one(store.add_ids.container.left_side_q, Vertical)
+            left_side = self.query_one(
+                store.add_ids.container.left_side_q, LeftSideVertical
+            )
             operation_buttons = self.query_one(
                 store.add_ids.container.operate_buttons_q
             )

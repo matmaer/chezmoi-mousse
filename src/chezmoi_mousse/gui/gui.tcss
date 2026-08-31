@@ -68,7 +68,7 @@
   }
 }
 
-.tab_left_vertical {
+.left_side_vertical {
   margin-right: 2;
   width: auto;
   max-width: 35%;
@@ -99,7 +99,29 @@
       text-style: none;
     }
   }
+  &>.directory_tree {
+    border-top: $primary;
+    border-title-align: center;
+    border-title-style: bold;
+    min-width: 18;
+    width: auto;
+    &>.directory-tree--folder {
+      color: $primary-lighten-3;
+      text-style: none;
+    }
+    &>.directory-tree--extension {
+      text-style: none;
+    }
+    &>.directory-tree--hidden {
+      text-style: none;
+    }
+    &>.directory-tree--file {
+      color: $success-lighten-3;
+      text-style: none;
+    }
+  }
 }
+
 
 /**********************/
 /* Type Selector tcss */
@@ -286,28 +308,7 @@ DataTable {
   }
 }
 
-DirectoryTree {
-  border-top: $primary;
-  border-title-align: center;
-  border-title-style: bold;
-  min-width: 18;
-  max-width: 100%;
-  width: auto;
-  &>.directory-tree--folder {
-    color: $primary-lighten-3;
-    text-style: none;
-  }
-  &>.directory-tree--extension {
-    text-style: none;
-  }
-  &>.directory-tree--hidden {
-    text-style: none;
-  }
-  &>.directory-tree--file {
-    color: $success-lighten-3;
-    text-style: none;
-  }
-}
+
 
 Footer {
   height: 2;

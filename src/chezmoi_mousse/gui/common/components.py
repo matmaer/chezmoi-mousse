@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, ClassVar
 from textual.containers import Container, Vertical
 from textual.widgets import Label, Static
 
-from chezmoi_mousse.str_enums import InfoKind, SectionLabel
+from chezmoi_mousse.str_enums import InfoKind, LabelStr
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
@@ -31,26 +31,23 @@ __all__ = [
 # Container Regions
 class LeftSideVertical(Vertical):
     def __init__(self, *, app_ids: AppIds) -> None:
-        super().__init__(id=app_ids.container.left_side, classes=Tcss.tab_left_vertical)
-
-
-# Label subclasses
+        super().__init__(
+            id=app_ids.container.left_side, classes=Tcss.left_side_vertical
+        )
 
 
 class MainSectionLabel(Label):
-    def __init__(self, section_label: SectionLabel = SectionLabel.not_set) -> None:
+    def __init__(self, section_label: LabelStr = LabelStr.not_set) -> None:
         super().__init__(section_label, classes=Tcss.main_section_label)
 
 
 class FlatSectionLabel(Label):
-    def __init__(
-        self, section_label: SectionLabel | str = SectionLabel.not_set
-    ) -> None:
+    def __init__(self, section_label: LabelStr | str = LabelStr.not_set) -> None:
         super().__init__(section_label, classes=Tcss.flat_section_label)
 
 
 class SubSectionLabel(Label):
-    def __init__(self, section_label: SectionLabel = SectionLabel.not_set) -> None:
+    def __init__(self, section_label: LabelStr = LabelStr.not_set) -> None:
         super().__init__(section_label, classes=Tcss.sub_section_label)
 
 
@@ -78,12 +75,12 @@ class InfoVertical(Vertical):
 
     nothing_to_show_map: ClassVar[dict[InfoKind, tuple[str, ...]]] = {
         InfoKind.dest_dir_contents: (
-            SectionLabel.dest_dir,
+            LabelStr.dest_dir,
             "",
             "<- click a path with a status to see its diff",
         ),
         InfoKind.contents_view_file: (
-            SectionLabel.dest_dir,
+            LabelStr.dest_dir,
             "",
             "<- Click a file path to see its contents",
         ),
@@ -105,9 +102,9 @@ class InfoVertical(Vertical):
         self.info_static = self.query_exactly_one(InfoStatic)
 
     def _reset_widgets(self) -> None:
-        self.main_label = SectionLabel.not_set
-        self.sub_label = SectionLabel.not_set
-        self.info_static = SectionLabel.not_set
+        self.main_label = LabelStr.not_set
+        self.sub_label = LabelStr.not_set
+        self.info_static = LabelStr.not_set
 
     def watch_info_kind(self, info_kind: InfoKind | None) -> None:
         if info_kind is None:

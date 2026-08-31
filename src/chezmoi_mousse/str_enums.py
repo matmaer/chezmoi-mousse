@@ -11,7 +11,6 @@ __all__ = [
     "ContainerName",
     "GlobalArgs",
     "InfoKind",
-    "LoadingLabel",
     "LogString",
     "OpInfoString",
     "PathFilters",
@@ -19,10 +18,9 @@ __all__ = [
     "ReactiveVar",
     "ReadCmd",
     "RichLogName",
-    "SectionLabel",
+    "LabelStr",
     "StatusCode",
     "SplashLogStr",
-    "SwitchLabel",
     "Tcss",
     "VerbArgs",
     "WriteCmd",
@@ -210,7 +208,6 @@ class ColorVar(StrEnum):
     info = "foreground-darken-1"
     accent_darken_2 = "accent-darken-2"
     text = "text"
-    text_accent = "text-accent"
     text_block = "foreground-darken-1"
     text_error = "text-error"
     text_error_dark = "text-error-darken-3"
@@ -242,14 +239,6 @@ class ContainerName(StrEnum):
     @property
     def container_id(self) -> str:
         return f"{self}_id"
-
-
-class LoadingLabel(StrEnum):
-    loading = "Loading"  # the initial label
-    get_affected_paths = "Getting affected paths"
-    purge_cache = "Purge cached data"
-    update_trees = "Update Managed Trees"
-    reload_dir_tree = "Reloading Add tab directory tree"
 
 
 class LogString(StrEnum):
@@ -284,6 +273,53 @@ class InfoKind(Enum):
     dest_dir_contents = auto()
     unmanaged_diff = auto()
     unmanaged_git_log = auto()
+
+
+class LabelStr(StrEnum):
+    # Apply and ReAdd Tab
+    show_unchanged = "Show unchanged paths"
+    show_unmanaged = "Show unmanaged children"
+    expand_all = "Expand all dirs"
+
+    # Add Tab
+    show_managed = "Show managed paths"
+    show_unwanted = "Show unwanted paths"
+
+    # Changed paths widget
+    added_managed_paths = "Added managed paths"
+    affected_paths = "Paths affected by the command"
+    cat_config_output = "Cat Config Output"
+    changed_paths = "Changed Paths"
+    changed_status_paths = "Changed status paths"
+    chezmoi_cat_output = "Chezmoi Cat output"
+    command_outputs = "Command Output"
+    debug_log = "Debug Log"
+    dest_dir = "Destination Directory"
+    dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
+    diagram = "Chezmoi Diagram"
+    doctor_output = "Doctor Output"
+    dom_nodes = "DOM Nodes"
+    env_vars = "Environment Variables"
+    full_cmd = "Full Command"
+    get_affected_paths = "Getting affected paths"
+    ignored_output = "Ignored Output"
+    loading = "loading..."  # TODO, eliminate member
+    managed_dir = "Managed Directory"
+    managed_file = "Managed File"
+    managed_no_status = "The path is managed but has no status for this context"
+    n_dir = "Managed directory which contains nested status paths"
+    no_managed_paths = "No managed paths yet"
+    no_status_paths = "No paths with a status"
+    not_set = "Not Set"
+    paths_with_status = "Paths with Status"
+    read_file_output = "Read file from disk output"
+    removed_managed_paths = "Removed managed paths"
+    stderr_output = "Output from stderr"
+    stdout_output = "Output from stdout"
+    template_data_output = "Chezmoi Data Output"
+    test_paths = " Test Paths "
+    unmanaged_dir = "Unmanaged Directory"
+    unmanaged_file = "Unmanaged File"
 
 
 class OpInfoString(StrEnum):
@@ -485,51 +521,6 @@ class RichLogName(StrEnum):
     memory_usage_logger = auto()
 
 
-class SectionLabel(StrEnum):
-    added_managed_paths = "Added managed paths"
-    affected_paths = "Paths affected by the command"
-    cat_config_output = "Cat Config Output"
-    changed_paths = "Changed Paths"
-    changed_status_paths = "Changed status paths"
-    chezmoi_cat_output = "Chezmoi Cat output"
-    command_outputs = "Command Output"
-    debug_log = "Debug Log"
-    dest_dir = "Destination Directory"
-    dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
-    diagram = "Chezmoi Diagram"
-    doctor_output = "Doctor Output"
-    dom_nodes = "DOM Nodes"
-    env_vars = "Environment Variables"
-    full_cmd = "Full Command"
-    ignored_output = "Ignored Output"
-    managed_dir = "Managed Directory"
-    managed_file = "Managed File"
-    managed_no_status = "The path is managed but has no status for this context"
-    n_dir = "Managed directory which contains nested status paths"
-    no_managed_paths = "No managed paths yet"
-    no_status_paths = "No paths with a status"
-    not_set = "Not Set"
-    paths_with_status = "Paths with Status"
-    read_file_output = "Read file from disk output"
-    removed_managed_paths = "Removed managed paths"
-    stderr_output = "Output from stderr"
-    stdout_output = "Output from stdout"
-    template_data_output = "Chezmoi Data Output"
-    test_paths = " Test Paths "
-    unmanaged_dir = "Unmanaged Directory"
-    unmanaged_file = "Unmanaged File"
-
-
-class SplashStr(StrEnum):
-    completed = auto()
-    found_repo = "create new chezmoi repo"
-    exit_one = auto()
-    exit_other = auto()
-    exit_zero = auto()
-    found_existing_repo = "chezmoi repository exists"
-    reported = auto()
-
-
 class StatusCode(StrEnum):
     Added = "A"
     Deleted = "D"
@@ -581,23 +572,13 @@ class SplashLogStr(StrEnum):
         return str(self).rjust(max_length)
 
 
-class SwitchLabel(StrEnum):
-    # Apply and ReAdd Tab
-    show_unchanged = "Show unchanged paths"
-    show_unmanaged = "Show unmanaged children"
-    expand_all = "Expand all dirs"
-
-    # Add Tab
-    show_managed = "Show managed paths"
-    show_unwanted = "Show unwanted paths"
-
-
 class Tcss(StrEnum):
     add_tab_contents_view = auto()
     added = auto()
     changed = auto()
     context = auto()
     dest_dir_tree_label = auto()
+    directory_tree = auto()
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
@@ -605,19 +586,19 @@ class Tcss(StrEnum):
     info = auto()
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
+    left_side_vertical = auto()
     limited_label = auto()
     live_run_color = auto()
     main_section_label = auto()
     managed_tree = auto()
-    operate_button = auto()
     op_btn_group = auto()
+    operate_button = auto()
     operate_info = auto()
     refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()
     sub_section_label = auto()
     tab_button = auto()
-    tab_left_vertical = auto()
     unhandled = auto()
 
     # add a property to return the name with a dot prefix

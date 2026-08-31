@@ -39,6 +39,8 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "DebugBtn",
+    "DebugBtnGroup",
     "DirContentBtn",
     "DryRunBtn",
     "FlatBtn",

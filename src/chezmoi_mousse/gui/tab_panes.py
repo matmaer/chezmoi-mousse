@@ -13,6 +13,7 @@ from textual.reactive import reactive
 from textual.widgets import (
     ContentSwitcher,
     DirectoryTree,
+    Label,
     Pretty,
     Static,
     Switch,
@@ -22,7 +23,7 @@ from textual.widgets import (
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import (
     BtnLabel,
-    SectionLabel,
+    LabelStr,
     Tcss,
 )
 
@@ -35,12 +36,12 @@ from .common.actionables import (
     TabButtons,
 )
 from .common.ascii_constants import FLOW_DIAGRAM
-from .common.components import MainSectionLabel
+from .common.components import LeftSideVertical, MainSectionLabel
 from .common.contents import ContentsView
 from .common.doctor_data import DoctorTable
 from .common.filtered_dir_tree import FilteredDirTree
 from .common.loggers import AppLog, CmdLog
-from .common.managed_tree import DestDirTree, ManagedTree
+from .common.managed_tree import ManagedTree
 from .common.messages import FlatBtnMsg, TabBtnMsg
 from .common.switchers import ViewSwitcher
 
@@ -57,12 +58,11 @@ class AddTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield Vertical(
-                FilteredDirTree(dest_dir=store.cfg.dest_dir),
-                RefreshBtn(app_ids=store.add_ids),
-                id=store.add_ids.container.left_side,
-                classes=Tcss.tab_left_vertical,
-            )
+            with LeftSideVertical(app_ids=store.add_ids):
+                yield FilteredDirTree(
+                    dest_dir=store.cfg.dest_dir,
+                )
+                yield RefreshBtn(app_ids=store.add_ids)
             with Vertical():
                 yield ContentsView(store.add_ids)
                 yield ReviewBtnGroup(
@@ -107,7 +107,10 @@ class ApplyTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield DestDirTree(store.apply_ids)
+            with LeftSideVertical(app_ids=store.apply_ids):
+                yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
+                yield ManagedTree(store.apply_ids)
+                yield RefreshBtn(app_ids=store.apply_ids)
             yield ViewSwitcher(store.apply_ids)
         yield SwitchSlider(app_ids=store.apply_ids)
 
@@ -129,7 +132,10 @@ class ReAddTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield DestDirTree(store.re_add_ids)
+            with LeftSideVertical(app_ids=store.re_add_ids):
+                yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
+                yield ManagedTree(store.re_add_ids)
+                yield RefreshBtn(app_ids=store.re_add_ids)
             yield ViewSwitcher(store.re_add_ids)
         yield SwitchSlider(app_ids=store.re_add_ids)
 
@@ -198,27 +204,27 @@ class ConfigTab(TabPane):
             )
             with ContentSwitcher(initial=store.config_ids.container.doctor):
                 yield Vertical(
-                    MainSectionLabel(SectionLabel.doctor_output),
+                    MainSectionLabel(LabelStr.doctor_output),
                     DoctorTable(),
                     id=store.config_ids.container.doctor,
                 )
                 yield Vertical(
-                    MainSectionLabel(SectionLabel.cat_config_output),
+                    MainSectionLabel(LabelStr.cat_config_output),
                     ConfigTab.CatConfigStatic("Not Found"),
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
-                    MainSectionLabel(SectionLabel.ignored_output),
+                    MainSectionLabel(LabelStr.ignored_output),
                     ScrollableContainer(ConfigTab.PrettyIgnored("Not Found")),
                     id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
-                    MainSectionLabel(SectionLabel.template_data_output),
+                    MainSectionLabel(LabelStr.template_data_output),
                     ScrollableContainer(ConfigTab.PrettyTemplateData("Not Found")),
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
-                    MainSectionLabel(SectionLabel.diagram),
+                    MainSectionLabel(LabelStr.diagram),
                     Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
                     id=store.config_ids.container.diagram,
                 )

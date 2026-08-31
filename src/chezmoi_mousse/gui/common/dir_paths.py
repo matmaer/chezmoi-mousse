@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.str_enums import BtnLabel, SectionLabel, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.app_ids import AppIds
@@ -120,7 +120,7 @@ class DirPathsView(Container):
             )
         if not store.managed_dirs:
             widgets = [
-                Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
+                Label(LabelStr.paths_with_status, classes=Tcss.main_section_label)
             ]
             widgets.append(
                 Static(
@@ -131,7 +131,7 @@ class DirPathsView(Container):
             )
         elif not store.status_dirs_kind and not store.status_files_kind:
             widgets.append(
-                Label(SectionLabel.paths_with_status, classes=Tcss.main_section_label)
+                Label(LabelStr.paths_with_status, classes=Tcss.main_section_label)
             )
             widgets.append(
                 Static(

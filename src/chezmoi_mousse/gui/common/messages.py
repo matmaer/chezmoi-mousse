@@ -21,6 +21,7 @@ __all__ = [
     "DirContentBtnMsg",
     "DryRunBtnMsg",
     "ExitModalBtnMsg",
+    "FlatBtnMsg",
     "RefreshBtnMsg",
     "ReviewBtnMsg",
     "RunBtnMsg",

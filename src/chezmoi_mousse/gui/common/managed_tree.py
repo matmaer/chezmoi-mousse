@@ -6,9 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.containers import Vertical
 from textual.reactive import reactive
-from textual.widgets import Label, Tree
+from textual.widgets import Tree
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
@@ -25,7 +24,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from textual import getters
-    from textual.app import ComposeResult
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
@@ -33,21 +31,9 @@ if TYPE_CHECKING:
     from chezmoi_mousse.functions import ScanDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-from .actionables import RefreshBtn
 from .messages import CurrentNodeMsg
 
-__all__ = ["ManagedTree", "DestDirTree"]
-
-
-class DestDirTree(Vertical):
-    def __init__(self, ids: AppIds) -> None:
-        self.app_ids = ids
-        super().__init__(id=ids.container.left_side, classes=Tcss.tab_left_vertical)
-
-    def compose(self) -> ComposeResult:
-        yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-        yield ManagedTree(self.app_ids)
-        yield RefreshBtn(app_ids=self.app_ids)
+__all__ = ["ManagedTree"]
 
 
 @dataclass(slots=True)

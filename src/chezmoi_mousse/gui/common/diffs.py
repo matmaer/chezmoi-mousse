@@ -12,8 +12,8 @@ from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.str_enums import (
     BtnLabel,
+    LabelStr,
     ReadCmd,
-    SectionLabel,
     Tcss,
 )
 
@@ -109,28 +109,28 @@ class DiffView(ScrollableContainer):
         managed_paths = store.managed_dirs | store.managed_files
 
         if path == store.cfg.dest_dir:
-            self.main_section_label.update(SectionLabel.dest_dir)
+            self.main_section_label.update(LabelStr.dest_dir)
             if not managed_paths:
-                self.sub_section_label.update(SectionLabel.no_managed_paths)
+                self.sub_section_label.update(LabelStr.no_managed_paths)
             else:
-                self.sub_section_label.update(SectionLabel.dest_dir_diff)
+                self.sub_section_label.update(LabelStr.dest_dir_diff)
 
         elif path in managed_paths:
             if path in store.managed_dirs:
-                self.main_section_label.update(SectionLabel.managed_dir)
+                self.main_section_label.update(LabelStr.managed_dir)
             elif path in store.managed_files:
-                self.main_section_label.update(SectionLabel.managed_file)
-            self.sub_section_label.update(SectionLabel.managed_no_status)
+                self.main_section_label.update(LabelStr.managed_file)
+            self.sub_section_label.update(LabelStr.managed_no_status)
 
         elif path in self.paths.n_dirs:
-            self.main_section_label.update(SectionLabel.managed_dir)
-            self.sub_section_label.update(SectionLabel.n_dir)
+            self.main_section_label.update(LabelStr.managed_dir)
+            self.sub_section_label.update(LabelStr.n_dir)
 
         else:
             if path.is_dir():
-                self.main_section_label.update(SectionLabel.unmanaged_dir)
+                self.main_section_label.update(LabelStr.unmanaged_dir)
             elif path.is_file():
-                self.main_section_label.update(SectionLabel.unmanaged_file)
+                self.main_section_label.update(LabelStr.unmanaged_file)
             self.sub_section_label.update(str(path))
 
         self.diff_lines.display = False

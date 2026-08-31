@@ -9,7 +9,7 @@ from textual.widgets import DirectoryTree
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
-from chezmoi_mousse.str_enums import Chars
+from chezmoi_mousse.str_enums import Chars, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -28,7 +28,7 @@ class FilteredDirTree(DirectoryTree):
     show_unwanted: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, *, dest_dir: Path) -> None:
-        super().__init__(dest_dir)
+        super().__init__(dest_dir, classes=Tcss.directory_tree)
 
     def on_mount(self) -> None:
         self.root.expand()

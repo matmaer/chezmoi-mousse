@@ -24,16 +24,15 @@ from chezmoi_mousse.gui.common.actionables import (
     DebugBtn,
     DebugBtnGroup,
     FlatBtn,
-    FlatBtnMsg,
     FlatButtonsVertical,
 )
 from chezmoi_mousse.gui.common.loggers import RichLoggers
-from chezmoi_mousse.gui.common.messages import DebugBtnMsg
+from chezmoi_mousse.gui.common.messages import DebugBtnMsg, FlatBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ColorVar,
+    LabelStr,
     LogString,
-    SectionLabel,
     Tcss,
 )
 
@@ -176,17 +175,17 @@ class DebugTab(TabPane):
             )
             with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
                 yield Vertical(
-                    Label(SectionLabel.test_paths, classes=Tcss.main_section_label),
+                    Label(LabelStr.test_paths, classes=Tcss.main_section_label),
                     DebugTab.TestPathsView(classes=Tcss.info),
                     id=store.debug_ids.container.test_paths_view,
                 )
                 yield Vertical(
-                    Label(SectionLabel.debug_log, classes=Tcss.main_section_label),
+                    Label(LabelStr.debug_log, classes=Tcss.main_section_label),
                     DebugLog(),
                     id=store.debug_ids.container.debug_log,
                 )
                 yield Vertical(
-                    Label(SectionLabel.dom_nodes, classes=Tcss.main_section_label),
+                    Label(LabelStr.dom_nodes, classes=Tcss.main_section_label),
                     RichLog(
                         id=store.debug_ids.richlog.dom_nodes,
                         highlight=True,
@@ -195,7 +194,7 @@ class DebugTab(TabPane):
                     id=store.debug_ids.container.dom_nodes,
                 )
                 yield Vertical(
-                    Label(SectionLabel.env_vars, classes=Tcss.main_section_label),
+                    Label(LabelStr.env_vars, classes=Tcss.main_section_label),
                     RichLog(
                         id=store.debug_ids.richlog.env_vars,
                         highlight=True,

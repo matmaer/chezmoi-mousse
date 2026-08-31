@@ -13,10 +13,9 @@ from chezmoi_mousse.functions import Commands, ParseCmd, min_wait
 from chezmoi_mousse.named_tuples import RunCommandInfo
 from chezmoi_mousse.str_enums import (
     BtnLabel,
-    LoadingLabel,
+    LabelStr,
     OpInfoString,
     ReadCmd,
-    SectionLabel,
     Tcss,
     WriteCmd,
 )
@@ -45,7 +44,7 @@ class LoadingModal(ModalScreen[None]):
     label_text: reactive[str | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
-        yield (VerticalGroup(Label(LoadingLabel.loading), LoadingIndicator()))
+        yield (VerticalGroup(Label(LabelStr.loading), LoadingIndicator()))
 
     @work
     async def run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
@@ -161,14 +160,14 @@ class ChangedPathsOutput(ScrollableContainer):
     class ChangedStatus(Static): ...
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabel.changed_paths)
-        yield SubSectionLabel(SectionLabel.added_managed_paths)
+        yield MainSectionLabel(LabelStr.changed_paths)
+        yield SubSectionLabel(LabelStr.added_managed_paths)
         yield ChangedPathsOutput.AddedManaged(classes=Tcss.info)
-        yield SubSectionLabel(SectionLabel.removed_managed_paths)
+        yield SubSectionLabel(LabelStr.removed_managed_paths)
         yield ChangedPathsOutput.RemovedManaged(classes=Tcss.info)
-        yield SubSectionLabel(SectionLabel.changed_status_paths)
+        yield SubSectionLabel(LabelStr.changed_status_paths)
         yield ChangedPathsOutput.ChangedStatus(classes=Tcss.info)
-        yield SubSectionLabel(SectionLabel.command_outputs)
+        yield SubSectionLabel(LabelStr.command_outputs)
 
     def on_mount(self) -> None:
         self.added_managed = self.query_exactly_one(self.AddedManaged)
@@ -192,7 +191,7 @@ class AffectedPathsReview(ScrollableContainer):
     affected_paths: reactive[AffectedPaths | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(SectionLabel.affected_paths)
+        yield MainSectionLabel(LabelStr.affected_paths)
         yield SubSectionLabel()
         yield InfoStatic()
 
@@ -248,7 +247,7 @@ class OperateModal(ModalScreen[None]):
             return
         self.loading_modal = LoadingModal()
         await self.app.push_screen(self.loading_modal)
-        self.loading_modal.label_text = LoadingLabel.get_affected_paths
+        self.loading_modal.label_text = LabelStr.get_affected_paths
         write_cmd = WriteCmd.get_write_cmd(self.operate_label)
         tab_path = store.get_tab_path(self.operate_label)
         if tab_path is None:

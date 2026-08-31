@@ -103,13 +103,7 @@ class SplashScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade())
-            yield Center(
-                RichLog(
-                    markup=True,
-                    id="rich_splash_log",
-                    classes="splash_log",
-                )
-            )
+            yield Center(RichLog(markup=True))
 
     def on_mount(self) -> None:
         self.chezmoi_repo_found = False
