@@ -19,6 +19,7 @@ __all__ = [
     "OpInfoString",
     "PathFilters",
     "PathKind",
+    "ProblemChars",
     "ReactiveVar",
     "ReadCmd",
     "RichLogName",
@@ -547,6 +548,15 @@ class PathKind(StrEnum):
     UNHANDLED = auto()
     unman_dir_access_denied = auto()
     UNMANAGED = auto()
+
+
+class ProblemChars(StrEnum):
+    BIDI_PDF = "\u202c"
+    BIDI_RLO = "\u202e"
+    COMBINING = "\u0301"
+    VARSEL = "\ufe0f"
+    ZWJ = "\u200d"
+    ZWS = "\u200b"
 
 
 class ReactiveVar(StrEnum):

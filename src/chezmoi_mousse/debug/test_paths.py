@@ -1,45 +1,21 @@
 import random
 import shutil
 from dataclasses import dataclass, fields
-from enum import StrEnum
 from functools import cached_property
 from pathlib import Path
 
-from chezmoi_mousse.str_enums import ColorVar
+from chezmoi_mousse.str_enums import ColorVar, ProblemChars
 
 __all__ = ["TestPaths"]
 
 
-class ProblemChars(StrEnum):
-    BIDI_PDF = "\u202c"
-    BIDI_RLO = "\u202e"
-    COMBINING = "\u0301"
-    VARSEL = "\ufe0f"
-    ZWJ = "\u200d"
-    ZWS = "\u200b"
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class FileNames:
-    BINARY = "_test_file_binary.bin"
-    LARGE = "_test_file_large.txt"
-    PYTHON_FILE = "_test_file.py"
-    TEST_FILE_1 = "_test_file_1.toml"
-    TEST_FILE_2 = "_test_file_2.toml"
-    TEST_FILE_3 = "_test_file_3.toml"
-    TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
-
-    @property
-    def all_toml_file_names(self) -> list[str]:
-        return [self.TEST_FILE_1, self.TEST_FILE_2, self.TEST_FILE_3]
-
-    @property
-    def toml_file_without_diff(self) -> list[str]:
-        return [self.TEST_FILE_2]
-
-    @property
-    def toml_files_for_diffs(self) -> list[str]:
-        return [self.TEST_FILE_1, self.TEST_FILE_3]
+BINARY = "_test_file_binary.bin"
+LARGE = "_test_file_large.txt"
+PYTHON_FILE = "_test_file.py"
+TEST_FILE_1 = "_test_file_1.toml"
+TEST_FILE_2 = "_test_file_2.toml"
+TEST_FILE_3 = "_test_file_3.toml"
+TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -55,9 +31,6 @@ class AllTestPaths:
     _nested_dir_with_status_files_in: Path = (
         _nested_dir_without_status_files_in / "_test_nested_dir"
     )
-
-    # file names
-    file_names = FileNames()
 
     @property
     def all_dirs_to_create(self) -> list[Path]:
@@ -85,11 +58,11 @@ class AllTestPaths:
     @property
     def toml_files_to_create(self) -> list[Path]:
         to_create: set[Path] = set()
-        for file_name in self.file_names.all_toml_file_names:
+        for file_name in self.all_toml_file_names:
             for dir in self._dirs_with_toml_files:
                 if dir != self._nested_dir_without_status_files_in:
                     to_create.add(dir / file_name)
-        for file_name in self.file_names.toml_file_without_diff:
+        for file_name in self.toml_file_without_diff:
             to_create.add(self._nested_dir_without_status_files_in / file_name)
         return sorted(to_create)
 
@@ -97,14 +70,14 @@ class AllTestPaths:
     def toml_files_to_delete(self) -> list[Path]:
         to_delete: set[Path] = set()
         for file_name in self.toml_files_to_create:
-            if file_name.name == self.file_names.TEST_FILE_3:
+            if file_name.name == TEST_FILE_3:
                 to_delete.add(self._nested_dir_without_status_files_in / file_name.name)
         return sorted(to_delete)
 
     @property
     def toml_files_for_diff(self) -> list[Path]:
         to_diff: set[Path] = set()
-        for file_name in self.file_names.toml_files_for_diffs:
+        for file_name in self.toml_files_for_diffs:
             for dir in self._dirs_with_toml_files:
                 if dir in [self._nested_dir_without_status_files_in, self._empty_dir]:
                     continue
@@ -113,19 +86,19 @@ class AllTestPaths:
 
     @property
     def large_file_path(self) -> Path:
-        return self.test_dir / self.file_names.LARGE
+        return self.test_dir / LARGE
 
     @property
     def binary_file_path(self) -> Path:
-        return self.test_dir / self.file_names.BINARY
+        return self.test_dir / BINARY
 
     @property
     def python_file_path(self) -> Path:
-        return self.test_dir / self.file_names.PYTHON_FILE
+        return self.test_dir / PYTHON_FILE
 
     @property
     def tricky_utf8_file_path(self) -> Path:
-        return self.test_dir / self.file_names.TRICKY_UTF8
+        return self.test_dir / TRICKY_UTF8
 
     @property
     def all_test_paths(self) -> list[Path]:
@@ -168,6 +141,18 @@ class AllTestPaths:
                     break
 
         return sorted(collected)
+
+    @property
+    def all_toml_file_names(self) -> list[str]:
+        return [TEST_FILE_1, TEST_FILE_2, TEST_FILE_3]
+
+    @property
+    def toml_file_without_diff(self) -> list[str]:
+        return [TEST_FILE_2]
+
+    @property
+    def toml_files_for_diffs(self) -> list[str]:
+        return [TEST_FILE_1, TEST_FILE_3]
 
 
 class TestPaths:
