@@ -1,6 +1,6 @@
 from textual.theme import Theme
 
-__all__ = ("chezmoi_mousse_dark", "chezmoi_mousse_light")
+__all__ = ["chezmoi_mousse_dark", "chezmoi_mousse_light"]
 
 chezmoi_mousse_dark = Theme(
     name="chezmoi-mousse-dark",

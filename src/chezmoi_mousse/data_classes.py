@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import StatusCode
 
-__all__ = ("Changed", "ChezmoiRepoChecks", "StatusPaths")
+__all__ = ["Changed", "ChezmoiRepoChecks", "StatusPaths"]
 
 
 @dataclass(slots=True)

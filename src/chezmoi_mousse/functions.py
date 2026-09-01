@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ("min_wait", "ParseCmd", "Commands", "CheckPath", "ScanDirResult")
+__all__ = ["min_wait", "ParseCmd", "Commands", "CheckPath", "ScanDirResult"]
 
 # TODO implement clearing for cached stuff upon tree or app reload
 
