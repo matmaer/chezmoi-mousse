@@ -3,7 +3,7 @@ name = "chezmoi-mousse"
 version = "0.2.5"
 description = "Visual interface in the terminal for the chezmoi dotfile manager, with a wink to the mouse."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.15"
 dependencies = [
     "textual>=8.2.8",
 ]
@@ -22,16 +22,16 @@ Repository = "https://github.com/matmaer/chezmoi-mousse"
 dev = [
     "codespell>=2.4.3",
     "faker",
+    "ipykernel>=7.3.0",
+    "mypy>=2.3.1",
     "nuitka>=4.1.3",
     "pre-commit",
-    "psutil",
     "pyright>=1.1.411",
     "pytest",
     "pytest-timeout",
     "ruff",
     "textual-dev",
     "twine",
-    "types-psutil",
 ]
 
 [tool.pre-commit]
@@ -55,15 +55,19 @@ truncation_limit_chars = 4000
 truncation_limit_lines = 100
 
 [tool.ruff]
+extend-exclude = ["*.ipynb"]
 line-length = 88
+src = ["src"]
 target-version = "py313"
 
 [tool.ruff.lint]
 select = [
+    "ANN",     # flake8-annotations (enforces type annotations on functions/args)
     "ARG",     # Unused arguments
     "B",       # flake8-bugbear
+    "BLE",     # flake8-blind-except (catches bare 'except Exception:')
     "C4",      # flake8-comprehensions
-    "E",       # pycodestyle errors
+    "E501",    # pycodestyle errors
     "ERA001",  # eradicate (commented-out code)
     "F",       # Pyflakes
     "I",       # isort
@@ -72,30 +76,31 @@ select = [
     "PLE",     # pylint errors
     "PT",      # Pytest style
     "PTH",     # Use pathlib
-    "RUF012",  # flake8-class-attributes
+    "RUF",     # Ruff-specific rules (e.g. RUF012 for class attributes)
     "SIM",     # Simplify
     "TCH",     # flake8-type-checking
-    "TID",     # flake8-tidy-imports (bans relative parent imports)
+    "TID252",  # flake8-tidy-imports
     "UP",      # pyupgrade
     "W",       # pycodestyle
 ]
 extend-safe-fixes = [
+    "C408",    # rewrite dict()/list()/tuple() calls to literals {}, []
+    "E501",    # wrap long comments, URLs or strings
+    "PTH123",  # convert open() to Path.open()
+    "RUF005",  # collection-literal-concatenation
+    "RUF022",  # unsorted-dunder-all
+    "SIM108",  # convert simple if-else blocks into ternary expressions
     "TCH",     # move imports into TYPE_CHECKING blocks
     "UP006",   # use standard collections like list[str] instead of typing.List[str]
     "UP007",   # use X | Y union syntax instead of Optional[X] or Union[X, Y]
-    "C408",    # rewrite dict()/list()/tuple() calls to literals {}, []
-    "RUF013",  # prefer implicit Optional for default None arguments
-    "B006",    # replace mutable default arguments like arg=[] with None
-    "SIM108",  # convert simple if-else blocks into ternary expressions
-    "PTH123",  # convert open() to Path.open()
 ]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "parents"
 
 [tool.ruff.format]
-quote-style = "double"
 indent-style = "space"
+quote-style = "double"
 
 [tool.ruff.lint.flake8-type-checking]
 strict = true
@@ -106,10 +111,3 @@ combine-as-imports = true
 [tool.codespell]
 check-filenames = true
 ignore-words-list = "ReAdd,re-add"
-
-[tool.pyright]
-reportUnknownMemberType = "information"
-typeCheckingMode = "strict"
-pythonVersion = "3.13"
-extraPaths = ["src"]
-include = ["src", "static_tests"]

@@ -80,4 +80,5 @@ Thumbs.db
 *.lock
 *.py[cod]
 *$py.class
+*.ipynb
 
