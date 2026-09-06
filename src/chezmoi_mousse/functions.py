@@ -11,7 +11,7 @@ from datetime import datetime
 from functools import lru_cache, wraps
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Protocol
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
@@ -70,16 +70,40 @@ def min_wait(
     return wrapper
 
 
+class TypedCacheWrapper[**FuncParams, FuncReturn](Protocol):
+    """
+    Why this exists:
+    Standard @lru_cache destroys function type signatures, and so Pyright/Pylance,
+    turning them into 'Unknown' arguments. This Protocol acts as a static
+    blueprint that forces Pyright to retain the original function's parameters
+    and return types across the application.
+
+    _typed_lru_cache can then be written without any need for cast or ignore comments
+    while keeping unconditional strict type checking everywhere
+    """
+
+    def __call__(
+        self, *args: FuncParams.args, **kwargs: FuncParams.kwargs
+    ) -> FuncReturn: ...
+
+    def cache_clear(self) -> None: ...
+
+
 def _typed_lru_cache[**FuncParams, FuncReturn](
     *, maxsize: int = 128, typed: bool = False
-) -> Callable[[Callable[FuncParams, FuncReturn]], Callable[FuncParams, FuncReturn]]:
+) -> Callable[
+    [Callable[FuncParams, FuncReturn]], TypedCacheWrapper[FuncParams, FuncReturn]
+]:
     def decorator(
         func: Callable[FuncParams, FuncReturn],
-    ) -> Callable[FuncParams, FuncReturn]:
-        return cast(
-            "Callable[FuncParams, FuncReturn]",
-            lru_cache(maxsize=maxsize, typed=typed)(func),
-        )
+    ) -> TypedCacheWrapper[FuncParams, FuncReturn]:
+        # We assign the standard library cache execution directly to a typed reference
+        # This maps the raw implementation seamlessly to the explicit Protocol contract.
+        runtime_cached: TypedCacheWrapper[FuncParams, FuncReturn] = lru_cache(
+            maxsize=maxsize, typed=typed
+        )(func)  # type: ignore[assignment]
+
+        return runtime_cached
 
     return decorator
 
