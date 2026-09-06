@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
 
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import StatusCode
@@ -52,7 +49,7 @@ class StatusPaths:
     space_dirs: frozenset[Path] = frozenset()
     space_files: frozenset[Path] = frozenset()
     n_dirs: frozenset[Path] = frozenset()
-    tree_dirs: dict[Path, StatusCode] = field(default_factory=lambda: {})
+    tree_dirs: dict[Path, StatusCode] = field(default_factory=dict[Path, StatusCode])
 
     def __post_init__(self) -> None:
         self.space_dirs = frozenset(
@@ -85,13 +82,15 @@ class StatusPaths:
 
 @dataclass(slots=True)
 class Changed:
-    added_managed: list[Path] = field(default_factory=lambda: [])
-    removed_managed: list[Path] = field(default_factory=lambda: [])
-    changed_status: dict[Path, tuple[str, str]] = field(default_factory=lambda: {})
+    added_managed: list[Path] = field(default_factory=list[Path])
+    removed_managed: list[Path] = field(default_factory=list[Path])
+    changed_status: dict[Path, tuple[str, str]] = field(
+        default_factory=dict[Path, tuple[str, str]]
+    )
     changed_paths: bool = False
 
-    _old_managed_paths: set[Path] = field(default_factory=lambda: set())
-    _old_status_paths: dict[Path, str] = field(default_factory=lambda: {})
+    _old_managed_paths: set[Path] = field(default_factory=set[Path])
+    _old_status_paths: dict[Path, str] = field(default_factory=dict[Path, str])
 
     def update_changed_paths(self) -> None:
         from chezmoi_mousse import store

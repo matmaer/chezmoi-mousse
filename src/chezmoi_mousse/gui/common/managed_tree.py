@@ -41,7 +41,7 @@ class ManagedTreeState:
     root_node: TreeNode[Path]
     selected_node: TreeNode[Path]
     selected_path: Path | None = None  # Track selected path instead of stale TreeNode
-    expanded_paths: set[Path] = field(default_factory=lambda: set())
+    expanded_paths: set[Path] = field(default_factory=set[Path])
     show_unchanged: bool = False
     show_unmanaged: bool = False
     expand_all: bool = False
