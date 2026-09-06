@@ -1,4 +1,4 @@
-__all__ = ["SPLASH_ASCII", "FLOW_DIAGRAM"]
+__all__ = ["FLOW_DIAGRAM", "SPLASH_ASCII"]
 
 SPLASH_ASCII = """\
  _______________________________ ___________________._

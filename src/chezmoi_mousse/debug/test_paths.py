@@ -9,6 +9,8 @@ from chezmoi_mousse.str_enums import ColorVar, ProblemChars
 __all__ = ["TestPaths"]
 
 
+HOME_PATH = Path.home()
+
 BINARY = "_test_file_binary.bin"
 LARGE = "_test_file_large.txt"
 PYTHON_FILE = "_test_file.py"
@@ -20,8 +22,7 @@ TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AllTestPaths:
-    home_dir: Path = Path.home()
-    test_dir: Path = home_dir / "_test_dir"
+    test_dir: Path = HOME_PATH / "_test_dir"
 
     # dir names
     _empty_dir: Path = test_dir / "_test_empty_dir"
@@ -47,7 +48,7 @@ class AllTestPaths:
     @property
     def _dirs_with_toml_files(self) -> list[Path]:
         return sorted(
-            {self.home_dir}
+            {HOME_PATH}
             | {
                 getattr(self, field.name)
                 for field in fields(self)
@@ -160,7 +161,7 @@ class TestPaths:
         self.all_paths = AllTestPaths()
 
     @cached_property
-    def _faker(self):
+    def _faker(self):  # noqa: ANN202
         from faker import Faker
 
         return Faker()
@@ -297,7 +298,7 @@ class TestPaths:
                 f"[${ColorVar.dimmed}]{p}[/]" for p in sorted(existing_after)
             ]
 
-        return [f"[${ColorVar.info} bold]Created paths:[/]"] + sorted(created)
+        return [f"[${ColorVar.info} bold]Created paths:[/]", *sorted(created)]
 
     def remove_test_paths(self) -> list[str]:
         existing_paths = self.get_existing_test_paths()
@@ -314,10 +315,10 @@ class TestPaths:
         # Remove any test files left in the home directory (those listed in
         # `existing_paths`).
         for p in existing_paths:
-            if p.exists() and p.parent == self.all_paths.home_dir and p.is_file():
+            if p.exists() and p.parent == HOME_PATH and p.is_file():
                 p.unlink()
 
-        return [f"[${ColorVar.info} bold]Removed paths:[/]"] + removed_entries
+        return [f"[${ColorVar.info} bold]Removed paths:[/]", *removed_entries]
 
     def create_diffs(self) -> str:
         if not self.get_existing_test_paths():

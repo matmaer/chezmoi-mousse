@@ -40,13 +40,13 @@ __all__ = [
     "DirContentBtn",
     "DryRunBtn",
     "FlatBtn",
+    "FlatButtonsVertical",
     "RefreshBtn",
     "ReviewBtn",
-    "TabBtn",
-    "FlatButtonsVertical",
     "ReviewBtnGroup",
     "RunBtnGroup",
     "SwitchSlider",
+    "TabBtn",
     "TabButtons",
 ]
 

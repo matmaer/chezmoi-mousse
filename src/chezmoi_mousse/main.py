@@ -16,7 +16,7 @@ def is_elevated() -> bool:
     if os.name == "nt":
         try:
             return ctypes.windll.shell32.IsUserAnAdmin() != 0
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
     # POSIX / Unix platform check
@@ -68,15 +68,11 @@ def run_app() -> None:
     DebugUtils.clear_stacktrace()
     _check_if_we_can_run()
 
-    try:
-        app = ChezmoiGui()
-        if store.PILOT_MODE:
-            run_with_pilot(app)
-        else:
-            app.run()
-    except Exception as error:
-        DebugUtils.save_stacktrace()
-        raise error
+    app = ChezmoiGui()
+    if store.PILOT_MODE:
+        run_with_pilot(app)
+    else:
+        app.run()
 
 
 if __name__ == "__main__":

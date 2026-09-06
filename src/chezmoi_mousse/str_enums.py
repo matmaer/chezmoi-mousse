@@ -15,7 +15,6 @@ __all__ = [
     "InfoKind",
     "LabelStr",
     "LogStr",
-    "LogStr",
     "OpInfoString",
     "PathFilters",
     "PathKind",
@@ -189,7 +188,7 @@ class Chars(StrEnum):
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     # warning_sign = "\u26a0"  # WARNING SIGN # noqa: ERA001
     x_mark = "\u2716"  # HEAVY MULTIPLICATION X
-    bullet = "\u2022"  # BULLET # noqa: ERA001
+    bullet = "\u2022"  # BULLET
     # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
     # gear = "\u2699"  # GEAR # noqa: ERA001
     # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
@@ -627,7 +626,7 @@ class Tcss(StrEnum):
 class ChezmoiGitArgs(Enum):
     option_terminator = "--"
     global_args = ("--no-pager", "--no-advice")
-    default_args = (option_terminator,) + global_args
+    default_args = (option_terminator, *global_args)
     # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
@@ -637,10 +636,10 @@ class ChezmoiGitArgs(Enum):
         "--no-decorate",
         "--no-expand-tabs",
     )
-    git_log = default_args + ("log",) + git_log_args
-    git_remote = default_args + ("remote", "--verbose")
-    check_exists = default_args + ("rev-parse", "--git-dir")
-    check_has_commits = default_args + ("rev-parse", "--verify", "HEAD")
+    git_log = (*default_args, "log", *git_log_args)
+    git_remote = (*default_args, "remote", "--verbose")
+    check_exists = (*default_args, "rev-parse", "--git-dir")
+    check_has_commits = (*default_args, "rev-parse", "--verify", "HEAD")
 
 
 class GlobalArgs(Enum):
@@ -675,10 +674,10 @@ class ReadCmd(Enum):
     diff_reverse = ("diff", VerbArgs.reverse)
     doctor = ("doctor",)
     dump_config = ("dump-config", VerbArgs.format_json)
-    git_commit_check = ("git",) + ChezmoiGitArgs.check_has_commits.value
-    git_log = ("git",) + ChezmoiGitArgs.git_log.value
-    git_remote = ("git",) + ChezmoiGitArgs.git_remote.value
-    git_repo_check = ("git",) + ChezmoiGitArgs.check_exists.value
+    git_commit_check = ("git", *ChezmoiGitArgs.check_has_commits.value)
+    git_log = ("git", *ChezmoiGitArgs.git_log.value)
+    git_remote = ("git", *ChezmoiGitArgs.git_remote.value)
+    git_repo_check = ("git", *ChezmoiGitArgs.check_exists.value)
     ignored = ("ignored",)
     managed_dirs = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
     managed_files = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_files)

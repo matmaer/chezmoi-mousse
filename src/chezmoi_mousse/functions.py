@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ["min_wait", "ParseCmd", "Commands", "CheckPath", "ScanDirResult"]
+__all__ = ["CheckPath", "Commands", "ParseCmd", "ScanDirResult", "min_wait"]
 
 # TODO implement clearing for cached stuff upon tree or app reload
 
@@ -56,7 +56,9 @@ def min_wait(
 ) -> Callable[..., Awaitable[AffectedPaths | CommandResult | None]]:
     # not needed for anything else than showing log messages briefly for humans
     @wraps(func)
-    async def wrapper(self: LoadingModal, *args: Any, **kwargs: Any) -> Any:
+    async def wrapper(
+        self: LoadingModal, *args: object, **kwargs: object
+    ) -> AffectedPaths | CommandResult | None:
         min_wait_time = 0.3
         start_time = time.monotonic()
         res = await func(self, *args, **kwargs)
@@ -186,7 +188,7 @@ class Commands:
         elif not path.is_absolute():
             raise ValueError("Calling subprocess with a relative path")
         else:
-            run_args = args_tuple + (str(path),)
+            run_args = (*args_tuple, str(path))
 
         std_out, std_err, result_code = await Commands._asyncio_exec(run_args)
 
@@ -247,7 +249,6 @@ class Commands:
 
     @staticmethod
     async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
-        path_arg: tuple[str, ...] = (str(path),)
         # Only works for apply and re-add, not for add, forget and destroy
         if path == store.cfg.dest_dir and write_cmd in (
             WriteCmd.add,
@@ -256,18 +257,16 @@ class Commands:
         ):
             # TODO: disable the chezmoi review button, so it should never happen
             raise ValueError(f"Cannot run chezmoi on the destDir for {write_cmd.name}")
-        path_arg = () if path == store.cfg.dest_dir else (str(path),)
+        path_arg = "" if path == store.cfg.dest_dir else str(path)
 
         # Build command arguments
         args_tuple: tuple[str, ...] = (
-            ("chezmoi",)
-            + GlobalArgs.global_defaults.value
-            + (
-                GlobalArgs.verbose.value,
-                GlobalArgs.dry_run.value,
-            )
-            + write_cmd.value
-            + path_arg
+            "chezmoi",
+            *GlobalArgs.global_defaults.value,
+            GlobalArgs.verbose.value,
+            GlobalArgs.dry_run.value,
+            *write_cmd.value,
+            path_arg,
         )
 
         rel_path = ParseCmd.get_rel_path(path) if path != store.cfg.dest_dir else ""
@@ -288,7 +287,7 @@ class Commands:
 
     @staticmethod
     async def exec_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
-        args_tuple: tuple[str, ...] = ("chezmoi",) + cmd.value
+        args_tuple: tuple[str, ...] = ("chezmoi", *cmd.value)
         cmd_result: CommandResult = await Commands._get_exec_result(
             args_tuple, path=path_arg, cmd_enum=cmd
         )
@@ -304,9 +303,9 @@ class Commands:
     @staticmethod
     async def run_write_cmd(cmd: WriteCmd, path_arg: Path | None) -> CommandResult:
         args_tuple: tuple[str, ...] = (
-            ("chezmoi", "--dry-run") + cmd.value
+            ("chezmoi", "--dry-run", *cmd.value)
             if store.live_run is False
-            else ("chezmoi",) + cmd.value
+            else ("chezmoi", *cmd.value)
         )
         cmd_result: CommandResult = await Commands._get_exec_result(
             args_tuple, path=path_arg, cmd_enum=cmd
