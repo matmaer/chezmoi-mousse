@@ -11,17 +11,6 @@ __all__ = ["AppIds"]
 
 
 class AppIds:
-    __slots__ = (
-        "container",
-        "managed_tree",
-        "managed_tree_q",
-        "op_btn",
-        "richlog",
-        "switch",
-        "switch_slider",
-        "tab_label",
-    )
-
     def __init__(self, tab_label: BtnLabel) -> None:
         self.tab_label = tab_label
         self.container = _ContainerIds(self)
