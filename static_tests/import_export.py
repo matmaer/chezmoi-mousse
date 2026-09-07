@@ -2,242 +2,146 @@ import ast
 from typing import TYPE_CHECKING
 
 import pytest
-
-from static_tests._helpers import (
-    MODULE_DIR,
-    ast_parse,
-    get_file_paths,
-)
+from static_tests._ast_nodes import NodeData, NodeDb
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from static_tests._ast_nodes import NDSet
+
+type ExportDict = dict[str, set[str]]
+type ExportNodeDict = dict[str, NodeData]
 
 
-def get_export_var_value(module: ast.Module) -> set[str] | None:
-    all_var_value: ast.List | ast.Constant | None = None
+def _get_defined_exports(node_db: NodeDb) -> tuple[ExportDict, ExportNodeDict]:
+    """Finds all `__all__` assignments across modules and extracts exported symbols."""
+    defined_exports: ExportDict = {}
+    export_nodes: ExportNodeDict = {}
 
-    for stmt in module.body:
-        if isinstance(stmt, ast.Assign):
-            for target in stmt.targets:
-                if isinstance(target, ast.Name) and target.id == "__all__":
-                    assert isinstance(stmt.value, (ast.List, ast.Constant))
-                    all_var_value = stmt.value
+    assign_nodes = node_db.by_type.get(ast.Assign.__name__, set())
+    for assign_node in assign_nodes:
+        assert isinstance(assign_node.ast_node, ast.Assign)
+        targets = assign_node.ast_node.targets
 
-    if all_var_value is None:
-        return None
+        if (
+            len(targets) == 1
+            and isinstance(targets[0], ast.Name)
+            and targets[0].id == "__all__"
+        ):
+            names = assign_node.export_names
+            if names is not None:
+                mod_name = assign_node.module_qualname
+                defined_exports[mod_name] = names
+                export_nodes[mod_name] = assign_node
 
-    # Handle single string constant: __all__ = "foo"
-    if isinstance(all_var_value, ast.Constant):
-        assert isinstance(all_var_value.value, str)
-        return {all_var_value.value}
-
-    # Handle list assignment: __all__ = ["foo", "bar"]
-    elements: set[str] = set()
-    for elt in all_var_value.elts:
-        assert isinstance(elt, ast.Constant)
-        assert isinstance(elt.value, str)
-        elements.add(elt.value)
-    return elements
+    return defined_exports, export_nodes
 
 
-class AllVariableDetector(ast.NodeVisitor):
-    def __init__(self) -> None:
-        self.current_module: str = ""
-        self.known_modules: set[str] = set()
-        self.root_package: str = "chezmoi_mousse"
+def get_unused(node_db: NodeDb) -> list[str]:
+    defined_exports, export_nodes = _get_defined_exports(node_db)
 
-        # Mapping of module_name -> set of exported strings in __all__
-        self.defined_all: dict[str, set[str]] = {}
-        # Mapping of module_name -> bool indicating if __all__ exists
-        self.has_all: dict[str, bool] = {}
+    # Track import relationships across the codebase:
+    # (target_module, imported_symbol) -> set of consuming modules
+    import_tracker: dict[tuple[str, str], set[str]] = {}
+    imported_symbols_by_module: set[tuple[str, str]] = set()
 
-        # Tracking explicit imports:
-        # (imported_from_module, item_name) -> set of modules that imported it
-        self.imports_tracker: dict[tuple[str, str], set[str]] = {}
+    import_from_nodes: NDSet = node_db.by_type.get(ast.ImportFrom.__name__, set())
+    for imp_node in import_from_nodes:
+        assert isinstance(imp_node.ast_node, ast.ImportFrom)
+        ast_imp = imp_node.ast_node
 
-        # Set of (module_name, item_name) imported *by* a module
-        self.items_imported_by_module: set[tuple[str, str]] = set()
+        if not ast_imp.module or not ast_imp.module.startswith("chezmoi_mousse"):
+            continue
 
-        # Policy violations: relative imports deeper than one level (.., ...)
-        self.invalid_relative_imports: set[str] = set()
+        target_module = ast_imp.module
+        consumer_module = imp_node.module_qualname
 
-    def _is_known_module_path(self, module_name: str) -> bool:
-        """Return True for exact known module names or package prefixes."""
-        if module_name in self.known_modules:
-            return True
-
-        package_prefix = f"{module_name}."
-        return any(known.startswith(package_prefix) for known in self.known_modules)
-
-    def _resolve_non_relative_import(self, module_name: str | None) -> str | None:
-        """Resolve non-relative imports into a module path tracked by this test."""
-        if not module_name:
-            return None
-
-        root_prefix = f"{self.root_package}."
-        if module_name.startswith(root_prefix):
-            return module_name[len(root_prefix) :]
-
-        current_parts = self.current_module.split(".")
-        package_parts = current_parts[:-1]
-
-        # Accept implicit package-style imports by resolving nearest package first.
-        # Relative imports like `from .common.x import Y` are handled in
-        # visit_ImportFrom via node.level > 0 before reaching this branch.
-        incoming_parts = module_name.split(".")
-        for end in range(len(package_parts), 0, -1):
-            candidate_parts = package_parts[:end] + incoming_parts
-            candidate = ".".join(candidate_parts)
-            if self._is_known_module_path(candidate):
-                return candidate
-
-        # Fallback to root package scope for root-level modules.
-        if self._is_known_module_path(module_name):
-            return module_name
-
-        return None
-
-    def visit_Module(self, node: ast.Module) -> None:
-        self.has_all[self.current_module] = False
-
-        export_var_value: set[str] | None = get_export_var_value(node)
-        if export_var_value is not None:
-            self.has_all[self.current_module] = True
-            self.defined_all[self.current_module] = export_var_value
-
-        self.generic_visit(node)
-
-    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        # Resolve the source module based on absolute vs relative context rules
-        if node.level > 0:
-            if node.level != 1:
-                imported_names = ", ".join(alias.name for alias in node.names)
-                dots = "." * node.level
-                from_target = node.module or ""
-                self.invalid_relative_imports.add(
-                    f"- {self.current_module} uses disallowed relative import: "
-                    f"from {dots}{from_target} import {imported_names}"
-                )
-                return
-
-            parts = self.current_module.split(".")
-            base = parts[:-1]
-            suffix = [node.module] if node.module else []
-            absolute_module = ".".join(base + suffix)
-        else:
-            absolute_module = self._resolve_non_relative_import(node.module)
-            if absolute_module is None:
-                return
-
-        for alias in node.names:
-            if alias.name == "*":
-                continue
-
-            key = (absolute_module, alias.name)
-            self.imports_tracker.setdefault(key, set()).add(self.current_module)
-
-            # Record that this specific module imported this specific item name
-            # (used to check if it's re-exported in __all__)
-            self.items_imported_by_module.add((self.current_module, alias.name))
-
-
-def test_import_export() -> None:
-    detector = AllVariableDetector()
-
-    # Map file paths to package-relative module dotted names
-    file_to_module: dict[Path, str] = {}
-    for file_path in get_file_paths():
-        rel_parts = file_path.relative_to(MODULE_DIR).with_suffix("").parts
-        module_name = ".".join(rel_parts)
-
-        if module_name:
-            file_to_module[file_path] = module_name
-
-    detector.known_modules = set(file_to_module.values())
-
-    # Scan all files to gather structural definitions and cross-references
-    for file_path, module_name in file_to_module.items():
-        detector.current_module = module_name
-        tree = ast_parse(file_path)
-        detector.visit(tree)
+        for alias in ast_imp.names:
+            if alias.name != "*":
+                key = (target_module, alias.name)
+                import_tracker.setdefault(key, set()).add(consumer_module)
+                imported_symbols_by_module.add((consumer_module, alias.name))
 
     # Output Buckets
     never_imported_anywhere: list[str] = []
     imported_but_missing_from_all: list[str] = []
     missing_all_variable_entirely: list[str] = []
-    imported_items_in_all: list[str] = []
-    invalid_relative_imports: list[str] = sorted(detector.invalid_relative_imports)
+    reexported_indirect_imports: list[str] = []
 
-    # Map target modules being queried
-    modules_imported_from = {mod for mod, _ in detector.imports_tracker}
+    # 1. Flag modules imported from that lack an `__all__` declaration
+    modules_imported_from = {src for src, _ in import_tracker}
+    for src_module in modules_imported_from:
+        if src_module not in defined_exports:
+            has_external_consumer = any(
+                c != src_module
+                for (s, _), cons in import_tracker.items()
+                if s == src_module
+                for c in cons
+            )
+            if has_external_consumer:
+                missing_all_variable_entirely.append(
+                    f"{src_module} has no '__all__' variable, but other modules "
+                    f"import from it"
+                )
 
-    # Module has no __all__ variable but other modules import from it
-    for mod, has_all in detector.has_all.items():
+    # 2. Flag items imported from a module that are missing from its `__all__`
+    for (src_module, symbol), consumers in import_tracker.items():
         if (
-            not has_all
-            and mod in modules_imported_from
-            and any(
-                imp_mod == mod and (consumers - {mod})
-                for (imp_mod, _), consumers in detector.imports_tracker.items()
-            )
+            consumers - {src_module}
+            and src_module in defined_exports
+            and symbol not in defined_exports[src_module]
         ):
-            missing_all_variable_entirely.append(
-                f"- {mod} has no __all__ but other modules import from it."
+            imported_but_missing_from_all.append(
+                f"'{symbol}' imported from '{src_module}', not exported in __all__"
             )
 
-    # Core evaluations per tracked import statement
-    for (source_mod, item), consumers in detector.imports_tracker.items():
-        external_consumers = consumers - {source_mod}
-        if not external_consumers:
-            continue
+    # 3. Flag unused entries in `__all__` or indirect re-exports
+    for src_module, exports in defined_exports.items():
+        node = export_nodes[src_module]
+        is_init = node.rel_path.endswith("__init__.py")
 
-        # A module imports from another module, but the entry is missing from __all__
-        if detector.has_all.get(source_mod):
-            exports = detector.defined_all.get(source_mod, set())
-            if item not in exports:
-                imported_but_missing_from_all.append(
-                    f"- {item} is imported from '{source_mod}', but not exported."
+        for symbol in exports:
+            if not is_init and (src_module, symbol) in imported_symbols_by_module:
+                reexported_indirect_imports.append(
+                    f"'{symbol}' in {src_module} ({node.rel_path}:{node.lineno}) "
+                    f"is imported from elsewhere but re-exported in __all__"
                 )
 
-    # Entry in __all__ evaluations
-    for mod, exports in detector.defined_all.items():
-        for item in exports:
-            # Item in __all__ was imported from elsewhere
-            if (mod, item) in detector.items_imported_by_module:
-                imported_items_in_all.append(
-                    f"- {item} in {mod} is imported from elsewhere but exported."
+            external_consumers = import_tracker.get((src_module, symbol), set()) - {
+                src_module
+            }
+            if not external_consumers:
+                never_imported_anywhere.append(
+                    f"'{symbol}' in {src_module} ({node.rel_path}:{node.lineno})"
                 )
 
-            direct_consumers = detector.imports_tracker.get((mod, item), set()) - {mod}
+    # Build report sections
+    sections = [
+        (
+            "\nFound entries in __all__ that are never imported anywhere:",
+            never_imported_anywhere,
+        ),
+        (
+            "\nItems imported from a module, but not exported in __all__:",
+            imported_but_missing_from_all,
+        ),
+        (
+            "\nModules with no '__all__' variable, but other modules import from them:",
+            missing_all_variable_entirely,
+        ),
+        ("\nIndirect re-exports in __all__:", reexported_indirect_imports),
+    ]
 
-            if not direct_consumers:
-                never_imported_anywhere.append(f"- {item} in {mod}")
+    reports: list[str] = []
+    for header, items in sections:
+        if items:
+            reports.append(header)
+            reports.extend(f"- {r}" for r in sorted(items))
 
-    error_lines: list[str] = []
+    return reports
 
-    if never_imported_anywhere:
-        error_lines.append(
-            "\nFound entries in __all__ that are never imported anywhere:"
-        )
-        error_lines.extend(never_imported_anywhere)
 
-    if imported_but_missing_from_all:
-        error_lines.append("\nItems imported from a module, but not exported:")
-        error_lines.extend(imported_but_missing_from_all)
+def test_import_export(node_db: NodeDb) -> None:
+    reports = get_unused(node_db)
 
-    if missing_all_variable_entirely:
-        error_lines.append(
-            "\nModules with no '__all__' variable but other modules import from them:"
-        )
-        error_lines.extend(missing_all_variable_entirely)
-
-    if imported_items_in_all:
-        error_lines.append("\nIndirect imports:")
-        error_lines.extend(imported_items_in_all)
-
-    if invalid_relative_imports:
-        error_lines.append("\nDisallowed deep relative imports (only '.' is allowed):")
-        error_lines.extend(invalid_relative_imports)
-
-    if error_lines:
-        pytest.fail("\n".join(error_lines))
+    if reports:
+        msg = f"{len(reports)} import/export issue(s) found:\n" + "\n".join(reports)
+        pytest.fail(msg)

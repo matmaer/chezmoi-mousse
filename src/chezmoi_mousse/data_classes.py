@@ -11,34 +11,34 @@ __all__ = ["Changed", "ChezmoiRepoChecks", "StatusPaths"]
 
 @dataclass(slots=True)
 class ChezmoiRepoChecks:
-    exists_bool: bool | None = None
-    has_commits_bool: bool | None = None
-    has_managed_paths_bool: bool | None = None
-    has_status_paths_bool: bool | None = None
+    _exists_bool: bool | None = None
+    _has_commits_bool: bool | None = None
+    _has_managed_paths_bool: bool | None = None
+    _has_status_paths_bool: bool | None = None
 
     @property
     def exists(self) -> bool:
-        if self.exists_bool is None:
+        if self._exists_bool is None:
             raise RuntimeError("Accessing exists before it is set")
-        return self.exists_bool
+        return self._exists_bool
 
     @property
     def has_commits(self) -> bool:
-        if self.has_commits_bool is None:
+        if self._has_commits_bool is None:
             raise RuntimeError("Accessing has_commits before it is set")
-        return self.has_commits_bool
+        return self._has_commits_bool
 
     @property
     def has_managed_paths(self) -> bool:
-        if self.has_managed_paths_bool is None:
+        if self._has_managed_paths_bool is None:
             raise RuntimeError("Accessing has_managed_paths before it is set")
-        return self.has_managed_paths_bool
+        return self._has_managed_paths_bool
 
     @property
     def has_status_paths(self) -> bool:
-        if self.has_status_paths_bool is None:
+        if self._has_status_paths_bool is None:
             raise RuntimeError("Accessing has_status_paths before it is set")
-        return self.has_status_paths_bool
+        return self._has_status_paths_bool
 
 
 @dataclass(slots=True, kw_only=True)
@@ -50,6 +50,11 @@ class StatusPaths:
     space_files: frozenset[Path] = frozenset()
     n_dirs: frozenset[Path] = frozenset()
     tree_dirs: dict[Path, StatusCode] = field(default_factory=dict[Path, StatusCode])
+    unused_pub_field_w_def: frozenset[Path] = frozenset()
+    unused_pub_field_wo_def: frozenset[Path]
+    _unused_priv_field_w_def: frozenset[Path] = frozenset()
+    _unused_priv_field_wo_def: frozenset[Path]
+    managed_tree_q: str
 
     def __post_init__(self) -> None:
         self.space_dirs = frozenset(

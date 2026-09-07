@@ -20,9 +20,9 @@ def check_valid_select_type(arg: ast.expr) -> str | None:
     """
     valid = False
     if isinstance(arg, ast.Name):
-        valid = bool(re.fullmatch(r"[A-Z][A-Za-z]*[a-z]", arg.id))
+        valid = bool(re.fullmatch(r"[_A-Z][A-Za-z]*[a-z]", arg.id))
     elif isinstance(arg, ast.Attribute):
-        valid = bool(re.fullmatch(r"[A-Z][A-Za-z]*[a-z]", arg.attr))
+        valid = bool(re.fullmatch(r"[_A-Z][A-Za-z]*[a-z]", arg.attr))
     if not valid:
         return "unexpected select type"
     return None

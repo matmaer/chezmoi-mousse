@@ -39,7 +39,7 @@ config = ".pre-commit-config.yaml"
 
 [tool.pytest.ini_options]
 addopts = [
-    "--color=auto",
+    "--color=yes",
     "--tb=no",                # Hide long stack traces
     "--capture=no",           # Don't capture stdout (allow prints)
     "--no-header",            # Hide boilerplate intro
