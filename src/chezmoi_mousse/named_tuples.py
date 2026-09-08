@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, NamedTuple
 
-from chezmoi_mousse.str_enums import StatusCode
-
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -13,7 +11,6 @@ __all__ = [
     "AffectedPaths",
     "CommandResult",
     "DumpConfigKeys",
-    "PathStatus",
     "RunCommandInfo",
     "ScanDirItem",
 ]
@@ -85,12 +82,6 @@ class DumpConfigKeys(NamedTuple):
         if self.auto_push_bool is None:
             raise RuntimeError("Accessing auto_push before the config is parsed")
         return self.auto_push_bool
-
-
-class PathStatus(NamedTuple):
-    apply_status: StatusCode = StatusCode.Space
-    re_add_status: StatusCode = StatusCode.Space
-    status_pair: str = "  "
 
 
 class RunCommandInfo(NamedTuple):

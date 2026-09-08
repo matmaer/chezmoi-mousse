@@ -17,14 +17,11 @@ if TYPE_CHECKING:
 __all__ = [
     "CommandResultMsg",
     "CurrentNodeMsg",
-    "DebugBtnMsg",
     "DirContentBtnMsg",
     "DryRunBtnMsg",
-    "ExitModalBtnMsg",
     "FlatBtnMsg",
+    "OperateBtnMsg",
     "RefreshBtnMsg",
-    "ReviewBtnMsg",
-    "RunBtnMsg",
     "TabBtnMsg",
 ]
 
@@ -64,14 +61,6 @@ class DirContentBtnMsg(Message):
         super().__init__()
 
 
-class DebugBtnMsg(Message):
-    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.button = button
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__()
-
-
 class DryRunBtnMsg(Message):
     def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
@@ -88,14 +77,6 @@ class FlatBtnMsg(Message):
         super().__init__()
 
 
-class ExitModalBtnMsg(Message):
-    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.button = button
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__()
-
-
 class RefreshBtnMsg(Message):
     def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
@@ -104,15 +85,7 @@ class RefreshBtnMsg(Message):
         super().__init__()
 
 
-class ReviewBtnMsg(Message):
-    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.button = button
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__()
-
-
-class RunBtnMsg(Message):
+class OperateBtnMsg(Message):
     def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button
         self.app_ids = app_ids

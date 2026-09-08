@@ -45,7 +45,7 @@ class GitLogView(Vertical):
     def on_mount(self) -> None:
         self.git_log_results: dict[Path, tuple[str, str]]
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
-        self.data_table = self.query_exactly_one(DataTable[str])
+        self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
         self.info_container = self.query_exactly_one(InfoVertical)
         self.info_container.display = False

@@ -2,20 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual import on, work
+from textual import work
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands, ParseCmd, min_wait
+from chezmoi_mousse.functions import Commands, ParseCmd
 from chezmoi_mousse.gui.common.components import (
     InfoStatic,
     MainSectionLabel,
     SubSectionLabel,
 )
-from chezmoi_mousse.gui.common.messages import ExitModalBtnMsg
 from chezmoi_mousse.named_tuples import RunCommandInfo
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -62,12 +61,10 @@ class LoadingModal(ModalScreen[None]):
         store.changed.update_changed_paths()
 
     @work(thread=True)
-    @min_wait
     async def _run_read_command(self, read_cmd: ReadCmd) -> None:
         await Commands.exec_read_cmd(read_cmd, path_arg=None)
 
     @work(thread=True)
-    @min_wait
     async def _run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
         await Commands.run_write_cmd(
             write_cmd,
@@ -238,13 +235,7 @@ class OperateModal(ModalScreen[None]):
             changed_paths_output.display = False
             self._show_affected_paths()
 
-    @on(ExitModalBtnMsg)
-    def _handle_exit_modal(self, msg: ExitModalBtnMsg) -> None:
-        msg.stop()
-        self.dismiss()
-
     @work
-    @min_wait
     async def _show_affected_paths(self) -> None:
         if self.operate_label is None:
             return

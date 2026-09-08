@@ -13,14 +13,11 @@ from textual.containers import (
 from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse.gui.common.messages import (
-    DebugBtnMsg,
     DirContentBtnMsg,
     DryRunBtnMsg,
-    ExitModalBtnMsg,
     FlatBtnMsg,
+    OperateBtnMsg,
     RefreshBtnMsg,
-    ReviewBtnMsg,
-    RunBtnMsg,
     TabBtnMsg,
 )
 from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
@@ -35,15 +32,12 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DebugBtn",
-    "DebugBtnGroup",
     "DirContentBtn",
     "DryRunBtn",
     "FlatBtn",
     "FlatButtonsVertical",
+    "OperateBtnGroup",
     "RefreshBtn",
-    "ReviewBtn",
-    "ReviewBtnGroup",
-    "RunBtnGroup",
     "SwitchSlider",
     "TabBtn",
     "TabButtons",
@@ -88,7 +82,7 @@ class DebugBtn(Button):
     @on(Button.Pressed)
     def _send_message(self, event: DebugBtn.Pressed) -> None:
         event.stop()
-        self.post_message(DebugBtnMsg(event.button, self.app_ids, self.btn_label))
+        self.post_message(OperateBtnMsg(event.button, self.app_ids, self.btn_label))
 
 
 class DryRunBtn(Button):
@@ -106,26 +100,6 @@ class DryRunBtn(Button):
         event.stop()
         self.post_message(
             DryRunBtnMsg(button=self, app_ids=self.app_ids, btn_label=self.btn_label)
-        )
-
-
-class ExitModalBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(
-            id=self.app_ids.btn_id(btn_label=self.btn_label),
-            label=self.btn_label,
-            classes=Tcss.operate_button,
-        )
-
-    @on(Button.Pressed)
-    def _send_message(self, event: ExitModalBtn.Pressed) -> None:
-        event.stop()
-        self.post_message(
-            ExitModalBtnMsg(
-                event.button, app_ids=self.app_ids, btn_label=self.btn_label
-            )
         )
 
 
@@ -171,7 +145,7 @@ class RefreshBtn(Button):
         )
 
 
-class ReviewBtn(Button):
+class OperateBtn(Button):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
         self.btn_label = btn_label
@@ -185,27 +159,7 @@ class ReviewBtn(Button):
     def _send_message(self, event: Button.Pressed) -> None:
         event.stop()
         self.post_message(
-            ReviewBtnMsg(
-                button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
-            )
-        )
-
-
-class RunBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(
-            classes=Tcss.operate_button,
-            id=self.app_ids.btn_id(btn_label=self.btn_label),
-            label=self.btn_label,
-        )
-
-    @on(Button.Pressed)
-    def _send_message(self, event: Button.Pressed) -> None:
-        event.stop()
-        self.post_message(
-            RunBtnMsg(
+            OperateBtnMsg(
                 button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
             )
         )
@@ -251,7 +205,7 @@ class FlatButtonsVertical(Container):
         msg.button.add_class(Tcss.last_clicked_flat_btn)
 
 
-class ReviewBtnGroup(HorizontalGroup):
+class OperateBtnGroup(HorizontalGroup):
     def __init__(self, *, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
         self.app_ids = app_ids
         self.labels = labels
@@ -261,34 +215,7 @@ class ReviewBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield ReviewBtn(app_ids=self.app_ids, btn_label=btn_label)
-
-
-class DebugBtnGroup(HorizontalGroup):
-    def __init__(self, *, app_ids: AppIds, btn_labels: tuple[BtnLabel, ...]) -> None:
-        self.app_ids = app_ids
-        self.btn_labels = btn_labels
-        super().__init__(classes=Tcss.op_btn_group)
-
-    def compose(self) -> ComposeResult:
-        for btn_label in self.btn_labels:
-            yield DebugBtn(app_ids=self.app_ids, btn_label=btn_label)
-
-
-class RunBtnGroup(HorizontalGroup):
-    def __init__(self, *, app_ids: AppIds, btn_labels: tuple[BtnLabel, ...]) -> None:
-        self.app_ids = app_ids
-        self.btn_labels = btn_labels
-        super().__init__(classes=Tcss.op_btn_group)
-
-    def compose(self) -> ComposeResult:
-        for btn_label in self.btn_labels:
-            if btn_label in BtnLabel.dry_run_set():
-                yield DryRunBtn(app_ids=self.app_ids, btn_label=btn_label)
-            elif btn_label in BtnLabel.run_btn_set():
-                yield RunBtn(app_ids=self.app_ids, btn_label=btn_label)
-            elif btn_label in BtnLabel.exit_modal_set():
-                yield ExitModalBtn(app_ids=self.app_ids, btn_label=btn_label)
+            yield OperateBtn(app_ids=self.app_ids, btn_label=btn_label)
 
 
 class SwitchSlider(VerticalGroup):
@@ -331,6 +258,6 @@ class TabButtons(Horizontal):
 
     @on(TabBtnMsg)
     def update_tcss_classes(self, msg: TabBtnMsg) -> None:
-        for btn in self.query_children(TabBtn).results():
+        for btn in self.query(TabBtn).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
         msg.button.add_class(Tcss.last_clicked_tab_btn)

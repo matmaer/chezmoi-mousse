@@ -6,7 +6,7 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
-from chezmoi_mousse.gui.common.actionables import ReviewBtnGroup, TabBtn, TabButtons
+from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, TabBtn, TabButtons
 from chezmoi_mousse.gui.common.contents import ContentsView
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.git_log import GitLogView
@@ -40,7 +40,7 @@ class ViewSwitcher(Vertical):
             yield DiffView(self.ids)
             yield ContentsView(self.ids)
             yield GitLogView(self.ids)
-        yield ReviewBtnGroup(
+        yield OperateBtnGroup(
             app_ids=self.ids,
             labels=(
                 self.run_label,

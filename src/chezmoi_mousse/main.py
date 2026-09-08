@@ -11,7 +11,7 @@ from chezmoi_mousse.gui.textual_app import ChezmoiGui
 __all__ = ["run_app"]
 
 
-def is_elevated() -> bool:
+def _is_elevated() -> bool:
     # Windows platform check
     if os.name == "nt":
         try:
@@ -27,7 +27,7 @@ def is_elevated() -> bool:
 
 def _check_if_we_can_run() -> None:
 
-    if is_elevated():
+    if _is_elevated():
         sys.exit(
             "Refusing to run: Process is running with elevated (root/Administrator) "
             "privileges."

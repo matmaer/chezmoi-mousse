@@ -10,6 +10,9 @@ __all__ = ["TestPaths"]
 
 
 HOME_PATH = Path.home()
+TEST_DIR = HOME_PATH / "_test_dir"
+EMPTY_DIR = TEST_DIR / "_test_empty_dir"
+
 
 BINARY = "_test_file_binary.bin"
 LARGE = "_test_file_large.txt"
@@ -21,14 +24,11 @@ TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class AllTestPaths:
-    test_dir: Path = HOME_PATH / "_test_dir"
-
+class _AllTestPaths:
     # dir names
-    _empty_dir: Path = test_dir / "_test_empty_dir"
-    dir_with_status: Path = test_dir / "_test_dir_with_status"
-    nested_dirs_1: Path = test_dir / "_test_sub_dir_1" / "_test_nested_dir"
-    _nested_dir_without_status_files_in: Path = test_dir / "_test_sub_dir_2"
+    dir_with_status: Path = TEST_DIR / "_test_dir_with_status"
+    nested_dirs_1: Path = TEST_DIR / "_test_sub_dir_1" / "_test_nested_dir"
+    _nested_dir_without_status_files_in: Path = TEST_DIR / "_test_sub_dir_2"
     _nested_dir_with_status_files_in: Path = (
         _nested_dir_without_status_files_in / "_test_nested_dir"
     )
@@ -39,7 +39,7 @@ class AllTestPaths:
         return sorted(
             {
                 self.dir_with_status,
-                self._empty_dir,
+                EMPTY_DIR,
                 self.nested_dirs_1,
                 self._nested_dir_with_status_files_in,
             }
@@ -59,7 +59,7 @@ class AllTestPaths:
     @property
     def toml_files_to_create(self) -> list[Path]:
         to_create: set[Path] = set()
-        for file_name in self.all_toml_file_names:
+        for file_name in self._all_toml_file_names:
             for dir in self._dirs_with_toml_files:
                 if dir != self._nested_dir_without_status_files_in:
                     to_create.add(dir / file_name)
@@ -80,34 +80,34 @@ class AllTestPaths:
         to_diff: set[Path] = set()
         for file_name in self.toml_files_for_diffs:
             for dir in self._dirs_with_toml_files:
-                if dir in [self._nested_dir_without_status_files_in, self._empty_dir]:
+                if dir in [self._nested_dir_without_status_files_in, EMPTY_DIR]:
                     continue
                 to_diff.add(dir / file_name)
         return sorted(to_diff)
 
     @property
     def large_file_path(self) -> Path:
-        return self.test_dir / LARGE
+        return TEST_DIR / LARGE
 
     @property
     def binary_file_path(self) -> Path:
-        return self.test_dir / BINARY
+        return TEST_DIR / BINARY
 
     @property
     def python_file_path(self) -> Path:
-        return self.test_dir / PYTHON_FILE
+        return TEST_DIR / PYTHON_FILE
 
     @property
     def tricky_utf8_file_path(self) -> Path:
-        return self.test_dir / TRICKY_UTF8
+        return TEST_DIR / TRICKY_UTF8
 
     @property
     def all_test_paths(self) -> list[Path]:
         collected: set[Path] = set()
-        test_dir_str = str(self.test_dir)
+        test_dir_str = str(TEST_DIR)
 
         # always include the test dir itself
-        collected.add(self.test_dir)
+        collected.add(TEST_DIR)
 
         # include directories and their ancestors under test_dir
         for d in self.all_dirs_to_create:
@@ -144,7 +144,7 @@ class AllTestPaths:
         return sorted(collected)
 
     @property
-    def all_toml_file_names(self) -> list[str]:
+    def _all_toml_file_names(self) -> list[str]:
         return [TEST_FILE_1, TEST_FILE_2, TEST_FILE_3]
 
     @property
@@ -158,7 +158,7 @@ class AllTestPaths:
 
 class TestPaths:
     def __init__(self) -> None:
-        self.all_paths = AllTestPaths()
+        self.all_paths = _AllTestPaths()
 
     @cached_property
     def _faker(self):  # noqa: ANN202
@@ -310,7 +310,7 @@ class TestPaths:
         ]
 
         # Remove the test directory tree
-        shutil.rmtree(self.all_paths.test_dir, ignore_errors=True)
+        shutil.rmtree(TEST_DIR, ignore_errors=True)
 
         # Remove any test files left in the home directory (those listed in
         # `existing_paths`).

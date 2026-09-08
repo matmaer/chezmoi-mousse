@@ -23,12 +23,12 @@ from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.gui.common.actionables import (
     DebugBtn,
-    DebugBtnGroup,
     FlatBtn,
     FlatButtonsVertical,
+    OperateBtnGroup,
 )
 from chezmoi_mousse.gui.common.loggers import RichLoggers
-from chezmoi_mousse.gui.common.messages import DebugBtnMsg, FlatBtnMsg
+from chezmoi_mousse.gui.common.messages import FlatBtnMsg, OperateBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ColorVar,
@@ -198,9 +198,9 @@ class DebugTab(TabPane):
                     ),
                     id=store.debug_ids.container.env_vars,
                 )
-        yield DebugBtnGroup(
+        yield OperateBtnGroup(
             app_ids=store.debug_ids,
-            btn_labels=(
+            labels=(
                 BtnLabel.log_memory,
                 BtnLabel.list_test_paths,
                 BtnLabel.create_diffs,
@@ -213,9 +213,6 @@ class DebugTab(TabPane):
 
         self.test_paths = TestPaths()
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.test_paths_view = self.query_one(
-            store.debug_ids.container.test_paths_view_q
-        )
         self.test_paths_static = self.query_exactly_one(DebugTab.TestPathsView)
         self.debug_log = self.query_exactly_one(DebugLog)
         self.dom_node_logger = self.query_one(
@@ -339,7 +336,7 @@ class DebugTab(TabPane):
             for btn in self.test_paths_op_btns:
                 btn.display = True
         if event.button.label == BtnLabel.test_paths:
-            self.switcher.current = self.test_paths_view.id
+            self.switcher.current = store.debug_ids.container.test_paths_view
         elif event.button.label == BtnLabel.debug_log:
             self.switcher.current = store.debug_ids.container.debug_log
         elif event.button.label == BtnLabel.dom_nodes:
@@ -347,8 +344,8 @@ class DebugTab(TabPane):
         elif event.button.label == BtnLabel.env_vars:
             self.switcher.current = store.debug_ids.container.env_vars
 
-    @on(DebugBtnMsg)
-    def handle_operate_buttons(self, msg: DebugBtnMsg) -> None:
+    @on(OperateBtnMsg)
+    def handle_operate_buttons(self, msg: OperateBtnMsg) -> None:
         msg.stop()
         if msg.button.label == BtnLabel.log_memory.value:
             self._write_to_debug_log(auto=False)

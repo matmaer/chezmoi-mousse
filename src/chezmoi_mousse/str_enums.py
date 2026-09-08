@@ -47,9 +47,6 @@ class BindingDescription(StrEnum):
 
 
 class BtnLabel(StrEnum):
-    # Placeholder
-    not_set = "Not Set"
-
     # Main tabs
     add = "Add"
     apply = "Apply"
@@ -314,7 +311,6 @@ class LogStr(StrEnum):
     doctor_not_set_found = "See the Config tab for commands not set"
     doctor_section = "Chezmoi doctor output"
     doctor_warnings_found = "See the Config tab for warnings"
-    env_vars = "Environment variables"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
     not_tracing = "tracemalloc is not tracing but the Debug tab is active"
@@ -543,8 +539,6 @@ class PathKind(StrEnum):
     EXISTS_FALSE = auto()
     man_dir_access_denied = auto()
     man_dir_not_exists = auto()
-    SYMLINK = auto()
-    UNHANDLED = auto()
     unman_dir_access_denied = auto()
     UNMANAGED = auto()
 
@@ -624,9 +618,9 @@ class Tcss(StrEnum):
 
 
 class ChezmoiGitArgs(Enum):
-    option_terminator = "--"
+    _option_terminator = "--"
     global_args = ("--no-pager", "--no-advice")
-    default_args = (option_terminator, *global_args)
+    default_args = (_option_terminator, *global_args)
     # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
@@ -638,8 +632,6 @@ class ChezmoiGitArgs(Enum):
     )
     git_log = (*default_args, "log", *git_log_args)
     git_remote = (*default_args, "remote", "--verbose")
-    check_exists = (*default_args, "rev-parse", "--git-dir")
-    check_has_commits = (*default_args, "rev-parse", "--verify", "HEAD")
 
 
 class GlobalArgs(Enum):
@@ -674,10 +666,8 @@ class ReadCmd(Enum):
     diff_reverse = ("diff", VerbArgs.reverse)
     doctor = ("doctor",)
     dump_config = ("dump-config", VerbArgs.format_json)
-    git_commit_check = ("git", *ChezmoiGitArgs.check_has_commits.value)
     git_log = ("git", *ChezmoiGitArgs.git_log.value)
     git_remote = ("git", *ChezmoiGitArgs.git_remote.value)
-    git_repo_check = ("git", *ChezmoiGitArgs.check_exists.value)
     ignored = ("ignored",)
     managed_dirs = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
     managed_files = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_files)

@@ -50,11 +50,6 @@ class StatusPaths:
     space_files: frozenset[Path] = frozenset()
     n_dirs: frozenset[Path] = frozenset()
     tree_dirs: dict[Path, StatusCode] = field(default_factory=dict[Path, StatusCode])
-    unused_pub_field_w_def: frozenset[Path] = frozenset()
-    unused_pub_field_wo_def: frozenset[Path]
-    _unused_priv_field_w_def: frozenset[Path] = frozenset()
-    _unused_priv_field_wo_def: frozenset[Path]
-    managed_tree_q: str
 
     def __post_init__(self) -> None:
         self.space_dirs = frozenset(
@@ -87,12 +82,11 @@ class StatusPaths:
 
 @dataclass(slots=True)
 class Changed:
-    added_managed: list[Path] = field(default_factory=list[Path])
-    removed_managed: list[Path] = field(default_factory=list[Path])
-    changed_status: dict[Path, tuple[str, str]] = field(
+    _added_managed: list[Path] = field(default_factory=list[Path])
+    _removed_managed: list[Path] = field(default_factory=list[Path])
+    _changed_status: dict[Path, tuple[str, str]] = field(
         default_factory=dict[Path, tuple[str, str]]
     )
-    changed_paths: bool = False
 
     _old_managed_paths: set[Path] = field(default_factory=set[Path])
     _old_status_paths: dict[Path, str] = field(default_factory=dict[Path, str])
@@ -100,9 +94,9 @@ class Changed:
     def update_changed_paths(self) -> None:
         from chezmoi_mousse import store
 
-        self.added_managed = []
-        self.removed_managed = []
-        self.changed_status = {}
+        self._added_managed = []
+        self._removed_managed = []
+        self._changed_status = {}
 
         managed_paths = set(store.managed_dirs | store.managed_files)
         status_paths = store.status_dirs_kind | store.status_files_kind
@@ -122,29 +116,29 @@ class Changed:
             if old_code != new_code:
                 _changed_status[path] = (old_code, new_code)
 
-        self.added_managed = sorted(added_managed)
-        self.changed_status = _changed_status
-        self.removed_managed = sorted(removed_managed)
+        self._added_managed = sorted(added_managed)
+        self._changed_status = _changed_status
+        self._removed_managed = sorted(removed_managed)
 
     @property
     def added_managed_str(self) -> str:
-        return "\n".join(str(p) for p in self.added_managed)
+        return "\n".join(str(p) for p in self._added_managed)
 
     @property
     def changed_status_str(self) -> str:
         return "\n".join(
             f"{p}:\nold status pair: '{old}' -> new status pair: '{new}'"
-            for p, (old, new) in self.changed_status.items()
+            for p, (old, new) in self._changed_status.items()
         )
 
     @property
     def removed_managed_str(self) -> str:
-        return "\n".join(str(p) for p in self.removed_managed)
+        return "\n".join(str(p) for p in self._removed_managed)
 
     @property
     def no_changed_paths(self) -> bool:
         return (
-            not self.added_managed
-            and not self.changed_status
-            and not self.removed_managed
+            not self._added_managed
+            and not self._changed_status
+            and not self._removed_managed
         )

@@ -39,8 +39,8 @@ from chezmoi_mousse.str_enums import (
 from .common.actionables import (
     FlatBtn,
     FlatButtonsVertical,
+    OperateBtnGroup,
     RefreshBtn,
-    ReviewBtnGroup,
     SwitchSlider,
     TabButtons,
 )
@@ -65,7 +65,7 @@ class AddTab(TabPane):
                 yield RefreshBtn(app_ids=store.add_ids)
             with Vertical():
                 yield ContentsView(store.add_ids)
-                yield ReviewBtnGroup(
+                yield OperateBtnGroup(
                     app_ids=store.add_ids, labels=(BtnLabel.add_review,)
                 )
         yield SwitchSlider(app_ids=store.add_ids)

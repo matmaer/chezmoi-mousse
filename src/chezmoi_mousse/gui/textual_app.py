@@ -12,13 +12,15 @@ from textual.binding import Binding
 from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
-from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
+from textual.widgets import Footer, Header, TabbedContent, Tabs
+from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     DryRunBtn,
     FlatButtonsVertical,
+    OperateBtnGroup,
     SwitchSlider,
     TabButtons,
 )
@@ -65,13 +67,12 @@ class CustomHeader(Header):
         self.icon = Chars.burger
 
     def watch_live_run(self, live_run: bool) -> None:
+        header_title = self.query_exactly_one(HeaderTitle)
         if live_run is True:
             self.screen.title = self.LIVE_MODE
-            header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.add_class(Tcss.live_run_color)
         if live_run is False:
             self.screen.title = self.DRY_MODE
-            header_title = self.query_exactly_one("HeaderTitle", Static)
             header_title.remove_class(Tcss.live_run_color)
 
 
@@ -210,7 +211,7 @@ class ChezmoiGui(App[str]):
             pretty_path = msg.path.relative_to(store.cfg.dest_dir)
         else:
             pretty_path = msg.path
-        self.query_exactly_one(
+        self.query_one(
             msg.app_ids.container.right_side_q, ViewSwitcher
         ).border_subtitle = f" {pretty_path} "
         # Update diff_view, contents_view, and git_log_view with the new path
@@ -275,7 +276,8 @@ class ChezmoiGui(App[str]):
             binding_action=BindingAction.toggle_dry_run,
             new_description=new_description,
         )
-        self.screen.query_exactly_one(CustomHeader).live_run = store.live_run
+        custom_header = self.screen.query_exactly_one(CustomHeader)
+        custom_header.live_run = store.live_run
         if isinstance(self.screen, (OperateModal)):
             dry_run_btn = self.screen.query_exactly_one(DryRunBtn)
             dry_run_btn.label = (
@@ -328,21 +330,21 @@ class ChezmoiGui(App[str]):
                 store.apply_ids.container.left_side_q, LeftSideVertical
             )
             operation_buttons = self.query_one(
-                store.apply_ids.container.operate_buttons_q
+                store.apply_ids.container.operate_buttons_q, OperateBtnGroup
             )
         elif active_tab_label == BtnLabel.re_add:
             left_side = self.query_one(
                 store.re_add_ids.container.left_side_q, LeftSideVertical
             )
             operation_buttons = self.query_one(
-                store.re_add_ids.container.operate_buttons_q
+                store.re_add_ids.container.operate_buttons_q, OperateBtnGroup
             )
         elif active_tab_label == BtnLabel.add:
             left_side = self.query_one(
                 store.add_ids.container.left_side_q, LeftSideVertical
             )
             operation_buttons = self.query_one(
-                store.add_ids.container.operate_buttons_q
+                store.add_ids.container.operate_buttons_q, OperateBtnGroup
             )
         elif active_tab_label == BtnLabel.logs:
             logs_tab_buttons = self.query(TabButtons).last()

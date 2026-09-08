@@ -25,13 +25,17 @@ class CmdResultCollapsible(Collapsible):
         super().__init__(
             *collapsible_contents,
             title=self._colored_with_timestamp(
-                cmd_result.pretty_cmd, cmd_result.returncode
+                cmd_result.pretty_cmd,
+                cmd_result.returncode,
+                time_stamp=cmd_result.time_stamp,
             ),
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
         )
 
-    def _colored_with_timestamp(self, cmd_str: str, code: int | None) -> str:
+    def _colored_with_timestamp(
+        self, cmd_str: str, code: int | None, time_stamp: str
+    ) -> str:
         if code is None:
             color = f"${ColorVar.text_error}"
         else:
@@ -40,8 +44,7 @@ class CmdResultCollapsible(Collapsible):
                 if code == 0
                 else f"${ColorVar.text_warning}"
             )
-        time = f"{datetime.now().strftime('%H:%M:%S')}"
-        return f"{time} [{color}]{cmd_str}[/] (returncode {code})"
+        return f"[{time_stamp}] [{color}]{cmd_str}[/] (returncode {code})"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
         curated_std_out = result.std_out or f"{LogStr.no_stdout}"

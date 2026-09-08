@@ -6,12 +6,9 @@ import os
 import re
 import shutil
 import subprocess
-import time
 from datetime import datetime
-from functools import lru_cache, wraps
 from itertools import islice
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
@@ -33,84 +30,13 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
-if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
-    from typing import Any
-
-    from chezmoi_mousse.gui.common.operate_modal import LoadingModal
-
-
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ["CheckPath", "Commands", "ParseCmd", "ScanDirResult", "min_wait"]
-
-# TODO implement clearing for cached stuff upon tree or app reload
-
-##############
-# DECORATORS #
-##############
-
-
-def min_wait(
-    func: Callable[..., Awaitable[Any]],
-) -> Callable[..., Awaitable[AffectedPaths | CommandResult | None]]:
-    # not needed for anything else than showing log messages briefly for humans
-    @wraps(func)
-    async def wrapper(
-        self: LoadingModal, *args: object, **kwargs: object
-    ) -> AffectedPaths | CommandResult | None:
-        min_wait_time = 0.3
-        start_time = time.monotonic()
-        res = await func(self, *args, **kwargs)
-        elapsed = time.monotonic() - start_time
-        if elapsed < min_wait_time:
-            await asyncio.sleep(min_wait_time - elapsed)
-        return res
-
-    return wrapper
-
-
-class TypedCacheWrapper[**FuncParams, FuncReturn](Protocol):
-    """
-    Why this exists:
-    Standard @lru_cache destroys function type signatures, and so Pyright/Pylance,
-    turning them into 'Unknown' arguments. This Protocol acts as a static
-    blueprint that forces Pyright to retain the original function's parameters
-    and return types across the application.
-
-    _typed_lru_cache can then be written without any need for cast or ignore comments
-    while keeping unconditional strict type checking everywhere
-    """
-
-    def __call__(
-        self, *args: FuncParams.args, **kwargs: FuncParams.kwargs
-    ) -> FuncReturn: ...
-
-    def cache_clear(self) -> None: ...
-
-
-def _typed_lru_cache[**FuncParams, FuncReturn](
-    *, maxsize: int = 128, typed: bool = False
-) -> Callable[
-    [Callable[FuncParams, FuncReturn]], TypedCacheWrapper[FuncParams, FuncReturn]
-]:
-    def decorator(
-        func: Callable[FuncParams, FuncReturn],
-    ) -> TypedCacheWrapper[FuncParams, FuncReturn]:
-        # We assign the standard library cache execution directly to a typed reference
-        # This maps the raw implementation seamlessly to the explicit Protocol contract.
-        runtime_cached: TypedCacheWrapper[FuncParams, FuncReturn] = lru_cache(
-            maxsize=maxsize, typed=typed
-        )(func)  # type: ignore[assignment]
-
-        return runtime_cached
-
-    return decorator
+__all__ = ["CheckPath", "Commands", "ParseCmd", "ScanDirResult"]
 
 
 class ParseCmd:
     @staticmethod
-    @_typed_lru_cache()
     def filter_ugly_args() -> set[str]:
         ugly_args: set[str] = set()
         ugly_args.update(
@@ -125,12 +51,10 @@ class ParseCmd:
         return ugly_args
 
     @staticmethod
-    @_typed_lru_cache()
     def get_rel_path(path: Path) -> str:
         return str(path.relative_to(store.cfg.dest_dir))
 
     @staticmethod
-    @_typed_lru_cache()
     def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
         if pretty is True:
             verb_str = " ".join(
@@ -145,13 +69,11 @@ class ParseCmd:
         return f"{base_cmd} {verb_str}"
 
     @staticmethod
-    @_typed_lru_cache()
     def pretty_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         rel_path = ParseCmd.get_rel_path(path) if path is not None else ""
         return f"{ParseCmd._cmd_str_wop(cmd, pretty=True)} {rel_path}"
 
     @staticmethod
-    @_typed_lru_cache()
     def full_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
         path_str = str(path) if path is not None else ""
         return f"{ParseCmd._cmd_str_wop(cmd, pretty=False)} {path_str}"
@@ -337,7 +259,6 @@ class Commands:
         return cmd_result
 
     @staticmethod
-    @_typed_lru_cache(maxsize=500)
     def get_highlighted_file_contents(file_path: Path) -> Text:
         if file_path.is_dir():
             raise ValueError(
@@ -377,7 +298,6 @@ class Commands:
         return await Commands.exec_read_cmd(ReadCmd.source_path, path_arg=path_arg)
 
     @staticmethod
-    @_typed_lru_cache()
     def parse_git_log_result(cmd_result: CommandResult) -> list[tuple[str, str]]:
         parsed_rows: list[tuple[str, str]] = []
         no_commit_message = "no commit message"
@@ -410,7 +330,6 @@ class Commands:
 
 class CheckPath:
     @staticmethod
-    @_typed_lru_cache(maxsize=1000)
     def os_scan_dir(dir_path: Path, *, managed_dir: bool = False) -> ScanDirResult:
 
         if not dir_path.is_absolute():
@@ -492,7 +411,6 @@ class CheckPath:
     # functions for file paths
 
     @staticmethod
-    @_typed_lru_cache(maxsize=4000)
     def _is_sensitive(file_path: Path) -> bool:
         return (
             file_path.suffix in PathFilters.KEY_FILE_EXTENSIONS.value
@@ -542,7 +460,6 @@ class CheckPath:
         return file_path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
 
     @staticmethod
-    @_typed_lru_cache(maxsize=4000)
     def is_unwanted_file(file_path: Path) -> bool:
         return (
             CheckPath._looks_like_cache(file_path)
@@ -576,7 +493,6 @@ class CheckPath:
             return False
 
     @staticmethod
-    @_typed_lru_cache(maxsize=4000)
     def is_unwanted_dir(dir_path: Path) -> bool:
         return (
             CheckPath._looks_like_cache(dir_path)
