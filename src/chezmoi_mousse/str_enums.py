@@ -318,13 +318,8 @@ class LogStr(StrEnum):
         return "-" * len(self)
 
     # Splash log strings, prefixes
-    has_git_commits = "chezmoi repo has commits"
-    has_no_git_commits = "chezmoi repo has no commits"
+    check_chezmoi_repo = "check chezmoi repository"
     parse_dump_config = "parse dump-config"
-    repo_created = "chezmoi repo created"
-    repo_init = "chezmoi repo initialized"
-    repo_found = "chezmoi repo found"
-    repo_not_found = "chezmoi repo not found"
 
     # Splash log strings, suffixes
     checked = auto()  # for non-problematic non-exit 0 chezmoi commands
@@ -332,6 +327,8 @@ class LogStr(StrEnum):
     reports = auto()  # other
     parsed = auto()
     success = auto()  # successful commands
+    absent = auto()
+    present = auto()
 
     @classmethod
     def _suffixes(cls) -> frozenset[Self]:
@@ -339,8 +336,9 @@ class LogStr(StrEnum):
             (
                 cls[cls.checked],
                 cls[cls.failed],
-                cls[cls.reports],
                 cls[cls.parsed],
+                cls[cls.present],
+                cls[cls.reports],
                 cls[cls.success],
             )
         )
@@ -623,6 +621,7 @@ class ChezmoiGitArgs(Enum):
         "--no-decorate",
         "--no-expand-tabs",
     )
+    git_dir = (*_default_args, "rev-parse", "--git-dir")
     git_log = (*_default_args, "log", *git_log_args)
     git_remote = (*_default_args, "remote", "--verbose")
 
@@ -659,6 +658,7 @@ class ReadCmd(Enum):
     diff_reverse = ("diff", VerbArgs.reverse)
     doctor = ("doctor",)
     dump_config = ("dump-config", VerbArgs.format_json)
+    git_dir = ("git", *ChezmoiGitArgs.git_dir.value)
     git_log = ("git", *ChezmoiGitArgs.git_log.value)
     git_remote = ("git", *ChezmoiGitArgs.git_remote.value)
     ignored = ("ignored",)

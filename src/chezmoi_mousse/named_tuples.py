@@ -84,6 +84,12 @@ class DumpConfigKeys(NamedTuple):
         return self.auto_push_bool
 
 
+class InitData(NamedTuple):
+    which_chezmoi: str | None = None
+    which_git: str | None = None
+    pilot_mode: bool = False
+
+
 class RunCommandInfo(NamedTuple):
     border_title: str
     border_subtitle: str

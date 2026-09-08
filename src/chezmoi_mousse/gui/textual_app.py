@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import dataclasses
+import os
+import shutil
+import sys
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -35,6 +38,7 @@ from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
+from chezmoi_mousse.named_tuples import InitData
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -103,6 +107,15 @@ class ChezmoiGui(App[str]):
     CSS_PATH = "gui.tcss"
 
     def __init__(self) -> None:
+
+        store.init_data = InitData(
+            which_chezmoi=shutil.which("chezmoi"),
+            which_git=shutil.which("git"),
+            pilot_mode=(
+                os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
+                or "--pilot-mode" in sys.argv
+            ),
+        )
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
@@ -127,7 +140,7 @@ class ChezmoiGui(App[str]):
     @work
     async def run_startup_worker(self) -> None:
         await self.push_screen(self.splash_screen)
-        await self.splash_screen.run_init_tasks()
+        await self.splash_screen.run_initial_command_sequence()
 
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(ApplyTab())
@@ -135,18 +148,23 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(AddTab())
         await tabbed_content.add_pane(LogsTab())
         await tabbed_content.add_pane(ConfigTab())
-        if store.SHOW_DEBUG_TAB:
-            await tabbed_content.add_pane(DebugTab())
+        await tabbed_content.add_pane(DebugTab())
 
         await tabbed_content.wait_for_refresh()
         await self._log_pre_mount_cmd_results()
 
-        await self.splash_screen.run_post_init_tasks()
         await self._update_managed_trees()
         await self.splash_screen.dismiss_after_fade_loop()
 
+    async def _log_pre_mount_cmd_results(self) -> None:
+        app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
+        cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
+        for cmd in self.splash_screen.pre_mount_cmd_results:
+            setattr(app_log, ReactiveVar.cmd_result, cmd)
+            setattr(cmd_log, ReactiveVar.cmd_result, cmd)
+
     @on(CommandResultMsg)
-    def _handle_command_result(self, msg: CommandResultMsg) -> None:
+    def handle_command_result(self, msg: CommandResultMsg) -> None:
 
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         setattr(app_log, ReactiveVar.cmd_result, msg.cmd_result)
@@ -165,13 +183,6 @@ class ChezmoiGui(App[str]):
         elif msg.cmd_result.cmd_enum is ReadCmd.template_data:
             template_data = self.query_exactly_one(ConfigTab)
             setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
-
-    async def _log_pre_mount_cmd_results(self) -> None:
-        app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
-        cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        for cmd in self.splash_screen.pre_mount_cmd_results:
-            setattr(app_log, ReactiveVar.cmd_result, cmd)
-            setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
     async def _update_managed_trees(self) -> None:
         apply_managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
@@ -373,8 +384,9 @@ class ChezmoiGui(App[str]):
     def check_action(
         self,
         action: str,
-        parameters: tuple[object, ...],  # noqa: ARG002
+        parameters: tuple[object, ...],
     ) -> bool:
+        _ = parameters
         if isinstance(self.screen, SplashScreen):
             return False
         active_pane = self.query_exactly_one(TabbedContent).active_pane

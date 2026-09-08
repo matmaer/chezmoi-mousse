@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-import asyncio
 import json
 import os
-import re
-import shutil
-import subprocess
 from datetime import datetime
 from itertools import islice
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
 from chezmoi_mousse import store
+from chezmoi_mousse.asyncio_process_exec import (
+    execute_chezmoi_command,
+    get_affected_paths,
+)
 from chezmoi_mousse.named_tuples import (
     AffectedPaths,
     CommandResult,
@@ -30,12 +31,17 @@ from chezmoi_mousse.str_enums import (
     WriteCmd,
 )
 
+if TYPE_CHECKING:
+    from chezmoi_mousse.asyncio_process_exec import (
+        ExecResult,
+    )
+
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ["CheckPath", "Commands", "ParseCmd", "ScanDirResult"]
+__all__ = ["CheckPath", "Commands", "ScanDirResult"]
 
 
-class ParseCmd:
+class _ParseCmd:
     @staticmethod
     def filter_ugly_args() -> set[str]:
         ugly_args: set[str] = set()
@@ -58,7 +64,7 @@ class ParseCmd:
     def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
         if pretty is True:
             verb_str = " ".join(
-                [a for a in cmd.value if a not in ParseCmd.filter_ugly_args()]
+                [a for a in cmd.value if a not in _ParseCmd.filter_ugly_args()]
             )
         else:
             verb_str = " ".join(cmd.value)
@@ -69,14 +75,14 @@ class ParseCmd:
         return f"{base_cmd} {verb_str}"
 
     @staticmethod
-    def pretty_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
-        rel_path = ParseCmd.get_rel_path(path) if path is not None else ""
-        return f"{ParseCmd._cmd_str_wop(cmd, pretty=True)} {rel_path}"
+    def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
+        rel_path = _ParseCmd.get_rel_path(path) if path is not None else ""
+        return f"{_ParseCmd._cmd_str_wop(cmd, pretty=True)} {rel_path}"
 
     @staticmethod
-    def full_cmd(cmd: ReadCmd | WriteCmd, *, path: Path | None) -> str:
+    def full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
         path_str = str(path) if path is not None else ""
-        return f"{ParseCmd._cmd_str_wop(cmd, pretty=False)} {path_str}"
+        return f"{_ParseCmd._cmd_str_wop(cmd, pretty=False)} {path_str}"
 
     @staticmethod
     def get_dump_config_keys(std_out: str) -> DumpConfigKeys:
@@ -91,53 +97,16 @@ class ParseCmd:
 
 class Commands:
     @staticmethod
-    async def _asyncio_exec(
-        run_args: tuple[str, ...], time_out: int = 10
-    ) -> tuple[str, str, int | None]:
-        cm_exe = shutil.which(run_args[0])
-        if cm_exe is None:
-            raise RuntimeError("chezmoi executable not found in PATH")
-
-        process = await asyncio.create_subprocess_exec(
-            cm_exe,
-            *run_args[1:],
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-
-        try:
-            async with asyncio.timeout(time_out):
-                stdout_bytes, stderr_bytes = await process.communicate()
-        except TimeoutError as e:
-            process.kill()
-            await process.wait()
-            raise subprocess.TimeoutExpired(
-                cmd=run_args,
-                timeout=time_out,
-            ) from e
-
-        std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
-        std_err = (stderr_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
-
-        return std_out, std_err, process.returncode
-
-    @staticmethod
-    async def _get_exec_result(
-        args_tuple: tuple[str, ...],
-        *,
-        path: Path | None,
+    async def exec_chezmoi_cmd(
         cmd_enum: ReadCmd | WriteCmd,
+        path_arg: Path | None,
     ) -> CommandResult:
 
-        if path is None:
-            run_args = args_tuple
-        elif not path.is_absolute():
-            raise ValueError("Calling subprocess with a relative path")
-        else:
-            run_args = (*args_tuple, str(path))
+        exec_result: ExecResult = await execute_chezmoi_command(cmd_enum, path_arg)
 
-        std_out, std_err, result_code = await Commands._asyncio_exec(run_args)
-
+        std_out = exec_result[0]
+        std_err = exec_result[1]
+        result_code = exec_result[2]
         if not std_out and not std_err:
             out_lines: list[str] = []
             out_lines.append("Output on stdout:")
@@ -151,47 +120,17 @@ class Commands:
             out_txt = std_out
         else:
             out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
-
         return CommandResult(
             cmd_enum=cmd_enum,
-            full_cmd=f"{ParseCmd.full_cmd(cmd_enum, path=path)}",
+            full_cmd=f"{_ParseCmd.full_cmd(cmd_enum, path_arg)}",
             out_txt=out_txt,
-            path_arg=path,
-            pretty_cmd=f"{ParseCmd.pretty_cmd(cmd_enum, path=path)}",
+            path_arg=path_arg,
+            pretty_cmd=f"{_ParseCmd.pretty_cmd(cmd_enum, path_arg)}",
             returncode=result_code,
             std_err=std_err,
             std_out=std_out,
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
-
-    @staticmethod
-    def _subprocess_get_affected_paths(
-        args_tuple: tuple[str, ...],
-    ) -> tuple[set[str], str, int]:
-
-        affected_paths_str: set[str] = set()
-        path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
-
-        # Launch process
-        with subprocess.Popen(
-            args_tuple,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            shell=False,
-        ) as process:
-            # Stream stdout line-by-line
-            if process.stdout is not None:
-                for line in process.stdout:
-                    match = path_pattern.match(line)
-                    if match:
-                        affected_paths_str.add(match.group(1))
-
-            # Read any remaining stderr output after stdout completes
-            stderr_output = process.stderr.read() if process.stderr is not None else ""
-
-            returncode = process.wait()
-            return affected_paths_str, stderr_output, returncode
 
     @staticmethod
     async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
@@ -215,48 +154,21 @@ class Commands:
             path_arg,
         )
 
-        rel_path = ParseCmd.get_rel_path(path) if path != store.cfg.dest_dir else ""
+        rel_path = _ParseCmd.get_rel_path(path) if path != store.cfg.dest_dir else ""
         pretty_cmd = " ".join(
-            [a for a in args_tuple if a not in ParseCmd.filter_ugly_args()]
+            [a for a in args_tuple if a not in _ParseCmd.filter_ugly_args()]
         )
 
         # Offload the blocking streaming execution to a thread worker
-        affected_paths_str, stderr_output, returncode = await asyncio.to_thread(
-            Commands._subprocess_get_affected_paths, args_tuple
+        std_out, std_err, returncode = await get_affected_paths(
+            verb=write_cmd.value[0], path=path_arg
         )
         return AffectedPaths(
-            paths=sorted([Path(path_str) for path_str in affected_paths_str]),
+            paths=sorted([Path(path_str) for path_str in std_out.splitlines()]),
             pretty_cmd=f"{pretty_cmd} {rel_path}",
-            std_err=stderr_output,
+            std_err=std_err,
             returncode=returncode,
         )
-
-    @staticmethod
-    async def exec_read_cmd(cmd: ReadCmd, path_arg: Path | None) -> CommandResult:
-        args_tuple: tuple[str, ...] = ("chezmoi", *cmd.value)
-        cmd_result: CommandResult = await Commands._get_exec_result(
-            args_tuple, path=path_arg, cmd_enum=cmd
-        )
-        return cmd_result
-
-    @staticmethod
-    async def run_chezmoi_init() -> CommandResult:
-        cmd_result: CommandResult = await Commands._get_exec_result(
-            ("chezmoi",), path=None, cmd_enum=WriteCmd.init
-        )
-        return cmd_result
-
-    @staticmethod
-    async def run_write_cmd(cmd: WriteCmd, path_arg: Path | None) -> CommandResult:
-        args_tuple: tuple[str, ...] = (
-            ("chezmoi", "--dry-run", *cmd.value)
-            if store.live_run is False
-            else ("chezmoi", *cmd.value)
-        )
-        cmd_result: CommandResult = await Commands._get_exec_result(
-            args_tuple, path=path_arg, cmd_enum=cmd
-        )
-        return cmd_result
 
     @staticmethod
     def get_highlighted_file_contents(file_path: Path) -> Text:
@@ -285,7 +197,7 @@ class Commands:
     async def get_highlighted_chezmoi_cat_output(
         file_path: Path,
     ) -> Text:
-        cmd_result = await Commands.exec_read_cmd(ReadCmd.cat, path_arg=file_path)
+        cmd_result = await Commands.exec_chezmoi_cmd(ReadCmd.cat, file_path)
         f_contents = cmd_result.std_out
         if not f_contents.strip():
             f_contents = "File is empty or contains only whitespace"
@@ -295,7 +207,8 @@ class Commands:
 
     @staticmethod
     async def _get_source_path(path_arg: Path) -> CommandResult:
-        return await Commands.exec_read_cmd(ReadCmd.source_path, path_arg=path_arg)
+        result = await Commands.exec_chezmoi_cmd(ReadCmd.source_path, path_arg)
+        return result
 
     @staticmethod
     def parse_git_log_result(cmd_result: CommandResult) -> list[tuple[str, str]]:
@@ -312,20 +225,20 @@ class Commands:
     @staticmethod
     async def run_chezmoi_git_log(path_arg: Path) -> CommandResult:
         if path_arg == store.cfg.dest_dir:
-            result = await Commands.exec_read_cmd(ReadCmd.git_log, path_arg=None)
+            result = await Commands.exec_chezmoi_cmd(ReadCmd.git_log, None)
         else:
             source_path_result = await Commands._get_source_path(path_arg)
             if source_path_result.returncode != 0:
                 return source_path_result
-            result = await Commands.exec_read_cmd(
-                cmd=ReadCmd.git_log,
-                path_arg=Path(source_path_result.std_out),
+            result = await Commands.exec_chezmoi_cmd(
+                ReadCmd.git_log,
+                Path(source_path_result.std_out),
             )
         return result
 
     @staticmethod
     async def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
-        return await Commands.exec_read_cmd(diff_cmd, path_arg=path)
+        return await Commands.exec_chezmoi_cmd(diff_cmd, path)
 
 
 class CheckPath:

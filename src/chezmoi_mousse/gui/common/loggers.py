@@ -74,7 +74,7 @@ class CmdLog(ScrollableContainer):
 
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+    async def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is not None:
             self.mount(CmdResultCollapsible(cmd_result=cmd_result))
 
@@ -122,7 +122,7 @@ class AppLog(RichLoggers):
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogStr.debug_tab_enabled}")
 
-    def watch_cmd_result(self, cmd_result: CommandResult) -> None:
+    async def watch_cmd_result(self, cmd_result: CommandResult) -> None:
         if cmd_result.returncode == 0:
             self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
         if "doctor" in cmd_result.full_cmd:

@@ -105,9 +105,11 @@ class SplashScreen(Screen[None]):
             yield Center(RichLog(markup=True))
 
     def on_mount(self) -> None:
-        self.chezmoi_repo_found = False
+        self.repo_existed = True
         self.pre_mount_cmd_results: list[CommandResult] = []
         self.color_map: dict[LogStr | int, str] = {
+            LogStr.absent: self.app.theme_variables[ColorVar.accent_darken_2],
+            LogStr.present: self.app.theme_variables[ColorVar.text_success],
             LogStr.checked: self.app.theme_variables[ColorVar.text_warning],
             LogStr.failed: self.app.theme_variables[ColorVar.text_error],
             LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_2],
@@ -115,129 +117,112 @@ class SplashScreen(Screen[None]):
             LogStr.success: self.app.theme_variables[ColorVar.text_primary],
         }
         self.splash_log = self.query_exactly_one(RichLog)
-        self.post_dump_config_commands = (
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-            ReadCmd.git_log,
-        )
-        self.post_operation_commands = (
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-            ReadCmd.git_log,
-        )
-        self.splash_log.styles.height = (
-            len(self.post_dump_config_commands) + len(self.post_operation_commands) + 9
-        )
+        self.splash_log.styles.height = 18
         self.splash_log.styles.width = LOG_MSG_WIDTH
         self.animated_fade = self.query_exactly_one(AnimatedFade)
         self.animated_fade.fade_timer.resume()
 
-    def _write_log_msg(self, *, prefix: LogStr | str, suffix: LogStr) -> None:
+    async def _write_log_msg(self, *, prefix: LogStr | str, suffix: LogStr) -> None:
         padding = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded) - 4
         color = self.color_map[suffix]
         msg = f"[{color}]{prefix} {'.' * padding} {suffix.padded}[/{color}]"
         self.splash_log.write(msg)
 
-    async def _splash_run_pre_mount_cmd(self, cmd: ReadCmd) -> None:
-        cr: CommandResult = await Commands.exec_read_cmd(cmd, path_arg=None)
-        self.pre_mount_cmd_results.append(cr)
-
-        prefix = cr.pretty_cmd
-        suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
-        self._write_log_msg(prefix=prefix, suffix=suffix)
-
-        if cmd is ReadCmd.dump_config:
-            parsed_std_out = json.loads(cr.std_out)
-            store.cfg = DumpConfigKeys(
-                dest_dir_path=Path(parsed_std_out["destDir"]),
-                auto_add_bool=parsed_std_out["git"]["autoadd"],
-                auto_commit_bool=parsed_std_out["git"]["autocommit"],
-                auto_push_bool=parsed_std_out["git"]["autopush"],
-            )
-            store.add_path = store.cfg.dest_dir_path
-            store.apply_path = store.cfg.dest_dir_path
-            store.re_add_path = store.cfg.dest_dir_path
-            self._write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.reports)
-        elif cmd is ReadCmd.git_remote:
-            if cr.returncode == 0:
-                self.chezmoi_repo_found = True
-                self._write_log_msg(prefix=LogStr.repo_found, suffix=LogStr.reports)
-            else:
-                self._write_log_msg(prefix=LogStr.repo_not_found, suffix=LogStr.reports)
-
-        elif cmd is ReadCmd.git_log:
-            if cr.returncode == 0:
-                self._write_log_msg(
-                    prefix=LogStr.has_git_commits, suffix=LogStr.reports
-                )
-            else:
-                self._write_log_msg(
-                    prefix=LogStr.has_no_git_commits, suffix=LogStr.reports
-                )
-
-    async def _splash_run_post_mount_cmd(self, cmd: ReadCmd) -> None:
-        cr: CommandResult = await Commands.exec_read_cmd(cmd, path_arg=None)
-        self.app.post_message(CommandResultMsg(cr))
-
-        prefix = cr.pretty_cmd
-        suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
-        self._write_log_msg(prefix=prefix, suffix=suffix)
-
-        if cmd is ReadCmd.dump_config:
-            parsed_std_out = json.loads(cr.std_out)
-            store.cfg = DumpConfigKeys(
-                dest_dir_path=Path(parsed_std_out["destDir"]),
-                auto_add_bool=parsed_std_out["git"]["autoadd"],
-                auto_commit_bool=parsed_std_out["git"]["autocommit"],
-                auto_push_bool=parsed_std_out["git"]["autopush"],
-            )
-            store.add_path = store.cfg.dest_dir_path
-            store.apply_path = store.cfg.dest_dir_path
-            store.re_add_path = store.cfg.dest_dir_path
-            self._write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.reports)
-        elif cmd is ReadCmd.git_remote:
-            if cr.returncode == 0:
-                self.chezmoi_repo_found = True
-                self._write_log_msg(prefix=LogStr.repo_found, suffix=LogStr.reports)
-            else:
-                self._write_log_msg(prefix=LogStr.repo_not_found, suffix=LogStr.reports)
-
-        elif cmd is ReadCmd.git_log:
-            if cr.returncode == 0:
-                self._write_log_msg(
-                    prefix=LogStr.has_git_commits, suffix=LogStr.reports
-                )
-            else:
-                self._write_log_msg(
-                    prefix=LogStr.has_no_git_commits, suffix=LogStr.reports
-                )
-
-    async def _splash_run_chezmoi_init(self) -> None:
-        cr = await Commands.run_write_cmd(WriteCmd.init, path_arg=None)
-        suffix = LogStr.success if cr.returncode == 0 else LogStr.failed
-        self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
-        if self.chezmoi_repo_found:
-            self._write_log_msg(prefix=LogStr.repo_created, suffix=LogStr.reports)
+    async def _splash_run_chezmoi(
+        self, cmd: ReadCmd | WriteCmd, pre_mount_phase: bool = False
+    ) -> int:
+        cr: CommandResult = await Commands.exec_chezmoi_cmd(cmd, path_arg=None)
+        if pre_mount_phase is True:
+            self.pre_mount_cmd_results.append(cr)
         else:
-            self._write_log_msg(prefix=LogStr.repo_init, suffix=LogStr.reports)
+            self.app.post_message(CommandResultMsg(cr))
 
-    async def run_init_tasks(self) -> None:
-        await self._splash_run_pre_mount_cmd(ReadCmd.git_remote)
-        await self._splash_run_chezmoi_init()
-        await self._splash_run_pre_mount_cmd(ReadCmd.dump_config)
+        prefix = cr.pretty_cmd
+        suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
+        await self._write_log_msg(prefix=prefix, suffix=suffix)
+        if cr.returncode is None:
+            return -1
+        return cr.returncode
 
-    async def run_post_init_tasks(self) -> None:
+    async def run_initial_command_sequence(self) -> None:
+
+        # check if repo exists
+        rc = await self._splash_run_chezmoi(ReadCmd.git_dir, pre_mount_phase=True)
+        suffix = LogStr.present if rc == 0 else LogStr.absent
+        await self._write_log_msg(prefix=LogStr.check_chezmoi_repo, suffix=suffix)
+        self.repo_existed = bool(rc == 0)
+        if not self.repo_existed:
+            # TODO: show modal for chezmoi init
+            self.notify("No existing chezmoi repository found.")
+            self.notify("chezmoi init not yet implemented in this case...")
+            self.notify("App will exit...", severity="warning")
+            await asyncio.sleep(3)
+            self.app.exit()
+
+        # run chezmoi init to update config
+        rc = await self._splash_run_chezmoi(WriteCmd.init, pre_mount_phase=True)
+        if rc != 0:
+            # TODO: handle error when chezmoi init to update config fails, could happen
+            # after the user updated the template files
+            self.notify(
+                "Error: Failed to run chezmoi init to update config, run chezmoi init "
+                "manually in the terminal to check for issues.",
+                severity="error",
+            )
+            self.notify("App will exit...", severity="warning")
+            await asyncio.sleep(3)
+            self.app.exit()
+        await self._splash_run_chezmoi(ReadCmd.dump_config, pre_mount_phase=True)
+
+        # Set store.cfg variable
+        cr = self.pre_mount_cmd_results[-1]  # result form chezmoi dump-config
+        parsed_std_out = json.loads(cr.std_out)
+        store.cfg = DumpConfigKeys(
+            dest_dir_path=Path(parsed_std_out["destDir"]),
+            auto_add_bool=parsed_std_out["git"]["autoadd"],
+            auto_commit_bool=parsed_std_out["git"]["autocommit"],
+            auto_push_bool=parsed_std_out["git"]["autopush"],
+        )
+        store.add_path = store.cfg.dest_dir_path
+        store.apply_path = store.cfg.dest_dir_path
+        store.re_add_path = store.cfg.dest_dir_path
+        await self._write_log_msg(
+            prefix=LogStr.parse_dump_config, suffix=LogStr.reports
+        )
+
+    async def run_config_tab_tasks(self) -> None:
         async with asyncio.TaskGroup() as tg:
-            for cmd in self.post_dump_config_commands:
-                tg.create_task(self._splash_run_post_mount_cmd(cmd))
+            for cmd in (
+                ReadCmd.doctor,
+                ReadCmd.cat_config,
+                ReadCmd.ignored,
+                ReadCmd.template_data,
+            ):
+                tg.create_task(self._splash_run_chezmoi(cmd))
 
+    async def run_splash_cmd_tasks(self) -> None:
         async with asyncio.TaskGroup() as tg:
-            for cmd in self.post_operation_commands:
-                tg.create_task(self._splash_run_post_mount_cmd(cmd))
+            for cmd in (
+                ReadCmd.cat_config,
+                ReadCmd.doctor,
+                ReadCmd.git_log,
+                ReadCmd.git_remote,
+                ReadCmd.ignored,
+                ReadCmd.template_data,
+            ):
+                tg.create_task(self._splash_run_chezmoi(cmd))
+
+    async def run_managed_cmd_tasks(self) -> None:
+        async with asyncio.TaskGroup() as tg:
+            for cmd in (
+                ReadCmd.managed_dirs,
+                ReadCmd.managed_files,
+                ReadCmd.status_dirs,
+                ReadCmd.status_files,
+            ):
+                tg.create_task(self._splash_run_chezmoi(cmd))
+
+        await self.wait_for_refresh()
 
     async def dismiss_after_fade_loop(self) -> None:
         while (

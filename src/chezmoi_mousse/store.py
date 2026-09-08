@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-import os
-import sys
-import tracemalloc
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.data_classes import Changed, StatusPaths
-from chezmoi_mousse.named_tuples import (
-    DumpConfigKeys,
-)
+from chezmoi_mousse.named_tuples import DumpConfigKeys, InitData
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
@@ -18,20 +13,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import PathKind, StatusCode
 
 
-PILOT_MODE = (
-    os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1" or "--pilot-mode" in sys.argv
-)
-
-SHOW_DEBUG_TAB = (
-    "--dev" in sys.argv
-    or "devtools" in os.getenv("TEXTUAL", "").split(",")
-    or "--show-debugtab" in sys.argv
-    or PILOT_MODE
-)
-
-if SHOW_DEBUG_TAB:
-    tracemalloc.start()
-
+init_data: InitData = InitData()
 live_run: bool = False
 
 add_ids = AppIds(BtnLabel.add)

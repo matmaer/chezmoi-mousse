@@ -18,7 +18,6 @@ from chezmoi_mousse.gui.common.actionables import (
     TabBtn,
 )
 from chezmoi_mousse.gui.common.diffs import DiffView
-from chezmoi_mousse.gui.common.operate_modal import LoadingModal
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.str_enums import BtnLabel
@@ -36,7 +35,7 @@ if TYPE_CHECKING:
 async def _pilot_chill(pilot: Pilot[str]) -> None:
 
     await pilot.wait_for_scheduled_animations()
-    while isinstance(pilot.app.screen, LoadingModal):
+    while isinstance(pilot.app.screen, SplashScreen):
         await pilot.pause(0.1)
     await pilot.pause(0.1)
 
@@ -132,6 +131,7 @@ async def _start_pilot_mode(app: ChezmoiGui) -> None:
             tabs_to_check.append(BtnLabel.debug)
 
         for label in tabs_to_check:
+            await _pilot_chill(pilot)
             tab = tabbed_content.get_tab(label)
             await _click_and_wait(pilot, tab)
             await _toggle_binding(pilot, "M")

@@ -9,7 +9,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands, ParseCmd
+from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.gui.common.components import (
     InfoStatic,
     MainSectionLabel,
@@ -20,14 +20,11 @@ from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
     OpInfoString,
-    ReadCmd,
     Tcss,
     WriteCmd,
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from textual import getters
     from textual.app import ComposeResult
 
@@ -47,35 +44,6 @@ class LoadingModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         yield (VerticalGroup(Label(LabelStr.loading), LoadingIndicator()))
-
-    @work
-    async def run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
-        await self._run_write_command(write_cmd, path_arg).wait()
-        await self.run_managed_commands().wait()
-
-    @work
-    async def run_managed_commands(self) -> None:
-        for cmd in (
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-            ReadCmd.git_log,
-        ):
-            self.label_text = f"Running: {ParseCmd.pretty_cmd(cmd, path=None)}"
-            await self._run_read_command(cmd).wait()
-        store.changed.update_changed_paths()
-
-    @work(thread=True)
-    async def _run_read_command(self, read_cmd: ReadCmd) -> None:
-        await Commands.exec_read_cmd(read_cmd, path_arg=None)
-
-    @work(thread=True)
-    async def _run_write_command(self, write_cmd: WriteCmd, path_arg: Path) -> None:
-        await Commands.run_write_cmd(
-            write_cmd,
-            path_arg=path_arg,
-        )
 
     def watch_label_text(self, label_text: str) -> None:
         if self.label_text is None:
