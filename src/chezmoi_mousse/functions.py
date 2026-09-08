@@ -330,7 +330,7 @@ class Commands:
 
 class CheckPath:
     @staticmethod
-    def os_scan_dir(dir_path: Path, *, managed_dir: bool = False) -> ScanDirResult:
+    def os_scan_dir(dir_path: Path) -> ScanDirResult:
 
         if not dir_path.is_absolute():
             raise ValueError(
@@ -345,17 +345,8 @@ class CheckPath:
         try:
             with os.scandir(str(dir_path)) as entry_generator:
                 dir_entries: list[os.DirEntry[str]] = list(entry_generator)
-        except FileNotFoundError as dir_path_not_found:
-            if managed_dir:
-                return PathKind.man_dir_not_exists
-            else:
-                raise dir_path_not_found  # fail fast
-        except PermissionError:
-            if managed_dir:
-                return PathKind.man_dir_access_denied
-            else:
-                # can happen in ManagedTree scan
-                return PathKind.unman_dir_access_denied
+        except (FileNotFoundError, PermissionError, OSError):
+            return PathKind.ERROR
 
         sibling_count = len(dir_entries)
 
@@ -380,13 +371,12 @@ class CheckPath:
             else:
                 matches_unwanted = True
 
-            if matches_unwanted and managed_dir:
+            if matches_unwanted:
                 continue
 
             scan_dir_items.append(
                 ScanDirItem(
                     scanned_dir=dir_path,
-                    managed_arg=managed_dir,
                     path=de_path,
                     is_dir=is_dir,
                     is_file=is_file,

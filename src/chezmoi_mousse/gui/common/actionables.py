@@ -31,11 +31,11 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "DebugBtn",
     "DirContentBtn",
     "DryRunBtn",
     "FlatBtn",
     "FlatButtonsVertical",
+    "OperateBtn",
     "OperateBtnGroup",
     "RefreshBtn",
     "SwitchSlider",
@@ -67,22 +67,6 @@ class DirContentBtn(Button):
                 path=self.path,
             )
         )
-
-
-class DebugBtn(Button):
-    def __init__(self, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(
-            id=self.app_ids.btn_id(btn_label=self.btn_label),
-            label=self.btn_label,
-            classes=Tcss.operate_button,
-        )
-
-    @on(Button.Pressed)
-    def _send_message(self, event: DebugBtn.Pressed) -> None:
-        event.stop()
-        self.post_message(OperateBtnMsg(event.button, self.app_ids, self.btn_label))
 
 
 class DryRunBtn(Button):

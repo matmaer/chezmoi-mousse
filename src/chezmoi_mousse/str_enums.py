@@ -243,10 +243,7 @@ class ContainerName(StrEnum):
 class InfoKind(Enum):
     # Kind of info mainly
     contents_view_file = auto()
-    dest_dir_diff = auto()
     dest_dir_contents = auto()
-    unmanaged_diff = auto()
-    unmanaged_git_log = auto()
 
 
 class LabelStr(StrEnum):
@@ -288,7 +285,6 @@ class LabelStr(StrEnum):
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
     not_set = "Not Set"
-    paths_with_status = "Paths with Status"
     read_file_output = "Read file from disk output"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
@@ -299,9 +295,9 @@ class LabelStr(StrEnum):
 
 
 class LogStr(StrEnum):
-    added_managed = "New managed paths"
+    # added_managed = "New managed paths" # noqa: ERA001
     app_log_initialized = "Application log initialized"
-    changed_status = "New managed paths"
+    # changed_status = "New managed paths" # noqa: ERA001
     debug_log_initialized = "Debug log initialized"
     debug_tab_enabled = "Debug tab enabled"
     doctor_errors_found = "See the Config tab for errors"
@@ -314,7 +310,7 @@ class LogStr(StrEnum):
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
     not_tracing = "tracemalloc is not tracing but the Debug tab is active"
-    removed_managed = "New managed paths"
+    # removed_managed = "New managed paths" # noqa: ERA001
     tracing = "tracemalloc is tracing"
 
     @property
@@ -537,9 +533,7 @@ class PathFilters(Enum):
 
 class PathKind(StrEnum):
     EXISTS_FALSE = auto()
-    man_dir_access_denied = auto()
-    man_dir_not_exists = auto()
-    unman_dir_access_denied = auto()
+    ERROR = auto()
     UNMANAGED = auto()
 
 
@@ -592,7 +586,6 @@ class Tcss(StrEnum):
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
     left_side_vertical = auto()
-    limited_label = auto()
     live_run_color = auto()
     main_section_label = auto()
     managed_tree = auto()
@@ -620,7 +613,7 @@ class Tcss(StrEnum):
 class ChezmoiGitArgs(Enum):
     _option_terminator = "--"
     global_args = ("--no-pager", "--no-advice")
-    default_args = (_option_terminator, *global_args)
+    _default_args = (_option_terminator, *global_args)
     # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
@@ -630,8 +623,8 @@ class ChezmoiGitArgs(Enum):
         "--no-decorate",
         "--no-expand-tabs",
     )
-    git_log = (*default_args, "log", *git_log_args)
-    git_remote = (*default_args, "remote", "--verbose")
+    git_log = (*_default_args, "log", *git_log_args)
+    git_remote = (*_default_args, "remote", "--verbose")
 
 
 class GlobalArgs(Enum):
@@ -676,41 +669,22 @@ class ReadCmd(Enum):
     status_files = ("status", VerbArgs.path_style_absolute, VerbArgs.include_files)
     template_data = ("data", VerbArgs.format_json)
 
-    @classmethod
-    def post_operation_commands(cls) -> tuple[Self, ...]:
-        return (
-            cls[cls.managed_dirs.name],
-            cls[cls.managed_files.name],
-            cls[cls.status_dirs.name],
-            cls[cls.status_files.name],
-            cls[cls.git_log.name],
-        )
-
-    @classmethod
-    def post_dump_config_commands(cls) -> tuple[Self, ...]:
-        return (
-            cls[cls.doctor.name],
-            cls[cls.cat_config.name],
-            cls[cls.ignored.name],
-            cls[cls.template_data.name],
-        )
-
 
 class WriteCmd(Enum):
     init = ("init",)
     add = ("add",)
-    apply = ("apply",)
+    # apply = ("apply",)  # noqa: ERA001
     destroy = ("destroy",)
     forget = ("forget",)
-    re_add = ("re-add",)
+    # re_add = ("re-add",)  # noqa: ERA001
 
     @classmethod
     def get_write_cmd(cls, op_btn_label: BtnLabel) -> Self:
         mapping = {
             BtnLabel.add_run: cls[cls.add.name],
-            BtnLabel.apply_run: cls[cls.apply.name],
+            # BtnLabel.apply_run: cls[cls.apply.name],
             BtnLabel.destroy_run: cls[cls.destroy.name],
             BtnLabel.forget_run: cls[cls.forget.name],
-            BtnLabel.re_add_run: cls[cls.re_add.name],
+            # BtnLabel.re_add_run: cls[cls.re_add.name],
         }
         return mapping[op_btn_label]

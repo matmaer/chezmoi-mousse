@@ -55,7 +55,13 @@ class LoadingModal(ModalScreen[None]):
 
     @work
     async def run_managed_commands(self) -> None:
-        for cmd in ReadCmd.post_operation_commands():
+        for cmd in (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.git_log,
+        ):
             self.label_text = f"Running: {ParseCmd.pretty_cmd(cmd, path=None)}"
             await self._run_read_command(cmd).wait()
         store.changed.update_changed_paths()

@@ -9,7 +9,6 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
-from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, TabbedContent, Tabs
@@ -28,7 +27,6 @@ from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.contents import ContentsView
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
 from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import ManagedTree
@@ -71,14 +69,12 @@ class CustomHeader(Header):
         if live_run is True:
             self.screen.title = self.LIVE_MODE
             header_title.add_class(Tcss.live_run_color)
-        if live_run is False:
+        elif live_run is False:
             self.screen.title = self.DRY_MODE
             header_title.remove_class(Tcss.live_run_color)
 
 
 class ChezmoiGui(App[str]):
-    class MainVertical(Vertical): ...
-
     BINDINGS: ClassVar = [
         Binding(
             "ctrl+q",
@@ -186,13 +182,6 @@ class ChezmoiGui(App[str]):
         )
         re_add_managed_tree.update_tree()
         re_add_managed_tree.refresh()
-
-    @work
-    async def _reload_directory_tree_loading(self) -> None:
-        # Update FilteredDirTree
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        dir_tree.reload()
-        dir_tree.refresh()
 
     @on(CurrentNodeMsg)
     def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:

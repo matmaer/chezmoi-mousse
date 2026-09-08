@@ -93,7 +93,6 @@ class RunCommandInfo(NamedTuple):
 class ScanDirItem(NamedTuple):
     # matches the argument passed to the os_scan_dir function
     scanned_dir: Path
-    managed_arg: bool
     # absolute path matchingthe DirEntry.path attribute
     path: Path
     # matches DirEntry attribute
@@ -101,7 +100,7 @@ class ScanDirItem(NamedTuple):
     is_file: bool
     is_symlink: bool
     name: str
-    # if it's a dir or if an exception occurs when calling .stat()
+    # # if it's a dir or if an exception occurs when calling .stat()
     file_size: int | None
     # set by the os_scan_dir function
     sibling_count: int

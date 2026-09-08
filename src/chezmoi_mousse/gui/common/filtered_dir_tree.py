@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual.reactive import reactive
@@ -13,10 +11,9 @@ from chezmoi_mousse.str_enums import Chars, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
 
 __all__ = ["FilteredDirTree"]
-
-GIT_OBJECT_DIR: str = f"{os.sep}{Path('.git', 'objects')}{os.sep}"
 
 
 class FilteredDirTree(DirectoryTree):

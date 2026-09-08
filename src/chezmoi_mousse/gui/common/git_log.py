@@ -39,7 +39,7 @@ class GitLogView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel()
-        yield DataTable[str](show_cursor=False)
+        yield DataTable(show_cursor=False)
         yield InfoVertical()
 
     def on_mount(self) -> None:

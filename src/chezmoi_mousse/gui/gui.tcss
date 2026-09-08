@@ -264,27 +264,6 @@ TabButtons {
   scrollbar-corner-color: $background;
 }
 
-CheckBox {
-  margin: 0;
-  padding: 0;
-  background: $surface;
-  background-tint: $surface;
-  &>.toggle--button {
-    color: $error;
-    background: $surface;
-    background-tint: $surface;
-  }
-  &.-on>.toggle--button {
-    color: $success;
-  }
-  &:focus>.toggle--button {
-    text-style: none;
-  }
-  &:hover>.toggle--button {
-    text-style: bold;
-  }
-}
-
 Collapsible {
   border-top: none;
   padding-bottom: 0;
@@ -307,8 +286,6 @@ DataTable {
     text-style: none;
   }
 }
-
-
 
 Footer {
   height: 2;
@@ -336,14 +313,6 @@ Label{
     border-bottom: wide $primary-muted;
     border-top: wide $primary-muted;
     color: $primary-lighten-3;
-    width: 1fr;
-  }
-  &.limited_label {
-    background-tint: $surface;
-    background: $surface;
-    border-bottom: wide $surface;
-    border-top: wide $surface;
-    color: $text-error;
     width: 1fr;
   }
   &.sub_section_label {
@@ -450,12 +419,11 @@ TabbedContent {
   }
 }
 
-Toast {
-    content-align: center middle;
-    padding: 1 1;
-    background: $surface-lighten-1;
-    background-tint: $surface-lighten-1;
-}
+# Toast {
+#     content-align: center middle;
+#     background: $surface-lighten-1;
+#     background-tint: $surface-lighten-1;
+# }
 
 Tree {
   &>.tree--highlight-line {

@@ -115,10 +115,22 @@ class SplashScreen(Screen[None]):
             LogStr.success: self.app.theme_variables[ColorVar.text_primary],
         }
         self.splash_log = self.query_exactly_one(RichLog)
+        self.post_dump_config_commands = (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.git_log,
+        )
+        self.post_operation_commands = (
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.git_log,
+        )
         self.splash_log.styles.height = (
-            len(ReadCmd.post_dump_config_commands())
-            + len(ReadCmd.post_operation_commands())
-            + 9
+            len(self.post_dump_config_commands) + len(self.post_operation_commands) + 9
         )
         self.splash_log.styles.width = LOG_MSG_WIDTH
         self.animated_fade = self.query_exactly_one(AnimatedFade)
@@ -220,11 +232,11 @@ class SplashScreen(Screen[None]):
 
     async def run_post_init_tasks(self) -> None:
         async with asyncio.TaskGroup() as tg:
-            for cmd in ReadCmd.post_dump_config_commands():
+            for cmd in self.post_dump_config_commands:
                 tg.create_task(self._splash_run_post_mount_cmd(cmd))
 
         async with asyncio.TaskGroup() as tg:
-            for cmd in ReadCmd.post_operation_commands():
+            for cmd in self.post_operation_commands:
                 tg.create_task(self._splash_run_post_mount_cmd(cmd))
 
     async def dismiss_after_fade_loop(self) -> None:

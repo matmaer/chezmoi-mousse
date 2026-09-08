@@ -6,7 +6,7 @@ import tracemalloc
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.data_classes import Changed, ChezmoiRepoChecks, StatusPaths
+from chezmoi_mousse.data_classes import Changed, StatusPaths
 from chezmoi_mousse.named_tuples import (
     DumpConfigKeys,
 )
@@ -42,7 +42,6 @@ logs_ids = AppIds(BtnLabel.logs)
 re_add_ids = AppIds(BtnLabel.re_add)
 
 cfg = DumpConfigKeys()
-cm_repo_checks = ChezmoiRepoChecks()
 
 changed = Changed()
 

@@ -38,7 +38,7 @@ class DoctorTable(DataTable[Text]):
         }
 
     @work
-    async def populate_dr_table(self, cmd_result: CommandResult) -> None:
+    async def _populate_dr_table(self, cmd_result: CommandResult) -> None:
         doctor_lines = cmd_result.std_out.splitlines()
         if cmd_result.returncode != 0:
             self.notify(f"{cmd_result.std_err}", severity="error")
@@ -77,4 +77,4 @@ class DoctorTable(DataTable[Text]):
 
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is not None:
-            self.populate_dr_table(cmd_result)
+            self._populate_dr_table(cmd_result)

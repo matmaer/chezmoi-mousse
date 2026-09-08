@@ -12,7 +12,8 @@ __all__ = ["TestPaths"]
 HOME_PATH = Path.home()
 TEST_DIR = HOME_PATH / "_test_dir"
 EMPTY_DIR = TEST_DIR / "_test_empty_dir"
-
+DIR_WITH_STATUS = TEST_DIR / "_test_dir_with_status"
+NESTED_DIRS_1 = TEST_DIR / "_test_sub_dir_1" / "_test_nested_dir"
 
 BINARY = "_test_file_binary.bin"
 LARGE = "_test_file_large.txt"
@@ -26,8 +27,6 @@ TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
 @dataclass(frozen=True, slots=True, kw_only=True)
 class _AllTestPaths:
     # dir names
-    dir_with_status: Path = TEST_DIR / "_test_dir_with_status"
-    nested_dirs_1: Path = TEST_DIR / "_test_sub_dir_1" / "_test_nested_dir"
     _nested_dir_without_status_files_in: Path = TEST_DIR / "_test_sub_dir_2"
     _nested_dir_with_status_files_in: Path = (
         _nested_dir_without_status_files_in / "_test_nested_dir"
@@ -38,9 +37,9 @@ class _AllTestPaths:
         # to create the dirs with parents True
         return sorted(
             {
-                self.dir_with_status,
+                DIR_WITH_STATUS,
                 EMPTY_DIR,
-                self.nested_dirs_1,
+                NESTED_DIRS_1,
                 self._nested_dir_with_status_files_in,
             }
         )
@@ -359,7 +358,7 @@ class TestPaths:
                 modified.add(f"[${ColorVar.text_warning}]{file}[/]")
 
         # Toggle between 0o750 and 0o755 for the dir with status
-        dir_with_status = self.all_paths.dir_with_status
+        dir_with_status = DIR_WITH_STATUS
         if dir_with_status.exists():
             current_permissions = dir_with_status.stat().st_mode
             if current_permissions == 0o750:
@@ -368,8 +367,8 @@ class TestPaths:
                 dir_with_status.chmod(0o750)
             modified.add(f"[${ColorVar.text_warning}]{dir_with_status}[/]")
 
-        # Delete or create the self.nested_dirs_1
-        nested_dirs_1 = self.all_paths.nested_dirs_1
+        # Delete or create the NESTED_DIRS_1
+        nested_dirs_1 = NESTED_DIRS_1
         if nested_dirs_1.exists():
             shutil.rmtree(nested_dirs_1)
             modified.add(f"[${ColorVar.text_error}]{nested_dirs_1}[/]")

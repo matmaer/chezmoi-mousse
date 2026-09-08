@@ -22,9 +22,9 @@ from textual.widgets import (
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.gui.common.actionables import (
-    DebugBtn,
     FlatBtn,
     FlatButtonsVertical,
+    OperateBtn,
     OperateBtnGroup,
 )
 from chezmoi_mousse.gui.common.loggers import RichLoggers
@@ -222,20 +222,20 @@ class DebugTab(TabPane):
             store.debug_ids.richlog.env_vars_q, RichLog
         )
         self.mem_log_op_btn = self.query_one(
-            store.debug_ids.op_btn.log_memory_q, DebugBtn
+            store.debug_ids.op_btn.log_memory_q, OperateBtn
         )
         self.mem_log_op_btn.disabled = True
         self.list_test_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.list_test_paths_q, DebugBtn
+            store.debug_ids.op_btn.list_test_paths_q, OperateBtn
         )
         self.create_diffs_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_diffs_q, DebugBtn
+            store.debug_ids.op_btn.create_diffs_q, OperateBtn
         )
         self.create_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_paths_q, DebugBtn
+            store.debug_ids.op_btn.create_paths_q, OperateBtn
         )
         self.remove_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.remove_paths_q, DebugBtn
+            store.debug_ids.op_btn.remove_paths_q, OperateBtn
         )
         self.test_paths_op_btns = [
             self.list_test_paths_op_btn,

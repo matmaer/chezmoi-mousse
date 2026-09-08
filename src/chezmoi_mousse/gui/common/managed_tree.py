@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -36,17 +35,6 @@ if TYPE_CHECKING:
 __all__ = ["ManagedTree"]
 
 
-@dataclass(slots=True)
-class ManagedTreeState:
-    root_node: TreeNode[Path]
-    selected_node: TreeNode[Path]
-    selected_path: Path | None = None  # Track selected path instead of stale TreeNode
-    expanded_paths: set[Path] = field(default_factory=set[Path])
-    show_unchanged: bool = False
-    show_unmanaged: bool = False
-    expand_all: bool = False
-
-
 class ManagedTree(Tree[Path]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -74,11 +62,6 @@ class ManagedTree(Tree[Path]):
             StatusCode.Space: ColorVar.dimmed,
             PathKind.UNMANAGED: ColorVar.text_error_dark,
         }
-        self.state = ManagedTreeState(
-            root_node=self.root, selected_node=self.root, selected_path=self.root.data
-        )
-        if self.root.data:
-            self.state.expanded_paths.add(self.root.data)
 
     @property
     def paths(self) -> StatusPaths:
@@ -156,13 +139,13 @@ class ManagedTree(Tree[Path]):
     def _populate_unmanaged_nodes(self) -> None:
         expanded_dirs = [store.cfg.dest_dir]
         expanded_dirs += [
-            node.data
-            for node in self._iter_tree_nodes()
-            if node.allow_expand and node.data in self.state.expanded_paths
+            node.data for node in self._iter_tree_nodes() if node.allow_expand
         ]
 
         for dir_path in expanded_dirs:
-            unmanaged: ScanDirResult = CheckPath.os_scan_dir(dir_path, managed_dir=True)
+            if dir_path is None:
+                return
+            unmanaged: ScanDirResult = CheckPath.os_scan_dir(dir_path)
             if isinstance(unmanaged, PathKind):
                 continue
 
@@ -235,21 +218,13 @@ class ManagedTree(Tree[Path]):
             if node is self.root:
                 continue
             if node.allow_expand:
-                if self.expand_all or (node.data in self.state.expanded_paths):
+                if self.expand_all:
                     node.expand()
                 else:
                     node.collapse()
 
         # Restore selection with parent fallback
-        target_path = self.state.selected_path
         node_to_select: TreeNode[Path] | None = None
-
-        while target_path is not None and target_path != self.root.data:
-            node_to_select = self._get_tree_node(target_path, parent_node=False)
-            if node_to_select is not None:
-                break
-            # If target node was deleted/removed, walk up to parent
-            target_path = target_path.parent
 
         if node_to_select is not None:
             self.select_node(node_to_select)
@@ -261,26 +236,18 @@ class ManagedTree(Tree[Path]):
     # #################################
 
     @on(Tree.NodeCollapsed)
-    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
-        if not self.expand_all and event.node.data:
-            self.state.expanded_paths.discard(event.node.data)
+    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None: ...
 
     @on(Tree.NodeExpanded)
-    def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
-        if not self.expand_all and event.node.data:
-            self.state.expanded_paths.add(event.node.data)
+    def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None: ...
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
-        self.state.selected_node = event.node
-        if event.node.data is None:
-            raise RuntimeError("Node data is None, which is unexpected.")
-
-        self.state.selected_path = event.node.data
-
         has_status = (
             event.node.data in self.paths.files or event.node.data in self.paths.dirs
         )
+        if event.node.data is None:
+            return
         is_dest_dir = event.node is self.root
         is_unmanaged = event.node.data not in store.managed_dirs | store.managed_files
         self.post_message(
@@ -294,7 +261,6 @@ class ManagedTree(Tree[Path]):
         )
 
     def watch_expand_all(self, expand_all: bool) -> None:
-        self.state.expand_all = expand_all
         if expand_all:
             for node in self._iter_tree_nodes():
                 if node.allow_expand:
@@ -304,13 +270,11 @@ class ManagedTree(Tree[Path]):
                 if node is self.root:
                     continue
                 if node.allow_expand:
-                    if node.data in self.state.expanded_paths:
-                        node.expand()
-                    else:
-                        node.collapse()
+                    node.expand()
+                else:
+                    node.collapse()
 
     def watch_show_unmanaged(self, show_unmanaged: bool) -> None:
-        self.state.show_unmanaged = show_unmanaged
         if show_unmanaged:
             self._populate_unmanaged_nodes()
         else:
@@ -322,7 +286,6 @@ class ManagedTree(Tree[Path]):
                     node.remove()
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
-        self.state.show_unchanged = show_unchanged
         if show_unchanged:
             self._populate_unchanged_nodes()
         else:
