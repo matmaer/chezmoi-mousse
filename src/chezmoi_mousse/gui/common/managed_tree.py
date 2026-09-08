@@ -11,6 +11,7 @@ from textual.widgets import Tree
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
+from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     Chars,
@@ -31,7 +32,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.functions import ScanDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-from .messages import CurrentNodeMsg
 
 __all__ = ["ManagedTree"]
 

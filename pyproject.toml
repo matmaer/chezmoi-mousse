@@ -94,9 +94,6 @@ extend-safe-fixes = [
     "UP007",   # use X | Y union syntax instead of Optional[X] or Union[X, Y]
 ]
 
-[tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "parents"
-
 [tool.ruff.format]
 indent-style = "space"
 quote-style = "double"

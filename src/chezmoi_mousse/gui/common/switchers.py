@@ -6,13 +6,12 @@ from textual import on
 from textual.containers import Vertical
 from textual.widgets import ContentSwitcher
 
+from chezmoi_mousse.gui.common.actionables import ReviewBtnGroup, TabBtn, TabButtons
+from chezmoi_mousse.gui.common.contents import ContentsView
+from chezmoi_mousse.gui.common.diffs import DiffView
+from chezmoi_mousse.gui.common.git_log import GitLogView
+from chezmoi_mousse.gui.common.messages import TabBtnMsg
 from chezmoi_mousse.str_enums import BtnLabel
-
-from .actionables import ReviewBtnGroup, TabBtn, TabButtons
-from .contents import ContentsView
-from .diffs import DiffView
-from .git_log import GitLogView
-from .messages import TabBtnMsg
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult

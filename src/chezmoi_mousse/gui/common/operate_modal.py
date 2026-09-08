@@ -10,6 +10,12 @@ from textual.widgets import Label, LoadingIndicator, Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands, ParseCmd, min_wait
+from chezmoi_mousse.gui.common.components import (
+    InfoStatic,
+    MainSectionLabel,
+    SubSectionLabel,
+)
+from chezmoi_mousse.gui.common.messages import ExitModalBtnMsg
 from chezmoi_mousse.named_tuples import RunCommandInfo
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -19,9 +25,6 @@ from chezmoi_mousse.str_enums import (
     Tcss,
     WriteCmd,
 )
-
-from .components import InfoStatic, MainSectionLabel, SubSectionLabel
-from .messages import ExitModalBtnMsg
 
 if TYPE_CHECKING:
     from pathlib import Path

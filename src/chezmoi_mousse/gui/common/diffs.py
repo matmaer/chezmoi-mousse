@@ -10,19 +10,18 @@ from textual.widgets import Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    LabelStr,
-    ReadCmd,
-    Tcss,
-)
-
-from .components import (
+from chezmoi_mousse.gui.common.components import (
     DiffLinesContainer,
     FlatSectionLabel,
     InfoStatic,
     MainSectionLabel,
     SubSectionLabel,
+)
+from chezmoi_mousse.str_enums import (
+    BtnLabel,
+    LabelStr,
+    ReadCmd,
+    Tcss,
 )
 
 if TYPE_CHECKING:

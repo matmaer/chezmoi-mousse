@@ -18,11 +18,10 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
+from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import DumpConfigKeys
 from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, WriteCmd
-
-from .common.ascii_constants import SPLASH_ASCII
-from .common.messages import CommandResultMsg
 
 if TYPE_CHECKING:
     from textual import getters

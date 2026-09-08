@@ -16,6 +16,25 @@ from textual.widgets import Footer, Header, Static, TabbedContent, Tabs
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
+from chezmoi_mousse.gui.common.actionables import (
+    DryRunBtn,
+    FlatButtonsVertical,
+    SwitchSlider,
+    TabButtons,
+)
+from chezmoi_mousse.gui.common.components import LeftSideVertical
+from chezmoi_mousse.gui.common.contents import ContentsView
+from chezmoi_mousse.gui.common.diffs import DiffView
+from chezmoi_mousse.gui.common.doctor_data import DoctorTable
+from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
+from chezmoi_mousse.gui.common.git_log import GitLogView
+from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
+from chezmoi_mousse.gui.common.managed_tree import ManagedTree
+from chezmoi_mousse.gui.common.messages import CommandResultMsg, CurrentNodeMsg
+from chezmoi_mousse.gui.common.operate_modal import OperateModal
+from chezmoi_mousse.gui.common.switchers import ViewSwitcher
+from chezmoi_mousse.gui.splash_screen import SplashScreen
+from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -26,26 +45,6 @@ from chezmoi_mousse.str_enums import (
     Tcss,
 )
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
-
-from .common.actionables import (
-    DryRunBtn,
-    FlatButtonsVertical,
-    SwitchSlider,
-    TabButtons,
-)
-from .common.components import LeftSideVertical
-from .common.contents import ContentsView
-from .common.diffs import DiffView
-from .common.doctor_data import DoctorTable
-from .common.filtered_dir_tree import FilteredDirTree
-from .common.git_log import GitLogView
-from .common.loggers import AppLog, CmdLog
-from .common.managed_tree import ManagedTree
-from .common.messages import CommandResultMsg, CurrentNodeMsg
-from .common.operate_modal import OperateModal
-from .common.switchers import ViewSwitcher
-from .splash_screen import SplashScreen
-from .tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult

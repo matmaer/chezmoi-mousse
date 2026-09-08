@@ -8,16 +8,15 @@ from textual.reactive import reactive
 
 from chezmoi_mousse import store
 from chezmoi_mousse.functions import Commands
+from chezmoi_mousse.gui.common.components import (
+    HighlightedStatic,
+    MainSectionLabel,
+    SubSectionLabel,
+)
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
     PathKind,
-)
-
-from .components import (
-    HighlightedStatic,
-    MainSectionLabel,
-    SubSectionLabel,
 )
 
 if TYPE_CHECKING:

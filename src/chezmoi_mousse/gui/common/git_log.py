@@ -8,12 +8,11 @@ from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse.functions import Commands
-from chezmoi_mousse.str_enums import ColorVar
-
-from .components import (
+from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     InfoVertical,
 )
+from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -6,3 +6,7 @@
 # GNU General Public License for more details.
 #
 # See THIRD_PARTY_LICENSES.md for the chezmoi and textual license information.
+
+from chezmoi_mousse import store
+
+__all__ = ["store"]

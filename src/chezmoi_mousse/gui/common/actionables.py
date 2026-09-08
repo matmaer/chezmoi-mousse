@@ -12,9 +12,7 @@ from textual.containers import (
 )
 from textual.widgets import Button, Label, Switch
 
-from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
-
-from .messages import (
+from chezmoi_mousse.gui.common.messages import (
     DebugBtnMsg,
     DirContentBtnMsg,
     DryRunBtnMsg,
@@ -25,6 +23,7 @@ from .messages import (
     RunBtnMsg,
     TabBtnMsg,
 )
+from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path

@@ -21,6 +21,15 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store
+from chezmoi_mousse.gui.common.ascii_constants import FLOW_DIAGRAM
+from chezmoi_mousse.gui.common.components import LeftSideVertical, MainSectionLabel
+from chezmoi_mousse.gui.common.contents import ContentsView
+from chezmoi_mousse.gui.common.doctor_data import DoctorTable
+from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
+from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
+from chezmoi_mousse.gui.common.managed_tree import ManagedTree
+from chezmoi_mousse.gui.common.messages import FlatBtnMsg, TabBtnMsg
+from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
@@ -35,15 +44,6 @@ from .common.actionables import (
     SwitchSlider,
     TabButtons,
 )
-from .common.ascii_constants import FLOW_DIAGRAM
-from .common.components import LeftSideVertical, MainSectionLabel
-from .common.contents import ContentsView
-from .common.doctor_data import DoctorTable
-from .common.filtered_dir_tree import FilteredDirTree
-from .common.loggers import AppLog, CmdLog
-from .common.managed_tree import ManagedTree
-from .common.messages import FlatBtnMsg, TabBtnMsg
-from .common.switchers import ViewSwitcher
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
@@ -247,10 +247,7 @@ class ConfigTab(TabPane):
             self.switcher.current = store.config_ids.container.diagram
 
     def _parse_template_data(self, template_data: str) -> None:
-        try:
-            parsed_data = json.loads(template_data)
-        except Exception as e:
-            parsed_data = {"Cannot parse JSON": f"{e}"}
+        parsed_data = json.loads(template_data)
         widget = self.query_exactly_one(ConfigTab.PrettyTemplateData)
         widget.update(parsed_data)
 

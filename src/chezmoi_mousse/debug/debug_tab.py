@@ -20,6 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store
+from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.gui.common.actionables import (
     DebugBtn,
     DebugBtnGroup,
@@ -35,8 +36,6 @@ from chezmoi_mousse.str_enums import (
     LogStr,
     Tcss,
 )
-
-from .test_paths import TestPaths
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -117,19 +116,16 @@ class DebugLog(RichLoggers):
                         self.write_text_block(f"{e}")
 
         def _type_for(name: str) -> str:
-            try:
-                val = getattr(obj, name)
-                if inspect.isclass(val):
-                    return "class"
-                if inspect.ismodule(val):
-                    return "module"
-                if inspect.isroutine(val):
-                    if show_method_sources is True:
-                        self.callable_source(val)
-                    return str(type(val).__name__)
+            val = getattr(obj, name)
+            if inspect.isclass(val):
+                return "class"
+            if inspect.ismodule(val):
+                return "module"
+            if inspect.isroutine(val):
+                if show_method_sources is True:
+                    self.callable_source(val)
                 return str(type(val).__name__)
-            except Exception:
-                return "unknown"
+            return str(type(val).__name__)
 
         members_with_types = [f"{m}: {_type_for(m)}" for m in members]
         self.write_info(f"{obj.__class__.__name__} attributes:")
