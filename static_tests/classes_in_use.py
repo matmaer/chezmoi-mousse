@@ -1,8 +1,8 @@
 import ast
 from typing import TYPE_CHECKING
 
-import pytest
 from static_tests._ast_nodes import NodeData, NodeDb
+from static_tests.conftest import CheckRunner, IssueList
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -21,12 +21,19 @@ def _is_inside_class(node: NodeData, class_node: NodeData) -> bool:
     return False
 
 
-def get_class_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
-    """Analyzes top-level classes for usage and privacy recommendations."""
+def get_class_issues(node_db: NodeDb) -> IssueList:
+    """Analyzes top-level and nested classes for usage and privacy recommendations."""
     class_nodes: NDSet = node_db.by_type.get(ast.ClassDef.__name__, set())
-    name_nodes: NDSet = node_db.by_type.get(ast.Name.__name__, set())
 
-    # Map class_name -> top-level ClassDef NodeData
+    # Query both Name and Attribute nodes to catch accesses like
+    # ConfigTab.CatConfigStatic
+    name_nodes: NDSet = node_db.by_type.get(ast.Name.__name__, set())
+    attr_nodes: NDSet = node_db.by_type.get(ast.Attribute.__name__, set())
+    identifier_nodes = name_nodes | attr_nodes
+
+    issue_list: IssueList = []
+
+    # Map class_name -> ClassDef NodeData
     defined_classes: dict[str, NodeData] = {}
     for node in class_nodes:
         assert isinstance(node.ast_node, ast.ClassDef)
@@ -37,28 +44,28 @@ def get_class_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
     # Track usage files per class name
     class_file_usages: dict[str, set[str]] = {}
 
-    for name_node in name_nodes:
+    for identifier_node in identifier_nodes:
+        # Extract name depending on whether it's ast.Name or ast.Attribute
+        identifier_str = identifier_node.str_rep
+
+        if not identifier_str or identifier_str not in defined_classes:
+            continue
+
+        # Ignore class definition headers (Store context on targets/assignments)
         if (
-            not isinstance(name_node.ast_node, ast.Name)
-            or name_node.str_rep not in defined_classes
+            identifier_node.ast_node
+            and getattr(identifier_node.ast_node, "ctx", None) is ast.Store()
         ):
             continue
 
-        # Ignore class definition headers (Store context)
-        if isinstance(name_node.ast_node.ctx, ast.Store):
-            continue
-
-        class_name = name_node.str_rep
+        class_name = identifier_str
         class_node = defined_classes[class_name]
 
         # Ignore self-references inside the class definition itself
-        if _is_inside_class(name_node, class_node):
+        if _is_inside_class(identifier_node, class_node):
             continue
 
-        class_file_usages.setdefault(class_name, set()).add(name_node.rel_path)
-
-    unused_classes: list[str] = []
-    should_be_private: list[str] = []
+        class_file_usages.setdefault(class_name, set()).add(identifier_node.rel_path)
 
     for class_name, class_node in defined_classes.items():
         file_usages = class_file_usages.get(class_name, set())
@@ -66,29 +73,26 @@ def get_class_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
         loc_str = f"{class_node.rel_path}:{class_node.lineno}"
 
         if not file_usages:
-            unused_classes.append(f"Class '{class_name}' is unused ({loc_str})")
+            issue_list.append(
+                (
+                    f"{class_name}",
+                    f"{loc_str}",
+                    "Unused class(es)",
+                )
+            )
         elif class_name in node_db.textual_subclass_names:
             continue
         if file_usages == {class_node.rel_path} and not is_private:
-            should_be_private.append(
-                f"Class '{class_name}' used only in defined file, should be private "
-                f"({loc_str})"
+            issue_list.append(
+                (
+                    f"{class_name}",
+                    f"{loc_str}",
+                    "Class(es) can be private",
+                )
             )
 
-    return sorted(unused_classes), sorted(should_be_private)
+    return issue_list
 
 
-def test_classes_in_use(node_db: NodeDb) -> None:
-    unused, should_be_private = get_class_issues(node_db)
-    reports: list[str] = []
-
-    if unused:
-        reports.append("Unused classes found:")
-        reports.extend(f"- {item}" for item in unused)
-
-    if should_be_private:
-        reports.append("\nPublic classes that should be private:")
-        reports.extend(f"- {item}" for item in should_be_private)
-
-    if reports:
-        pytest.fail("\n".join(reports))
+def test_classes_in_use(run_check: CheckRunner) -> None:
+    run_check(get_class_issues)

@@ -32,7 +32,7 @@ class NodeData:
     col_offset: int | None = None
 
     _dc_field_name: str | None = None
-    _decorator_name: str | None = None
+    _decorator_names: list[str] = field(default_factory=list[str])
     _enum_member_name: str | None = None
     _export_names: set[str] | None = None
     _function_name: str | None = None
@@ -50,28 +50,28 @@ class NodeData:
         return self._dc_field_name
 
     @property
-    def decorator_name(self) -> str | None:
+    def decorator_names(self) -> list[str]:
         assert isinstance(
             self.ast_node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
         )
-        if isinstance(self._decorator_name, str):
-            return self._decorator_name
+        if self._decorator_names:
+            return self._decorator_names
 
-        dec_name = None
+        dec_names: list[str] = []
         for dec in self.ast_node.decorator_list:
             # Plain decorators
             if isinstance(dec, ast.Name):
-                dec_name = dec.id
+                dec_names.append(dec.id)
             elif isinstance(dec, ast.Attribute):
-                dec_name = dec.attr
+                dec_names.append(dec.attr)
             elif isinstance(dec, ast.Call):
                 # Parameterized decorators
                 if isinstance(dec.func, ast.Name):
-                    dec_name = dec.func.id
+                    dec_names.append(dec.func.id)
                 elif isinstance(dec.func, ast.Attribute):
-                    dec_name = dec.func.attr
-        self._decorator_name = dec_name
-        return dec_name
+                    dec_names.append(dec.func.attr)
+        self._decorator_names = dec_names
+        return dec_names
 
     @property
     def enum_member_name(self) -> str:
@@ -175,7 +175,7 @@ class NodeData:
         return name
 
     @property
-    def is_special_dunder(self) -> bool:
+    def is_dunder(self) -> bool:
         name = self.function_name
         return name.startswith("__") and name.endswith("__")
 

@@ -2,7 +2,7 @@ import ast
 from typing import TYPE_CHECKING
 
 from static_tests._ast_nodes import NodeData, NodeDb
-from static_tests.conftest import CheckRunner
+from static_tests.conftest import CheckRunner, IssueList
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -73,11 +73,11 @@ def _check_alternative_usage(
     return used_members
 
 
-def get_unused(node_db: NodeDb) -> list[tuple[str, ...]]:
+def get_unused(node_db: NodeDb) -> IssueList:
     enum_members = _extract_enum_members(node_db)
     attr_nodes: NDSet = node_db.by_type.get(ast.Attribute.__name__, set())
     name_nodes: NDSet = node_db.by_type.get(ast.Name.__name__, set())
-    unused_reports: list[tuple[str, ...]] = []
+    issue_list: IssueList = []
 
     for class_node, members in enum_members.items():
         assert isinstance(class_node.ast_node, ast.ClassDef)
@@ -115,10 +115,10 @@ def get_unused(node_db: NodeDb) -> list[tuple[str, ...]]:
 
             if member_name.startswith("_"):
                 if member_name not in used_internally:
-                    unused_reports.append(
+                    issue_list.append(
                         (
-                            member_name,
                             class_name,
+                            member_name,
                             loc_str,
                             "Private member(s) internally not in use",
                         )
@@ -129,25 +129,25 @@ def get_unused(node_db: NodeDb) -> list[tuple[str, ...]]:
                 continue
 
             if member_name in used_internally:
-                unused_reports.append(
+                issue_list.append(
                     (
-                        member_name,
                         class_name,
+                        member_name,
                         loc_str,
                         "Member(s) can be private",
                     )
                 )
             else:
-                unused_reports.append(
+                issue_list.append(
                     (
-                        member_name,
                         class_name,
+                        member_name,
                         loc_str,
                         "Member(s) not accessed",
                     )
                 )
 
-    return sorted(unused_reports)
+    return sorted(issue_list)
 
 
 def test_enum_members(run_check: CheckRunner) -> None:

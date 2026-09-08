@@ -1,14 +1,14 @@
 import ast
 from typing import TYPE_CHECKING
 
-import pytest
 from static_tests._ast_nodes import NodeData, NodeDb
+from static_tests.conftest import CheckRunner, IssueList
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
 
-type ExportDict = dict[str, set[str]]
-type ExportNodeDict = dict[str, NodeData]
+type ExportDict = dict[str, set[str]]  # module name mapped to exported strings
+type ExportNodeDict = dict[str, NodeData]  # module name mapped to assign node
 
 
 def _get_defined_exports(node_db: NodeDb) -> tuple[ExportDict, ExportNodeDict]:
@@ -35,12 +35,13 @@ def _get_defined_exports(node_db: NodeDb) -> tuple[ExportDict, ExportNodeDict]:
     return defined_exports, export_nodes
 
 
-def get_unused(node_db: NodeDb) -> list[str]:
+def get_issues(node_db: NodeDb) -> IssueList:
+    issue_list: IssueList = []
     defined_exports, export_nodes = _get_defined_exports(node_db)
 
     # Track import relationships across the codebase:
-    # (target_module, imported_symbol) -> set of consuming modules
     import_tracker: dict[tuple[str, str], set[str]] = {}
+    # (target_module, imported_symbol) -> set of consuming modules
     imported_symbols_by_module: set[tuple[str, str]] = set()
 
     import_from_nodes: NDSet = node_db.by_type.get(ast.ImportFrom.__name__, set())
@@ -60,26 +61,27 @@ def get_unused(node_db: NodeDb) -> list[str]:
                 import_tracker.setdefault(key, set()).add(consumer_module)
                 imported_symbols_by_module.add((consumer_module, alias.name))
 
-    # Output Buckets
-    never_imported_anywhere: list[str] = []
-    imported_but_missing_from_all: list[str] = []
-    missing_all_variable_entirely: list[str] = []
-    reexported_indirect_imports: list[str] = []
-
     # 1. Flag modules imported from that lack an `__all__` declaration
     modules_imported_from = {src for src, _ in import_tracker}
     for src_module in modules_imported_from:
         if src_module not in defined_exports:
             has_external_consumer = any(
-                c != src_module
-                for (s, _), cons in import_tracker.items()
+                consumer != src_module
+                for (s, _), consumers in import_tracker.items()
                 if s == src_module
-                for c in cons
+                for consumer in consumers
             )
             if has_external_consumer:
-                missing_all_variable_entirely.append(
-                    f"{src_module} has no '__all__' variable, but other modules "
-                    f"import from it"
+                issue_list.append(
+                    (
+                        f"{src_module}",
+                        "not available",
+                        "not available",
+                        (
+                            "Module(s) without '__all__' var, but other modules import "
+                            "from it"
+                        ),
+                    )
                 )
 
     # 2. Flag items imported from a module that are missing from its `__all__`
@@ -89,8 +91,13 @@ def get_unused(node_db: NodeDb) -> list[str]:
             and src_module in defined_exports
             and symbol not in defined_exports[src_module]
         ):
-            imported_but_missing_from_all.append(
-                f"'{symbol}' imported from '{src_module}', not exported in __all__"
+            issue_list.append(
+                (
+                    f"{src_module}",
+                    f"{symbol}",
+                    "not available",
+                    ("Symbol(s) imported but not exported in __all__"),
+                )
             )
 
     # 3. Flag unused entries in `__all__` or indirect re-exports
@@ -100,48 +107,29 @@ def get_unused(node_db: NodeDb) -> list[str]:
 
         for symbol in exports:
             if not is_init and (src_module, symbol) in imported_symbols_by_module:
-                reexported_indirect_imports.append(
-                    f"'{symbol}' in {src_module} ({node.rel_path}:{node.lineno}) "
-                    f"is imported from elsewhere but re-exported in __all__"
+                issue_list.append(
+                    (
+                        f"{src_module}",
+                        f"{symbol}",
+                        f"{node.rel_path}:{node.lineno}",
+                        ("Symbol(s) imported and re-exported in __all__"),
+                    )
                 )
-
             external_consumers = import_tracker.get((src_module, symbol), set()) - {
                 src_module
             }
             if not external_consumers:
-                never_imported_anywhere.append(
-                    f"'{symbol}' in {src_module} ({node.rel_path}:{node.lineno})"
+                issue_list.append(
+                    (
+                        f"{src_module}",
+                        f"{symbol}",
+                        f"{node.rel_path}:{node.lineno}",
+                        ("Symbol(s) exported in __all__ but never imported"),
+                    )
                 )
 
-    # Build report sections
-    sections = [
-        (
-            "\nFound entries in __all__ that are never imported anywhere:",
-            never_imported_anywhere,
-        ),
-        (
-            "\nItems imported from a module, but not exported in __all__:",
-            imported_but_missing_from_all,
-        ),
-        (
-            "\nModules with no '__all__' variable, but other modules import from them:",
-            missing_all_variable_entirely,
-        ),
-        ("\nIndirect re-exports in __all__:", reexported_indirect_imports),
-    ]
-
-    reports: list[str] = []
-    for header, items in sections:
-        if items:
-            reports.append(header)
-            reports.extend(f"- {r}" for r in sorted(items))
-
-    return reports
+    return issue_list
 
 
-def test_import_export(node_db: NodeDb) -> None:
-    reports = get_unused(node_db)
-
-    if reports:
-        msg = f"{len(reports)} import/export issue(s) found:\n" + "\n".join(reports)
-        pytest.fail(msg)
+def test_import_export(run_check: CheckRunner) -> None:
+    run_check(get_issues)

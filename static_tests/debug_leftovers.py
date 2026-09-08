@@ -1,15 +1,19 @@
-import pytest
 from static_tests._ast_nodes import NodeDb
+from static_tests.conftest import CheckRunner, IssueList
 
-# TODO: debug log calls
 
-
-def test_print_calls(node_db: NodeDb) -> None:
+def get_print_calls(node_db: NodeDb) -> IssueList:
+    issues_set: set[tuple[str, ...]] = set()
     print_nodes = node_db.by_name.get("print", set())
-    issues: set[str] = set()
     for data in print_nodes:
-        issues.add(f"print call in {data.rel_path}:{data.lineno}")
+        issues_set.add(
+            (
+                f"{data.rel_path}:{data.lineno}",
+                "Call(s) to print",
+            )
+        )
+    return list(issues_set)
 
-    if issues:
-        msg = f"{len(issues)} debug leftovers:\n\n" + "\n".join(sorted(issues))
-        pytest.fail(msg, pytrace=False)
+
+def test_print_calls(run_check: CheckRunner) -> None:
+    run_check(get_print_calls)

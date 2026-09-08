@@ -1,8 +1,8 @@
 import ast
 from typing import TYPE_CHECKING
 
-import pytest
 from static_tests._ast_nodes import NodeData, NodeDb
+from static_tests.conftest import CheckRunner, IssueList
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -62,7 +62,8 @@ def _find_enclosing_class(node: NodeData) -> str:
     return "module"
 
 
-def get_function_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
+def get_function_issues(node_db: NodeDb) -> IssueList:
+    issue_list: IssueList = []
     textual_imports = node_db.textual_imports
 
     func_type_names = (ast.FunctionDef.__name__, ast.AsyncFunctionDef.__name__)
@@ -76,14 +77,14 @@ def get_function_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
     # 1. Gather Top-Level Module Functions
     module_functions: dict[str, NodeData] = {}
     for node in func_nodes:
-        if node.is_top_level and not node.is_special_dunder:
+        if node.is_top_level and not node.is_dunder:
             module_functions[node.function_name] = node
 
     # 2. Gather Class Methods
     class_methods: dict[tuple[str, str], tuple[NodeData, NodeData]] = {}
 
     for node in func_nodes:
-        if node.is_special_dunder:
+        if node.is_dunder:
             continue
 
         parent = node.parent
@@ -97,7 +98,7 @@ def get_function_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
             method_name = node.function_name
 
             # Skip Textual's @on decorated methods
-            if node.decorator_name == "on":
+            if "on" in node.decorator_names:
                 continue
 
             # Automatically skip Textual lifecycle methods in Textual subclasses
@@ -134,9 +135,6 @@ def get_function_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
         module_func_file_usages.setdefault(identifier, set()).add(name_node.rel_path)
         method_class_usages.setdefault(identifier, set()).add(enclosing_class)
 
-    unused_functions: list[str] = []
-    should_be_private: list[str] = []
-
     # 4. Evaluate Module Functions
     for func_name, node in module_functions.items():
         file_usages = module_func_file_usages.get(func_name, set())
@@ -144,11 +142,12 @@ def get_function_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
         loc_str = f"{node.rel_path}:{node.lineno}"
 
         if not file_usages:
-            unused_functions.append(f"Function '{func_name}()' is unused ({loc_str})")
+            issue_list.append(
+                (f"{func_name}()", f"{loc_str}", "Function(s) not in use")
+            )
         elif file_usages == {node.rel_path} and not is_private:
-            should_be_private.append(
-                f"Function '{func_name}()' used only in defined file, can be "
-                f"private ({loc_str})"
+            issue_list.append(
+                (f"{func_name}()", f"{loc_str}", "Function(s) can be private")
             )
 
     # 5. Evaluate Class Methods
@@ -158,24 +157,16 @@ def get_function_issues(node_db: NodeDb) -> tuple[list[str], list[str]]:
         loc_str = f"{node.rel_path}:{node.lineno}"
 
         if not class_usages:
-            unused_functions.append(f"{method_name}() from {class_name} ({loc_str})")
+            issue_list.append(
+                (f"{method_name}()", f"{loc_str}", "Function(s) not in use")
+            )
         elif class_usages == {class_name} and not is_private:
-            should_be_private.append(f"{method_name}() from {class_name} ({loc_str})")
+            issue_list.append(
+                (f"{method_name}()", f"{loc_str}", "Function(s) can be private")
+            )
 
-    return sorted(unused_functions), sorted(should_be_private)
+    return issue_list
 
 
-def test_functions_in_use(node_db: NodeDb) -> None:
-    unused, should_be_private = get_function_issues(node_db)
-    reports: list[str] = ["Function usage report:\n"]
-
-    if unused:
-        reports.append("\nUnused functions/methods found:\n")
-        reports.extend(f"{item}" for item in unused)
-
-    if should_be_private:
-        reports.append("\nPublic functions/methods that can be private:\n")
-        reports.extend(f"{item}" for item in should_be_private)
-
-    if reports:
-        pytest.fail("\n".join(reports))
+def test_functions(run_check: CheckRunner) -> None:
+    run_check(get_function_issues)

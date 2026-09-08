@@ -1,8 +1,8 @@
 import ast
 import re
 
-import pytest
 from static_tests._ast_nodes import NodeDb
+from static_tests.conftest import CheckRunner, IssueList
 
 QUERY_ONE = "query_one"
 QUERY_EXACTLY_ONE = "query_exactly_one"
@@ -52,11 +52,10 @@ def check_query_call(call_node: ast.Call, func_name: str) -> str | None:
     return reason
 
 
-def test_query_args(node_db: NodeDb) -> None:
+def get_issues(node_db: NodeDb) -> IssueList:
     q_one_nodes = node_db.by_name.get(QUERY_ONE, set())
     q_exactly_one_nodes = node_db.by_name.get(QUERY_EXACTLY_ONE, set())
-
-    issues: list[str] = []
+    issue_list: IssueList = []
 
     for data in q_one_nodes | q_exactly_one_nodes:
         if not isinstance(data.ast_node, ast.Call) or not isinstance(data.str_rep, str):
@@ -66,9 +65,15 @@ def test_query_args(node_db: NodeDb) -> None:
         reason = check_query_call(data.ast_node, data.str_rep)
         if reason is None:
             continue
-        issues.append(f"{node_str} {reason} ({data.rel_path}:{data.lineno})")
+        issue_list.append(
+            (
+                f"{node_str}",
+                f"{data.rel_path}:{data.lineno}",
+                f"{reason}",
+            )
+        )
+    return issue_list
 
-    if issues:
-        issues.sort()
-        msg = f"{len(issues)} invalid query calls:\n\n" + "\n".join(issues)
-        pytest.fail(msg)
+
+def test_query_args(run_check: CheckRunner) -> None:
+    run_check(get_issues)

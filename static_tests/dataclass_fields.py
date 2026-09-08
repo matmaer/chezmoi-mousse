@@ -1,8 +1,8 @@
 import ast
 from typing import TYPE_CHECKING
 
-import pytest
 from static_tests._ast_nodes import NodeData, NodeDb
+from static_tests.conftest import CheckRunner, IssueList
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -16,7 +16,7 @@ def _extract_dataclass_fields(node_db: NodeDb) -> DcFieldDict:
 
     class_nodes = node_db.by_type.get(ast.ClassDef.__name__, set())
     for class_node in class_nodes:
-        if class_node.decorator_name != "dataclass":
+        if "dataclass" not in class_node.decorator_names:
             continue
 
         fields = {
@@ -43,10 +43,10 @@ def _is_inside_class(attr: NodeData, class_node: NodeData) -> bool:
     return False
 
 
-def get_unused(node_db: NodeDb) -> list[str]:
+def get_unused(node_db: NodeDb) -> IssueList:
     dataclass_fields: DcFieldDict = _extract_dataclass_fields(node_db)
     attr_nodes: NDSet = node_db.by_type.get(ast.Attribute.__name__, set())
-    unused_reports: list[str] = []
+    issue_list: IssueList = []
 
     for class_node, fields in dataclass_fields.items():
         assert isinstance(class_node.ast_node, ast.ClassDef)
@@ -75,35 +75,33 @@ def get_unused(node_db: NodeDb) -> list[str]:
 
         # Evaluate usage for each field
         for field_node in fields:
+            loc_str = f"{class_node.rel_path}:{field_node.lineno}"
             field_name = field_node.dc_field_name
 
-            if field_name.startswith("_"):
-                if field_name not in used_internally:
-                    unused_reports.append(
-                        f"{class_name} private field '{field_name}' internally not in "
-                        f"use ({field_node.rel_path}:{field_node.lineno})"
-                    )
+            if field_name in used_externally or (
+                field_name.startswith("_") and field_name in used_internally
+            ):
                 continue
-
-            if field_name in used_externally:
-                continue
-
-            if field_name in used_internally:
-                unused_reports.append(
-                    f"{class_name} public field '{field_name}' should be private "
-                    f"({field_node.rel_path}:{field_node.lineno})"
+            if field_name in used_internally and not field_name.startswith("_"):
+                issue_list.append(
+                    (
+                        f"{class_name}",
+                        f"{field_name}",
+                        f"{loc_str}",
+                        "Member(s) can be private",
+                    ),
                 )
             else:
-                unused_reports.append(
-                    f"{class_name} public field '{field_name}' not accessed "
-                    f"({field_node.rel_path}:{field_node.lineno})"
+                issue_list.append(
+                    (
+                        f"{class_name}",
+                        f"{field_name}",
+                        f"{loc_str}",
+                        "Member(s) not in use",
+                    ),
                 )
-    return sorted(unused_reports)
+    return issue_list
 
 
-def test_dataclass_fields(node_db: NodeDb) -> None:
-    unused = get_unused(node_db)
-
-    if unused:
-        msg = f"{len(unused)} dataclass field issue(s) found:\n\n" + "\n".join(unused)
-        pytest.fail(msg)
+def test_dataclass_fields(run_check: CheckRunner) -> None:
+    run_check(get_unused)

@@ -47,7 +47,7 @@ def format_fails(items: IssueList) -> str:
     # Create padded lines grouped by last column (info)
     formatted_output: list[str] = []
     for info, rows in groups.items():
-        formatted_output.append(f"\n{info}:\n")
+        formatted_output.append(f"\n___ {info} ___\n")
         for row in sorted(rows):
             formatted_parts: list[str] = []
             for col_idx, text in enumerate(row):
