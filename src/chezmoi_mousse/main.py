@@ -69,7 +69,7 @@ def run_app() -> None:
     _check_if_we_can_run()
 
     app = ChezmoiGui()
-    if store.PILOT_MODE:
+    if store.init_data.pilot_mode:
         run_with_pilot(app)
     else:
         app.run()
