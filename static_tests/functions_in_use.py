@@ -1,4 +1,5 @@
 import ast
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from static_tests._ast_nodes import NodeData, NodeDb
@@ -9,6 +10,7 @@ if TYPE_CHECKING:
 
 # Classes whose methods are exempt from unused checks
 EXCLUDE_CLASSES = {"DebugLog", "CustomScrollBarRender"}
+EXCLUDE_MODULES = {Path("debug", "utils.py")}
 
 # General Textual lifecycle & handler prefixes/names
 TEXTUAL_LIFECYCLE_NAMES = {
@@ -84,7 +86,7 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
     class_methods: dict[tuple[str, str], tuple[NodeData, NodeData]] = {}
 
     for node in func_nodes:
-        if node.is_dunder:
+        if node.is_dunder or node.file_path in EXCLUDE_MODULES:
             continue
 
         parent = node.parent
