@@ -86,15 +86,15 @@ class DiffView(ScrollableContainer):
     @property
     def paths(self) -> StatusPaths:
         return (
-            store.apply_paths
+            store.paths.apply
             if self.app_ids.tab_label == BtnLabel.apply
-            else store.re_add_paths
+            else store.paths.re_add
         )
 
     @work
     async def _update_widgets(self, path: Path) -> None:
 
-        if path in store.status_dirs_kind and not store.status_files_kind:
+        if path in self.paths.status_paths:
             diff_result = await tchezmoi.run_chezmoi_diff(self.app, self.diff_cmd, path)
 
             self.main_section_label.update(str(diff_result.full_cmd))
@@ -109,23 +109,21 @@ class DiffView(ScrollableContainer):
             self.info_static.display = False
             return
 
-        managed_paths = store.managed_dirs | store.managed_files
-
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-            if not managed_paths:
+            if not store.paths.managed_paths:
                 self.sub_section_label.update(LabelStr.no_managed_paths)
             else:
                 self.sub_section_label.update(LabelStr.dest_dir_diff)
 
-        elif path in managed_paths:
-            if path in store.managed_dirs:
+        elif path in store.paths.managed_paths:
+            if path in store.paths.managed_dirs:
                 self.main_section_label.update(LabelStr.managed_dir)
-            elif path in store.managed_files:
+            elif path in store.paths.managed_files:
                 self.main_section_label.update(LabelStr.managed_file)
             self.sub_section_label.update(LabelStr.managed_no_status)
 
-        elif path in self.paths.n_dirs:
+        elif path in self.paths.real_status_dirs:
             self.main_section_label.update(LabelStr.managed_dir)
             self.sub_section_label.update(LabelStr.n_dir)
 

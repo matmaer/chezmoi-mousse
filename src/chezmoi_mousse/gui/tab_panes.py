@@ -109,7 +109,7 @@ class ApplyTab(TabPane):
         with Horizontal():
             with LeftSideVertical(app_ids=store.apply_ids):
                 yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-                yield ManagedTree(store.apply_ids, store.apply_paths)
+                yield ManagedTree(store.apply_ids)
                 yield RefreshBtn(app_ids=store.apply_ids)
             yield ViewSwitcher(store.apply_ids)
         yield SwitchSlider(app_ids=store.apply_ids)
@@ -134,7 +134,7 @@ class ReAddTab(TabPane):
         with Horizontal():
             with LeftSideVertical(app_ids=store.re_add_ids):
                 yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-                yield ManagedTree(store.re_add_ids, store.re_add_paths)
+                yield ManagedTree(store.re_add_ids)
                 yield RefreshBtn(app_ids=store.re_add_ids)
             yield ViewSwitcher(store.re_add_ids)
         yield SwitchSlider(app_ids=store.re_add_ids)

@@ -4,6 +4,7 @@ import dataclasses
 import os
 import shutil
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -17,7 +18,8 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
-from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse import store
+from chezmoi_mousse.data_classes import ManagedPaths
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
@@ -42,6 +44,7 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     BtnLabel,
     Chars,
+    PathKind,
     ReactiveVar,
     ReadCmd,
     Tcss,
@@ -159,7 +162,7 @@ class ChezmoiGui(App[str]):
         await self._log_pre_mount_cmd_results().wait()
 
         await self.run_splash_cmd_workers().wait()
-        await self.run_managed_paths_workers(splash_screen=True).wait()
+        await self.run_managed_paths_workers().wait()
 
         await self._update_managed_trees()
         await self.splash_screen.dismiss_after_fade_loop()
@@ -178,12 +181,40 @@ class ChezmoiGui(App[str]):
             await self.splash_screen.splash_run_chezmoi(cmd)
 
     @work(group="managed_paths")
-    async def run_managed_paths_workers(self, splash_screen: bool = False) -> None:
-        for cmd in ReadCmd.managed_commands():
-            if not splash_screen:
-                await tchezmoi.exec_chezmoi_cmd(self.app, cmd).wait()
-            else:
-                await self.splash_screen.splash_run_chezmoi(cmd)
+    async def run_managed_paths_workers(self) -> None:
+        await self.splash_screen.run_managed_commands().wait()
+        await self._create_managed_paths_instance()
+
+    async def _create_managed_paths_instance(self) -> None:
+
+        # we will create the data for the four fields which we need to properly init
+        # the ManagedPaths instance: managed_dirs, managed_files, status_dir_pairs,
+        # status_file_pairs
+
+        managed_dirs_dict: dict[Path, PathKind] = {
+            path: (PathKind.EXISTS if path.exists() else PathKind.MISSING)
+            for p in store.ManagedCmdResults.managed_dirs_result.splitlines()
+            if (path := Path(p))
+        }
+        managed_files_dict: dict[Path, PathKind] = {
+            path: (PathKind.EXISTS if path.exists() else PathKind.MISSING)
+            for p in store.ManagedCmdResults.managed_files_result.splitlines()
+            if (path := Path(p))
+        }
+        status_dir_pairs: dict[Path, str] = {
+            Path(line[0:2]): line[3:]
+            for line in store.ManagedCmdResults.status_dirs_result.splitlines()
+        }
+        status_file_pairs: dict[Path, str] = {
+            Path(line[0:2]): line[3:]
+            for line in store.ManagedCmdResults.status_files_result.splitlines()
+        }
+        store.paths = ManagedPaths(
+            managed_dirs=managed_dirs_dict,
+            managed_files=managed_files_dict,
+            status_dir_pairs=status_dir_pairs,
+            status_file_pairs=status_file_pairs,
+        )
 
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:

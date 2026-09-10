@@ -385,7 +385,8 @@ class PathFilters(Enum):
 
 
 class PathKind(StrEnum):
-    EXISTS_FALSE = auto()
+    EXISTS = auto()
+    MISSING = auto()
     ERROR = auto()
     UNMANAGED = auto()
 

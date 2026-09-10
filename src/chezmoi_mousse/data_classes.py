@@ -29,6 +29,10 @@ class StatusPaths:
     def fake_status_dirs(self) -> frozenset[Path]:
         return frozenset(self.space_dirs & self.status_dirs.keys())
 
+    @cached_property
+    def real_status_dirs(self) -> frozenset[Path]:
+        return frozenset(self.status_dirs.keys() - self.space_dirs)
+
 
 @dataclass(kw_only=True)
 class ManagedPaths:
@@ -46,12 +50,16 @@ class ManagedPaths:
         self.re_add = self.get_status_paths(1)
 
     @cached_property
-    def double_space_dirs(self) -> dict[Path, PathKind]:
-        return {
+    def managed_paths(self) -> dict[Path, PathKind]:
+        paths = {
             path: kind
             for path, kind in self.managed_dirs.items()
             if path not in self.status_dir_pairs
         }
+        for path, kind in self.managed_files.items():
+            if path not in self.status_file_pairs:
+                paths[path] = kind
+        return paths
 
     def get_status_paths(self, column: int) -> StatusPaths:
         # Return a dict which is relevant for the apply or re-add context.

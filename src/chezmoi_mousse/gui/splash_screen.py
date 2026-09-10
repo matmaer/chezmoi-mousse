@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import events
+from textual import events, work
 from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.reactive import reactive
@@ -192,6 +192,11 @@ class SplashScreen(Screen[None]):
         await self._parse_and_store_config()
 
         store.pre_mount = False
+
+    @work(group="managed_commands")
+    async def run_managed_commands(self) -> None:
+        for cmd in ReadCmd.managed_commands():
+            await self.splash_run_chezmoi(cmd)
 
     async def dismiss_after_fade_loop(self) -> None:
         while (
