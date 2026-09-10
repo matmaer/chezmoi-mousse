@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum, StrEnum, auto
-from functools import cache
+from functools import cache, cached_property
 from typing import Self
 
 __all__ = [
@@ -241,6 +241,7 @@ class LogStr(StrEnum):
     success = auto()
 
     @classmethod
+    @cache
     def _splash_suffixes(cls) -> frozenset[Self]:
         return frozenset(
             (
@@ -517,10 +518,9 @@ class ReadCmd(Enum):
     status_files = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_files)
     template_data = ("data", _VerbArgs.format_json)
 
-    @property
+    @cached_property
     def pretty_cmd(self) -> str:
-        ugly_args: tuple[str, ...] = ()
-        ugly_args += (
+        ugly_args: tuple[str, ...] = (
             *GlobalArgs.global_defaults.value,
             *_ChezmoiGitArgs.global_args.value,
             *_ChezmoiGitArgs.git_log_args.value,
@@ -530,7 +530,8 @@ class ReadCmd(Enum):
                 _VerbArgs.path_style_absolute.value,
             ),
         )
-        verb_str = " ".join([a for a in self.value if a not in ugly_args])
+
+        verb_str = " ".join(a for a in self.value if a not in ugly_args)
         return f"chezmoi {verb_str}"
 
     @classmethod
@@ -559,18 +560,19 @@ class ReadCmd(Enum):
 class WriteCmd(Enum):
     init = ("init",)
     add = ("add",)
-    # apply = ("apply",)  # noqa: ERA001
+    apply = ("apply",)
     destroy = ("destroy",)
     forget = ("forget",)
-    # re_add = ("re-add",)  # noqa: ERA001
+    re_add = ("re-add",)
 
     @classmethod
+    @cache
     def get_write_cmd(cls, op_btn_label: BtnLabel) -> Self:
-        mapping = {
-            BtnLabel.add_run: cls[cls.add.name],
-            # BtnLabel.apply_run: cls[cls.apply.name],
-            BtnLabel.destroy_run: cls[cls.destroy.name],
-            BtnLabel.forget_run: cls[cls.forget.name],
-            # BtnLabel.re_add_run: cls[cls.re_add.name],
+        mapping: dict[BtnLabel, Self] = {
+            BtnLabel.add_run: cls(cls.add),
+            BtnLabel.apply_run: cls(cls.apply),
+            BtnLabel.destroy_run: cls(cls.destroy),
+            BtnLabel.forget_run: cls(cls.forget),
+            BtnLabel.re_add_run: cls(cls.re_add),
         }
         return mapping[op_btn_label]

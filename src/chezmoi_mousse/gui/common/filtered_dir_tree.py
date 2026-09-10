@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 from textual.reactive import reactive
 from textual.widgets import DirectoryTree
 
-from chezmoi_mousse import store
-from chezmoi_mousse.functions import CheckPath
+from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.str_enums import Chars, Tcss
 
 if TYPE_CHECKING:
@@ -63,9 +62,9 @@ class FilteredDirTree(DirectoryTree):
             is_dir = p.is_dir()
             is_managed = bool(p in store.managed_files | store.managed_dirs)
             if is_dir:
-                is_unwanted = CheckPath.is_unwanted_dir(p)
+                is_unwanted = path_funcs.is_unwanted_dir(p)
             else:
-                is_unwanted = CheckPath.is_unwanted_file(p)
+                is_unwanted = path_funcs.is_unwanted_file(p)
             if self._should_show_path(is_managed, is_unwanted):
                 filter_paths.add(p)
         return filter_paths

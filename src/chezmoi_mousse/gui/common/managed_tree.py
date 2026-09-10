@@ -8,8 +8,7 @@ from textual import on
 from textual.reactive import reactive
 from textual.widgets import Tree
 
-from chezmoi_mousse import store
-from chezmoi_mousse.functions import CheckPath
+from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
 from chezmoi_mousse.str_enums import (
     Chars,
@@ -27,8 +26,8 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.data_classes import StatusPaths
-    from chezmoi_mousse.functions import ScanDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.path_funcs import ScanDirResult
 
 
 __all__ = ["ManagedTree"]
@@ -141,7 +140,7 @@ class ManagedTree(Tree[Path]):
         for dir_path in expanded_dirs:
             if dir_path is None:
                 return
-            unmanaged: ScanDirResult = CheckPath.os_scan_dir(dir_path)
+            unmanaged: ScanDirResult = path_funcs.os_scan_dir(dir_path)
             if isinstance(unmanaged, PathKind):
                 continue
 

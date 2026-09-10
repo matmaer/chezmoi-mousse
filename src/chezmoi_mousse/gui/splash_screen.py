@@ -16,8 +16,7 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import DumpConfigKeys
@@ -133,10 +132,10 @@ class SplashScreen(Screen[None]):
         self, cmd: ReadCmd | WriteCmd, pre_mount_phase: bool = False
     ) -> int:
         if self.repo_existed is False and cmd in (ReadCmd.git_remote, ReadCmd.git_log):
-            prefix = Commands.pretty_cmd(cmd, None)
+            prefix = tchezmoi.pretty_cmd(cmd, None)
             suffix = LogStr.skipped
             await self._write_log_msg(prefix=prefix, suffix=suffix)
-        cr: CommandResult = await Commands.exec_chezmoi_cmd(cmd, path_arg=None)
+        cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(cmd)
         prefix = cr.pretty_cmd
         if pre_mount_phase is True:
             self.pre_mount_cmd_results.append(cr)

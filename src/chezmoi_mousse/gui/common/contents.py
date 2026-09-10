@@ -6,8 +6,7 @@ from textual import work
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 
-from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.components import (
     HighlightedStatic,
     MainSectionLabel,
@@ -85,11 +84,11 @@ class ContentsView(ScrollableContainer):
         else:
             self.main_section_label.update(LabelStr.unmanaged_file)
         if store.managed_files.get(path) is PathKind.EXISTS_FALSE:
-            f_content = await Commands.get_highlighted_chezmoi_cat_output(path)
+            f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(path)
             self.highlighted_static.update(f_content)
             self.sub_section_label.update(LabelStr.chezmoi_cat_output)
         else:
-            f_content = Commands.get_highlighted_file_contents(path)
+            f_content = tchezmoi.get_highlighted_file_contents(path)
             self.highlighted_static.update(f_content)
             self.sub_section_label.update(LabelStr.read_file_output)
 

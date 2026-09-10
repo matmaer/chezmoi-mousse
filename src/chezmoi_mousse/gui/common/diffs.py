@@ -8,8 +8,7 @@ from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import Static
 
-from chezmoi_mousse import store
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.components import (
     DiffLinesContainer,
     FlatSectionLabel,
@@ -91,7 +90,7 @@ class DiffView(ScrollableContainer):
     async def _update_widgets(self, path: Path) -> None:
 
         if path in store.status_dirs_kind and not store.status_files_kind:
-            diff_result = await Commands.run_chezmoi_diff(self.diff_cmd, path)
+            diff_result = await tchezmoi.run_chezmoi_diff(self.diff_cmd, path)
 
             self.main_section_label.update(str(diff_result.full_cmd))
 

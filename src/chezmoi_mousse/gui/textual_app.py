@@ -17,9 +17,8 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
-from chezmoi_mousse import store
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
     OperateBtnGroup,
@@ -30,7 +29,6 @@ from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.contents import ContentsView
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import ManagedTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg, CurrentNodeMsg
@@ -150,7 +148,8 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(DebugTab())
 
         await tabbed_content.wait_for_refresh()
-        self._log_pre_mount_cmd_results()
+
+        await self._log_pre_mount_cmd_results().wait()
 
         await self.run_splash_cmd_workers().wait()
         await self.run_managed_paths_workers(splash_screen=True).wait()
@@ -175,7 +174,7 @@ class ChezmoiGui(App[str]):
     async def run_managed_paths_workers(self, splash_screen: bool = False) -> None:
         for cmd in ReadCmd.managed_commands():
             if not splash_screen:
-                await Commands.exec_chezmoi_cmd(cmd, path_arg=None)
+                await tchezmoi.exec_chezmoi_cmd(cmd)
             else:
                 await self.splash_screen.splash_run_chezmoi(cmd)
 
@@ -196,6 +195,11 @@ class ChezmoiGui(App[str]):
         elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
             pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
             pretty_ignored.update(msg.cmd_result.out_txt)
+        elif msg.cmd_result.cmd_enum is ReadCmd.git_log:
+            git_log_view = self.query_one(store.apply_ids.container.git_log_q)
+            setattr(git_log_view, ReactiveVar.cmd_result, msg.cmd_result)
+            git_log_view = self.query_one(store.re_add_ids.container.git_log_q)
+            setattr(git_log_view, ReactiveVar.cmd_result, msg.cmd_result)
         elif msg.cmd_result.cmd_enum is ReadCmd.template_data:
             template_data = self.query_exactly_one(ConfigTab)
             setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
@@ -235,7 +239,6 @@ class ChezmoiGui(App[str]):
         self.query_one(
             msg.app_ids.container.contents_q, ContentsView
         ).show_path = msg.path
-        self.query_one(msg.app_ids.container.git_log_q, GitLogView).node_msg = msg
 
     @on(TabbedContent.TabActivated)
     def tab_update_switch_slider_binding(
