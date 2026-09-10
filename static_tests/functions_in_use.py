@@ -13,45 +13,19 @@ EXCLUDE_CLASSES = {"DebugLog", "CustomScrollBarRender"}
 EXCLUDE_MODULES = {Path("debug", "utils.py")}
 
 # General Textual lifecycle & handler prefixes/names
-TEXTUAL_LIFECYCLE_NAMES = {
+TEXTUAL_EXCLUSIONS = {
     "compose",
     "render",
     "render_line",
     "render_lines",
     "filter_paths",
     "check_action",
-}
-
-TEXTUAL_LIFECYCLE_PREFIXES = (
     "action_",
     "watch_",
     "on_",
     "validate_",
     "compute_",
-)
-
-
-def _is_textual_subclass(class_node: NodeData, textual_imports: set[str]) -> bool:
-    """Checks if a ClassDef node inherits from any dynamically imported Textual base
-    class."""
-    assert isinstance(class_node.ast_node, ast.ClassDef)
-    for base in class_node.ast_node.bases:
-        if isinstance(base, ast.Name) and base.id in textual_imports:
-            return True
-        elif isinstance(base, ast.Subscript) and isinstance(base.value, ast.Name):
-            if base.value.id in textual_imports:
-                return True
-        elif isinstance(base, ast.Attribute) and base.attr in textual_imports:
-            return True
-    return False
-
-
-def _is_textual_lifecycle_method(method_name: str) -> bool:
-    """Checks if a method name matches common Textual callback/event naming
-    conventions."""
-    if method_name in TEXTUAL_LIFECYCLE_NAMES:
-        return True
-    return method_name.startswith(TEXTUAL_LIFECYCLE_PREFIXES)
+}
 
 
 def _find_enclosing_class(node: NodeData) -> str:
@@ -66,7 +40,6 @@ def _find_enclosing_class(node: NodeData) -> str:
 
 def get_function_issues(node_db: NodeDb) -> IssueList:
     issue_list: IssueList = []
-    textual_imports = node_db.textual_imports
 
     func_type_names = (ast.FunctionDef.__name__, ast.AsyncFunctionDef.__name__)
     func_nodes: NDSet = set()
@@ -93,20 +66,15 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
         if parent and parent.node_type == "ClassDef":
             assert isinstance(parent.ast_node, ast.ClassDef)
             class_name = parent.ast_node.name
-
             if class_name in EXCLUDE_CLASSES:
                 continue
 
             method_name = node.function_name
-
-            # Skip Textual's @on decorated methods
-            if "on" in node.decorator_names:
-                continue
-
-            # Automatically skip Textual lifecycle methods in Textual subclasses
-            if _is_textual_subclass(
-                parent, textual_imports
-            ) and _is_textual_lifecycle_method(method_name):
+            if (
+                "on" in node.decorator_names
+                or method_name in TEXTUAL_EXCLUSIONS
+                or any(method_name.startswith(entry) for entry in TEXTUAL_EXCLUSIONS)
+            ):
                 continue
 
             class_methods[(class_name, method_name)] = (node, parent)
@@ -145,11 +113,21 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
 
         if not file_usages:
             issue_list.append(
-                (f"{func_name}()", f"{loc_str}", "Function(s) not in use")
+                (
+                    f"{node.rel_path}",
+                    f"{func_name}",
+                    f"{loc_str}",
+                    "Function(s) not in use",
+                )
             )
         elif file_usages == {node.rel_path} and not is_private:
             issue_list.append(
-                (f"{func_name}()", f"{loc_str}", "Function(s) can be private")
+                (
+                    f"{node.rel_path}",
+                    f"{func_name}",
+                    f"{loc_str}",
+                    "Function(s) can be private",
+                )
             )
 
     # 5. Evaluate Class Methods
@@ -160,11 +138,21 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
 
         if not class_usages:
             issue_list.append(
-                (f"{method_name}()", f"{loc_str}", "Function(s) not in use")
+                (
+                    f"{class_name}",
+                    f"{method_name}",
+                    f"{loc_str}",
+                    "Function(s) not in use",
+                )
             )
         elif class_usages == {class_name} and not is_private:
             issue_list.append(
-                (f"{method_name}()", f"{loc_str}", "Function(s) can be private")
+                (
+                    f"{class_name}",
+                    f"{method_name}",
+                    f"{loc_str}",
+                    "Function(s) can be private",
+                )
             )
 
     return issue_list
