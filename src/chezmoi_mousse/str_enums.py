@@ -8,14 +8,12 @@ __all__ = [
     "BindingDescription",
     "BtnLabel",
     "Chars",
-    "ChezmoiGitArgs",
     "ColorVar",
     "ContainerName",
     "GlobalArgs",
     "InfoKind",
     "LabelStr",
     "LogStr",
-    "OpInfoString",
     "PathFilters",
     "PathKind",
     "ProblemChars",
@@ -24,7 +22,6 @@ __all__ = [
     "RichLogName",
     "StatusCode",
     "Tcss",
-    "VerbArgs",
     "WriteCmd",
 ]
 
@@ -181,20 +178,7 @@ class Chars(StrEnum):
     burger = "\u2261"  # IDENTICAL TO
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
-    right_arrow = f"{'\u2014' * 3}\u2192"  # EM DASH, RIGHTWARDS ARROW
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
-    # warning_sign = "\u26a0"  # WARNING SIGN # noqa: ERA001
-    x_mark = "\u2716"  # HEAVY MULTIPLICATION X
-    bullet = "\u2022"  # BULLET
-    # check_mark = "\u2714"  # HEAVY CHECK MARK # noqa: ERA001
-    # gear = "\u2699"  # GEAR # noqa: ERA001
-    # heavy_line = "\u2501"  # Box Drawings Heavy Horizontal # noqa: ERA001
-    # heavy_line_left = "\u2578"  # BOX DRAWINGS HEAVY LEFT  # noqa: ERA001
-    # heavy_line_right = "\u257a"  # BOX DRAWINGS HEAVY RIGHT # noqa: ERA001
-    # quadrant_lower_left = "\u2596"  # Quadrant Lower Left # noqa: ERA001
-    # quadrant_lower_right = "\u2597"  # Quadrant Lower Rightbottom # noqa: ERA001
-    # quadrant_upper_left = "\u2598"  # Quadrant Upper Left # noqa: ERA001
-    # quadrant_upper_right = "\u259d"  # Quadrant Upper Right # noqa: ERA001
 
     # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
     tree_collapsed = f"{right_triangle} "
@@ -203,9 +187,10 @@ class Chars(StrEnum):
 
 class ColorVar(StrEnum):
     bogus = "#FFFF00"
+    accent_darken_2 = "accent-darken-2"
     dimmed = "foreground-darken-3"
     info = "foreground-darken-1"
-    accent_darken_2 = "accent-darken-2"
+    success = "success"
     text = "text"
     text_block = "foreground-darken-1"
     text_error = "text-error"
@@ -214,6 +199,7 @@ class ColorVar(StrEnum):
     text_secondary = "text-secondary"
     text_success = "text-success"
     text_warning = "text-warning"
+    warning = "warning"
 
 
 class ContainerName(StrEnum):
@@ -257,18 +243,15 @@ class LabelStr(StrEnum):
     show_unwanted = "Show unwanted paths"
 
     # Changed paths
-    added_managed_paths = "Added managed paths"
-    changed_paths = "Changed Paths"
-    changed_status_paths = "Changed status paths"
-    removed_managed_paths = "Removed managed paths"
+    # added_managed_paths = "Added managed paths" # noqa: ERA001
+    # changed_paths = "Changed Paths" # noqa: ERA001
+    # changed_status_paths = "Changed status paths" # noqa: ERA001
+    # removed_managed_paths = "Removed managed paths" # noqa: ERA001
 
     # Other
-    affected_paths = "Paths affected by the command"
-    get_affected_paths = "Getting affected paths"
-    loading = "loading..."  # TODO, eliminate member
     cat_config_output = "Cat Config Output"
     chezmoi_cat_output = "Chezmoi Cat output"
-    command_outputs = "Command Output"
+    # command_outputs = "Command Output"  # noqa: ERA001
     debug_log = "Debug Log"
     dest_dir = "Destination Directory"
     dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
@@ -319,95 +302,48 @@ class LogStr(StrEnum):
 
     # Splash log strings, prefixes
     check_chezmoi_repo = "check chezmoi repository"
-    parse_dump_config = "parse dump-config"
+    parse_dump_config = "parse chezmoi dump-config"
 
     # Splash log strings, suffixes
-    checked = auto()  # for non-problematic non-exit 0 chezmoi commands
-    failed = auto()  # problematic non-exit 0 chezmoi commands, failed non chezmoi
-    reports = auto()  # other
-    parsed = auto()
-    success = auto()  # successful commands
     absent = auto()
+    checked = auto()
+    parsed = auto()
     present = auto()
+    reports = auto()
+    skipped = auto()
+    success = auto()
 
     @classmethod
-    def _suffixes(cls) -> frozenset[Self]:
+    def _splash_suffixes(cls) -> frozenset[Self]:
         return frozenset(
             (
+                cls[cls.absent],
                 cls[cls.checked],
-                cls[cls.failed],
                 cls[cls.parsed],
                 cls[cls.present],
                 cls[cls.reports],
+                cls[cls.skipped],
                 cls[cls.success],
             )
         )
 
+    @classmethod
+    def splash_prefixes(cls) -> frozenset[str]:
+        return frozenset(
+            (
+                cls.check_chezmoi_repo.value,
+                cls.parse_dump_config.value,
+            )
+        )
+
     @property
-    def padded(self) -> str:
-        if self not in self._suffixes():
+    def padded_suffix(self) -> str:
+        if self not in self._splash_suffixes():
             raise ValueError(f"{self} is not a splash log suffix")
         # Add padding for splash log suffixes
-        max_length = max(len(str(suffix)) for suffix in self._suffixes())
+        max_length = max(len(str(suffix)) for suffix in self._splash_suffixes())
         # return the string with spaces on the left
         return str(self).rjust(max_length)
-
-
-class OpInfoString(StrEnum):
-    add_path_info = (
-        f"[${ColorVar.info}]{Chars.bullet} Add new targets to the source state[/]"
-    )
-    add_subtitle = f"local path {Chars.right_arrow} chezmoi repo"
-    apply_path_info = (
-        f"[${ColorVar.info}]{Chars.bullet} Chezmoi will ensure that the path is in the "
-        "target state. The command will run without prompting. For targets modified "
-        "since chezmoi last wrote it[/]"
-    )
-    apply_subtitle = f"chezmoi repo {Chars.right_arrow} path on disk"
-    auto_add = (
-        f"{Chars.bullet} [${ColorVar.text_warning}]Chezmoi 'autoadd' is enabled: "
-        "paths will be added to the chezmoi repository[/]"
-    )
-    auto_commit = (
-        f"{Chars.bullet} [${ColorVar.text_warning}]Chezmoi 'autocommit' is "
-        "enabled: paths will be committed to the chezmoi repository[/]"
-    )
-    auto_push = (
-        f"{Chars.bullet} [${ColorVar.text_warning}]Chezmoi 'autopush' is enabled: "
-        "the updated chezmoi repository will be pushed to the remote (origin)[/]"
-    )
-    auto_settings_not_applicable = (
-        f"{Chars.bullet} [dim]Apply btn_label: chezmoi autoadd, autocommit and "
-        "autopush not applicable[/]"
-    )
-    destroy_path_info = (
-        f"{Chars.bullet} [${ColorVar.text_error}]Permanently remove the path from disk "
-        "and chezmoi.\n"
-        "MAKE SURE YOU HAVE A BACKUP![/]"
-    )
-    destroy_subtitle = (
-        f"[${ColorVar.text_error}]{Chars.x_mark}delete on disk and in chezmoi repo"
-        f"[${ColorVar.text_error}]{Chars.x_mark}[/]"
-    )
-    dry_run_notice = (
-        f"{Chars.bullet} [${ColorVar.text_secondary}]--dry-run flag is active, no "
-        "changes will be made to the chezmoi repository[/]"
-    )
-    forget_path_info = (
-        f"{Chars.bullet} [${ColorVar.info}]Remove from the source state, i.e. stop "
-        "managing them[/]"
-    )
-    forget_subtitle = f"leave on disk {Chars.right_arrow} chezmoi repo {Chars.x_mark}"
-    live_run_notice = (
-        f"{Chars.bullet} [${ColorVar.text_warning}]Command will run live! The paths "
-        "below will be affected![/]"
-    )
-    re_add_path_info = (
-        f"{Chars.bullet} [${ColorVar.info}]Re-add modified files in the target state, "
-        "preserving any encrypted_ attributes. chezmoi will not overwrite templates, "
-        "and all entries that are not files are ignored[/]"
-    )
-    re_add_subtitle = f"path on disk {Chars.right_arrow} overwrite chezmoi repo"
 
 
 class PathFilters(Enum):
@@ -589,7 +525,7 @@ class Tcss(StrEnum):
     managed_tree = auto()
     op_btn_group = auto()
     operate_button = auto()
-    operate_info = auto()
+    operate_buttons = auto()
     refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()
@@ -608,10 +544,10 @@ class Tcss(StrEnum):
 ##############################################
 
 
-class ChezmoiGitArgs(Enum):
+class _ChezmoiGitArgs(Enum):
     _option_terminator = "--"
     global_args = ("--no-pager", "--no-advice")
-    _default_args = (_option_terminator, *global_args)
+    verbose = "--verbose"
     # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
@@ -621,9 +557,9 @@ class ChezmoiGitArgs(Enum):
         "--no-decorate",
         "--no-expand-tabs",
     )
-    git_dir = (*_default_args, "rev-parse", "--git-dir")
-    git_log = (*_default_args, "log", *git_log_args)
-    git_remote = (*_default_args, "remote", "--verbose")
+    git_dir = (_option_terminator, *global_args, "rev-parse", "--git-dir")
+    git_log = (_option_terminator, *global_args, "log", *git_log_args)
+    git_remote = (_option_terminator, *global_args, "remote", verbose)
 
 
 class GlobalArgs(Enum):
@@ -643,7 +579,7 @@ class GlobalArgs(Enum):
     verbose = "--verbose=true"
 
 
-class VerbArgs(StrEnum):
+class _VerbArgs(StrEnum):
     format_json = "--format=json"
     include_dirs = "--include=dirs"
     include_files = "--include=files"
@@ -655,19 +591,35 @@ class ReadCmd(Enum):
     cat = ("cat",)
     cat_config = ("cat-config",)
     diff = ("diff",)
-    diff_reverse = ("diff", VerbArgs.reverse)
+    diff_reverse = ("diff", _VerbArgs.reverse)
     doctor = ("doctor",)
-    dump_config = ("dump-config", VerbArgs.format_json)
-    git_dir = ("git", *ChezmoiGitArgs.git_dir.value)
-    git_log = ("git", *ChezmoiGitArgs.git_log.value)
-    git_remote = ("git", *ChezmoiGitArgs.git_remote.value)
+    dump_config = ("dump-config", _VerbArgs.format_json)
+    git_dir = ("git", *_ChezmoiGitArgs.git_dir.value)
+    git_log = ("git", *_ChezmoiGitArgs.git_log.value)
+    git_remote = ("git", *_ChezmoiGitArgs.git_remote.value)
     ignored = ("ignored",)
-    managed_dirs = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
-    managed_files = ("managed", VerbArgs.path_style_absolute, VerbArgs.include_files)
+    managed_dirs = ("managed", _VerbArgs.path_style_absolute, _VerbArgs.include_dirs)
+    managed_files = ("managed", _VerbArgs.path_style_absolute, _VerbArgs.include_files)
     source_path = ("source-path",)
-    status_dirs = ("status", VerbArgs.path_style_absolute, VerbArgs.include_dirs)
-    status_files = ("status", VerbArgs.path_style_absolute, VerbArgs.include_files)
-    template_data = ("data", VerbArgs.format_json)
+    status_dirs = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_dirs)
+    status_files = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_files)
+    template_data = ("data", _VerbArgs.format_json)
+
+    @property
+    def pretty_cmd(self) -> str:
+        ugly_args: tuple[str, ...] = ()
+        ugly_args += (
+            *GlobalArgs.global_defaults.value,
+            *_ChezmoiGitArgs.global_args.value,
+            *_ChezmoiGitArgs.git_log_args.value,
+            _ChezmoiGitArgs.verbose.value,
+            *(
+                _VerbArgs.format_json.value,
+                _VerbArgs.path_style_absolute.value,
+            ),
+        )
+        verb_str = " ".join([a for a in self.value if a not in ugly_args])
+        return f"chezmoi {verb_str}"
 
 
 class WriteCmd(Enum):

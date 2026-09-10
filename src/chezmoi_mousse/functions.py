@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 from datetime import datetime
 from itertools import islice
@@ -13,21 +12,15 @@ from rich.text import Text
 from chezmoi_mousse import store
 from chezmoi_mousse.asyncio_process_exec import (
     execute_chezmoi_command,
-    get_affected_paths,
 )
 from chezmoi_mousse.named_tuples import (
-    AffectedPaths,
     CommandResult,
-    DumpConfigKeys,
     ScanDirItem,
 )
 from chezmoi_mousse.str_enums import (
-    ChezmoiGitArgs,
-    GlobalArgs,
     PathFilters,
     PathKind,
     ReadCmd,
-    VerbArgs,
     WriteCmd,
 )
 
@@ -41,67 +34,39 @@ type ScanDirResult = list[ScanDirItem] | PathKind
 __all__ = ["CheckPath", "Commands", "ScanDirResult"]
 
 
-class _ParseCmd:
+class Commands:
     @staticmethod
-    def filter_ugly_args() -> set[str]:
-        ugly_args: set[str] = set()
-        ugly_args.update(
-            GlobalArgs.global_defaults.value,
-            ChezmoiGitArgs.global_args.value,
-            ChezmoiGitArgs.git_log_args.value,
-            (
-                VerbArgs.format_json.value,
-                VerbArgs.path_style_absolute.value,
-            ),
-        )
-        return ugly_args
-
-    @staticmethod
-    def get_rel_path(path: Path) -> str:
+    def _get_rel_path(path: Path) -> str:
         return str(path.relative_to(store.cfg.dest_dir))
 
     @staticmethod
-    def _cmd_str_wop(cmd: ReadCmd | WriteCmd, *, pretty: bool) -> str:
-        if pretty is True:
-            verb_str = " ".join(
-                [a for a in cmd.value if a not in _ParseCmd.filter_ugly_args()]
-            )
-        else:
-            verb_str = " ".join(cmd.value)
+    def _get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
         if isinstance(cmd, ReadCmd):
-            base_cmd = "chezmoi"
-        else:
-            base_cmd = "chezmoi --dry-run" if store.live_run is False else "chezmoi"
-        return f"{base_cmd} {verb_str}"
+            return "chezmoi"
+        return "chezmoi --dry-run" if store.live_run is False else "chezmoi"
+
+    @staticmethod
+    def _full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
+        path_str = str(path) if path is not None else ""
+        return f"{Commands._get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}"
 
     @staticmethod
     def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
-        rel_path = _ParseCmd.get_rel_path(path) if path is not None else ""
-        return f"{_ParseCmd._cmd_str_wop(cmd, pretty=True)} {rel_path}"
+        path_str = Commands._get_rel_path(path) if path is not None else ""
+        if isinstance(cmd, ReadCmd):
+            return cmd.pretty_cmd if path is None else f"{cmd.pretty_cmd} {path_str}"
+        base_cmd = Commands._get_base_cmd(cmd)
+        return f"{base_cmd} {' '.join(cmd.value)} {path_str}".rstrip()
 
-    @staticmethod
-    def full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
-        path_str = str(path) if path is not None else ""
-        return f"{_ParseCmd._cmd_str_wop(cmd, pretty=False)} {path_str}"
-
-    @staticmethod
-    def get_dump_config_keys(std_out: str) -> DumpConfigKeys:
-        parsed_dump_config = json.loads(std_out)
-        return DumpConfigKeys(
-            dest_dir_path=Path(parsed_dump_config["destDir"]),
-            auto_add_bool=parsed_dump_config["git"]["autoadd"],
-            auto_commit_bool=parsed_dump_config["git"]["autocommit"],
-            auto_push_bool=parsed_dump_config["git"]["autopush"],
-        )
-
-
-class Commands:
     @staticmethod
     async def exec_chezmoi_cmd(
         cmd_enum: ReadCmd | WriteCmd,
         path_arg: Path | None,
     ) -> CommandResult:
-
+        if cmd_enum not in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config) and (
+            path_arg == store.cfg.dest_dir
+        ):
+            raise ValueError(f"Path {path_arg} cannot be the destination directory")
         exec_result: ExecResult = await execute_chezmoi_command(cmd_enum, path_arg)
 
         std_out = exec_result[0]
@@ -122,52 +87,14 @@ class Commands:
             out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
         return CommandResult(
             cmd_enum=cmd_enum,
-            full_cmd=f"{_ParseCmd.full_cmd(cmd_enum, path_arg)}",
+            full_cmd=f"{Commands._full_cmd(cmd_enum, path_arg)}",
             out_txt=out_txt,
             path_arg=path_arg,
-            pretty_cmd=f"{_ParseCmd.pretty_cmd(cmd_enum, path_arg)}",
+            pretty_cmd=f"{Commands.pretty_cmd(cmd_enum, path_arg)}",
             returncode=result_code,
             std_err=std_err,
             std_out=std_out,
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-        )
-
-    @staticmethod
-    async def get_affected_paths(write_cmd: WriteCmd, path: Path) -> AffectedPaths:
-        # Only works for apply and re-add, not for add, forget and destroy
-        if path == store.cfg.dest_dir and write_cmd in (
-            WriteCmd.add,
-            WriteCmd.destroy,
-            WriteCmd.forget,
-        ):
-            # TODO: disable the chezmoi review button, so it should never happen
-            raise ValueError(f"Cannot run chezmoi on the destDir for {write_cmd.name}")
-        path_arg = "" if path == store.cfg.dest_dir else str(path)
-
-        # Build command arguments
-        args_tuple: tuple[str, ...] = (
-            "chezmoi",
-            *GlobalArgs.global_defaults.value,
-            GlobalArgs.verbose.value,
-            GlobalArgs.dry_run.value,
-            *write_cmd.value,
-            path_arg,
-        )
-
-        rel_path = _ParseCmd.get_rel_path(path) if path != store.cfg.dest_dir else ""
-        pretty_cmd = " ".join(
-            [a for a in args_tuple if a not in _ParseCmd.filter_ugly_args()]
-        )
-
-        # Offload the blocking streaming execution to a thread worker
-        std_out, std_err, returncode = await get_affected_paths(
-            verb=write_cmd.value[0], path=path_arg
-        )
-        return AffectedPaths(
-            paths=sorted([Path(path_str) for path_str in std_out.splitlines()]),
-            pretty_cmd=f"{pretty_cmd} {rel_path}",
-            std_err=std_err,
-            returncode=returncode,
         )
 
     @staticmethod
