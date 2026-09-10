@@ -7,7 +7,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
-from chezmoi_mousse.functions import Commands
+from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     InfoVertical,
@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import CommandResult
 
-    from .messages import CurrentNodeMsg
 
 __all__ = ["GitLogView"]
 
@@ -32,7 +32,7 @@ class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    node_msg: reactive[CurrentNodeMsg | None] = reactive(None, init=False)
+    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
         super().__init__(id=ids.container.git_log)
@@ -50,17 +50,18 @@ class GitLogView(Vertical):
         self.info_container = self.query_exactly_one(InfoVertical)
         self.info_container.display = False
 
+    # check line.rstrip("\x00").split("\x1f", 2)
+
     @work
-    async def _update_datatable(self, node_msg: CurrentNodeMsg) -> None:
-        result = await Commands.run_chezmoi_git_log(node_msg.path)
-        git_log_lines = result.std_out.splitlines()
+    async def _update_datatable(self, std_out: str) -> None:
+        git_log_lines = std_out.splitlines()
 
-        self.data_table.clear()
+        pretty_rows: list[list[str]] = []
 
-        def add_row_with_style(columns: list[str], log_color: ColorVar) -> None:
+        def stylize(columns: list[str], log_color: ColorVar) -> None:
             color = self.app.theme_variables[log_color]
             row: list[str] = [f"[{color}]{cell_text}[/]" for cell_text in columns]
-            self.data_table.add_row(*row)
+            pretty_rows.append(row)
 
         for line in git_log_lines:
             no_commit_message = "no commit message"
@@ -69,18 +70,26 @@ class GitLogView(Vertical):
             column_two = f"{subject}" if subject.strip() else no_commit_message
             columns: list[str] = [column_one, column_two]
             if column_two.split(maxsplit=1)[0] == "Add":
-                add_row_with_style(columns, ColorVar.text_success)
+                stylize(columns, ColorVar.text_success)
             elif column_two.split(maxsplit=1)[0] == "Update":
-                add_row_with_style(columns, ColorVar.text_warning)
+                stylize(columns, ColorVar.text_warning)
             elif column_two.split(maxsplit=1)[0] == "Remove":
-                add_row_with_style(columns, ColorVar.text_error)
+                stylize(columns, ColorVar.text_error)
             elif column_two == no_commit_message:
-                add_row_with_style(columns, ColorVar.text_secondary)
+                stylize(columns, ColorVar.text_secondary)
             else:
-                add_row_with_style(columns, ColorVar.text)
+                stylize(columns, ColorVar.text)
 
-    def watch_node_msg(self, node_msg: CurrentNodeMsg | None) -> None:
-        if node_msg is None:
+        self.data_table.clear()
+
+        for row in pretty_rows:
+            self.data_table.add_row(*row)
+
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
             return
-        self.flat_section_label.update(str(node_msg.path))
-        self._update_datatable(node_msg)
+        if cmd_result.path_arg is None:
+            self.flat_section_label.update(str(store.cfg.dest_dir))
+        else:
+            self.flat_section_label.update(str(cmd_result.path_arg))
+        self._update_datatable(cmd_result.std_out)
