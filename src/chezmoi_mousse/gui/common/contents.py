@@ -21,15 +21,20 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from textual import getters
     from textual.app import ComposeResult
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.data_classes import StatusPaths
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["ContentsView"]
 
 
 class ContentsView(ScrollableContainer):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
@@ -84,7 +89,9 @@ class ContentsView(ScrollableContainer):
         else:
             self.main_section_label.update(LabelStr.unmanaged_file)
         if store.managed_files.get(path) is PathKind.EXISTS_FALSE:
-            f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(path)
+            f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
+                self.app, path
+            )
             self.highlighted_static.update(f_content)
             self.sub_section_label.update(LabelStr.chezmoi_cat_output)
         else:

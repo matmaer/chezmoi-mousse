@@ -489,7 +489,6 @@ class GlobalArgs(Enum):
         "--use-builtin-git=true",
     )
     dry_run = "--dry-run=true"
-    verbose = "--verbose=true"
 
 
 class _VerbArgs(StrEnum):
@@ -521,7 +520,6 @@ class ReadCmd(Enum):
     @cached_property
     def pretty_cmd(self) -> str:
         ugly_args: tuple[str, ...] = (
-            *GlobalArgs.global_defaults.value,
             *_ChezmoiGitArgs.global_args.value,
             *_ChezmoiGitArgs.git_log_args.value,
             _ChezmoiGitArgs.verbose.value,
@@ -530,7 +528,6 @@ class ReadCmd(Enum):
                 _VerbArgs.path_style_absolute.value,
             ),
         )
-
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
         return f"chezmoi {verb_str}"
 
@@ -576,3 +573,7 @@ class WriteCmd(Enum):
             BtnLabel.re_add_run: cls(cls.re_add),
         }
         return mapping[op_btn_label]
+
+    @cached_property
+    def pretty_cmd(self) -> str:
+        return f"chezmoi {self.value[0]}"

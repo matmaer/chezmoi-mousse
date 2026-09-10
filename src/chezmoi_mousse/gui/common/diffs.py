@@ -26,11 +26,13 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from textual import getters
     from textual.app import ComposeResult
     from textual.widgets import Label
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.data_classes import StatusPaths
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
 __all__ = ["DiffView"]
@@ -50,6 +52,9 @@ DIFF_TCSS = {
 
 
 class DiffView(ScrollableContainer):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     show_path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds) -> None:
@@ -90,7 +95,7 @@ class DiffView(ScrollableContainer):
     async def _update_widgets(self, path: Path) -> None:
 
         if path in store.status_dirs_kind and not store.status_files_kind:
-            diff_result = await tchezmoi.run_chezmoi_diff(self.diff_cmd, path)
+            diff_result = await tchezmoi.run_chezmoi_diff(self.app, self.diff_cmd, path)
 
             self.main_section_label.update(str(diff_result.full_cmd))
 

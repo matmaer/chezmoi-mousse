@@ -29,6 +29,7 @@ from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.contents import ContentsView
 from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
+from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import ManagedTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg, CurrentNodeMsg
@@ -48,7 +49,10 @@ from chezmoi_mousse.str_enums import (
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 if TYPE_CHECKING:
+    from textual import getters
     from textual.app import ComposeResult
+
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 __all__ = ["ChezmoiGui"]
@@ -76,6 +80,9 @@ class CustomHeader(Header):
 
 
 class ChezmoiGui(App[str]):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     BINDINGS: ClassVar = [
         Binding(
             "ctrl+q",
@@ -174,7 +181,7 @@ class ChezmoiGui(App[str]):
     async def run_managed_paths_workers(self, splash_screen: bool = False) -> None:
         for cmd in ReadCmd.managed_commands():
             if not splash_screen:
-                await tchezmoi.exec_chezmoi_cmd(cmd)
+                await tchezmoi.exec_chezmoi_cmd(self.app, cmd).wait()
             else:
                 await self.splash_screen.splash_run_chezmoi(cmd)
 
@@ -196,9 +203,13 @@ class ChezmoiGui(App[str]):
             pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
             pretty_ignored.update(msg.cmd_result.out_txt)
         elif msg.cmd_result.cmd_enum is ReadCmd.git_log:
-            git_log_view = self.query_one(store.apply_ids.container.git_log_q)
+            git_log_view = self.query_one(
+                store.apply_ids.container.git_log_q, GitLogView
+            )
             setattr(git_log_view, ReactiveVar.cmd_result, msg.cmd_result)
-            git_log_view = self.query_one(store.re_add_ids.container.git_log_q)
+            git_log_view = self.query_one(
+                store.re_add_ids.container.git_log_q, GitLogView
+            )
             setattr(git_log_view, ReactiveVar.cmd_result, msg.cmd_result)
         elif msg.cmd_result.cmd_enum is ReadCmd.template_data:
             template_data = self.query_exactly_one(ConfigTab)

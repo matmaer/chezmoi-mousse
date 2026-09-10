@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
+from textual import work
 
-from chezmoi_mousse import store
+from chezmoi_mousse import _func, store
 from chezmoi_mousse.asyncio_process_exec import (
     execute_chezmoi_command,
 )
+from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import (
     CommandResult,
     ScanDirItem,
@@ -21,50 +24,28 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse.asyncio_process_exec import (
         ExecResult,
     )
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
 __all__ = ["ScanDirResult"]
 
 
-def _get_rel_path(path: Path) -> str:
-    return str(path.relative_to(store.cfg.dest_dir))
-
-
-def _get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
-    if isinstance(cmd, ReadCmd):
-        return "chezmoi"
-    return "chezmoi --dry-run" if store.live_run is False else "chezmoi"
-
-
-def _full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
-    path_str = str(path) if path is not None else ""
-    return f"{_get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}"
-
-
 def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
-    path_str = _get_rel_path(path) if path is not None else ""
+    rel_path = _func.get_rel_path(path)
     if isinstance(cmd, ReadCmd):
-        return cmd.pretty_cmd if path is None else f"{cmd.pretty_cmd} {path_str}"
-    base_cmd = _get_base_cmd(cmd)
-    return f"{base_cmd} {' '.join(cmd.value)} {path_str}".rstrip()
+        return (f"{cmd.pretty_cmd} {rel_path}").rstrip()
+    else:
+        base_cmd = _func.get_base_cmd(cmd)
+        return (f"{base_cmd} {cmd.pretty_cmd} {_func.get_rel_path(path)}").rstrip()
 
 
-async def exec_chezmoi_cmd(
-    cmd_enum: ReadCmd | WriteCmd,
-    path_arg: Path | None = None,
+async def construct_command_result(
+    exec_result: ExecResult, cmd_enum: ReadCmd | WriteCmd, path_arg: Path | None
 ) -> CommandResult:
-    if cmd_enum not in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config) and (
-        path_arg == store.cfg.dest_dir
-    ):
-        raise ValueError(f"Path {path_arg} cannot be the destination directory")
-    exec_result: ExecResult = await execute_chezmoi_command(cmd_enum, path_arg)
-
     std_out = exec_result[0]
     std_err = exec_result[1]
     result_code = exec_result[2]
@@ -83,7 +64,7 @@ async def exec_chezmoi_cmd(
         out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
     return CommandResult(
         cmd_enum=cmd_enum,
-        full_cmd=f"{_full_cmd(cmd_enum, path_arg)}",
+        full_cmd=f"{_func.get_full_cmd(cmd_enum, path_arg)}",
         out_txt=out_txt,
         path_arg=path_arg,
         pretty_cmd=f"{pretty_cmd(cmd_enum, path_arg)}",
@@ -92,6 +73,40 @@ async def exec_chezmoi_cmd(
         std_out=std_out,
         time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
     )
+
+
+@work
+async def exec_chezmoi_cmd(
+    app: ChezmoiGui, cmd_enum: ReadCmd | WriteCmd, path_arg: Path | None = None
+) -> CommandResult:
+    if cmd_enum not in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config) and (
+        path_arg == store.cfg.dest_dir
+    ):
+        raise ValueError(f"Path {path_arg} cannot be the destination directory")
+    exec_result: ExecResult = await execute_chezmoi_command(cmd_enum, path_arg)
+    cmd_result = await construct_command_result(exec_result, cmd_enum, path_arg)
+    if store.pre_mount is False:
+        app.post_message(CommandResultMsg(cmd_result))
+    return cmd_result
+
+
+@work
+async def run_chezmoi_git_log(
+    app: ChezmoiGui, path_arg: Path | None = None
+) -> CommandResult:
+
+    if store.pre_mount is True:
+        # don't access store.cfg.dest_dir
+        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
+        return cmd_result
+    elif path_arg is None or path_arg == store.cfg.dest_dir:
+        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
+        return cmd_result
+    else:
+        source_path_result = await exec_chezmoi_cmd(app, ReadCmd.git_log).wait()
+        source_path = Path(source_path_result.std_out)
+        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, source_path).wait()
+        return cmd_result
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:
@@ -116,9 +131,10 @@ def get_highlighted_file_contents(file_path: Path) -> Text:
 
 
 async def get_highlighted_chezmoi_cat_output(
+    app: ChezmoiGui,
     file_path: Path,
 ) -> Text:
-    cmd_result = await exec_chezmoi_cmd(ReadCmd.cat, file_path)
+    cmd_result = await exec_chezmoi_cmd(app, ReadCmd.cat, file_path).wait()
     f_contents = cmd_result.std_out
     if not f_contents.strip():
         f_contents = "File is empty or contains only whitespace"
@@ -127,5 +143,7 @@ async def get_highlighted_chezmoi_cat_output(
     return text_contents
 
 
-async def run_chezmoi_diff(diff_cmd: ReadCmd, path: Path) -> CommandResult:
-    return await exec_chezmoi_cmd(diff_cmd, path)
+async def run_chezmoi_diff(
+    app: ChezmoiGui, diff_cmd: ReadCmd, path: Path
+) -> CommandResult:
+    return await exec_chezmoi_cmd(app, diff_cmd, path).wait()

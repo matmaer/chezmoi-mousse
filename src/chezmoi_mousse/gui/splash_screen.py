@@ -18,7 +18,6 @@ from textual.widgets import RichLog, Static
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
-from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import DumpConfigKeys
 from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, WriteCmd
 
@@ -128,19 +127,15 @@ class SplashScreen(Screen[None]):
         msg = f"[{color}]{prefix} {dots} {suffix.padded_suffix}[/{color}]"
         self.splash_log.write(msg)
 
-    async def splash_run_chezmoi(
-        self, cmd: ReadCmd | WriteCmd, pre_mount_phase: bool = False
-    ) -> int:
+    async def splash_run_chezmoi(self, cmd: ReadCmd | WriteCmd) -> int:
         if self.repo_existed is False and cmd in (ReadCmd.git_remote, ReadCmd.git_log):
             prefix = tchezmoi.pretty_cmd(cmd, None)
             suffix = LogStr.skipped
             await self._write_log_msg(prefix=prefix, suffix=suffix)
-        cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(cmd)
+        cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(self.app, cmd, None).wait()
         prefix = cr.pretty_cmd
-        if pre_mount_phase is True:
+        if store.pre_mount is True:
             self.pre_mount_cmd_results.append(cr)
-        else:
-            self.app.post_message(CommandResultMsg(cr))
 
         suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
         await self._write_log_msg(prefix=prefix, suffix=suffix)
@@ -166,7 +161,7 @@ class SplashScreen(Screen[None]):
     async def run_initial_command_sequence(self) -> None:
 
         # check if repo exists
-        rc = await self.splash_run_chezmoi(ReadCmd.git_dir, pre_mount_phase=True)
+        rc = await self.splash_run_chezmoi(ReadCmd.git_dir)
         suffix = LogStr.present if rc == 0 else LogStr.absent
         await self._write_log_msg(prefix=LogStr.check_chezmoi_repo, suffix=suffix)
         self.repo_existed = bool(rc == 0)
@@ -179,7 +174,7 @@ class SplashScreen(Screen[None]):
             self.app.exit()
 
         # run chezmoi init to update config
-        rc = await self.splash_run_chezmoi(WriteCmd.init, pre_mount_phase=True)
+        rc = await self.splash_run_chezmoi(WriteCmd.init)
         if rc != 0:
             # TODO: handle error when chezmoi init to update config fails, could happen
             # after the user updated the template files
@@ -191,10 +186,12 @@ class SplashScreen(Screen[None]):
             self.notify("App will exit...", severity="warning")
             await asyncio.sleep(3)
             self.app.exit()
-        await self.splash_run_chezmoi(ReadCmd.dump_config, pre_mount_phase=True)
+        await self.splash_run_chezmoi(ReadCmd.dump_config)
 
         # parse and store config
         await self._parse_and_store_config()
+
+        store.pre_mount = False
 
     async def dismiss_after_fade_loop(self) -> None:
         while (

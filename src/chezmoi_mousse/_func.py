@@ -102,10 +102,12 @@ def get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
 
 def get_full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
     path_str = str(path) if path is not None else ""
-    return f"{get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}"
+    return f"{get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}".rstrip()
 
 
-def get_rel_path(path: Path) -> str:
+def get_rel_path(path: Path | None) -> str:
+    if store.pre_mount or path is None:
+        return ""
     return str(path.relative_to(store.cfg.dest_dir))
 
 

@@ -50,8 +50,6 @@ class GitLogView(Vertical):
         self.info_container = self.query_exactly_one(InfoVertical)
         self.info_container.display = False
 
-    # check line.rstrip("\x00").split("\x1f", 2)
-
     @work
     async def _update_datatable(self, std_out: str) -> None:
         git_log_lines = std_out.splitlines()
