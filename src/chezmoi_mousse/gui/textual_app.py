@@ -20,7 +20,6 @@ from textual.widgets._header import HeaderTitle
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
-    DryRunBtn,
     FlatButtonsVertical,
     OperateBtnGroup,
     SwitchSlider,
@@ -34,7 +33,6 @@ from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import ManagedTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg, CurrentNodeMsg
-from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
@@ -151,11 +149,26 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(DebugTab())
 
         await tabbed_content.wait_for_refresh()
-        await self._log_pre_mount_cmd_results()
+        self._log_pre_mount_cmd_results()
+
+        for cmd in {
+            ReadCmd.doctor,
+            ReadCmd.cat_config,
+            ReadCmd.git_log,
+            ReadCmd.git_remote,
+            ReadCmd.ignored,
+            ReadCmd.managed_dirs,
+            ReadCmd.managed_files,
+            ReadCmd.status_dirs,
+            ReadCmd.status_files,
+            ReadCmd.template_data,
+        }:
+            await self.splash_screen.run_splash_cmd_worker(cmd).wait()
 
         await self._update_managed_trees()
         await self.splash_screen.dismiss_after_fade_loop()
 
+    @work
     async def _log_pre_mount_cmd_results(self) -> None:
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
@@ -278,13 +291,6 @@ class ChezmoiGui(App[str]):
         )
         custom_header = self.screen.query_exactly_one(CustomHeader)
         custom_header.live_run = store.live_run
-        if isinstance(self.screen, (OperateModal)):
-            dry_run_btn = self.screen.query_exactly_one(DryRunBtn)
-            dry_run_btn.label = (
-                BtnLabel.enable_live_run
-                if store.live_run is False
-                else BtnLabel.switch_to_dry_run
-            )
 
     def action_toggle_switch_slider(self) -> None:
         if isinstance(self.screen, SplashScreen):

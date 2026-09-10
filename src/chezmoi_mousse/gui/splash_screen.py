@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import events
+from textual import events, work
 from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.reactive import reactive
@@ -104,45 +104,65 @@ class SplashScreen(Screen[None]):
             yield Center(AnimatedFade())
             yield Center(RichLog(markup=True))
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
         self.repo_existed = True
         self.pre_mount_cmd_results: list[CommandResult] = []
         self.color_map: dict[LogStr | int, str] = {
-            LogStr.absent: self.app.theme_variables[ColorVar.accent_darken_2],
-            LogStr.present: self.app.theme_variables[ColorVar.text_success],
-            LogStr.checked: self.app.theme_variables[ColorVar.text_warning],
-            LogStr.failed: self.app.theme_variables[ColorVar.text_error],
+            LogStr.absent: self.app.theme_variables[ColorVar.text_error],
+            LogStr.present: self.app.theme_variables[ColorVar.success],
+            LogStr.checked: self.app.theme_variables[ColorVar.warning],
             LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_2],
-            LogStr.parsed: self.app.theme_variables[ColorVar.text_success],
+            LogStr.parsed: self.app.theme_variables[ColorVar.success],
             LogStr.success: self.app.theme_variables[ColorVar.text_primary],
         }
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.height = 18
         self.splash_log.styles.width = LOG_MSG_WIDTH
         self.animated_fade = self.query_exactly_one(AnimatedFade)
+        await self.wait_for_refresh()
         self.animated_fade.fade_timer.resume()
 
     async def _write_log_msg(self, *, prefix: LogStr | str, suffix: LogStr) -> None:
-        padding = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded) - 4
+        dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded_suffix) - 4
+        dots = "." * dots_count
         color = self.color_map[suffix]
-        msg = f"[{color}]{prefix} {'.' * padding} {suffix.padded}[/{color}]"
+        msg = f"[{color}]{prefix} {dots} {suffix.padded_suffix}[/{color}]"
         self.splash_log.write(msg)
 
     async def _splash_run_chezmoi(
         self, cmd: ReadCmd | WriteCmd, pre_mount_phase: bool = False
     ) -> int:
+        if self.repo_existed is False and cmd in (ReadCmd.git_remote, ReadCmd.git_log):
+            prefix = Commands.pretty_cmd(cmd, None)
+            suffix = LogStr.skipped
+            await self._write_log_msg(prefix=prefix, suffix=suffix)
         cr: CommandResult = await Commands.exec_chezmoi_cmd(cmd, path_arg=None)
+        prefix = cr.pretty_cmd
         if pre_mount_phase is True:
             self.pre_mount_cmd_results.append(cr)
         else:
             self.app.post_message(CommandResultMsg(cr))
 
-        prefix = cr.pretty_cmd
         suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
         await self._write_log_msg(prefix=prefix, suffix=suffix)
         if cr.returncode is None:
             return -1
         return cr.returncode
+
+    async def _parse_and_store_config(self) -> None:
+        # Set store.cfg variable
+        cr = self.pre_mount_cmd_results[-1]  # result form chezmoi dump-config
+        parsed_std_out = json.loads(cr.std_out)
+        store.cfg = DumpConfigKeys(
+            dest_dir_path=Path(parsed_std_out["destDir"]),
+            auto_add_bool=parsed_std_out["git"]["autoadd"],
+            auto_commit_bool=parsed_std_out["git"]["autocommit"],
+            auto_push_bool=parsed_std_out["git"]["autopush"],
+        )
+        store.add_path = store.cfg.dest_dir_path
+        store.apply_path = store.cfg.dest_dir_path
+        store.re_add_path = store.cfg.dest_dir_path
+        await self._write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.parsed)
 
     async def run_initial_command_sequence(self) -> None:
 
@@ -174,55 +194,12 @@ class SplashScreen(Screen[None]):
             self.app.exit()
         await self._splash_run_chezmoi(ReadCmd.dump_config, pre_mount_phase=True)
 
-        # Set store.cfg variable
-        cr = self.pre_mount_cmd_results[-1]  # result form chezmoi dump-config
-        parsed_std_out = json.loads(cr.std_out)
-        store.cfg = DumpConfigKeys(
-            dest_dir_path=Path(parsed_std_out["destDir"]),
-            auto_add_bool=parsed_std_out["git"]["autoadd"],
-            auto_commit_bool=parsed_std_out["git"]["autocommit"],
-            auto_push_bool=parsed_std_out["git"]["autopush"],
-        )
-        store.add_path = store.cfg.dest_dir_path
-        store.apply_path = store.cfg.dest_dir_path
-        store.re_add_path = store.cfg.dest_dir_path
-        await self._write_log_msg(
-            prefix=LogStr.parse_dump_config, suffix=LogStr.reports
-        )
+        # parse and store config
+        await self._parse_and_store_config()
 
-    async def run_config_tab_tasks(self) -> None:
-        async with asyncio.TaskGroup() as tg:
-            for cmd in (
-                ReadCmd.doctor,
-                ReadCmd.cat_config,
-                ReadCmd.ignored,
-                ReadCmd.template_data,
-            ):
-                tg.create_task(self._splash_run_chezmoi(cmd))
-
-    async def run_splash_cmd_tasks(self) -> None:
-        async with asyncio.TaskGroup() as tg:
-            for cmd in (
-                ReadCmd.cat_config,
-                ReadCmd.doctor,
-                ReadCmd.git_log,
-                ReadCmd.git_remote,
-                ReadCmd.ignored,
-                ReadCmd.template_data,
-            ):
-                tg.create_task(self._splash_run_chezmoi(cmd))
-
-    async def run_managed_cmd_tasks(self) -> None:
-        async with asyncio.TaskGroup() as tg:
-            for cmd in (
-                ReadCmd.managed_dirs,
-                ReadCmd.managed_files,
-                ReadCmd.status_dirs,
-                ReadCmd.status_files,
-            ):
-                tg.create_task(self._splash_run_chezmoi(cmd))
-
-        await self.wait_for_refresh()
+    @work
+    async def run_splash_cmd_worker(self, cmd: ReadCmd) -> None:
+        await self._splash_run_chezmoi(cmd)
 
     async def dismiss_after_fade_loop(self) -> None:
         while (
