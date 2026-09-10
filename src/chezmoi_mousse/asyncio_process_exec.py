@@ -18,6 +18,12 @@ if TYPE_CHECKING:
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
 
+__all__ = [
+    "check_chezmoi_cmd",
+    "execute_chezmoi_command",
+]
+
+
 def check_chezmoi_cmd() -> str | None:
     return shutil.which("chezmoi")
 
@@ -27,6 +33,11 @@ def _get_chezmoi_cmd() -> str:
         raise RuntimeError(
             "Trying to run a chezmoi command when it's not available or before it's "
             "set in store.init_data.which_chezmoi"
+        )
+    elif store.init_data.which_git is None:
+        raise RuntimeError(
+            "Trying to run a chezmoi command when git is not available or before it's "
+            "set in store.init_data.which_git"
         )
     return store.init_data.which_chezmoi
 
