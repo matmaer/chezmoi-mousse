@@ -1,16 +1,24 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.data_classes import Changed, StatusPaths
+from chezmoi_mousse.data_classes import Changed, ManagedPaths
 from chezmoi_mousse.named_tuples import DumpConfigKeys, InitData
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.str_enums import PathKind, StatusCode
+
+class ManagedCmdResults:
+    """Simple container to collect managed command results, it's simply the output of
+    the command on stdout."""
+
+    managed_dirs_result: ClassVar[str] = ""
+    managed_files_result: ClassVar[str] = ""
+    status_dirs_result: ClassVar[str] = ""
+    status_files_result: ClassVar[str] = ""
 
 
 init_data: InitData = InitData()
@@ -27,24 +35,7 @@ re_add_ids = AppIds(BtnLabel.re_add)
 cfg = DumpConfigKeys()
 
 changed = Changed()
-
-
-managed_dirs: dict[Path, PathKind] = {}
-managed_files: dict[Path, PathKind] = {}
-status_dirs_kind: dict[Path, PathKind] = {}
-status_files_kind: dict[Path, PathKind] = {}
-
-dir_status_pairs: dict[Path, str] = {}
-file_status_pairs: dict[Path, str] = {}
-
-apply_status_dirs: dict[Path, StatusCode] = {}
-apply_status_files: dict[Path, StatusCode] = {}
-re_add_status_dirs: dict[Path, StatusCode] = {}
-re_add_status_files: dict[Path, StatusCode] = {}
-
-apply_paths = StatusPaths(dirs=apply_status_dirs, files=apply_status_files)
-re_add_paths = StatusPaths(dirs=re_add_status_dirs, files=re_add_status_files)
-
+paths = ManagedPaths()
 
 # Keep track of the selected path by tab
 add_path: Path | None = None
