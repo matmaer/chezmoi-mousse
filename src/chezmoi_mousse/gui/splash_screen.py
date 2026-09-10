@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import events, work
+from textual import events
 from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.reactive import reactive
@@ -129,7 +129,7 @@ class SplashScreen(Screen[None]):
         msg = f"[{color}]{prefix} {dots} {suffix.padded_suffix}[/{color}]"
         self.splash_log.write(msg)
 
-    async def _splash_run_chezmoi(
+    async def splash_run_chezmoi(
         self, cmd: ReadCmd | WriteCmd, pre_mount_phase: bool = False
     ) -> int:
         if self.repo_existed is False and cmd in (ReadCmd.git_remote, ReadCmd.git_log):
@@ -167,7 +167,7 @@ class SplashScreen(Screen[None]):
     async def run_initial_command_sequence(self) -> None:
 
         # check if repo exists
-        rc = await self._splash_run_chezmoi(ReadCmd.git_dir, pre_mount_phase=True)
+        rc = await self.splash_run_chezmoi(ReadCmd.git_dir, pre_mount_phase=True)
         suffix = LogStr.present if rc == 0 else LogStr.absent
         await self._write_log_msg(prefix=LogStr.check_chezmoi_repo, suffix=suffix)
         self.repo_existed = bool(rc == 0)
@@ -180,7 +180,7 @@ class SplashScreen(Screen[None]):
             self.app.exit()
 
         # run chezmoi init to update config
-        rc = await self._splash_run_chezmoi(WriteCmd.init, pre_mount_phase=True)
+        rc = await self.splash_run_chezmoi(WriteCmd.init, pre_mount_phase=True)
         if rc != 0:
             # TODO: handle error when chezmoi init to update config fails, could happen
             # after the user updated the template files
@@ -192,14 +192,10 @@ class SplashScreen(Screen[None]):
             self.notify("App will exit...", severity="warning")
             await asyncio.sleep(3)
             self.app.exit()
-        await self._splash_run_chezmoi(ReadCmd.dump_config, pre_mount_phase=True)
+        await self.splash_run_chezmoi(ReadCmd.dump_config, pre_mount_phase=True)
 
         # parse and store config
         await self._parse_and_store_config()
-
-    @work
-    async def run_splash_cmd_worker(self, cmd: ReadCmd) -> None:
-        await self._splash_run_chezmoi(cmd)
 
     async def dismiss_after_fade_loop(self) -> None:
         while (

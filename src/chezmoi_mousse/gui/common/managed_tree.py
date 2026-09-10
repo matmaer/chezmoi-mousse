@@ -12,7 +12,6 @@ from chezmoi_mousse import store
 from chezmoi_mousse.functions import CheckPath
 from chezmoi_mousse.gui.common.messages import CurrentNodeMsg
 from chezmoi_mousse.str_enums import (
-    BtnLabel,
     Chars,
     ColorVar,
     PathKind,
@@ -46,13 +45,18 @@ class ManagedTree(Tree[Path]):
     show_unmanaged: reactive[bool] = reactive(False, init=False)
     expand_all: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, app_ids: AppIds) -> None:
+    def __init__(self, app_ids: AppIds, paths: StatusPaths) -> None:
         self.app_ids = app_ids
-        super().__init__(label="", id=app_ids.managed_tree, classes=Tcss.managed_tree)
+        self.paths = paths
+        super().__init__(
+            label=str(store.cfg.dest_dir),
+            id=app_ids.managed_tree,
+            classes=Tcss.managed_tree,
+            data=store.cfg.dest_dir,
+        )
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-
         self.status_color: dict[StatusCode | PathKind, ColorVar] = {
             StatusCode.Added: ColorVar.text_success,
             StatusCode.Deleted: ColorVar.text_error,
@@ -62,14 +66,6 @@ class ManagedTree(Tree[Path]):
             StatusCode.Space: ColorVar.dimmed,
             PathKind.UNMANAGED: ColorVar.text_error_dark,
         }
-
-    @property
-    def paths(self) -> StatusPaths:
-        return (
-            store.apply_paths
-            if self.app_ids.tab_label == BtnLabel.apply
-            else store.re_add_paths
-        )
 
     def _insert_node(
         self, dir_node: bool, path: Path, parent_node: TreeNode[Path]
@@ -186,12 +182,6 @@ class ManagedTree(Tree[Path]):
     def update_tree(self) -> None:
         """Rebuilds the tree structure from current chezmoi paths and restores state."""
         self.root.remove_children()
-        # configure root node
-        self.root.data = store.cfg.dest_dir
-        color = self.app.theme_variables[ColorVar.text_primary]
-        self.root.label = f"[{color}]{store.cfg.dest_dir.name}[/]"
-        self.root.expand()
-        self.root.allow_expand = False
         # Add status directories and files to root node
         nodes_by_path: dict[Path, TreeNode[Path]] = {store.cfg.dest_dir: self.root}
 
@@ -236,13 +226,17 @@ class ManagedTree(Tree[Path]):
     # #################################
 
     @on(Tree.NodeCollapsed)
-    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None: ...
+    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
+        if event.node is self.root:
+            event.node.expand()
 
     @on(Tree.NodeExpanded)
     def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None: ...
 
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
+        if event.node.data == store.cfg.dest_dir:
+            return
         has_status = (
             event.node.data in self.paths.files or event.node.data in self.paths.dirs
         )

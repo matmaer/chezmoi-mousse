@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum, StrEnum, auto
+from functools import cache
 from typing import Self
 
 __all__ = [
@@ -531,6 +532,28 @@ class ReadCmd(Enum):
         )
         verb_str = " ".join([a for a in self.value if a not in ugly_args])
         return f"chezmoi {verb_str}"
+
+    @classmethod
+    @cache
+    def splash_commands(cls) -> tuple[Self, ...]:
+        return (
+            cls(cls.doctor),
+            cls(cls.cat_config),
+            cls(cls.git_log),
+            cls(cls.git_remote),
+            cls(cls.ignored),
+            cls(cls.template_data),
+        )
+
+    @classmethod
+    @cache
+    def managed_commands(cls) -> tuple[Self, ...]:
+        return (
+            cls(cls.managed_dirs),
+            cls(cls.managed_files),
+            cls(cls.status_dirs),
+            cls(cls.status_files),
+        )
 
 
 class WriteCmd(Enum):

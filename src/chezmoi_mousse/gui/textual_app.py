@@ -19,6 +19,7 @@ from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
+from chezmoi_mousse.functions import Commands
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
     OperateBtnGroup,
@@ -151,19 +152,8 @@ class ChezmoiGui(App[str]):
         await tabbed_content.wait_for_refresh()
         self._log_pre_mount_cmd_results()
 
-        for cmd in {
-            ReadCmd.doctor,
-            ReadCmd.cat_config,
-            ReadCmd.git_log,
-            ReadCmd.git_remote,
-            ReadCmd.ignored,
-            ReadCmd.managed_dirs,
-            ReadCmd.managed_files,
-            ReadCmd.status_dirs,
-            ReadCmd.status_files,
-            ReadCmd.template_data,
-        }:
-            await self.splash_screen.run_splash_cmd_worker(cmd).wait()
+        await self.run_splash_cmd_workers().wait()
+        await self.run_managed_paths_workers(splash_screen=True).wait()
 
         await self._update_managed_trees()
         await self.splash_screen.dismiss_after_fade_loop()
@@ -175,6 +165,19 @@ class ChezmoiGui(App[str]):
         for cmd in self.splash_screen.pre_mount_cmd_results:
             setattr(app_log, ReactiveVar.cmd_result, cmd)
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
+
+    @work(group="splash_commands")
+    async def run_splash_cmd_workers(self) -> None:
+        for cmd in ReadCmd.splash_commands():
+            await self.splash_screen.splash_run_chezmoi(cmd)
+
+    @work(group="managed_paths")
+    async def run_managed_paths_workers(self, splash_screen: bool = False) -> None:
+        for cmd in ReadCmd.managed_commands():
+            if not splash_screen:
+                await Commands.exec_chezmoi_cmd(cmd, path_arg=None)
+            else:
+                await self.splash_screen.splash_run_chezmoi(cmd)
 
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:
