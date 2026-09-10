@@ -133,10 +133,10 @@ class ChezmoiGui(App[str]):
         self.theme = "chezmoi-mousse-dark"
         self.splash_screen = SplashScreen()
         self.register_theme(chezmoi_mousse_light)
-        self.run_startup_worker()
+        self._run_startup_worker()
 
     @work
-    async def run_startup_worker(self) -> None:
+    async def _run_startup_worker(self) -> None:
         await self.push_screen(self.splash_screen)
         await self.splash_screen.run_initial_command_sequence()
 

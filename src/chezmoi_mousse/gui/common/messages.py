@@ -18,7 +18,6 @@ __all__ = [
     "CommandResultMsg",
     "CurrentNodeMsg",
     "DirContentBtnMsg",
-    "DryRunBtnMsg",
     "FlatBtnMsg",
     "OperateBtnMsg",
     "RefreshBtnMsg",
@@ -58,14 +57,6 @@ class DirContentBtnMsg(Message):
         self.app_ids = app_ids
         self.btn_label = btn_label
         self.path = path
-        super().__init__()
-
-
-class DryRunBtnMsg(Message):
-    def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.button = button
-        self.app_ids = app_ids
-        self.btn_label = btn_label
         super().__init__()
 
 

@@ -14,7 +14,6 @@ from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse.gui.common.messages import (
     DirContentBtnMsg,
-    DryRunBtnMsg,
     FlatBtnMsg,
     OperateBtnMsg,
     RefreshBtnMsg,
@@ -32,7 +31,6 @@ if TYPE_CHECKING:
 
 __all__ = [
     "DirContentBtn",
-    "DryRunBtn",
     "FlatBtn",
     "FlatButtonsVertical",
     "OperateBtn",
@@ -66,24 +64,6 @@ class DirContentBtn(Button):
                 self.btn_label,
                 path=self.path,
             )
-        )
-
-
-class DryRunBtn(Button):
-    def __init__(self, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(
-            id=self.app_ids.btn_id(btn_label=self.btn_label),
-            label=self.btn_label,
-            classes=Tcss.operate_button,
-        )
-
-    @on(Button.Pressed)
-    def _send_message(self, event: DryRunBtn.Pressed) -> None:
-        event.stop()
-        self.post_message(
-            DryRunBtnMsg(button=self, app_ids=self.app_ids, btn_label=self.btn_label)
         )
 
 

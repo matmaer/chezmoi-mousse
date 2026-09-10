@@ -94,84 +94,10 @@ class BtnLabel(StrEnum):
     # Other
     cancel = "Cancel"
     close = "Close"
-    enable_live_run = "Enable live run"
-    switch_to_dry_run = "Switch to dry run"
 
     @property
     def pane_id(self) -> str:
         return f"{self}_pane_id"
-
-    @classmethod
-    def debug_tab_btn_set(cls) -> frozenset[BtnLabel]:
-        return frozenset(
-            {
-                BtnLabel.create_diffs,
-                BtnLabel.create_paths,
-                BtnLabel.list_test_paths,
-                BtnLabel.log_memory,
-                BtnLabel.remove_paths,
-            }
-        )
-
-    @classmethod
-    def dry_run_set(cls) -> frozenset[BtnLabel]:
-        return frozenset({BtnLabel.enable_live_run, BtnLabel.switch_to_dry_run})
-
-    @classmethod
-    def exit_modal_set(cls) -> frozenset[BtnLabel]:
-        return frozenset({BtnLabel.cancel, BtnLabel.close, BtnLabel.reload})
-
-    @classmethod
-    def main_tabs_set(cls) -> frozenset[BtnLabel]:
-        return frozenset(
-            {
-                BtnLabel.add,
-                BtnLabel.apply,
-                BtnLabel.config,
-                BtnLabel.debug,
-                BtnLabel.logs,
-                BtnLabel.re_add,
-            }
-        )
-
-    @classmethod
-    def run_btn_set(cls) -> frozenset[BtnLabel]:
-        return frozenset(
-            {
-                BtnLabel.add_run,
-                BtnLabel.apply_run,
-                BtnLabel.destroy_run,
-                BtnLabel.forget_run,
-                BtnLabel.re_add_run,
-            }
-        )
-
-    @classmethod
-    def debug_btn_set(cls) -> frozenset[BtnLabel]:
-        return frozenset(
-            {
-                BtnLabel.create_diffs,
-                BtnLabel.create_paths,
-                BtnLabel.list_test_paths,
-                BtnLabel.log_memory,
-                BtnLabel.remove_paths,
-            }
-        )
-
-    # classmethod which maps each review button to its corresponding run button
-    @classmethod
-    def _review_to_run_map(cls) -> dict[BtnLabel, BtnLabel]:
-        return {
-            cls.add_review: cls.add_run,
-            cls.apply_review: cls.apply_run,
-            cls.re_add_review: cls.re_add_run,
-            cls.destroy_review: cls.destroy_run,
-            cls.forget_review: cls.forget_run,
-        }
-
-    @property
-    def review_to_run(self) -> BtnLabel:
-        return self._review_to_run_map()[self]
 
 
 class Chars(StrEnum):
@@ -324,15 +250,6 @@ class LogStr(StrEnum):
                 cls[cls.reports],
                 cls[cls.skipped],
                 cls[cls.success],
-            )
-        )
-
-    @classmethod
-    def splash_prefixes(cls) -> frozenset[str]:
-        return frozenset(
-            (
-                cls.check_chezmoi_repo.value,
-                cls.parse_dump_config.value,
             )
         )
 
@@ -525,18 +442,12 @@ class Tcss(StrEnum):
     managed_tree = auto()
     op_btn_group = auto()
     operate_button = auto()
-    operate_buttons = auto()
     refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()
     sub_section_label = auto()
     tab_button = auto()
     unhandled = auto()
-
-    # add a property to return the name with a dot prefix
-    @property
-    def dot_prefix(self) -> str:
-        return f".{self.value}"
 
 
 ##############################################

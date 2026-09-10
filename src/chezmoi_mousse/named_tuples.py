@@ -8,23 +8,11 @@ if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
 
 __all__ = [
-    "AffectedPaths",
     "CommandResult",
     "DumpConfigKeys",
-    "RunCommandInfo",
+    "InitData",
     "ScanDirItem",
 ]
-
-
-class AffectedPaths(NamedTuple):
-    paths: list[Path]
-    pretty_cmd: str
-    std_err: str
-    returncode: int
-
-    @property
-    def path_strings(self) -> str:
-        return "\n".join(str(p) for p in self.paths)
 
 
 class CommandResult(NamedTuple):
@@ -37,20 +25,6 @@ class CommandResult(NamedTuple):
     std_err: str
     std_out: str
     time_stamp: str
-
-    @classmethod
-    def empty(cls) -> CommandResult:
-        return cls(
-            cmd_enum=None,
-            full_cmd="",
-            out_txt="",
-            path_arg=None,
-            pretty_cmd="",
-            returncode=0,
-            std_err="",
-            std_out="",
-            time_stamp="",
-        )
 
 
 class DumpConfigKeys(NamedTuple):
@@ -88,12 +62,6 @@ class InitData(NamedTuple):
     which_chezmoi: str | None = None
     which_git: str | None = None
     pilot_mode: bool = False
-
-
-class RunCommandInfo(NamedTuple):
-    border_title: str
-    border_subtitle: str
-    cmd_description: str
 
 
 class ScanDirItem(NamedTuple):

@@ -131,12 +131,6 @@ AnimatedFade, AppLog, CmdLog, ContentsView, DiffView {
   margin-bottom: 2;
 }
 
-AddedManaged, RemovedManaged, ChangedStatus {
-    background-tint: $surface;
-    background: $surface;
-    color: $text-muted;
-    padding: 0 1;
-}
 
 CustomHeader {
   border-bottom: dashed $surface-lighten-3;
@@ -166,32 +160,6 @@ InfoVertical {
   height: 1fr;
 }
 
-OperateModal {
-  align: center middle;
-  &>Vertical {
-    margin: 1 2 1 2;
-    border: round $warning-darken-2;
-  }
-  &>ScrollableContainer {
-    height: auto;
-  }
-}
-
-LoadingModal {
-  align: center middle;
-  &>VerticalGroup {
-    border: round $warning-darken-2;
-    min-width: 70;
-    width: auto;
-    &>Label {
-      width: 100%;
-    }
-    &>LoadingIndicator {
-      height: auto;
-      margin-top: 1;
-    }
-  }
-}
 
 SwitchSlider {
   background-tint: $surface;
@@ -364,12 +332,6 @@ Static {
     color: $text;
     padding: 0 1;
   }
-  &.operate_info {
-    border-subtitle-align: center;
-    border: round $foreground;
-    height: auto;
-    padding: 0 1;
-  }
   &.removed {
     background-tint: $error-muted;
     background: $error-muted;
@@ -418,12 +380,6 @@ TabbedContent {
     margin: 0 2;
   }
 }
-
-# Toast {
-#     content-align: center middle;
-#     background: $surface-lighten-1;
-#     background-tint: $surface-lighten-1;
-# }
 
 Tree {
   &>.tree--highlight-line {

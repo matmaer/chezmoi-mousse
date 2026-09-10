@@ -62,7 +62,7 @@ class _AllTestPaths:
             for dir in self._dirs_with_toml_files:
                 if dir != self._nested_dir_without_status_files_in:
                     to_create.add(dir / file_name)
-        for file_name in self.toml_file_without_diff:
+        for file_name in [TEST_FILE_2]:
             to_create.add(self._nested_dir_without_status_files_in / file_name)
         return sorted(to_create)
 
@@ -77,7 +77,7 @@ class _AllTestPaths:
     @property
     def toml_files_for_diff(self) -> list[Path]:
         to_diff: set[Path] = set()
-        for file_name in self.toml_files_for_diffs:
+        for file_name in [TEST_FILE_1, TEST_FILE_3]:
             for dir in self._dirs_with_toml_files:
                 if dir in [self._nested_dir_without_status_files_in, EMPTY_DIR]:
                     continue
@@ -145,14 +145,6 @@ class _AllTestPaths:
     @property
     def _all_toml_file_names(self) -> list[str]:
         return [TEST_FILE_1, TEST_FILE_2, TEST_FILE_3]
-
-    @property
-    def toml_file_without_diff(self) -> list[str]:
-        return [TEST_FILE_2]
-
-    @property
-    def toml_files_for_diffs(self) -> list[str]:
-        return [TEST_FILE_1, TEST_FILE_3]
 
 
 class TestPaths:

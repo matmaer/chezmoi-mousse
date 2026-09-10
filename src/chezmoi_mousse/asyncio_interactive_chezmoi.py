@@ -14,7 +14,7 @@ type PromptHandler = Callable[[str], Awaitable[str]]
 
 
 @asynccontextmanager
-async def managed_process(
+async def _managed_process(
     *cmd: str,
 ) -> AsyncGenerator[asyncio.subprocess.Process]:
     """Spawns an asyncio subprocess with guaranteed graceful cleanup on
@@ -51,7 +51,7 @@ async def run_interactive_stream(
 ) -> int:
     """Executes a chezmoi command, streams merged stdout/stderr, and intercepts
     prompts."""
-    async with managed_process(*cmd) as process:
+    async with _managed_process(*cmd) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin
 

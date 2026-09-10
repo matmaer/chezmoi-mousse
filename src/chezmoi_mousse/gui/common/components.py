@@ -101,11 +101,6 @@ class InfoVertical(Vertical):
         self.sub_label = self.query_exactly_one(SubSectionLabel)
         self.info_static = self.query_exactly_one(InfoStatic)
 
-    def _reset_widgets(self) -> None:
-        self.main_label = LabelStr.not_set
-        self.sub_label = LabelStr.not_set
-        self.info_static = LabelStr.not_set
-
     def watch_info_kind(self, info_kind: InfoKind | None) -> None:
         if info_kind is None:
             return
