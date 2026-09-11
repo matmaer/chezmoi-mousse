@@ -73,7 +73,6 @@ select = [
     "N",       # Naming
     "PGH",     # pygrep-hooks replacements
     "PLE",     # pylint errors
-    "PT",      # Pytest style
     "PTH",     # Use pathlib
     "RUF",     # Ruff-specific rules (e.g. RUF012 for class attributes)
     "SIM",     # Simplify
@@ -92,6 +91,12 @@ extend-safe-fixes = [
     "TCH",     # move imports into TYPE_CHECKING blocks
     "UP006",   # use standard collections like list[str] instead of typing.List[str]
     "UP007",   # use X | Y union syntax instead of Optional[X] or Union[X, Y]
+]
+
+ignore = [
+    # ignore functional NamedTuple warning when merely using the NamedTuple from typing 
+    # to typie dot accessed attributes without creating a NamedTuple subclass.
+    "UP014",   
 ]
 
 [tool.ruff.format]
