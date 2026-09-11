@@ -4,7 +4,6 @@ import dataclasses
 import os
 import shutil
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -19,7 +18,6 @@ from textual.widgets import Footer, Header, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store
-from chezmoi_mousse.data_classes import ManagedPaths
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
@@ -44,7 +42,6 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     BtnLabel,
     Chars,
-    PathKind,
     ReactiveVar,
     ReadCmd,
     Tcss,
@@ -164,7 +161,7 @@ class ChezmoiGui(App[str]):
         await self.run_splash_cmd_workers().wait()
         await self.run_managed_paths_workers().wait()
 
-        await self._update_managed_trees()
+        await self._update_managed_trees().wait()
         await self.splash_screen.dismiss_after_fade_loop()
 
     @work
@@ -183,38 +180,11 @@ class ChezmoiGui(App[str]):
     @work(group="managed_paths")
     async def run_managed_paths_workers(self) -> None:
         await self.splash_screen.run_managed_commands().wait()
-        await self._create_managed_paths_instance()
-
-    async def _create_managed_paths_instance(self) -> None:
-
         # we will create the data for the four fields which we need to properly init
         # the ManagedPaths instance: managed_dirs, managed_files, status_dir_pairs,
         # status_file_pairs
 
-        managed_dirs_dict: dict[Path, PathKind] = {
-            path: (PathKind.EXISTS if path.exists() else PathKind.MISSING)
-            for p in store.ManagedCmdResults.managed_dirs_result.splitlines()
-            if (path := Path(p))
-        }
-        managed_files_dict: dict[Path, PathKind] = {
-            path: (PathKind.EXISTS if path.exists() else PathKind.MISSING)
-            for p in store.ManagedCmdResults.managed_files_result.splitlines()
-            if (path := Path(p))
-        }
-        status_dir_pairs: dict[Path, str] = {
-            Path(line[0:2]): line[3:]
-            for line in store.ManagedCmdResults.status_dirs_result.splitlines()
-        }
-        status_file_pairs: dict[Path, str] = {
-            Path(line[0:2]): line[3:]
-            for line in store.ManagedCmdResults.status_files_result.splitlines()
-        }
-        store.paths = ManagedPaths(
-            managed_dirs=managed_dirs_dict,
-            managed_files=managed_files_dict,
-            status_dir_pairs=status_dir_pairs,
-            status_file_pairs=status_file_pairs,
-        )
+        ...
 
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:
@@ -246,6 +216,7 @@ class ChezmoiGui(App[str]):
             template_data = self.query_exactly_one(ConfigTab)
             setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
 
+    @work
     async def _update_managed_trees(self) -> None:
         apply_managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
         apply_managed_tree.update_tree()

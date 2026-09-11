@@ -97,9 +97,9 @@ class ManagedTree(Tree[Path]):
             return tree_node
 
         managed_kind = (
-            store.paths.managed_dirs.get(path, None)
+            store.paths.managed.dirs.get(path, None)
             if dir_node
-            else store.paths.managed_files.get(path, None)
+            else store.paths.managed.files.get(path, None)
         )
         status_code = (
             self.paths.status_dirs.get(path, None)
@@ -129,12 +129,12 @@ class ManagedTree(Tree[Path]):
         )
 
     def _populate_unchanged_nodes(self) -> None:
-        for path in self.paths.space_dirs:
+        for path in sorted(self.paths.no_status_dirs):
             parent_node = self._get_tree_node(path, parent_node=True)
             if parent_node is not None:
                 self._insert_node(dir_node=True, path=path, parent_node=parent_node)
 
-        for path in self.paths.space_files:
+        for path in sorted(self.paths.no_status_files):
             parent_node = self._get_tree_node(path, parent_node=True)
             if parent_node is not None:
                 self._insert_node(dir_node=False, path=path, parent_node=parent_node)
@@ -153,12 +153,11 @@ class ManagedTree(Tree[Path]):
                 continue
 
             for item in unmanaged:
-                if item.path in store.paths.managed_dirs | store.paths.managed_files:
+                if item.path in store.paths.managed.dirs | store.paths.managed.files:
                     continue
 
                 if not self.show_unchanged and (
-                    item.path in self.paths.space_dirs
-                    or item.path in self.paths.space_files
+                    item.path in store.paths.managed.space_paths
                 ):
                     continue
 
@@ -187,46 +186,30 @@ class ManagedTree(Tree[Path]):
         return None
 
     def update_tree(self) -> None:
-        """Rebuilds the tree structure from current chezmoi paths and restores state."""
         self.root.remove_children()
-        # Add status directories and files to root node
-        nodes_by_path: dict[Path, TreeNode[Path]] = {store.cfg.dest_dir: self.root}
 
-        for path in self.paths.status_dirs:
-            parent_node = nodes_by_path.get(path.parent, self.root)
-            node: TreeNode[Path] = self._insert_node(
-                dir_node=True, path=path, parent_node=parent_node
+        # status_dirs already contains every ancestor dir needed to reach a
+        # status path (as StatusCode.N_DIR), so sorting by depth guarantees
+        # each parent node exists before its child is inserted.
+        entries: deque[tuple[Path, bool]] = deque(
+            sorted(
+                [(path, True) for path in self.paths.status_dirs]
+                + [(path, False) for path in self.paths.status_files],
+                key=lambda entry: len(entry[0].parts),
             )
-            nodes_by_path[path] = node
+        )
 
-        for file_path in self.paths.status_files:
-            parent_node = nodes_by_path.get(file_path.parent, self.root)
-            self._insert_node(dir_node=False, path=file_path, parent_node=parent_node)
+        while entries:
+            path, dir_node = entries.popleft()
+            parent_node = self._get_tree_node(path, parent_node=True)
+            if parent_node is None:
+                raise RuntimeError(f"no parent node found to attach {path}")
+            self._insert_node(dir_node=dir_node, path=path, parent_node=parent_node)
 
-        # Re-populate optional active views (unchanged / unmanaged)
         if self.show_unchanged:
             self._populate_unchanged_nodes()
-
         if self.show_unmanaged:
             self._populate_unmanaged_nodes()
-
-        # Restore directory expansions
-        for node in self._iter_tree_nodes():
-            if node is self.root:
-                continue
-            if node.allow_expand:
-                if self.expand_all:
-                    node.expand()
-                else:
-                    node.collapse()
-
-        # Restore selection with parent fallback
-        node_to_select: TreeNode[Path] | None = None
-
-        if node_to_select is not None:
-            self.select_node(node_to_select)
-        else:
-            self.select_node(self.root)
 
     # #################################
     # # Watchers and message handling #
@@ -248,7 +231,7 @@ class ManagedTree(Tree[Path]):
         if event.node.data is None:
             return
         is_dest_dir = event.node is self.root
-        is_unmanaged = event.node.data not in store.paths.managed_paths
+        is_unmanaged = event.node.data not in store.paths.managed.paths
         self.post_message(
             CurrentNodeMsg(
                 app_ids=self.app_ids,
@@ -278,18 +261,18 @@ class ManagedTree(Tree[Path]):
             self._populate_unmanaged_nodes()
         else:
             for node in list(self._iter_tree_nodes()):
-                if node.data not in store.paths.managed_paths and node is not self.root:
+                if node.data not in store.paths.managed.paths and node is not self.root:
                     node.remove()
 
     def watch_show_unchanged(self, show_unchanged: bool) -> None:
         if show_unchanged:
             self._populate_unchanged_nodes()
         else:
-            for path in self.paths.space_dirs:
+            for path in self.paths.ns_dirs:
                 node = self._get_tree_node(path, parent_node=False)
                 if node is not None:
                     node.remove()
-            for path in self.paths.space_files:
+            for path in self.paths.no_status_files:
                 node = self._get_tree_node(path, parent_node=False)
                 if node is not None:
                     node.remove()

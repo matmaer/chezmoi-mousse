@@ -12,11 +12,9 @@ from chezmoi_mousse import _func, store
 from chezmoi_mousse.asyncio_process_exec import (
     execute_chezmoi_command,
 )
+from chezmoi_mousse.data_classes import ChezmoiPaths, ManagedPaths, StatusPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.named_tuples import (
-    CommandResult,
-    ScanDirItem,
-)
+from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
     PathKind,
     ReadCmd,
@@ -107,6 +105,57 @@ async def run_chezmoi_git_log(
         source_path = Path(source_path_result.std_out)
         cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, source_path).wait()
         return cmd_result
+
+
+@work
+async def run_tracked_commands(app: ChezmoiGui) -> None:
+    store.git_log_cr = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
+    managed_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None).wait()
+    managed_files_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_files, None).wait()
+    status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None).wait()
+    status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None).wait()
+
+    managed_dirs: dict[Path, PathKind] = {}
+    for line in managed_dirs_cr.std_out.splitlines():
+        path = Path(line)
+        managed_dirs[path] = PathKind.EXISTS if path.exists() else PathKind.MISSING
+    managed_files: dict[Path, PathKind] = {}
+    for line in managed_files_cr.std_out.splitlines():
+        path = Path(line)
+        managed_files[path] = PathKind.EXISTS if path.exists() else PathKind.MISSING
+
+    s_dir_pairs = {ln[3:]: ln[:2] for ln in status_dirs_cr.std_out.splitlines()}
+    s_file_pairs = {ln[3:]: ln[:2] for ln in status_files_cr.std_out.splitlines()}
+
+    store.paths = ChezmoiPaths(
+        managed=ManagedPaths(
+            dirs=managed_dirs,
+            files=managed_files,
+            status_paths=frozenset(Path(elt) for elt in s_dir_pairs | s_file_pairs),
+            added_dirs=frozenset(managed_dirs.keys() - store.paths.managed.dirs.keys()),
+            removed_dirs=frozenset(
+                store.paths.managed.dirs.keys() - managed_dirs.keys()
+            ),
+            added_files=frozenset(
+                managed_files.keys() - store.paths.managed.files.keys()
+            ),
+            removed_files=frozenset(
+                store.paths.managed.files.keys() - managed_files.keys()
+            ),
+        ),
+        apply=StatusPaths(
+            _status_dirs={Path(path_str): pair[1] for path_str, pair in s_dir_pairs},
+            _status_files={Path(path_str): pair[1] for path_str, pair in s_file_pairs},
+            changed_dirs={},
+            changed_files={},
+        ),
+        re_add=StatusPaths(
+            _status_dirs={Path(path_str): pair[0] for path_str, pair in s_dir_pairs},
+            _status_files={Path(path_str): pair[0] for path_str, pair in s_file_pairs},
+            changed_dirs={},
+            changed_files={},
+        ),
+    )
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:

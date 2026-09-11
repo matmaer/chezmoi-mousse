@@ -554,6 +554,17 @@ class ReadCmd(Enum):
             cls(cls.status_files),
         )
 
+    @classmethod
+    @cache
+    def tracked_commands(cls) -> tuple[Self, ...]:
+        return (
+            cls(cls.git_log),
+            cls(cls.managed_dirs),
+            cls(cls.managed_files),
+            cls(cls.status_dirs),
+            cls(cls.status_files),
+        )
+
 
 class WriteCmd(Enum):
     init = ("init",)

@@ -1,24 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.data_classes import Changed, ManagedPaths
+from chezmoi_mousse.data_classes import ChezmoiPaths, ManagedPaths, StatusPaths
 from chezmoi_mousse.named_tuples import DumpConfigKeys, InitData
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-
-class ManagedCmdResults:
-    """Simple container to collect managed command results, it's simply the output of
-    the command on stdout."""
-
-    managed_dirs_result: ClassVar[str] = ""
-    managed_files_result: ClassVar[str] = ""
-    status_dirs_result: ClassVar[str] = ""
-    status_files_result: ClassVar[str] = ""
+    from chezmoi_mousse.named_tuples import CommandResult
 
 
 init_data: InitData = InitData()
@@ -34,8 +26,31 @@ re_add_ids = AppIds(BtnLabel.re_add)
 
 cfg = DumpConfigKeys()
 
-changed = Changed()
-paths = ManagedPaths()
+git_log_cr: CommandResult | None = None
+paths = ChezmoiPaths(
+    managed=ManagedPaths(
+        dirs={},
+        files={},
+        status_paths=frozenset(),
+        added_dirs=frozenset(),
+        removed_dirs=frozenset(),
+        added_files=frozenset(),
+        removed_files=frozenset(),
+    ),
+    apply=StatusPaths(
+        _status_dirs={},
+        _status_files={},
+        changed_dirs={},
+        changed_files={},
+    ),
+    re_add=StatusPaths(
+        _status_dirs={},
+        _status_files={},
+        changed_dirs={},
+        changed_files={},
+    ),
+)
+
 
 # Keep track of the selected path by tab
 add_path: Path | None = None

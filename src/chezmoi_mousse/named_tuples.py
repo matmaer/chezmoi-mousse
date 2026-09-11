@@ -26,6 +26,20 @@ class CommandResult(NamedTuple):
     std_out: str
     time_stamp: str
 
+    @classmethod
+    def empty(cls) -> CommandResult:
+        return cls(
+            cmd_enum=None,
+            full_cmd="",
+            out_txt="",
+            path_arg=None,
+            pretty_cmd="",
+            returncode=0,
+            std_err="",
+            std_out="",
+            time_stamp="",
+        )
+
 
 class DumpConfigKeys(NamedTuple):
     dest_dir_path: Path | None = None
@@ -62,6 +76,18 @@ class InitData(NamedTuple):
     which_chezmoi: str | None = None
     which_git: str | None = None
     pilot_mode: bool = False
+
+
+class TrackedResults(NamedTuple):
+    """Group of commands we keep track of to show changes in the GUI and which
+    can produce output in depending on eachothers cross referenced result."""
+
+    # TODO: expand scope
+
+    managed_dirs_cr: CommandResult = CommandResult.empty()
+    managed_files_cr: CommandResult = CommandResult.empty()
+    status_dirs_cr: CommandResult = CommandResult.empty()
+    status_files_cr: CommandResult = CommandResult.empty()
 
 
 class ScanDirItem(NamedTuple):
