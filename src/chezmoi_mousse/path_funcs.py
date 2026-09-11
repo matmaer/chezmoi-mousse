@@ -13,7 +13,39 @@ from chezmoi_mousse.str_enums import (
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ["is_unwanted_dir", "is_unwanted_file", "os_scan_dir"]
+__all__ = ["_get_top_parents", "is_unwanted_dir", "is_unwanted_file", "os_scan_dir"]
+
+
+def _get_top_parents(paths: list[Path] | set[Path] | frozenset[Path]) -> list[Path]:
+
+    sorted_paths = sorted(paths)
+    top_parents = [sorted_paths[0]]
+
+    for path in sorted_paths[1:]:
+        # Compare current path only to the last confirmed top parent
+        if not path.is_relative_to(top_parents[-1]):
+            top_parents.append(path)
+
+    return top_parents
+
+
+def is_unwanted_file(file_path: Path) -> bool:
+    return (
+        _func.path_seems_cache(file_path)
+        or _func.file_is_sensitive(file_path)
+        or _func.file_unwanted_suffix(file_path)
+        or _func.file_is_large(file_path)
+        or _func.file_is_binary(file_path)
+    )
+
+
+def is_unwanted_dir(dir_path: Path) -> bool:
+    return (
+        _func.path_seems_cache(dir_path)
+        or _func.dir_name_is_unwanted(dir_path)
+        or _func.dir_is_git_objects(dir_path)
+        or _func.dir_has_many_children(dir_path)
+    )
 
 
 def os_scan_dir(dir_path: Path) -> ScanDirResult:
@@ -74,22 +106,3 @@ def os_scan_dir(dir_path: Path) -> ScanDirResult:
             )
         )
     return scan_dir_items
-
-
-def is_unwanted_file(file_path: Path) -> bool:
-    return (
-        _func.path_seems_cache(file_path)
-        or _func.file_is_sensitive(file_path)
-        or _func.file_unwanted_suffix(file_path)
-        or _func.file_is_large(file_path)
-        or _func.file_is_binary(file_path)
-    )
-
-
-def is_unwanted_dir(dir_path: Path) -> bool:
-    return (
-        _func.path_seems_cache(dir_path)
-        or _func.dir_name_is_unwanted(dir_path)
-        or _func.dir_is_git_objects(dir_path)
-        or _func.dir_has_many_children(dir_path)
-    )
