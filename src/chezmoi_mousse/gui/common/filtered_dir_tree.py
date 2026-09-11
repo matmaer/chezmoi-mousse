@@ -60,7 +60,7 @@ class FilteredDirTree(DirectoryTree):
         filter_paths: set[Path] = set()
         for p in paths:
             is_dir = p.is_dir()
-            is_managed = bool(p in store.paths.managed_paths)
+            is_managed = bool(p in store.paths.managed.paths)
             if is_dir:
                 is_unwanted = path_funcs.is_unwanted_dir(p)
             else:

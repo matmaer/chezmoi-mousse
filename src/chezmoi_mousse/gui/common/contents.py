@@ -62,33 +62,33 @@ class ContentsView(ScrollableContainer):
         )
 
     def _is_dir(self, path: Path) -> bool:
-        return path == store.cfg.dest_dir or path in store.paths.managed_dirs
+        return path == store.cfg.dest_dir or path in store.paths.managed.paths
 
     def _set_dir_contents(self, path: Path) -> None:
         # main label
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-        elif path in store.paths.managed_dirs:
+        elif path in store.paths.managed.dirs:
             self.main_section_label.update(LabelStr.managed_dir)
         else:
             self.main_section_label.update(LabelStr.unmanaged_dir)
         # sub label
         label = str(path)
         if self.app_ids.tab_label in (BtnLabel.apply, BtnLabel.re_add):
-            if not store.paths.managed_dirs | store.paths.managed_files:
+            if not store.paths.managed.dirs | store.paths.managed.files:
                 label = LabelStr.no_managed_paths
-            elif not store.paths.status_dir_pairs and not store.paths.status_file_pairs:
+            elif self.paths.no_status_dirs and self.paths.no_status_files:
                 label = LabelStr.no_status_paths
         self.sub_section_label.update(label)
 
     @work
     async def _create_file_container(self, path: Path) -> None:
         self.sub_section_label.update(LabelStr.not_set)
-        if path in store.paths.managed_files:
+        if path in store.paths.managed.files:
             self.main_section_label.update(LabelStr.managed_file)
         else:
             self.main_section_label.update(LabelStr.unmanaged_file)
-        if store.paths.managed_files.get(path) is PathKind.EXISTS:
+        if store.paths.managed.files.get(path) is PathKind.EXISTS:
             f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                 self.app, path
             )
