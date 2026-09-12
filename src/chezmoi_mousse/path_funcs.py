@@ -13,10 +13,13 @@ from chezmoi_mousse.str_enums import (
 
 type ScanDirResult = list[ScanDirItem] | PathKind
 
-__all__ = ["_get_top_parents", "is_unwanted_dir", "is_unwanted_file", "os_scan_dir"]
+__all__ = ["get_top_parents", "is_unwanted_dir", "is_unwanted_file", "os_scan_dir"]
 
 
-def _get_top_parents(paths: list[Path] | set[Path] | frozenset[Path]) -> list[Path]:
+def get_top_parents(paths: list[Path] | set[Path] | frozenset[Path]) -> list[Path]:
+
+    if not paths:
+        return []
 
     sorted_paths = sorted(paths)
     top_parents = [sorted_paths[0]]
