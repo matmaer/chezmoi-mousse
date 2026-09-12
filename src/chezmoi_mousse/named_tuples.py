@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-if TYPE_CHECKING:
-    from pathlib import Path
+from chezmoi_mousse.str_enums import ReadCmd
 
-    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+if TYPE_CHECKING:
+    from chezmoi_mousse.str_enums import WriteCmd
 
 __all__ = [
     "CommandResult",
@@ -24,7 +25,14 @@ class CommandResult(NamedTuple):
     returncode: int | None
     std_err: str
     std_out: str
+    out_list: list[str]
     time_stamp: str
+
+    @property
+    def path_set(self) -> set[Path]:
+        if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
+            raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
+        return {Path(p) for p in self.out_list}
 
     @classmethod
     def empty(cls) -> CommandResult:
@@ -37,6 +45,7 @@ class CommandResult(NamedTuple):
             returncode=0,
             std_err="",
             std_out="",
+            out_list=[],
             time_stamp="",
         )
 
