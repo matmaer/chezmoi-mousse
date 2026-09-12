@@ -92,38 +92,23 @@ class DiffView(ScrollableContainer):
         )
 
     @work
-    async def _update_widgets(self, path: Path) -> None:
-
-        if path in self.paths.status_paths:
-            diff_result = await tchezmoi.run_chezmoi_diff(self.app, self.diff_cmd, path)
-
-            self.main_section_label.update(str(diff_result.full_cmd))
-
-            self.diff_lines.remove_children()
-            self.diff_lines.mount_all(self._create_diff_widgets(diff_result))
-            self.flat_section_label.update(diff_result.std_out.splitlines().pop(0))
-
-            self.diff_lines.display = True
-            self.flat_section_label.display = True
-            self.sub_section_label.display = False
-            self.info_static.display = False
-            return
+    async def _update_if_no_diff(self, path: Path) -> None:
 
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-            if not store.cm_paths.managed.paths:
+            if not store.cm_paths.managed_paths:
                 self.sub_section_label.update(LabelStr.no_managed_paths)
             else:
                 self.sub_section_label.update(LabelStr.dest_dir_diff)
 
-        elif path in store.cm_paths.managed.paths:
-            if path in store.cm_paths.managed.dirs:
+        elif path in store.cm_paths.managed_paths:
+            if path in store.cm_paths.managed_dirs:
                 self.main_section_label.update(LabelStr.managed_dir)
-            elif path in store.cm_paths.managed.files:
+            elif path in store.cm_paths.managed_files:
                 self.main_section_label.update(LabelStr.managed_file)
             self.sub_section_label.update(LabelStr.managed_no_status)
 
-        elif path in self.paths.no_status_dirs:
+        elif path not in store.cm_paths.status_dirs:
             self.main_section_label.update(LabelStr.managed_dir)
             self.sub_section_label.update(LabelStr.n_dir)
 
@@ -139,7 +124,9 @@ class DiffView(ScrollableContainer):
         self.sub_section_label.display = True
         self.info_static.display = True
 
-    def _create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
+    @work
+    async def _create_diff_widgets(self, diff_result: CommandResult) -> list[Static]:
+
         widgets: list[Label | Static] = []
 
         def get_prefix(line: str) -> str:
@@ -148,9 +135,7 @@ class DiffView(ScrollableContainer):
                     return p
             return "unhandled"
 
-        for prefix, group_lines in groupby(
-            diff_result.std_out.splitlines(), key=get_prefix
-        ):
+        for prefix, group_lines in groupby(diff_result.out_list, key=get_prefix):
             group_list = list(group_lines)
             if prefix in ("+", "-"):
                 text = "\n".join(group_list)
@@ -164,7 +149,31 @@ class DiffView(ScrollableContainer):
                     )
         return widgets
 
-    def watch_show_path(self, show_path: Path | None) -> None:
+    async def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        self.notify("show path in diff view not implemented")
+        if show_path in store.cm_paths.status_paths:
+            self.diff_lines.remove_children()
+            diff_result = await tchezmoi.exec_chezmoi_cmd(
+                self.app, self.diff_cmd, show_path
+            ).wait()
+            self.main_section_label.update(str(diff_result.full_cmd))
+            self.flat_section_label.update(diff_result.std_out.splitlines().pop(0))
+
+            self.diff_lines.display = True
+            self.flat_section_label.display = True
+            self.sub_section_label.display = False
+            self.info_static.display = False
+            self.main_section_label.update(str(diff_result.full_cmd))
+
+            self.diff_lines.remove_children()
+            self.diff_lines.mount_all(
+                await self._create_diff_widgets(diff_result).wait()
+            )
+            self.flat_section_label.update(diff_result.std_out.splitlines().pop(0))
+
+            self.diff_lines.display = True
+            self.flat_section_label.display = True
+            self.sub_section_label.display = False
+            self.info_static.display = False
+            return

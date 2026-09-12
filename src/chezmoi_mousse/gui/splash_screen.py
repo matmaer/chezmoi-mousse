@@ -132,7 +132,12 @@ class SplashScreen(Screen[None]):
             prefix = tchezmoi.pretty_cmd(cmd, None)
             suffix = LogStr.skipped
             await self._write_log_msg(prefix=prefix, suffix=suffix)
-        cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(self.app, cmd, None).wait()
+        if cmd is ReadCmd.git_log:
+            cr = await tchezmoi.run_chezmoi_git_log(self.app).wait()
+        else:
+            cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(
+                self.app, cmd, None
+            ).wait()
         prefix = cr.pretty_cmd
         if store.pre_mount is True:
             self.pre_mount_cmd_results.append(cr)

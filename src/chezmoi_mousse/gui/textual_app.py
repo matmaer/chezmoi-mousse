@@ -49,10 +49,7 @@ from chezmoi_mousse.str_enums import (
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 if TYPE_CHECKING:
-    from textual import getters
     from textual.app import ComposeResult
-
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 __all__ = ["ChezmoiGui"]
@@ -80,9 +77,6 @@ class CustomHeader(Header):
 
 
 class ChezmoiGui(App[str]):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
     BINDINGS: ClassVar = [
         Binding(
             "ctrl+q",
@@ -158,8 +152,8 @@ class ChezmoiGui(App[str]):
 
         await self._log_pre_mount_cmd_results().wait()
 
-        await self.run_splash_cmd_workers().wait()
-        await self.run_managed_paths_workers().wait()
+        await self._run_splash_cmd_workers().wait()
+        await self.splash_screen.run_managed_commands().wait()
 
         await self._update_managed_trees().wait()
         await self.splash_screen.dismiss_after_fade_loop()
@@ -173,18 +167,9 @@ class ChezmoiGui(App[str]):
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
     @work(group="splash_commands")
-    async def run_splash_cmd_workers(self) -> None:
+    async def _run_splash_cmd_workers(self) -> None:
         for cmd in ReadCmd.splash_commands():
             await self.splash_screen.splash_run_chezmoi(cmd)
-
-    @work(group="managed_paths")
-    async def run_managed_paths_workers(self) -> None:
-        await self.splash_screen.run_managed_commands().wait()
-        # we will create the data for the four fields which we need to properly init
-        # the ManagedPaths instance: managed_dirs, managed_files, status_dir_pairs,
-        # status_file_pairs
-
-        ...
 
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:

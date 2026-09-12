@@ -7,6 +7,6 @@
 #
 # See THIRD_PARTY_LICENSES.md for the chezmoi and textual license information.
 
-from chezmoi_mousse import store
+from chezmoi_mousse import path_funcs, store, tchezmoi
 
-__all__ = ["store"]
+__all__ = ["path_funcs", "store", "tchezmoi"]

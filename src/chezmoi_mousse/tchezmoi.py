@@ -8,18 +8,15 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 from textual import work
 
-from chezmoi_mousse import _func, store
+import chezmoi_mousse._func as _func
+from chezmoi_mousse import store
 from chezmoi_mousse.asyncio_process_exec import (
     execute_chezmoi_command,
 )
 from chezmoi_mousse.data_classes import ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
-from chezmoi_mousse.str_enums import (
-    PathKind,
-    ReadCmd,
-    WriteCmd,
-)
+from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import (
@@ -27,7 +24,7 @@ if TYPE_CHECKING:
     )
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-type ScanDirResult = list[ScanDirItem] | PathKind
+type ScanDirResult = list[ScanDirItem]
 
 __all__ = ["ScanDirResult"]
 
@@ -41,7 +38,7 @@ def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
         return (f"{base_cmd} {cmd.pretty_cmd} {_func.get_rel_path(path)}").rstrip()
 
 
-async def construct_command_result(
+async def _construct_command_result(
     exec_result: ExecResult, cmd_enum: ReadCmd | WriteCmd, path_arg: Path | None
 ) -> CommandResult:
     std_out = exec_result[0]
@@ -85,7 +82,7 @@ async def exec_chezmoi_cmd(
     ):
         raise ValueError(f"Path {path_arg} cannot be the destination directory")
     exec_result: ExecResult = await execute_chezmoi_command(cmd_enum, path_arg)
-    cmd_result = await construct_command_result(exec_result, cmd_enum, path_arg)
+    cmd_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
     if store.pre_mount is False:
         app.post_message(CommandResultMsg(cmd_result))
     return cmd_result
@@ -104,7 +101,7 @@ async def run_chezmoi_git_log(
         cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
         return cmd_result
     else:
-        source_path_result = await exec_chezmoi_cmd(app, ReadCmd.git_log).wait()
+        source_path_result = await exec_chezmoi_cmd(app, ReadCmd.source_path).wait()
         source_path = Path(source_path_result.std_out)
         cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, source_path).wait()
         return cmd_result
@@ -119,14 +116,14 @@ async def run_tracked_commands(app: ChezmoiGui) -> None:
     status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None).wait()
 
     new_cm_paths = ChezmoiPaths(
-        _old_managed_dirs=store.cm_paths.managed.dirs,
-        _new_managed_dirs=managed_dirs_cr.paths_set,
-        _old_managed_files=store.cm_paths.managed.files,
-        _new_managed_files=managed_files_cr.paths_set,
-        _old_dir_status_pairs=store.cm_paths.managed.status_dirs,
-        _new_dir_status_pairs=status_dirs_cr.status_pairs,
-        _old_file_status_pairs=store.cm_paths.managed.status_files,
-        _new_file_status_pairs=status_files_cr.status_pairs,
+        managed_dirs=managed_dirs_cr.path_list,
+        managed_files=managed_files_cr.path_list,
+        old_man_dirs_set=set(store.cm_paths.managed_dirs),
+        old_man_files_set=set(store.cm_paths.managed_files),
+        status_dirs=status_dirs_cr.managed_status,
+        status_files=status_files_cr.managed_status,
+        old_status_dirs=store.cm_paths.status_dirs,
+        old_status_files=store.cm_paths.status_files,
     )
     store.cm_paths = new_cm_paths
 
@@ -163,9 +160,3 @@ async def get_highlighted_chezmoi_cat_output(
     text_contents = Text(f_contents)
     ReprHighlighter().highlight(text_contents)
     return text_contents
-
-
-async def run_chezmoi_diff(
-    app: ChezmoiGui, diff_cmd: ReadCmd, path: Path
-) -> CommandResult:
-    return await exec_chezmoi_cmd(app, diff_cmd, path).wait()

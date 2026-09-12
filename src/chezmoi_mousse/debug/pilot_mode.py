@@ -147,7 +147,4 @@ async def _start_pilot_mode(app: ChezmoiGui) -> None:
         tab = tabbed_content.get_tab(BtnLabel.apply)
         await _click_and_wait(pilot, tab)
 
-        if pilot.app.devtools and pilot.app.devtools.session:
-            await pilot.app.devtools.session.close()
-
         await pilot.exit("Pilot mode completed\n")

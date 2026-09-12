@@ -3,15 +3,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from chezmoi_mousse import _func
-from chezmoi_mousse.named_tuples import (
-    ScanDirItem,
-)
-from chezmoi_mousse.str_enums import (
-    PathKind,
-)
+import chezmoi_mousse._func as _func
+from chezmoi_mousse.named_tuples import ScanDirItem
 
-type ScanDirResult = list[ScanDirItem] | PathKind
+type ScanDirResult = list[ScanDirItem]
 
 __all__ = ["get_top_parents", "is_unwanted_dir", "is_unwanted_file", "os_scan_dir"]
 
@@ -67,7 +62,7 @@ def os_scan_dir(dir_path: Path) -> ScanDirResult:
         with os.scandir(str(dir_path)) as entry_generator:
             dir_entries: list[os.DirEntry[str]] = list(entry_generator)
     except (FileNotFoundError, PermissionError, OSError):
-        return PathKind.ERROR
+        return []
 
     sibling_count = len(dir_entries)
 

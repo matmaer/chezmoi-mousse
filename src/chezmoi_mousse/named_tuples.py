@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from chezmoi_mousse.str_enums import ChezmoiStatusCode as CmSc, ReadCmd
+from chezmoi_mousse.str_enums import ReadCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import WriteCmd
@@ -13,10 +13,7 @@ __all__ = [
     "DumpConfigKeys",
     "InitData",
     "ScanDirItem",
-    "StatusPairsDict",
 ]
-
-type StatusPairsDict = dict[Path, tuple[CmSc, CmSc]]
 
 
 class CommandResult(NamedTuple):
@@ -32,33 +29,16 @@ class CommandResult(NamedTuple):
     time_stamp: str
 
     @property
-    def status_pairs(self) -> StatusPairsDict:
+    def managed_status(self) -> dict[Path, str]:
         if self.cmd_enum not in (ReadCmd.status_dirs, ReadCmd.status_files):
             raise RuntimeError(f"Command {self.cmd_enum} does not return status lines.")
-        return {
-            Path(line[3:]): (CmSc(line[0]), CmSc(line[1])) for line in self.out_list
-        }
+        return {Path(line[3:]): line[:2] for line in self.out_list}
 
     @property
-    def paths_set(self) -> set[Path]:
+    def path_list(self) -> list[Path]:
         if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
             raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
-        return {Path(p) for p in self.out_list}
-
-    @classmethod
-    def empty(cls) -> CommandResult:
-        return cls(
-            cmd_enum=None,
-            full_cmd="",
-            out_txt="",
-            path_arg=None,
-            pretty_cmd="",
-            returncode=0,
-            std_err="",
-            std_out="",
-            out_list=[],
-            time_stamp="",
-        )
+        return sorted(Path(p) for p in self.out_list)
 
 
 class DumpConfigKeys(NamedTuple):
@@ -96,18 +76,6 @@ class InitData(NamedTuple):
     which_chezmoi: str | None = None
     which_git: str | None = None
     pilot_mode: bool = False
-
-
-class TrackedResults(NamedTuple):
-    """Group of commands we keep track of to show changes in the GUI and which
-    can produce output in depending on eachothers cross referenced result."""
-
-    # TODO: expand scope
-
-    managed_dirs_cr: CommandResult = CommandResult.empty()
-    managed_files_cr: CommandResult = CommandResult.empty()
-    status_dirs_cr: CommandResult = CommandResult.empty()
-    status_files_cr: CommandResult = CommandResult.empty()
 
 
 class ScanDirItem(NamedTuple):

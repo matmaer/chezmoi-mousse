@@ -17,7 +17,6 @@ __all__ = [
     "LabelStr",
     "LogStr",
     "PathFilters",
-    "PathKind",
     "ProblemChars",
     "ReactiveVar",
     "ReadCmd",
@@ -94,7 +93,6 @@ class BtnLabel(StrEnum):
 
     # Other
     cancel = "Cancel"
-    close = "Close"
 
     @property
     def pane_id(self) -> str:
@@ -384,13 +382,6 @@ class PathFilters(Enum):
     )
 
 
-class PathKind(StrEnum):
-    EXISTS = auto()
-    MISSING = auto()
-    ERROR = auto()
-    UNMANAGED = auto()
-
-
 class ProblemChars(StrEnum):
     BIDI_PDF = "\u202c"
     BIDI_RLO = "\u202e"
@@ -548,17 +539,6 @@ class ReadCmd(Enum):
     @cache
     def managed_commands(cls) -> tuple[Self, ...]:
         return (
-            cls(cls.managed_dirs),
-            cls(cls.managed_files),
-            cls(cls.status_dirs),
-            cls(cls.status_files),
-        )
-
-    @classmethod
-    @cache
-    def tracked_commands(cls) -> tuple[Self, ...]:
-        return (
-            cls(cls.git_log),
             cls(cls.managed_dirs),
             cls(cls.managed_files),
             cls(cls.status_dirs),

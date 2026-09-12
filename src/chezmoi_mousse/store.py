@@ -31,14 +31,14 @@ cfg = DumpConfigKeys()
 git_log_cr: CommandResult | None = None
 
 cm_paths = ChezmoiPaths(
-    _old_managed_dirs=set(),
-    _new_managed_dirs=set(),
-    _old_managed_files=set(),
-    _new_managed_files=set(),
-    _old_dir_status_pairs={},
-    _new_dir_status_pairs={},
-    _old_file_status_pairs={},
-    _new_file_status_pairs={},
+    managed_dirs=[],
+    managed_files=[],
+    old_man_dirs_set=set(),
+    old_man_files_set=set(),
+    status_dirs={},
+    status_files={},
+    old_status_dirs={},
+    old_status_files={},
 )
 
 # Keep track of the selected path by tab

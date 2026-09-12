@@ -19,7 +19,7 @@ type CheckFunction = Callable[[NodeDb], IssueList]
 type CheckRunner = Callable[[CheckFunction], None]
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=True)  # pyright: ignore[reportUnknownMemberType]
 def node_db() -> NodeDb:
     return NodeDb()
 
