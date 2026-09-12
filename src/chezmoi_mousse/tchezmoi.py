@@ -12,7 +12,7 @@ from chezmoi_mousse import _func, store
 from chezmoi_mousse.asyncio_process_exec import (
     execute_chezmoi_command,
 )
-from chezmoi_mousse.data_classes import ChezmoiPaths, ManagedPaths, StatusPaths
+from chezmoi_mousse.data_classes import ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import (
@@ -47,6 +47,7 @@ async def construct_command_result(
     std_out = exec_result[0]
     std_err = exec_result[1]
     result_code = exec_result[2]
+    out_list = []
     if not std_out and not std_err:
         out_lines: list[str] = []
         out_lines.append("Output on stdout:")
@@ -57,6 +58,7 @@ async def construct_command_result(
     elif not std_out and std_err:
         out_txt = std_err
     elif std_out and not std_err:
+        out_list = std_out.splitlines()
         out_txt = std_out
     else:
         out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
@@ -69,6 +71,7 @@ async def construct_command_result(
         returncode=result_code,
         std_err=std_err,
         std_out=std_out,
+        out_list=out_list,
         time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
     )
 
@@ -115,47 +118,17 @@ async def run_tracked_commands(app: ChezmoiGui) -> None:
     status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None).wait()
     status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None).wait()
 
-    managed_dirs: dict[Path, PathKind] = {}
-    for line in managed_dirs_cr.std_out.splitlines():
-        path = Path(line)
-        managed_dirs[path] = PathKind.EXISTS if path.exists() else PathKind.MISSING
-    managed_files: dict[Path, PathKind] = {}
-    for line in managed_files_cr.std_out.splitlines():
-        path = Path(line)
-        managed_files[path] = PathKind.EXISTS if path.exists() else PathKind.MISSING
-
-    s_dir_pairs = {ln[3:]: ln[:2] for ln in status_dirs_cr.std_out.splitlines()}
-    s_file_pairs = {ln[3:]: ln[:2] for ln in status_files_cr.std_out.splitlines()}
-
-    store.paths = ChezmoiPaths(
-        managed=ManagedPaths(
-            dirs=managed_dirs,
-            files=managed_files,
-            status_paths=frozenset(Path(elt) for elt in s_dir_pairs | s_file_pairs),
-            added_dirs=frozenset(managed_dirs.keys() - store.paths.managed.dirs.keys()),
-            removed_dirs=frozenset(
-                store.paths.managed.dirs.keys() - managed_dirs.keys()
-            ),
-            added_files=frozenset(
-                managed_files.keys() - store.paths.managed.files.keys()
-            ),
-            removed_files=frozenset(
-                store.paths.managed.files.keys() - managed_files.keys()
-            ),
-        ),
-        apply=StatusPaths(
-            _status_dirs={Path(path_str): pair[1] for path_str, pair in s_dir_pairs},
-            _status_files={Path(path_str): pair[1] for path_str, pair in s_file_pairs},
-            changed_dirs={},
-            changed_files={},
-        ),
-        re_add=StatusPaths(
-            _status_dirs={Path(path_str): pair[0] for path_str, pair in s_dir_pairs},
-            _status_files={Path(path_str): pair[0] for path_str, pair in s_file_pairs},
-            changed_dirs={},
-            changed_files={},
-        ),
+    new_cm_paths = ChezmoiPaths(
+        _old_managed_dirs=store.cm_paths.managed.dirs,
+        _new_managed_dirs=managed_dirs_cr.paths_set,
+        _old_managed_files=store.cm_paths.managed.files,
+        _new_managed_files=managed_files_cr.paths_set,
+        _old_dir_status_pairs=store.cm_paths.managed.status_dirs,
+        _new_dir_status_pairs=status_dirs_cr.status_pairs,
+        _old_file_status_pairs=store.cm_paths.managed.status_files,
+        _new_file_status_pairs=status_files_cr.status_pairs,
     )
+    store.cm_paths = new_cm_paths
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.data_classes import StatusPaths
+    from chezmoi_mousse.data_classes import StatusByColumn
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["ContentsView"]
@@ -54,41 +54,41 @@ class ContentsView(ScrollableContainer):
         self.sub_section_label.update()
 
     @property
-    def paths(self) -> StatusPaths:
+    def paths(self) -> StatusByColumn:
         return (
-            store.paths.apply
+            store.cm_paths.apply
             if self.app_ids.tab_label == BtnLabel.apply
-            else store.paths.re_add
+            else store.cm_paths.re_add
         )
 
     def _is_dir(self, path: Path) -> bool:
-        return path == store.cfg.dest_dir or path in store.paths.managed.paths
+        return path == store.cfg.dest_dir or path in store.cm_paths.managed.paths
 
     def _set_dir_contents(self, path: Path) -> None:
         # main label
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-        elif path in store.paths.managed.dirs:
+        elif path in store.cm_paths.managed.dirs:
             self.main_section_label.update(LabelStr.managed_dir)
         else:
             self.main_section_label.update(LabelStr.unmanaged_dir)
         # sub label
         label = str(path)
         if self.app_ids.tab_label in (BtnLabel.apply, BtnLabel.re_add):
-            if not store.paths.managed.dirs | store.paths.managed.files:
+            if not store.cm_paths.managed.paths:
                 label = LabelStr.no_managed_paths
-            elif self.paths.no_status_dirs and self.paths.no_status_files:
+            elif store.cm_paths.no_status_paths:
                 label = LabelStr.no_status_paths
         self.sub_section_label.update(label)
 
     @work
     async def _create_file_container(self, path: Path) -> None:
         self.sub_section_label.update(LabelStr.not_set)
-        if path in store.paths.managed.files:
+        if path in store.cm_paths.managed.files:
             self.main_section_label.update(LabelStr.managed_file)
         else:
             self.main_section_label.update(LabelStr.unmanaged_file)
-        if store.paths.managed.files.get(path) is PathKind.EXISTS:
+        if store.cm_paths.managed.files.get(path) is PathKind.EXISTS:
             f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                 self.app, path
             )

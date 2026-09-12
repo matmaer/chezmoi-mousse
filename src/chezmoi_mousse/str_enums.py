@@ -9,6 +9,7 @@ __all__ = [
     "BindingDescription",
     "BtnLabel",
     "Chars",
+    "ChezmoiStatusCode",
     "ColorVar",
     "ContainerName",
     "GlobalArgs",
@@ -21,7 +22,6 @@ __all__ = [
     "ReactiveVar",
     "ReadCmd",
     "RichLogName",
-    "StatusCode",
     "Tcss",
     "WriteCmd",
 ]
@@ -413,7 +413,7 @@ class RichLogName(StrEnum):
     memory_usage_logger = auto()
 
 
-class StatusCode(StrEnum):
+class ChezmoiStatusCode(StrEnum):
     Added = "A"
     Deleted = "D"
     Modified = "M"

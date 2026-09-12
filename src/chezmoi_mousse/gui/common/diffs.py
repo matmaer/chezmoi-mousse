@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from textual.widgets import Label
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.data_classes import StatusPaths
+    from chezmoi_mousse.data_classes import StatusByColumn
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.named_tuples import CommandResult
 
@@ -84,11 +84,11 @@ class DiffView(ScrollableContainer):
         self.diff_lines.display = False
 
     @property
-    def paths(self) -> StatusPaths:
+    def paths(self) -> StatusByColumn:
         return (
-            store.paths.apply
+            store.cm_paths.apply
             if self.app_ids.tab_label == BtnLabel.apply
-            else store.paths.re_add
+            else store.cm_paths.re_add
         )
 
     @work
@@ -111,15 +111,15 @@ class DiffView(ScrollableContainer):
 
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-            if not store.paths.managed.paths:
+            if not store.cm_paths.managed.paths:
                 self.sub_section_label.update(LabelStr.no_managed_paths)
             else:
                 self.sub_section_label.update(LabelStr.dest_dir_diff)
 
-        elif path in store.paths.managed.paths:
-            if path in store.paths.managed.dirs:
+        elif path in store.cm_paths.managed.paths:
+            if path in store.cm_paths.managed.dirs:
                 self.main_section_label.update(LabelStr.managed_dir)
-            elif path in store.paths.managed.files:
+            elif path in store.cm_paths.managed.files:
                 self.main_section_label.update(LabelStr.managed_file)
             self.sub_section_label.update(LabelStr.managed_no_status)
 

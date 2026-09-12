@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.data_classes import ChezmoiPaths, ManagedPaths, StatusPaths
+from chezmoi_mousse.data_classes import (
+    ChezmoiPaths,
+)
 from chezmoi_mousse.named_tuples import DumpConfigKeys, InitData
 from chezmoi_mousse.str_enums import BtnLabel
 
@@ -27,30 +29,17 @@ re_add_ids = AppIds(BtnLabel.re_add)
 cfg = DumpConfigKeys()
 
 git_log_cr: CommandResult | None = None
-paths = ChezmoiPaths(
-    managed=ManagedPaths(
-        dirs={},
-        files={},
-        status_paths=frozenset(),
-        added_dirs=frozenset(),
-        removed_dirs=frozenset(),
-        added_files=frozenset(),
-        removed_files=frozenset(),
-    ),
-    apply=StatusPaths(
-        _status_dirs={},
-        _status_files={},
-        changed_dirs={},
-        changed_files={},
-    ),
-    re_add=StatusPaths(
-        _status_dirs={},
-        _status_files={},
-        changed_dirs={},
-        changed_files={},
-    ),
-)
 
+cm_paths = ChezmoiPaths(
+    _old_managed_dirs=set(),
+    _new_managed_dirs=set(),
+    _old_managed_files=set(),
+    _new_managed_files=set(),
+    _old_dir_status_pairs={},
+    _new_dir_status_pairs={},
+    _old_file_status_pairs={},
+    _new_file_status_pairs={},
+)
 
 # Keep track of the selected path by tab
 add_path: Path | None = None

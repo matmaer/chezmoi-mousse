@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from chezmoi_mousse.str_enums import ReadCmd
+from chezmoi_mousse.str_enums import ChezmoiStatusCode as CmSc, ReadCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import WriteCmd
@@ -13,7 +13,10 @@ __all__ = [
     "DumpConfigKeys",
     "InitData",
     "ScanDirItem",
+    "StatusPairsDict",
 ]
+
+type StatusPairsDict = dict[Path, tuple[CmSc, CmSc]]
 
 
 class CommandResult(NamedTuple):
@@ -29,7 +32,15 @@ class CommandResult(NamedTuple):
     time_stamp: str
 
     @property
-    def path_set(self) -> set[Path]:
+    def status_pairs(self) -> StatusPairsDict:
+        if self.cmd_enum not in (ReadCmd.status_dirs, ReadCmd.status_files):
+            raise RuntimeError(f"Command {self.cmd_enum} does not return status lines.")
+        return {
+            Path(line[3:]): (CmSc(line[0]), CmSc(line[1])) for line in self.out_list
+        }
+
+    @property
+    def paths_set(self) -> set[Path]:
         if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
             raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
         return {Path(p) for p in self.out_list}
