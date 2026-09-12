@@ -10,9 +10,7 @@ from textual import work
 
 import chezmoi_mousse._func as _func
 from chezmoi_mousse import store
-from chezmoi_mousse.asyncio_process_exec import (
-    execute_chezmoi_command,
-)
+from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
 from chezmoi_mousse.data_classes import ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
@@ -75,13 +73,15 @@ async def _construct_command_result(
 
 @work
 async def exec_chezmoi_cmd(
-    app: ChezmoiGui, cmd_enum: ReadCmd | WriteCmd, path_arg: Path | None = None
+    app: ChezmoiGui,
+    cmd_enum: ReadCmd | WriteCmd,
+    path_arg: Path | None = None,
 ) -> CommandResult:
     if cmd_enum not in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config) and (
         path_arg == store.cfg.dest_dir
     ):
         raise ValueError(f"Path {path_arg} cannot be the destination directory")
-    exec_result: ExecResult = await execute_chezmoi_command(cmd_enum, path_arg)
+    exec_result: ExecResult = await create_subprocess_exec_result(cmd_enum, path_arg)
     cmd_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
     if store.pre_mount is False:
         app.post_message(CommandResultMsg(cmd_result))

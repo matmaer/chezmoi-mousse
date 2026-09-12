@@ -18,7 +18,7 @@ type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
 __all__ = [
     "ExecResult",
-    "execute_chezmoi_command",
+    "create_subprocess_exec_result",
 ]
 
 
@@ -50,7 +50,7 @@ def _get_base_cmd_tuple(*, live_run: bool) -> tuple[str, ...]:
     )
 
 
-async def execute_chezmoi_command(
+async def create_subprocess_exec_result(
     cmd_enum: ReadCmd | WriteCmd,
     path: Path | None,
     time_out: int = 15,
