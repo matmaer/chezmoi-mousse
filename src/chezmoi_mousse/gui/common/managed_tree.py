@@ -62,6 +62,7 @@ class ManagedTree(Tree[Path]):
             CmSc.Space: ColorVar.dimmed,
             "unmanaged": ColorVar.text_error_dark,
         }
+        self.root.expand()
 
     @property
     def paths(self) -> StatusByColumn:
@@ -84,53 +85,70 @@ class ManagedTree(Tree[Path]):
             yield node
             queue.extend(node.children)
 
-    def _get_tree_node(self, path: Path, *, parent_node: bool) -> TreeNode[Path] | None:
-        target_path = path.parent if parent_node else path
+    def _get_tree_node(self, path: Path) -> TreeNode[Path] | None:
         for node in self._iter_tree_nodes():
-            if node.data == target_path:
+            if node.data == path:
                 return node
         return None
 
     def update_tree(self) -> None:
-        #     removed_dirs: set[Path],
-        #     removed_files: set[Path],
-        #     added_dirs: set[Path],
-        #     added_files: set[Path],
-        #     changed_dirs: set[Path],
-        #     changed_files: set[Path],
 
-        # -------------------------------------------------------------
-        # PHASE 1: REMOVALS (Fastest, clears DOM nodes immediately)
-        # -------------------------------------------------------------
-        # Remove top-level directories (automatically wipes all children)
+        # We update the tree based on the following available paths in store.py
+        # - store.cm_paths.changes.managed_dirs.removed
+        # - store.cm_paths.changes.managed_files.removed
+        # - store.cm_paths.changes.managed_dirs.added
+        # - store.cm_paths.changes.managed_files.added
+
+        # -----------------
+        # PHASE 1: REMOVALS
+        # -----------------
+
+        # 1.1 call .remove_children() on all top level removed directories
         top_removed_dirs: list[Path] = path_funcs.get_top_parents(
             store.cm_paths.changes.managed_dirs.removed
         )
-
         for d in top_removed_dirs:
-            tree_node = self._get_tree_node(d, parent_node=False)
+            tree_node = self._get_tree_node(d)
             if tree_node is None:
                 continue
             tree_node.remove_children()
+
+        # 1.2 call .remove() on the top level removed directories themselves
+        for d in top_removed_dirs:
+            tree_node = self._get_tree_node(d)
+            if tree_node is None:
+                continue
             tree_node.remove()
 
+        # 1.3 call .remove() on the file nodes which should still exist in the tree
         file_paths_to_remove = [
             f
             for f in store.cm_paths.changes.managed_files.removed
             if f not in top_removed_dirs
         ]
         for f in file_paths_to_remove:
-            tree_node = self._get_tree_node(f, parent_node=False)
+            tree_node = self._get_tree_node(f)
             if tree_node is None:
                 continue
             tree_node.remove()
 
-        # -------------------------------------------------------------
-        # PHASE 2: ADDITIONS (Build structural parents, then files)
-        # -------------------------------------------------------------
+        # ------------------
+        # PHASE 2: ADDITIONS
+        # ------------------
 
-        # Sort directories by path length so parent folders exist before subfolders
-        # Add files to their parent folder nodes
+        # 2.1 add new managed directories
+        for d in store.cm_paths.changes.managed_dirs.added:
+            parent_node = self._get_tree_node(d.parent)
+            if parent_node is None:
+                continue
+            parent_node.add(f"{d.name}")
+
+        # 2.2 add new managed files
+        for f in store.cm_paths.changes.managed_files.added:
+            parent_node = self._get_tree_node(f.parent)
+            if parent_node is None:
+                continue
+            parent_node.add_leaf(f"{f.name}")
 
         # -------------------------------------------------------------
         # PHASE 3: MODIFICATIONS (Cosmetic updates on existing nodes)
