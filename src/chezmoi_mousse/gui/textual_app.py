@@ -153,7 +153,7 @@ class ChezmoiGui(App[str]):
         await self._log_pre_mount_cmd_results().wait()
 
         await self._run_splash_cmd_workers().wait()
-        await self.splash_screen.run_managed_commands().wait()
+        await self.splash_screen.splash_run_managed_commands().wait()
 
         await self._update_managed_trees().wait()
         await self.splash_screen.dismiss_after_fade_loop()

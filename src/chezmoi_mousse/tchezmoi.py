@@ -108,8 +108,7 @@ async def run_chezmoi_git_log(
 
 
 @work
-async def run_tracked_commands(app: ChezmoiGui) -> None:
-    store.git_log_cr = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
+async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
     managed_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None).wait()
     managed_files_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_files, None).wait()
     status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None).wait()
@@ -126,6 +125,12 @@ async def run_tracked_commands(app: ChezmoiGui) -> None:
         old_status_files=store.cm_paths.status_files,
     )
     store.cm_paths = new_cm_paths
+    return [
+        managed_dirs_cr,
+        managed_files_cr,
+        status_dirs_cr,
+        status_files_cr,
+    ]
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:

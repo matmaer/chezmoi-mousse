@@ -136,7 +136,8 @@ class ManagedTree(Tree[Path]):
         # PHASE 2: ADDITIONS
         # ------------------
 
-        # 2.1 add new managed directories
+        # 2.1 the directories to be added depend on the context, we add all directories
+        # with a status plus all n_dirs, which are context dependent!
         for d in store.cm_paths.changes.managed_dirs.added:
             parent_node = self._get_tree_node(d.parent)
             if parent_node is None:

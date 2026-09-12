@@ -117,10 +117,9 @@ class SplashScreen(Screen[None]):
         self.splash_log.styles.height = 18
         self.splash_log.styles.width = LOG_MSG_WIDTH
         self.animated_fade = self.query_exactly_one(AnimatedFade)
-        await self.wait_for_refresh()
         self.animated_fade.fade_timer.resume()
 
-    async def _write_log_msg(self, *, prefix: LogStr | str, suffix: LogStr) -> None:
+    async def _write_log_msg(self, *, prefix: str, suffix: LogStr) -> None:
         dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded_suffix) - 4
         dots = "." * dots_count
         color = self.color_map[suffix]
@@ -138,12 +137,11 @@ class SplashScreen(Screen[None]):
             cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(
                 self.app, cmd, None
             ).wait()
-        prefix = cr.pretty_cmd
         if store.pre_mount is True:
             self.pre_mount_cmd_results.append(cr)
 
         suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
-        await self._write_log_msg(prefix=prefix, suffix=suffix)
+        await self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
         if cr.returncode is None:
             return -1
         return cr.returncode
@@ -199,9 +197,11 @@ class SplashScreen(Screen[None]):
         store.pre_mount = False
 
     @work(group="managed_commands")
-    async def run_managed_commands(self) -> None:
-        for cmd in ReadCmd.managed_commands():
-            await self.splash_run_chezmoi(cmd)
+    async def splash_run_managed_commands(self) -> None:
+        crs = await tchezmoi.run_managed_commands(self.app).wait()
+        for cr in crs:
+            suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
+            await self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
 
     async def dismiss_after_fade_loop(self) -> None:
         while (
