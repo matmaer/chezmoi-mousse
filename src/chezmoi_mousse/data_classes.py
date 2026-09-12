@@ -10,42 +10,47 @@ __all__ = ["ChezmoiPaths", "StatusByColumn"]
 
 StatusChange = NamedTuple(
     "StatusChange",
-    old_status=str,
-    new_status=str,
+    [
+        ("old_status", str),
+        ("new_status", str),
+    ],
 )
 
 ManagedChange = NamedTuple(
     "ManagedChange",
-    added=list[Path],
-    removed=list[Path],
+    [
+        ("added", list[Path]),
+        ("removed", list[Path]),
+    ],
 )
 
 Changes = NamedTuple(
     "Changes",
-    managed_dirs=ManagedChange,
-    managed_files=ManagedChange,
-    status_dirs=dict[Path, StatusChange],
-    status_files=dict[Path, StatusChange],
+    [
+        ("managed_dirs", ManagedChange),
+        ("managed_files", ManagedChange),
+        ("status_dirs", dict[Path, StatusChange]),
+        ("status_files", dict[Path, StatusChange]),
+    ],
 )
 
 StatusByColumn = NamedTuple(
     "StatusByColumn",
-    all=set[Path],
-    dirs=dict[Path, CmSc],
-    files=dict[Path, CmSc],
-    n_dirs=set[Path],
-    ns_dirs=set[Path],
-    space_dirs=set[Path],
-    space_files=set[Path],
+    [
+        ("all", set[Path]),
+        ("status_dirs", dict[Path, CmSc]),
+        ("status_files", dict[Path, CmSc]),
+        ("status_paths", set[Path]),
+        ("n_dirs", set[Path]),
+        ("ns_dirs", set[Path]),
+        ("space_dirs", set[Path]),
+        ("space_files", set[Path]),
+    ],
 )
 
 
 class ChezmoiPaths:
     """Created after each time we re-run all managed, status, and git log commands."""
-
-    changes: Changes
-    apply: StatusByColumn
-    re_add: StatusByColumn
 
     def __init__(
         self,
@@ -71,14 +76,18 @@ class ChezmoiPaths:
             p for p in self.managed_paths if not p.exists()
         }
 
-        self.changes = self._calculate_managed_changes(
+        self.changes: Changes = self._calculate_managed_changes(
             old_man_dirs_set,
             old_man_files_set,
             old_status_dirs,
             old_status_files,
         )
-        self.re_add = self._calculate_status_by_column(0, status_dirs, status_files)
-        self.apply = self._calculate_status_by_column(1, status_dirs, status_files)
+        self.re_add: StatusByColumn = self._calculate_status_by_column(
+            0, status_dirs, status_files
+        )
+        self.apply: StatusByColumn = self._calculate_status_by_column(
+            1, status_dirs, status_files
+        )
 
     def _calculate_managed_changes(
         self,
@@ -131,27 +140,28 @@ class ChezmoiPaths:
         dir_status_pairs: dict[Path, str],
         file_status_pairs: dict[Path, str],
     ) -> StatusByColumn:
-        status_dirs = {
-            path: status_pair[column] for path, status_pair in dir_status_pairs.items()
+        # Convert every raw status string directly into a CmSc enum instance
+        status_dirs: dict[Path, CmSc] = {
+            path: CmSc(status_pair[column])
+            for path, status_pair in dir_status_pairs.items()
+            if status_pair[column] != CmSc.Space
         }
-        status_files = {
-            path: status_pair[column] for path, status_pair in file_status_pairs.items()
+        status_files: dict[Path, CmSc] = {
+            path: CmSc(status_pair[column])
+            for path, status_pair in file_status_pairs.items()
+            if status_pair[column] != CmSc.Space
         }
 
         space_dirs = {
-            path for path, status in status_dirs.items() if status == CmSc.Space
+            path
+            for path, status_pair in dir_status_pairs.items()
+            if status_pair[column] == CmSc.Space
         }
         space_files = {
-            path for path, status in status_files.items() if status == CmSc.Space
+            path
+            for path, status_pair in file_status_pairs.items()
+            if status_pair[column] == CmSc.Space
         }
-
-        for path, status in status_dirs.items():
-            if status != CmSc.Space:
-                status_dirs[path] = CmSc(status)
-
-        for path, status in status_files.items():
-            if status != CmSc.Space:
-                status_files[path] = CmSc(status)
 
         status_paths = set(status_dirs | status_files)
 
@@ -175,8 +185,9 @@ class ChezmoiPaths:
 
         return StatusByColumn(
             all=status_paths,
-            dirs=status_dirs,
-            files=status_files,
+            status_dirs=status_dirs,
+            status_files=status_files,
+            status_paths=status_paths,
             n_dirs=n_dirs,
             ns_dirs=ns_dirs,
             space_dirs=space_dirs,
