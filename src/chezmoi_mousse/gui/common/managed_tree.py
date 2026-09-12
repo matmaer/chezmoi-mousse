@@ -10,10 +10,10 @@ from textual.widgets import Tree
 
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.str_enums import (
+    BtnLabel,
     Chars,
     ChezmoiStatusCode as CmSc,
     ColorVar,
-    PathKind,
     Tcss,
 )
 
@@ -24,8 +24,8 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.data_classes import StatusByColumn
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.path_funcs import ScanDirResult
 
 
 __all__ = ["ManagedTree"]
@@ -53,28 +53,29 @@ class ManagedTree(Tree[Path]):
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-        self.status_color: dict[CmSc | PathKind, ColorVar] = {
+        self.status_color: dict[CmSc | str, ColorVar] = {
             CmSc.Added: ColorVar.text_success,
             CmSc.Deleted: ColorVar.text_error,
             CmSc.Modified: ColorVar.text_warning,
             CmSc.N_DIR: ColorVar.text_secondary,
             CmSc.Run: ColorVar.bogus,
             CmSc.Space: ColorVar.dimmed,
-            PathKind.UNMANAGED: ColorVar.text_error_dark,
+            "unmanaged": ColorVar.text_error_dark,
         }
+
+    @property
+    def paths(self) -> StatusByColumn:
+        return (
+            store.cm_paths.apply
+            if self.app_ids.tab_label == BtnLabel.apply
+            else store.cm_paths.re_add
+        )
 
     def _populate_unmanaged_nodes(self) -> None:
         expanded_dirs = [store.cfg.dest_dir]
         expanded_dirs += [
             node.data for node in self._iter_tree_nodes() if node.allow_expand
         ]
-
-        for dir_path in expanded_dirs:
-            if dir_path is None:
-                return
-            unmanaged: ScanDirResult = path_funcs.os_scan_dir(dir_path)
-            if isinstance(unmanaged, PathKind):
-                continue
 
     def _iter_tree_nodes(self) -> Iterator[TreeNode[Path]]:
         queue: deque[TreeNode[Path]] = deque([self.root])
@@ -83,18 +84,58 @@ class ManagedTree(Tree[Path]):
             yield node
             queue.extend(node.children)
 
-    def _get_tree_node(
-        self, path: Path | None, *, parent_node: bool
-    ) -> TreeNode[Path] | None:
-        if path is None:
-            return None
+    def _get_tree_node(self, path: Path, *, parent_node: bool) -> TreeNode[Path] | None:
         target_path = path.parent if parent_node else path
         for node in self._iter_tree_nodes():
             if node.data == target_path:
                 return node
         return None
 
-    def update_tree(self) -> None: ...
+    def update_tree(self) -> None:
+        #     removed_dirs: set[Path],
+        #     removed_files: set[Path],
+        #     added_dirs: set[Path],
+        #     added_files: set[Path],
+        #     changed_dirs: set[Path],
+        #     changed_files: set[Path],
+
+        # -------------------------------------------------------------
+        # PHASE 1: REMOVALS (Fastest, clears DOM nodes immediately)
+        # -------------------------------------------------------------
+        # Remove top-level directories (automatically wipes all children)
+        top_removed_dirs: list[Path] = path_funcs.get_top_parents(
+            store.cm_paths.changes.managed_dirs.removed
+        )
+
+        for d in top_removed_dirs:
+            tree_node = self._get_tree_node(d, parent_node=False)
+            if tree_node is None:
+                continue
+            tree_node.remove_children()
+            tree_node.remove()
+
+        file_paths_to_remove = [
+            f
+            for f in store.cm_paths.changes.managed_files.removed
+            if f not in top_removed_dirs
+        ]
+        for f in file_paths_to_remove:
+            tree_node = self._get_tree_node(f, parent_node=False)
+            if tree_node is None:
+                continue
+            tree_node.remove()
+
+        # -------------------------------------------------------------
+        # PHASE 2: ADDITIONS (Build structural parents, then files)
+        # -------------------------------------------------------------
+
+        # Sort directories by path length so parent folders exist before subfolders
+        # Add files to their parent folder nodes
+
+        # -------------------------------------------------------------
+        # PHASE 3: MODIFICATIONS (Cosmetic updates on existing nodes)
+        # -------------------------------------------------------------
+        # to change colors for paths with a changed status
 
     # #################################
     # # Watchers and message handling #
