@@ -60,7 +60,7 @@ def format_fails(items: IssueList) -> str:
 
 
 # --- Check Runner Fixture ---
-@pytest.fixture
+@pytest.fixture  # pyright: ignore[reportUnknownMemberType]
 def run_check(node_db: NodeDb) -> CheckRunner:
     """_test_func: formats issues from any def test_func_ and calls pytest.fail()"""
 
