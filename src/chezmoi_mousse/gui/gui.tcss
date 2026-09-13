@@ -189,18 +189,17 @@ Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
 
   &>.operations_right {
     &>.op_btn_vert_group {
-      padding-top: 1;
 
       .operate_button {
+        border: none;
         background-tint: $surface-lighten-1;
         background: $surface-lighten-1;
-        border-bottom: wide $primary-darken-3;
-        border-top: none;
+        border-top: wide $primary-darken-3;
         color: $text-primary;
         width: 1fr;
 
         &:hover {
-          border-bottom: wide $accent-darken-3;
+          border-top: wide $accent-darken-3;
           color: $accent;
           text-style: none;
         }
@@ -212,12 +211,12 @@ Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
     }
 
     &>.switches_vert_group {
-      background-tint: $surface;
-      background: $surface;
-      padding-top: 1;
-
       .switch_with_label {
-        padding: 0 0 1 2;
+        background-tint: $surface;
+        background: $surface;
+        border-bottom: inner $surface;
+        border-top: inner $surface;
+        padding-left: 2;
       }
     }
 
@@ -240,10 +239,7 @@ RadioSet {
   }
 
   &:focus {
-    border: none;
-
     &>RadioButton.-selected {
-
       &>.toggle--label {
         background: $surface;
         background-tint: $surface;
@@ -251,12 +247,10 @@ RadioSet {
         text-style: $block-cursor-text-style;
       }
     }
-
   }
 }
 
 ToggleButton {
-
   &>.toggle--button {
     background: $surface;
     background-tint: $surface;
