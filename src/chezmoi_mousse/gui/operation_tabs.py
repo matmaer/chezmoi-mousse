@@ -254,7 +254,9 @@ class RightSideVertical(Vertical):
         super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(LabelStr.right_side)
+        with VerticalGroup(classes=Tcss.op_btn_vert_group):
+            for btn_label in self.op_btn_labels:
+                yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
         with RadioSet(id="focus_me"):
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)
@@ -266,9 +268,6 @@ class RightSideVertical(Vertical):
                     Label(switch_label),
                     classes=Tcss.switch_with_label,
                 )
-        with VerticalGroup(classes=Tcss.op_btn_vert_group):
-            for btn_label in self.op_btn_labels:
-                yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
 
     def on_mount(self) -> None:
         first_radio = self.query_one(RadioSet).query(RadioButton).first()
