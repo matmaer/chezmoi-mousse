@@ -138,15 +138,21 @@ class ManagedTree(Tree[Path]):
 
         # 2.1 the directories to be added depend on the context, we add all directories
         # with a status plus all n_dirs, which are context dependent!
-        for d in store.cm_paths.changes.managed_dirs.added:
-            parent_node = self._get_tree_node(d.parent)
+        for d in self.paths.n_dirs | set(self.paths.status_dirs):
+            if d.parent == store.cfg.dest_dir:
+                parent_node = self.root
+            else:
+                parent_node = self._get_tree_node(d.parent)
             if parent_node is None:
                 continue
             parent_node.add(f"{d.name}")
 
         # 2.2 add new managed files
-        for f in store.cm_paths.changes.managed_files.added:
-            parent_node = self._get_tree_node(f.parent)
+        for f in self.paths.status_files:
+            if f.parent == store.cfg.dest_dir:
+                parent_node = self.root
+            else:
+                parent_node = self._get_tree_node(f.parent)
             if parent_node is None:
                 continue
             parent_node.add_leaf(f"{f.name}")
