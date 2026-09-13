@@ -12,7 +12,9 @@ from textual.containers import (
 )
 from textual.widgets import Button, Label, Switch
 
+from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import (
+    DestDirBtnMsg,
     DirContentBtnMsg,
     FlatBtnMsg,
     OperateBtnMsg,
@@ -30,11 +32,13 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    "DestDirBtn",
     "DirContentBtn",
     "FlatBtn",
     "FlatButtonsVertical",
     "OperateBtn",
     "OperateBtnGroup",
+    "OperateBtnVerticalGroup",
     "RefreshBtn",
     "SwitchSlider",
     "TabBtn",
@@ -85,6 +89,29 @@ class FlatBtn(Button):
         self.post_message(
             FlatBtnMsg(
                 button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
+            )
+        )
+
+
+class DestDirBtn(Button):
+    def __init__(self, *, app_ids: AppIds) -> None:
+        self.ids = app_ids
+        super().__init__(
+            id=self.ids.btn_id(btn_label=BtnLabel.dest_dir_select),
+            label=BtnLabel.dest_dir_select,
+            classes=Tcss.dest_dir_button,
+        )
+
+    def on_mount(self) -> None:
+        self.label = f"{store.cfg.dest_dir} (destDir)"
+
+    @on(Button.Pressed)
+    def _send_message(self, event: DestDirBtn.Pressed) -> None:
+        event.stop()
+        self.post_message(
+            DestDirBtnMsg(
+                button=event.button,
+                tab_label=self.ids.tab_label,
             )
         )
 
@@ -180,6 +207,19 @@ class OperateBtnGroup(HorizontalGroup):
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
             yield OperateBtn(app_ids=self.app_ids, btn_label=btn_label)
+
+
+class OperateBtnVerticalGroup(VerticalGroup):
+    def __init__(self, *, ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
+        self.ids = ids
+        self.labels = labels
+        super().__init__(
+            id=ids.container.operate_buttons, classes=Tcss.op_btn_vert_group
+        )
+
+    def compose(self) -> ComposeResult:
+        for btn_label in self.labels:
+            yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
 
 
 class SwitchSlider(VerticalGroup):

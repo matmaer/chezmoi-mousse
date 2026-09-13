@@ -19,7 +19,6 @@ class AppIds:
         self.op_btn = _OperateButtonIds(self)
         self.richlog = _RichLogIds(self)
         self.switch = _SwitchIds(self)
-        self.switch_group = f"{self.tab_label.name}_switch_group"
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:

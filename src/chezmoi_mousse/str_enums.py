@@ -53,13 +53,14 @@ class BtnLabel(StrEnum):
     re_add = "Re-Add"
 
     # Gen 2 main tabs
-    managed_tree = "Managed Tree"
-    danger_zone = "Danger Zone"
+    managed_pane = "Managed Tree"
+    danger_pane = "Danger Zone"
 
-    # Managed Tree operation buttons
     chezmoi_add = "chezmoi add"
     chezmoi_apply = "chezmoi apply"
     chezmoi_re_add = "chezmoi re-add"
+    refresh_tree = "Refresh Tree"
+    dest_dir_select = "not set"
 
     # Danger Zone operation buttons
     chezmoi_forget = "chezmoi forget"
@@ -457,15 +458,18 @@ class Tcss(StrEnum):
     operations_left = auto()
     operations_middle = auto()
     operations_right = auto()
-    switch_group = auto()
+    switch_with_label = auto()
     operate_pane = auto()
+    dest_dir_button = auto()
+    op_btn_vert_group = auto()
+    switches_vert_group = auto()
 
     # Both legacy and operation tabs
-    dest_dir_tree_label = auto()
     main_section_label = auto()
     managed_tree = auto()
 
     # Other
+    dest_dir_tree_label = auto()
     add_tab_contents_view = auto()
     added = auto()
     changed = auto()

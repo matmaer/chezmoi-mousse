@@ -123,36 +123,73 @@
 }
 
 .operate_pane {
-  # border: red;
-
-  .operations_left {
-    # margin-right: 2;
-    # width: auto;
-    # max-width: 33%;
-    # min-width: 18;
+  &>.operations_left {
+    &>.dest_dir_button{
+      text-align: left;
+      content-align: left middle;
+      background-tint: $primary-muted;
+      background: $primary-muted;
+      border-bottom: inner $primary-muted;
+      border-top: inner $primary-muted;
+      color: $text-muted;
+      width: 1fr;
+      &:hover {
+        color: $text-accent;
+      }
+      &:focus {
+        text-style: bold;
+      }
+    }
+    &>.refresh_button {
+        background-tint: $surface-lighten-1;
+        background: $surface-lighten-1;
+        border-bottom: none;
+        border-top: wide $surface-lighten-1;
+        color: $primary-lighten-3;
+        margin: 0 1;
+        min-width: 18;
+        text-style: none;
+        width: 100%;
+        &:hover {
+          text-style: none;
+          color: $accent-lighten-1;
+        }
+        &:focus {
+          text-style: none;
+        }
+      }
   }
   
-  .operations_middle {
+  &>.operations_middle {
     margin: 0 2;
-    # width: auto;
-    # max-width: 33%;
-    # min-width: 18;
   }
   
-  .operations_right {
-    # max-width: 33%;
-    # width: auto;
-    &>.switch_group {
+  &>.operations_right {
+    &>.op_btn_vert_group {
+      padding-top: 1;
+      .operate_button {
+        background-tint: $surface-lighten-1;
+        background: $surface-lighten-1;
+        border-bottom: wide $primary-darken-3;
+        border-top: none;
+        color: $text-primary;
+        width: 1fr;
+        &:hover {
+          border-bottom: wide $accent-darken-3;
+          color: $accent;
+          text-style: none;
+        }
+        &:focus {
+          text-style: none;
+        }
+      }
+    }
+    &>.switches_vert_group {
       background-tint: $surface;
-      background: $surface;
-      color: $foreground-darken-1;
-      margin-bottom: 1;
-      padding: 0 0 1 0;
-      & HorizontalGroup {
-        background-tint: $surface;
-        background: $surface;
-        padding-left: 2;
-        border-top: $surface;
+      background: $surface;        
+      padding-top: 1;
+      .switch_with_label {
+        padding: 0 0 1 2;
       }
     }
   }

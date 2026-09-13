@@ -68,6 +68,13 @@ class FlatBtnMsg(Message):
         super().__init__()
 
 
+class DestDirBtnMsg(Message):
+    def __init__(self, button: Button, tab_label: BtnLabel) -> None:
+        self.button = button
+        self.tab_label = tab_label
+        super().__init__()
+
+
 class RefreshBtnMsg(Message):
     def __init__(self, button: Button, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.button = button

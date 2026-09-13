@@ -27,8 +27,8 @@ logs_ids = AppIds(BtnLabel.logs)
 re_add_ids = AppIds(BtnLabel.re_add)
 
 
-man_tree_ids = AppIds(BtnLabel.managed_tree)
-danger_zone_ids = AppIds(BtnLabel.danger_zone)
+man_tree_ids = AppIds(BtnLabel.managed_pane)
+danger_zone_ids = AppIds(BtnLabel.danger_pane)
 
 
 cfg = DumpConfigKeys()

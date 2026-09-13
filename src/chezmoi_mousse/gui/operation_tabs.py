@@ -5,11 +5,28 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
-from textual.containers import HorizontalGroup, VerticalGroup
+from textual.containers import (
+    Horizontal,
+    HorizontalGroup,
+    Vertical,
+    VerticalGroup,
+)
 from textual.reactive import reactive
-from textual.widgets import Tree
+from textual.widgets import (
+    Label,
+    Switch,
+    TabPane,
+    Tree,
+)
 
 from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse.gui.common.actionables import (
+    DestDirBtn,
+    OperateBtn,
+    RefreshBtn,
+)
+from chezmoi_mousse.gui.common.components import MainSectionLabel
+from chezmoi_mousse.gui.common.messages import DestDirBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     Chars,
@@ -23,39 +40,15 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from textual import getters
+    from textual.app import ComposeResult
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.data_classes import StatusByColumn
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-from typing import TYPE_CHECKING
 
-from textual.containers import (
-    Horizontal,
-    Vertical,
-)
-from textual.widgets import (
-    Label,
-    Switch,
-    TabPane,
-)
-
-from chezmoi_mousse.gui.common.actionables import (
-    OperateBtnGroup,
-    RefreshBtn,
-    SwitchSlider,
-)
-from chezmoi_mousse.gui.common.components import MainSectionLabel
-
-if TYPE_CHECKING:
-    from textual.app import ComposeResult
-
-    from chezmoi_mousse.app_ids import AppIds
 
 __all__ = ["DangerZoneTab", "ManagedTreeTab"]
-
-
-__all__ = ["ManagedTree"]
 
 
 class ManagedTree(Tree[Path]):
@@ -229,9 +222,13 @@ class LeftSideVertical(Vertical):
         super().__init__(id=app_ids.container.left_side, classes=Tcss.operations_left)
 
     def compose(self) -> ComposeResult:
-        yield Label(f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_tree_label)
+        yield DestDirBtn(app_ids=self.ids)
         yield ManagedTree(self.ids)
         yield RefreshBtn(app_ids=self.ids)
+
+    @on(DestDirBtnMsg)
+    def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:
+        self.notify(f"DestDirBtn pressed: {msg.tab_label}")
 
 
 class MiddleVertical(Vertical):
@@ -244,50 +241,54 @@ class MiddleVertical(Vertical):
 
 
 class RightSideVertical(Vertical):
-    def __init__(self, *, app_ids: AppIds) -> None:
+    def __init__(self, *, app_ids: AppIds, op_btn_labels: tuple[BtnLabel, ...]) -> None:
         self.ids = app_ids
+        self.op_btn_labels = op_btn_labels
         super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(LabelStr.right_side)
-        with VerticalGroup(id=self.ids.switch_group, classes=Tcss.switch_group):
-            yield HorizontalGroup(
-                Switch(id=self.ids.switch_id(switch_label=LabelStr.show_unchanged)),
-                Label(LabelStr.show_unchanged),
-            )
-            yield HorizontalGroup(
-                Switch(id=self.ids.switch_id(switch_label=LabelStr.show_unmanaged)),
-                Label(LabelStr.show_unmanaged),
-            )
-            yield HorizontalGroup(
-                Switch(id=self.ids.switch_id(switch_label=LabelStr.expand_all)),
-                Label(LabelStr.expand_all),
-            )
+        with VerticalGroup(classes=Tcss.op_btn_vert_group):
+            for btn_label in self.op_btn_labels:
+                yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
+        with VerticalGroup(classes=Tcss.switches_vert_group):
+            for switch_label in (
+                LabelStr.show_unchanged,
+                LabelStr.expand_all,
+                LabelStr.show_unmanaged,
+                LabelStr.show_unwanted,
+            ):
+                yield HorizontalGroup(
+                    Switch(id=self.ids.switch_id(switch_label=switch_label)),
+                    Label(switch_label),
+                    classes=Tcss.switch_with_label,
+                )
+
+    def on_mount(self) -> None:
+        show_unwanted = self.query_one(self.ids.switch.show_unwanted_q, Switch)
+        show_unwanted.disabled = True
 
 
 class ManagedTreeTab(TabPane):
     def __init__(self) -> None:
         self.ids = store.man_tree_ids
         super().__init__(
-            id=BtnLabel.managed_tree.pane_id,
-            title=BtnLabel.managed_tree,
-            classes=Tcss.operate_pane,
+            id=BtnLabel.managed_pane.pane_id,
+            title=BtnLabel.managed_pane,
         )
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield LeftSideVertical(app_ids=store.man_tree_ids)
-            yield MiddleVertical(app_ids=store.man_tree_ids)
-            yield RightSideVertical(app_ids=store.man_tree_ids)
-        yield OperateBtnGroup(
-            app_ids=store.man_tree_ids,
-            labels=(
-                BtnLabel.chezmoi_add,
-                BtnLabel.chezmoi_apply,
-                BtnLabel.chezmoi_re_add,
-            ),
-        )
-        yield SwitchSlider(app_ids=store.man_tree_ids)
+        with Horizontal(classes=Tcss.operate_pane):
+            yield LeftSideVertical(app_ids=self.ids)
+            yield MiddleVertical(app_ids=self.ids)
+            yield RightSideVertical(
+                app_ids=self.ids,
+                op_btn_labels=(
+                    BtnLabel.chezmoi_add,
+                    BtnLabel.chezmoi_apply,
+                    BtnLabel.chezmoi_re_add,
+                ),
+            )
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
@@ -305,24 +306,21 @@ class DangerZoneTab(TabPane):
     def __init__(self) -> None:
         self.ids = store.danger_zone_ids
         super().__init__(
-            id=BtnLabel.danger_zone.pane_id,
-            title=BtnLabel.danger_zone,
-            classes=Tcss.operate_pane,
+            id=BtnLabel.danger_pane.pane_id,
+            title=BtnLabel.danger_pane,
         )
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield LeftSideVertical(app_ids=store.danger_zone_ids)
-            yield MiddleVertical(app_ids=store.danger_zone_ids)
-            yield RightSideVertical(app_ids=store.danger_zone_ids)
-        yield OperateBtnGroup(
-            app_ids=store.danger_zone_ids,
-            labels=(
-                BtnLabel.chezmoi_forget,
-                BtnLabel.chezmoi_destroy,
-            ),
-        )
-        yield SwitchSlider(app_ids=store.danger_zone_ids)
+        with Horizontal(classes=Tcss.operate_pane):
+            yield LeftSideVertical(app_ids=self.ids)
+            yield MiddleVertical(app_ids=self.ids)
+            yield RightSideVertical(
+                app_ids=self.ids,
+                op_btn_labels=(
+                    BtnLabel.chezmoi_forget,
+                    BtnLabel.chezmoi_destroy,
+                ),
+            )
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
