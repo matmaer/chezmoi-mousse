@@ -125,13 +125,14 @@
 .operate_pane {
   &>.operations_left {
     &>.dest_dir_button{
-      text-align: left;
-      content-align: left middle;
       background-tint: $primary-muted;
       background: $primary-muted;
       border-bottom: inner $primary-muted;
       border-top: inner $primary-muted;
       color: $text-muted;
+      content-align: left middle;
+      text-align: left;
+      text-style: bold;
       width: 1fr;
       &:hover {
         color: $text-accent;

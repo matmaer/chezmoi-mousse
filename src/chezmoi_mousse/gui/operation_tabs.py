@@ -244,20 +244,20 @@ class RightSideVertical(Vertical):
         *,
         app_ids: AppIds,
         op_btn_labels: tuple[BtnLabel, ...],
+        radio_labels: tuple[LabelStr, ...],
         switch_labels: tuple[LabelStr, ...],
     ) -> None:
         self.ids = app_ids
         self.op_btn_labels = op_btn_labels
+        self.radio_labels = radio_labels
         self.switch_labels = switch_labels
         super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(LabelStr.right_side)
         with RadioSet(id="focus_me"):
-            yield RadioButton(LabelStr.radio_contents, compact=True)
-            yield RadioButton(LabelStr.radio_diff)
-            yield RadioButton(LabelStr.radio_diff_reverse)
-            yield RadioButton(LabelStr.radio_git_log, value=True)
+            for radio_label in self.radio_labels:
+                yield RadioButton(radio_label, compact=True)
 
         with VerticalGroup(classes=Tcss.switches_vert_group):
             for switch_label in self.switch_labels:
@@ -269,6 +269,11 @@ class RightSideVertical(Vertical):
         with VerticalGroup(classes=Tcss.op_btn_vert_group):
             for btn_label in self.op_btn_labels:
                 yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
+
+    def on_mount(self) -> None:
+        first_radio = self.query_one(RadioSet).query(RadioButton).first()
+        if first_radio:
+            first_radio.value = True
 
 
 class ManagedTreeTab(TabPane):
@@ -289,6 +294,12 @@ class ManagedTreeTab(TabPane):
                     BtnLabel.chezmoi_add,
                     BtnLabel.chezmoi_apply,
                     BtnLabel.chezmoi_re_add,
+                ),
+                radio_labels=(
+                    LabelStr.radio_contents,
+                    LabelStr.radio_diff,
+                    LabelStr.radio_diff_reverse,
+                    LabelStr.radio_git_log,
                 ),
                 switch_labels=(
                     LabelStr.show_unchanged,
@@ -326,6 +337,10 @@ class DangerZoneTab(TabPane):
                 op_btn_labels=(
                     BtnLabel.chezmoi_forget,
                     BtnLabel.chezmoi_destroy,
+                ),
+                radio_labels=(
+                    LabelStr.radio_contents,
+                    LabelStr.radio_git_log,
                 ),
                 switch_labels=(
                     LabelStr.show_unchanged,

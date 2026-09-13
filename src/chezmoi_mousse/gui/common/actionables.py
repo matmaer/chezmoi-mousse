@@ -21,7 +21,7 @@ from chezmoi_mousse.gui.common.messages import (
     RefreshBtnMsg,
     TabBtnMsg,
 )
-from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -103,7 +103,9 @@ class DestDirBtn(Button):
         )
 
     def on_mount(self) -> None:
-        self.label = f"{store.cfg.dest_dir} (destDir)"
+        self.label = (
+            f"{Chars.big_down_triangle} {store.cfg.dest_dir} {Chars.big_down_triangle} "
+        )
 
     @on(Button.Pressed)
     def _send_message(self, event: DestDirBtn.Pressed) -> None:

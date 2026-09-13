@@ -116,6 +116,7 @@ class BtnLabel(StrEnum):
 class Chars(StrEnum):
     burger = "\u2261"  # IDENTICAL TO
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
+    big_down_triangle = "\u25bc"  # BLACK DOWN-POINTING TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
