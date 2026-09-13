@@ -11,7 +11,7 @@ from textual import work
 import chezmoi_mousse._func as _func
 from chezmoi_mousse import store
 from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
-from chezmoi_mousse.data_classes import ChezmoiPaths
+from chezmoi_mousse.data_classes import ChezmoiPathsLegacy
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
@@ -71,7 +71,6 @@ async def _construct_command_result(
     )
 
 
-@work
 async def exec_chezmoi_cmd(
     app: ChezmoiGui,
     cmd_enum: ReadCmd | WriteCmd,
@@ -95,36 +94,36 @@ async def run_chezmoi_git_log(
 
     if store.pre_mount is True:
         # don't access store.cfg.dest_dir
-        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
+        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None)
         return cmd_result
     elif path_arg is None or path_arg == store.cfg.dest_dir:
-        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None).wait()
+        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None)
         return cmd_result
     else:
-        source_path_result = await exec_chezmoi_cmd(app, ReadCmd.source_path).wait()
+        source_path_result = await exec_chezmoi_cmd(app, ReadCmd.source_path)
         source_path = Path(source_path_result.std_out)
-        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, source_path).wait()
+        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, source_path)
         return cmd_result
 
 
 @work
 async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
-    managed_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None).wait()
-    managed_files_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_files, None).wait()
-    status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None).wait()
-    status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None).wait()
+    managed_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None)
+    managed_files_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_files, None)
+    status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None)
+    status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None)
 
-    new_cm_paths = ChezmoiPaths(
-        managed_dirs=managed_dirs_cr.path_list,
-        managed_files=managed_files_cr.path_list,
-        old_man_dirs_set=set(store.cm_paths.managed_dirs),
-        old_man_files_set=set(store.cm_paths.managed_files),
-        status_dirs=status_dirs_cr.managed_status,
-        status_files=status_files_cr.managed_status,
-        old_status_dirs=store.cm_paths.status_dirs,
-        old_status_files=store.cm_paths.status_files,
+    new_cm_paths = ChezmoiPathsLegacy(
+        managed_dirs=managed_dirs_cr.managed_paths_list,
+        managed_files=managed_files_cr.managed_paths_list,
+        old_man_dirs_set=set(store.cm_paths_legacy.managed_dirs),
+        old_man_files_set=set(store.cm_paths_legacy.managed_files),
+        status_dirs=status_dirs_cr.status_dict,
+        status_files=status_files_cr.status_dict,
+        old_status_dirs=store.cm_paths_legacy.status_dirs,
+        old_status_files=store.cm_paths_legacy.status_files,
     )
-    store.cm_paths = new_cm_paths
+    store.cm_paths_legacy = new_cm_paths
     return [
         managed_dirs_cr,
         managed_files_cr,
@@ -158,7 +157,7 @@ async def get_highlighted_chezmoi_cat_output(
     app: ChezmoiGui,
     file_path: Path,
 ) -> Text:
-    cmd_result = await exec_chezmoi_cmd(app, ReadCmd.cat, file_path).wait()
+    cmd_result = await exec_chezmoi_cmd(app, ReadCmd.cat, file_path)
     f_contents = cmd_result.std_out
     if not f_contents.strip():
         f_contents = "File is empty or contains only whitespace"

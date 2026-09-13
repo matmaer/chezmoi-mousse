@@ -29,16 +29,23 @@ class CommandResult(NamedTuple):
     time_stamp: str
 
     @property
-    def managed_status(self) -> dict[Path, str]:
+    def status_dict(self) -> dict[Path, str]:
         if self.cmd_enum not in (ReadCmd.status_dirs, ReadCmd.status_files):
             raise RuntimeError(f"Command {self.cmd_enum} does not return status lines.")
         return {Path(line[3:]): line[:2] for line in self.out_list}
 
     @property
-    def path_list(self) -> list[Path]:
+    def managed_paths_list(self) -> list[Path]:
         if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
             raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
-        return sorted(Path(p) for p in self.out_list)
+        return [Path(p) for p in self.out_list]
+
+    @property
+    def managed_dict(self) -> dict[Path, bool]:
+        if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
+            raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
+        paths = [Path(p) for p in self.out_list]
+        return {p: p.exists() for p in paths}
 
 
 class DumpConfigKeys(NamedTuple):

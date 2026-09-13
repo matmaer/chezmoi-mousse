@@ -67,9 +67,9 @@ class ManagedTree(Tree[Path]):
     @property
     def paths(self) -> StatusByColumn:
         return (
-            store.cm_paths.apply
+            store.cm_paths_legacy.apply
             if self.app_ids.tab_label == BtnLabel.apply
-            else store.cm_paths.re_add
+            else store.cm_paths_legacy.re_add
         )
 
     def _populate_unmanaged_nodes(self) -> None:
@@ -94,10 +94,10 @@ class ManagedTree(Tree[Path]):
     def update_tree(self) -> None:
 
         # We update the tree based on the following available paths in store.py
-        # - store.cm_paths.changes.managed_dirs.removed
-        # - store.cm_paths.changes.managed_files.removed
-        # - store.cm_paths.changes.managed_dirs.added
-        # - store.cm_paths.changes.managed_files.added
+        # - store.cm_paths_legacy.changes.managed_dirs.removed
+        # - store.cm_paths_legacy.changes.managed_files.removed
+        # - store.cm_paths_legacy.changes.managed_dirs.added
+        # - store.cm_paths_legacy.changes.managed_files.added
 
         # -----------------
         # PHASE 1: REMOVALS
@@ -105,7 +105,7 @@ class ManagedTree(Tree[Path]):
 
         # 1.1 call .remove_children() on all top level removed directories
         top_removed_dirs: list[Path] = path_funcs.get_top_parents(
-            store.cm_paths.changes.managed_dirs.removed
+            store.cm_paths_legacy.changes.managed_dirs.removed
         )
         for d in top_removed_dirs:
             tree_node = self._get_tree_node(d)
@@ -123,7 +123,7 @@ class ManagedTree(Tree[Path]):
         # 1.3 call .remove() on the file nodes which should still exist in the tree
         file_paths_to_remove = [
             f
-            for f in store.cm_paths.changes.managed_files.removed
+            for f in store.cm_paths_legacy.changes.managed_files.removed
             if f not in top_removed_dirs
         ]
         for f in file_paths_to_remove:

@@ -86,9 +86,9 @@ class DiffView(ScrollableContainer):
     @property
     def paths(self) -> StatusByColumn:
         return (
-            store.cm_paths.apply
+            store.cm_paths_legacy.apply
             if self.app_ids.tab_label == BtnLabel.apply
-            else store.cm_paths.re_add
+            else store.cm_paths_legacy.re_add
         )
 
     @work
@@ -96,19 +96,19 @@ class DiffView(ScrollableContainer):
 
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-            if not store.cm_paths.managed_paths:
+            if not store.cm_paths_legacy.managed_paths:
                 self.sub_section_label.update(LabelStr.no_managed_paths)
             else:
                 self.sub_section_label.update(LabelStr.dest_dir_diff)
 
-        elif path in store.cm_paths.managed_paths:
-            if path in store.cm_paths.managed_dirs:
+        elif path in store.cm_paths_legacy.managed_paths:
+            if path in store.cm_paths_legacy.managed_dirs:
                 self.main_section_label.update(LabelStr.managed_dir)
-            elif path in store.cm_paths.managed_files:
+            elif path in store.cm_paths_legacy.managed_files:
                 self.main_section_label.update(LabelStr.managed_file)
             self.sub_section_label.update(LabelStr.managed_no_status)
 
-        elif path not in store.cm_paths.status_dirs:
+        elif path not in store.cm_paths_legacy.status_dirs:
             self.main_section_label.update(LabelStr.managed_dir)
             self.sub_section_label.update(LabelStr.n_dir)
 
@@ -152,11 +152,11 @@ class DiffView(ScrollableContainer):
     async def watch_show_path(self, show_path: Path | None) -> None:
         if show_path is None:
             return
-        if show_path in store.cm_paths.status_paths:
+        if show_path in store.cm_paths_legacy.status_paths:
             self.diff_lines.remove_children()
             diff_result = await tchezmoi.exec_chezmoi_cmd(
                 self.app, self.diff_cmd, show_path
-            ).wait()
+            )
             self.main_section_label.update(str(diff_result.full_cmd))
             self.flat_section_label.update(diff_result.std_out.splitlines().pop(0))
 

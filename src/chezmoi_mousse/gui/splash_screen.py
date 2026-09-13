@@ -134,9 +134,7 @@ class SplashScreen(Screen[None]):
         if cmd is ReadCmd.git_log:
             cr = await tchezmoi.run_chezmoi_git_log(self.app).wait()
         else:
-            cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(
-                self.app, cmd, None
-            ).wait()
+            cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(self.app, cmd, None)
         if store.pre_mount is True:
             self.pre_mount_cmd_results.append(cr)
 

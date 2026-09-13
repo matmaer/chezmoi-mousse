@@ -55,39 +55,39 @@ class ContentsView(ScrollableContainer):
     @property
     def paths(self) -> StatusByColumn:
         return (
-            store.cm_paths.apply
+            store.cm_paths_legacy.apply
             if self.app_ids.tab_label == BtnLabel.apply
-            else store.cm_paths.re_add
+            else store.cm_paths_legacy.re_add
         )
 
     def _is_dir(self, path: Path) -> bool:
-        return path == store.cfg.dest_dir or path in store.cm_paths.managed_paths
+        return path == store.cfg.dest_dir or path in store.cm_paths_legacy.managed_paths
 
     def _set_dir_contents(self, path: Path) -> None:
         # main label
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
-        elif path in store.cm_paths.managed_dirs:
+        elif path in store.cm_paths_legacy.managed_dirs:
             self.main_section_label.update(LabelStr.managed_dir)
         else:
             self.main_section_label.update(LabelStr.unmanaged_dir)
         # sub label
         label = str(path)
         if self.app_ids.tab_label in (BtnLabel.apply, BtnLabel.re_add):
-            if not store.cm_paths.managed_paths:
+            if not store.cm_paths_legacy.managed_paths:
                 label = LabelStr.no_managed_paths
-            elif not store.cm_paths.managed_paths:
+            elif not store.cm_paths_legacy.managed_paths:
                 label = LabelStr.no_status_paths
         self.sub_section_label.update(label)
 
     @work
     async def _create_file_container(self, path: Path) -> None:
         self.sub_section_label.update(LabelStr.not_set)
-        if path in store.cm_paths.managed_files:
+        if path in store.cm_paths_legacy.managed_files:
             self.main_section_label.update(LabelStr.managed_file)
         else:
             self.main_section_label.update(LabelStr.unmanaged_file)
-        if path in store.cm_paths.missing_paths:
+        if path in store.cm_paths_legacy.missing_paths:
             f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                 self.app, path
             )

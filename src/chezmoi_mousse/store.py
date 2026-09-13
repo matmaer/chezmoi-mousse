@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.data_classes import (
-    ChezmoiPaths,
+    ChezmoiPathsLegacy,
 )
 from chezmoi_mousse.named_tuples import DumpConfigKeys, InitData
 from chezmoi_mousse.str_enums import BtnLabel
@@ -35,7 +35,7 @@ cfg = DumpConfigKeys()
 
 git_log_cr: CommandResult | None = None
 
-cm_paths = ChezmoiPaths(
+cm_paths_legacy = ChezmoiPathsLegacy(
     managed_dirs=[],
     managed_files=[],
     old_man_dirs_set=set(),
