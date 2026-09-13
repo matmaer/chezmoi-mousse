@@ -52,6 +52,19 @@ class BtnLabel(StrEnum):
     logs = "Logs"
     re_add = "Re-Add"
 
+    # Gen 2 main tabs
+    managed_tree = "Managed Tree"
+    danger_zone = "Danger Zone"
+
+    # Managed Tree operation buttons
+    chezmoi_add = "chezmoi add"
+    chezmoi_apply = "chezmoi apply"
+    chezmoi_re_add = "chezmoi re-add"
+
+    # Danger Zone operation buttons
+    chezmoi_forget = "chezmoi forget"
+    chezmoi_destroy = "chezmoi destroy"
+
     # Tab buttons for content switcher within a main tab
     app_log = "Application"
     cmd_log = "Chezmoi-Commands"
@@ -414,6 +427,24 @@ class ChezmoiStatusCode(StrEnum):
     # Fake status code for internal use in the ManagedTree, not returned by chezmoi
     # Used to create the color and to determine if the dir should be displayed or not.
     N_DIR = auto()
+
+
+class StatusPairs(StrEnum):
+    # Standard file state pairs
+    M_S = "M "  # Modified locally in target
+    S_M = " M"  # Modified in source repo
+    M_M = "MM"  # Modified in both target and source
+
+    D_S = "D "  # Deleted locally in target (apply will recreate)
+    S_D = " D"  # Deleted in source repo (apply will delete target)
+    D_A = "DA"  # Previously managed entry deleted, recreate from source
+    M_A = "MA"  # Modified locally, target state creates entry
+
+    A_S = "A "  # Target entry created locally (unmanaged/new)
+    S_A = " A"  # Target entry added in source repo
+
+    # Script execution pair
+    S_R = " R"  # Script target will run on apply
 
 
 class Tcss(StrEnum):

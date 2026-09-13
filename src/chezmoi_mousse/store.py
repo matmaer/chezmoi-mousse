@@ -26,6 +26,11 @@ debug_ids = AppIds(BtnLabel.debug)
 logs_ids = AppIds(BtnLabel.logs)
 re_add_ids = AppIds(BtnLabel.re_add)
 
+
+man_tree_ids = AppIds(BtnLabel.managed_tree)
+danger_zone_ids = AppIds(BtnLabel.danger_zone)
+
+
 cfg = DumpConfigKeys()
 
 git_log_cr: CommandResult | None = None
