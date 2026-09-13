@@ -1,10 +1,10 @@
-/****************/
-/* tcss classes */
-/****************/
+/* 
+TODO implement vw and vh for screens and containers with docked components
 
-/* TODO implement vw and vh for screens and containers with docked components */
-/* TODO, check scrollbar-gutter: stable */
-# Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
+TODO, check scrollbar-gutter: stable 
+
+Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
+*/
 
 .add_tab_contents_view {
   border-top: $primary;
@@ -12,7 +12,7 @@
   border-title-style: bold;
 }
 
-.flat_button{
+.flat_button {
   background-tint: $primary-muted;
   background: $primary-muted;
   border-bottom: inner $primary-muted;
@@ -21,19 +21,24 @@
   border-top: inner $primary-muted;
   color: $text-muted;
   width: 100%;
+
   &:hover {
     color: $foreground;
   }
+
   &:focus {
     text-style: bold;
     color: $text-accent;
   }
+
   &.last_clicked_flat_btn {
     color: $text-accent;
     text-style: bold;
+
     &:hover {
       color: $text-accent;
     }
+
     &:focus {
       text-style: bold;
       color: $text-accent;
@@ -48,6 +53,7 @@
 .op_btn_group {
   dock: bottom;
   height: 2;
+
   &>.operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -57,11 +63,13 @@
     margin: 0 1;
     text-style: none;
     width: 1fr;
+
     &:hover {
       text-style: none;
       color: $accent;
       border-top: wide $accent-darken-3;
     }
+
     &:focus {
       text-style: none;
     }
@@ -73,12 +81,14 @@
   width: auto;
   max-width: 33%;
   min-width: 18;
+
   &>.managed_tree {
     height: 1fr;
     min-width: 18;
     max-width: 100%;
     width: auto;
   }
+
   &>.refresh_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -91,30 +101,37 @@
     min-width: 18;
     text-style: none;
     width: 100%;
+
     &:hover {
       text-style: none;
       color: $accent-lighten-1;
     }
+
     &:focus {
       text-style: none;
     }
   }
+
   &>.directory_tree {
     border-top: $primary;
     border-title-align: center;
     border-title-style: bold;
     min-width: 18;
     width: auto;
+
     &>.directory-tree--folder {
       color: $primary-lighten-3;
       text-style: none;
     }
+
     &>.directory-tree--extension {
       text-style: none;
     }
+
     &>.directory-tree--hidden {
       text-style: none;
     }
+
     &>.directory-tree--file {
       color: $success-lighten-3;
       text-style: none;
@@ -124,7 +141,7 @@
 
 .operate_pane {
   &>.operations_left {
-    &>.dest_dir_button{
+    &>.dest_dir_button {
       background-tint: $primary-muted;
       background: $primary-muted;
       border-bottom: inner $primary-muted;
@@ -134,40 +151,46 @@
       text-align: left;
       text-style: bold;
       width: 1fr;
+
       &:hover {
         color: $text-accent;
       }
+
       &:focus {
         text-style: bold;
       }
     }
+
     &>.refresh_button {
-        background-tint: $surface-lighten-1;
-        background: $surface-lighten-1;
-        border-bottom: none;
-        border-top: wide $surface-lighten-1;
-        color: $primary-lighten-3;
-        margin: 0 1;
-        min-width: 18;
+      background-tint: $surface-lighten-1;
+      background: $surface-lighten-1;
+      border-bottom: none;
+      border-top: wide $surface-lighten-1;
+      color: $primary-lighten-3;
+      margin: 0 1;
+      min-width: 18;
+      text-style: none;
+      width: 100%;
+
+      &:hover {
         text-style: none;
-        width: 100%;
-        &:hover {
-          text-style: none;
-          color: $accent-lighten-1;
-        }
-        &:focus {
-          text-style: none;
-        }
+        color: $accent-lighten-1;
       }
+
+      &:focus {
+        text-style: none;
+      }
+    }
   }
-  
+
   &>.operations_middle {
     margin: 0 2;
   }
-  
+
   &>.operations_right {
     &>.op_btn_vert_group {
       padding-top: 1;
+
       .operate_button {
         background-tint: $surface-lighten-1;
         background: $surface-lighten-1;
@@ -175,20 +198,24 @@
         border-top: none;
         color: $text-primary;
         width: 1fr;
+
         &:hover {
           border-bottom: wide $accent-darken-3;
           color: $accent;
           text-style: none;
         }
+
         &:focus {
           text-style: none;
         }
       }
     }
+
     &>.switches_vert_group {
       background-tint: $surface;
-      background: $surface;        
+      background: $surface;
       padding-top: 1;
+
       .switch_with_label {
         padding: 0 0 1 2;
       }
@@ -198,22 +225,65 @@
 }
 
 RadioSet {
-  background-tint: $surface;
-  background: $surface;
-  margin-bottom: 1;
-  padding: 0 0 1 1;
   border: none;
+  border-top: wide $surface-lighten-1;
+  border-bottom: inner $surface;
+  background: $surface;
+  background-tint: $surface;
+
+  &:blur {
+    &>RadioButton.-selected {
+      &>.toggle--label {
+        text-style: bold;
+      }
+    }
+  }
+
+  &:focus {
+    border: none;
+
+    &>RadioButton.-selected {
+
+      &>.toggle--label {
+        background: $surface;
+        background-tint: $surface;
+        color: $block-cursor-foreground;
+        text-style: $block-cursor-text-style;
+      }
+    }
+
+  }
 }
 
-RadioButton {
-  padding-top: 1;
+ToggleButton {
+
+  &>.toggle--button {
+    background: $surface;
+    background-tint: $surface;
+  }
+
+  &.-on>.toggle--button {
+    color: $text-success;
+  }
+
+  &:blur:hover {
+    &>.toggle--label {
+      background: $surface;
+      background-tint: $surface;
+      text-style: bold;
+    }
+  }
 }
 
 /**********************/
 /* Type Selector tcss */
 /**********************/
 
-AnimatedFade, AppLog, CmdLog, ContentsView, DiffView {
+AnimatedFade,
+AppLog,
+CmdLog,
+ContentsView,
+DiffView {
   margin-bottom: 2;
 }
 
@@ -223,6 +293,7 @@ CustomHeader {
   color: $primary;
   height: 2;
   text-style: bold;
+
   &>.live_run_color {
     color: $warning;
   }
@@ -260,9 +331,11 @@ SwitchSlider {
   padding: 0 1 0 2;
   transition: offset 380ms;
   width: auto;
+
   &.-visible {
     offset-x: 0%;
   }
+
   & HorizontalGroup {
     padding-bottom: 1;
     width: auto;
@@ -279,24 +352,30 @@ TabButtons {
   &>.single_button_vertical {
     align: center middle;
   }
+
   .tab_button {
     border: none;
     min-width: 3;
     text-style: bold;
     color: $foreground 60%;
+
     &:hover {
       color: $foreground;
     }
+
     &:focus {
       text-style: bold;
       color: $text-accent 80%;
     }
+
     &.last_clicked_tab_btn {
       color: $text-accent 80%;
       text-style: bold;
+
       &:hover {
         color: $text-accent 80%;
       }
+
       &:focus {
         text-style: bold;
         color: $text-accent 80%;
@@ -322,7 +401,8 @@ Collapsible {
   border-top: none;
   padding-bottom: 0;
   padding-left: 0;
-  &> Contents {
+
+  &>Contents {
     padding: 0 0 1 1;
   }
 }
@@ -330,6 +410,7 @@ Collapsible {
 CollapsibleTitle {
   padding: 0;
   text-style: none;
+
   &:hover {
     text-style: bold;
   }
@@ -348,11 +429,12 @@ Footer {
   background: $surface;
 }
 
-Label{
+Label {
   padding: 0 1;
   text-align: center;
   border-left: none;
   border-right: none;
+
   &.dest_dir_tree_label {
     background-tint: $background;
     background: $background;
@@ -361,6 +443,7 @@ Label{
     color: $primary-lighten-3;
     width: 100%;
   }
+
   &.flat_section_label {
     background-tint: $primary-muted;
     background: $primary-muted;
@@ -369,6 +452,7 @@ Label{
     color: $primary-lighten-3;
     width: 1fr;
   }
+
   &.sub_section_label {
     background-tint: $panel;
     background: $panel;
@@ -377,6 +461,7 @@ Label{
     color: $text-success;
     width: 1fr;
   }
+
   &.main_section_label {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -393,16 +478,19 @@ Static {
     background: $success-muted;
     color: $text-success;
   }
+
   &.changed {
     background-tint: $warning-muted;
     background: $warning-muted;
     color: $text-warning;
   }
-  &.context{
+
+  &.context {
     background-tint: $surface;
     background: $surface;
     color: $text-disabled;
   }
+
   &.full_cmd {
     background-tint: $primary-muted;
     background: $primary-muted;
@@ -410,6 +498,7 @@ Static {
     text-align: center;
     width: 1fr;
   }
+
   &.info {
     border-top: inner $surface;
     border-bottom: inner $surface;
@@ -418,11 +507,13 @@ Static {
     color: $text;
     padding: 0 1;
   }
+
   &.removed {
     background-tint: $error-muted;
     background: $error-muted;
     color: $text-error;
   }
+
   &.unhandled {
     /* only used for debugging by visualizing unhandled formatting conditions */
     background-tint: $error-darken-3;
@@ -436,20 +527,25 @@ Switch {
   background-tint: $surface;
   border: none;
   padding-right: 1;
+
   &>.switch--slider {
     color: $error-darken-3;
   }
+
   &.-on .switch--slider {
     color: $success-darken-2;
   }
+
   &:hover {
     &>.switch--slider {
       color: $error-darken-1;
     }
+
     &.-on>.switch--slider {
       color: $success-lighten-1;
     }
   }
+
   &:disabled {
     &>.switch--slider {
       color: $panel-lighten-3;
@@ -458,10 +554,12 @@ Switch {
 }
 
 TabbedContent {
+
   /* center the tab buttons on top */
   & #tabs-list {
     align: center top;
   }
+
   & Tab {
     margin: 0 2;
   }
@@ -471,28 +569,34 @@ Tree {
   &>.tree--highlight-line {
     text-style: bold;
   }
+
   &>.tree--highlight {
     text-style: none;
   }
+
   &>.tree--guides {
     color: $primary-lighten-3;
   }
+
   &>.tree--guides-hover {
     color: $primary-lighten-3;
   }
+
   &>.tree--guides-selected {
     color: $primary-lighten-3;
   }
+
   &:focus {
     &>.tree--guides {
       color: $primary-lighten-3;
     }
+
     &>.tree--guides-hover {
       color: $primary-lighten-3;
     }
+
     &>.tree--guides-selected {
       color: $primary-lighten-3;
     }
   }
 }
-
