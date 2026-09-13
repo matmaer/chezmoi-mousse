@@ -14,6 +14,8 @@ from textual.containers import (
 from textual.reactive import reactive
 from textual.widgets import (
     Label,
+    RadioButton,
+    RadioSet,
     Switch,
     TabPane,
     Tree,
@@ -29,7 +31,6 @@ from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.messages import DestDirBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
-    Chars,
     ChezmoiStatusCode as CmSc,
     ColorVar,
     LabelStr,
@@ -54,9 +55,6 @@ __all__ = ["DangerZoneTab", "ManagedTreeTab"]
 class ManagedTree(Tree[Path]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-
-    ICON_NODE = Chars.tree_collapsed
-    ICON_NODE_EXPANDED = Chars.tree_expanded
 
     show_unchanged: reactive[bool] = reactive(False, init=False)
     show_unmanaged: reactive[bool] = reactive(False, init=False)
@@ -241,32 +239,36 @@ class MiddleVertical(Vertical):
 
 
 class RightSideVertical(Vertical):
-    def __init__(self, *, app_ids: AppIds, op_btn_labels: tuple[BtnLabel, ...]) -> None:
+    def __init__(
+        self,
+        *,
+        app_ids: AppIds,
+        op_btn_labels: tuple[BtnLabel, ...],
+        switch_labels: tuple[LabelStr, ...],
+    ) -> None:
         self.ids = app_ids
         self.op_btn_labels = op_btn_labels
+        self.switch_labels = switch_labels
         super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(LabelStr.right_side)
-        with VerticalGroup(classes=Tcss.op_btn_vert_group):
-            for btn_label in self.op_btn_labels:
-                yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
+        with RadioSet(id="focus_me"):
+            yield RadioButton(LabelStr.radio_contents, compact=True)
+            yield RadioButton(LabelStr.radio_diff)
+            yield RadioButton(LabelStr.radio_diff_reverse)
+            yield RadioButton(LabelStr.radio_git_log, value=True)
+
         with VerticalGroup(classes=Tcss.switches_vert_group):
-            for switch_label in (
-                LabelStr.show_unchanged,
-                LabelStr.expand_all,
-                LabelStr.show_unmanaged,
-                LabelStr.show_unwanted,
-            ):
+            for switch_label in self.switch_labels:
                 yield HorizontalGroup(
                     Switch(id=self.ids.switch_id(switch_label=switch_label)),
                     Label(switch_label),
                     classes=Tcss.switch_with_label,
                 )
-
-    def on_mount(self) -> None:
-        show_unwanted = self.query_one(self.ids.switch.show_unwanted_q, Switch)
-        show_unwanted.disabled = True
+        with VerticalGroup(classes=Tcss.op_btn_vert_group):
+            for btn_label in self.op_btn_labels:
+                yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
 
 
 class ManagedTreeTab(TabPane):
@@ -287,6 +289,11 @@ class ManagedTreeTab(TabPane):
                     BtnLabel.chezmoi_add,
                     BtnLabel.chezmoi_apply,
                     BtnLabel.chezmoi_re_add,
+                ),
+                switch_labels=(
+                    LabelStr.show_unchanged,
+                    LabelStr.expand_all,
+                    LabelStr.show_unmanaged,
                 ),
             )
 
@@ -319,6 +326,11 @@ class DangerZoneTab(TabPane):
                 op_btn_labels=(
                     BtnLabel.chezmoi_forget,
                     BtnLabel.chezmoi_destroy,
+                ),
+                switch_labels=(
+                    LabelStr.show_unchanged,
+                    LabelStr.show_existing,
+                    LabelStr.expand_all,
                 ),
             )
 

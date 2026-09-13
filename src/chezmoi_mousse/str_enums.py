@@ -118,6 +118,7 @@ class Chars(StrEnum):
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
 
     # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
     tree_collapsed = f"{right_triangle} "
@@ -176,15 +177,20 @@ class LabelStr(StrEnum):
     # Managed Tree and Danger Zone tab
     middle = "Middle Section"
     right_side = "Right Side Section"
+    radio_diff = "Diff View"
+    radio_diff_reverse = "Diff Reverse View"
+    radio_contents = "Contents View"
+    radio_git_log = "Git Log View"
 
     # Apply and ReAdd Tab
-    show_unchanged = "Show unchanged paths"
-    show_unmanaged = "Show unmanaged children"
-    expand_all = "Expand all dirs"
+    show_existing = "Show Existing Paths"
+    show_unchanged = "Show Unchanged Paths"
+    show_unmanaged = "Show Unmanaged Children"
+    expand_all = "Expand All Dirs"
 
     # Add Tab
-    show_managed = "Show managed paths"
-    show_unwanted = "Show unwanted paths"
+    show_managed = "Show Managed Paths"
+    show_unwanted = "Show Unwanted Paths"
 
     # Changed paths
     # added_managed_paths = "Added managed paths" # noqa: ERA001

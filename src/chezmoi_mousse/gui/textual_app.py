@@ -14,7 +14,7 @@ from textual.app import App
 from textual.binding import Binding
 from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
-from textual.widgets import Footer, Header, TabbedContent, Tabs
+from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store
@@ -54,6 +54,9 @@ if TYPE_CHECKING:
 
 
 __all__ = ["ChezmoiGui"]
+
+
+RadioButton.BUTTON_INNER = Chars.radio_button
 
 
 class CustomHeader(Header):

@@ -192,11 +192,21 @@
         padding: 0 0 1 2;
       }
     }
+
   }
 }
 
+RadioSet {
+  background-tint: $surface;
+  background: $surface;
+  margin-bottom: 1;
+  padding: 0 0 1 1;
+  border: none;
+}
 
-
+RadioButton {
+  padding-top: 1;
+}
 
 /**********************/
 /* Type Selector tcss */
