@@ -19,6 +19,7 @@ class AppIds:
         self.op_btn = _OperateButtonIds(self)
         self.richlog = _RichLogIds(self)
         self.switch = _SwitchIds(self)
+        self.switch_group = f"{self.tab_label.name}_switch_group"
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
@@ -62,6 +63,8 @@ class _ContainerIds:
         self.ignored_q: str = f"#{self.ignored}"
         self.left_side: str = ids.container_id(name=ContainerName.left_side)
         self.left_side_q: str = f"#{self.left_side}"
+        self.middle: str = ids.container_id(name=ContainerName.middle)
+        self.middle_q: str = f"#{self.middle}"
         self.env_vars: str = ids.container_id(name=ContainerName.env_vars)
         self.env_vars_q: str = f"#{self.env_vars}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)

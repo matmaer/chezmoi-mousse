@@ -34,6 +34,7 @@ from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_tree import ManagedTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg, CurrentNodeMsg
 from chezmoi_mousse.gui.common.switchers import ViewSwitcher
+from chezmoi_mousse.gui.operation_tabs import DangerZoneTab, ManagedTreeTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
 from chezmoi_mousse.named_tuples import InitData
@@ -141,6 +142,8 @@ class ChezmoiGui(App[str]):
         await self.splash_screen.run_initial_command_sequence()
 
         tabbed_content = self.query_exactly_one(TabbedContent)
+        await tabbed_content.add_pane(ManagedTreeTab())
+        await tabbed_content.add_pane(DangerZoneTab())
         await tabbed_content.add_pane(ApplyTab())
         await tabbed_content.add_pane(ReAddTab())
         await tabbed_content.add_pane(AddTab())

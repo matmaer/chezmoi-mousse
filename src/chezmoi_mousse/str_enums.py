@@ -109,7 +109,7 @@ class BtnLabel(StrEnum):
 
     @property
     def pane_id(self) -> str:
-        return f"{self}_pane_id"
+        return f"{self.name}_pane_id"
 
 
 class Chars(StrEnum):
@@ -154,8 +154,9 @@ class ContainerName(StrEnum):
     git_ignored = auto()
     git_log = auto()
     left_side = auto()
-    operate_buttons = auto()
+    middle = auto()
     right_side = auto()
+    operate_buttons = auto()
     template_data = auto()
     test_paths_view = auto()
 
@@ -171,6 +172,10 @@ class InfoKind(Enum):
 
 
 class LabelStr(StrEnum):
+    # Managed Tree and Danger Zone tab
+    middle = "Middle Section"
+    right_side = "Right Side Section"
+
     # Apply and ReAdd Tab
     show_unchanged = "Show unchanged paths"
     show_unmanaged = "Show unmanaged children"
@@ -448,11 +453,23 @@ class StatusPairs(StrEnum):
 
 
 class Tcss(StrEnum):
+    # Operation tabs
+    operations_left = auto()
+    operations_middle = auto()
+    operations_right = auto()
+    switch_group = auto()
+    operate_pane = auto()
+
+    # Both legacy and operation tabs
+    dest_dir_tree_label = auto()
+    main_section_label = auto()
+    managed_tree = auto()
+
+    # Other
     add_tab_contents_view = auto()
     added = auto()
     changed = auto()
     context = auto()
-    dest_dir_tree_label = auto()
     directory_tree = auto()
     flat_button = auto()
     flat_section_label = auto()
@@ -463,8 +480,6 @@ class Tcss(StrEnum):
     last_clicked_tab_btn = auto()
     left_side_vertical = auto()
     live_run_color = auto()
-    main_section_label = auto()
-    managed_tree = auto()
     op_btn_group = auto()
     operate_button = auto()
     refresh_button = auto()

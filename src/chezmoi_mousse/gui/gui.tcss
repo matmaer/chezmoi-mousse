@@ -71,7 +71,7 @@
 .left_side_vertical {
   margin-right: 2;
   width: auto;
-  max-width: 35%;
+  max-width: 33%;
   min-width: 18;
   &>.managed_tree {
     height: 1fr;
@@ -121,6 +121,44 @@
     }
   }
 }
+
+.operate_pane {
+  # border: red;
+
+  .operations_left {
+    # margin-right: 2;
+    # width: auto;
+    # max-width: 33%;
+    # min-width: 18;
+  }
+  
+  .operations_middle {
+    margin: 0 2;
+    # width: auto;
+    # max-width: 33%;
+    # min-width: 18;
+  }
+  
+  .operations_right {
+    # max-width: 33%;
+    # width: auto;
+    &>.switch_group {
+      background-tint: $surface;
+      background: $surface;
+      color: $foreground-darken-1;
+      margin-bottom: 1;
+      padding: 0 0 1 0;
+      & HorizontalGroup {
+        background-tint: $surface;
+        background: $surface;
+        padding-left: 2;
+        border-top: $surface;
+      }
+    }
+  }
+}
+
+
 
 
 /**********************/

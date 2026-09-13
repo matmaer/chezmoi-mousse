@@ -1,10 +1,38 @@
 from __future__ import annotations
 
+from collections import deque
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on
+from textual.containers import HorizontalGroup, VerticalGroup
+from textual.reactive import reactive
+from textual.widgets import Tree
+
+from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse.str_enums import (
+    BtnLabel,
+    Chars,
+    ChezmoiStatusCode as CmSc,
+    ColorVar,
+    LabelStr,
+    Tcss,
+)
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from textual import getters
+    from textual.widgets.tree import TreeNode
+
+    from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.data_classes import StatusByColumn
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
+from typing import TYPE_CHECKING
+
 from textual.containers import (
     Horizontal,
+    Vertical,
 )
 from textual.widgets import (
     Label,
@@ -12,35 +40,245 @@ from textual.widgets import (
     TabPane,
 )
 
-from chezmoi_mousse import store
-from chezmoi_mousse.gui.common.components import LeftSideVertical
-from chezmoi_mousse.gui.common.managed_tree import ManagedTree
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    Tcss,
-)
-
-from .common.actionables import (
+from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     RefreshBtn,
     SwitchSlider,
 )
+from chezmoi_mousse.gui.common.components import MainSectionLabel
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.app_ids import AppIds
+
 __all__ = ["DangerZoneTab", "ManagedTreeTab"]
+
+
+__all__ = ["ManagedTree"]
+
+
+class ManagedTree(Tree[Path]):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
+    ICON_NODE = Chars.tree_collapsed
+    ICON_NODE_EXPANDED = Chars.tree_expanded
+
+    show_unchanged: reactive[bool] = reactive(False, init=False)
+    show_unmanaged: reactive[bool] = reactive(False, init=False)
+    expand_all: reactive[bool] = reactive(False, init=False)
+
+    def __init__(self, app_ids: AppIds) -> None:
+        self.app_ids = app_ids
+        super().__init__(
+            label=str(store.cfg.dest_dir),
+            id=app_ids.managed_tree,
+            classes=Tcss.managed_tree,
+            data=store.cfg.dest_dir,
+        )
+
+    def on_mount(self) -> None:
+        self.guide_depth: int = 3
+        self.status_color: dict[CmSc | str, ColorVar] = {
+            CmSc.Added: ColorVar.text_success,
+            CmSc.Deleted: ColorVar.text_error,
+            CmSc.Modified: ColorVar.text_warning,
+            CmSc.N_DIR: ColorVar.text_secondary,
+            CmSc.Run: ColorVar.bogus,
+            CmSc.Space: ColorVar.dimmed,
+            "unmanaged": ColorVar.text_error_dark,
+        }
+        self.root.expand()
+
+    @property
+    def paths(self) -> StatusByColumn:
+        return (
+            store.cm_paths.apply
+            if self.app_ids.tab_label == BtnLabel.apply
+            else store.cm_paths.re_add
+        )
+
+    def _populate_unmanaged_nodes(self) -> None:
+        expanded_dirs = [store.cfg.dest_dir]
+        expanded_dirs += [
+            node.data for node in self._iter_tree_nodes() if node.allow_expand
+        ]
+
+    def _iter_tree_nodes(self) -> Iterator[TreeNode[Path]]:
+        queue: deque[TreeNode[Path]] = deque([self.root])
+        while queue:
+            node = queue.popleft()
+            yield node
+            queue.extend(node.children)
+
+    def _get_tree_node(self, path: Path) -> TreeNode[Path] | None:
+        for node in self._iter_tree_nodes():
+            if node.data == path:
+                return node
+        return None
+
+    def update_tree(self) -> None:
+
+        # We update the tree based on the following available paths in store.py
+        # - store.cm_paths.changes.managed_dirs.removed
+        # - store.cm_paths.changes.managed_files.removed
+        # - store.cm_paths.changes.managed_dirs.added
+        # - store.cm_paths.changes.managed_files.added
+
+        # -----------------
+        # PHASE 1: REMOVALS
+        # -----------------
+
+        # 1.1 call .remove_children() on all top level removed directories
+        top_removed_dirs: list[Path] = path_funcs.get_top_parents(
+            store.cm_paths.changes.managed_dirs.removed
+        )
+        for d in top_removed_dirs:
+            tree_node = self._get_tree_node(d)
+            if tree_node is None:
+                continue
+            tree_node.remove_children()
+
+        # 1.2 call .remove() on the top level removed directories themselves
+        for d in top_removed_dirs:
+            tree_node = self._get_tree_node(d)
+            if tree_node is None:
+                continue
+            tree_node.remove()
+
+        # 1.3 call .remove() on the file nodes which should still exist in the tree
+        file_paths_to_remove = [
+            f
+            for f in store.cm_paths.changes.managed_files.removed
+            if f not in top_removed_dirs
+        ]
+        for f in file_paths_to_remove:
+            tree_node = self._get_tree_node(f)
+            if tree_node is None:
+                continue
+            tree_node.remove()
+
+        # ------------------
+        # PHASE 2: ADDITIONS
+        # ------------------
+
+        # 2.1 the directories to be added depend on the context, we add all directories
+        # with a status plus all n_dirs, which are context dependent!
+        for d in self.paths.n_dirs | set(self.paths.status_dirs):
+            if d.parent == store.cfg.dest_dir:
+                parent_node = self.root
+            else:
+                parent_node = self._get_tree_node(d.parent)
+            if parent_node is None:
+                continue
+            parent_node.add(f"{d.name}")
+
+        # 2.2 add new managed files
+        for f in self.paths.status_files:
+            if f.parent == store.cfg.dest_dir:
+                parent_node = self.root
+            else:
+                parent_node = self._get_tree_node(f.parent)
+            if parent_node is None:
+                continue
+            parent_node.add_leaf(f"{f.name}")
+
+        # -------------------------------------------------------------
+        # PHASE 3: MODIFICATIONS (Cosmetic updates on existing nodes)
+        # -------------------------------------------------------------
+        # to change colors for paths with a changed status
+
+    # #################################
+    # # Watchers and message handling #
+    # #################################
+
+    @on(Tree.NodeCollapsed)
+    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
+        if event.node is self.root:
+            event.node.expand()
+
+    @on(Tree.NodeExpanded)
+    def handle_node_expanded(self, _: Tree.NodeExpanded[Path]) -> None: ...
+
+    @on(Tree.NodeSelected)
+    def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
+        if event.node.data == store.cfg.dest_dir:
+            return
+        if event.node.data is None:
+            return
+
+    def watch_expand_all(self, expand_all: bool) -> None:
+        if expand_all:
+            for node in self._iter_tree_nodes():
+                if node.allow_expand:
+                    node.expand()
+        else:
+            for node in self._iter_tree_nodes():
+                if node is self.root:
+                    continue
+                if node.allow_expand:
+                    node.expand()
+                else:
+                    node.collapse()
+
+
+class LeftSideVertical(Vertical):
+    def __init__(self, *, app_ids: AppIds) -> None:
+        self.ids = app_ids
+        super().__init__(id=app_ids.container.left_side, classes=Tcss.operations_left)
+
+    def compose(self) -> ComposeResult:
+        yield Label(f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_tree_label)
+        yield ManagedTree(self.ids)
+        yield RefreshBtn(app_ids=self.ids)
+
+
+class MiddleVertical(Vertical):
+    def __init__(self, *, app_ids: AppIds) -> None:
+        self.ids = app_ids
+        super().__init__(id=app_ids.container.middle, classes=Tcss.operations_middle)
+
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel(LabelStr.middle)
+
+
+class RightSideVertical(Vertical):
+    def __init__(self, *, app_ids: AppIds) -> None:
+        self.ids = app_ids
+        super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
+
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel(LabelStr.right_side)
+        with VerticalGroup(id=self.ids.switch_group, classes=Tcss.switch_group):
+            yield HorizontalGroup(
+                Switch(id=self.ids.switch_id(switch_label=LabelStr.show_unchanged)),
+                Label(LabelStr.show_unchanged),
+            )
+            yield HorizontalGroup(
+                Switch(id=self.ids.switch_id(switch_label=LabelStr.show_unmanaged)),
+                Label(LabelStr.show_unmanaged),
+            )
+            yield HorizontalGroup(
+                Switch(id=self.ids.switch_id(switch_label=LabelStr.expand_all)),
+                Label(LabelStr.expand_all),
+            )
 
 
 class ManagedTreeTab(TabPane):
     def __init__(self) -> None:
-        super().__init__(id=BtnLabel.managed_tree.pane_id, title=BtnLabel.managed_tree)
+        self.ids = store.man_tree_ids
+        super().__init__(
+            id=BtnLabel.managed_tree.pane_id,
+            title=BtnLabel.managed_tree,
+            classes=Tcss.operate_pane,
+        )
 
     def compose(self) -> ComposeResult:
-        with Horizontal(), LeftSideVertical(app_ids=store.man_tree_ids):
-            yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-            yield ManagedTree(store.man_tree_ids)
-            yield RefreshBtn(app_ids=store.man_tree_ids)
+        with Horizontal():
+            yield LeftSideVertical(app_ids=store.man_tree_ids)
+            yield MiddleVertical(app_ids=store.man_tree_ids)
+            yield RightSideVertical(app_ids=store.man_tree_ids)
         yield OperateBtnGroup(
             app_ids=store.man_tree_ids,
             labels=(
@@ -54,29 +292,34 @@ class ManagedTreeTab(TabPane):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        managed_tree = self.query_one(store.man_tree_ids.managed_tree_q, ManagedTree)
-        if event.switch.id == store.man_tree_ids.switch.show_unchanged:
+        managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+        if event.switch.id == self.ids.switch.show_unchanged:
             managed_tree.show_unchanged = event.value
-        elif event.switch.id == store.man_tree_ids.switch.show_unmanaged:
+        elif event.switch.id == self.ids.switch.show_unmanaged:
             managed_tree.show_unmanaged = event.value
-        elif event.switch.id == store.man_tree_ids.switch.expand_all:
+        elif event.switch.id == self.ids.switch.expand_all:
             managed_tree.expand_all = event.value
 
 
 class DangerZoneTab(TabPane):
     def __init__(self) -> None:
-        super().__init__(id=BtnLabel.danger_zone.pane_id, title=BtnLabel.danger_zone)
+        self.ids = store.danger_zone_ids
+        super().__init__(
+            id=BtnLabel.danger_zone.pane_id,
+            title=BtnLabel.danger_zone,
+            classes=Tcss.operate_pane,
+        )
 
     def compose(self) -> ComposeResult:
-        with Horizontal(), LeftSideVertical(app_ids=store.danger_zone_ids):
-            yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-            yield ManagedTree(store.danger_zone_ids)
-            yield RefreshBtn(app_ids=store.danger_zone_ids)
+        with Horizontal():
+            yield LeftSideVertical(app_ids=store.danger_zone_ids)
+            yield MiddleVertical(app_ids=store.danger_zone_ids)
+            yield RightSideVertical(app_ids=store.danger_zone_ids)
         yield OperateBtnGroup(
             app_ids=store.danger_zone_ids,
             labels=(
-                BtnLabel.forget_review,
-                BtnLabel.destroy_review,
+                BtnLabel.chezmoi_forget,
+                BtnLabel.chezmoi_destroy,
             ),
         )
         yield SwitchSlider(app_ids=store.danger_zone_ids)
@@ -84,10 +327,10 @@ class DangerZoneTab(TabPane):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        managed_tree = self.query_one(store.danger_zone_ids.managed_tree_q, ManagedTree)
-        if event.switch.id == store.danger_zone_ids.switch.show_unchanged:
+        managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+        if event.switch.id == self.ids.switch.show_unchanged:
             managed_tree.show_unchanged = event.value
-        elif event.switch.id == store.danger_zone_ids.switch.show_unmanaged:
+        elif event.switch.id == self.ids.switch.show_unmanaged:
             managed_tree.show_unmanaged = event.value
-        elif event.switch.id == store.danger_zone_ids.switch.expand_all:
+        elif event.switch.id == self.ids.switch.expand_all:
             managed_tree.expand_all = event.value
