@@ -132,7 +132,7 @@ class SplashScreen(Screen[None]):
             suffix = LogStr.skipped
             await self._write_log_msg(prefix=prefix, suffix=suffix)
         if cmd is ReadCmd.git_log:
-            cr = await tchezmoi.run_chezmoi_git_log(self.app).wait()
+            cr = await tchezmoi.run_chezmoi_git_log(self.app)
         else:
             cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(self.app, cmd, None)
         if store.pre_mount is True:
@@ -196,7 +196,7 @@ class SplashScreen(Screen[None]):
 
     @work(group="managed_commands")
     async def splash_run_managed_commands(self) -> None:
-        crs = await tchezmoi.run_managed_commands(self.app).wait()
+        crs = await tchezmoi.run_managed_commands(self.app)
         for cr in crs:
             suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
             await self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
