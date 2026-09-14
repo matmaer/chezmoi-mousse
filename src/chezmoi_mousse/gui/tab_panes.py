@@ -12,24 +12,17 @@ from textual.containers import (
 from textual.reactive import reactive
 from textual.widgets import (
     ContentSwitcher,
-    DirectoryTree,
-    Label,
     Pretty,
     Static,
-    Switch,
     TabPane,
 )
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.ascii_constants import FLOW_DIAGRAM
-from chezmoi_mousse.gui.common.components import LeftSideVertical, MainSectionLabel
-from chezmoi_mousse.gui.common.contents import ContentsView
+from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.filtered_dir_tree import FilteredDirTree
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_tree import ManagedTree
 from chezmoi_mousse.gui.common.messages import FlatBtnMsg, TabBtnMsg
-from chezmoi_mousse.gui.common.switchers import ViewSwitcher
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
@@ -39,9 +32,6 @@ from chezmoi_mousse.str_enums import (
 from .common.actionables import (
     FlatBtn,
     FlatButtonsVertical,
-    OperateBtnGroup,
-    RefreshBtn,
-    SwitchSlider,
     TabButtons,
 )
 
@@ -49,107 +39,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
 
 
-__all__ = ["AddTab", "ApplyTab", "ConfigTab", "LogsTab", "ReAddTab"]
-
-
-class AddTab(TabPane):
-    def __init__(self) -> None:
-        super().__init__(id=BtnLabel.add.pane_id, title=BtnLabel.add)
-
-    def compose(self) -> ComposeResult:
-        with Horizontal():
-            with LeftSideVertical(app_ids=store.add_ids):
-                yield FilteredDirTree(
-                    dest_dir=store.cfg.dest_dir,
-                )
-                yield RefreshBtn(app_ids=store.add_ids)
-            with Vertical():
-                yield ContentsView(store.add_ids)
-                yield OperateBtnGroup(
-                    app_ids=store.add_ids, labels=(BtnLabel.add_review,)
-                )
-        yield SwitchSlider(app_ids=store.add_ids)
-
-    def on_mount(self) -> None:
-        self.contents_view = self.query_one(
-            store.add_ids.container.contents_q, ContentsView
-        )
-        self.contents_view.add_class(Tcss.add_tab_contents_view)
-
-    @on(DirectoryTree.FileSelected)
-    @on(DirectoryTree.DirectorySelected)
-    def update_contents_view(
-        self, event: DirectoryTree.FileSelected | DirectoryTree.DirectorySelected
-    ) -> None:
-        event.stop()
-        if event.node.data is None:
-            raise ValueError("event.node.data is None in update_contents_view")
-        self.contents_view.show_path = event.node.data.path
-        if event.node.data.path == store.cfg.dest_dir:
-            self.contents_view.border_title = f" {store.cfg.dest_dir} "
-        else:
-            self.contents_view.border_title = f" {event.node.data.path.name} "
-
-    @on(Switch.Changed)
-    def handle_filter_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        dir_tree = self.query_exactly_one(FilteredDirTree)
-        if event.switch.id == store.add_ids.switch.show_managed:
-            dir_tree.show_managed = event.value
-        elif event.switch.id == store.add_ids.switch.show_unwanted:
-            dir_tree.show_unwanted = event.value
-        dir_tree.reload()
-
-
-class ApplyTab(TabPane):
-    def __init__(self) -> None:
-        super().__init__(id=BtnLabel.apply.pane_id, title=BtnLabel.apply)
-
-    def compose(self) -> ComposeResult:
-        with Horizontal():
-            with LeftSideVertical(app_ids=store.apply_ids):
-                yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-                yield ManagedTree(store.apply_ids)
-                yield RefreshBtn(app_ids=store.apply_ids)
-            yield ViewSwitcher(store.apply_ids)
-        yield SwitchSlider(app_ids=store.apply_ids)
-
-    @on(Switch.Changed)
-    def handle_tree_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
-        if event.switch.id == store.apply_ids.switch.show_unchanged:
-            managed_tree.show_unchanged = event.value
-        elif event.switch.id == store.apply_ids.switch.show_unmanaged:
-            managed_tree.show_unmanaged = event.value
-        elif event.switch.id == store.apply_ids.switch.expand_all:
-            managed_tree.expand_all = event.value
-
-
-class ReAddTab(TabPane):
-    def __init__(self) -> None:
-        super().__init__(id=BtnLabel.re_add.pane_id, title=BtnLabel.re_add)
-
-    def compose(self) -> ComposeResult:
-        with Horizontal():
-            with LeftSideVertical(app_ids=store.re_add_ids):
-                yield Label("destDir tree", classes=Tcss.dest_dir_tree_label)
-                yield ManagedTree(store.re_add_ids)
-                yield RefreshBtn(app_ids=store.re_add_ids)
-            yield ViewSwitcher(store.re_add_ids)
-        yield SwitchSlider(app_ids=store.re_add_ids)
-
-    @on(Switch.Changed)
-    def handle_tree_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        managed_tree = self.query_one(store.re_add_ids.managed_tree_q, ManagedTree)
-
-        if event.switch.id == store.re_add_ids.switch.show_unchanged:
-            managed_tree.show_unchanged = event.value
-        elif event.switch.id == store.re_add_ids.switch.show_unmanaged:
-            managed_tree.show_unmanaged = event.value
-        elif event.switch.id == store.re_add_ids.switch.expand_all:
-            managed_tree.expand_all = event.value
+__all__ = ["ConfigTab", "LogsTab"]
 
 
 class LogsTab(TabPane):

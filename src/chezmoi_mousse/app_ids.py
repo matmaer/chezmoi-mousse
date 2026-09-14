@@ -152,9 +152,5 @@ class _SwitchIds:
         self.expand_all: str = ids.switch_id(switch_label=LabelStr.expand_all)
         self.expand_all_q: str = f"#{self.expand_all}"
 
-        # Add tab
-        self.show_managed: str = ids.switch_id(switch_label=LabelStr.show_managed)
-        self.show_managed_q: str = f"#{self.show_managed}"
-
         self.show_unwanted: str = ids.switch_id(switch_label=LabelStr.show_unwanted)
         self.show_unwanted_q: str = f"#{self.show_unwanted}"

@@ -26,17 +26,12 @@ from chezmoi_mousse.gui.common.actionables import (
     TabButtons,
 )
 from chezmoi_mousse.gui.common.components import LeftSideVertical
-from chezmoi_mousse.gui.common.contents import ContentsView
-from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.git_log import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_tree import ManagedTree
-from chezmoi_mousse.gui.common.messages import CommandResultMsg, CurrentNodeMsg
-from chezmoi_mousse.gui.common.switchers import ViewSwitcher
+from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.operation_tabs import DangerZoneTab, ManagedTreeTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ConfigTab, LogsTab, ReAddTab
+from chezmoi_mousse.gui.tab_panes import AddTab, ConfigTab, LogsTab
 from chezmoi_mousse.named_tuples import InitData
 from chezmoi_mousse.str_enums import (
     BindingAction,
@@ -147,8 +142,6 @@ class ChezmoiGui(App[str]):
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(ManagedTreeTab())
         await tabbed_content.add_pane(DangerZoneTab())
-        await tabbed_content.add_pane(ApplyTab())
-        await tabbed_content.add_pane(ReAddTab())
         await tabbed_content.add_pane(AddTab())
         await tabbed_content.add_pane(LogsTab())
         await tabbed_content.add_pane(ConfigTab())
@@ -156,15 +149,13 @@ class ChezmoiGui(App[str]):
 
         await tabbed_content.wait_for_refresh()
 
-        await self._log_pre_mount_cmd_results().wait()
+        await self._log_pre_mount_cmd_results()
 
         await self._run_splash_cmd_workers().wait()
         await self.splash_screen.splash_run_managed_commands().wait()
 
-        await self._update_managed_trees().wait()
         await self.splash_screen.dismiss_after_fade_loop()
 
-    @work
     async def _log_pre_mount_cmd_results(self) -> None:
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
@@ -194,62 +185,16 @@ class ChezmoiGui(App[str]):
         elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
             pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
             pretty_ignored.update(msg.cmd_result.out_txt)
-        elif msg.cmd_result.cmd_enum is ReadCmd.git_log:
-            git_log_view = self.query_one(
-                store.apply_ids.container.git_log_q, GitLogView
-            )
-            setattr(git_log_view, ReactiveVar.cmd_result, msg.cmd_result)
-            git_log_view = self.query_one(
-                store.re_add_ids.container.git_log_q, GitLogView
-            )
-            setattr(git_log_view, ReactiveVar.cmd_result, msg.cmd_result)
         elif msg.cmd_result.cmd_enum is ReadCmd.template_data:
             template_data = self.query_exactly_one(ConfigTab)
             setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
-
-    @work
-    async def _update_managed_trees(self) -> None:
-        apply_managed_tree = self.query_one(store.apply_ids.managed_tree_q, ManagedTree)
-        apply_managed_tree.update_tree()
-        apply_managed_tree.refresh()
-        re_add_managed_tree = self.query_one(
-            store.re_add_ids.managed_tree_q, ManagedTree
-        )
-        re_add_managed_tree.update_tree()
-        re_add_managed_tree.refresh()
-
-    @on(CurrentNodeMsg)
-    def handle_new_tree_node_selected(self, msg: CurrentNodeMsg) -> None:
-        if isinstance(self.screen, SplashScreen):
-            return
-        msg.stop()
-        # Keep track of selected paths for each tab
-        if msg.app_ids.tab_label == BtnLabel.add:
-            store.add_path = msg.path
-        elif msg.app_ids.tab_label == BtnLabel.apply:
-            store.apply_path = msg.path
-        elif msg.app_ids.tab_label == BtnLabel.re_add:
-            store.re_add_path = msg.path
-        # Update the border subtitle for the tab buttons in the ViewSwitcher
-        if msg.path != store.cfg.dest_dir:
-            pretty_path = msg.path.relative_to(store.cfg.dest_dir)
-        else:
-            pretty_path = msg.path
-        self.query_one(
-            msg.app_ids.container.right_side_q, ViewSwitcher
-        ).border_subtitle = f" {pretty_path} "
-        # Update diff_view, contents_view, and git_log_view with the new path
-        self.query_one(msg.app_ids.container.diff_q, DiffView).show_path = msg.path
-        self.query_one(
-            msg.app_ids.container.contents_q, ContentsView
-        ).show_path = msg.path
 
     @on(TabbedContent.TabActivated)
     def tab_update_switch_slider_binding(
         self, event: TabbedContent.TabActivated
     ) -> None:
         active_pane = event.tabbed_content.active_pane
-        if isinstance(active_pane, (AddTab, ApplyTab, ReAddTab)):
+        if isinstance(active_pane, AddTab):
             slider = active_pane.query_exactly_one(SwitchSlider)
             slider_visible = slider.has_class("-visible")
             new_description = (
@@ -307,7 +252,7 @@ class ChezmoiGui(App[str]):
             return
         slider = None
         tab_pane = self.query_exactly_one(TabbedContent).active_pane
-        if not isinstance(tab_pane, (ApplyTab, ReAddTab, AddTab)):
+        if not isinstance(tab_pane, AddTab):
             return
         slider = tab_pane.query_exactly_one(SwitchSlider)
         slider_visible = slider.has_class("-visible")
@@ -407,11 +352,11 @@ class ChezmoiGui(App[str]):
             return False
         active_pane = self.query_exactly_one(TabbedContent).active_pane
         if action == BindingAction.toggle_switch_slider:
-            return isinstance(active_pane, (AddTab, ApplyTab, ReAddTab))
+            return isinstance(active_pane, (AddTab))
         if action == BindingAction.toggle_maximized:
             return isinstance(
                 active_pane,
-                (AddTab, ApplyTab, ReAddTab, ConfigTab, LogsTab, DebugTab),
+                (AddTab, ConfigTab, LogsTab, DebugTab),
             )
         return True
 

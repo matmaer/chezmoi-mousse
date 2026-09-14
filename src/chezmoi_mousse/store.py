@@ -18,15 +18,12 @@ pre_mount: bool = True
 live_run: bool = False
 
 add_ids = AppIds(BtnLabel.add)
-apply_ids = AppIds(BtnLabel.apply)
 config_ids = AppIds(BtnLabel.config)
 debug_ids = AppIds(BtnLabel.debug)
 logs_ids = AppIds(BtnLabel.logs)
-re_add_ids = AppIds(BtnLabel.re_add)
 
 
-man_tree_ids = AppIds(BtnLabel.managed_pane)
-danger_zone_ids = AppIds(BtnLabel.danger_pane)
+man_tree_ids = AppIds(BtnLabel.operate)
 
 
 cfg = DumpConfigKeys()

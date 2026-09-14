@@ -46,16 +46,12 @@ class BindingDescription(StrEnum):
 class BtnLabel(StrEnum):
     # Main tabs
     add = "Add"
-    apply = "Apply"
     config = "Config"
     debug = "Debug"
     logs = "Logs"
-    re_add = "Re-Add"
 
     # Gen 2 main tabs
-    managed_pane = "Managed Tree"
-    danger_pane = "Danger Zone"
-
+    operate = "Operate"
     chezmoi_add = "chezmoi add"
     chezmoi_apply = "chezmoi apply"
     chezmoi_re_add = "chezmoi re-add"
@@ -126,6 +122,18 @@ class Chars(StrEnum):
     tree_expanded = f"{down_triangle} "
 
 
+class ChezmoiStatusCode(StrEnum):
+    Added = "A"
+    Deleted = "D"
+    Modified = "M"
+    Run = "R"
+    Space = " "
+
+    # Fake status code for internal use in the ManagedTree, not returned by chezmoi
+    # Used to create the color and to determine if the dir should be displayed or not.
+    N_DIR = auto()
+
+
 class ColorVar(StrEnum):
     bogus = "#FFFF00"
     accent_darken_2 = "accent-darken-2"
@@ -175,23 +183,17 @@ class InfoKind(Enum):
 
 
 class LabelStr(StrEnum):
-    # Managed Tree and Danger Zone tab
+    # Managed Tree tab
     middle = "Middle Section"
     right_side = "Right Side Section"
     radio_diff = "Diff View"
     radio_diff_reverse = "Diff Reverse View"
     radio_contents = "Contents View"
     radio_git_log = "Git Log View"
-
-    # Apply and ReAdd Tab
-    show_existing = "Show Existing Paths"
-    show_unchanged = "Show Unchanged Paths"
-    show_unmanaged = "Show Unmanaged Children"
+    show_unchanged = "Show Unchanged"
+    show_unmanaged = "Show Unmanaged"
     expand_all = "Expand All Dirs"
-
-    # Add Tab
-    show_managed = "Show Managed Paths"
-    show_unwanted = "Show Unwanted Paths"
+    show_unwanted = "Show Unwanted"
 
     # Changed paths
     # added_managed_paths = "Added managed paths" # noqa: ERA001
@@ -428,36 +430,6 @@ class RichLogName(StrEnum):
     dom_node_logger = auto()
     env_var_logger = auto()
     memory_usage_logger = auto()
-
-
-class ChezmoiStatusCode(StrEnum):
-    Added = "A"
-    Deleted = "D"
-    Modified = "M"
-    Run = "R"
-    Space = " "
-
-    # Fake status code for internal use in the ManagedTree, not returned by chezmoi
-    # Used to create the color and to determine if the dir should be displayed or not.
-    N_DIR = auto()
-
-
-class StatusPairs(StrEnum):
-    # Standard file state pairs
-    M_S = "M "  # Modified locally in target
-    S_M = " M"  # Modified in source repo
-    M_M = "MM"  # Modified in both target and source
-
-    D_S = "D "  # Deleted locally in target (apply will recreate)
-    S_D = " D"  # Deleted in source repo (apply will delete target)
-    D_A = "DA"  # Previously managed entry deleted, recreate from source
-    M_A = "MA"  # Modified locally, target state creates entry
-
-    A_S = "A "  # Target entry created locally (unmanaged/new)
-    S_A = " A"  # Target entry added in source repo
-
-    # Script execution pair
-    S_R = " R"  # Script target will run on apply
 
 
 class Tcss(StrEnum):

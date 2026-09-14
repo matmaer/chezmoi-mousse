@@ -3,23 +3,16 @@
 from __future__ import annotations
 
 import asyncio
-import random
-from itertools import product
 from typing import TYPE_CHECKING
 
 from textual.pilot import OutOfBounds
-from textual.widgets import Switch, TabbedContent
+from textual.widgets import TabbedContent
 
 from chezmoi_mousse.gui.common.actionables import (
-    DirContentBtn,
     FlatBtn,
-    RefreshBtn,
-    SwitchSlider,
     TabBtn,
 )
-from chezmoi_mousse.gui.common.diffs import DiffView
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.gui.tab_panes import AddTab, ApplyTab, ReAddTab
 from chezmoi_mousse.str_enums import BtnLabel
 
 __all__ = ["run_with_pilot"]
@@ -60,28 +53,6 @@ async def _toggle_binding(pilot: Pilot[str], key: str) -> None:
     await _press_and_wait(pilot, key)
 
 
-async def _refresh_trees(pilot: Pilot[str], active_pane: TabPane) -> None:
-    if not isinstance(active_pane, (ApplyTab, ReAddTab, AddTab)):
-        return
-    refresh_tree_btn = active_pane.query_exactly_one(RefreshBtn)
-    await _click_and_wait(pilot, refresh_tree_btn)
-
-
-async def _toggle_switches(pilot: Pilot[str], active_pane: TabPane) -> None:
-    if active_pane.id not in (BtnLabel.apply, BtnLabel.re_add, BtnLabel.add):
-        return
-    switch_slider = active_pane.query_exactly_one(SwitchSlider)
-    switches: tuple[Switch, ...] = tuple(switch_slider.query(Switch))
-
-    states = list(product((False, True), repeat=len(switches)))[1:]
-    rev_states = list(reversed(states))
-
-    for state in states + rev_states:
-        for switch, target in zip(switches, state, strict=True):
-            if switch.value != target:
-                await _click_and_wait(pilot, switch)
-
-
 async def _click_content_switcher_buttons(pilot: Pilot[str], tab_pane: TabPane) -> None:
     tab_buttons = tuple(tab_pane.query(TabBtn).results())
     for tab_button in tab_buttons[1:]:
@@ -89,19 +60,6 @@ async def _click_content_switcher_buttons(pilot: Pilot[str], tab_pane: TabPane) 
     flat_buttons = tuple(tab_pane.query(FlatBtn).results())
     for flat_button in flat_buttons[1:]:
         await _click_and_wait(pilot, flat_button)
-
-
-async def _click_random_path_in_diff_view(pilot: Pilot[str], tab_pane: TabPane) -> None:
-    if tab_pane.id not in (BtnLabel.apply, BtnLabel.re_add):
-        return
-    diff_view = tab_pane.query_exactly_one(DiffView)
-    diff_view_clickable_paths = tuple(diff_view.query(DirContentBtn).results())
-    # choose a random path to click on
-    if not diff_view_clickable_paths:
-        await _pilot_chill(pilot)
-        return
-    to_click = random.choice(diff_view_clickable_paths)
-    await _click_and_wait(pilot, to_click)
 
 
 def run_with_pilot(app: ChezmoiGui) -> None:
@@ -120,8 +78,7 @@ async def _start_pilot_mode(app: ChezmoiGui) -> None:
         tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
 
         tabs_to_check = [
-            BtnLabel.apply,
-            BtnLabel.re_add,
+            BtnLabel.operate,
             BtnLabel.add,
             BtnLabel.logs,
             BtnLabel.config,
@@ -140,11 +97,6 @@ async def _start_pilot_mode(app: ChezmoiGui) -> None:
             tab_pane = tabbed_content.active_pane
             if tab_pane is None:
                 raise ValueError("No active pane")
-            await _click_random_path_in_diff_view(pilot, tab_pane)
             await _click_content_switcher_buttons(pilot, tab_pane)
-            await _toggle_switches(pilot, tab_pane)
-            await _refresh_trees(pilot, tab_pane)
-        tab = tabbed_content.get_tab(BtnLabel.apply)
-        await _click_and_wait(pilot, tab)
 
         await pilot.exit("Pilot mode completed\n")
