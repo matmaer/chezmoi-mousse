@@ -2,28 +2,49 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import chezmoi_mousse._func as _func
 from chezmoi_mousse.named_tuples import ScanDirItem
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 type ScanDirResult = list[ScanDirItem]
 
-__all__ = ["get_top_parents", "is_unwanted_dir", "is_unwanted_file", "os_scan_dir"]
+__all__ = [
+    "get_top_parents",
+    "is_unwanted_dir",
+    "is_unwanted_file",
+    "os_scan_dir",
+    "sort_path_dict",
+    "sort_paths",
+]
 
 
-def get_top_parents(paths: list[Path] | set[Path] | frozenset[Path]) -> list[Path]:
+def sort_paths(paths: Iterable[Path]) -> list[Path]:
+    path_list = list(paths)
+    path_list.sort(key=lambda p: (len(p.parts), p))
+    return path_list
 
-    if not paths:
-        return []
 
-    sorted_paths = sorted(paths)
-    top_parents = [sorted_paths[0]]
+def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
+    sorted_keys = sort_paths(path_dict.keys())
+    return {path: path_dict[path] for path in sorted_keys}
 
-    for path in sorted_paths[1:]:
-        # Compare current path only to the last confirmed top parent
-        if not path.is_relative_to(top_parents[-1]):
-            top_parents.append(path)
 
+def get_top_parents(
+    paths: Iterable[Path] | dict[Path, bool],
+) -> list[Path]:
+    """
+    Return the unique top-level parent paths from the proveded collection of paths.
+    """
+    top_parents: list[Path] = []
+    for p in paths:
+        if not any(parent in paths for parent in p.parents):
+            top_parents.append(p)
+
+    top_parents.sort(key=lambda p: len(p.parts))
     return top_parents
 
 
