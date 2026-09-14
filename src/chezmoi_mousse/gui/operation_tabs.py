@@ -13,7 +13,6 @@ from textual.containers import (
 )
 from textual.reactive import reactive
 from textual.widgets import (
-    Button,
     Label,
     RadioButton,
     RadioSet,
@@ -46,7 +45,6 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.data_classes import StatusByColumn
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -83,14 +81,6 @@ class ManagedTree(Tree[Path]):
         }
         self.root.expand()
 
-    @property
-    def paths(self) -> StatusByColumn:
-        return (
-            store.cm_paths_legacy.apply
-            if self.app_ids.tab_label == BtnLabel.apply
-            else store.cm_paths_legacy.re_add
-        )
-
     def _populate_unmanaged_nodes(self) -> None:
         expanded_dirs = [store.cfg.dest_dir]
         expanded_dirs += [
@@ -112,19 +102,13 @@ class ManagedTree(Tree[Path]):
 
     def update_tree(self) -> None:
 
-        # We update the tree based on the following available paths in store.py
-        # - store.cm_paths_legacy.changes.managed_dirs.removed
-        # - store.cm_paths_legacy.changes.managed_files.removed
-        # - store.cm_paths_legacy.changes.managed_dirs.added
-        # - store.cm_paths_legacy.changes.managed_files.added
-
         # -----------------
         # PHASE 1: REMOVALS
         # -----------------
 
         # 1.1 call .remove_children() on all top level removed directories
         top_removed_dirs: list[Path] = path_funcs.get_top_parents(
-            store.cm_paths_legacy.changes.managed_dirs.removed
+            store.cm_paths.changes.removed_dirs
         )
         for d in top_removed_dirs:
             tree_node = self._get_tree_node(d)
@@ -141,9 +125,7 @@ class ManagedTree(Tree[Path]):
 
         # 1.3 call .remove() on the file nodes which should still exist in the tree
         file_paths_to_remove = [
-            f
-            for f in store.cm_paths_legacy.changes.managed_files.removed
-            if f not in top_removed_dirs
+            f for f in store.cm_paths.changes.removed_files if f not in top_removed_dirs
         ]
         for f in file_paths_to_remove:
             tree_node = self._get_tree_node(f)
@@ -154,32 +136,7 @@ class ManagedTree(Tree[Path]):
         # ------------------
         # PHASE 2: ADDITIONS
         # ------------------
-
-        # 2.1 the directories to be added depend on the context, we add all directories
-        # with a status plus all n_dirs, which are context dependent!
-        for d in self.paths.n_dirs | set(self.paths.status_dirs):
-            if d.parent == store.cfg.dest_dir:
-                parent_node = self.root
-            else:
-                parent_node = self._get_tree_node(d.parent)
-            if parent_node is None:
-                continue
-            parent_node.add(f"{d.name}")
-
-        # 2.2 add new managed files
-        for f in self.paths.status_files:
-            if f.parent == store.cfg.dest_dir:
-                parent_node = self.root
-            else:
-                parent_node = self._get_tree_node(f.parent)
-            if parent_node is None:
-                continue
-            parent_node.add_leaf(f"{f.name}")
-
-        # -------------------------------------------------------------
-        # PHASE 3: MODIFICATIONS (Cosmetic updates on existing nodes)
-        # -------------------------------------------------------------
-        # to change colors for paths with a changed status
+        # treat newly managed files
 
     # #################################
     # # Watchers and message handling #
@@ -310,59 +267,6 @@ class ManagedTreeTab(TabPane):
 
     def on_mount(self) -> None:
         self.path_to_status = {}  # Initialize the path_to_status dictionary
-
-    def get_aggregate_status(self, dir_path: Path) -> set[str]:
-        """
-        Returns the set of all status strings present for a directory or any of its
-        descendants.
-        """
-        status_pairs_set: set[str] = set()
-
-        # If the directory itself has a status code pair
-        if dir_path in store.cm_paths_legacy.status_dirs:
-            status_pairs_set.add(store.cm_paths_legacy.status_dirs[dir_path])
-
-        # Collect all statuses from child files/directories
-        for path, status in (
-            store.cm_paths_legacy.status_dirs.items()
-            | store.cm_paths_legacy.status_files.items()
-        ):
-            if path != dir_path and path.is_relative_to(dir_path):
-                status_pairs_set.add(status)
-
-        return status_pairs_set
-
-    def update_action_buttons(self, selected_path: Path) -> None:
-        """
-        Enable/disable action buttons based on whether chezmoi will have
-        work to perform on the selected path or its child branch.
-        """
-        if selected_path.is_dir():
-            status_pair_set = self.get_aggregate_status(selected_path)
-        else:
-            status_pair_set = set(
-                store.cm_paths_legacy.status_files.get(selected_path, "  ")
-            )
-
-        # Determine action availability across target statuses
-        can_re_add = any(s[0] in ("M", "D") for s in status_pair_set)
-        can_add = any(s[0] == "A" or s[1] == "A" for s in status_pair_set)
-
-        # Apply works if:
-        # 1. Column 2 has source changes ('A', 'D', 'M', 'R')
-        # 2. File was deleted locally in $HOME ('D' in Column 1)
-        # 3. autoadd is True AND file was modified locally ('M' in Column 1)
-        can_apply = any(
-            s[1] in ("A", "D", "M", "R")
-            or s[0] == "D"
-            or (store.cfg.auto_add and s[0] == "M")
-            for s in status_pair_set
-        )
-
-        # Update Textual Button UI
-        self.query_one("#btn-readd", Button).disabled = not can_re_add
-        self.query_one("#btn-apply", Button).disabled = not can_apply
-        self.query_one("#btn-add", Button).disabled = not can_add
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:

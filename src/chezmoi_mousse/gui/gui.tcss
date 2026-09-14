@@ -1,10 +1,4 @@
-/* 
-TODO implement vw and vh for screens and containers with docked components
-
-TODO, check scrollbar-gutter: stable 
-
-Valid scalar units are '%', 'fr', 'h', 'vh', 'vw', or 'w'
-*/
+/* width /height valid scalar units '%', 'fr', 'h', 'vh', 'vw', or 'w' */
 
 .add_tab_contents_view {
   border-top: $primary;

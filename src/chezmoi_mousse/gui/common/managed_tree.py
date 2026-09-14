@@ -8,9 +8,8 @@ from textual import on
 from textual.reactive import reactive
 from textual.widgets import Tree
 
-from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import (
-    BtnLabel,
     Chars,
     ChezmoiStatusCode as CmSc,
     ColorVar,
@@ -24,7 +23,6 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.data_classes import StatusByColumn
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -63,104 +61,58 @@ class ManagedTree(Tree[Path]):
             "unmanaged": ColorVar.text_error_dark,
         }
         self.root.expand()
+        self.cached_tree_nodes: dict[Path, TreeNode[Path]] = {}
+
+    def _populate_unmanaged_nodes(self) -> None: ...
 
     @property
-    def paths(self) -> StatusByColumn:
-        return (
-            store.cm_paths_legacy.apply
-            if self.app_ids.tab_label == BtnLabel.apply
-            else store.cm_paths_legacy.re_add
-        )
-
-    def _populate_unmanaged_nodes(self) -> None:
-        expanded_dirs = [store.cfg.dest_dir]
-        expanded_dirs += [
-            node.data for node in self._iter_tree_nodes() if node.allow_expand
-        ]
-
-    def _iter_tree_nodes(self) -> Iterator[TreeNode[Path]]:
+    def _tree_node_iterator(self) -> Iterator[TreeNode[Path]]:
         queue: deque[TreeNode[Path]] = deque([self.root])
         while queue:
             node = queue.popleft()
             yield node
             queue.extend(node.children)
 
-    def _get_tree_node(self, path: Path) -> TreeNode[Path] | None:
-        for node in self._iter_tree_nodes():
+    def _get_tree_node(self, path: Path, cached: bool) -> TreeNode[Path] | None:
+        if path == store.cfg.dest_dir:
+            return self.root
+        elif cached is True and path in self.cached_tree_nodes:
+            return self.cached_tree_nodes[path]
+        elif path in self.cached_tree_nodes:
+            # If we don't ask cached remove it if it exists
+            _ = self.cached_tree_nodes.pop(path)
+
+        for node in self._tree_node_iterator:
             if node.data == path:
-                return node
-        return None
+                found_node = node
+                self.cached_tree_nodes[path] = found_node
+                return found_node
 
-    def update_tree(self) -> None:
-
-        # We update the tree based on the following available paths in store.py
-        # - store.cm_paths_legacy.changes.managed_dirs.removed
-        # - store.cm_paths_legacy.changes.managed_files.removed
-        # - store.cm_paths_legacy.changes.managed_dirs.added
-        # - store.cm_paths_legacy.changes.managed_files.added
-
-        # -----------------
-        # PHASE 1: REMOVALS
-        # -----------------
-
-        # 1.1 call .remove_children() on all top level removed directories
-        top_removed_dirs: list[Path] = path_funcs.get_top_parents(
-            store.cm_paths_legacy.changes.managed_dirs.removed
-        )
-        for d in top_removed_dirs:
-            tree_node = self._get_tree_node(d)
-            if tree_node is None:
-                continue
-            tree_node.remove_children()
-
-        # 1.2 call .remove() on the top level removed directories themselves
-        for d in top_removed_dirs:
-            tree_node = self._get_tree_node(d)
-            if tree_node is None:
-                continue
-            tree_node.remove()
-
-        # 1.3 call .remove() on the file nodes which should still exist in the tree
-        file_paths_to_remove = [
-            f
-            for f in store.cm_paths_legacy.changes.managed_files.removed
-            if f not in top_removed_dirs
+    def insert_dir_node(self, parent_node: TreeNode[Path], path: Path) -> None:
+        parent_dir_children = [
+            child for child in parent_node.children if child.allow_expand
         ]
-        for f in file_paths_to_remove:
-            tree_node = self._get_tree_node(f)
-            if tree_node is None:
-                continue
-            tree_node.remove()
+        # now determine the correct position to insert the new directory
+        insert_index = 0
+        for i, child in enumerate(parent_dir_children):
+            if path.name < str(child.label):
+                insert_index = i
+                break
+            insert_index = i + 1
+        parent_node.add(f"{path.name}", before=insert_index)
 
-        # ------------------
-        # PHASE 2: ADDITIONS
-        # ------------------
-
-        # 2.1 the directories to be added depend on the context, we add all directories
-        # with a status plus all n_dirs, which are context dependent!
-        for d in self.paths.n_dirs | set(self.paths.status_dirs):
-            if d.parent == store.cfg.dest_dir:
-                parent_node = self.root
-            else:
-                parent_node = self._get_tree_node(d.parent)
-            if parent_node is None:
-                continue
-            parent_node.add(f"{d.name}")
-
-        # 2.2 add new managed files
-        for f in self.paths.status_files:
-            if f.parent == store.cfg.dest_dir:
-                parent_node = self.root
-            else:
-                parent_node = self._get_tree_node(f.parent)
-            if parent_node is None:
-                continue
-            parent_node.add_leaf(f"{f.name}")
-
-        # -------------------------------------------------------------
-        # PHASE 3: MODIFICATIONS (Cosmetic updates on existing nodes)
-        # -------------------------------------------------------------
-        # to change colors for paths with a changed status
+    def insert_file_node(self, parent_node: TreeNode[Path], path: Path) -> None:
+        parent_file_children = [
+            child for child in parent_node.children if not child.allow_expand
+        ]
+        # now determine the correct position to insert the new directory
+        insert_index = 0
+        for i, child in enumerate(parent_file_children):
+            if path.name < str(child.label):
+                insert_index = i
+                break
+            insert_index = i + 1
+        parent_node.add(f"{path.name}", before=insert_index)
 
     # #################################
     # # Watchers and message handling #
@@ -183,11 +135,11 @@ class ManagedTree(Tree[Path]):
 
     def watch_expand_all(self, expand_all: bool) -> None:
         if expand_all:
-            for node in self._iter_tree_nodes():
+            for node in self._tree_node_iterator:
                 if node.allow_expand:
                     node.expand()
         else:
-            for node in self._iter_tree_nodes():
+            for node in self._tree_node_iterator:
                 if node is self.root:
                     continue
                 if node.allow_expand:
