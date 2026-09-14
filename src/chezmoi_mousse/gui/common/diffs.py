@@ -1,3 +1,6 @@
+# type: ignore  # noqa: PGH003
+
+
 from __future__ import annotations
 
 from itertools import groupby
