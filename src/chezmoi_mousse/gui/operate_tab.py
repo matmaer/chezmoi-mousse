@@ -21,7 +21,7 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import (
     DestDirBtn,
     OperateBtn,
@@ -31,7 +31,6 @@ from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.messages import DestDirBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
-    ChezmoiStatusCode as CmSc,
     ColorVar,
     LabelStr,
     Tcss,
@@ -70,13 +69,13 @@ class ManagedTree(Tree[Path]):
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-        self.status_color: dict[CmSc | str, ColorVar] = {
-            CmSc.Added: ColorVar.text_success,
-            CmSc.Deleted: ColorVar.text_error,
-            CmSc.Modified: ColorVar.text_warning,
-            CmSc.N_DIR: ColorVar.text_secondary,
-            CmSc.Run: ColorVar.bogus,
-            CmSc.Space: ColorVar.dimmed,
+        self.status_color: dict[str, ColorVar] = {
+            "Added": ColorVar.text_success,
+            "Deleted": ColorVar.text_error,
+            "Modified": ColorVar.text_warning,
+            "N_DIR": ColorVar.text_secondary,
+            "Run": ColorVar.bogus,
+            "Space": ColorVar.dimmed,
             "unmanaged": ColorVar.text_error_dark,
         }
         self.root.expand()
@@ -100,47 +99,11 @@ class ManagedTree(Tree[Path]):
                 return node
         return None
 
-    def update_tree(self) -> None:
+    def update_tree(self) -> None: ...
 
-        # -----------------
-        # PHASE 1: REMOVALS
-        # -----------------
-
-        # 1.1 call .remove_children() on all top level removed directories
-        top_removed_dirs: list[Path] = path_funcs.get_top_parents(
-            store.cm_paths.changes.removed_dirs
-        )
-        for d in top_removed_dirs:
-            tree_node = self._get_tree_node(d)
-            if tree_node is None:
-                continue
-            tree_node.remove_children()
-
-        # 1.2 call .remove() on the top level removed directories themselves
-        for d in top_removed_dirs:
-            tree_node = self._get_tree_node(d)
-            if tree_node is None:
-                continue
-            tree_node.remove()
-
-        # 1.3 call .remove() on the file nodes which should still exist in the tree
-        file_paths_to_remove = [
-            f for f in store.cm_paths.changes.removed_files if f not in top_removed_dirs
-        ]
-        for f in file_paths_to_remove:
-            tree_node = self._get_tree_node(f)
-            if tree_node is None:
-                continue
-            tree_node.remove()
-
-        # ------------------
-        # PHASE 2: ADDITIONS
-        # ------------------
-        # treat newly managed files
-
-    # #################################
-    # # Watchers and message handling #
-    # #################################
+    #################################
+    # Watchers and message handling #
+    #################################
 
     @on(Tree.NodeCollapsed)
     def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
@@ -264,6 +227,7 @@ class OperateTab(TabPane):
                     LabelStr.show_unchanged,
                     LabelStr.expand_all,
                     LabelStr.show_unmanaged,
+                    LabelStr.show_unwanted,
                 ),
             )
 

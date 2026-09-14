@@ -9,7 +9,6 @@ __all__ = [
     "BindingDescription",
     "BtnLabel",
     "Chars",
-    "ChezmoiStatusCode",
     "ColorVar",
     "ContainerName",
     "GlobalArgs",
@@ -120,18 +119,6 @@ class Chars(StrEnum):
     # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
     tree_collapsed = f"{right_triangle} "
     tree_expanded = f"{down_triangle} "
-
-
-class ChezmoiStatusCode(StrEnum):
-    Added = "A"
-    Deleted = "D"
-    Modified = "M"
-    Run = "R"
-    Space = " "
-
-    # Fake status code for internal use in the ManagedTree, not returned by chezmoi
-    # Used to create the color and to determine if the dir should be displayed or not.
-    N_DIR = auto()
 
 
 class ColorVar(StrEnum):
