@@ -35,12 +35,6 @@ class CommandResult(NamedTuple):
         return {Path(line[3:]): line[:2] for line in self.out_list}
 
     @property
-    def managed_paths_list(self) -> list[Path]:
-        if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
-            raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
-        return [Path(p) for p in self.out_list]
-
-    @property
     def managed_dict(self) -> dict[Path, bool]:
         if self.cmd_enum not in (ReadCmd.managed_dirs, ReadCmd.managed_files):
             raise RuntimeError(f"Command {self.cmd_enum} does not return path lines.")
