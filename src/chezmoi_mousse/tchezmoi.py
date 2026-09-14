@@ -113,15 +113,19 @@ async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
     status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None)
     status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None)
 
+    def get_dict(managed: list[str], status: list[str]) -> dict[Path, str]:
+        status_dict = {Path(line[3:]): line[:2] for line in status}
+        paths = [Path(line) for line in managed]
+        paths_dict: dict[Path, str] = {}
+        for path in paths:
+            paths_dict[path] = status_dict.get(path, "  ")
+        return paths_dict
+
     new_cm_paths = ChezmoiPaths(
-        managed_dirs=managed_dirs_cr.managed_dict,
-        managed_files=managed_files_cr.managed_dict,
-        status_dirs=status_dirs_cr.status_dict,
-        status_files=status_files_cr.status_dict,
+        managed_dirs=get_dict(managed_dirs_cr.out_list, status_dirs_cr.out_list),
+        managed_files=get_dict(managed_files_cr.out_list, status_files_cr.out_list),
         old_man_dirs=store.cm_paths.managed_dirs,
         old_man_files=store.cm_paths.managed_files,
-        old_status_dirs=store.cm_paths.status_dirs,
-        old_status_files=store.cm_paths.status_files,
     )
     store.cm_paths = new_cm_paths
     return [

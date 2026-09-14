@@ -36,12 +36,8 @@ git_log_cr: CommandResult | None = None
 cm_paths = ChezmoiPaths(
     managed_dirs={},
     managed_files={},
-    status_dirs={},
-    status_files={},
     old_man_dirs={},
     old_man_files={},
-    old_status_dirs={},
-    old_status_files={},
 )
 
 # Keep track of the selected path by tab
