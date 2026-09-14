@@ -11,7 +11,7 @@ from textual import work
 import chezmoi_mousse._func as _func
 from chezmoi_mousse import store
 from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
-from chezmoi_mousse.data_classes import ChezmoiPathsLegacy
+from chezmoi_mousse.data_classes import ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
@@ -113,17 +113,17 @@ async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
     status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None)
     status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None)
 
-    new_cm_paths = ChezmoiPathsLegacy(
-        managed_dirs=managed_dirs_cr.managed_paths_list,
-        managed_files=managed_files_cr.managed_paths_list,
-        old_man_dirs_set=set(store.cm_paths_legacy.managed_dirs),
-        old_man_files_set=set(store.cm_paths_legacy.managed_files),
+    new_cm_paths = ChezmoiPaths(
+        managed_dirs=managed_dirs_cr.managed_dict,
+        managed_files=managed_files_cr.managed_dict,
         status_dirs=status_dirs_cr.status_dict,
         status_files=status_files_cr.status_dict,
-        old_status_dirs=store.cm_paths_legacy.status_dirs,
-        old_status_files=store.cm_paths_legacy.status_files,
+        old_man_dirs=store.cm_paths.managed_dirs,
+        old_man_files=store.cm_paths.managed_files,
+        old_status_dirs=store.cm_paths.status_dirs,
+        old_status_files=store.cm_paths.status_files,
     )
-    store.cm_paths_legacy = new_cm_paths
+    store.cm_paths = new_cm_paths
     return [
         managed_dirs_cr,
         managed_files_cr,
