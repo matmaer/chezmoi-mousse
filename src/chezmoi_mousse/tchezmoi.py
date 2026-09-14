@@ -6,10 +6,8 @@ from typing import TYPE_CHECKING
 
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
-from textual import work
 
-import chezmoi_mousse._func as _func
-from chezmoi_mousse import store
+from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
 from chezmoi_mousse.data_classes import ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
@@ -27,13 +25,24 @@ type ScanDirResult = list[ScanDirItem]
 __all__ = ["ScanDirResult"]
 
 
+def get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
+    if isinstance(cmd, ReadCmd):
+        return "chezmoi"
+    return "chezmoi --dry-run" if store.live_run is False else "chezmoi"
+
+
+def get_full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
+    path_str = str(path) if path is not None else ""
+    return f"{get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}".rstrip()
+
+
 def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
-    rel_path = _func.get_rel_path(path)
+    rel_path = path_funcs.get_rel_path(path)
     if isinstance(cmd, ReadCmd):
         return (f"{cmd.pretty_cmd} {rel_path}").rstrip()
     else:
-        base_cmd = _func.get_base_cmd(cmd)
-        return (f"{base_cmd} {cmd.pretty_cmd} {_func.get_rel_path(path)}").rstrip()
+        base_cmd = get_base_cmd(cmd)
+        return (f"{base_cmd} {cmd.pretty_cmd} {path_funcs.get_rel_path(path)}").rstrip()
 
 
 async def _construct_command_result(
@@ -59,7 +68,7 @@ async def _construct_command_result(
         out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
     return CommandResult(
         cmd_enum=cmd_enum,
-        full_cmd=f"{_func.get_full_cmd(cmd_enum, path_arg)}",
+        full_cmd=f"{get_full_cmd(cmd_enum, path_arg)}",
         out_txt=out_txt,
         path_arg=path_arg,
         pretty_cmd=f"{pretty_cmd(cmd_enum, path_arg)}",
@@ -87,7 +96,6 @@ async def exec_chezmoi_cmd(
     return cmd_result
 
 
-@work
 async def run_chezmoi_git_log(
     app: ChezmoiGui, path_arg: Path | None = None
 ) -> CommandResult:
@@ -106,7 +114,6 @@ async def run_chezmoi_git_log(
         return cmd_result
 
 
-@work
 async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
     managed_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None)
     managed_files_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_files, None)
