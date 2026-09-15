@@ -28,7 +28,7 @@ from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.gui.operation_tabs import ManagedTree, OperateTab
+from chezmoi_mousse.gui.operate_tab import ManagedTree, OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import ConfigTab, LogsTab
 from chezmoi_mousse.named_tuples import InitData
@@ -144,15 +144,14 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(ConfigTab())
         await tabbed_content.add_pane(DebugTab())
 
-        await tabbed_content.wait_for_refresh()
+        self._log_pre_mount_cmd_results()
+        self._run_splash_cmd_workers()
 
-        await self._log_pre_mount_cmd_results()
-
-        await self._run_splash_cmd_workers().wait()
-        await self.splash_screen.splash_run_managed_commands().wait()
+        await self.splash_screen.splash_run_managed_commands()
 
         await self.splash_screen.dismiss_after_fade_loop()
 
+    @work
     async def _log_pre_mount_cmd_results(self) -> None:
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
@@ -160,7 +159,7 @@ class ChezmoiGui(App[str]):
             setattr(app_log, ReactiveVar.cmd_result, cmd)
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
-    @work(group="splash_commands")
+    @work
     async def _run_splash_cmd_workers(self) -> None:
         for cmd in ReadCmd.splash_commands():
             await self.splash_screen.splash_run_chezmoi(cmd)

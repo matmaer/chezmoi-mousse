@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from rich.segment import Segment
 from rich.style import Style
-from textual import events, work
+from textual import events
 from textual.color import Gradient
 from textual.containers import Center, Middle
 from textual.reactive import reactive
@@ -194,10 +194,9 @@ class SplashScreen(Screen[None]):
 
         store.pre_mount = False
 
-    @work(group="managed_commands")
     async def splash_run_managed_commands(self) -> None:
-        crs = await tchezmoi.run_managed_commands(self.app)
-        for cr in crs:
+        command_results = await tchezmoi.run_managed_commands(self.app)
+        for cr in command_results:
             suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
             await self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
 
