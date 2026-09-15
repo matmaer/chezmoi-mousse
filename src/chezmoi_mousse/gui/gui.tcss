@@ -156,6 +156,8 @@
   }
 
   &>.operations_right {
+    width: 25;
+
     &>.op_btn_vert_group {
 
       .operate_button {

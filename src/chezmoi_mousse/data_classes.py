@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple, Self
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
+from typing import NamedTuple, Self
 
 ChangedPaths = NamedTuple(
     "ChangedPaths",
@@ -66,15 +62,6 @@ class ChezmoiPaths:
         self.changes = changes
 
         self.sets: ChezmoiPathSets = self._get_path_sets()
-
-    def _sort_paths(self, paths: Iterable[Path]) -> list[Path]:
-        path_list = list(paths)
-        path_list.sort(key=lambda p: (len(p.parts), p))
-        return path_list
-
-    def _sort_path_dict[V](self, path_dict: dict[Path, V]) -> dict[Path, V]:
-        sorted_keys = self._sort_paths(path_dict.keys())
-        return {path: path_dict[path] for path in sorted_keys}
 
     def _get_path_sets(
         self,
