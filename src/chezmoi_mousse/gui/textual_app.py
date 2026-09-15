@@ -155,6 +155,7 @@ class ChezmoiGui(App[str]):
         self._run_splash_commands()
         await self._log_pre_mount_cmd_results()
         chezmoi_paths: ChezmoiPaths = await tchezmoi.run_managed_commands(self)
+        store.cm_paths = chezmoi_paths
         await self._update_managed_tree(chezmoi_paths)
 
         await self.splash_screen.dismiss_after_fade_loop()
@@ -168,7 +169,7 @@ class ChezmoiGui(App[str]):
 
     async def _update_managed_tree(self, chezmoi_paths: ChezmoiPaths) -> None:
         managed_tree = self.query_exactly_one(ManagedTree)
-        managed_tree.update_tree(chezmoi_paths)
+        await managed_tree.update_tree(chezmoi_paths)
 
     @work
     async def _run_doctor_command(self) -> None:
