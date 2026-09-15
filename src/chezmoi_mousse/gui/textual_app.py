@@ -22,16 +22,15 @@ from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
     OperateBtnGroup,
-    SwitchSlider,
     TabButtons,
 )
 from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.gui.operation_tabs import DangerZoneTab, ManagedTreeTab
+from chezmoi_mousse.gui.operation_tabs import ManagedTree, OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.gui.tab_panes import AddTab, ConfigTab, LogsTab
+from chezmoi_mousse.gui.tab_panes import ConfigTab, LogsTab
 from chezmoi_mousse.named_tuples import InitData
 from chezmoi_mousse.str_enums import (
     BindingAction,
@@ -140,9 +139,7 @@ class ChezmoiGui(App[str]):
         await self.splash_screen.run_initial_command_sequence()
 
         tabbed_content = self.query_exactly_one(TabbedContent)
-        await tabbed_content.add_pane(ManagedTreeTab())
-        await tabbed_content.add_pane(DangerZoneTab())
-        await tabbed_content.add_pane(AddTab())
+        await tabbed_content.add_pane(OperateTab())
         await tabbed_content.add_pane(LogsTab())
         await tabbed_content.add_pane(ConfigTab())
         await tabbed_content.add_pane(DebugTab())
@@ -189,25 +186,6 @@ class ChezmoiGui(App[str]):
             template_data = self.query_exactly_one(ConfigTab)
             setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
 
-    @on(TabbedContent.TabActivated)
-    def tab_update_switch_slider_binding(
-        self, event: TabbedContent.TabActivated
-    ) -> None:
-        active_pane = event.tabbed_content.active_pane
-        if isinstance(active_pane, AddTab):
-            slider = active_pane.query_exactly_one(SwitchSlider)
-            slider_visible = slider.has_class("-visible")
-            new_description = (
-                BindingDescription.hide_filters
-                if slider_visible is True
-                else BindingDescription.show_filters
-            )
-            self._update_binding_description(
-                binding_action=BindingAction.toggle_switch_slider,
-                new_description=new_description,
-            )
-            self.refresh_bindings()
-
     # ##################
     # # Action Methods #
     # ##################
@@ -247,26 +225,6 @@ class ChezmoiGui(App[str]):
         custom_header = self.screen.query_exactly_one(CustomHeader)
         custom_header.live_run = store.live_run
 
-    def action_toggle_switch_slider(self) -> None:
-        if isinstance(self.screen, SplashScreen):
-            return
-        slider = None
-        tab_pane = self.query_exactly_one(TabbedContent).active_pane
-        if not isinstance(tab_pane, AddTab):
-            return
-        slider = tab_pane.query_exactly_one(SwitchSlider)
-        slider_visible = slider.has_class("-visible")
-        new_description = (
-            BindingDescription.hide_filters
-            if slider_visible is False
-            else BindingDescription.show_filters
-        )
-        self._update_binding_description(
-            binding_action=BindingAction.toggle_switch_slider,
-            new_description=new_description,
-        )
-        slider.toggle_class("-visible")
-
     def action_toggle_maximized(self) -> None:
         if isinstance(self.screen, SplashScreen):
             return
@@ -280,27 +238,7 @@ class ChezmoiGui(App[str]):
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab_label in (BtnLabel.apply, BtnLabel.re_add):
-            tab_pane = self.query_exactly_one(TabbedContent).active_pane
-            if tab_pane is None:
-                return
-            view_switcher_buttons = tab_pane.query(TabButtons).last()
-
-        if active_tab_label == BtnLabel.apply:
-            left_side = self.query_one(
-                store.apply_ids.container.left_side_q, LeftSideVertical
-            )
-            operation_buttons = self.query_one(
-                store.apply_ids.container.operate_buttons_q, OperateBtnGroup
-            )
-        elif active_tab_label == BtnLabel.re_add:
-            left_side = self.query_one(
-                store.re_add_ids.container.left_side_q, LeftSideVertical
-            )
-            operation_buttons = self.query_one(
-                store.re_add_ids.container.operate_buttons_q, OperateBtnGroup
-            )
-        elif active_tab_label == BtnLabel.add:
+        if active_tab_label == BtnLabel.add:
             left_side = self.query_one(
                 store.add_ids.container.left_side_q, LeftSideVertical
             )
@@ -329,8 +267,6 @@ class ChezmoiGui(App[str]):
         tab_pane = self.query_exactly_one(TabbedContent).active_pane
         if tab_pane is None:
             return
-        switch_slider = tab_pane.query_exactly_one(SwitchSlider)
-        switch_slider.display = not switch_slider.display
 
         new_description = (
             BindingDescription.maximize
@@ -350,13 +286,11 @@ class ChezmoiGui(App[str]):
         _ = parameters
         if isinstance(self.screen, SplashScreen):
             return False
-        active_pane = self.query_exactly_one(TabbedContent).active_pane
-        if action == BindingAction.toggle_switch_slider:
-            return isinstance(active_pane, (AddTab))
         if action == BindingAction.toggle_maximized:
+            active_pane = self.query_exactly_one(TabbedContent).active_pane
             return isinstance(
                 active_pane,
-                (AddTab, ConfigTab, LogsTab, DebugTab),
+                (ManagedTree, ConfigTab, LogsTab, DebugTab),
             )
         return True
 

@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["DangerZoneTab", "ManagedTreeTab"]
+__all__ = ["OperateTab"]
 
 
 class ManagedTree(Tree[Path]):
@@ -233,12 +233,12 @@ class RightSideVertical(Vertical):
             first_radio.value = True
 
 
-class ManagedTreeTab(TabPane):
+class OperateTab(TabPane):
     def __init__(self) -> None:
         self.ids = store.man_tree_ids
         super().__init__(
-            id=BtnLabel.managed_pane.pane_id,
-            title=BtnLabel.managed_pane,
+            id=BtnLabel.operate.pane_id,
+            title=BtnLabel.operate,
         )
 
     def compose(self) -> ComposeResult:
@@ -251,6 +251,8 @@ class ManagedTreeTab(TabPane):
                     BtnLabel.chezmoi_add,
                     BtnLabel.chezmoi_apply,
                     BtnLabel.chezmoi_re_add,
+                    BtnLabel.chezmoi_forget,
+                    BtnLabel.chezmoi_destroy,
                 ),
                 radio_labels=(
                     LabelStr.radio_contents,
@@ -267,47 +269,6 @@ class ManagedTreeTab(TabPane):
 
     def on_mount(self) -> None:
         self.path_to_status = {}  # Initialize the path_to_status dictionary
-
-    @on(Switch.Changed)
-    def handle_tree_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
-        if event.switch.id == self.ids.switch.show_unchanged:
-            managed_tree.show_unchanged = event.value
-        elif event.switch.id == self.ids.switch.show_unmanaged:
-            managed_tree.show_unmanaged = event.value
-        elif event.switch.id == self.ids.switch.expand_all:
-            managed_tree.expand_all = event.value
-
-
-class DangerZoneTab(TabPane):
-    def __init__(self) -> None:
-        self.ids = store.danger_zone_ids
-        super().__init__(
-            id=BtnLabel.danger_pane.pane_id,
-            title=BtnLabel.danger_pane,
-        )
-
-    def compose(self) -> ComposeResult:
-        with Horizontal(classes=Tcss.operate_pane):
-            yield LeftSideVertical(app_ids=self.ids)
-            yield MiddleVertical(app_ids=self.ids)
-            yield RightSideVertical(
-                app_ids=self.ids,
-                op_btn_labels=(
-                    BtnLabel.chezmoi_forget,
-                    BtnLabel.chezmoi_destroy,
-                ),
-                radio_labels=(
-                    LabelStr.radio_contents,
-                    LabelStr.radio_git_log,
-                ),
-                switch_labels=(
-                    LabelStr.show_unchanged,
-                    LabelStr.show_existing,
-                    LabelStr.expand_all,
-                ),
-            )
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:

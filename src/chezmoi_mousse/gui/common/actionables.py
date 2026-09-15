@@ -10,7 +10,7 @@ from textual.containers import (
     Vertical,
     VerticalGroup,
 )
-from textual.widgets import Button, Label, Switch
+from textual.widgets import Button
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import (
@@ -21,7 +21,7 @@ from chezmoi_mousse.gui.common.messages import (
     RefreshBtnMsg,
     TabBtnMsg,
 )
-from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, Chars, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -40,7 +40,6 @@ __all__ = [
     "OperateBtnGroup",
     "OperateBtnVerticalGroup",
     "RefreshBtn",
-    "SwitchSlider",
     "TabBtn",
     "TabButtons",
 ]
@@ -222,30 +221,6 @@ class OperateBtnVerticalGroup(VerticalGroup):
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
             yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
-
-
-class SwitchSlider(VerticalGroup):
-    def __init__(self, *, app_ids: AppIds) -> None:
-        super().__init__(id=app_ids.switch_slider, classes="-visible")
-        if app_ids.tab_label in (BtnLabel.apply, BtnLabel.re_add):
-            self.switches: tuple[LabelStr, ...] = (
-                LabelStr.show_unchanged,
-                LabelStr.show_unmanaged,
-                LabelStr.expand_all,
-            )
-        else:  # for the AddTab
-            self.switches = (LabelStr.show_managed, LabelStr.show_unwanted)
-        self.app_ids = app_ids
-
-    def compose(self) -> ComposeResult:
-        for switch_label in self.switches:
-            yield HorizontalGroup(
-                Switch(id=self.app_ids.switch_id(switch_label=switch_label)),
-                Label(switch_label),
-            )
-
-    def on_mount(self) -> None:
-        self.query_children(HorizontalGroup).last().styles.padding = 0
 
 
 class TabButtons(Horizontal):
