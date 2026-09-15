@@ -31,7 +31,6 @@ from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.messages import DestDirBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
-    ColorVar,
     LabelStr,
     Tcss,
 )
@@ -44,6 +43,7 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.data_classes import ChezmoiPaths
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -69,22 +69,9 @@ class ManagedTree(Tree[Path]):
 
     def on_mount(self) -> None:
         self.guide_depth: int = 3
-        self.status_color: dict[str, ColorVar] = {
-            "Added": ColorVar.text_success,
-            "Deleted": ColorVar.text_error,
-            "Modified": ColorVar.text_warning,
-            "N_DIR": ColorVar.text_secondary,
-            "Run": ColorVar.bogus,
-            "Space": ColorVar.dimmed,
-            "unmanaged": ColorVar.text_error_dark,
-        }
         self.root.expand()
-
-    def _populate_unmanaged_nodes(self) -> None:
-        expanded_dirs = [store.cfg.dest_dir]
-        expanded_dirs += [
-            node.data for node in self._iter_tree_nodes() if node.allow_expand
-        ]
+        self.show_root = False
+        self.path_to_node: dict[Path, str] = {}
 
     def _iter_tree_nodes(self) -> Iterator[TreeNode[Path]]:
         queue: deque[TreeNode[Path]] = deque([self.root])
@@ -99,7 +86,11 @@ class ManagedTree(Tree[Path]):
                 return node
         return None
 
-    def update_tree(self) -> None: ...
+    def update_tree(self, cm_paths: ChezmoiPaths) -> None:
+        for path in cm_paths.managed_files:
+            if path.parent == store.cfg.dest_dir:
+                self.notify(f"Adding managed file: {path}")
+                self.root.add_leaf(label=str(path.name), data=path)
 
     #################################
     # Watchers and message handling #

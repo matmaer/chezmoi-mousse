@@ -9,7 +9,7 @@ from rich.text import Text
 
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
-from chezmoi_mousse.data_classes import ChezmoiPaths
+from chezmoi_mousse.data_classes import ChangedPaths, ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
 from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
@@ -80,7 +80,7 @@ async def _construct_command_result(
     )
 
 
-async def _exec_chezmoi_cmd(
+async def _exec_chezmoi(
     app: ChezmoiGui,
     cmd_enum: ReadCmd | WriteCmd,
     path_arg: Path | None = None,
@@ -91,7 +91,8 @@ async def _exec_chezmoi_cmd(
         raise ValueError(f"Path {path_arg} cannot be the destination directory")
     exec_result: ExecResult = await create_subprocess_exec_result(cmd_enum, path_arg)
     cmd_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
-    app.post_message(CommandResultMsg(cmd_result))
+    is_queued = app.post_message(CommandResultMsg(cmd_result))
+    assert is_queued, "Failed to queue CommandResultMsg"
     return cmd_result
 
 
@@ -101,28 +102,28 @@ async def run_chezmoi_command(
     path_arg: Path | None = None,
 ) -> CommandResult:
     if cmd_enum is ReadCmd.git_log and path_arg is not None:
-        cr = await _run_chezmoi_git_log_on_path(app, path_arg)
+        cr: CommandResult = await _run_chezmoi_git_log_on_path(app, path_arg)
     else:
-        cr = await _exec_chezmoi_cmd(app, cmd_enum, path_arg)
+        cr: CommandResult = await _exec_chezmoi(app, cmd_enum, path_arg)
     return cr
 
 
 async def _run_chezmoi_git_log_on_path(
     app: ChezmoiGui, path_arg: Path
 ) -> CommandResult:
-    source_path_result = await _exec_chezmoi_cmd(app, ReadCmd.source_path, path_arg)
+    source_path_result = await _exec_chezmoi(app, ReadCmd.source_path, path_arg)
     source_path = Path(source_path_result.std_out)
-    cmd_result = await _exec_chezmoi_cmd(app, ReadCmd.git_log, source_path)
+    cmd_result = await _exec_chezmoi(app, ReadCmd.git_log, source_path)
     return cmd_result
 
 
-async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
-    managed_dirs_cr = await _exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None)
-    managed_files_cr = await _exec_chezmoi_cmd(app, ReadCmd.managed_files, None)
-    status_dirs_cr = await _exec_chezmoi_cmd(app, ReadCmd.status_dirs, None)
-    status_files_cr = await _exec_chezmoi_cmd(app, ReadCmd.status_files, None)
+async def run_managed_commands(app: ChezmoiGui) -> ChezmoiPaths:
+    _man_dir_list = (await _exec_chezmoi(app, ReadCmd.managed_dirs, None)).out_list
+    _man_file_list = (await _exec_chezmoi(app, ReadCmd.managed_files, None)).out_list
+    _status_dirs_list = (await _exec_chezmoi(app, ReadCmd.status_dirs, None)).out_list
+    _status_files_list = (await _exec_chezmoi(app, ReadCmd.status_files, None)).out_list
 
-    def get_dict(managed: list[str], status: list[str]) -> dict[Path, str]:
+    def get_managed_dict(managed: list[str], status: list[str]) -> dict[Path, str]:
         status_dict = {Path(line[3:]): line[:2] for line in status}
         paths = [Path(line) for line in managed]
         paths_dict: dict[Path, str] = {}
@@ -130,19 +131,46 @@ async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
             paths_dict[path] = status_dict.get(path, "  ")
         return paths_dict
 
-    new_cm_paths = ChezmoiPaths(
-        managed_dirs=get_dict(managed_dirs_cr.out_list, status_dirs_cr.out_list),
-        managed_files=get_dict(managed_files_cr.out_list, status_files_cr.out_list),
-        old_man_dirs=store.cm_paths.managed_dirs,
-        old_man_files=store.cm_paths.managed_files,
+    _managed_dirs = get_managed_dict(_man_dir_list, _status_dirs_list)
+    _managed_files = get_managed_dict(_man_file_list, _status_files_list)
+
+    removed_dirs = [p for p in store.cm_paths.managed_dirs if p not in _managed_dirs]
+    removed_files = [p for p in store.cm_paths.managed_files if p not in _managed_files]
+
+    added_dirs = {
+        p: s for p, s in _managed_dirs.items() if p not in store.cm_paths.managed_dirs
+    }
+    added_files = {
+        p: s for p, s in _managed_files.items() if p not in store.cm_paths.managed_files
+    }
+
+    def get_changes_dict(
+        dict1: dict[Path, str], dict2: dict[Path, str]
+    ) -> dict[Path, str]:
+        return {
+            key: dict2[key]
+            for key in dict1.keys() & dict2.keys()
+            if dict1[key] != dict2[key]
+        }
+
+    changed_dirs = get_changes_dict(store.cm_paths.managed_dirs, _managed_dirs)
+    changed_files = get_changes_dict(store.cm_paths.managed_files, _managed_files)
+
+    changes = ChangedPaths(
+        added_dirs=added_dirs,
+        added_files=added_files,
+        removed_dirs=removed_dirs,
+        removed_files=removed_files,
+        changed_dirs=changed_dirs,
+        changed_files=changed_files,
+        top_removed_dirs=path_funcs.get_sorted_top_parents(removed_dirs),
     )
-    store.cm_paths = new_cm_paths
-    return [
-        managed_dirs_cr,
-        managed_files_cr,
-        status_dirs_cr,
-        status_files_cr,
-    ]
+    new_cm_paths = ChezmoiPaths(
+        managed_dirs=_managed_dirs,
+        managed_files=_managed_files,
+        changes=changes,
+    )
+    return new_cm_paths
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:
@@ -170,7 +198,7 @@ async def get_highlighted_chezmoi_cat_output(
     app: ChezmoiGui,
     file_path: Path,
 ) -> Text:
-    cmd_result = await _exec_chezmoi_cmd(app, ReadCmd.cat, file_path)
+    cmd_result = await _exec_chezmoi(app, ReadCmd.cat, file_path)
     f_contents = cmd_result.std_out
     if not f_contents.strip():
         f_contents = "File is empty or contains only whitespace"

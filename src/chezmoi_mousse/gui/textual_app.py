@@ -47,6 +47,7 @@ from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.data_classes import ChezmoiPaths
     from chezmoi_mousse.named_tuples import CommandResult
 
 
@@ -151,9 +152,10 @@ class ChezmoiGui(App[str]):
 
         self.pre_mount = False
         self._run_doctor_command()
-        self._run_managed_commands()
         self._run_splash_commands()
         await self._log_pre_mount_cmd_results()
+        chezmoi_paths: ChezmoiPaths = await tchezmoi.run_managed_commands(self)
+        await self._update_managed_tree(chezmoi_paths)
 
         await self.splash_screen.dismiss_after_fade_loop()
 
@@ -163,6 +165,10 @@ class ChezmoiGui(App[str]):
         for cmd in self.pre_mount_cmd_results:
             setattr(app_log, ReactiveVar.cmd_result, cmd)
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
+
+    async def _update_managed_tree(self, chezmoi_paths: ChezmoiPaths) -> None:
+        managed_tree = self.query_exactly_one(ManagedTree)
+        managed_tree.update_tree(chezmoi_paths)
 
     @work
     async def _run_doctor_command(self) -> None:
@@ -174,10 +180,6 @@ class ChezmoiGui(App[str]):
             if cmd is ReadCmd.doctor:
                 continue
             await tchezmoi.run_chezmoi_command(self, cmd)
-
-    @work
-    async def _run_managed_commands(self) -> None:
-        await tchezmoi.run_managed_commands(self)
 
     @work
     async def _log_to_splash_screen(self, msg: CommandResultMsg) -> None:

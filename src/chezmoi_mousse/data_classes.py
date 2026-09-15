@@ -12,10 +12,11 @@ ChangedPaths = NamedTuple(
     [
         ("removed_dirs", list[Path]),
         ("removed_files", list[Path]),
-        ("added_files", list[Path]),
-        ("added_dirs", list[Path]),
+        ("added_files", dict[Path, str]),
+        ("added_dirs", dict[Path, str]),
         ("changed_dirs", dict[Path, str]),
         ("changed_files", dict[Path, str]),
+        ("top_removed_dirs", list[Path]),
     ],
 )
 
@@ -55,20 +56,15 @@ class ChezmoiPaths:
     def __init__(
         self,
         *,
-        # the CommandResult instances for each command
         managed_dirs: dict[Path, str],
         managed_files: dict[Path, str],
-        # the data currently in store.cm_paths_legacy
-        old_man_dirs: dict[Path, str],
-        old_man_files: dict[Path, str],
+        changes: ChangedPaths,
     ) -> None:
 
         self.managed_dirs = managed_dirs
         self.managed_files = managed_files
+        self.changes = changes
 
-        self.changes: ChangedPaths = self._get_changed_paths(
-            old_man_dirs, old_man_files
-        )
         self.sets: ChezmoiPathSets = self._get_path_sets()
 
     def _sort_paths(self, paths: Iterable[Path]) -> list[Path]:
@@ -79,30 +75,6 @@ class ChezmoiPaths:
     def _sort_path_dict[V](self, path_dict: dict[Path, V]) -> dict[Path, V]:
         sorted_keys = self._sort_paths(path_dict.keys())
         return {path: path_dict[path] for path in sorted_keys}
-
-    def _get_changed_paths(
-        self,
-        old_man_dirs: dict[Path, str],
-        old_man_files: dict[Path, str],
-    ) -> ChangedPaths:
-        def get_dict(dict1: dict[Path, str], dict2: dict[Path, str]) -> dict[Path, str]:
-            return {
-                key: dict2[key]
-                for key in dict1.keys() & dict2.keys()
-                if dict1[key] != dict2[key]
-            }
-
-        changed_dirs = get_dict(old_man_dirs, self.managed_dirs)
-        changed_files = get_dict(old_man_files, self.managed_files)
-
-        return ChangedPaths(
-            added_dirs=[p for p in self.managed_dirs if p not in old_man_dirs],
-            added_files=[p for p in self.managed_files if p not in old_man_files],
-            removed_dirs=[p for p in old_man_dirs if p not in self.managed_dirs],
-            removed_files=[p for p in old_man_files if p not in self.managed_files],
-            changed_dirs=changed_dirs,
-            changed_files=changed_files,
-        )
 
     def _get_path_sets(
         self,

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 type ScanDirResult = list[ScanDirItem]
 
 __all__ = [
-    "get_top_parents",
+    "get_sorted_top_parents",
     "is_unwanted_dir",
     "is_unwanted_file",
     "os_scan_dir",
@@ -36,7 +36,7 @@ def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
-def get_top_parents(
+def get_sorted_top_parents(
     paths: Iterable[Path] | dict[Path, bool],
 ) -> list[Path]:
     """
