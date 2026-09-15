@@ -76,13 +76,6 @@
   max-width: 33%;
   min-width: 18;
 
-  &>.managed_tree {
-    height: 1fr;
-    min-width: 18;
-    max-width: 100%;
-    width: auto;
-  }
-
   &>.refresh_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
@@ -105,36 +98,12 @@
       text-style: none;
     }
   }
-
-  &>.directory_tree {
-    border-top: $primary;
-    border-title-align: center;
-    border-title-style: bold;
-    min-width: 18;
-    width: auto;
-
-    &>.directory-tree--folder {
-      color: $primary-lighten-3;
-      text-style: none;
-    }
-
-    &>.directory-tree--extension {
-      text-style: none;
-    }
-
-    &>.directory-tree--hidden {
-      text-style: none;
-    }
-
-    &>.directory-tree--file {
-      color: $success-lighten-3;
-      text-style: none;
-    }
-  }
 }
 
 .operate_pane {
   &>.operations_left {
+    width: auto;
+
     &>.dest_dir_button {
       background-tint: $primary-muted;
       background: $primary-muted;
@@ -144,7 +113,7 @@
       content-align: left middle;
       text-align: left;
       text-style: bold;
-      width: 1fr;
+      width: 100%;
 
       &:hover {
         color: $text-accent;
@@ -155,16 +124,21 @@
       }
     }
 
+    &>.managed_tree {
+      height: 1fr;
+      width: auto;
+    }
+
     &>.refresh_button {
       background-tint: $surface-lighten-1;
       background: $surface-lighten-1;
-      border-bottom: none;
       border-top: wide $surface-lighten-1;
+      border-bottom: inner $surface-lighten-1;
       color: $primary-lighten-3;
-      margin: 0 1;
       min-width: 18;
       text-style: none;
       width: 100%;
+      height: 3;
 
       &:hover {
         text-style: none;
@@ -277,7 +251,7 @@ DiffView {
 
 
 CustomHeader {
-  border-bottom: dashed $surface-lighten-3;
+  border-bottom: dashed $panel;
   color: $primary;
   height: 2;
   text-style: bold;
@@ -405,16 +379,14 @@ CollapsibleTitle {
 }
 
 DataTable {
-  &>.datatable--header {
+  &.datatable--header {
     text-style: none;
   }
 }
 
 Footer {
-  height: 2;
-  border-top: wide $surface;
-  background-tint: $surface;
-  background: $surface;
+  background-tint: $panel;
+  background: $panel;
 }
 
 Label {
@@ -422,15 +394,6 @@ Label {
   text-align: center;
   border-left: none;
   border-right: none;
-
-  &.dest_dir_tree_label {
-    background-tint: $background;
-    background: $background;
-    border-bottom: solid $primary;
-    border-top: none;
-    color: $primary-lighten-3;
-    width: 100%;
-  }
 
   &.flat_section_label {
     background-tint: $primary-muted;
