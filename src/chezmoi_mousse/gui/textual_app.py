@@ -17,7 +17,7 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
-from chezmoi_mousse import store
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
@@ -37,6 +37,7 @@ from chezmoi_mousse.str_enums import (
     BindingDescription,
     BtnLabel,
     Chars,
+    LogStr,
     ReactiveVar,
     ReadCmd,
     Tcss,
@@ -45,6 +46,8 @@ from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
+
+    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["ChezmoiGui"]
@@ -131,10 +134,12 @@ class ChezmoiGui(App[str]):
         self.theme = "chezmoi-mousse-dark"
         self.splash_screen = SplashScreen()
         self.register_theme(chezmoi_mousse_light)
+        self.pre_mount_cmd_results: list[CommandResult] = []
         self._run_startup_worker()
 
     @work
     async def _run_startup_worker(self) -> None:
+        self.pre_mount = True
         await self.push_screen(self.splash_screen)
         await self.splash_screen.run_initial_command_sequence()
 
@@ -144,28 +149,49 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(ConfigTab())
         await tabbed_content.add_pane(DebugTab())
 
-        self._log_pre_mount_cmd_results()
-        self._run_splash_cmd_workers()
-
-        await self.splash_screen.splash_run_managed_commands()
+        self.pre_mount = False
+        self._run_doctor_command()
+        self._run_managed_commands()
+        self._run_splash_commands()
+        await self._log_pre_mount_cmd_results()
 
         await self.splash_screen.dismiss_after_fade_loop()
 
-    @work
     async def _log_pre_mount_cmd_results(self) -> None:
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        for cmd in self.splash_screen.pre_mount_cmd_results:
+        for cmd in self.pre_mount_cmd_results:
             setattr(app_log, ReactiveVar.cmd_result, cmd)
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
     @work
-    async def _run_splash_cmd_workers(self) -> None:
+    async def _run_doctor_command(self) -> None:
+        await tchezmoi.run_chezmoi_command(self, ReadCmd.doctor)
+
+    @work
+    async def _run_splash_commands(self) -> None:
         for cmd in ReadCmd.splash_commands():
-            await self.splash_screen.splash_run_chezmoi(cmd)
+            if cmd is ReadCmd.doctor:
+                continue
+            await tchezmoi.run_chezmoi_command(self, cmd)
+
+    @work
+    async def _run_managed_commands(self) -> None:
+        await tchezmoi.run_managed_commands(self)
+
+    @work
+    async def _log_to_splash_screen(self, msg: CommandResultMsg) -> None:
+        assert isinstance(self.screen, SplashScreen)
+        suffix = LogStr.success if msg.cmd_result.returncode == 0 else LogStr.checked
+        await self.screen.write_log_msg(prefix=msg.cmd_result.pretty_cmd, suffix=suffix)
 
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:
+        if isinstance(self.screen, SplashScreen):
+            self._log_to_splash_screen(msg)
+        if self.pre_mount is True:
+            self.pre_mount_cmd_results.append(msg.cmd_result)
+            return
 
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         setattr(app_log, ReactiveVar.cmd_result, msg.cmd_result)

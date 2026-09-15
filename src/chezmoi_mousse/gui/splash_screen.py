@@ -104,7 +104,6 @@ class SplashScreen(Screen[None]):
 
     async def on_mount(self) -> None:
         self.repo_existed = True
-        self.pre_mount_cmd_results: list[CommandResult] = []
         self.color_map: dict[LogStr | int, str] = {
             LogStr.absent: self.app.theme_variables[ColorVar.text_error],
             LogStr.present: self.app.theme_variables[ColorVar.success],
@@ -119,34 +118,15 @@ class SplashScreen(Screen[None]):
         self.animated_fade = self.query_exactly_one(AnimatedFade)
         self.animated_fade.fade_timer.resume()
 
-    async def _write_log_msg(self, *, prefix: str, suffix: LogStr) -> None:
+    async def write_log_msg(self, *, prefix: str, suffix: LogStr) -> None:
         dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded_suffix) - 4
         dots = "." * dots_count
         color = self.color_map[suffix]
         msg = f"[{color}]{prefix} {dots} {suffix.padded_suffix}[/{color}]"
         self.splash_log.write(msg)
 
-    async def splash_run_chezmoi(self, cmd: ReadCmd | WriteCmd) -> int:
-        if self.repo_existed is False and cmd in (ReadCmd.git_remote, ReadCmd.git_log):
-            prefix = tchezmoi.pretty_cmd(cmd, None)
-            suffix = LogStr.skipped
-            await self._write_log_msg(prefix=prefix, suffix=suffix)
-        if cmd is ReadCmd.git_log:
-            cr = await tchezmoi.run_chezmoi_git_log(self.app)
-        else:
-            cr: CommandResult = await tchezmoi.exec_chezmoi_cmd(self.app, cmd, None)
-        if store.pre_mount is True:
-            self.pre_mount_cmd_results.append(cr)
-
-        suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
-        await self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
-        if cr.returncode is None:
-            return -1
-        return cr.returncode
-
-    async def _parse_and_store_config(self) -> None:
+    async def _parse_and_store_config(self, cr: CommandResult) -> None:
         # Set store.cfg variable
-        cr = self.pre_mount_cmd_results[-1]  # result form chezmoi dump-config
         parsed_std_out = json.loads(cr.std_out)
         store.cfg = DumpConfigKeys(
             dest_dir_path=Path(parsed_std_out["destDir"]),
@@ -157,15 +137,15 @@ class SplashScreen(Screen[None]):
         store.add_path = store.cfg.dest_dir_path
         store.apply_path = store.cfg.dest_dir_path
         store.re_add_path = store.cfg.dest_dir_path
-        await self._write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.parsed)
+        await self.write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.parsed)
 
     async def run_initial_command_sequence(self) -> None:
 
         # check if repo exists
-        rc = await self.splash_run_chezmoi(ReadCmd.git_dir)
-        suffix = LogStr.present if rc == 0 else LogStr.absent
-        await self._write_log_msg(prefix=LogStr.check_chezmoi_repo, suffix=suffix)
-        self.repo_existed = bool(rc == 0)
+        cr: CommandResult = await tchezmoi.run_chezmoi_command(
+            self.app, ReadCmd.git_dir
+        )
+        self.repo_existed = bool(cr.returncode == 0)
         if not self.repo_existed:
             # TODO: show modal for chezmoi init
             self.notify("No existing chezmoi repository found.")
@@ -175,8 +155,9 @@ class SplashScreen(Screen[None]):
             self.app.exit()
 
         # run chezmoi init to update config
-        rc = await self.splash_run_chezmoi(WriteCmd.init)
-        if rc != 0:
+        cr: CommandResult = await tchezmoi.run_chezmoi_command(self.app, WriteCmd.init)
+
+        if cr.returncode != 0:
             # TODO: handle error when chezmoi init to update config fails, could happen
             # after the user updated the template files
             self.notify(
@@ -187,18 +168,13 @@ class SplashScreen(Screen[None]):
             self.notify("App will exit...", severity="warning")
             await asyncio.sleep(3)
             self.app.exit()
-        await self.splash_run_chezmoi(ReadCmd.dump_config)
+
+        cr: CommandResult = await tchezmoi.run_chezmoi_command(
+            self.app, ReadCmd.dump_config
+        )
 
         # parse and store config
-        await self._parse_and_store_config()
-
-        store.pre_mount = False
-
-    async def splash_run_managed_commands(self) -> None:
-        command_results = await tchezmoi.run_managed_commands(self.app)
-        for cr in command_results:
-            suffix = LogStr.success if cr.returncode == 0 else LogStr.checked
-            await self._write_log_msg(prefix=cr.pretty_cmd, suffix=suffix)
+        await self._parse_and_store_config(cr)
 
     async def dismiss_after_fade_loop(self) -> None:
         while (

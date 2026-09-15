@@ -80,7 +80,7 @@ async def _construct_command_result(
     )
 
 
-async def exec_chezmoi_cmd(
+async def _exec_chezmoi_cmd(
     app: ChezmoiGui,
     cmd_enum: ReadCmd | WriteCmd,
     path_arg: Path | None = None,
@@ -91,34 +91,36 @@ async def exec_chezmoi_cmd(
         raise ValueError(f"Path {path_arg} cannot be the destination directory")
     exec_result: ExecResult = await create_subprocess_exec_result(cmd_enum, path_arg)
     cmd_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
-    if store.pre_mount is False:
-        app.post_message(CommandResultMsg(cmd_result))
+    app.post_message(CommandResultMsg(cmd_result))
     return cmd_result
 
 
-async def run_chezmoi_git_log(
-    app: ChezmoiGui, path_arg: Path | None = None
+async def run_chezmoi_command(
+    app: ChezmoiGui,
+    cmd_enum: ReadCmd | WriteCmd,
+    path_arg: Path | None = None,
 ) -> CommandResult:
-
-    if store.pre_mount is True:
-        # don't access store.cfg.dest_dir
-        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None)
-        return cmd_result
-    elif path_arg is None or path_arg == store.cfg.dest_dir:
-        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, None)
-        return cmd_result
+    if cmd_enum is ReadCmd.git_log and path_arg is not None:
+        cr = await _run_chezmoi_git_log_on_path(app, path_arg)
     else:
-        source_path_result = await exec_chezmoi_cmd(app, ReadCmd.source_path)
-        source_path = Path(source_path_result.std_out)
-        cmd_result = await exec_chezmoi_cmd(app, ReadCmd.git_log, source_path)
-        return cmd_result
+        cr = await _exec_chezmoi_cmd(app, cmd_enum, path_arg)
+    return cr
+
+
+async def _run_chezmoi_git_log_on_path(
+    app: ChezmoiGui, path_arg: Path
+) -> CommandResult:
+    source_path_result = await _exec_chezmoi_cmd(app, ReadCmd.source_path, path_arg)
+    source_path = Path(source_path_result.std_out)
+    cmd_result = await _exec_chezmoi_cmd(app, ReadCmd.git_log, source_path)
+    return cmd_result
 
 
 async def run_managed_commands(app: ChezmoiGui) -> list[CommandResult]:
-    managed_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None)
-    managed_files_cr = await exec_chezmoi_cmd(app, ReadCmd.managed_files, None)
-    status_dirs_cr = await exec_chezmoi_cmd(app, ReadCmd.status_dirs, None)
-    status_files_cr = await exec_chezmoi_cmd(app, ReadCmd.status_files, None)
+    managed_dirs_cr = await _exec_chezmoi_cmd(app, ReadCmd.managed_dirs, None)
+    managed_files_cr = await _exec_chezmoi_cmd(app, ReadCmd.managed_files, None)
+    status_dirs_cr = await _exec_chezmoi_cmd(app, ReadCmd.status_dirs, None)
+    status_files_cr = await _exec_chezmoi_cmd(app, ReadCmd.status_files, None)
 
     def get_dict(managed: list[str], status: list[str]) -> dict[Path, str]:
         status_dict = {Path(line[3:]): line[:2] for line in status}
@@ -168,7 +170,7 @@ async def get_highlighted_chezmoi_cat_output(
     app: ChezmoiGui,
     file_path: Path,
 ) -> Text:
-    cmd_result = await exec_chezmoi_cmd(app, ReadCmd.cat, file_path)
+    cmd_result = await _exec_chezmoi_cmd(app, ReadCmd.cat, file_path)
     f_contents = cmd_result.std_out
     if not f_contents.strip():
         f_contents = "File is empty or contains only whitespace"

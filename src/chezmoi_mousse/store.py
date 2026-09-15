@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 
 init_data: InitData = InitData()
-pre_mount: bool = True
 live_run: bool = False
 
 add_ids = AppIds(BtnLabel.add)
