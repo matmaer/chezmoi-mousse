@@ -48,13 +48,12 @@ if TYPE_CHECKING:
 __all__ = ["OperateTab"]
 
 
-class ManagedTree(Tree[Path]):
+class ManagedTreeBase(Tree[Path]):
+    """Base class for the managed tree with unchanged paths, without unchanged paths,
+    and with unmanaged or unwanted paths."""
+
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-
-    show_unchanged: reactive[bool] = reactive(False, init=False)
-    show_unmanaged: reactive[bool] = reactive(False, init=False)
-    expand_all: reactive[bool] = reactive(False, init=False)
 
     def __init__(self) -> None:
         super().__init__(
@@ -63,38 +62,51 @@ class ManagedTree(Tree[Path]):
         )
 
     def on_mount(self) -> None:
-        self.path_to_node: dict[Path, TreeNode[Path]] = {}
-        self.root.data = store.cfg.dest_dir
-        self.path_to_node[store.cfg.dest_dir] = self.root
+        self.root.data = store.cfg.dest_dir_path
         self.guide_depth: int = 3
         self.show_root = False
         self.cm_paths = ChezmoiPaths.empty()
 
+
+class FullManagedTree(ManagedTreeBase):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
+    show_unchanged: reactive[bool] = reactive(False, init=False)
+    show_unmanaged: reactive[bool] = reactive(False, init=False)
+    expand_all: reactive[bool] = reactive(False, init=False)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.cm_paths = ChezmoiPaths.empty()
+        self.node_map: dict[Path, TreeNode[Path]] = {}
+
     def color_label(self, path: Path) -> str:
-        italic = ""
         color_var = ColorVar.bogus
         if path in self.cm_paths.managed_dirs:
             status = self.cm_paths.managed_dirs[path]
-            color_var = ColorVar.dimmed if status == "  " else ColorVar.text_primary
+            color_var = ColorVar.dimmed if status == "  " else ColorVar.text_warning
+            if path in self.cm_paths.sets.dirty_space_dirs:
+                color_var = ColorVar.text_primary
         elif path in self.cm_paths.managed_files:
             status = self.cm_paths.managed_files[path]
             color_var = ColorVar.dimmed if status == "  " else ColorVar.text_warning
-        if path in self.cm_paths.sets.missing_paths:
-            italic = " italic"
+        italic = " italic" if path in self.cm_paths.sets.missing_paths else ""
         color = self.app.theme_variables.get(color_var.value, ColorVar.bogus.value)
-        markup_text = f"[{color}{italic}]{path.name}[/]"
-        return markup_text
+        return f"[{color}{italic}]{path.name}[/]"
 
     async def update_tree(self, cm_paths: ChezmoiPaths) -> None:
         self.cm_paths = cm_paths
         for path in cm_paths.managed_dirs:
-            if path.parent == store.cfg.dest_dir:
-                label = self.color_label(path)
-                self.root.add(label=label, data=path)
+            parent_node = self.node_map.get(path.parent, self.root)
+            label = self.color_label(path)
+            new_node = parent_node.add(label=label, data=path)
+            self.node_map[path] = new_node
         for path in cm_paths.managed_files:
-            if path.parent == store.cfg.dest_dir:
-                label = self.color_label(path)
-                self.root.add_leaf(label=label, data=path)
+            parent_node = self.node_map.get(path.parent, self.root)
+            label = self.color_label(path)
+            new_node = parent_node.add_leaf(label=label, data=path)
+            self.node_map[path] = new_node
 
     #################################
     # Watchers and message handling #
@@ -126,7 +138,7 @@ class LeftSideVertical(Vertical):
 
     def compose(self) -> ComposeResult:
         yield DestDirBtn(app_ids=self.ids)
-        yield ManagedTree()
+        yield FullManagedTree()
         yield RefreshBtn(app_ids=self.ids)
 
     @on(DestDirBtnMsg)
@@ -221,10 +233,12 @@ class OperateTab(TabPane):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        managed_tree = self.query_one(self.ids.managed_tree_q, ManagedTree)
+        managed_tree_with_unchanged = self.query_one(
+            self.ids.managed_tree_q, FullManagedTree
+        )
         if event.switch.id == self.ids.switch.show_unchanged:
-            managed_tree.show_unchanged = event.value
+            managed_tree_with_unchanged.show_unchanged = event.value
         elif event.switch.id == self.ids.switch.show_unmanaged:
-            managed_tree.show_unmanaged = event.value
+            managed_tree_with_unchanged.show_unmanaged = event.value
         elif event.switch.id == self.ids.switch.expand_all:
-            managed_tree.expand_all = event.value
+            managed_tree_with_unchanged.expand_all = event.value

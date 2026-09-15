@@ -28,7 +28,10 @@ from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.gui.operate_tab import ManagedTree, OperateTab
+from chezmoi_mousse.gui.operate_tab import (
+    FullManagedTree,
+    OperateTab,
+)
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.gui.tab_panes import ConfigTab, LogsTab
 from chezmoi_mousse.named_tuples import InitData
@@ -168,8 +171,8 @@ class ChezmoiGui(App[str]):
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
     async def _update_managed_tree(self, chezmoi_paths: ChezmoiPaths) -> None:
-        managed_tree = self.query_exactly_one(ManagedTree)
-        await managed_tree.update_tree(chezmoi_paths)
+        managed_tree_with_unchanged = self.query_exactly_one(FullManagedTree)
+        await managed_tree_with_unchanged.update_tree(chezmoi_paths)
 
     @work
     async def _run_doctor_command(self) -> None:
@@ -318,7 +321,7 @@ class ChezmoiGui(App[str]):
             active_pane = self.query_exactly_one(TabbedContent).active_pane
             return isinstance(
                 active_pane,
-                (ManagedTree, ConfigTab, LogsTab, DebugTab),
+                (OperateTab, ConfigTab, LogsTab, DebugTab),
             )
         return True
 
