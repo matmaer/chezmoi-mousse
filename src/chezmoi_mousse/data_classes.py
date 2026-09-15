@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple, Self
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -166,4 +166,20 @@ class ChezmoiPaths:
             re_add_dirs=re_add_dirs,
             re_add_files=re_add_files,
             re_add_paths=re_add_dirs | re_add_files,
+        )
+
+    @classmethod
+    def empty(cls) -> Self:
+        return cls(
+            managed_dirs={},
+            managed_files={},
+            changes=ChangedPaths(
+                removed_dirs=[],
+                removed_files=[],
+                added_files={},
+                added_dirs={},
+                changed_dirs={},
+                changed_files={},
+                top_removed_dirs=[],
+            ),
         )
