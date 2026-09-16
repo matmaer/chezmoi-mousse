@@ -41,6 +41,12 @@ def get_sorted_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
+def any_nested_in(*, dir_path: Path, check_paths: set[Path]) -> bool:
+    return any(
+        path != dir_path and path.is_relative_to(dir_path) for path in check_paths
+    )
+
+
 def get_sorted_top_parents(
     paths: Iterable[Path] | dict[Path, bool],
 ) -> list[Path]:
