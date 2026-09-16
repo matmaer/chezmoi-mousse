@@ -460,6 +460,12 @@ class Tcss(StrEnum):
     unhandled = auto()
 
 
+class TreeName(StrEnum):
+    managed_tree = auto()
+    status_tree = auto()
+    chezmoi_tree = auto()
+
+
 ##############################################
 # Enums for the chezmoi command construction #
 ##############################################

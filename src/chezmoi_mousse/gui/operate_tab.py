@@ -15,7 +15,6 @@ from textual.widgets import (
     RadioSet,
     Switch,
     TabPane,
-    Tree,
 )
 
 from chezmoi_mousse import store
@@ -30,7 +29,7 @@ from chezmoi_mousse.gui.common.managed_trees import (
     ManagedTree,
     StatusTree,
 )
-from chezmoi_mousse.gui.common.messages import DestDirBtnMsg
+from chezmoi_mousse.gui.common.messages import DestDirBtnMsg, SwitchGroupMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
@@ -38,8 +37,6 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from textual import getters
     from textual.app import ComposeResult
 
@@ -48,6 +45,9 @@ if TYPE_CHECKING:
 
 
 __all__ = ["OperateTab"]
+
+
+type SwitchState = dict[str, bool]
 
 
 class LeftSideVertical(Vertical):
@@ -60,8 +60,8 @@ class LeftSideVertical(Vertical):
 
     def compose(self) -> ComposeResult:
         yield DestDirBtn(app_ids=self.ids)
-        yield ManagedTree()
         yield StatusTree()
+        yield ManagedTree()
         yield ChezmoiTree()
 
     @on(DestDirBtnMsg)
@@ -78,32 +78,47 @@ class MiddleVertical(Vertical):
         yield MainSectionLabel(LabelStr.middle)
 
 
+class SwitchGroup(VerticalGroup):
+    def compose(self) -> ComposeResult:
+        switch_labels = (
+            LabelStr.show_unchanged,
+            LabelStr.expand_all,
+            LabelStr.show_unmanaged,
+            LabelStr.show_unwanted,
+        )
+        for switch_label in switch_labels:
+            yield HorizontalGroup(
+                Switch(name=switch_label.name),
+                Label(switch_label),
+                classes=Tcss.switch_with_label,
+            )
+
+    @on(Switch.Changed)
+    def handle_tree_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        switches = self.query(Switch)
+        switch_states: SwitchState = {
+            switch.name: switch.value for switch in switches if switch.name
+        }
+        self.post_message(SwitchGroupMsg(switch_states=switch_states))
+
+
 class RightSideVertical(Vertical):
     def __init__(
         self,
         *,
         app_ids: AppIds,
         radio_labels: tuple[LabelStr, ...],
-        switch_labels: tuple[LabelStr, ...],
     ) -> None:
         self.ids = app_ids
         self.radio_labels = radio_labels
-        self.switch_labels = switch_labels
         super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
         with RadioSet():
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)
-
-        with VerticalGroup(classes=Tcss.switches_vert_group):
-            for switch_label in self.switch_labels:
-                yield HorizontalGroup(
-                    Switch(id=self.ids.switch_id(switch_label=switch_label)),
-                    Label(switch_label),
-                    classes=Tcss.switch_with_label,
-                )
-
+        yield SwitchGroup(classes=Tcss.switches_vert_group)
         yield RefreshBtn(app_ids=self.ids)
 
     def on_mount(self) -> None:
@@ -132,12 +147,6 @@ class OperateTab(TabPane):
                     LabelStr.radio_diff_reverse,
                     LabelStr.radio_git_log,
                 ),
-                switch_labels=(
-                    LabelStr.show_unchanged,
-                    LabelStr.expand_all,
-                    LabelStr.show_unmanaged,
-                    LabelStr.show_unwanted,
-                ),
             )
             yield OperateBtnGroup(
                 app_ids=self.ids,
@@ -157,26 +166,8 @@ class OperateTab(TabPane):
     # Watchers and message handling #
     #################################
 
-    @on(Switch.Changed)
-    def handle_tree_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        full_man_tree = self.query_exactly_one(ManagedTree)
-        status_man_tree = self.query_exactly_one(StatusTree)
-        if event.switch.id == self.ids.switch.show_unchanged:
-            full_man_tree.display = not full_man_tree.display
-            status_man_tree.display = not status_man_tree.display
-        elif event.switch.id == self.ids.switch.show_unmanaged:
-            self.notify(f"Show unmanaged: {event.value}")
-        elif event.switch.id == self.ids.switch.expand_all:
-            self.notify(f"Expand all: {event.value}")
-
-    # To implement
-
-    @on(Tree.NodeCollapsed)
-    def handle_node_collapsed(self, _: Tree.NodeCollapsed[Path]) -> None: ...
-
-    @on(Tree.NodeExpanded)
-    def handle_node_expanded(self, _: Tree.NodeExpanded[Path]) -> None: ...
-
-    @on(Tree.NodeSelected)
-    def send_node_context_message(self, _: Tree.NodeSelected[Path]) -> None: ...
+    @on(SwitchGroupMsg)
+    def handle_switch_group(self, message: SwitchGroupMsg) -> None:
+        switch_states = message.switch_states
+        # Handle the switch states as needed
+        self.notify(f"{switch_states}")
