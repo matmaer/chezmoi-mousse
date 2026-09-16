@@ -29,16 +29,10 @@ ChezmoiPathSets = NamedTuple(
         ("status_paths", set[Path]),
         ("missing_paths", set[Path]),
         # Paths in the tree which 'chezmoi add' will do something
-        ("add_files", set[Path]),
-        ("add_dirs", set[Path]),
         ("add_paths", set[Path]),
         # Paths in the tree which 'chezmoi apply' will do something
-        ("apply_files", set[Path]),
-        ("apply_dirs", set[Path]),
         ("apply_paths", set[Path]),
         # Paths in the tree which 'chezmoi re-add' will do something
-        ("re_add_files", set[Path]),
-        ("re_add_dirs", set[Path]),
         ("re_add_paths", set[Path]),
     ],
 )
@@ -84,29 +78,28 @@ class ChezmoiPaths:
         def check_can_readd(status: str) -> bool:
             return status[0] != " "
 
-        add_files: set[Path] = set()
-        apply_files: set[Path] = set()
-        re_add_files: set[Path] = set()
+        add_files_set: set[Path] = set()
+        apply_files_set: set[Path] = set()
+        re_add_files_set: set[Path] = set()
+        status_add_dirs: set[Path] = set()
+        status_apply_dirs: set[Path] = set()
+        status_re_add_dirs: set[Path] = set()
 
         for path, status_pair in self.managed_files.items():
             if check_can_add(status_pair):
-                add_files.add(path)
+                add_files_set.add(path)
             if check_can_apply(status_pair):
-                apply_files.add(path)
+                apply_files_set.add(path)
             if check_can_readd(status_pair):
-                re_add_files.add(path)
-
-        _status_add_dirs: set[Path] = set()
-        _status_apply_dirs: set[Path] = set()
-        _status_re_add_dirs: set[Path] = set()
+                re_add_files_set.add(path)
 
         for path, status_pair in self.managed_dirs.items():
             if check_can_add(status_pair):
-                _status_add_dirs.add(path)
+                status_add_dirs.add(path)
             if check_can_apply(status_pair):
-                _status_apply_dirs.add(path)
+                status_apply_dirs.add(path)
             if check_can_readd(status_pair):
-                _status_re_add_dirs.add(path)
+                status_re_add_dirs.add(path)
 
         # for the dirs without a status, we also need to consider their nested contents
 
@@ -115,23 +108,23 @@ class ChezmoiPaths:
                 path != dir_path and path.is_relative_to(dir_path) for path in context
             )
 
-        _space_add_dirs: set[Path] = set()
-        _space_apply_dirs: set[Path] = set()
-        _space_re_add_dirs: set[Path] = set()
+        space_add_dirs: set[Path] = set()
+        space_apply_dirs: set[Path] = set()
+        space_re_add_dirs: set[Path] = set()
 
         for path in self.managed_dirs.keys() - self.managed_files.keys():
-            if has_nested_status_children(path, _status_add_dirs | add_files):
-                _space_add_dirs.add(path)
-            if has_nested_status_children(path, _status_apply_dirs | apply_files):
-                _space_apply_dirs.add(path)
-            if has_nested_status_children(path, _status_re_add_dirs | re_add_files):
-                _space_re_add_dirs.add(path)
+            if has_nested_status_children(path, status_add_dirs | add_files_set):
+                space_add_dirs.add(path)
+            if has_nested_status_children(path, status_apply_dirs | apply_files_set):
+                space_apply_dirs.add(path)
+            if has_nested_status_children(path, status_re_add_dirs | re_add_files_set):
+                space_re_add_dirs.add(path)
 
-        add_dirs = _status_add_dirs | _space_add_dirs
-        apply_dirs = _status_apply_dirs | _space_apply_dirs
-        re_add_dirs = _status_re_add_dirs | _space_re_add_dirs
+        add_dirs = status_add_dirs | space_add_dirs
+        apply_dirs = status_apply_dirs | space_apply_dirs
+        re_add_dirs = status_re_add_dirs | space_re_add_dirs
 
-        dirty_space_dirs = _space_add_dirs | _space_apply_dirs | _space_re_add_dirs
+        dirty_space_dirs = space_add_dirs | space_apply_dirs | space_re_add_dirs
         clean_space_dirs = (
             self.managed_dirs.keys() - self.managed_files.keys() - dirty_space_dirs
         )
@@ -148,17 +141,11 @@ class ChezmoiPaths:
             status_paths=managed_paths - status_paths,
             missing_paths={p for p in managed_paths if not p.exists()},
             # Paths in the tree which 'chezmoi add' will do something
-            add_dirs=add_dirs,
-            add_files=add_files,
-            add_paths=add_dirs | add_files,
+            add_paths=add_dirs | add_files_set,
             # Paths in the tree which 'chezmoi apply' will do something
-            apply_dirs=apply_dirs,
-            apply_files=apply_files,
-            apply_paths=apply_dirs | apply_files,
+            apply_paths=apply_dirs | apply_files_set,
             # Paths in the tree which 'chezmoi re-add' will do something
-            re_add_dirs=re_add_dirs,
-            re_add_files=re_add_files,
-            re_add_paths=re_add_dirs | re_add_files,
+            re_add_paths=re_add_dirs | re_add_files_set,
         )
 
     @classmethod

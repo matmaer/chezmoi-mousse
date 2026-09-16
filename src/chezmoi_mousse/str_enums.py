@@ -20,6 +20,7 @@ __all__ = [
     "ReactiveVar",
     "ReadCmd",
     "RichLogName",
+    "StatusCode",
     "Tcss",
     "WriteCmd",
 ]
@@ -119,6 +120,19 @@ class Chars(StrEnum):
     # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
     tree_collapsed = f"{right_triangle} "
     tree_expanded = f"{down_triangle} "
+
+
+class StatusCode(StrEnum):
+    # real chezmoi status codes in a column
+    A = auto()
+    D = auto()
+    M = auto()
+    R = auto()
+    S = "\x20"  # single space as a status (no status)
+    # meta, self assigned status codes
+    SS = "\x20\x20"  # paths with TWO spaces as a status (no status)
+    T = auto()  # dir without status, with nested status paths, to be shown in the Tree
+    U = auto()  # unmanaged path
 
 
 class ColorVar(StrEnum):
@@ -529,9 +543,15 @@ class ReadCmd(Enum):
     source_path = ("source-path",)
     status_dirs = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_dirs)
     status_files = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_files)
-    unmanaged = (
+    unmanaged_dirs = (
         "unmanaged",
         _VerbArgs.path_style_absolute,
+        _VerbArgs.include_dirs,
+    )
+    unmanaged_files = (
+        "unmanaged",
+        _VerbArgs.path_style_absolute,
+        _VerbArgs.include_files,
     )
     template_data = ("data", _VerbArgs.format_json)
 
@@ -569,7 +589,8 @@ class ReadCmd(Enum):
             cls(cls.managed_files),
             cls(cls.status_dirs),
             cls(cls.status_files),
-            cls(cls.unmanaged),
+            cls(cls.unmanaged_dirs),
+            cls(cls.unmanaged_files),
         )
 
 

@@ -12,7 +12,7 @@ from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
 from chezmoi_mousse.data_classes import ChangedPaths, ChezmoiPaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
-from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import (
@@ -118,46 +118,36 @@ async def _run_chezmoi_git_log_on_path(
 
 
 async def run_managed_commands(app: ChezmoiGui) -> ChezmoiPaths:
-    _man_dir_list = (await _exec_chezmoi(app, ReadCmd.managed_dirs, None)).out_list
-    _man_file_list = (await _exec_chezmoi(app, ReadCmd.managed_files, None)).out_list
-    _status_dirs_list = (await _exec_chezmoi(app, ReadCmd.status_dirs, None)).out_list
-    _status_files_list = (await _exec_chezmoi(app, ReadCmd.status_files, None)).out_list
-    _unmanaged_list = (await _exec_chezmoi(app, ReadCmd.unmanaged, None)).out_list
-    _unmanaged_paths = [Path(line) for line in _unmanaged_list]
-    _unmanaged_dirs_list = [path for path in _unmanaged_paths if path.is_dir()]
-    _unmanaged_files_list = [path for path in _unmanaged_paths if path.is_file()]
+    man_dir_cr = (await _exec_chezmoi(app, ReadCmd.managed_dirs)).out_list
+    man_file_cr = (await _exec_chezmoi(app, ReadCmd.managed_files)).out_list
+    status_dirs_cr = (await _exec_chezmoi(app, ReadCmd.status_dirs)).out_list
+    status_files_cr = (await _exec_chezmoi(app, ReadCmd.status_files)).out_list
+    unman_dirs_cr = (await _exec_chezmoi(app, ReadCmd.unmanaged_dirs)).out_list
+    unman_files_cr = (await _exec_chezmoi(app, ReadCmd.unmanaged_files)).out_list
 
     def get_managed_dict(managed: list[str], status: list[str]) -> dict[Path, str]:
         status_dict = {Path(line[3:]): line[:2] for line in status}
         paths = [Path(line) for line in managed]
         paths_dict: dict[Path, str] = {}
         for path in paths:
-            paths_dict[path] = status_dict.get(path, "  ")
+            paths_dict[path] = status_dict.get(path, StatusCode.S)
         return paths_dict
 
-    _managed_dirs = get_managed_dict(_man_dir_list, _status_dirs_list)
-    _managed_files = get_managed_dict(_man_file_list, _status_files_list)
+    managed_dirs = get_managed_dict(man_dir_cr, status_dirs_cr)
+    managed_files = get_managed_dict(man_file_cr, status_files_cr)
+    unmanaged_dirs = {Path(line): StatusCode.U for line in unman_dirs_cr}
+    unmanaged_files = {Path(line): StatusCode.U for line in unman_files_cr}
 
-    def get_unmanaged_dict(
-        unmanaged: list[Path],
-    ) -> dict[Path, str]:
-        return dict.fromkeys(unmanaged, "XX")
+    chezmoi_dirs = path_funcs.sort_path_dict(unmanaged_dirs | managed_dirs)
+    chezmoi_files = path_funcs.sort_path_dict(unmanaged_files | managed_files)
 
-    _unmanaged_dirs = get_unmanaged_dict(_unmanaged_dirs_list)
-    _unmanaged_files = get_unmanaged_dict(_unmanaged_files_list)
-
-    _chezmoi_dirs = path_funcs.sort_path_dict(_unmanaged_dirs | _managed_dirs)
-    _chezmoi_files = path_funcs.sort_path_dict(_unmanaged_files | _managed_files)
-    _removed_dirs = [p for p in store.cm_paths.managed_dirs if p not in _managed_dirs]
-    _removed_files = [
-        p for p in store.cm_paths.managed_files if p not in _managed_files
-    ]
-
-    _added_dirs = {
-        p: s for p, s in _managed_dirs.items() if p not in store.cm_paths.managed_dirs
+    removed_dirs = [p for p in store.cm_paths.managed_dirs if p not in managed_dirs]
+    removed_files = [p for p in store.cm_paths.managed_files if p not in managed_files]
+    added_dirs = {
+        p: s for p, s in managed_dirs.items() if p not in store.cm_paths.managed_dirs
     }
-    _added_files = {
-        p: s for p, s in _managed_files.items() if p not in store.cm_paths.managed_files
+    added_files = {
+        p: s for p, s in managed_files.items() if p not in store.cm_paths.managed_files
     }
 
     def get_changes_dict(
@@ -169,24 +159,24 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiPaths:
             if dict1[key] != dict2[key]
         }
 
-    _changed_dirs = get_changes_dict(store.cm_paths.managed_dirs, _managed_dirs)
-    _changed_files = get_changes_dict(store.cm_paths.managed_files, _managed_files)
+    changed_dirs = get_changes_dict(store.cm_paths.managed_dirs, managed_dirs)
+    changed_files = get_changes_dict(store.cm_paths.managed_files, managed_files)
 
-    _changes = ChangedPaths(
-        added_dirs=_added_dirs,
-        added_files=_added_files,
-        removed_dirs=_removed_dirs,
-        removed_files=_removed_files,
-        changed_dirs=_changed_dirs,
-        changed_files=_changed_files,
-        top_removed_dirs=path_funcs.get_sorted_top_parents(_removed_dirs),
+    changes = ChangedPaths(
+        added_dirs=added_dirs,
+        added_files=added_files,
+        removed_dirs=removed_dirs,
+        removed_files=removed_files,
+        changed_dirs=changed_dirs,
+        changed_files=changed_files,
+        top_removed_dirs=path_funcs.get_sorted_top_parents(removed_dirs),
     )
     new_cm_paths = ChezmoiPaths(
-        managed_dirs=_managed_dirs,
-        managed_files=_managed_files,
-        changes=_changes,
-        chezmoi_dirs=_chezmoi_dirs,
-        chezmoi_files=_chezmoi_files,
+        managed_dirs=managed_dirs,
+        managed_files=managed_files,
+        changes=changes,
+        chezmoi_dirs=chezmoi_dirs,
+        chezmoi_files=chezmoi_files,
     )
     return new_cm_paths
 
