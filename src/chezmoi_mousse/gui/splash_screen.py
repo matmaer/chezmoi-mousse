@@ -134,9 +134,6 @@ class SplashScreen(Screen[None]):
             auto_commit_bool=parsed_std_out["git"]["autocommit"],
             auto_push_bool=parsed_std_out["git"]["autopush"],
         )
-        store.add_path = store.cfg.dest_dir_path
-        store.apply_path = store.cfg.dest_dir_path
-        store.re_add_path = store.cfg.dest_dir_path
         await self.write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.parsed)
 
     async def run_initial_command_sequence(self) -> None:
