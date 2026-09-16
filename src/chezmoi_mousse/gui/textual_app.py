@@ -27,7 +27,7 @@ from chezmoi_mousse.gui.common.actionables import (
 from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_trees import FullManagedTree, StatusManagedTree
+from chezmoi_mousse.gui.common.managed_trees import ManagedTree, StatusTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
@@ -169,9 +169,9 @@ class ChezmoiGui(App[str]):
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
     async def _update_managed_trees(self, chezmoi_paths: ChezmoiPaths) -> None:
-        managed_tree_with_unchanged = self.query_exactly_one(FullManagedTree)
+        managed_tree_with_unchanged = self.query_exactly_one(ManagedTree)
         await managed_tree_with_unchanged.update_tree(chezmoi_paths)
-        status_managed_tree = self.query_exactly_one(StatusManagedTree)
+        status_managed_tree = self.query_exactly_one(StatusTree)
         await status_managed_tree.update_tree(chezmoi_paths)
 
     @work

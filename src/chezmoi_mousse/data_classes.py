@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import NamedTuple, Self
 
+__all__ = ["ChezmoiPaths"]
+
 ChangedPaths = NamedTuple(
     "ChangedPaths",
     [
@@ -54,11 +56,15 @@ class ChezmoiPaths:
         *,
         managed_dirs: dict[Path, str],
         managed_files: dict[Path, str],
+        chezmoi_dirs: dict[Path, str],
+        chezmoi_files: dict[Path, str],
         changes: ChangedPaths,
     ) -> None:
 
         self.managed_dirs = managed_dirs
         self.managed_files = managed_files
+        self.chezmoi_dirs = chezmoi_dirs
+        self.chezmoi_files = chezmoi_files
         self.changes = changes
 
         self.sets: ChezmoiPathSets = self._get_path_sets()
@@ -69,7 +75,7 @@ class ChezmoiPaths:
 
         def check_can_add(status: str) -> bool:
             # TODO: check if this condition is correct
-            return status[0] == "A" or status[1] == "A"
+            return status[0] == "A" or status[1] == "A" or status == "XX"
 
         def check_can_apply(status: str) -> bool:
             # TODO: handle/support 'R'
@@ -160,6 +166,8 @@ class ChezmoiPaths:
         return cls(
             managed_dirs={},
             managed_files={},
+            chezmoi_dirs={},
+            chezmoi_files={},
             changes=ChangedPaths(
                 removed_dirs=[],
                 removed_files=[],

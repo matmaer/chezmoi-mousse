@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 __all__ = [
     "CommandResultMsg",
     "CurrentNodeMsg",
+    "DestDirBtnMsg",
     "DirContentBtnMsg",
     "FlatBtnMsg",
     "OperateBtnMsg",

@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["FullManagedTree", "StatusManagedTree"]
+__all__ = ["ChezmoiTree", "ManagedTree", "StatusTree"]
 
 
 class _ManagedTreeBase(Tree[Path]):
@@ -77,8 +77,6 @@ class _ManagedTreeBase(Tree[Path]):
 
     async def update_tree(self, cm_paths: ChezmoiPaths) -> None:
         self.cm_paths = cm_paths
-        self.node_map.clear()
-        self.root.remove_children()
 
         for path in cm_paths.managed_dirs:
             if self.should_include_dir(path):
@@ -89,10 +87,31 @@ class _ManagedTreeBase(Tree[Path]):
                 self.add_node(path, allow_expand=False)
 
 
-class FullManagedTree(_ManagedTreeBase): ...
+class ManagedTree(_ManagedTreeBase):
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.display = False
+
+    def should_include_dir(self, path: Path) -> bool:
+        return path not in self.cm_paths.sets.clean_space_dirs
+
+    def should_include_file(self, _: Path, status: str) -> bool:
+        return status != "xx"
 
 
-class StatusManagedTree(_ManagedTreeBase):
+class StatusTree(_ManagedTreeBase):
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.display = True
+
+    def should_include_dir(self, path: Path) -> bool:
+        return path not in self.cm_paths.sets.clean_space_dirs
+
+    def should_include_file(self, _: Path, status: str) -> bool:
+        return status != "  "
+
+
+class ChezmoiTree(_ManagedTreeBase):
     def on_mount(self) -> None:
         super().on_mount()
         self.display = False

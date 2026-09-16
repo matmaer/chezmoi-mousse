@@ -25,7 +25,11 @@ from chezmoi_mousse.gui.common.actionables import (
     RefreshBtn,
 )
 from chezmoi_mousse.gui.common.components import MainSectionLabel
-from chezmoi_mousse.gui.common.managed_trees import FullManagedTree, StatusManagedTree
+from chezmoi_mousse.gui.common.managed_trees import (
+    ChezmoiTree,
+    ManagedTree,
+    StatusTree,
+)
 from chezmoi_mousse.gui.common.messages import DestDirBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -56,8 +60,9 @@ class LeftSideVertical(Vertical):
 
     def compose(self) -> ComposeResult:
         yield DestDirBtn(app_ids=self.ids)
-        yield FullManagedTree()
-        yield StatusManagedTree()
+        yield ManagedTree()
+        yield StatusTree()
+        yield ChezmoiTree()
 
     @on(DestDirBtnMsg)
     def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:
@@ -155,8 +160,8 @@ class OperateTab(TabPane):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        full_man_tree = self.query_exactly_one(FullManagedTree)
-        status_man_tree = self.query_exactly_one(StatusManagedTree)
+        full_man_tree = self.query_exactly_one(ManagedTree)
+        status_man_tree = self.query_exactly_one(StatusTree)
         if event.switch.id == self.ids.switch.show_unchanged:
             full_man_tree.display = not full_man_tree.display
             status_man_tree.display = not status_man_tree.display

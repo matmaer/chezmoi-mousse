@@ -8,6 +8,8 @@ from chezmoi_mousse.named_tuples import DumpConfigKeys, InitData
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse.named_tuples import CommandResult
 
 
@@ -28,3 +30,9 @@ cfg = DumpConfigKeys()
 git_log_cr: CommandResult | None = None
 
 cm_paths = ChezmoiPaths.empty()
+
+
+# Keep track of the selected path by tab
+full_tree_path: Path | None = None
+apply_path: Path | None = None
+re_add_path: Path | None = None

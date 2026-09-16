@@ -523,6 +523,10 @@ class ReadCmd(Enum):
     source_path = ("source-path",)
     status_dirs = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_dirs)
     status_files = ("status", _VerbArgs.path_style_absolute, _VerbArgs.include_files)
+    unmanaged = (
+        "unmanaged",
+        _VerbArgs.path_style_absolute,
+    )
     template_data = ("data", _VerbArgs.format_json)
 
     @cached_property
@@ -559,6 +563,7 @@ class ReadCmd(Enum):
             cls(cls.managed_files),
             cls(cls.status_dirs),
             cls(cls.status_files),
+            cls(cls.unmanaged),
         )
 
 

@@ -36,6 +36,11 @@ def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
+def get_sorted_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
+    sorted_keys = sort_paths(path_dict.keys())
+    return {path: path_dict[path] for path in sorted_keys}
+
+
 def get_sorted_top_parents(
     paths: Iterable[Path] | dict[Path, bool],
 ) -> list[Path]:
