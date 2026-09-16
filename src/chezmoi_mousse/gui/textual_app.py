@@ -48,8 +48,7 @@ from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.data_classes import ChezmoiPaths
-    from chezmoi_mousse.named_tuples import CommandResult
+    from chezmoi_mousse.named_tuples import ChezmoiPaths, CommandResult
 
 
 __all__ = ["ChezmoiGui"]

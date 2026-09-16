@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse import path_funcs
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.data_classes import ChezmoiPaths
 from chezmoi_mousse.named_tuples import (
-    CmPathCanges,
+    ChezmoiPaths,
+    CmPathChanges,
     DumpConfigKeys,
     InitData,
 )
@@ -35,9 +35,16 @@ cfg = DumpConfigKeys()
 
 git_log_cr: CommandResult | None = None
 
-cm_paths = ChezmoiPaths.empty()
+cm_paths = ChezmoiPaths(
+    chezmoi_dirs={},
+    chezmoi_files={},
+    managed_dirs={},
+    managed_files={},
+    status_dirs={},
+    status_files={},
+)
 
-cm_path_changes = CmPathCanges(
+cm_path_changes = CmPathChanges(
     added_dirs={},
     added_files={},
     removed_dirs=[],
@@ -76,7 +83,7 @@ async def update_cm_path_changes(
 
     global cm_path_changes
 
-    cm_path_changes = CmPathCanges(
+    cm_path_changes = CmPathChanges(
         added_dirs={p: s for p, s in new_man_dirs.items() if p not in old_man_dirs},
         added_files={p: s for p, s in new_man_files.items() if p not in old_man_files},
         removed_dirs=removed_dirs,
