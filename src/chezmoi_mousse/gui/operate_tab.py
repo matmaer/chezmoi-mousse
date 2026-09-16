@@ -21,7 +21,7 @@ from textual.widgets import (
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import (
     DestDirBtn,
-    OperateBtn,
+    OperateBtnGroup,
     RefreshBtn,
 )
 from chezmoi_mousse.gui.common.components import MainSectionLabel
@@ -58,7 +58,6 @@ class LeftSideVertical(Vertical):
         yield DestDirBtn(app_ids=self.ids)
         yield FullManagedTree()
         yield StatusManagedTree()
-        yield RefreshBtn(app_ids=self.ids)
 
     @on(DestDirBtnMsg)
     def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:
@@ -79,20 +78,15 @@ class RightSideVertical(Vertical):
         self,
         *,
         app_ids: AppIds,
-        op_btn_labels: tuple[BtnLabel, ...],
         radio_labels: tuple[LabelStr, ...],
         switch_labels: tuple[LabelStr, ...],
     ) -> None:
         self.ids = app_ids
-        self.op_btn_labels = op_btn_labels
         self.radio_labels = radio_labels
         self.switch_labels = switch_labels
         super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
-        with VerticalGroup(classes=Tcss.op_btn_vert_group):
-            for btn_label in self.op_btn_labels:
-                yield OperateBtn(app_ids=self.ids, btn_label=btn_label)
         with RadioSet():
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)
@@ -104,6 +98,8 @@ class RightSideVertical(Vertical):
                     Label(switch_label),
                     classes=Tcss.switch_with_label,
                 )
+
+        yield RefreshBtn(app_ids=self.ids)
 
     def on_mount(self) -> None:
         first_radio = self.query_one(RadioSet).query(RadioButton).first()
@@ -125,13 +121,6 @@ class OperateTab(TabPane):
             yield MiddleVertical(app_ids=self.ids)
             yield RightSideVertical(
                 app_ids=self.ids,
-                op_btn_labels=(
-                    BtnLabel.chezmoi_add,
-                    BtnLabel.chezmoi_apply,
-                    BtnLabel.chezmoi_re_add,
-                    BtnLabel.chezmoi_forget,
-                    BtnLabel.chezmoi_destroy,
-                ),
                 radio_labels=(
                     LabelStr.radio_contents,
                     LabelStr.radio_diff,
@@ -143,6 +132,16 @@ class OperateTab(TabPane):
                     LabelStr.expand_all,
                     LabelStr.show_unmanaged,
                     LabelStr.show_unwanted,
+                ),
+            )
+            yield OperateBtnGroup(
+                app_ids=self.ids,
+                labels=(
+                    BtnLabel.chezmoi_add,
+                    BtnLabel.chezmoi_apply,
+                    BtnLabel.chezmoi_re_add,
+                    BtnLabel.chezmoi_forget,
+                    BtnLabel.chezmoi_destroy,
                 ),
             )
 
