@@ -46,13 +46,13 @@
 
 .op_btn_group {
   dock: bottom;
-  height: 2;
+  height: 3;
 
   &>.operate_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
     border-top: wide $primary-darken-3;
-    border-bottom: none;
+    border-bottom: inner $surface-lighten-1;
     color: $primary-lighten-3;
     margin: 0 1;
     text-style: none;
@@ -75,29 +75,6 @@
   width: auto;
   max-width: 33%;
   min-width: 18;
-
-  &>.refresh_button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-bottom: none;
-    border-top: wide $surface-lighten-1;
-    color: $primary-lighten-3;
-    dock: bottom;
-    height: 2;
-    margin: 0 1;
-    min-width: 18;
-    text-style: none;
-    width: 100%;
-
-    &:hover {
-      text-style: none;
-      color: $accent-lighten-1;
-    }
-
-    &:focus {
-      text-style: none;
-    }
-  }
 }
 
 .operate_pane {
@@ -128,12 +105,30 @@
       height: 1fr;
       width: auto;
     }
+  }
+
+  &>.operations_middle {
+    margin: 0 2;
+  }
+
+  &>.operations_right {
+    width: 25;
+
+    &>.switches_vert_group {
+      .switch_with_label {
+        background-tint: $surface;
+        background: $surface;
+        border-bottom: inner $surface;
+        border-top: inner $surface;
+        padding-left: 2;
+      }
+    }
 
     &>.refresh_button {
-      background-tint: $surface-lighten-1;
-      background: $surface-lighten-1;
-      border-top: wide $surface-lighten-1;
-      border-bottom: inner $surface-lighten-1;
+      background-tint: $surface;
+      background: $surface;
+      border-top: wide $surface;
+      border-bottom: inner $surface;
       color: $primary-lighten-3;
       min-width: 18;
       text-style: none;
@@ -149,47 +144,6 @@
         text-style: none;
       }
     }
-  }
-
-  &>.operations_middle {
-    margin: 0 2;
-  }
-
-  &>.operations_right {
-    width: 25;
-
-    &>.op_btn_vert_group {
-
-      .operate_button {
-        border: none;
-        background-tint: $surface-lighten-1;
-        background: $surface-lighten-1;
-        border-top: wide $primary-darken-3;
-        color: $text-primary;
-        width: 1fr;
-
-        &:hover {
-          border-top: wide $accent-darken-3;
-          color: $accent;
-          text-style: none;
-        }
-
-        &:focus {
-          text-style: none;
-        }
-      }
-    }
-
-    &>.switches_vert_group {
-      .switch_with_label {
-        background-tint: $surface;
-        background: $surface;
-        border-bottom: inner $surface;
-        border-top: inner $surface;
-        padding-left: 2;
-      }
-    }
-
   }
 }
 
