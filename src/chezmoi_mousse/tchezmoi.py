@@ -9,9 +9,10 @@ from rich.text import Text
 
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
+from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.named_tuples import ChezmoiPaths, CommandResult, ScanDirItem
-from chezmoi_mousse.str_enums import ReadCmd, StatusCode as Sc, WriteCmd
+from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
+from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import (
@@ -116,53 +117,24 @@ async def _run_chezmoi_git_log_on_path(
     return cmd_result
 
 
-async def run_managed_commands(app: ChezmoiGui) -> ChezmoiPaths:
+async def run_managed_commands(app: ChezmoiGui) -> None:
 
-    man_dir_cr = (await _exec_chezmoi(app, ReadCmd.managed_dirs)).out_list
-    man_file_cr = (await _exec_chezmoi(app, ReadCmd.managed_files)).out_list
-    status_dirs_cr = (await _exec_chezmoi(app, ReadCmd.status_dirs)).out_list
-    status_files_cr = (await _exec_chezmoi(app, ReadCmd.status_files)).out_list
-    unman_dirs_cr = (await _exec_chezmoi(app, ReadCmd.unmanaged_dirs)).out_list
-    unman_files_cr = (await _exec_chezmoi(app, ReadCmd.unmanaged_files)).out_list
+    man_dir_list = (await _exec_chezmoi(app, ReadCmd.managed_dirs)).out_list
+    man_file_list = (await _exec_chezmoi(app, ReadCmd.managed_files)).out_list
+    status_dirs_list = (await _exec_chezmoi(app, ReadCmd.status_dirs)).out_list
+    status_files_list = (await _exec_chezmoi(app, ReadCmd.status_files)).out_list
+    unman_dirs_list = (await _exec_chezmoi(app, ReadCmd.unmanaged_dirs)).out_list
+    unman_files_list = (await _exec_chezmoi(app, ReadCmd.unmanaged_files)).out_list
 
-    status_dirs_dict = {Path(line[3:]): line[:2] for line in status_dirs_cr}
-    status_files_dict = {Path(line[3:]): line[:2] for line in status_files_cr}
-
-    def get_managed_dict(
-        managed: list[str], status: dict[Path, str]
-    ) -> dict[Path, str]:
-        status_dict = status
-        paths = [Path(line) for line in managed]
-        paths_dict: dict[Path, str] = {}
-        for path in paths:
-            paths_dict[path] = status_dict.get(path, Sc.SS.value)
-        return paths_dict
-
-    man_dirs_dict = get_managed_dict(man_dir_cr, status_dirs_dict)
-    man_files_dict = get_managed_dict(man_file_cr, status_files_dict)
-
-    await store.update_cm_path_changes(man_dirs_dict, man_files_dict)
-
-    unman_dirs_dict = {
-        Path(line): Sc.U.value
-        for line in unman_dirs_cr
-        if Path(line) not in man_dirs_dict
-    }
-    unman_files_dict = {
-        Path(line): Sc.U.value
-        for line in unman_files_cr
-        if Path(line) not in man_files_dict
-    }
-
-    new_cm_paths = ChezmoiPaths(
-        chezmoi_dirs=path_funcs.sort_path_dict(unman_dirs_dict | man_dirs_dict),
-        chezmoi_files=path_funcs.sort_path_dict(unman_files_dict | man_files_dict),
-        managed_dirs=man_dirs_dict,
-        managed_files=man_files_dict,
-        status_dirs=status_dirs_dict,
-        status_files=status_files_dict,
+    tree_paths = ChezmoiTreePaths(
+        _man_dirs_list=man_dir_list,
+        _man_files_list=man_file_list,
+        _status_dirs_list=status_dirs_list,
+        _status_files_list=status_files_list,
+        _unman_dirs_list=unman_dirs_list,
+        _unman_files_list=unman_files_list,
     )
-    return new_cm_paths
+    await store.handle_new_tree_paths(tree_paths)
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:

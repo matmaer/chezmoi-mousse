@@ -21,13 +21,11 @@ from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
-    OperateBtnGroup,
     TabButtons,
 )
-from chezmoi_mousse.gui.common.components import LeftSideVertical
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_trees import ManagedTree, StatusTree
+from chezmoi_mousse.gui.common.managed_trees import ChezmoiTree, ManagedTree, StatusTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
@@ -48,7 +46,7 @@ from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.named_tuples import ChezmoiPaths, CommandResult
+    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["ChezmoiGui"]
@@ -153,11 +151,9 @@ class ChezmoiGui(App[str]):
         self.pre_mount = False
         self._run_doctor_command()
         self._run_splash_commands()
+        await tchezmoi.run_managed_commands(self)
         await self._log_pre_mount_cmd_results()
-        chezmoi_paths: ChezmoiPaths = await tchezmoi.run_managed_commands(self)
-        store.cm_paths = chezmoi_paths
-        await self._update_managed_trees(chezmoi_paths)
-
+        await self._update_trees()
         await self.splash_screen.dismiss_after_fade_loop()
 
     async def _log_pre_mount_cmd_results(self) -> None:
@@ -167,11 +163,13 @@ class ChezmoiGui(App[str]):
             setattr(app_log, ReactiveVar.cmd_result, cmd)
             setattr(cmd_log, ReactiveVar.cmd_result, cmd)
 
-    async def _update_managed_trees(self, chezmoi_paths: ChezmoiPaths) -> None:
-        managed_tree_with_unchanged = self.query_exactly_one(ManagedTree)
-        await managed_tree_with_unchanged.update_tree(chezmoi_paths)
-        status_managed_tree = self.query_exactly_one(StatusTree)
-        await status_managed_tree.update_tree(chezmoi_paths)
+    async def _update_trees(self) -> None:
+        chezmoi_tree = self.query_exactly_one(ChezmoiTree)
+        await chezmoi_tree.update_tree()
+        managed_tree = self.query_exactly_one(ManagedTree)
+        await managed_tree.update_tree()
+        status_tree = self.query_exactly_one(StatusTree)
+        await status_tree.update_tree()
 
     @work
     async def _run_doctor_command(self) -> None:
@@ -259,7 +257,7 @@ class ChezmoiGui(App[str]):
         if isinstance(self.screen, SplashScreen):
             return
         active_tab_label = self.query_exactly_one(TabbedContent).active
-        left_side: LeftSideVertical | FlatButtonsVertical | None = None
+        left_side: FlatButtonsVertical | None = None
         operation_buttons = None
         view_switcher_buttons = None
 
@@ -268,14 +266,7 @@ class ChezmoiGui(App[str]):
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab_label == BtnLabel.add:
-            left_side = self.query_one(
-                store.add_ids.container.left_side_q, LeftSideVertical
-            )
-            operation_buttons = self.query_one(
-                store.add_ids.container.operate_buttons_q, OperateBtnGroup
-            )
-        elif active_tab_label == BtnLabel.logs:
+        if active_tab_label == BtnLabel.logs:
             logs_tab_buttons = self.query(TabButtons).last()
             logs_tab_buttons.display = logs_tab_buttons.display is not True
         elif active_tab_label == BtnLabel.config:

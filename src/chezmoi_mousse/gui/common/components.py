@@ -10,7 +10,6 @@ from chezmoi_mousse.str_enums import InfoKind, LabelStr
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.app_ids import AppIds
 
 from textual.reactive import reactive
 
@@ -22,18 +21,9 @@ __all__ = [
     "HighlightedStatic",
     "InfoStatic",
     "InfoVertical",
-    "LeftSideVertical",
     "MainSectionLabel",
     "SubSectionLabel",
 ]
-
-
-# Container Regions
-class LeftSideVertical(Vertical):
-    def __init__(self, *, app_ids: AppIds) -> None:
-        super().__init__(
-            id=app_ids.container.left_side, classes=Tcss.left_side_vertical
-        )
 
 
 class MainSectionLabel(Label):

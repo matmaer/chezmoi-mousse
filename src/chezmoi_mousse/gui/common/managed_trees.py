@@ -8,9 +8,8 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import TreeStateMsg
-from chezmoi_mousse.named_tuples import ChezmoiPaths, CmPathSets
 from chezmoi_mousse.str_enums import (
     ColorVar,
     StatusCode as Sc,
@@ -32,33 +31,11 @@ __all__ = ["ChezmoiTree", "ManagedTree", "StatusTree"]
 
 
 class _ManagedTreeBase(Tree[Path]):
-    """Base class for the managed tree with unchanged paths, without unchanged paths,
-    and with unmanaged or unwanted paths."""
-
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
     def __init__(self, tree_name: TreeName) -> None:
-        self.node_color_map: dict[Path, str] = {}
         self.node_map: NodeMap = {}
-        self.cm_paths = ChezmoiPaths(
-            chezmoi_dirs={},
-            chezmoi_files={},
-            managed_dirs={},
-            managed_files={},
-            status_dirs={},
-            status_files={},
-        )
-        self.sets = CmPathSets(
-            clean_space_dirs=set(),
-            dirty_space_dirs=set(),
-            managed_paths=set(),
-            status_paths=set(),
-            missing_paths=set(),
-            add_paths=set(),
-            apply_paths=set(),
-            re_add_paths=set(),
-        )
 
         super().__init__(label="root", classes=Tcss.managed_tree, name=tree_name)
 
@@ -66,135 +43,30 @@ class _ManagedTreeBase(Tree[Path]):
         self.root.data = store.cfg.dest_dir_path
         self.guide_depth = 3
         self.show_root = False
+        self.dir_color_map: dict[str, str] = {
+            Sc.SS: ColorVar.text_success,
+            Sc.TT: ColorVar.text_warning,
+            Sc.UU: ColorVar.text_accent,
+        }
+        self.file_color_map: dict[str, str] = {
+            Sc.SS: ColorVar.success,
+            Sc.UU: ColorVar.accent,
+        }
 
-    def update_path_sets(
-        self,
-        cm_paths: ChezmoiPaths,
-    ) -> CmPathSets:
-        # TODO: check logic
-
-        def check_can_add(status: str) -> bool:
-            return Sc.A in status or status is Sc.U
-
-        def check_can_apply(status: str) -> bool:
-            return status[1] in (Sc.A, Sc.D, Sc.M)
-
-        def check_can_readd(status: str) -> bool:
-            return status[0] in (Sc.A, Sc.D, Sc.M)
-
-        status_add_dirs: set[Path] = set()
-        status_apply_dirs: set[Path] = set()
-        status_re_add_dirs: set[Path] = set()
-
-        status_add_files: set[Path] = set()
-        status_apply_files: set[Path] = set()
-        status_re_add_files: set[Path] = set()
-
-        for path, status in cm_paths.managed_dirs.items():
-            if check_can_add(status):
-                status_add_dirs.add(path)
-            if check_can_apply(status) and status is not Sc.U:
-                status_apply_dirs.add(path)
-            if check_can_readd(status) and status is not Sc.U:
-                status_re_add_dirs.add(path)
-
-        for path, status in cm_paths.managed_files.items():
-            if check_can_add(status):
-                status_add_files.add(path)
-            if check_can_apply(status) and status is not Sc.U:
-                status_apply_files.add(path)
-            if check_can_readd(status) and status is not Sc.U:
-                status_re_add_files.add(path)
-
-        # for the dirs without a status, we also need to consider their nested contents
-
-        space_add_dirs: set[Path] = set()
-        space_apply_dirs: set[Path] = set()
-        space_re_add_dirs: set[Path] = set()
-
-        for path in cm_paths.managed_dirs.keys() - cm_paths.status_dirs.keys():
-            if path_funcs.any_nested_in(
-                dir_path=path, check_paths=status_add_dirs | status_add_files
-            ):
-                space_add_dirs.add(path)
-            if path_funcs.any_nested_in(
-                dir_path=path, check_paths=status_apply_dirs | status_apply_files
-            ):
-                space_apply_dirs.add(path)
-            if path_funcs.any_nested_in(
-                dir_path=path, check_paths=status_re_add_dirs | status_re_add_files
-            ):
-                space_re_add_dirs.add(path)
-
-        tree_add_dirs = status_add_dirs | space_add_dirs
-        tree_apply_dirs = status_apply_dirs | space_apply_dirs
-        tree_re_add_dirs = status_re_add_dirs | space_re_add_dirs
-
-        dirty_space_dirs = space_add_dirs | space_apply_dirs | space_re_add_dirs
-
-        clean_space_dirs = (
-            cm_paths.managed_dirs.keys()
-            - cm_paths.status_dirs.keys()
-            - dirty_space_dirs
-        )
-        managed_paths_set = cm_paths.managed_dirs.keys() | cm_paths.managed_files.keys()
-        return CmPathSets(
-            clean_space_dirs=clean_space_dirs,
-            dirty_space_dirs=dirty_space_dirs,
-            managed_paths=managed_paths_set,
-            status_paths=cm_paths.status_dirs.keys() | cm_paths.status_files.keys(),
-            missing_paths={p for p in managed_paths_set if not p.exists()},
-            add_paths=tree_add_dirs | status_add_files,
-            apply_paths=tree_apply_dirs | status_apply_files,
-            re_add_paths=tree_re_add_dirs | status_re_add_files,
-        )
-
-    def color_label(self, path: Path, cm_paths: ChezmoiPaths) -> str:
-        if self.node_color_map.get(path, None) is not None:
-            return f"[{self.node_color_map[path]}]{path.name}[/]"
-        color_var = ColorVar.bogus
-        if path in cm_paths.chezmoi_dirs:
-            if path in self.sets.dirty_space_dirs:
-                color_var = ColorVar.text_primary
-            else:
-                status = cm_paths.chezmoi_dirs[path]
-                color_var = (
-                    ColorVar.dimmed if status == Sc.SS else ColorVar.text_warning
-                )
-        elif (
-            path in cm_paths.chezmoi_files
-            and cm_paths.chezmoi_files.get(path, None) is not Sc.U
-        ):
-            status = cm_paths.chezmoi_files[path]
-            color_var = ColorVar.dimmed if status == Sc.SS else ColorVar.text_warning
-        italic = " italic" if path in self.sets.missing_paths else ""
-        color = self.app.theme_variables.get(color_var.value, ColorVar.bogus.value)
-        self.node_color_map[path] = color
+    def color_label(self, path: Path, status: str, dir: bool) -> str:
+        if dir:
+            color_var = self.dir_color_map.get(status, ColorVar.bogus)
+        else:
+            color_var = self.file_color_map.get(status, ColorVar.bogus)
+        italic = " italic" if path in store.cm_path_sets.missing else ""
+        color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
         return f"[{color}{italic}]{path.name}[/]"
 
-    def add_node(self, path: Path, allow_expand: bool) -> None:
+    def add_node(self, path: Path, status: str, *, allow_expand: bool) -> None:
         parent_node = self.node_map.get(path.parent, self.root)
-        label = self.color_label(path, self.cm_paths)
+        label = self.color_label(path, status, dir=allow_expand)
         new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
         self.node_map[path] = new_node
-
-    def should_include_dir(self, _path: Path, _status: str) -> bool:
-        return True
-
-    def should_include_file(self, _path: Path, _status: str) -> bool:
-        return True
-
-    async def update_tree(self, cm_paths: ChezmoiPaths) -> None:
-        self.sets = self.update_path_sets(cm_paths)
-        self.cm_paths = cm_paths
-
-        for path, status in cm_paths.chezmoi_dirs.items():
-            if self.should_include_dir(path, status):
-                self.add_node(path, allow_expand=True)
-
-        for path, status in cm_paths.chezmoi_files.items():
-            if self.should_include_file(path, status):
-                self.add_node(path, allow_expand=False)
 
     @on(Tree.NodeCollapsed)
     def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
@@ -213,6 +85,21 @@ class _ManagedTreeBase(Tree[Path]):
         self.app.post_message(TreeStateMsg(path, self.name, self.node_map))
 
 
+class ChezmoiTree(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.chezmoi_tree)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.display = False
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.all_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.all_files.items():
+            self.add_node(path, status, allow_expand=False)
+
+
 class ManagedTree(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.managed_tree)
@@ -221,11 +108,11 @@ class ManagedTree(_ManagedTreeBase):
         super().on_mount()
         self.display = False
 
-    def should_include_dir(self, path: Path, status: str) -> bool:
-        return path not in self.sets.clean_space_dirs and status != "xx"
-
-    def should_include_file(self, _: Path, status: str) -> bool:
-        return status != "xx"
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.managed_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.managed_files.items():
+            self.add_node(path, status, allow_expand=False)
 
 
 class StatusTree(_ManagedTreeBase):
@@ -236,17 +123,8 @@ class StatusTree(_ManagedTreeBase):
         super().on_mount()
         self.display = True
 
-    def should_include_dir(self, path: Path, status: str) -> bool:
-        return path in self.sets.clean_space_dirs and status != "xx"
-
-    def should_include_file(self, _: Path, status: str) -> bool:
-        return status != "  " and status != "xx"
-
-
-class ChezmoiTree(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.chezmoi_tree)
-
-    def on_mount(self) -> None:
-        super().on_mount()
-        self.display = False
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.status_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.status_files.items():
+            self.add_node(path, status, allow_expand=False)
