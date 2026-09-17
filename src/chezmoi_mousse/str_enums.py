@@ -122,19 +122,6 @@ class Chars(StrEnum):
     tree_expanded = f"{down_triangle} "
 
 
-class StatusCode(StrEnum):
-    # real chezmoi status codes in a column
-    A = auto()
-    D = auto()
-    M = auto()
-    R = auto()
-    S = "\x20"  # single space as a status (no status)
-    # meta, self assigned status codes
-    SS = "\x20\x20"  # paths with TWO spaces as a status (no status)
-    TT = "TT"  # dir without status, with nested status paths, to be shown in the Tree
-    UU = "UU"  # unmanaged path
-
-
 class ColorVar(StrEnum):
     bogus = "#FFFF00"
 
@@ -438,6 +425,44 @@ class RichLogName(StrEnum):
     dom_node_logger = auto()
     env_var_logger = auto()
     memory_usage_logger = auto()
+
+
+class StatusCode(StrEnum):
+    """
+    Status pairs used for coloring and parsing, the comments are potentially not 100%
+    correct and are corrected when new, uncounted for scenarios emerge or when it's
+    plain wrong.
+    """
+
+    # Possible chezmoi status codes in a column
+    A = auto()
+    D = auto()
+    M = auto()
+    R = auto()
+    S = "\x20"  # single space
+
+    # --- Status Pairs ---
+    # TODO: We currently completely skip any status R, so currently omitted here
+    # NOTE: The first column can only contain M, D or a space, so not applicable
+
+    DA = "DA"  # Target deleted locally; apply will create/restore target file.
+    DD = "DD"  # NOTE: probably impossible status pair
+    DM = "DM"  # Target deleted locally; apply will create target from source.
+    DS = "DS"  # Target deleted locally; no target apply action required.
+
+    MA = "MA"  # Target modified without chezmoi edit; apply treats path as addition.
+    MD = "MD"  # Target modified without chezmoi edit; apply deletes target per rules.
+    MM = "MM"  # Target modified without chezmoi edit; apply will modify target.
+    MS = "MS"  # Target modified without chezmoi edit; no target apply action required.
+
+    SA = "SA"  # Applied target missing; apply will create/restore target file.
+    SD = "SD"  # Applied target clean; apply will delete target per source rules.
+    SM = "SM"  # Applied target clean; apply will modify target from source updates.
+
+    # Meta statuses, self assigned for Tree widget rendering.
+    SS = "\x20\x20"  # Any path which don't occur at all in chezmoi status output
+    TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
+    UU = "UU"  # Unmanaged  path
 
 
 class Tcss(StrEnum):

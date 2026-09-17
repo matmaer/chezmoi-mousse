@@ -44,17 +44,49 @@ class _ManagedTreeBase(Tree[Path]):
         self.guide_depth = 3
         self.show_root = False
         self.dir_color_map: dict[str, str] = {
-            Sc.SS: ColorVar.text_success,
-            Sc.TT: ColorVar.text_warning,
+            # D combos
+            Sc.DA: ColorVar.text_error,
+            Sc.DD: ColorVar.bogus,  # probably impossible status pair
+            Sc.DM: ColorVar.text_error,
+            Sc.DS: ColorVar.text_error,
+            # M combos
+            Sc.MA: ColorVar.text_warning,
+            Sc.MD: ColorVar.text_error,
+            Sc.MM: ColorVar.text_warning,
+            Sc.MS: ColorVar.text_warning,
+            # S combos
+            Sc.SA: ColorVar.text_success,
+            Sc.SD: ColorVar.text_error,
+            Sc.SM: ColorVar.text_warning,
+            # Meta codes
+            Sc.SS: ColorVar.foreground_darken_2,
+            Sc.TT: ColorVar.text_primary,
             Sc.UU: ColorVar.text_accent,
         }
         self.file_color_map: dict[str, str] = {
-            Sc.SS: ColorVar.success,
+            # D combos
+            Sc.DA: ColorVar.error,
+            Sc.DD: ColorVar.bogus,  # probably impossible status pair
+            Sc.DM: ColorVar.error,
+            Sc.DS: ColorVar.error,
+            # M combos
+            Sc.MA: ColorVar.warning,
+            Sc.MD: ColorVar.error,
+            Sc.MM: ColorVar.warning,
+            Sc.MS: ColorVar.warning,
+            # S combos
+            Sc.SA: ColorVar.success,
+            Sc.SD: ColorVar.error,
+            Sc.SM: ColorVar.warning,
+            # Meta codes
+            Sc.SS: ColorVar.dimmed,
+            Sc.TT: ColorVar.primary,
             Sc.UU: ColorVar.accent,
         }
 
-    def color_label(self, path: Path, status: str, dir: bool) -> str:
-        if dir:
+    def color_label(self, path: Path, status: Sc, directory: bool) -> str:
+        color_var = ColorVar.dimmed  # the default
+        if directory:
             color_var = self.dir_color_map.get(status, ColorVar.bogus)
         else:
             color_var = self.file_color_map.get(status, ColorVar.bogus)
@@ -62,9 +94,9 @@ class _ManagedTreeBase(Tree[Path]):
         color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
         return f"[{color}{italic}]{path.name}[/]"
 
-    def add_node(self, path: Path, status: str, *, allow_expand: bool) -> None:
+    def add_node(self, path: Path, status: Sc, *, allow_expand: bool) -> None:
         parent_node = self.node_map.get(path.parent, self.root)
-        label = self.color_label(path, status, dir=allow_expand)
+        label = self.color_label(path, status, allow_expand)
         new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
         self.node_map[path] = new_node
 

@@ -19,19 +19,27 @@ class ChezmoiTreePaths:
     _unman_dirs_list: list[str]
     _unman_files_list: list[str]
 
-    all_dirs: dict[Path, str] = field(default_factory=dict[Path, str])
-    all_files: dict[Path, str] = field(default_factory=dict[Path, str])
-    managed_dirs: dict[Path, str] = field(default_factory=dict[Path, str])
-    managed_files: dict[Path, str] = field(default_factory=dict[Path, str])
-    status_dirs: dict[Path, str] = field(default_factory=dict[Path, str])
-    status_files: dict[Path, str] = field(default_factory=dict[Path, str])
+    all_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    all_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    managed_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    managed_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    status_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    status_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
 
     def __post_init__(self) -> None:
 
-        managed_dirs = {Path(p): Sc.SS.value for p in self._man_dirs_list}
-        managed_files = {Path(p): Sc.SS.value for p in self._man_files_list}
-        status_dirs = {Path(line[3:]): line[:2] for line in self._status_dirs_list}
-        status_files = {Path(line[3:]): line[:2] for line in self._status_files_list}
+        managed_dirs = {Path(p): Sc.SS for p in self._man_dirs_list}
+        managed_files = {Path(p): Sc.SS for p in self._man_files_list}
+        status_dirs = {
+            Path(line[3:]): Sc(line[:2])
+            for line in self._status_dirs_list
+            if Sc.R.value not in line[:2]  # TODO: implement R
+        }
+        status_files = {
+            Path(line[3:]): Sc(line[:2])
+            for line in self._status_files_list
+            if Sc.R.value not in line[:2]  # TODO: implement R
+        }
 
         # Update managed files dict
         for path, status in status_files.items():
@@ -43,12 +51,12 @@ class ChezmoiTreePaths:
             if path in status_dirs:
                 continue  # we don't want to overwrite a real status
             if path_funcs.any_nested_in(dir_path=path, check_paths=real_status_paths):
-                status_dirs[path] = Sc.TT.value  # overwrites Sc.SS
-                managed_dirs[path] = Sc.TT.value
+                status_dirs[path] = Sc.TT
+                managed_dirs[path] = Sc.TT  # overwrites Sc.SS
 
-        # Update all vars, run from managed to also overwrite Sc.UU with Sc.SS
-        all_dirs = {Path(p): Sc.UU.value for p in self._unman_dirs_list}
-        all_files = {Path(p): Sc.UU.value for p in self._unman_files_list}
+        # Add dict items for all managed paths
+        all_dirs = {Path(p): Sc.UU for p in self._unman_dirs_list}
+        all_files = {Path(p): Sc.UU for p in self._unman_files_list}
         for path, status in managed_files.items():
             all_files[path] = status
         for path, status in managed_dirs.items():
@@ -67,12 +75,12 @@ class CmPathChanges:
     _old_tree_paths: ChezmoiTreePaths
     _new_tree_paths: ChezmoiTreePaths
 
-    added_dirs: dict[Path, str] = field(default_factory=dict[Path, str])
-    added_files: dict[Path, str] = field(default_factory=dict[Path, str])
+    added_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    added_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     removed_dirs: list[Path] = field(default_factory=list[Path])
     removed_files: list[Path] = field(default_factory=list[Path])
-    changed_dirs: dict[Path, str] = field(default_factory=dict[Path, str])
-    changed_files: dict[Path, str] = field(default_factory=dict[Path, str])
+    changed_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    changed_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     top_removed_dirs: list[Path] = field(default_factory=list[Path])
 
     def __post_init__(self) -> None:
@@ -99,8 +107,8 @@ class CmPathChanges:
         ]
 
         def get_changes_dict(
-            dict1: dict[Path, str], dict2: dict[Path, str]
-        ) -> dict[Path, str]:
+            dict1: dict[Path, Sc], dict2: dict[Path, Sc]
+        ) -> dict[Path, Sc]:
             return {
                 key: dict2[key]
                 for key in dict1.keys() & dict2.keys()
@@ -130,7 +138,7 @@ class ChezmoiPathSets:
     def __post_init__(self) -> None:
         # TODO: improve this logic to decide if a button should be enabled or not
 
-        all_paths: dict[Path, str] = self._cm_paths.all_dirs | self._cm_paths.all_files
+        all_paths: dict[Path, Sc] = self._cm_paths.all_dirs | self._cm_paths.all_files
         managed_paths: set[Path] = (
             self._cm_paths.managed_dirs.keys() | self._cm_paths.managed_files.keys()
         )
