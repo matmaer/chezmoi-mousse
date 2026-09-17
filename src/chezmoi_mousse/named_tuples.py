@@ -1,65 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
 
 __all__ = [
-    "ChezmoiPaths",
-    "CmPathChanges",
-    "CmPathSets",
     "CommandResult",
     "DumpConfigKeys",
     "InitData",
     "ScanDirItem",
 ]
-
-ChezmoiPaths = NamedTuple(
-    "ChezmoiPaths",
-    [
-        ("chezmoi_dirs", dict[Path, str]),
-        ("chezmoi_files", dict[Path, str]),
-        ("managed_dirs", dict[Path, str]),
-        ("managed_files", dict[Path, str]),
-        ("status_dirs", dict[Path, str]),
-        ("status_files", dict[Path, str]),
-    ],
-)
-
-CmPathChanges = NamedTuple(
-    "CmPathChanges",
-    [
-        ("removed_dirs", list[Path]),
-        ("removed_files", list[Path]),
-        ("added_files", dict[Path, str]),
-        ("added_dirs", dict[Path, str]),
-        ("changed_dirs", dict[Path, str]),
-        ("changed_files", dict[Path, str]),
-        ("top_removed_dirs", list[Path]),
-    ],
-)
-
-
-CmPathSets = NamedTuple(
-    "CmPathSets",
-    [
-        # dirty space dirs have nested status paths, clean don't
-        ("clean_space_dirs", set[Path]),
-        ("dirty_space_dirs", set[Path]),
-        # Managed paths, including both files and directories
-        ("managed_paths", set[Path]),
-        ("status_paths", set[Path]),
-        ("missing_paths", set[Path]),
-        # Paths in the tree which 'chezmoi add' will do something
-        ("add_paths", set[Path]),
-        # Paths in the tree which 'chezmoi apply' will do something
-        ("apply_paths", set[Path]),
-        # Paths in the tree which 'chezmoi re-add' will do something
-        ("re_add_paths", set[Path]),
-    ],
-)
 
 
 class CommandResult(NamedTuple):
