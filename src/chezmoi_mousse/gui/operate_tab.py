@@ -54,9 +54,9 @@ class LeftSideVertical(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, *, app_ids: AppIds) -> None:
-        self.ids = app_ids
-        super().__init__(id=app_ids.container.left_side, classes=Tcss.operations_left)
+    def __init__(self, *, ids: AppIds) -> None:
+        self.ids = ids
+        super().__init__(id=ids.container.left_side, classes=Tcss.operations_left)
 
     def compose(self) -> ComposeResult:
         yield DestDirBtn(app_ids=self.ids)
@@ -70,9 +70,9 @@ class LeftSideVertical(Vertical):
 
 
 class MiddleVertical(Vertical):
-    def __init__(self, *, app_ids: AppIds) -> None:
-        self.ids = app_ids
-        super().__init__(id=app_ids.container.middle, classes=Tcss.operations_middle)
+    def __init__(self, *, ids: AppIds) -> None:
+        self.ids = ids
+        super().__init__(id=ids.container.middle, classes=Tcss.operations_middle)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(LabelStr.middle)
@@ -107,12 +107,12 @@ class RightSideVertical(Vertical):
     def __init__(
         self,
         *,
-        app_ids: AppIds,
+        ids: AppIds,
         radio_labels: tuple[LabelStr, ...],
     ) -> None:
-        self.ids = app_ids
+        self.ids = ids
         self.radio_labels = radio_labels
-        super().__init__(id=app_ids.container.right_side, classes=Tcss.operations_right)
+        super().__init__(id=ids.container.right_side, classes=Tcss.operations_right)
 
     def compose(self) -> ComposeResult:
         with RadioSet():
@@ -129,7 +129,7 @@ class RightSideVertical(Vertical):
 
 class OperateTab(TabPane):
     def __init__(self) -> None:
-        self.ids = store.man_tree_ids
+        self.ids = store.operate_ids
         super().__init__(
             id=BtnLabel.operate.pane_id,
             title=BtnLabel.operate,
@@ -137,10 +137,10 @@ class OperateTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
-            yield LeftSideVertical(app_ids=self.ids)
-            yield MiddleVertical(app_ids=self.ids)
+            yield LeftSideVertical(ids=self.ids)
+            yield MiddleVertical(ids=self.ids)
             yield RightSideVertical(
-                app_ids=self.ids,
+                ids=self.ids,
                 radio_labels=(
                     LabelStr.radio_contents,
                     LabelStr.radio_diff,

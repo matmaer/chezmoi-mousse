@@ -22,13 +22,10 @@ if TYPE_CHECKING:
 init_data: InitData = InitData()
 live_run: bool = False
 
-add_ids = AppIds(BtnLabel.add)
+operate_ids = AppIds(BtnLabel.operate)
+logs_ids = AppIds(BtnLabel.logs)
 config_ids = AppIds(BtnLabel.config)
 debug_ids = AppIds(BtnLabel.debug)
-logs_ids = AppIds(BtnLabel.logs)
-
-
-man_tree_ids = AppIds(BtnLabel.operate)
 
 
 cfg = DumpConfigKeys()
