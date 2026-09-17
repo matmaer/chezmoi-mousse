@@ -76,7 +76,7 @@ class GitLogView(Vertical):
             elif column_two == no_commit_message:
                 stylize(columns, ColorVar.text_secondary)
             else:
-                stylize(columns, ColorVar.text)
+                stylize(columns, ColorVar.text_primary)
 
         self.data_table.clear()
 

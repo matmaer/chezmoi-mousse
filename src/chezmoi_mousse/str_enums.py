@@ -131,25 +131,32 @@ class StatusCode(StrEnum):
     S = "\x20"  # single space as a status (no status)
     # meta, self assigned status codes
     SS = "\x20\x20"  # paths with TWO spaces as a status (no status)
-    T = auto()  # dir without status, with nested status paths, to be shown in the Tree
-    U = auto()  # unmanaged path
+    TT = "TT"  # dir without status, with nested status paths, to be shown in the Tree
+    UU = "UU"  # unmanaged path
 
 
 class ColorVar(StrEnum):
     bogus = "#FFFF00"
-    accent_darken_2 = "accent-darken-2"
+
     dimmed = "foreground-darken-3"
+    accent_darken_2 = "accent-darken-2"
+    foreground_darken_2 = "foreground-darken-2"
     info = "foreground-darken-1"
-    success = "success"
-    text = "text"
     text_block = "foreground-darken-1"
+
+    accent = "accent"
+    error = "error"
+    primary = "primary"
+    secondary = "secondary"
+    success = "success"
+    warning = "warning"
+
+    text_accent = "text-accent"
     text_error = "text-error"
-    text_error_dark = "text-error-darken-3"
     text_primary = "text-primary"
     text_secondary = "text-secondary"
     text_success = "text-success"
     text_warning = "text-warning"
-    warning = "warning"
 
 
 class ContainerName(StrEnum):
