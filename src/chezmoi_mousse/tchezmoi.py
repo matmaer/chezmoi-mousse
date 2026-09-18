@@ -103,6 +103,8 @@ async def run_chezmoi_command(
 ) -> CommandResult:
     if cmd_enum is ReadCmd.git_log and path_arg is not None:
         cr: CommandResult = await _run_chezmoi_git_log_on_path(app, path_arg)
+    elif cmd_enum is ReadCmd.dump_config:
+        cr: CommandResult = await _run_dump_config(app)
     else:
         cr: CommandResult = await _exec_chezmoi(app, cmd_enum, path_arg)
     return cr
@@ -115,6 +117,12 @@ async def _run_chezmoi_git_log_on_path(
     source_path = Path(source_path_result.std_out)
     cmd_result = await _exec_chezmoi(app, ReadCmd.git_log, source_path)
     return cmd_result
+
+
+async def _run_dump_config(app: ChezmoiGui) -> CommandResult:
+    cr: CommandResult = await _exec_chezmoi(app, ReadCmd.dump_config)
+    await store.decode_and_store_config(cr.std_out)
+    return cr
 
 
 async def run_managed_commands(app: ChezmoiGui) -> None:
