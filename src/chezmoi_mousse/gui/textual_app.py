@@ -184,15 +184,21 @@ class ChezmoiGui(App[str]):
             await tchezmoi.run_chezmoi_command(self, cmd)
 
     @work
-    async def _log_to_splash_screen(self, msg: CommandResultMsg) -> None:
+    async def _splash_log_cmd_result(self, msg: CommandResultMsg) -> None:
         assert isinstance(self.screen, SplashScreen)
         suffix = LogStr.success if msg.cmd_result.returncode == 0 else LogStr.checked
         await self.screen.write_log_msg(prefix=msg.cmd_result.pretty_cmd, suffix=suffix)
 
+    @work
+    async def _splash_log_set_reactive(self, on_class: str, suffix: LogStr) -> None:
+        assert isinstance(self.screen, SplashScreen)
+        prefix = f"update {on_class}"
+        await self.screen.write_log_msg(prefix=prefix, suffix=suffix)
+
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:
         if isinstance(self.screen, SplashScreen):
-            self._log_to_splash_screen(msg)
+            self._splash_log_cmd_result(msg)
         if self.pre_mount is True:
             self.pre_mount_cmd_results.append(msg.cmd_result)
             return
@@ -205,6 +211,9 @@ class ChezmoiGui(App[str]):
         if msg.cmd_result.cmd_enum is ReadCmd.doctor:
             doctor_table = self.query_exactly_one(DoctorTable)
             setattr(doctor_table, ReactiveVar.cmd_result, msg.cmd_result)
+            self._splash_log_set_reactive(
+                f"{doctor_table.__class__.__name__}", LogStr.trigger
+            )
         elif msg.cmd_result.cmd_enum is ReadCmd.cat_config:
             cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
             cat_config.update(msg.cmd_result.out_txt)

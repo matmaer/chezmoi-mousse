@@ -105,12 +105,13 @@ class SplashScreen(Screen[None]):
     async def on_mount(self) -> None:
         self.repo_existed = True
         self.color_map: dict[LogStr | int, str] = {
-            LogStr.absent: self.app.theme_variables[ColorVar.text_error],
-            LogStr.present: self.app.theme_variables[ColorVar.success],
             LogStr.checked: self.app.theme_variables[ColorVar.warning],
-            LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_2],
-            LogStr.parsed: self.app.theme_variables[ColorVar.success],
+            LogStr.decoded: self.app.theme_variables[ColorVar.success],
+            LogStr.missing: self.app.theme_variables[ColorVar.error],
+            LogStr.present: self.app.theme_variables[ColorVar.info],
+            LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_3],
             LogStr.success: self.app.theme_variables[ColorVar.text_primary],
+            LogStr.trigger: self.app.theme_variables[ColorVar.text_accent],
         }
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.height = 18
@@ -119,10 +120,10 @@ class SplashScreen(Screen[None]):
         self.animated_fade.fade_timer.resume()
 
     async def write_log_msg(self, *, prefix: str, suffix: LogStr) -> None:
-        dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix.padded_suffix) - 4
+        dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix) - 4
         dots = "." * dots_count
         color = self.color_map[suffix]
-        msg = f"[{color}]{prefix} {dots} {suffix.padded_suffix}[/{color}]"
+        msg = f"[{color}]{prefix} {dots} {suffix}[/{color}]"
         self.splash_log.write(msg)
 
     async def _parse_and_store_config(self, cr: CommandResult) -> None:
@@ -134,7 +135,7 @@ class SplashScreen(Screen[None]):
             auto_commit_bool=parsed_std_out["git"]["autocommit"],
             auto_push_bool=parsed_std_out["git"]["autopush"],
         )
-        await self.write_log_msg(prefix=LogStr.parse_dump_config, suffix=LogStr.parsed)
+        await self.write_log_msg(prefix=cr.pretty_cmd, suffix=LogStr.decoded)
 
     async def run_initial_command_sequence(self) -> None:
 
