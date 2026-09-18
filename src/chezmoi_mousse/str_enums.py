@@ -604,7 +604,6 @@ class ReadCmd(Enum):
         return (
             cls(cls.doctor),
             cls(cls.cat_config),
-            cls(cls.git_log),
             cls(cls.git_remote),
             cls(cls.ignored),
             cls(cls.template_data),

@@ -41,6 +41,7 @@ from chezmoi_mousse.str_enums import (
     ReactiveVar,
     ReadCmd,
     Tcss,
+    WriteCmd,
 )
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
@@ -141,7 +142,7 @@ class ChezmoiGui(App[str]):
     async def _run_startup_worker(self) -> None:
         self.pre_mount = True
         await self.push_screen(self.splash_screen)
-        await self.splash_screen.run_initial_command_sequence()
+        pre_mount_cmd_results = await self._run_pre_mount_commands()
 
         tabbed_content = self.query_exactly_one(TabbedContent)
         await tabbed_content.add_pane(OperateTab())
@@ -150,19 +151,39 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(DebugTab())
 
         self.pre_mount = False
-        self._run_doctor_command()
+        for cr in pre_mount_cmd_results:
+            self._log_cmd_result(cr)
+
         self._run_splash_commands()
         await tchezmoi.run_managed_commands(self)
-        await self._log_pre_mount_cmd_results()
         await self._update_trees()
         await self.splash_screen.dismiss_after_fade_loop()
 
-    async def _log_pre_mount_cmd_results(self) -> None:
+    async def _run_pre_mount_commands(self) -> list[CommandResult]:
+        cmd_results: list[CommandResult] = []
+
+        cr = await tchezmoi.run_chezmoi_command(self, ReadCmd.git_dir)
+        cmd_results.append(cr)
+        cr = await tchezmoi.run_chezmoi_command(self, WriteCmd.init)
+        cmd_results.append(cr)
+        cr = await tchezmoi.run_chezmoi_command(self, ReadCmd.dump_config)
+        cmd_results.append(cr)
+
+        return cmd_results
+
+    @work
+    async def _log_cmd_result(self, cmd_result: CommandResult) -> None:
+        if isinstance(self.screen, SplashScreen):
+            await self.screen.write_log_msg(cmd_result=cmd_result)
+            if cmd_result.cmd_enum is ReadCmd.dump_config:
+                await self.splash_screen.write_log_msg(
+                    prefix_suffix=(ReadCmd.dump_config.pretty_cmd, LogStr.decoded)
+                )
+
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
+        setattr(app_log, ReactiveVar.cmd_result, cmd_result)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        for cmd in self.pre_mount_cmd_results:
-            setattr(app_log, ReactiveVar.cmd_result, cmd)
-            setattr(cmd_log, ReactiveVar.cmd_result, cmd)
+        setattr(cmd_log, ReactiveVar.cmd_result, cmd_result)
 
     async def _update_trees(self) -> None:
         chezmoi_tree = self.query_exactly_one(ChezmoiTree)
@@ -173,53 +194,24 @@ class ChezmoiGui(App[str]):
         await status_tree.update_tree()
 
     @work
-    async def _run_doctor_command(self) -> None:
-        await tchezmoi.run_chezmoi_command(self, ReadCmd.doctor)
-
-    @work
     async def _run_splash_commands(self) -> None:
         for cmd in ReadCmd.splash_commands():
-            if cmd is ReadCmd.doctor:
-                continue
             await tchezmoi.run_chezmoi_command(self, cmd)
 
-    @work
-    async def _splash_log_cmd_result(self, msg: CommandResultMsg) -> None:
-        assert isinstance(self.screen, SplashScreen)
-        suffix = LogStr.success if msg.cmd_result.returncode == 0 else LogStr.checked
-        await self.screen.write_log_msg(prefix=msg.cmd_result.pretty_cmd, suffix=suffix)
-
-    @work
-    async def _splash_log_set_reactive(self, on_class: str, suffix: LogStr) -> None:
-        assert isinstance(self.screen, SplashScreen)
-        prefix = f"update {on_class}"
-        await self.screen.write_log_msg(prefix=prefix, suffix=suffix)
-
     @on(CommandResultMsg)
-    def handle_command_result(self, msg: CommandResultMsg) -> None:
-        if isinstance(self.screen, SplashScreen):
-            self._splash_log_cmd_result(msg)
+    async def handle_command_result(self, msg: CommandResultMsg) -> None:
         if self.pre_mount is True:
-            self.pre_mount_cmd_results.append(msg.cmd_result)
             return
-
-        app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
-        setattr(app_log, ReactiveVar.cmd_result, msg.cmd_result)
-        cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        setattr(cmd_log, ReactiveVar.cmd_result, msg.cmd_result)
-
+        self._log_cmd_result(msg.cmd_result)
         if msg.cmd_result.cmd_enum is ReadCmd.doctor:
             doctor_table = self.query_exactly_one(DoctorTable)
             setattr(doctor_table, ReactiveVar.cmd_result, msg.cmd_result)
-            self._splash_log_set_reactive(
-                f"{doctor_table.__class__.__name__}", LogStr.trigger
-            )
         elif msg.cmd_result.cmd_enum is ReadCmd.cat_config:
             cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
             cat_config.update(msg.cmd_result.out_txt)
         elif msg.cmd_result.cmd_enum is ReadCmd.git_log:
             git_log = self.query_exactly_one(GitLogView)
-            git_log.path = None
+            setattr(git_log, ReactiveVar.cmd_result, msg.cmd_result)
         elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
             pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
             pretty_ignored.update(msg.cmd_result.out_txt)

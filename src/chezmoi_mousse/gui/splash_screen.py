@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from collections import deque
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rich.segment import Segment
@@ -16,10 +14,8 @@ from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
-from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
-from chezmoi_mousse.named_tuples import DumpConfigKeys
-from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, WriteCmd
+from chezmoi_mousse.str_enums import ColorVar, LogStr, Tcss
 
 if TYPE_CHECKING:
     from textual import getters
@@ -58,9 +54,8 @@ class AnimatedFade(Static):
         self.styles.width = SPLASH_WIDTH
         self.fade_timer = self.set_interval(
             name="refresh_self",
-            interval=0.05,
+            interval=0.1,
             callback=self._rotate_and_refresh,
-            pause=True,
         )
 
     def _rotate_and_refresh(self) -> None:
@@ -100,7 +95,7 @@ class SplashScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade())
-            yield Center(RichLog(markup=True))
+            yield Center(RichLog(markup=True, classes=Tcss.splash_log))
 
     async def on_mount(self) -> None:
         self.repo_existed = True
@@ -114,70 +109,35 @@ class SplashScreen(Screen[None]):
             LogStr.trigger: self.app.theme_variables[ColorVar.text_accent],
         }
         self.splash_log = self.query_exactly_one(RichLog)
-        self.splash_log.styles.height = 18
         self.splash_log.styles.width = LOG_MSG_WIDTH
         self.animated_fade = self.query_exactly_one(AnimatedFade)
-        self.animated_fade.fade_timer.resume()
 
-    async def write_log_msg(self, *, prefix: str, suffix: LogStr) -> None:
+    async def write_log_msg(
+        self,
+        *,
+        prefix_suffix: tuple[str, LogStr] | None = None,
+        cmd_result: CommandResult | None = None,
+    ) -> None:
+        if prefix_suffix:
+            prefix = prefix_suffix[0]
+            suffix = prefix_suffix[1]
+        elif cmd_result:
+            prefix = cmd_result.pretty_cmd
+            suffix = LogStr.success if cmd_result.returncode == 0 else LogStr.checked
+        else:
+            self.notify("Nothing to log for splash screen.", severity="error")
+            return
+
         dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix) - 4
         dots = "." * dots_count
         color = self.color_map[suffix]
         msg = f"[{color}]{prefix} {dots} {suffix}[/{color}]"
         self.splash_log.write(msg)
 
-    async def _parse_and_store_config(self, cr: CommandResult) -> None:
-        # Set store.cfg variable
-        parsed_std_out = json.loads(cr.std_out)
-        store.cfg = DumpConfigKeys(
-            dest_dir_path=Path(parsed_std_out["destDir"]),
-            auto_add_bool=parsed_std_out["git"]["autoadd"],
-            auto_commit_bool=parsed_std_out["git"]["autocommit"],
-            auto_push_bool=parsed_std_out["git"]["autopush"],
-        )
-        await self.write_log_msg(prefix=cr.pretty_cmd, suffix=LogStr.decoded)
-
-    async def run_initial_command_sequence(self) -> None:
-
-        # check if repo exists
-        cr: CommandResult = await tchezmoi.run_chezmoi_command(
-            self.app, ReadCmd.git_dir
-        )
-        self.repo_existed = bool(cr.returncode == 0)
-        if not self.repo_existed:
-            # TODO: show modal for chezmoi init
-            self.notify("No existing chezmoi repository found.")
-            self.notify("chezmoi init not yet implemented in this case...")
-            self.notify("App will exit...", severity="warning")
-            await asyncio.sleep(3)
-            self.app.exit()
-
-        # run chezmoi init to update config
-        cr: CommandResult = await tchezmoi.run_chezmoi_command(self.app, WriteCmd.init)
-
-        if cr.returncode != 0:
-            # TODO: handle error when chezmoi init to update config fails, could happen
-            # after the user updated the template files
-            self.notify(
-                "Error: Failed to run chezmoi init to update config, run chezmoi init "
-                "manually in the terminal to check for issues.",
-                severity="error",
-            )
-            self.notify("App will exit...", severity="warning")
-            await asyncio.sleep(3)
-            self.app.exit()
-
-        cr: CommandResult = await tchezmoi.run_chezmoi_command(
-            self.app, ReadCmd.dump_config
-        )
-
-        # parse and store config
-        await self._parse_and_store_config(cr)
-
     async def dismiss_after_fade_loop(self) -> None:
         while (
             self.animated_fade.step_count < 20
             or self.animated_fade.step_count % 20 != 0
         ):
-            await asyncio.sleep(0.03)
+            await asyncio.sleep(0.06)
         self.dismiss()
