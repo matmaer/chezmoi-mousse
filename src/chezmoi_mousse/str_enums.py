@@ -127,6 +127,7 @@ class ColorVar(StrEnum):
 
     dimmed = "foreground-darken-3"
     accent_darken_2 = "accent-darken-2"
+    accent_darken_3 = "accent-darken-3"
     foreground_darken_2 = "foreground-darken-2"
     info = "foreground-darken-1"
     text_block = "foreground-darken-1"
@@ -252,40 +253,32 @@ class LogStr(StrEnum):
 
     # Splash log strings, prefixes
     check_chezmoi_repo = "check chezmoi repository"
-    parse_dump_config = "parse chezmoi dump-config"
 
     # Splash log strings, suffixes
-    absent = auto()
     checked = auto()
-    parsed = auto()
+    decoded = auto()
+    missing = auto()
     present = auto()
     reports = auto()
     skipped = auto()
     success = auto()
+    trigger = auto()
 
     @classmethod
     @cache
     def _splash_suffixes(cls) -> frozenset[Self]:
         return frozenset(
             (
-                cls[cls.absent],
                 cls[cls.checked],
-                cls[cls.parsed],
+                cls[cls.decoded],
+                cls[cls.missing],
                 cls[cls.present],
                 cls[cls.reports],
                 cls[cls.skipped],
                 cls[cls.success],
+                cls[cls.trigger],
             )
         )
-
-    @property
-    def padded_suffix(self) -> str:
-        if self not in self._splash_suffixes():
-            raise ValueError(f"{self} is not a splash log suffix")
-        # Add padding for splash log suffixes
-        max_length = max(len(str(suffix)) for suffix in self._splash_suffixes())
-        # return the string with spaces on the left
-        return str(self).rjust(max_length)
 
 
 class PathFilters(Enum):
@@ -419,6 +412,7 @@ class ProblemChars(StrEnum):
 class ReactiveVar(StrEnum):
     cmd_result = auto()
     template_data = auto()
+    path = auto()
 
 
 class RichLogName(StrEnum):
