@@ -44,6 +44,13 @@
   min-width: 78;
 }
 
+.left_side_vertical {
+  margin-right: 2;
+  width: auto;
+  max-width: 33%;
+  min-width: 18;
+}
+
 .op_btn_group {
   dock: bottom;
   height: 3;
@@ -68,13 +75,6 @@
       text-style: none;
     }
   }
-}
-
-.left_side_vertical {
-  margin-right: 2;
-  width: auto;
-  max-width: 33%;
-  min-width: 18;
 }
 
 .operate_pane {
@@ -147,50 +147,10 @@
   }
 }
 
-RadioSet {
-  border: none;
-  border-top: wide $surface-lighten-1;
-  border-bottom: inner $surface;
-  background: $surface;
-  background-tint: $surface;
 
-  &:blur {
-    &>RadioButton.-selected {
-      &>.toggle--label {
-        text-style: bold;
-      }
-    }
-  }
-
-  &:focus {
-    &>RadioButton.-selected {
-      &>.toggle--label {
-        background: $surface;
-        background-tint: $surface;
-        color: $block-cursor-foreground;
-        text-style: $block-cursor-text-style;
-      }
-    }
-  }
-}
-
-ToggleButton {
-  &>.toggle--button {
-    background: $surface;
-    background-tint: $surface;
-  }
-
-  &.-on>.toggle--button {
-    color: $text-success;
-  }
-
-  &:blur:hover {
-    &>.toggle--label {
-      background: $surface;
-      background-tint: $surface;
-      text-style: bold;
-    }
-  }
+.splash_log {
+  min-height: 16;
+  height: auto;
 }
 
 /**********************/
@@ -234,7 +194,6 @@ InfoVertical {
   width: 1fr;
   height: 1fr;
 }
-
 
 SwitchSlider {
   background-tint: $surface;
@@ -376,6 +335,52 @@ Label {
     border-top: inner $surface-lighten-1;
     color: $text-accent;
     width: 1fr;
+  }
+}
+
+RadioSet {
+  border: none;
+  border-top: wide $surface-lighten-1;
+  border-bottom: inner $surface;
+  background: $surface;
+  background-tint: $surface;
+
+  &:blur {
+    &>RadioButton.-selected {
+      &>.toggle--label {
+        text-style: bold;
+      }
+    }
+  }
+
+  &:focus {
+    &>RadioButton.-selected {
+      &>.toggle--label {
+        background: $surface;
+        background-tint: $surface;
+        color: $block-cursor-foreground;
+        text-style: $block-cursor-text-style;
+      }
+    }
+  }
+}
+
+ToggleButton {
+  &>.toggle--button {
+    background: $surface;
+    background-tint: $surface;
+  }
+
+  &.-on>.toggle--button {
+    color: $text-success;
+  }
+
+  &:blur:hover {
+    &>.toggle--label {
+      background: $surface;
+      background-tint: $surface;
+      text-style: bold;
+    }
   }
 }
 
