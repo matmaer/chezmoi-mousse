@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import json
+from pathlib import Path
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import (
@@ -13,10 +14,6 @@ from chezmoi_mousse.named_tuples import (
     InitData,
 )
 from chezmoi_mousse.str_enums import BtnLabel
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
 
 init_data: InitData = InitData()
 live_run: bool = False
@@ -91,3 +88,15 @@ async def handle_new_tree_paths(
     # The differences are calculated, now overwrite the store.tree_paths
     cm_path_sets = ChezmoiPathSets(_cm_paths=new_tree_paths)
     cm_paths = new_tree_paths
+
+
+async def decode_and_store_config(std_out: str) -> None:
+    # Set store.cfg variable
+    parsed_std_out = json.loads(std_out)
+    global cfg
+    cfg = DumpConfigKeys(
+        dest_dir_path=Path(parsed_std_out["destDir"]),
+        auto_add_bool=parsed_std_out["git"]["autoadd"],
+        auto_commit_bool=parsed_std_out["git"]["autocommit"],
+        auto_push_bool=parsed_std_out["git"]["autopush"],
+    )
