@@ -33,7 +33,7 @@ class GitLogView(LabeledView):
             container_id=ids.container.git_log,
             main_label=LabelStr.git_log,
             flat_label=LabelStr.not_set,
-            view_body=DataTable[str](),
+            view_body=DataTable[str](show_cursor=False),
             classes=classes,
         )
 
@@ -87,6 +87,8 @@ class GitLogView(LabeledView):
         self.data_cache[path_key] = pretty_rows
         await self._populate_table(pretty_rows)
 
-    def watch_path(self, path: Path | None) -> None:
+    async def watch_path(self, path: Path | None) -> None:
+        self.data_table.loading = True
         self.flat_section_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
         self._update_datatable(path)
+        self.data_table.loading = False
