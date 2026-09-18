@@ -17,8 +17,6 @@ from chezmoi_mousse.str_enums import BtnLabel
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.named_tuples import CommandResult
-
 
 init_data: InitData = InitData()
 live_run: bool = False
@@ -30,8 +28,6 @@ debug_ids = AppIds(BtnLabel.debug)
 
 
 cfg = DumpConfigKeys()
-
-git_log_cr: CommandResult | None = None
 
 
 cm_paths = ChezmoiTreePaths(

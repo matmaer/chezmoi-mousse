@@ -24,6 +24,7 @@ from chezmoi_mousse.gui.common.actionables import (
     TabButtons,
 )
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
+from chezmoi_mousse.gui.common.labeled_views import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.managed_trees import ChezmoiTree, ManagedTree, StatusTree
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
@@ -207,6 +208,9 @@ class ChezmoiGui(App[str]):
         elif msg.cmd_result.cmd_enum is ReadCmd.cat_config:
             cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
             cat_config.update(msg.cmd_result.out_txt)
+        elif msg.cmd_result.cmd_enum is ReadCmd.git_log:
+            git_log = self.query_exactly_one(GitLogView)
+            git_log.path = None
         elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
             pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
             pretty_ignored.update(msg.cmd_result.out_txt)

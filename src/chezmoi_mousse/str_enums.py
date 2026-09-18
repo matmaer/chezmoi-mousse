@@ -178,6 +178,8 @@ class InfoKind(Enum):
 
 
 class LabelStr(StrEnum):
+    git_log = "Chezmoi Git Log"
+
     # Managed Tree tab
     middle = "Middle Section"
     right_side = "Right Side Section"

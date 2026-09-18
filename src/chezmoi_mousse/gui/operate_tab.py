@@ -23,7 +23,7 @@ from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     RefreshBtn,
 )
-from chezmoi_mousse.gui.common.components import MainSectionLabel
+from chezmoi_mousse.gui.common.labeled_views import GitLogView
 from chezmoi_mousse.gui.common.managed_trees import (
     ChezmoiTree,
     ManagedTree,
@@ -69,15 +69,6 @@ class LeftSideVertical(Vertical):
     @on(DestDirBtnMsg)
     def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:
         self.notify(f"DestDirBtn pressed: {msg.tab_label}")
-
-
-class MiddleVertical(Vertical):
-    def __init__(self, *, ids: AppIds) -> None:
-        self.ids = ids
-        super().__init__(id=ids.container.middle, classes=Tcss.operations_middle)
-
-    def compose(self) -> ComposeResult:
-        yield MainSectionLabel(LabelStr.middle)
 
 
 class SwitchGroup(VerticalGroup):
@@ -151,14 +142,14 @@ class OperateTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical(ids=self.ids)
-            yield MiddleVertical(ids=self.ids)
+            yield GitLogView(ids=self.ids, classes=Tcss.operations_middle)
             yield RightSideVertical(
                 ids=self.ids,
                 radio_labels=(
+                    LabelStr.radio_git_log,
                     LabelStr.radio_contents,
                     LabelStr.radio_diff,
                     LabelStr.radio_diff_reverse,
-                    LabelStr.radio_git_log,
                 ),
             )
             yield OperateBtnGroup(
@@ -202,3 +193,6 @@ class OperateTab(TabPane):
 
     @on(TreeStateMsg)
     def update_all_trees(self) -> None: ...
+
+    @on(RadioSet.Changed)
+    def update_middle_view(self) -> None: ...

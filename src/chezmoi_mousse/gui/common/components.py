@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual.containers import Container, Vertical
-from textual.reactive import reactive
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.str_enums import LabelStr, Tcss
@@ -60,10 +59,6 @@ class LabeledView(Vertical):
     """A MainSectionLabel, SubSectionLabel and Static widget for a standard format to
     show information which is manually created by accepting a value for each of the
     3 widgets to display."""
-
-    sub_label_reactive: reactive[str | None] = reactive(None, init=False)
-    flat_label_reactive: reactive[str | None] = reactive(None, init=False)
-    view_body_reactive: reactive[Widget | None] = reactive(None, init=False)
 
     def __init__(
         self,
