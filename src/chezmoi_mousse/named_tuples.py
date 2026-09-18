@@ -80,3 +80,16 @@ class ScanDirItem(NamedTuple):
     # set by the os_scan_dir function
     sibling_count: int
     matches_unwanted: bool
+
+
+from chezmoi_mousse.str_enums import LabelStr
+
+SwitchStates = NamedTuple(
+    "SwitchStates",
+    [
+        (LabelStr.show_unchanged.name, bool),
+        (LabelStr.show_unmanaged.name, bool),
+        (LabelStr.expand_all.name, bool),
+        (LabelStr.show_unwanted.name, bool),
+    ],
+)

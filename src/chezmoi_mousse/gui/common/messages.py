@@ -11,8 +11,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.gui.common.managed_trees import NodeMap
-    from chezmoi_mousse.gui.operate_tab import SwitchState
-    from chezmoi_mousse.named_tuples import CommandResult
+    from chezmoi_mousse.named_tuples import CommandResult, SwitchStates
     from chezmoi_mousse.str_enums import BtnLabel
 
 
@@ -95,7 +94,7 @@ class OperateBtnMsg(Message):
 
 
 class SwitchGroupMsg(Message):
-    def __init__(self, switch_states: SwitchState) -> None:
+    def __init__(self, switch_states: SwitchStates) -> None:
         self.switch_states = switch_states
         super().__init__()
 
