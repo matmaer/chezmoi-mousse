@@ -24,7 +24,7 @@ from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     RefreshBtn,
 )
-from chezmoi_mousse.gui.common.labeled_views import GitLogView
+from chezmoi_mousse.gui.common.labeled_views import ContentsView, GitLogView
 from chezmoi_mousse.gui.common.managed_trees import (
     ChezmoiTree,
     ManagedTree,
@@ -146,6 +146,7 @@ class OperateTab(TabPane):
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical(ids=self.ids)
             yield GitLogView(ids=self.ids, classes=Tcss.operations_middle)
+            yield ContentsView(ids=self.ids, classes=Tcss.operations_middle)
             yield RightSideVertical(
                 ids=self.ids,
                 radio_labels=(
@@ -169,6 +170,8 @@ class OperateTab(TabPane):
     def on_mount(self) -> None:
         self.path_to_status = {}
         self.git_log_view = self.query_exactly_one(GitLogView)
+        self.contents_view = self.query_exactly_one(ContentsView)
+        self.contents_view.display = False
 
     #################################
     # Watchers and message handling #
@@ -204,3 +207,13 @@ class OperateTab(TabPane):
     @on(Tree.NodeSelected)
     def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
         self.git_log_view.path = event.node.data
+        self.contents_view.path = event.node.data
+
+    @on(RadioSet.Changed)
+    def toggle_view(self, event: RadioSet.Changed) -> None:
+        if event.pressed.label == LabelStr.radio_git_log:
+            self.git_log_view.display = True
+            self.contents_view.display = False
+        if event.pressed.label == LabelStr.radio_contents:
+            self.git_log_view.display = False
+            self.contents_view.display = True
