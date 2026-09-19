@@ -134,15 +134,16 @@ class ChezmoiPathSets:
     destroy_paths: set[Path] = field(default_factory=set[Path])
     forget_paths: set[Path] = field(default_factory=set[Path])
     re_add_paths: set[Path] = field(default_factory=set[Path])
+    managed_paths: set[Path] = field(default_factory=set[Path])
 
     def __post_init__(self) -> None:
         # TODO: improve this logic to decide if a button should be enabled or not
 
         all_paths: dict[Path, Sc] = self._cm_paths.all_dirs | self._cm_paths.all_files
-        managed_paths: set[Path] = (
+        self.managed_paths: set[Path] = (
             self._cm_paths.managed_dirs.keys() | self._cm_paths.managed_files.keys()
         )
-        self.missing = {p for p in (managed_paths) if not p.exists()}
+        self.missing = {p for p in (self.managed_paths) if not p.exists()}
 
         for path, status in all_paths.items():
             if status == Sc.UU:

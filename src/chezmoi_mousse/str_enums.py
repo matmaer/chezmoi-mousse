@@ -221,7 +221,7 @@ class LabelStr(StrEnum):
     # LabelView MainSection labels
     contents_view = "Contents View"
     dest_dir = "Destination Directory"
-    git_log = "Chezmoi Git Log"
+    git_log = "Git Log View"
     managed_dir = "Managed Directory"
     managed_file = "Managed File"
     no_managed_paths = "No managed paths yet"

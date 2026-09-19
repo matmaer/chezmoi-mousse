@@ -314,7 +314,6 @@ Label {
     background-tint: $primary-muted;
     background: $primary-muted;
     border-bottom: wide $primary-muted;
-    border-top: wide $primary-muted;
     color: $primary-lighten-3;
     width: 1fr;
   }
@@ -322,8 +321,7 @@ Label {
   &.sub_section_label {
     background-tint: $panel;
     background: $panel;
-    border-bottom: wide $panel;
-    border-top: wide $panel;
+    border-bottom: inner $panel;
     color: $text-success;
     width: 1fr;
   }

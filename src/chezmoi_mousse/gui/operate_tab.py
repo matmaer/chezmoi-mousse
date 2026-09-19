@@ -15,6 +15,7 @@ from textual.widgets import (
     RadioSet,
     Switch,
     TabPane,
+    Tree,
 )
 
 from chezmoi_mousse import store
@@ -42,6 +43,8 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from textual import getters
     from textual.app import ComposeResult
 
@@ -165,6 +168,7 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         self.path_to_status = {}
+        self.git_log_view = self.query_exactly_one(GitLogView)
 
     #################################
     # Watchers and message handling #
@@ -196,3 +200,7 @@ class OperateTab(TabPane):
 
     @on(RadioSet.Changed)
     def update_middle_view(self) -> None: ...
+
+    @on(Tree.NodeSelected)
+    def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
+        self.git_log_view.path = event.node.data

@@ -11,6 +11,7 @@ from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     LabeledView,
     MainSectionLabel,
+    SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd, StatusCode
 
@@ -102,6 +103,8 @@ class GitLogView(LabeledView):
         super().__init__(
             container_id=ids.container.git_log,
             main_label=LabelStr.git_log,
+            sub_label=LabelStr.not_set,
+            flat_label=LabelStr.unmanaged_path,
             view_body=DataTable[str](show_cursor=False),
             classes=classes,
         )
@@ -111,6 +114,8 @@ class GitLogView(LabeledView):
         self.data_table.add_columns("COMMIT", "MESSAGE")
         self.data_cache: dict[Path, list[list[str]]] = {}
         self.main_section_label = self.query_exactly_one(MainSectionLabel)
+        self.sub_section_label = self.query_exactly_one(SubSectionLabel)
+        self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
 
     async def _create_stylized_lines(self, log_lines: list[str]) -> list[list[str]]:
         pretty_rows: list[list[str]] = []
@@ -140,22 +145,34 @@ class GitLogView(LabeledView):
         return pretty_rows
 
     @work
-    async def _update_datatable(self, path: Path | None) -> None:
+    async def _update_datatable(self, path: Path) -> None:
         self.data_table.clear()
+        if path not in store.cm_path_sets.managed_paths and path != store.cfg.dest_dir:
+            self.data_table.display = False
+            self.main_section_label.update(LabelStr.git_log)
+            self.sub_section_label.update(str(path))
+            self.sub_section_label.display = True
+            self.flat_section_label.display = True
+            return
+        self.main_section_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
+        self.sub_section_label.display = False
+        self.flat_section_label.display = False
         if path in self.data_cache:
             pretty_rows = self.data_cache[path]
         else:
+            path_arg = None if path == store.cfg.dest_dir else path
             cmd_result = await tchezmoi.run_chezmoi_command(
-                self.app, ReadCmd.git_log, path
+                self.app, ReadCmd.git_log, path_arg
             )
-            path_key = store.cfg.dest_dir if path is None else path
             pretty_rows = await self._create_stylized_lines(cmd_result.out_list)
-            self.data_cache[path_key] = pretty_rows
+            self.data_cache[path] = pretty_rows
         for row in pretty_rows:
             self.data_table.add_row(*row)
+        self.data_table.display = True
 
     async def watch_path(self, path: Path | None) -> None:
-        self.main_section_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
+        if path is None:
+            path = store.cfg.dest_dir
         self.data_table.loading = True
         self._update_datatable(path)
         self.data_table.loading = False
