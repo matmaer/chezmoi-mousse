@@ -74,7 +74,6 @@
       border-top: inner $surface-lighten-1;
       color: $text-primary;
       padding: 0 1 0 1;
-      text-align: left;
       text-style: bold;
       width: 100%;
 
@@ -466,12 +465,17 @@ TabbedContent {
 }
 
 Tree {
-  &>.tree--highlight-line {
-    text-style: bold;
+  &>.tree--cursor {
+    color: cyan;
+    text-style: none;
+  }
+
+  &>.tree--label {
+    text-style: none;
   }
 
   &>.tree--highlight {
-    text-style: none;
+    color: cyan;
   }
 
   &>.tree--guides {
