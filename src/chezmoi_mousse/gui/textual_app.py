@@ -26,12 +26,6 @@ from chezmoi_mousse.gui.common.actionables import (
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.labeled_views import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_trees import (
-    ManagedTree,
-    StatusTree,
-    UnManagedTree,
-    UnWantedTree,
-)
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import LogsTab
@@ -146,36 +140,36 @@ class ChezmoiGui(App[str]):
 
     @work
     async def _run_startup_worker(self) -> None:
-        self.pre_mount = True
         await self.push_screen(self.splash_screen)
-        pre_mount_cmd_results = await self._run_pre_mount_commands()
+
+        self.init_phase = True
+        results: list[CommandResult] = []
+        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.git_dir))
+        results.append(await tchezmoi.run_chezmoi_command(self, WriteCmd.init))
+        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.dump_config))
 
         tabbed_content = self.query_exactly_one(TabbedContent)
-        await tabbed_content.add_pane(OperateTab())
+
         await tabbed_content.add_pane(LogsTab())
         await tabbed_content.add_pane(ConfigTab())
         await tabbed_content.add_pane(DebugTab())
 
-        self.pre_mount = False
-        for cr in pre_mount_cmd_results:
+        self.init_phase = False
+        for cr in results:
             self._log_cmd_result(cr)
-
         self._run_splash_commands()
+
         await tchezmoi.run_managed_commands(self)
-        await self._update_trees()
+        await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
+        tabbed_content.active = BtnLabel.operate.pane_id
         await self.splash_screen.dismiss_after_fade_loop()
 
-    async def _run_pre_mount_commands(self) -> list[CommandResult]:
-        cmd_results: list[CommandResult] = []
-
-        cr = await tchezmoi.run_chezmoi_command(self, ReadCmd.git_dir)
-        cmd_results.append(cr)
-        cr = await tchezmoi.run_chezmoi_command(self, WriteCmd.init)
-        cmd_results.append(cr)
-        cr = await tchezmoi.run_chezmoi_command(self, ReadCmd.dump_config)
-        cmd_results.append(cr)
-
-        return cmd_results
+    async def _run_init_commands(self) -> list[CommandResult]:
+        results: list[CommandResult] = []
+        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.git_dir))
+        results.append(await tchezmoi.run_chezmoi_command(self, WriteCmd.init))
+        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.dump_config))
+        return results
 
     @work
     async def _log_cmd_result(self, cmd_result: CommandResult) -> None:
@@ -191,16 +185,6 @@ class ChezmoiGui(App[str]):
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
         setattr(cmd_log, ReactiveVar.cmd_result, cmd_result)
 
-    async def _update_trees(self) -> None:
-        unmanaged_tree = self.query_exactly_one(UnManagedTree)
-        await unmanaged_tree.update_tree()
-        managed_tree = self.query_exactly_one(ManagedTree)
-        await managed_tree.update_tree()
-        status_tree = self.query_exactly_one(StatusTree)
-        await status_tree.update_tree()
-        unwanted_tree = self.query_exactly_one(UnWantedTree)
-        await unwanted_tree.update_tree()
-
     @work
     async def _run_splash_commands(self) -> None:
         for cmd in ReadCmd.splash_commands():
@@ -208,7 +192,7 @@ class ChezmoiGui(App[str]):
 
     @on(CommandResultMsg)
     async def handle_command_result(self, msg: CommandResultMsg) -> None:
-        if self.pre_mount is True:
+        if self.init_phase is True:
             return
         self._log_cmd_result(msg.cmd_result)
         if msg.cmd_result.cmd_enum is ReadCmd.doctor:

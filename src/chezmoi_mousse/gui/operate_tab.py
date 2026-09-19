@@ -190,29 +190,42 @@ class OperateTab(TabPane):
     def handle_switch_group(self, msg: SwitchGroupMsg) -> None:
         switch_states: SwitchStates = msg.switch_states
 
-        status_tree = self.query_exactly_one(StatusTree)
         managed_tree = self.query_exactly_one(ManagedTree)
+        managed_tree_expanded = self.query_exactly_one(ManagedTreeExpanded)
+        status_tree = self.query_exactly_one(StatusTree)
+        status_tree_expanded = self.query_exactly_one(StatusTreeExpanded)
         unmanaged_tree = self.query_exactly_one(UnManagedTree)
+        unmanaged_tree_expanded = self.query_exactly_one(UnManagedTreeExpanded)
         unwanted_tree = self.query_exactly_one(UnWantedTree)
+        unwanted_tree_expanded = self.query_exactly_one(UnWantedTreeExpanded)
 
-        # TODO: show hide relevant filters for a given displayed tree
-
-        if switch_states.show_unwanted:
-            tree_to_show = unwanted_tree
-        elif switch_states.show_unmanaged:
-            tree_to_show = unmanaged_tree
-        elif switch_states.show_unchanged:
-            tree_to_show = managed_tree
+        if switch_states.expand_all:
+            if switch_states.show_unwanted:
+                tree_to_show = unwanted_tree_expanded
+            elif switch_states.show_unmanaged:
+                tree_to_show = unmanaged_tree_expanded
+            elif switch_states.show_unchanged:
+                tree_to_show = managed_tree_expanded
+            else:
+                tree_to_show = status_tree_expanded
         else:
-            tree_to_show = status_tree
+            if switch_states.show_unwanted:
+                tree_to_show = unwanted_tree
+            elif switch_states.show_unmanaged:
+                tree_to_show = unmanaged_tree
+            elif switch_states.show_unchanged:
+                tree_to_show = managed_tree
+            else:
+                tree_to_show = status_tree
 
-        status_tree.display = status_tree is tree_to_show
+        managed_tree_expanded.display = managed_tree_expanded is tree_to_show
         managed_tree.display = managed_tree is tree_to_show
+        status_tree_expanded.display = status_tree_expanded is tree_to_show
+        status_tree.display = status_tree is tree_to_show
+        unmanaged_tree_expanded.display = unmanaged_tree_expanded is tree_to_show
         unmanaged_tree.display = unmanaged_tree is tree_to_show
+        unwanted_tree_expanded.display = unwanted_tree_expanded is tree_to_show
         unwanted_tree.display = unwanted_tree is tree_to_show
-
-    @on(RadioSet.Changed)
-    def update_middle_view(self) -> None: ...
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:

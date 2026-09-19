@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from textual import work
 from textual.widgets import Tree
 
 from chezmoi_mousse import store
@@ -36,6 +37,8 @@ class _ManagedTreeBase(Tree[Path]):
         super().__init__(label="root", classes=Tcss.managed_tree, name=tree_name)
 
     def on_mount(self) -> None:
+        self.loading = True
+        self.display = False
         self.root.data = store.cfg.dest_dir_path
         self.guide_depth = 3
         self.show_root = False
@@ -79,7 +82,7 @@ class _ManagedTreeBase(Tree[Path]):
             Sc.TT: ColorVar.primary,
             Sc.UU: ColorVar.accent,
         }
-        self.select_node(self.root)
+        self.initial_tree_population()
 
     def color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = ColorVar.dimmed  # the default
@@ -97,126 +100,77 @@ class _ManagedTreeBase(Tree[Path]):
         new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
         self.node_map[path] = new_node
 
+    @work
+    async def initial_tree_population(self) -> None:
+        if self.name in (TreeName.status_tree, TreeName.status_tree_expanded):
+            for path, status in store.cm_paths.status_dirs.items():
+                self.add_node(path, status, allow_expand=True)
+            for path, status in store.cm_paths.status_files.items():
+                self.add_node(path, status, allow_expand=False)
+        elif self.name in (TreeName.managed_tree, TreeName.managed_tree_expanded):
+            for path, status in store.cm_paths.managed_dirs.items():
+                self.add_node(path, status, allow_expand=True)
+            for path, status in store.cm_paths.managed_files.items():
+                self.add_node(path, status, allow_expand=False)
+        elif self.name in (TreeName.unmanaged_tree, TreeName.unmanaged_tree_expanded):
+            for path, status in store.cm_paths.un_man_dirs.items():
+                self.add_node(path, status, allow_expand=True)
+            for path, status in store.cm_paths.un_man_files.items():
+                self.add_node(path, status, allow_expand=False)
+        elif self.name in (TreeName.unwanted_tree, TreeName.unwanted_tree_expanded):
+            for path, status in store.cm_paths.any_dirs.items():
+                self.add_node(path, status, allow_expand=True)
+            for path, status in store.cm_paths.any_files.items():
+                self.add_node(path, status, allow_expand=False)
+        if self.name in (
+            TreeName.status_tree_expanded,
+            TreeName.managed_tree_expanded,
+            TreeName.unmanaged_tree_expanded,
+            TreeName.unwanted_tree_expanded,
+        ):
+            self.root.expand_all()
+        self.select_node(self.root)
+        self.unselect()  # otherwise it looks like the first node is selected
+        if self.name == TreeName.status_tree:
+            self.display = True
+        self.loading = False
+
 
 class ManagedTree(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.managed_tree)
-
-    def on_mount(self) -> None:
-        self.display = False
-        super().on_mount()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.managed_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.managed_files.items():
-            self.add_node(path, status, allow_expand=False)
 
 
 class StatusTree(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.status_tree)
 
-    def on_mount(self) -> None:
-        super().on_mount()
-        self.display = True
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.status_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.status_files.items():
-            self.add_node(path, status, allow_expand=False)
-
 
 class UnManagedTree(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.unmanaged_tree)
-
-    def on_mount(self) -> None:
-        self.display = False
-        super().on_mount()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.un_man_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.un_man_files.items():
-            self.add_node(path, status, allow_expand=False)
 
 
 class UnWantedTree(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.unwanted_tree)
 
-    def on_mount(self) -> None:
-        self.display = False
-        super().on_mount()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.any_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.any_files.items():
-            self.add_node(path, status, allow_expand=False)
-
 
 class ManagedTreeExpanded(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.managed_tree_expanded)
-
-    def on_mount(self) -> None:
-        self.display = False
-        self.root.expand_all()
-        super().on_mount()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.managed_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.managed_files.items():
-            self.add_node(path, status, allow_expand=False)
 
 
 class StatusTreeExpanded(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.status_tree_expanded)
 
-    def on_mount(self) -> None:
-        self.display = False
-        super().on_mount()
-        self.root.expand_all()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.status_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.status_files.items():
-            self.add_node(path, status, allow_expand=False)
-
 
 class UnManagedTreeExpanded(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.unmanaged_tree_expanded)
 
-    def on_mount(self) -> None:
-        self.display = False
-        super().on_mount()
-        self.root.expand_all()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.un_man_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.un_man_files.items():
-            self.add_node(path, status, allow_expand=False)
-
 
 class UnWantedTreeExpanded(_ManagedTreeBase):
     def __init__(self) -> None:
         super().__init__(tree_name=TreeName.unwanted_tree_expanded)
-
-    def on_mount(self) -> None:
-        self.display = False
-        super().on_mount()
-        self.root.expand_all()
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.any_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.any_files.items():
-            self.add_node(path, status, allow_expand=False)
