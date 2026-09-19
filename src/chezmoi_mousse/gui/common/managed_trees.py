@@ -83,6 +83,7 @@ class _ManagedTreeBase(Tree[Path]):
             Sc.TT: ColorVar.primary,
             Sc.UU: ColorVar.accent,
         }
+        self.select_node(self.root)
 
     def color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = ColorVar.dimmed  # the default

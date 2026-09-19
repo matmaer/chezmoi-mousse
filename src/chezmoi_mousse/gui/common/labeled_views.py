@@ -37,12 +37,13 @@ class ContentsView(LabeledView):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    path: reactive[Path | None] = reactive(None)
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds, classes: str) -> None:
         super().__init__(
             container_id=ids.container.contents,
             main_label=LabelStr.dest_dir,
+            sub_label=LabelStr.not_set,
             flat_label=LabelStr.not_set,
             view_body=HighlightedStatic(markup=False),
             classes=classes,
@@ -50,12 +51,14 @@ class ContentsView(LabeledView):
 
     def on_mount(self) -> None:
         self.main_section_label = self.query_exactly_one(MainSectionLabel)
+        self.sub_section_label = self.query_exactly_one(SubSectionLabel)
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
         self.highlighted_static = self.query_exactly_one(HighlightedStatic)
 
     def _set_dir_contents(self, path: Path) -> None:
         # main label
         if path == store.cfg.dest_dir:
+            self.notify("contents view: setting main label for dest_dir")
             self.main_section_label.update(LabelStr.dest_dir)
         elif path in store.cm_paths.managed_dirs:
             self.main_section_label.update(LabelStr.managed_dir)
@@ -65,6 +68,7 @@ class ContentsView(LabeledView):
     @work
     async def _create_unknown_path_container(self) -> None:
         self.main_section_label.update(LabelStr.unmanaged_path)
+        self.sub_section_label.update(str(self.path))
 
     @work
     async def _create_file_container(self, path: Path) -> None:
@@ -84,10 +88,14 @@ class ContentsView(LabeledView):
             self.highlighted_static.update(f_content)
             self.flat_section_label.update(LabelStr.read_file_output)
 
-    def watch_show_path(self, path: Path | None) -> None:
-        if path in store.cm_paths.all_dirs:
+    def watch_path(self, path: Path) -> None:
+        if (
+            path == store.cfg.dest_dir
+            or path in store.cm_paths.all_dirs
+            or path.is_dir()
+        ):
             self._set_dir_contents(path)
-        elif path in store.cm_paths.all_files:
+        elif path in store.cm_paths.all_files or path.is_file():
             self._create_file_container(path)
         else:
             self._create_unknown_path_container()
@@ -97,12 +105,12 @@ class GitLogView(LabeledView):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    path: reactive[Path | None] = reactive(None)
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(self, ids: AppIds, classes: str) -> None:
         super().__init__(
             container_id=ids.container.git_log,
-            main_label=LabelStr.git_log,
+            main_label=LabelStr.dest_dir,
             sub_label=LabelStr.not_set,
             flat_label=LabelStr.unmanaged_path,
             view_body=DataTable[str](show_cursor=False),
@@ -147,7 +155,7 @@ class GitLogView(LabeledView):
     @work
     async def _update_datatable(self, path: Path) -> None:
         self.data_table.clear()
-        if path not in store.cm_path_sets.managed_paths and path != store.cfg.dest_dir:
+        if path != store.cfg.dest_dir and path not in store.cm_path_sets.managed_paths:
             self.data_table.display = False
             self.main_section_label.update(LabelStr.git_log)
             self.sub_section_label.update(str(path))
@@ -170,9 +178,7 @@ class GitLogView(LabeledView):
             self.data_table.add_row(*row)
         self.data_table.display = True
 
-    async def watch_path(self, path: Path | None) -> None:
-        if path is None:
-            path = store.cfg.dest_dir
+    async def watch_path(self, path: Path) -> None:
         self.data_table.loading = True
         self._update_datatable(path)
         self.data_table.loading = False
