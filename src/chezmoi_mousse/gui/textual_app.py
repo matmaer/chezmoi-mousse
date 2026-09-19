@@ -33,9 +33,10 @@ from chezmoi_mousse.gui.common.managed_trees import (
     UnWantedTree,
 )
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
+from chezmoi_mousse.gui.config_tab import ConfigTab
+from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.gui.tab_panes import ConfigTab, LogsTab
 from chezmoi_mousse.named_tuples import InitData
 from chezmoi_mousse.str_enums import (
     BindingAction,
