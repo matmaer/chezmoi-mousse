@@ -599,6 +599,13 @@ class ReadCmd(Enum):
             ),
         )
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
+        # for 'chezmoi git' commands, if the pretty verb string contains no '--' flags,
+        # the pretty command does not need the option terminator so we remove it.
+        if (
+            self in (self.git_dir, self.git_log, self.git_remote)
+            and self.value.count("--") == 1
+        ):
+            verb_str = verb_str.replace(" --", "")
         return f"chezmoi {verb_str}"
 
     @classmethod
