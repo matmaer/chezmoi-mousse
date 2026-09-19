@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual.containers import Container, Vertical
+from textual.containers import Vertical
 from textual.widgets import Label, Static
 
 from chezmoi_mousse.str_enums import LabelStr, Tcss
@@ -13,10 +13,8 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "DiffLinesContainer",
     "FlatSectionLabel",
     "HighlightedStatic",
-    "InfoStatic",
     "LabeledView",
     "MainSectionLabel",
     "SubSectionLabel",
@@ -38,21 +36,7 @@ class SubSectionLabel(Label):
         super().__init__(section_label, classes=Tcss.sub_section_label)
 
 
-# Static subclasses
-
-
-class InfoStatic(Static):
-    def __init__(self, text: str = "") -> None:
-        super().__init__(text, classes=Tcss.info)
-
-
 class HighlightedStatic(Static): ...
-
-
-# Container subclasses
-
-
-class DiffLinesContainer(Container): ...
 
 
 class LabeledView(Vertical):

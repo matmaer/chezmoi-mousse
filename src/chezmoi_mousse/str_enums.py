@@ -12,7 +12,6 @@ __all__ = [
     "ColorVar",
     "ContainerName",
     "GlobalArgs",
-    "InfoKind",
     "LabelStr",
     "LogStr",
     "PathFilters",
@@ -22,6 +21,7 @@ __all__ = [
     "RichLogName",
     "StatusCode",
     "Tcss",
+    "TreeName",
     "WriteCmd",
 ]
 
@@ -172,12 +172,6 @@ class ContainerName(StrEnum):
         return f"{self}_id"
 
 
-class InfoKind(Enum):
-    # Kind of info mainly
-    contents_view_file = auto()
-    dest_dir_contents = auto()
-
-
 class LabelStr(StrEnum):
     # Managed Tree tab
     middle = "Middle Section"
@@ -266,22 +260,6 @@ class LogStr(StrEnum):
     skipped = auto()
     success = auto()
     trigger = auto()
-
-    @classmethod
-    @cache
-    def _splash_suffixes(cls) -> frozenset[Self]:
-        return frozenset(
-            (
-                cls[cls.checked],
-                cls[cls.decoded],
-                cls[cls.missing],
-                cls[cls.present],
-                cls[cls.reports],
-                cls[cls.skipped],
-                cls[cls.success],
-                cls[cls.trigger],
-            )
-        )
 
 
 class PathFilters(Enum):
@@ -620,18 +598,6 @@ class ReadCmd(Enum):
             cls(cls.git_remote),
             cls(cls.ignored),
             cls(cls.template_data),
-        )
-
-    @classmethod
-    @cache
-    def managed_commands(cls) -> tuple[Self, ...]:
-        return (
-            cls(cls.managed_dirs),
-            cls(cls.managed_files),
-            cls(cls.status_dirs),
-            cls(cls.status_files),
-            cls(cls.unmanaged_dirs),
-            cls(cls.unmanaged_files),
         )
 
 
