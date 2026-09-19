@@ -24,7 +24,6 @@ from chezmoi_mousse.gui.common.actionables import (
     TabButtons,
 )
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.labeled_views import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -162,6 +161,8 @@ class ChezmoiGui(App[str]):
         await tchezmoi.run_managed_commands(self)
         await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
         tabbed_content.active = BtnLabel.operate.pane_id
+        operate_tab = self.query_exactly_one(OperateTab)
+        operate_tab.set_view_path_reactives(store.cfg.dest_dir)
         await self.splash_screen.dismiss_after_fade_loop()
 
     async def _run_init_commands(self) -> list[CommandResult]:
@@ -201,9 +202,6 @@ class ChezmoiGui(App[str]):
         elif msg.cmd_result.cmd_enum is ReadCmd.cat_config:
             cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
             cat_config.update(msg.cmd_result.out_txt)
-        elif msg.cmd_result.cmd_enum is ReadCmd.git_log:
-            git_log = self.query_exactly_one(GitLogView)
-            setattr(git_log, ReactiveVar.cmd_result, msg.cmd_result)
         elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
             pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
             pretty_ignored.update(msg.cmd_result.out_txt)
