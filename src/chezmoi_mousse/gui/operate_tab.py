@@ -27,9 +27,13 @@ from chezmoi_mousse.gui.common.actionables import (
 from chezmoi_mousse.gui.common.labeled_views import ContentsView, GitLogView
 from chezmoi_mousse.gui.common.managed_trees import (
     ManagedTree,
+    ManagedTreeExpanded,
     StatusTree,
+    StatusTreeExpanded,
     UnManagedTree,
+    UnManagedTreeExpanded,
     UnWantedTree,
+    UnWantedTreeExpanded,
 )
 from chezmoi_mousse.gui.common.messages import (
     DestDirBtnMsg,
@@ -69,6 +73,10 @@ class LeftSideVertical(Vertical):
         yield ManagedTree()
         yield UnManagedTree()
         yield UnWantedTree()
+        yield ManagedTreeExpanded()
+        yield StatusTreeExpanded()
+        yield UnManagedTreeExpanded()
+        yield UnWantedTreeExpanded()
 
     @on(DestDirBtnMsg)
     def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:

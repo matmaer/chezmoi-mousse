@@ -3,9 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual.widgets import (
-    Tree,
-)
+from textual.widgets import Tree
 
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import (
@@ -105,8 +103,8 @@ class ManagedTree(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.managed_tree)
 
     def on_mount(self) -> None:
-        super().on_mount()
         self.display = False
+        super().on_mount()
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.managed_dirs.items():
@@ -135,8 +133,8 @@ class UnManagedTree(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.unmanaged_tree)
 
     def on_mount(self) -> None:
-        super().on_mount()
         self.display = False
+        super().on_mount()
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.un_man_dirs.items():
@@ -150,8 +148,8 @@ class UnWantedTree(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.unwanted_tree)
 
     def on_mount(self) -> None:
-        super().on_mount()
         self.display = False
+        super().on_mount()
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.any_dirs.items():
@@ -165,9 +163,9 @@ class ManagedTreeExpanded(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.managed_tree_expanded)
 
     def on_mount(self) -> None:
-        super().on_mount()
-        self.root.expand_all()
         self.display = False
+        self.root.expand_all()
+        super().on_mount()
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.managed_dirs.items():
@@ -181,9 +179,9 @@ class StatusTreeExpanded(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.status_tree_expanded)
 
     def on_mount(self) -> None:
+        self.display = False
         super().on_mount()
         self.root.expand_all()
-        self.display = True
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.status_dirs.items():
@@ -197,9 +195,9 @@ class UnManagedTreeExpanded(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.unmanaged_tree_expanded)
 
     def on_mount(self) -> None:
+        self.display = False
         super().on_mount()
         self.root.expand_all()
-        self.display = False
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.un_man_dirs.items():
@@ -213,9 +211,9 @@ class UnWantedTreeExpanded(_ManagedTreeBase):
         super().__init__(tree_name=TreeName.unwanted_tree_expanded)
 
     def on_mount(self) -> None:
+        self.display = False
         super().on_mount()
         self.root.expand_all()
-        self.display = False
 
     async def update_tree(self) -> None:
         for path, status in store.cm_paths.any_dirs.items():
