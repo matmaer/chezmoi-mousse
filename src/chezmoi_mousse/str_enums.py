@@ -188,7 +188,7 @@ class LabelStr(StrEnum):
     radio_git_log = "Git Log View"
     show_unchanged = "Show Unchanged"
     show_unmanaged = "Show Unmanaged"
-    expand_all = "Expand All Dirs"
+    expand_all = "Expand All"
     show_unwanted = "Show Unwanted"
 
     # Changed paths
