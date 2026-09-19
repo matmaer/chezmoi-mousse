@@ -481,7 +481,6 @@ class Tcss(StrEnum):
 
     # Other
     dest_dir_tree_label = auto()
-    add_tab_contents_view = auto()
     added = auto()
     changed = auto()
     context = auto()
@@ -493,7 +492,6 @@ class Tcss(StrEnum):
     info = auto()
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
-    left_side_vertical = auto()
     live_run_color = auto()
     op_btn_group = auto()
     operate_button = auto()

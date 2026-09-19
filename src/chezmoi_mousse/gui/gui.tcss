@@ -1,11 +1,5 @@
 /* width /height valid scalar units '%', 'fr', 'h', 'vh', 'vw', or 'w' */
 
-.add_tab_contents_view {
-  border-top: $primary;
-  border-title-align: center;
-  border-title-style: bold;
-}
-
 .flat_button {
   background-tint: $primary-muted;
   background: $primary-muted;
@@ -42,13 +36,6 @@
 
 .flow_diagram {
   min-width: 78;
-}
-
-.left_side_vertical {
-  margin-right: 2;
-  width: auto;
-  max-width: 33%;
-  min-width: 18;
 }
 
 .op_btn_group {
