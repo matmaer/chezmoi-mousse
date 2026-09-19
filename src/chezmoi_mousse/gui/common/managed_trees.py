@@ -3,13 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import on
 from textual.widgets import (
     Tree,
 )
 
 from chezmoi_mousse import store
-from chezmoi_mousse.gui.common.messages import TreeStateMsg
 from chezmoi_mousse.str_enums import (
     ColorVar,
     StatusCode as Sc,
@@ -27,7 +25,7 @@ if TYPE_CHECKING:
 type NodeMap = dict[Path, TreeNode[Path]]
 
 
-__all__ = ["ChezmoiTree", "ManagedTree", "StatusTree"]
+__all__ = ["ManagedTree", "StatusTree", "UnManagedTree", "UnWantedTree"]
 
 
 class _ManagedTreeBase(Tree[Path]):
@@ -101,37 +99,6 @@ class _ManagedTreeBase(Tree[Path]):
         new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
         self.node_map[path] = new_node
 
-    @on(Tree.NodeCollapsed)
-    def handle_node_collapsed(self, event: Tree.NodeCollapsed[Path]) -> None:
-        self.call_next(self.send_tree_state_message, event.node.data)
-
-    @on(Tree.NodeExpanded)
-    def handle_node_expanded(self, event: Tree.NodeExpanded[Path]) -> None:
-        self.call_next(self.send_tree_state_message, event.node.data)
-
-    @on(Tree.NodeSelected)
-    def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
-        self.call_next(self.send_tree_state_message, event.node.data)
-
-    def send_tree_state_message(self, path: Path) -> None:
-        assert self.name is not None
-        self.app.post_message(TreeStateMsg(path, self.name, self.node_map))
-
-
-class ChezmoiTree(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.chezmoi_tree)
-
-    def on_mount(self) -> None:
-        super().on_mount()
-        self.display = False
-
-    async def update_tree(self) -> None:
-        for path, status in store.cm_paths.all_dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in store.cm_paths.all_files.items():
-            self.add_node(path, status, allow_expand=False)
-
 
 class ManagedTree(_ManagedTreeBase):
     def __init__(self) -> None:
@@ -160,4 +127,34 @@ class StatusTree(_ManagedTreeBase):
         for path, status in store.cm_paths.status_dirs.items():
             self.add_node(path, status, allow_expand=True)
         for path, status in store.cm_paths.status_files.items():
+            self.add_node(path, status, allow_expand=False)
+
+
+class UnManagedTree(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.unmanaged_tree)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.display = False
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.un_man_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.un_man_files.items():
+            self.add_node(path, status, allow_expand=False)
+
+
+class UnWantedTree(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.unwanted_tree)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.display = False
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.any_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.any_files.items():
             self.add_node(path, status, allow_expand=False)

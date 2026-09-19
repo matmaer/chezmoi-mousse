@@ -509,7 +509,8 @@ class Tcss(StrEnum):
 class TreeName(StrEnum):
     managed_tree = auto()
     status_tree = auto()
-    chezmoi_tree = auto()
+    unmanaged_tree = auto()
+    unwanted_tree = auto()
 
 
 ##############################################

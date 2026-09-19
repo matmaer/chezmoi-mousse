@@ -58,7 +58,6 @@ class ContentsView(LabeledView):
     def _set_dir_contents(self, path: Path) -> None:
         # main label
         if path == store.cfg.dest_dir:
-            self.notify("contents view: setting main label for dest_dir")
             self.main_section_label.update(LabelStr.dest_dir)
         elif path in store.cm_paths.managed_dirs:
             self.main_section_label.update(LabelStr.managed_dir)
@@ -91,11 +90,11 @@ class ContentsView(LabeledView):
     def watch_path(self, path: Path) -> None:
         if (
             path == store.cfg.dest_dir
-            or path in store.cm_paths.all_dirs
+            or path in store.cm_paths.any_dirs
             or path.is_dir()
         ):
             self._set_dir_contents(path)
-        elif path in store.cm_paths.all_files or path.is_file():
+        elif path in store.cm_paths.any_files or path.is_file():
             self._create_file_container(path)
         else:
             self._create_unknown_path_container()

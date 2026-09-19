@@ -19,12 +19,14 @@ class ChezmoiTreePaths:
     _unman_dirs_list: list[str]
     _unman_files_list: list[str]
 
-    all_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    all_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    any_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    any_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     managed_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     managed_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     status_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     status_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_man_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_man_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
 
     def __post_init__(self) -> None:
 
@@ -54,20 +56,38 @@ class ChezmoiTreePaths:
                 status_dirs[path] = Sc.TT
                 managed_dirs[path] = Sc.TT  # overwrites Sc.SS
 
-        # Add dict items for all managed paths
-        all_dirs = {Path(p): Sc.UU for p in self._unman_dirs_list}
-        all_files = {Path(p): Sc.UU for p in self._unman_files_list}
-        for path, status in managed_files.items():
-            all_files[path] = status
-        for path, status in managed_dirs.items():
-            all_dirs[path] = status
+        # Add dict items for all managed paths and unmanaged paths
+        any_dirs = {Path(p): Sc.UU for p in self._unman_dirs_list}
+        any_files = {Path(p): Sc.UU for p in self._unman_files_list}
 
-        self.all_dirs = path_funcs.sort_path_dict(all_dirs)
-        self.all_files = path_funcs.sort_path_dict(all_files)
+        unwanted_dirs = {
+            p
+            for p in any_dirs
+            if p not in managed_dirs and path_funcs.is_unwanted_dir(p)
+        }
+        unwanted_files = {
+            p
+            for p in any_files
+            if p not in managed_files and path_funcs.is_unwanted_file(p)
+        }
+        un_man_dirs = {p: Sc.UU for p in any_dirs if p not in unwanted_dirs}
+        un_man_files = {p: Sc.UU for p in any_files if p not in unwanted_files}
+
+        for path, status in managed_dirs.items():
+            un_man_dirs[path] = status
+            any_dirs[path] = status
+        for path, status in managed_files.items():
+            un_man_files[path] = status
+            any_files[path] = status
+
+        self.any_dirs = path_funcs.sort_path_dict(any_dirs)
+        self.any_files = path_funcs.sort_path_dict(any_files)
         self.managed_dirs = path_funcs.sort_path_dict(managed_dirs)
         self.managed_files = path_funcs.sort_path_dict(managed_files)
         self.status_dirs = path_funcs.sort_path_dict(status_dirs)
         self.status_files = path_funcs.sort_path_dict(status_files)
+        self.un_man_dirs = path_funcs.sort_path_dict(un_man_dirs)
+        self.un_man_files = path_funcs.sort_path_dict(un_man_files)
 
 
 @dataclass(slots=True, kw_only=True)
@@ -139,7 +159,7 @@ class ChezmoiPathSets:
     def __post_init__(self) -> None:
         # TODO: improve this logic to decide if a button should be enabled or not
 
-        all_paths: dict[Path, Sc] = self._cm_paths.all_dirs | self._cm_paths.all_files
+        all_paths: dict[Path, Sc] = self._cm_paths.any_dirs | self._cm_paths.any_files
         self.managed_paths: set[Path] = (
             self._cm_paths.managed_dirs.keys() | self._cm_paths.managed_files.keys()
         )

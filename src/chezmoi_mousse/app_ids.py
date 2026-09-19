@@ -14,10 +14,6 @@ class AppIds:
     def __init__(self, tab_label: BtnLabel) -> None:
         self.tab_label = tab_label
         self.container = _ContainerIds(self)
-        self.full_man_tree = f"{self.tab_label.name}_man_tree"
-        self.full_man_tree_q = f"#{self.full_man_tree}"
-        self.status_man_tree = f"{self.tab_label.name}_status_man_tree"
-        self.status_man_tree_q = f"#{self.status_man_tree}"
         self.op_btn = _OperateButtonIds(self)
         self.richlog = _RichLogIds(self)
         self.switch = _SwitchIds(self)

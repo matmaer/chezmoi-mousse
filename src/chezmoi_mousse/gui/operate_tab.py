@@ -26,14 +26,14 @@ from chezmoi_mousse.gui.common.actionables import (
 )
 from chezmoi_mousse.gui.common.labeled_views import ContentsView, GitLogView
 from chezmoi_mousse.gui.common.managed_trees import (
-    ChezmoiTree,
     ManagedTree,
     StatusTree,
+    UnManagedTree,
+    UnWantedTree,
 )
 from chezmoi_mousse.gui.common.messages import (
     DestDirBtnMsg,
     SwitchGroupMsg,
-    TreeStateMsg,
 )
 from chezmoi_mousse.named_tuples import SwitchStates
 from chezmoi_mousse.str_enums import (
@@ -67,7 +67,8 @@ class LeftSideVertical(Vertical):
         yield DestDirBtn(app_ids=self.ids)
         yield StatusTree()
         yield ManagedTree()
-        yield ChezmoiTree()
+        yield UnManagedTree()
+        yield UnWantedTree()
 
     @on(DestDirBtnMsg)
     def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:
@@ -181,31 +182,32 @@ class OperateTab(TabPane):
     def handle_switch_group(self, msg: SwitchGroupMsg) -> None:
         switch_states: SwitchStates = msg.switch_states
 
-        chezmoi_tree = self.query_exactly_one(ChezmoiTree)
-        managed_tree = self.query_exactly_one(ManagedTree)
         status_tree = self.query_exactly_one(StatusTree)
+        managed_tree = self.query_exactly_one(ManagedTree)
+        unmanaged_tree = self.query_exactly_one(UnManagedTree)
+        unwanted_tree = self.query_exactly_one(UnWantedTree)
 
         # TODO: show hide relevant filters for a given displayed tree
 
-        if switch_states.show_unwanted or switch_states.show_unmanaged:
-            active_tree = chezmoi_tree
+        if switch_states.show_unwanted:
+            tree_to_show = unwanted_tree
+        elif switch_states.show_unmanaged:
+            tree_to_show = unmanaged_tree
         elif switch_states.show_unchanged:
-            active_tree = managed_tree
+            tree_to_show = managed_tree
         else:
-            active_tree = status_tree
+            tree_to_show = status_tree
 
-        chezmoi_tree.display = chezmoi_tree is active_tree
-        managed_tree.display = managed_tree is active_tree
-        status_tree.display = status_tree is active_tree
-
-    @on(TreeStateMsg)
-    def update_all_trees(self) -> None: ...
+        status_tree.display = status_tree is tree_to_show
+        managed_tree.display = managed_tree is tree_to_show
+        unmanaged_tree.display = unmanaged_tree is tree_to_show
+        unwanted_tree.display = unwanted_tree is tree_to_show
 
     @on(RadioSet.Changed)
     def update_middle_view(self) -> None: ...
 
     @on(Tree.NodeSelected)
-    def send_node_context_message(self, event: Tree.NodeSelected[Path]) -> None:
+    def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
         self.git_log_view.path = event.node.data
         self.contents_view.path = event.node.data
 

@@ -26,7 +26,12 @@ from chezmoi_mousse.gui.common.actionables import (
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.labeled_views import GitLogView
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
-from chezmoi_mousse.gui.common.managed_trees import ChezmoiTree, ManagedTree, StatusTree
+from chezmoi_mousse.gui.common.managed_trees import (
+    ManagedTree,
+    StatusTree,
+    UnManagedTree,
+    UnWantedTree,
+)
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
@@ -186,12 +191,14 @@ class ChezmoiGui(App[str]):
         setattr(cmd_log, ReactiveVar.cmd_result, cmd_result)
 
     async def _update_trees(self) -> None:
-        chezmoi_tree = self.query_exactly_one(ChezmoiTree)
-        await chezmoi_tree.update_tree()
+        unmanaged_tree = self.query_exactly_one(UnManagedTree)
+        await unmanaged_tree.update_tree()
         managed_tree = self.query_exactly_one(ManagedTree)
         await managed_tree.update_tree()
         status_tree = self.query_exactly_one(StatusTree)
         await status_tree.update_tree()
+        unwanted_tree = self.query_exactly_one(UnWantedTree)
+        await unwanted_tree.update_tree()
 
     @work
     async def _run_splash_commands(self) -> None:
