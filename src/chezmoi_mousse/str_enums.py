@@ -195,9 +195,9 @@ class LabelStr(StrEnum):
     # Other
     cat_config_output = "Cat Config Output"
     chezmoi_cat_output = "Chezmoi Cat output"
-    # command_outputs = "Command Output"  # noqa: ERA001
+    command_outputs = "Command Output"
     debug_log = "Debug Log"
-    dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
+    dest_dir_diff = "You are in the root of the chezmoi repository, the destDir."
     diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
     dom_nodes = "DOM Nodes"
@@ -208,6 +208,9 @@ class LabelStr(StrEnum):
     n_dir = "Managed directory which contains nested status paths"
     not_set = "Not Set"
     read_file_output = "Read file from disk output"
+    select_path_contents = "<- Select a file path to view its contents."
+    select_path_diff = "<- Select a path with a status to view its diff."
+    select_path_git_log = "<- Select a managed path to see the chezmoi git log."
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
