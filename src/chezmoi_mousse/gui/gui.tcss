@@ -293,30 +293,28 @@ Label {
   text-align: center;
   border-left: none;
   border-right: none;
+  width: 1fr;
 
-  &.flat_section_label {
-    background-tint: $primary-muted;
-    background: $primary-muted;
-    border-bottom: wide $primary-muted;
-    color: $primary-lighten-3;
-    width: 1fr;
-  }
-
-  &.sub_section_label {
-    background-tint: $panel;
-    background: $panel;
-    border-bottom: inner $panel;
-    color: $text-success;
-    width: 1fr;
-  }
-
-  &.main_section_label {
+  &MainSectionLabel {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
     border-bottom: inner $surface-lighten-1;
     border-top: inner $surface-lighten-1;
     color: $text-accent;
-    width: 1fr;
+  }
+
+  &SubSectionLabel {
+    background-tint: $panel;
+    background: $panel;
+    border-bottom: wide $panel;
+    color: $text-success;
+  }
+
+  &FlatSectionLabel {
+    background-tint: $primary-muted;
+    background: $primary-muted;
+    border-bottom: wide $primary-muted;
+    color: $primary-lighten-3;
   }
 }
 
@@ -388,9 +386,19 @@ Static {
   &.full_cmd {
     background-tint: $primary-muted;
     background: $primary-muted;
+    border-top: wide $primary-muted;
+    border-bottom: inner $primary-muted;
     color: $primary-lighten-3;
     text-align: center;
     width: 1fr;
+  }
+
+  &.cmd_output {
+    border-bottom: inner $surface;
+    background-tint: $surface;
+    background: $surface;
+    color: $text;
+    padding: 0 1;
   }
 
   &.info {

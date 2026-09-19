@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from textual.containers import Vertical
 from textual.widgets import Label, Static
 
-from chezmoi_mousse.str_enums import LabelStr, Tcss
+from chezmoi_mousse.str_enums import LabelStr
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
@@ -21,19 +21,13 @@ __all__ = [
 ]
 
 
-class MainSectionLabel(Label):
-    def __init__(self, section_label: str) -> None:
-        super().__init__(section_label, classes=Tcss.main_section_label)
+class MainSectionLabel(Label): ...
 
 
-class FlatSectionLabel(Label):
-    def __init__(self, section_label: str = LabelStr.not_set) -> None:
-        super().__init__(section_label, classes=Tcss.flat_section_label)
+class FlatSectionLabel(Label): ...
 
 
-class SubSectionLabel(Label):
-    def __init__(self, section_label: str = LabelStr.not_set) -> None:
-        super().__init__(section_label, classes=Tcss.sub_section_label)
+class SubSectionLabel(Label): ...
 
 
 class HighlightedStatic(Static): ...

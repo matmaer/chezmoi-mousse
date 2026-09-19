@@ -8,6 +8,7 @@ from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, RichLog, Static
 
 from chezmoi_mousse import store
+from chezmoi_mousse.gui.common.components import SubSectionLabel
 from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
@@ -49,20 +50,18 @@ class CmdResultCollapsible(Collapsible):
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
         curated_std_out = result.std_out or f"{LogStr.no_stdout}"
         curated_std_err = result.std_err or f"{LogStr.no_stderr}"
-        contents: list[Label | Static] = [
-            Label(LabelStr.full_cmd, classes=Tcss.sub_section_label)
-        ]
+        contents: list[Label | Static] = []
         contents.extend([Label(result.full_cmd, classes=Tcss.full_cmd)])
         contents.extend(
             [
-                Label(LabelStr.stdout_output, classes=Tcss.sub_section_label),
-                Static(f"{curated_std_out}", markup=False),
+                SubSectionLabel(LabelStr.stdout_output),
+                Static(f"{curated_std_out}", markup=False, classes=Tcss.cmd_output),
             ]
         )
         contents.extend(
             [
-                Label(LabelStr.stderr_output, classes=Tcss.sub_section_label),
-                Static(f"{curated_std_err}", markup=False),
+                SubSectionLabel(LabelStr.stderr_output),
+                Static(f"{curated_std_err}", markup=False, classes=Tcss.cmd_output),
             ]
         )
         return contents

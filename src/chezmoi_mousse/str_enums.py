@@ -452,19 +452,16 @@ class Tcss(StrEnum):
     dest_dir_button = auto()
     op_btn_vert_group = auto()
     switches_vert_group = auto()
-
-    # Both legacy and operation tabs
-    main_section_label = auto()
     managed_tree = auto()
 
     # Other
     dest_dir_tree_label = auto()
     added = auto()
+    cmd_output = auto()
     changed = auto()
     context = auto()
     directory_tree = auto()
     flat_button = auto()
-    flat_section_label = auto()
     flow_diagram = auto()
     full_cmd = auto()
     info = auto()
@@ -477,7 +474,6 @@ class Tcss(StrEnum):
     removed = auto()
     single_button_vertical = auto()
     splash_log = auto()
-    sub_section_label = auto()
     tab_button = auto()
     unhandled = auto()
 

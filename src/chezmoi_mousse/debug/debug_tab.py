@@ -13,7 +13,6 @@ from textual.containers import (
 )
 from textual.widgets import (
     ContentSwitcher,
-    Label,
     RichLog,
     Static,
     TabPane,
@@ -27,6 +26,7 @@ from chezmoi_mousse.gui.common.actionables import (
     OperateBtn,
     OperateBtnGroup,
 )
+from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.loggers import RichLoggers
 from chezmoi_mousse.gui.common.messages import FlatBtnMsg, OperateBtnMsg
 from chezmoi_mousse.str_enums import (
@@ -171,17 +171,17 @@ class DebugTab(TabPane):
             )
             with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
                 yield Vertical(
-                    Label(LabelStr.test_paths, classes=Tcss.main_section_label),
+                    MainSectionLabel(LabelStr.test_paths),
                     DebugTab.TestPathsView(classes=Tcss.info),
                     id=store.debug_ids.container.test_paths_view,
                 )
                 yield Vertical(
-                    Label(LabelStr.debug_log, classes=Tcss.main_section_label),
+                    MainSectionLabel(LabelStr.debug_log),
                     DebugLog(),
                     id=store.debug_ids.container.debug_log,
                 )
                 yield Vertical(
-                    Label(LabelStr.dom_nodes, classes=Tcss.main_section_label),
+                    MainSectionLabel(LabelStr.dom_nodes),
                     RichLog(
                         id=store.debug_ids.richlog.dom_nodes,
                         highlight=True,
@@ -190,7 +190,7 @@ class DebugTab(TabPane):
                     id=store.debug_ids.container.dom_nodes,
                 )
                 yield Vertical(
-                    Label(LabelStr.env_vars, classes=Tcss.main_section_label),
+                    MainSectionLabel(LabelStr.env_vars),
                     RichLog(
                         id=store.debug_ids.richlog.env_vars,
                         highlight=True,
