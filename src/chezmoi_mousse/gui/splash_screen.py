@@ -54,7 +54,7 @@ class AnimatedFade(Static):
         self.styles.width = SPLASH_WIDTH
         self.fade_timer = self.set_interval(
             name="refresh_self",
-            interval=0.1,
+            interval=0.05,
             callback=self._rotate_and_refresh,
         )
 
@@ -139,5 +139,5 @@ class SplashScreen(Screen[None]):
             self.animated_fade.step_count < 20
             or self.animated_fade.step_count % 20 != 0
         ):
-            await asyncio.sleep(0.06)
+            await asyncio.sleep(0.08)
         self.dismiss()
