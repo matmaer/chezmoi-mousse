@@ -158,3 +158,67 @@ class UnWantedTree(_ManagedTreeBase):
             self.add_node(path, status, allow_expand=True)
         for path, status in store.cm_paths.any_files.items():
             self.add_node(path, status, allow_expand=False)
+
+
+class ManagedTreeExpanded(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.managed_tree_expanded)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.root.expand_all()
+        self.display = False
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.managed_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.managed_files.items():
+            self.add_node(path, status, allow_expand=False)
+
+
+class StatusTreeExpanded(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.status_tree_expanded)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.root.expand_all()
+        self.display = True
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.status_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.status_files.items():
+            self.add_node(path, status, allow_expand=False)
+
+
+class UnManagedTreeExpanded(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.unmanaged_tree_expanded)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.root.expand_all()
+        self.display = False
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.un_man_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.un_man_files.items():
+            self.add_node(path, status, allow_expand=False)
+
+
+class UnWantedTreeExpanded(_ManagedTreeBase):
+    def __init__(self) -> None:
+        super().__init__(tree_name=TreeName.unwanted_tree_expanded)
+
+    def on_mount(self) -> None:
+        super().on_mount()
+        self.root.expand_all()
+        self.display = False
+
+    async def update_tree(self) -> None:
+        for path, status in store.cm_paths.any_dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in store.cm_paths.any_files.items():
+            self.add_node(path, status, allow_expand=False)
