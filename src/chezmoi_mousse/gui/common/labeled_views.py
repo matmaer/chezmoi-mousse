@@ -4,11 +4,15 @@ from typing import TYPE_CHECKING
 
 from textual import work
 from textual.reactive import reactive
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.gui.common.components import FlatSectionLabel, LabeledView
-from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd
+from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
+    LabeledView,
+    MainSectionLabel,
+)
+from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd, StatusCode
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -19,7 +23,73 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["GitLogView"]
+__all__ = ["ContentsView", "GitLogView"]
+
+
+main_title_mapping: dict[StatusCode, LabelStr] = {StatusCode.UU: LabelStr.unmanaged_dir}
+
+
+class HighlightedStatic(Static): ...
+
+
+class ContentsView(LabeledView):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
+    path: reactive[Path | None] = reactive(None)
+
+    def __init__(self, ids: AppIds, classes: str) -> None:
+        super().__init__(
+            container_id=ids.container.contents,
+            main_label=LabelStr.dest_dir,
+            flat_label=LabelStr.not_set,
+            view_body=HighlightedStatic(markup=False),
+            classes=classes,
+        )
+
+    def on_mount(self) -> None:
+        self.main_section_label = self.query_exactly_one(MainSectionLabel)
+        self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
+        self.highlighted_static = self.query_exactly_one(HighlightedStatic)
+
+    def _set_dir_contents(self, path: Path) -> None:
+        # main label
+        if path == store.cfg.dest_dir:
+            self.main_section_label.update(LabelStr.dest_dir)
+        elif path in store.cm_paths.managed_dirs:
+            self.main_section_label.update(LabelStr.managed_dir)
+        else:
+            self.main_section_label.update(LabelStr.unmanaged_dir)
+
+    @work
+    async def _create_unknown_path_container(self) -> None:
+        self.main_section_label.update(LabelStr.unmanaged_path)
+
+    @work
+    async def _create_file_container(self, path: Path) -> None:
+        self.main_section_label.update(LabelStr.not_set)
+        if path in store.cm_paths.managed_files:
+            self.main_section_label.update(LabelStr.managed_file)
+        else:
+            self.main_section_label.update(LabelStr.unmanaged_file)
+        if path in store.cm_path_sets.missing:
+            f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
+                self.app, path
+            )
+            self.highlighted_static.update(f_content)
+            self.flat_section_label.update(LabelStr.chezmoi_cat_output)
+        else:
+            f_content = tchezmoi.get_highlighted_file_contents(path)
+            self.highlighted_static.update(f_content)
+            self.flat_section_label.update(LabelStr.read_file_output)
+
+    def watch_show_path(self, path: Path | None) -> None:
+        if path in store.cm_paths.all_dirs:
+            self._set_dir_contents(path)
+        elif path in store.cm_paths.all_files:
+            self._create_file_container(path)
+        else:
+            self._create_unknown_path_container()
 
 
 class GitLogView(LabeledView):
@@ -32,7 +102,6 @@ class GitLogView(LabeledView):
         super().__init__(
             container_id=ids.container.git_log,
             main_label=LabelStr.git_log,
-            flat_label=LabelStr.not_set,
             view_body=DataTable[str](show_cursor=False),
             classes=classes,
         )
@@ -41,7 +110,7 @@ class GitLogView(LabeledView):
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
         self.data_cache: dict[Path, list[list[str]]] = {}
-        self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
+        self.main_section_label = self.query_exactly_one(MainSectionLabel)
 
     async def _create_stylized_lines(self, log_lines: list[str]) -> list[list[str]]:
         pretty_rows: list[list[str]] = []
@@ -70,25 +139,23 @@ class GitLogView(LabeledView):
 
         return pretty_rows
 
-    async def _populate_table(self, pretty_rows: list[list[str]]) -> None:
+    @work
+    async def _update_datatable(self, path: Path | None) -> None:
         self.data_table.clear()
-
+        if path in self.data_cache:
+            pretty_rows = self.data_cache[path]
+        else:
+            cmd_result = await tchezmoi.run_chezmoi_command(
+                self.app, ReadCmd.git_log, path
+            )
+            path_key = store.cfg.dest_dir if path is None else path
+            pretty_rows = await self._create_stylized_lines(cmd_result.out_list)
+            self.data_cache[path_key] = pretty_rows
         for row in pretty_rows:
             self.data_table.add_row(*row)
 
-    @work
-    async def _update_datatable(self, path: Path | None) -> None:
-        if path in self.data_cache:
-            await self._populate_table(self.data_cache[path])
-            return
-        cmd_result = await tchezmoi.run_chezmoi_command(self.app, ReadCmd.git_log, path)
-        path_key = store.cfg.dest_dir if path is None else path
-        pretty_rows = await self._create_stylized_lines(cmd_result.out_list)
-        self.data_cache[path_key] = pretty_rows
-        await self._populate_table(pretty_rows)
-
     async def watch_path(self, path: Path | None) -> None:
+        self.main_section_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
         self.data_table.loading = True
-        self.flat_section_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
         self._update_datatable(path)
         self.data_table.loading = False

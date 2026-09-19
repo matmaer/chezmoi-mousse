@@ -179,8 +179,6 @@ class InfoKind(Enum):
 
 
 class LabelStr(StrEnum):
-    git_log = "Chezmoi Git Log"
-
     # Managed Tree tab
     middle = "Middle Section"
     right_side = "Right Side Section"
@@ -204,7 +202,6 @@ class LabelStr(StrEnum):
     chezmoi_cat_output = "Chezmoi Cat output"
     # command_outputs = "Command Output"  # noqa: ERA001
     debug_log = "Debug Log"
-    dest_dir = "Destination Directory"
     dest_dir_diff = "This is the root of the chezmoi repository and never has a status"
     diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
@@ -212,20 +209,26 @@ class LabelStr(StrEnum):
     env_vars = "Environment Variables"
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
-    managed_dir = "Managed Directory"
-    managed_file = "Managed File"
     managed_no_status = "The path is managed but has no status for this context"
     n_dir = "Managed directory which contains nested status paths"
-    no_managed_paths = "No managed paths yet"
-    no_status_paths = "No paths with a status"
     not_set = "Not Set"
     read_file_output = "Read file from disk output"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
     test_paths = " Test Paths "
+
+    # LabelView MainSection labels
+    contents_view = "Contents View"
+    dest_dir = "Destination Directory"
+    git_log = "Chezmoi Git Log"
+    managed_dir = "Managed Directory"
+    managed_file = "Managed File"
+    no_managed_paths = "No managed paths yet"
+    no_status_paths = "No paths with a status"
     unmanaged_dir = "Unmanaged Directory"
     unmanaged_file = "Unmanaged File"
+    unmanaged_path = "Unmanaged Path"
 
 
 class LogStr(StrEnum):

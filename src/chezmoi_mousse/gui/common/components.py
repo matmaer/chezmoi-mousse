@@ -24,7 +24,7 @@ __all__ = [
 
 
 class MainSectionLabel(Label):
-    def __init__(self, section_label: LabelStr = LabelStr.not_set) -> None:
+    def __init__(self, section_label: str) -> None:
         super().__init__(section_label, classes=Tcss.main_section_label)
 
 
@@ -63,7 +63,7 @@ class LabeledView(Vertical):
     def __init__(
         self,
         container_id: str,
-        main_label: LabelStr,
+        main_label: str,
         view_body: Widget | None = None,
         sub_label: str | None = None,
         flat_label: str | None = None,
