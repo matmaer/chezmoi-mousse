@@ -19,7 +19,6 @@ __all__ = [
     "AppLogMsg",
     "CommandResultMsg",
     "CurrentNodeMsg",
-    "DestDirBtnMsg",
     "DirContentBtnMsg",
     "FlatBtnMsg",
     "OperateBtnMsg",
@@ -74,13 +73,6 @@ class FlatBtnMsg(Message):
         self.app_ids = app_ids
         self.btn_label = btn_label
         self.button = button
-        super().__init__()
-
-
-class DestDirBtnMsg(Message):
-    def __init__(self, button: Button, tab_label: BtnLabel) -> None:
-        self.button = button
-        self.tab_label = tab_label
         super().__init__()
 
 

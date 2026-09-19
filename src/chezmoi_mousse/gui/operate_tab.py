@@ -10,6 +10,7 @@ from textual.containers import (
     VerticalGroup,
 )
 from textual.widgets import (
+    Button,
     Label,
     RadioButton,
     RadioSet,
@@ -20,7 +21,6 @@ from textual.widgets import (
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import (
-    DestDirBtn,
     OperateBtnGroup,
     RefreshBtn,
 )
@@ -40,10 +40,7 @@ from chezmoi_mousse.gui.common.managed_trees import (
     UnWantedTree,
     UnWantedTreeExpanded,
 )
-from chezmoi_mousse.gui.common.messages import (
-    DestDirBtnMsg,
-    SwitchGroupMsg,
-)
+from chezmoi_mousse.gui.common.messages import SwitchGroupMsg
 from chezmoi_mousse.named_tuples import SwitchStates
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -62,6 +59,16 @@ if TYPE_CHECKING:
 
 
 __all__ = ["OperateTab"]
+
+
+class DestDirBtn(Button):
+    def __init__(self) -> None:
+        super().__init__(
+            classes=Tcss.dest_dir_button,
+        )
+
+    def on_mount(self) -> None:
+        self.label = f"{store.cfg.dest_dir}"
 
 
 class LeftSideVertical(Vertical):
@@ -243,9 +250,10 @@ class OperateTab(TabPane):
         assert event.node.data is not None
         self.set_view_path_reactives(event.node.data)
 
-    @on(DestDirBtnMsg)
-    def handle_dest_dir_btn_msg(self, _: DestDirBtnMsg) -> None:
-        self.set_view_path_reactives(store.cfg.dest_dir)
+    @on(Button.Pressed)
+    def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
+        if event.button.label == store.cfg.dest_dir:
+            self.set_view_path_reactives(store.cfg.dest_dir)
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:

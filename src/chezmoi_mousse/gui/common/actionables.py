@@ -11,9 +11,7 @@ from textual.containers import (
 )
 from textual.widgets import Button
 
-from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import (
-    DestDirBtnMsg,
     DirContentBtnMsg,
     FlatBtnMsg,
     OperateBtnMsg,
@@ -32,7 +30,6 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "DestDirBtn",
     "DirContentBtn",
     "FlatBtn",
     "FlatButtonsVertical",
@@ -68,24 +65,6 @@ class _BaseAppButton(Button):
     def _handle_press(self, event: Button.Pressed) -> None:
         event.stop()
         self.post_message(self.send_message(event))
-
-
-class DestDirBtn(_BaseAppButton):
-    def __init__(self, *, app_ids: AppIds) -> None:
-        super().__init__(
-            app_ids=app_ids,
-            btn_label=BtnLabel.dest_dir_select,
-            classes=Tcss.dest_dir_button,
-        )
-
-    def on_mount(self) -> None:
-        self.label = f"{store.cfg.dest_dir}"
-
-    def send_message(self, event: Button.Pressed) -> DestDirBtnMsg:
-        return DestDirBtnMsg(
-            button=event.button,
-            tab_label=self.app_ids.tab_label,
-        )
 
 
 class DirContentBtn(_BaseAppButton):
