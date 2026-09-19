@@ -48,6 +48,8 @@ class _ContainerIds:
         self.diagram_q: str = f"#{self.diagram}"
         self.diff: str = ids.container_id(name=ContainerName.diff)
         self.diff_q: str = f"#{self.diff}"
+        self.diff_reverse: str = ids.container_id(name=ContainerName.diff_reverse)
+        self.diff_reverse_q: str = f"#{self.diff_reverse}"
         self.doctor: str = ids.container_id(name=ContainerName.doctor)
         self.doctor_q: str = f"#{self.doctor}"
         self.dom_nodes: str = ids.container_id(name=ContainerName.dom_nodes)

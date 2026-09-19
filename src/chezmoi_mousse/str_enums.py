@@ -154,6 +154,7 @@ class ContainerName(StrEnum):
     debug_log = auto()
     diagram = auto()
     diff = auto()
+    diff_reverse = auto()
     doctor = auto()
     dom_nodes = auto()
     env_vars = auto()

@@ -24,7 +24,12 @@ from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     RefreshBtn,
 )
-from chezmoi_mousse.gui.common.labeled_views import ContentsView, GitLogView
+from chezmoi_mousse.gui.common.labeled_views import (
+    ContentsView,
+    DiffReverseView,
+    DiffView,
+    GitLogView,
+)
 from chezmoi_mousse.gui.common.managed_trees import (
     ManagedTree,
     ManagedTreeExpanded,
@@ -77,10 +82,6 @@ class LeftSideVertical(Vertical):
         yield StatusTreeExpanded()
         yield UnManagedTreeExpanded()
         yield UnWantedTreeExpanded()
-
-    @on(DestDirBtnMsg)
-    def handle_dest_dir_btn_msg(self, msg: DestDirBtnMsg) -> None:
-        self.notify(f"DestDirBtn pressed: {msg.tab_label}")
 
 
 class SwitchGroup(VerticalGroup):
@@ -154,8 +155,10 @@ class OperateTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical(ids=self.ids)
-            yield GitLogView(ids=self.ids, classes=Tcss.operations_middle)
-            yield ContentsView(ids=self.ids, classes=Tcss.operations_middle)
+            yield GitLogView()
+            yield ContentsView()
+            yield DiffView()
+            yield DiffReverseView()
             yield RightSideVertical(
                 ids=self.ids,
                 radio_labels=(
@@ -180,7 +183,18 @@ class OperateTab(TabPane):
         self.path_to_status = {}
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.contents_view = self.query_exactly_one(ContentsView)
+        self.diff_view = self.query_exactly_one(DiffView)
+        self.diff_view = self.query_exactly_one(DiffReverseView)
         self.contents_view.display = False
+
+        self.man_tree = self.query_exactly_one(ManagedTree)
+        self.man_tree_expanded = self.query_exactly_one(ManagedTreeExpanded)
+        self.status_tree = self.query_exactly_one(StatusTree)
+        self.status_tree_expanded = self.query_exactly_one(StatusTreeExpanded)
+        self.unman_tree = self.query_exactly_one(UnManagedTree)
+        self.unman_tree_expanded = self.query_exactly_one(UnManagedTreeExpanded)
+        self.unwanted_tree = self.query_exactly_one(UnWantedTree)
+        self.unwanted_tree_expanded = self.query_exactly_one(UnWantedTreeExpanded)
 
     #################################
     # Watchers and message handling #
@@ -190,47 +204,48 @@ class OperateTab(TabPane):
     def handle_switch_group(self, msg: SwitchGroupMsg) -> None:
         switch_states: SwitchStates = msg.switch_states
 
-        managed_tree = self.query_exactly_one(ManagedTree)
-        managed_tree_expanded = self.query_exactly_one(ManagedTreeExpanded)
-        status_tree = self.query_exactly_one(StatusTree)
-        status_tree_expanded = self.query_exactly_one(StatusTreeExpanded)
-        unmanaged_tree = self.query_exactly_one(UnManagedTree)
-        unmanaged_tree_expanded = self.query_exactly_one(UnManagedTreeExpanded)
-        unwanted_tree = self.query_exactly_one(UnWantedTree)
-        unwanted_tree_expanded = self.query_exactly_one(UnWantedTreeExpanded)
-
         if switch_states.expand_all:
             if switch_states.show_unwanted:
-                tree_to_show = unwanted_tree_expanded
+                tree_to_show = self.unwanted_tree_expanded
             elif switch_states.show_unmanaged:
-                tree_to_show = unmanaged_tree_expanded
+                tree_to_show = self.unman_tree_expanded
             elif switch_states.show_unchanged:
-                tree_to_show = managed_tree_expanded
+                tree_to_show = self.man_tree_expanded
             else:
-                tree_to_show = status_tree_expanded
+                tree_to_show = self.status_tree_expanded
         else:
             if switch_states.show_unwanted:
-                tree_to_show = unwanted_tree
+                tree_to_show = self.unwanted_tree
             elif switch_states.show_unmanaged:
-                tree_to_show = unmanaged_tree
+                tree_to_show = self.unman_tree
             elif switch_states.show_unchanged:
-                tree_to_show = managed_tree
+                tree_to_show = self.man_tree
             else:
-                tree_to_show = status_tree
+                tree_to_show = self.status_tree
 
-        managed_tree_expanded.display = managed_tree_expanded is tree_to_show
-        managed_tree.display = managed_tree is tree_to_show
-        status_tree_expanded.display = status_tree_expanded is tree_to_show
-        status_tree.display = status_tree is tree_to_show
-        unmanaged_tree_expanded.display = unmanaged_tree_expanded is tree_to_show
-        unmanaged_tree.display = unmanaged_tree is tree_to_show
-        unwanted_tree_expanded.display = unwanted_tree_expanded is tree_to_show
-        unwanted_tree.display = unwanted_tree is tree_to_show
+        self.man_tree_expanded.display = self.man_tree_expanded is tree_to_show
+        self.man_tree.display = self.man_tree is tree_to_show
+        self.status_tree_expanded.display = self.status_tree_expanded is tree_to_show
+        self.status_tree.display = self.status_tree is tree_to_show
+        self.unman_tree_expanded.display = self.unman_tree_expanded is tree_to_show
+        self.unman_tree.display = self.unman_tree is tree_to_show
+        self.unwanted_tree_expanded.display = (
+            self.unwanted_tree_expanded is tree_to_show
+        )
+        self.unwanted_tree.display = self.unwanted_tree is tree_to_show
+
+    def set_view_path_reactives(self, path: Path) -> None:
+        self.git_log_view.path = path
+        self.contents_view.path = path
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
-        self.git_log_view.path = event.node.data
-        self.contents_view.path = event.node.data
+        assert event.node.data is not None
+        self.set_view_path_reactives(event.node.data)
+
+    @on(DestDirBtnMsg)
+    def handle_dest_dir_btn_msg(self, _: DestDirBtnMsg) -> None:
+        self.set_view_path_reactives(store.cfg.dest_dir)
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:
