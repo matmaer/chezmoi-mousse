@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -127,21 +128,23 @@ async def _run_dump_config(app: ChezmoiGui) -> CommandResult:
 
 async def run_managed_commands(app: ChezmoiGui) -> None:
 
-    man_dir_list = (await _exec_chezmoi(app, ReadCmd.managed_dirs)).out_list
-    man_file_list = (await _exec_chezmoi(app, ReadCmd.managed_files)).out_list
-    status_dirs_list = (await _exec_chezmoi(app, ReadCmd.status_dirs)).out_list
-    status_files_list = (await _exec_chezmoi(app, ReadCmd.status_files)).out_list
-    unman_dirs_list = (await _exec_chezmoi(app, ReadCmd.unmanaged_dirs)).out_list
-    unman_files_list = (await _exec_chezmoi(app, ReadCmd.unmanaged_files)).out_list
+    async with asyncio.TaskGroup() as tg:
+        man_dir_task = tg.create_task(_exec_chezmoi(app, ReadCmd.managed_dirs))
+        man_file_task = tg.create_task(_exec_chezmoi(app, ReadCmd.managed_files))
+        status_dirs_task = tg.create_task(_exec_chezmoi(app, ReadCmd.status_dirs))
+        status_files_task = tg.create_task(_exec_chezmoi(app, ReadCmd.status_files))
+        unman_dirs_task = tg.create_task(_exec_chezmoi(app, ReadCmd.unmanaged_dirs))
+        unman_files_task = tg.create_task(_exec_chezmoi(app, ReadCmd.unmanaged_files))
 
     tree_paths = ChezmoiTreePaths(
-        _man_dirs_list=man_dir_list,
-        _man_files_list=man_file_list,
-        _status_dirs_list=status_dirs_list,
-        _status_files_list=status_files_list,
-        _unman_dirs_list=unman_dirs_list,
-        _unman_files_list=unman_files_list,
+        _man_dirs_list=man_dir_task.result().out_list,
+        _man_files_list=man_file_task.result().out_list,
+        _status_dirs_list=status_dirs_task.result().out_list,
+        _status_files_list=status_files_task.result().out_list,
+        _unman_dirs_list=unman_dirs_task.result().out_list,
+        _unman_files_list=unman_files_task.result().out_list,
     )
+
     await store.handle_new_tree_paths(tree_paths)
 
 
