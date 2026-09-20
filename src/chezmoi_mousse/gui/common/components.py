@@ -6,7 +6,8 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import Label
 
-from chezmoi_mousse.str_enums import Tcss
+from chezmoi_mousse import store
+from chezmoi_mousse.str_enums import LabelStr, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -37,11 +38,11 @@ class LabeledView(Vertical):
 
     def __init__(
         self,
-        main_label: str,
         view_node: Widget,
         *,
-        sub_label: str | None = None,
-        flat_label: str | None = None,
+        main_label: str = LabelStr.dest_dir,
+        sub_label: str = LabelStr.not_set,
+        flat_label: str = LabelStr.not_set,
     ) -> None:
         self.view_node = view_node
         self.main_label = main_label
@@ -51,7 +52,7 @@ class LabeledView(Vertical):
         super().__init__(classes=Tcss.operations_middle)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(self.main_label)
+        yield MainSectionLabel()
         yield SubSectionLabel()
         yield FlatSectionLabel()
         yield self.view_node
@@ -61,14 +62,23 @@ class LabeledView(Vertical):
         self.sub_section_label = self.query_exactly_one(SubSectionLabel)
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
 
-        if self.sub_label is None:
-            self.sub_section_label.display = False
-        if self.flat_label is None:
-            self.sub_section_label.display = False
+    def _get_main_section_label_string(self, path: Path) -> LabelStr:
+        if path == store.cfg.dest_dir:
+            return LabelStr.dest_dir
+        if path in store.cm_paths.managed_dirs:
+            return LabelStr.managed_dir
+        if path in store.cm_paths.managed_files:
+            return LabelStr.managed_file
+        if path in store.cm_paths.status_files:
+            return LabelStr.status_file
+        if path in store.cm_paths.un_man_dirs:
+            return LabelStr.unmanaged_dir
+        if path in store.cm_paths.un_man_files:
+            return LabelStr.unmanaged_file
+        return LabelStr.not_set
 
-    def watch_path(self, path: Path | None) -> None:
-        if path is None:
-            return
+    def watch_path(self, path: Path) -> None:
+        self.main_section_label.update(self._get_main_section_label_string(path))
         self.sub_section_label.update(str(path))
         self.path_watch_hook(path)
 
