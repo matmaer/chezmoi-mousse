@@ -15,15 +15,6 @@ if TYPE_CHECKING:
 
 type ScanDirResult = list[ScanDirItem]
 
-__all__ = [
-    "get_sorted_top_parents",
-    "is_unwanted_dir",
-    "is_unwanted_file",
-    "os_scan_dir",
-    "sort_path_dict",
-    "sort_paths",
-]
-
 
 def sort_paths(paths: Iterable[Path]) -> list[Path]:
     path_list = list(paths)

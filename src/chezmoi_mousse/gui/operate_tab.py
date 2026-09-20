@@ -22,13 +22,6 @@ from textual.widgets import (
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import OperateBtnGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
-from chezmoi_mousse.gui.common.labeled_views import (
-    ContentView,
-    DiffReverseView,
-    DiffView,
-    GitLogView,
-    OperateViews,
-)
 from chezmoi_mousse.gui.common.managed_trees import (
     ManagedTree,
     ManagedTreeExpanded,
@@ -40,6 +33,13 @@ from chezmoi_mousse.gui.common.managed_trees import (
     UnWantedTreeExpanded,
 )
 from chezmoi_mousse.gui.common.messages import SwitchGroupMsg
+from chezmoi_mousse.gui.common.operate_views import (
+    ContentView,
+    DiffReverseView,
+    DiffView,
+    GitLogView,
+    OperateViews,
+)
 from chezmoi_mousse.named_tuples import SwitchStates
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -143,7 +143,7 @@ class RightSideVertical(Vertical):
         )
 
     def on_mount(self) -> None:
-        first_radio = self.query_one(RadioSet).query(RadioButton).first()
+        first_radio = self.query_exactly_one(RadioSet).query(RadioButton).first()
         if first_radio:
             first_radio.value = True
 

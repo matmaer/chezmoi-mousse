@@ -6,6 +6,8 @@ from pathlib import Path
 from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import StatusCode as Sc
 
+__all__ = ["ChezmoiPathSets", "ChezmoiTreePaths", "CmPathChanges"]
+
 
 @dataclass(slots=True, kw_only=True)
 class ChezmoiTreePaths:

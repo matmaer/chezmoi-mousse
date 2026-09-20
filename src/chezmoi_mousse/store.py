@@ -67,12 +67,6 @@ cm_changes = CmPathChanges(
 )
 
 
-# Keep track of the selected path by tab
-full_tree_path: Path | None = None
-apply_path: Path | None = None
-re_add_path: Path | None = None
-
-
 async def handle_new_tree_paths(
     new_tree_paths: ChezmoiTreePaths,
 ) -> None:

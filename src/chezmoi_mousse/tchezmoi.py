@@ -23,8 +23,6 @@ if TYPE_CHECKING:
 
 type ScanDirResult = list[ScanDirItem]
 
-__all__ = ["ScanDirResult"]
-
 
 def get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
     if isinstance(cmd, ReadCmd) or cmd is WriteCmd.init:

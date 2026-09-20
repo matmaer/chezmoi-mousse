@@ -9,7 +9,6 @@ from textual.widgets import Tree
 from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import (
     ColorVar,
-    StatusCode as Sc,
     Tcss,
     TreeName,
 )
@@ -19,12 +18,23 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.str_enums import StatusCode as Sc
 
 
 type NodeMap = dict[Path, TreeNode[Path]]
 
 
-__all__ = ["ManagedTree", "StatusTree", "UnManagedTree", "UnWantedTree"]
+__all__ = [
+    "ManagedTree",
+    "ManagedTreeExpanded",
+    "NodeMap",
+    "StatusTree",
+    "StatusTreeExpanded",
+    "UnManagedTree",
+    "UnManagedTreeExpanded",
+    "UnWantedTree",
+    "UnWantedTreeExpanded",
+]
 
 
 class _ManagedTreeBase(Tree[Path]):
@@ -42,54 +52,10 @@ class _ManagedTreeBase(Tree[Path]):
         self.root.data = store.cfg.dest_dir_path
         self.guide_depth = 3
         self.show_root = False
-        self.dir_color_map: dict[str, str] = {
-            # D combos
-            Sc.DA: ColorVar.text_error,
-            Sc.DD: ColorVar.bogus,  # probably impossible status pair
-            Sc.DM: ColorVar.text_error,
-            Sc.DS: ColorVar.text_error,
-            # M combos
-            Sc.MA: ColorVar.text_warning,
-            Sc.MD: ColorVar.text_error,
-            Sc.MM: ColorVar.text_warning,
-            Sc.MS: ColorVar.text_warning,
-            # S combos
-            Sc.SA: ColorVar.text_success,
-            Sc.SD: ColorVar.text_error,
-            Sc.SM: ColorVar.text_warning,
-            # Meta codes
-            Sc.SS: ColorVar.foreground_darken_2,
-            Sc.TT: ColorVar.text_primary,
-            Sc.UU: ColorVar.text_accent,
-        }
-        self.file_color_map: dict[str, str] = {
-            # D combos
-            Sc.DA: ColorVar.error,
-            Sc.DD: ColorVar.bogus,  # probably impossible status pair
-            Sc.DM: ColorVar.error,
-            Sc.DS: ColorVar.error,
-            # M combos
-            Sc.MA: ColorVar.warning,
-            Sc.MD: ColorVar.error,
-            Sc.MM: ColorVar.warning,
-            Sc.MS: ColorVar.warning,
-            # S combos
-            Sc.SA: ColorVar.success,
-            Sc.SD: ColorVar.error,
-            Sc.SM: ColorVar.warning,
-            # Meta codes
-            Sc.SS: ColorVar.dimmed,
-            Sc.TT: ColorVar.primary,
-            Sc.UU: ColorVar.accent,
-        }
         self.initial_tree_population()
 
     def color_label(self, path: Path, status: Sc, directory: bool) -> str:
-        color_var = ColorVar.dimmed  # the default
-        if directory:
-            color_var = self.dir_color_map.get(status, ColorVar.bogus)
-        else:
-            color_var = self.file_color_map.get(status, ColorVar.bogus)
+        color_var = status.dir_color if directory else status.file_color
         italic = " italic" if path in store.cm_path_sets.missing else ""
         color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
         return f"[{color}{italic}]{path.name}[/]"

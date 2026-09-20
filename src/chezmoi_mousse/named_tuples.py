@@ -12,6 +12,7 @@ __all__ = [
     "DumpConfigKeys",
     "InitData",
     "ScanDirItem",
+    "SwitchStates",
 ]
 
 

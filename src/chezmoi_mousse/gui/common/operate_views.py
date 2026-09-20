@@ -32,21 +32,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["OperateViews"]
-
-
-diff_tcss_map: dict[str, Tcss] = {
-    " ": Tcss.context,
-    "@@": Tcss.context,
-    "index": Tcss.context,
-    "-": Tcss.removed,
-    "deleted": Tcss.removed,
-    "old": Tcss.removed,
-    "+": Tcss.added,
-    "new": Tcss.added,
-    "changed": Tcss.changed,
-    "unhandled": Tcss.unhandled,
-}
+__all__ = ["DiffReverseView", "DiffView", "GitLogView", "OperateViews"]
 
 
 # Base view class ONLY for reactive path state (No compose, no extra DOM)
@@ -78,7 +64,7 @@ class ContentView(BaseView):
 
     @work
     async def create_contents(self, path: Path) -> None:
-        flat_label = self.app.query_one(FlatSectionLabel)
+        flat_label = self.app.query_exactly_one(FlatSectionLabel)
 
         if path in self.cache:
             f_content = self.cache[path]
@@ -108,6 +94,19 @@ class DiffView(BaseView):
 
     cache: ClassVar[dict[Path, list[Static]]] = {}
 
+    tcss_map: ClassVar[dict[str, Tcss]] = {
+        " ": Tcss.context,
+        "@@": Tcss.context,
+        "index": Tcss.context,
+        "-": Tcss.removed,
+        "deleted": Tcss.removed,
+        "old": Tcss.removed,
+        "+": Tcss.added,
+        "new": Tcss.added,
+        "changed": Tcss.changed,
+        "unhandled": Tcss.unhandled,
+    }
+
     def compose(self) -> ComposeResult:
         yield ScrollableContainer()
 
@@ -121,7 +120,7 @@ class DiffView(BaseView):
         widgets: list[Label | Static] = []
 
         def get_prefix(line: str) -> str:
-            for p in diff_tcss_map:
+            for p in self.tcss_map:
                 if line.startswith(p):
                     return p
             return " "
@@ -131,18 +130,18 @@ class DiffView(BaseView):
             if prefix in ("+", "-"):
                 text = "\n".join(group_list)
                 widgets.append(
-                    Static(text, classes=diff_tcss_map[prefix].value, markup=False)
+                    Static(text, classes=self.tcss_map[prefix].value, markup=False)
                 )
             else:
                 for line in group_list:
                     widgets.append(
-                        Static(line, classes=diff_tcss_map[prefix].value, markup=False)
+                        Static(line, classes=self.tcss_map[prefix].value, markup=False)
                     )
         return widgets
 
     @work
     async def _update_diff_view(self, path: Path) -> None:
-        flat_label = self.app.query_one(FlatSectionLabel)
+        flat_label = self.app.query_exactly_one(FlatSectionLabel)
         cached: list[Static] = []
 
         if path in self.cache:
@@ -250,7 +249,7 @@ class GitLogView(BaseView):
         )
 
     def on_path_changed(self, path: Path) -> None:
-        flat_label = self.app.query_one(FlatSectionLabel)
+        flat_label = self.app.query_exactly_one(FlatSectionLabel)
 
         if self._can_show_diff(path) and flat_label.display:
             return

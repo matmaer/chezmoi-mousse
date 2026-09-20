@@ -112,7 +112,6 @@ class BtnLabel(StrEnum):
 class Chars(StrEnum):
     burger = "\u2261"  # IDENTICAL TO
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
-    big_down_triangle = "\u25bc"  # BLACK DOWN-POINTING TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
@@ -250,9 +249,6 @@ class LogStr(StrEnum):
     @property
     def end(self) -> str:
         return "-" * len(self)
-
-    # Splash log strings, prefixes
-    check_chezmoi_repo = "check chezmoi repository"
 
     # Splash log strings, suffixes
     checked = auto()
@@ -444,6 +440,67 @@ class StatusCode(StrEnum):
     TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
     UU = "UU"  # Unmanaged  path
 
+    @classmethod
+    @cache
+    def _get_dir_color_var(cls, status_code: StatusCode) -> ColorVar:
+        mapping: dict[StatusCode, ColorVar] = {
+            # D combos
+            StatusCode.DA: ColorVar.text_error,
+            cls.DD: ColorVar.bogus,  # probably impossible status pair
+            cls.DM: ColorVar.text_error,
+            cls.DS: ColorVar.text_error,
+            # M combos
+            cls.MA: ColorVar.text_success,
+            cls.MD: ColorVar.text_error,
+            cls.MM: ColorVar.text_warning,
+            cls.MS: ColorVar.text_warning,
+            # S combos
+            cls.SA: ColorVar.text_success,
+            cls.SD: ColorVar.text_error,
+            cls.SM: ColorVar.text_warning,
+            # Meta codes
+            cls.SS: ColorVar.secondary,
+            cls.TT: ColorVar.text_primary,
+            cls.UU: ColorVar.text_accent,
+        }
+        return mapping[status_code]
+
+    @classmethod
+    @cache
+    def _get_file_color_var(cls, status_code: StatusCode) -> ColorVar:
+        mapping: dict[StatusCode, ColorVar] = {
+            # D combos
+            cls.DA: ColorVar.error,
+            cls.DD: ColorVar.bogus,  # probably impossible status pair
+            cls.DM: ColorVar.error,
+            cls.DS: ColorVar.error,
+            # M combos
+            cls.MA: ColorVar.success,
+            cls.MD: ColorVar.error,
+            cls.MM: ColorVar.warning,
+            cls.MS: ColorVar.warning,
+            # S combos
+            cls.SA: ColorVar.success,
+            cls.SD: ColorVar.error,
+            cls.SM: ColorVar.warning,
+            # Meta codes
+            cls.SS: ColorVar.dimmed,
+            cls.UU: ColorVar.accent,
+        }
+        return mapping[status_code]
+
+    @cached_property
+    def pretty_cmd(self) -> str:
+        return f"chezmoi {self.value[0]}"
+
+    @property
+    def dir_color(self) -> ColorVar:
+        return self._get_dir_color_var(self)
+
+    @property
+    def file_color(self) -> ColorVar:
+        return self._get_file_color_var(self)
+
 
 class Tcss(StrEnum):
     # Operation tabs
@@ -453,17 +510,14 @@ class Tcss(StrEnum):
     switch_with_label = auto()
     operate_pane = auto()
     dest_dir_button = auto()
-    op_btn_vert_group = auto()
     switches_vert_group = auto()
     managed_tree = auto()
 
     # Other
-    dest_dir_tree_label = auto()
     added = auto()
     cmd_output = auto()
     changed = auto()
     context = auto()
-    directory_tree = auto()
     flat_button = auto()
     flow_diagram = auto()
     full_cmd = auto()
