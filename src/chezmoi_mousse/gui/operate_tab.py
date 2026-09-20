@@ -11,6 +11,7 @@ from textual.widgets import (
     Button,
     RadioButton,
     RadioSet,
+    Switch,
     TabPane,
     Tree,
 )
@@ -188,6 +189,22 @@ class OperateTab(TabPane):
 
         for tree in self.query(OperateTree):
             tree.display = tree.id == shown_id
+
+        # Show unwanted only makes sense for non-managed paths, as managed paths are
+        # always wanted and disable 'expand_all' for trees including unwanted paths.
+        switch_ids = store.op_ids.switch
+        unwanted_switch = self.query_one(switch_ids.show_unwanted_q, Switch)
+        expand_all_switch = self.query_one(switch_ids.expand_all_q, Switch)
+        unwanted_switch.disabled = switch_states.expand_all or shown_id in (
+            tree_ids.status,
+            tree_ids.status_xpd,
+            tree_ids.managed,
+            tree_ids.managed_xpd,
+        )
+        expand_all_switch.disabled = shown_id in (
+            tree_ids.un_wanted,
+            tree_ids.un_wanted_xpd,
+        )
 
     def set_view_path_reactives(self, path: Path) -> None:
         self.git_log_view.path = path
