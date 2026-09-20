@@ -27,7 +27,7 @@ __all__ = ["ScanDirResult"]
 
 
 def get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
-    if isinstance(cmd, ReadCmd):
+    if isinstance(cmd, ReadCmd) or cmd is WriteCmd.init:
         return "chezmoi"
     return "chezmoi --dry-run" if store.live_run is False else "chezmoi"
 
@@ -86,10 +86,6 @@ async def _exec_chezmoi(
     cmd_enum: ReadCmd | WriteCmd,
     path_arg: Path | None = None,
 ) -> CommandResult:
-    if cmd_enum not in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config) and (
-        path_arg == store.cfg.dest_dir
-    ):
-        raise ValueError(f"Path {path_arg} cannot be the destination directory")
     exec_result: ExecResult = await create_subprocess_exec_result(cmd_enum, path_arg)
     cmd_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
     is_queued = app.post_message(CommandResultMsg(cmd_result))
