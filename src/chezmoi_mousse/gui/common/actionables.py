@@ -15,10 +15,9 @@ from chezmoi_mousse.gui.common.messages import (
     DirContentBtnMsg,
     FlatBtnMsg,
     OperateBtnMsg,
-    RefreshBtnMsg,
     TabBtnMsg,
 )
-from chezmoi_mousse.str_enums import BtnLabel, Tcss
+from chezmoi_mousse.str_enums import Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -27,6 +26,7 @@ if TYPE_CHECKING:
     from textual.message import Message
 
     from chezmoi_mousse.app_ids import AppIds
+    from chezmoi_mousse.str_enums import BtnLabel
 
 
 __all__ = [
@@ -35,7 +35,6 @@ __all__ = [
     "FlatButtonsVertical",
     "OperateBtn",
     "OperateBtnGroup",
-    "RefreshBtn",
     "TabBtn",
     "TabButtons",
 ]
@@ -96,20 +95,6 @@ class FlatBtn(_BaseAppButton):
         )
 
 
-class RefreshBtn(_BaseAppButton):
-    def __init__(self, *, app_ids: AppIds) -> None:
-        super().__init__(
-            app_ids=app_ids,
-            btn_label=BtnLabel.refresh_trees,
-            classes=Tcss.refresh_button,
-        )
-
-    def send_message(self, event: Button.Pressed) -> RefreshBtnMsg:
-        return RefreshBtnMsg(
-            button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
-        )
-
-
 class OperateBtn(_BaseAppButton):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
         super().__init__(
@@ -159,7 +144,7 @@ class FlatButtonsVertical(Container):
 
 
 class OperateBtnGroup(HorizontalGroup):
-    def __init__(self, *, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
+    def __init__(self, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
         self.app_ids = app_ids
         self.labels = labels
         super().__init__(

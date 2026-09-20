@@ -20,10 +20,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store
-from chezmoi_mousse.gui.common.actionables import (
-    OperateBtnGroup,
-    RefreshBtn,
-)
+from chezmoi_mousse.gui.common.actionables import OperateBtnGroup
 from chezmoi_mousse.gui.common.labeled_views import (
     ContentsView,
     DiffReverseView,
@@ -51,11 +48,7 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from textual import getters
     from textual.app import ComposeResult
-
-    from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 __all__ = ["OperateTab"]
@@ -72,15 +65,13 @@ class DestDirBtn(Button):
 
 
 class LeftSideVertical(Vertical):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    def __init__(self, *, ids: AppIds) -> None:
-        self.ids = ids
-        super().__init__(id=ids.container.left_side, classes=Tcss.operations_left)
+    def __init__(self) -> None:
+        super().__init__(
+            id=store.operate_ids.container.left_side, classes=Tcss.operations_left
+        )
 
     def compose(self) -> ComposeResult:
-        yield DestDirBtn(app_ids=self.ids)
+        yield DestDirBtn()
         yield StatusTree()
         yield ManagedTree()
         yield UnManagedTree()
@@ -92,8 +83,8 @@ class LeftSideVertical(Vertical):
 
 
 class SwitchGroup(VerticalGroup):
-    def __init__(self, *, ids: AppIds) -> None:
-        self.ids = ids
+    def __init__(self) -> None:
+        self.ids = store.operate_ids
         self.switch_labels = (
             LabelStr.expand_all,
             LabelStr.show_unchanged,
@@ -131,19 +122,22 @@ class RightSideVertical(Vertical):
     def __init__(
         self,
         *,
-        ids: AppIds,
         radio_labels: tuple[LabelStr, ...],
     ) -> None:
-        self.ids = ids
         self.radio_labels = radio_labels
-        super().__init__(id=ids.container.right_side, classes=Tcss.operations_right)
+        super().__init__(
+            id=store.operate_ids.container.right_side, classes=Tcss.operations_right
+        )
 
     def compose(self) -> ComposeResult:
         with RadioSet():
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)
-        yield SwitchGroup(ids=self.ids)
-        yield RefreshBtn(app_ids=self.ids)
+        yield SwitchGroup()
+        yield Button(
+            label=BtnLabel.refresh_trees,
+            classes=Tcss.refresh_button,
+        )
 
     def on_mount(self) -> None:
         first_radio = self.query_one(RadioSet).query(RadioButton).first()
@@ -153,7 +147,6 @@ class RightSideVertical(Vertical):
 
 class OperateTab(TabPane):
     def __init__(self) -> None:
-        self.ids = store.operate_ids
         super().__init__(
             id=BtnLabel.operate.pane_id,
             title=BtnLabel.operate,
@@ -161,13 +154,12 @@ class OperateTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
-            yield LeftSideVertical(ids=self.ids)
+            yield LeftSideVertical()
             yield GitLogView()
             yield ContentsView()
             yield DiffView()
             yield DiffReverseView()
             yield RightSideVertical(
-                ids=self.ids,
                 radio_labels=(
                     LabelStr.radio_git_log,
                     LabelStr.radio_contents,
@@ -176,7 +168,7 @@ class OperateTab(TabPane):
                 ),
             )
             yield OperateBtnGroup(
-                app_ids=self.ids,
+                store.operate_ids,
                 labels=(
                     BtnLabel.chezmoi_add,
                     BtnLabel.chezmoi_apply,
@@ -187,12 +179,10 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
-        self.path_to_status = {}
         self.git_log_view = self.query_exactly_one(GitLogView)
-        self.contents_view = self.query_exactly_one(ContentsView)
         self.diff_view = self.query_exactly_one(DiffView)
-        self.diff_view = self.query_exactly_one(DiffReverseView)
-        self.contents_view.display = False
+        self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
+        self.contents_view = self.query_exactly_one(ContentsView)
 
         self.man_tree = self.query_exactly_one(ManagedTree)
         self.man_tree_expanded = self.query_exactly_one(ManagedTreeExpanded)
@@ -243,23 +233,43 @@ class OperateTab(TabPane):
 
     def set_view_path_reactives(self, path: Path) -> None:
         self.git_log_view.path = path
+        self.diff_view.path = path
+        self.diff_reverse_view.path = path
         self.contents_view.path = path
+        return
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
+        self.notify("Setting path for views")
         assert event.node.data is not None
         self.set_view_path_reactives(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
+        event.stop()
         if event.button.label == store.cfg.dest_dir:
             self.set_view_path_reactives(store.cfg.dest_dir)
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:
+        event.stop()
         if event.pressed.label == LabelStr.radio_git_log:
             self.git_log_view.display = True
             self.contents_view.display = False
+            self.diff_view.display = False
+            self.diff_reverse_view.display = False
         if event.pressed.label == LabelStr.radio_contents:
             self.git_log_view.display = False
             self.contents_view.display = True
+            self.diff_view.display = False
+            self.diff_reverse_view.display = False
+        if event.pressed.label == LabelStr.radio_diff:
+            self.git_log_view.display = False
+            self.contents_view.display = False
+            self.diff_view.display = True
+            self.diff_reverse_view.display = False
+        if event.pressed.label == LabelStr.radio_diff_reverse:
+            self.git_log_view.display = False
+            self.contents_view.display = False
+            self.diff_view.display = False
+            self.diff_reverse_view.display = True

@@ -197,7 +197,6 @@ class LabelStr(StrEnum):
     chezmoi_cat_output = "Chezmoi Cat output"
     command_outputs = "Command Output"
     debug_log = "Debug Log"
-    dest_dir_diff = "You are in the root of the chezmoi repository, the destDir."
     diagram = "Chezmoi Diagram"
     doctor_output = "Doctor Output"
     dom_nodes = "DOM Nodes"

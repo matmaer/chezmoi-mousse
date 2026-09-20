@@ -3,18 +3,20 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual.containers import Vertical
-from textual.widgets import Label, Static
+from textual.reactive import reactive
+from textual.widgets import Label
 
-from chezmoi_mousse.str_enums import LabelStr
+from chezmoi_mousse.str_enums import Tcss
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from textual.app import ComposeResult
     from textual.widget import Widget
 
 
 __all__ = [
     "FlatSectionLabel",
-    "HighlightedStatic",
     "LabeledView",
     "MainSectionLabel",
     "SubSectionLabel",
@@ -30,37 +32,45 @@ class FlatSectionLabel(Label): ...
 class SubSectionLabel(Label): ...
 
 
-class HighlightedStatic(Static): ...
-
-
 class LabeledView(Vertical):
-    """A MainSectionLabel, SubSectionLabel and Static widget for a standard format to
-    show information which is manually created by accepting a value for each of the
-    3 widgets to display."""
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def __init__(
         self,
-        container_id: str,
         main_label: str,
-        view_body: Widget | None = None,
+        view_node: Widget,
+        *,
         sub_label: str | None = None,
         flat_label: str | None = None,
-        classes: str | None = None,
     ) -> None:
+        self.view_node = view_node
         self.main_label = main_label
         self.sub_label = sub_label
         self.flat_label = flat_label
-        self.view_body = view_body
 
-        super().__init__(id=container_id, classes=classes)
+        super().__init__(classes=Tcss.operations_middle)
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(self.main_label)
-        if self.sub_label:
-            yield SubSectionLabel(self.sub_label)
-        if self.flat_label:
-            yield FlatSectionLabel(self.flat_label)
-        if self.view_body is not None:
-            yield self.view_body
-        else:
-            yield Static("nothing to show")
+        yield SubSectionLabel()
+        yield FlatSectionLabel()
+        yield self.view_node
+
+    def on_mount(self) -> None:
+        self.main_section_label = self.query_exactly_one(MainSectionLabel)
+        self.sub_section_label = self.query_exactly_one(SubSectionLabel)
+        self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
+
+        if self.sub_label is None:
+            self.sub_section_label.display = False
+        if self.flat_label is None:
+            self.sub_section_label.display = False
+
+    def watch_path(self, path: Path | None) -> None:
+        if path is None:
+            return
+        self.sub_section_label.update(str(path))
+        self.path_watch_hook(path)
+
+    def path_watch_hook(self, path: Path) -> None:
+        pass
