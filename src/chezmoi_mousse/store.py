@@ -18,7 +18,7 @@ from chezmoi_mousse.str_enums import BtnLabel
 init_data: InitData = InitData()
 live_run: bool = False
 
-operate_ids = AppIds(BtnLabel.operate)
+op_ids = AppIds(BtnLabel.operate)
 logs_ids = AppIds(BtnLabel.logs)
 config_ids = AppIds(BtnLabel.config)
 debug_ids = AppIds(BtnLabel.debug)

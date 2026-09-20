@@ -10,7 +10,6 @@ from chezmoi_mousse import store
 from chezmoi_mousse.str_enums import (
     ColorVar,
     Tcss,
-    TreeName,
 )
 
 if TYPE_CHECKING:
@@ -25,26 +24,26 @@ type NodeMap = dict[Path, TreeNode[Path]]
 
 
 __all__ = [
-    "ManagedTree",
-    "ManagedTreeExpanded",
     "NodeMap",
-    "StatusTree",
-    "StatusTreeExpanded",
-    "UnManagedTree",
-    "UnManagedTreeExpanded",
-    "UnWantedTree",
-    "UnWantedTreeExpanded",
+    "OperateTree",
 ]
 
 
-class _ManagedTreeBase(Tree[Path]):
+class OperateTree(Tree[Path]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, tree_name: TreeName) -> None:
+    def __init__(
+        self, tree_id: str, dirs: dict[Path, Sc], files: dict[Path, Sc]
+    ) -> None:
         self.node_map: NodeMap = {}
-
-        super().__init__(label="root", classes=Tcss.managed_tree, name=tree_name)
+        self.dir_nodes: dict[Path, Sc] = dirs
+        self.file_nodes: dict[Path, Sc] = files
+        super().__init__(
+            id=tree_id,
+            label="root",
+            classes=Tcss.managed_tree,
+        )
 
     def on_mount(self) -> None:
         self.loading = True
@@ -52,7 +51,7 @@ class _ManagedTreeBase(Tree[Path]):
         self.root.data = store.cfg.dest_dir_path
         self.guide_depth = 3
         self.show_root = False
-        self.initial_tree_population()
+        self.initial_tree_population(self.dir_nodes, self.file_nodes)
 
     def color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = status.dir_color if directory else status.file_color
@@ -67,76 +66,29 @@ class _ManagedTreeBase(Tree[Path]):
         self.node_map[path] = new_node
 
     @work
-    async def initial_tree_population(self) -> None:
-        if self.name in (TreeName.status_tree, TreeName.status_tree_expanded):
-            for path, status in store.cm_paths.status_dirs.items():
-                self.add_node(path, status, allow_expand=True)
-            for path, status in store.cm_paths.status_files.items():
-                self.add_node(path, status, allow_expand=False)
-        elif self.name in (TreeName.managed_tree, TreeName.managed_tree_expanded):
-            for path, status in store.cm_paths.managed_dirs.items():
-                self.add_node(path, status, allow_expand=True)
-            for path, status in store.cm_paths.managed_files.items():
-                self.add_node(path, status, allow_expand=False)
-        elif self.name in (TreeName.unmanaged_tree, TreeName.unmanaged_tree_expanded):
-            for path, status in store.cm_paths.un_man_dirs.items():
-                self.add_node(path, status, allow_expand=True)
-            for path, status in store.cm_paths.un_man_files.items():
-                self.add_node(path, status, allow_expand=False)
-        elif self.name in (TreeName.unwanted_tree, TreeName.unwanted_tree_expanded):
-            for path, status in store.cm_paths.any_dirs.items():
-                self.add_node(path, status, allow_expand=True)
-            for path, status in store.cm_paths.any_files.items():
-                self.add_node(path, status, allow_expand=False)
-        if self.name in (
-            TreeName.status_tree_expanded,
-            TreeName.managed_tree_expanded,
-            TreeName.unmanaged_tree_expanded,
-            TreeName.unwanted_tree_expanded,
+    async def populate_tree(self, dirs: dict[Path, Sc], files: dict[Path, Sc]) -> None:
+        for path, status in dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in files.items():
+            self.add_node(path, status, allow_expand=False)
+
+    @work
+    async def initial_tree_population(
+        self, dirs: dict[Path, Sc], files: dict[Path, Sc]
+    ) -> None:
+        for path, status in dirs.items():
+            self.add_node(path, status, allow_expand=True)
+        for path, status in files.items():
+            self.add_node(path, status, allow_expand=False)
+        if self.id in (
+            store.op_ids.tree.status_xpd,
+            store.op_ids.tree.managed_xpd,
+            store.op_ids.tree.un_managed_xpd,
+            store.op_ids.tree.un_wanted_xpd,
         ):
             self.root.expand_all()
         self.select_node(self.root)
         self.unselect()  # otherwise it looks like the first node is selected
-        if self.name == TreeName.status_tree:
+        if self.id == store.op_ids.tree.status:
             self.display = True
         self.loading = False
-
-
-class ManagedTree(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.managed_tree)
-
-
-class StatusTree(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.status_tree)
-
-
-class UnManagedTree(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.unmanaged_tree)
-
-
-class UnWantedTree(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.unwanted_tree)
-
-
-class ManagedTreeExpanded(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.managed_tree_expanded)
-
-
-class StatusTreeExpanded(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.status_tree_expanded)
-
-
-class UnManagedTreeExpanded(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.unmanaged_tree_expanded)
-
-
-class UnWantedTreeExpanded(_ManagedTreeBase):
-    def __init__(self) -> None:
-        super().__init__(tree_name=TreeName.unwanted_tree_expanded)

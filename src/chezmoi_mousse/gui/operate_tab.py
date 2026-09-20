@@ -5,33 +5,20 @@ from typing import TYPE_CHECKING
 from textual import on
 from textual.containers import (
     Horizontal,
-    HorizontalGroup,
     Vertical,
-    VerticalGroup,
 )
 from textual.widgets import (
     Button,
-    Label,
     RadioButton,
     RadioSet,
-    Switch,
     TabPane,
     Tree,
 )
 
 from chezmoi_mousse import store
-from chezmoi_mousse.gui.common.actionables import OperateBtnGroup
+from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, SwitchGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
-from chezmoi_mousse.gui.common.managed_trees import (
-    ManagedTree,
-    ManagedTreeExpanded,
-    StatusTree,
-    StatusTreeExpanded,
-    UnManagedTree,
-    UnManagedTreeExpanded,
-    UnWantedTree,
-    UnWantedTreeExpanded,
-)
+from chezmoi_mousse.gui.common.managed_trees import OperateTree
 from chezmoi_mousse.gui.common.messages import SwitchGroupMsg
 from chezmoi_mousse.gui.common.operate_views import (
     ContentView,
@@ -40,7 +27,6 @@ from chezmoi_mousse.gui.common.operate_views import (
     GitLogView,
     OperateViews,
 )
-from chezmoi_mousse.named_tuples import SwitchStates
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
@@ -52,72 +38,60 @@ if TYPE_CHECKING:
 
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.named_tuples import SwitchStates
+
 
 __all__ = ["OperateTab"]
-
-
-class DestDirBtn(Button):
-    def __init__(self) -> None:
-        super().__init__(
-            classes=Tcss.dest_dir_button,
-        )
-
-    def on_mount(self) -> None:
-        self.label = f"{store.cfg.dest_dir}"
 
 
 class LeftSideVertical(Vertical):
     def __init__(self) -> None:
         super().__init__(
-            id=store.operate_ids.container.left_side, classes=Tcss.operations_left
+            id=store.op_ids.container.left_side, classes=Tcss.operations_left
         )
 
     def compose(self) -> ComposeResult:
-        yield DestDirBtn()
-        yield StatusTree()
-        yield ManagedTree()
-        yield UnManagedTree()
-        yield UnWantedTree()
-        yield ManagedTreeExpanded()
-        yield StatusTreeExpanded()
-        yield UnManagedTreeExpanded()
-        yield UnWantedTreeExpanded()
-
-
-class SwitchGroup(VerticalGroup):
-    def __init__(self) -> None:
-        self.ids = store.operate_ids
-        self.switch_labels = (
-            LabelStr.expand_all,
-            LabelStr.show_unchanged,
-            LabelStr.show_unmanaged,
-            LabelStr.show_unwanted,
+        yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
+        yield OperateTree(
+            store.op_ids.tree.status,
+            store.cm_paths.status_dirs,
+            store.cm_paths.status_files,
         )
-        super().__init__(classes=Tcss.switches_vert_group)
-
-    def compose(self) -> ComposeResult:
-        for switch_label in self.switch_labels:
-            yield HorizontalGroup(
-                Switch(id=self.ids.switch_id(switch_label=switch_label)),
-                Label(switch_label),
-                classes=Tcss.switch_with_label,
-            )
-
-    @on(Switch.Changed)
-    def handle_tree_switches(self, event: Switch.Changed) -> None:
-        event.stop()
-        expand_all_switch = self.query_one(self.ids.switch.expand_all_q, Switch)
-        unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
-        unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
-        unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
-
-        switch_states: SwitchStates = SwitchStates(
-            expand_all=expand_all_switch.value,
-            show_unchanged=unchanged_switch.value,
-            show_unmanaged=unmanaged_switch.value,
-            show_unwanted=unwanted_switch.value,
+        yield OperateTree(
+            store.op_ids.tree.status_xpd,
+            store.cm_paths.status_dirs,
+            store.cm_paths.status_files,
         )
-        self.post_message(SwitchGroupMsg(switch_states=switch_states))
+        yield OperateTree(
+            store.op_ids.tree.managed,
+            store.cm_paths.managed_dirs,
+            store.cm_paths.managed_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.managed_xpd,
+            store.cm_paths.managed_dirs,
+            store.cm_paths.managed_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.un_managed,
+            store.cm_paths.un_man_dirs,
+            store.cm_paths.un_man_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.un_managed_xpd,
+            store.cm_paths.un_man_dirs,
+            store.cm_paths.un_man_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.un_wanted,
+            store.cm_paths.any_dirs,
+            store.cm_paths.any_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.un_wanted_xpd,
+            store.cm_paths.any_dirs,
+            store.cm_paths.any_files,
+        )
 
 
 class RightSideVertical(Vertical):
@@ -128,7 +102,7 @@ class RightSideVertical(Vertical):
     ) -> None:
         self.radio_labels = radio_labels
         super().__init__(
-            id=store.operate_ids.container.right_side, classes=Tcss.operations_right
+            id=store.op_ids.container.right_side, classes=Tcss.operations_right
         )
 
     def compose(self) -> ComposeResult:
@@ -168,7 +142,7 @@ class OperateTab(TabPane):
                 ),
             )
             yield OperateBtnGroup(
-                store.operate_ids,
+                store.op_ids,
                 labels=(
                     BtnLabel.chezmoi_add,
                     BtnLabel.chezmoi_apply,
@@ -184,15 +158,6 @@ class OperateTab(TabPane):
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.contents_view = self.query_exactly_one(ContentView)
 
-        self.man_tree = self.query_exactly_one(ManagedTree)
-        self.man_tree_expanded = self.query_exactly_one(ManagedTreeExpanded)
-        self.status_tree = self.query_exactly_one(StatusTree)
-        self.status_tree_expanded = self.query_exactly_one(StatusTreeExpanded)
-        self.unman_tree = self.query_exactly_one(UnManagedTree)
-        self.unman_tree_expanded = self.query_exactly_one(UnManagedTreeExpanded)
-        self.unwanted_tree = self.query_exactly_one(UnWantedTree)
-        self.unwanted_tree_expanded = self.query_exactly_one(UnWantedTreeExpanded)
-
     #################################
     # Watchers and message handling #
     #################################
@@ -200,36 +165,29 @@ class OperateTab(TabPane):
     @on(SwitchGroupMsg)
     def handle_switch_group(self, msg: SwitchGroupMsg) -> None:
         switch_states: SwitchStates = msg.switch_states
+        tree_ids = store.op_ids.tree
 
         if switch_states.expand_all:
             if switch_states.show_unwanted:
-                tree_to_show = self.unwanted_tree_expanded
+                shown_id = tree_ids.un_wanted_xpd
             elif switch_states.show_unmanaged:
-                tree_to_show = self.unman_tree_expanded
+                shown_id = tree_ids.un_managed_xpd
             elif switch_states.show_unchanged:
-                tree_to_show = self.man_tree_expanded
+                shown_id = tree_ids.managed_xpd
             else:
-                tree_to_show = self.status_tree_expanded
+                shown_id = tree_ids.status_xpd
         else:
             if switch_states.show_unwanted:
-                tree_to_show = self.unwanted_tree
+                shown_id = tree_ids.un_wanted
             elif switch_states.show_unmanaged:
-                tree_to_show = self.unman_tree
+                shown_id = tree_ids.un_managed
             elif switch_states.show_unchanged:
-                tree_to_show = self.man_tree
+                shown_id = tree_ids.managed
             else:
-                tree_to_show = self.status_tree
+                shown_id = tree_ids.status
 
-        self.man_tree_expanded.display = self.man_tree_expanded is tree_to_show
-        self.man_tree.display = self.man_tree is tree_to_show
-        self.status_tree_expanded.display = self.status_tree_expanded is tree_to_show
-        self.status_tree.display = self.status_tree is tree_to_show
-        self.unman_tree_expanded.display = self.unman_tree_expanded is tree_to_show
-        self.unman_tree.display = self.unman_tree is tree_to_show
-        self.unwanted_tree_expanded.display = (
-            self.unwanted_tree_expanded is tree_to_show
-        )
-        self.unwanted_tree.display = self.unwanted_tree is tree_to_show
+        for tree in self.query(OperateTree):
+            tree.display = tree.id == shown_id
 
     def set_view_path_reactives(self, path: Path) -> None:
         self.git_log_view.path = path

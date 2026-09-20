@@ -5,6 +5,7 @@ from chezmoi_mousse.str_enums import (
     ContainerName,
     LabelStr,
     RichLogName,
+    TreeName,
 )
 
 __all__ = ["AppIds"]
@@ -17,6 +18,7 @@ class AppIds:
         self.op_btn = _OperateButtonIds(self)
         self.richlog = _RichLogIds(self)
         self.switch = _SwitchIds(self)
+        self.tree = _TreeIds(self)
         self.switch_slider = f"{self.tab_label.name}_switch_slider"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
@@ -30,6 +32,9 @@ class AppIds:
 
     def richlog_id(self, qid: str = "", *, richlog: RichLogName) -> str:
         return f"{qid}{self.tab_label.name}_{richlog.name}_id"
+
+    def tree_id(self, qid: str = "", *, tree_name: TreeName) -> str:
+        return f"{qid}{self.tab_label.name}_{tree_name.name}_tree_id"
 
 
 class _ContainerIds:
@@ -154,3 +159,27 @@ class _SwitchIds:
 
         self.show_unwanted: str = ids.switch_id(switch_label=LabelStr.show_unwanted)
         self.show_unwanted_q: str = f"#{self.show_unwanted}"
+
+
+class _TreeIds:
+    def __init__(self, ids: AppIds) -> None:
+
+        self.status: str = ids.tree_id(tree_name=TreeName.status)
+        self.status_q: str = f"#{self.status}"
+        self.status_xpd: str = ids.tree_id(tree_name=TreeName.status_xpd)
+        self.status_xpd_q: str = f"#{self.status_xpd}"
+
+        self.managed: str = ids.tree_id(tree_name=TreeName.managed)
+        self.managed_q: str = f"#{self.managed}"
+        self.managed_xpd: str = ids.tree_id(tree_name=TreeName.managed_xpd)
+        self.managed_xpd_q: str = f"#{self.managed_xpd}"
+
+        self.un_managed: str = ids.tree_id(tree_name=TreeName.un_managed)
+        self.un_managed_q: str = f"#{self.un_managed}"
+        self.un_managed_xpd: str = ids.tree_id(tree_name=TreeName.un_managed_xpd)
+        self.un_managed_xpd_q: str = f"#{self.un_managed_xpd}"
+
+        self.un_wanted: str = ids.tree_id(tree_name=TreeName.un_wanted)
+        self.un_wanted_q: str = f"#{self.un_wanted}"
+        self.un_wanted_xpd: str = ids.tree_id(tree_name=TreeName.un_wanted_xpd)
+        self.un_wanted_xpd_q: str = f"#{self.un_wanted_xpd}"

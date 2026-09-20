@@ -8,20 +8,21 @@ from textual.containers import (
     Horizontal,
     HorizontalGroup,
     Vertical,
+    VerticalGroup,
 )
-from textual.widgets import Button
+from textual.widgets import Button, Label, Switch
 
+from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import (
-    DirContentBtnMsg,
     FlatBtnMsg,
     OperateBtnMsg,
+    SwitchGroupMsg,
     TabBtnMsg,
 )
-from chezmoi_mousse.str_enums import Tcss
+from chezmoi_mousse.named_tuples import SwitchStates
+from chezmoi_mousse.str_enums import LabelStr, Tcss
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from textual.app import ComposeResult
     from textual.message import Message
 
@@ -30,7 +31,6 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "DirContentBtn",
     "FlatBtn",
     "FlatButtonsVertical",
     "OperateBtn",
@@ -64,20 +64,6 @@ class _BaseAppButton(Button):
     def _handle_press(self, event: Button.Pressed) -> None:
         event.stop()
         self.post_message(self.send_message(event))
-
-
-class DirContentBtn(_BaseAppButton):
-    def __init__(self, app_ids: AppIds, btn_label: BtnLabel, *, path: Path) -> None:
-        self.path = path
-        super().__init__(app_ids=app_ids, btn_label=btn_label)
-
-    def send_message(self, event: Button.Pressed) -> DirContentBtnMsg:
-        return DirContentBtnMsg(
-            event.button,
-            self.app_ids,
-            self.btn_label,
-            path=self.path,
-        )
 
 
 class FlatBtn(_BaseAppButton):
@@ -154,6 +140,42 @@ class OperateBtnGroup(HorizontalGroup):
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
             yield OperateBtn(app_ids=self.app_ids, btn_label=btn_label)
+
+
+class SwitchGroup(VerticalGroup):
+    def __init__(self) -> None:
+        self.ids = store.op_ids
+        self.switch_labels = (
+            LabelStr.expand_all,
+            LabelStr.show_unchanged,
+            LabelStr.show_unmanaged,
+            LabelStr.show_unwanted,
+        )
+        super().__init__(classes=Tcss.switches_vert_group)
+
+    def compose(self) -> ComposeResult:
+        for switch_label in self.switch_labels:
+            yield HorizontalGroup(
+                Switch(id=self.ids.switch_id(switch_label=switch_label)),
+                Label(switch_label),
+                classes=Tcss.switch_with_label,
+            )
+
+    @on(Switch.Changed)
+    def handle_tree_switches(self, event: Switch.Changed) -> None:
+        event.stop()
+        expand_all_switch = self.query_one(self.ids.switch.expand_all_q, Switch)
+        unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
+        unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
+        unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
+
+        switch_states: SwitchStates = SwitchStates(
+            expand_all=expand_all_switch.value,
+            show_unchanged=unchanged_switch.value,
+            show_unmanaged=unmanaged_switch.value,
+            show_unwanted=unwanted_switch.value,
+        )
+        self.post_message(SwitchGroupMsg(switch_states=switch_states))
 
 
 class TabButtons(Horizontal):

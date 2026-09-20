@@ -536,14 +536,14 @@ class Tcss(StrEnum):
 
 
 class TreeName(StrEnum):
-    managed_tree = auto()
-    managed_tree_expanded = auto()
-    status_tree = auto()
-    status_tree_expanded = auto()
-    unmanaged_tree = auto()
-    unmanaged_tree_expanded = auto()
-    unwanted_tree = auto()
-    unwanted_tree_expanded = auto()
+    managed = auto()
+    managed_xpd = auto()
+    status = auto()
+    status_xpd = auto()
+    un_managed = auto()
+    un_managed_xpd = auto()
+    un_wanted = auto()
+    un_wanted_xpd = auto()
 
 
 ##############################################
