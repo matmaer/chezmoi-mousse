@@ -23,10 +23,11 @@ from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import OperateBtnGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.labeled_views import (
-    ContentsView,
+    ContentView,
     DiffReverseView,
     DiffView,
     GitLogView,
+    OperateViews,
 )
 from chezmoi_mousse.gui.common.managed_trees import (
     ManagedTree,
@@ -157,10 +158,7 @@ class OperateTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical()
-            yield GitLogView()
-            yield ContentsView()
-            yield DiffView()
-            yield DiffReverseView()
+            yield OperateViews()
             yield RightSideVertical(
                 radio_labels=(
                     LabelStr.radio_git_log,
@@ -184,7 +182,7 @@ class OperateTab(TabPane):
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
-        self.contents_view = self.query_exactly_one(ContentsView)
+        self.contents_view = self.query_exactly_one(ContentView)
 
         self.man_tree = self.query_exactly_one(ManagedTree)
         self.man_tree_expanded = self.query_exactly_one(ManagedTreeExpanded)
