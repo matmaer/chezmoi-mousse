@@ -363,6 +363,7 @@ version = "0.2.5"
 source = { virtual = "." }
 dependencies = [
     { name = "textual" },
+    { name = "textual-diff-view" },
 ]
 
 [package.dev-dependencies]
@@ -382,7 +383,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "textual", specifier = ">=8.2.8" }]
+requires-dist = [
+    { name = "textual", specifier = ">=8.2.8" },
+    { name = "textual-diff-view", specifier = ">=0.1.5" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1742,6 +1746,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/38/fd/fd5ad9527b536c306a5a860a33a45e13983a59804b48b91ea52b42ba030a/textual_dev-1.8.0.tar.gz", hash = "sha256:7e56867b0341405a95e938cac0647e6d2763d38d0df08710469ad6b6a8db76df", size = 25026, upload-time = "2025-10-11T09:47:01.824Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/45/c6/1dc08ceee6d0bdf219c500cb2fbd605b681b63507c4ff27a6477f12f8245/textual_dev-1.8.0-py3-none-any.whl", hash = "sha256:227b6d24a485fbbc77e302aa21f4fdf3083beb57eb45cd95bae082c81cbeddeb", size = 27541, upload-time = "2025-10-11T09:47:00.531Z" },
+]
+
+[[package]]
+name = "textual-diff-view"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "textual" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/55/bb5d51487b195bee04c71d42bc5b3e6bca0ba9477cf9b6f12c7f498a0bd7/textual_diff_view-0.1.5.tar.gz", hash = "sha256:e28151c45d4207fb7b50b57fce2bc249e880c2a496b21bf7d8560a92e59caecb", size = 38405, upload-time = "2026-04-30T08:43:12.809Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2d/b3/891eb302e7bb037b308cd2960ba0f762fa1e95f574c1ed810b23c86326a1/textual_diff_view-0.1.5-py3-none-any.whl", hash = "sha256:2e9c7c7f37d195688d0df56f7056e9580e4f40c3583834b12366199b77798f35", size = 25542, upload-time = "2026-04-30T08:43:15.455Z" },
 ]
 
 [[package]]
