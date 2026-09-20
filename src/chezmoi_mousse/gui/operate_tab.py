@@ -242,14 +242,13 @@ class OperateTab(TabPane):
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
-        self.notify("Setting path for views")
         assert event.node.data is not None
         self.set_view_path_reactives(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == store.cfg.dest_dir:
+        if event.button.label == str(store.cfg.dest_dir):
+            event.stop()
             self.set_view_path_reactives(store.cfg.dest_dir)
 
     @on(RadioSet.Changed)
