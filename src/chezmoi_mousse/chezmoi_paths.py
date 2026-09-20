@@ -27,6 +27,7 @@ class ChezmoiTreePaths:
     status_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     un_man_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
     un_man_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    real_status_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
 
     def __post_init__(self) -> None:
 
@@ -37,6 +38,7 @@ class ChezmoiTreePaths:
             for line in self._status_dirs_list
             if Sc.R.value not in line[:2]  # TODO: implement R
         }
+        self.real_status_dirs = path_funcs.sort_path_dict(status_dirs)
         status_files = {
             Path(line[3:]): Sc(line[:2])
             for line in self._status_files_list
@@ -155,16 +157,20 @@ class ChezmoiPathSets:
     forget_paths: set[Path] = field(default_factory=set[Path])
     re_add_paths: set[Path] = field(default_factory=set[Path])
     managed_paths: set[Path] = field(default_factory=set[Path])
+    status_paths: set[Path] = field(default_factory=set[Path])
 
     def __post_init__(self) -> None:
-        # TODO: improve this logic to decide if a button should be enabled or not
 
-        all_paths: dict[Path, Sc] = self._cm_paths.any_dirs | self._cm_paths.any_files
         self.managed_paths: set[Path] = (
             self._cm_paths.managed_dirs.keys() | self._cm_paths.managed_files.keys()
         )
+        self.status_paths: set[Path] = (
+            self._cm_paths.status_files.keys() | self._cm_paths.real_status_dirs.keys()
+        )
         self.missing = {p for p in (self.managed_paths) if not p.exists()}
 
+        # TODO: improve this logic to decide if a button should be enabled or not
+        all_paths: dict[Path, Sc] = self._cm_paths.any_dirs | self._cm_paths.any_files
         for path, status in all_paths.items():
             if status == Sc.UU:
                 self.add_paths.add(path)
