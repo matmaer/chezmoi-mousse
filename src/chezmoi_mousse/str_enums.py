@@ -175,6 +175,7 @@ class ContainerName(StrEnum):
 
 class LabelStr(StrEnum):
     # Managed Tree tab
+    context = "Context"
     middle = "Middle Section"
     right_side = "Right Side Section"
     radio_diff = "Diff View"

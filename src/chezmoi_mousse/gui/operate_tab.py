@@ -21,6 +21,7 @@ from textual.widgets import (
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import OperateBtnGroup
+from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.labeled_views import (
     ContentsView,
     DiffReverseView,
@@ -130,6 +131,7 @@ class RightSideVertical(Vertical):
         )
 
     def compose(self) -> ComposeResult:
+        yield MainSectionLabel(LabelStr.context)
         with RadioSet():
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)

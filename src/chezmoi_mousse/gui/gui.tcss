@@ -94,7 +94,7 @@
   }
 
   &>.operations_middle {
-    margin: 0 2;
+    margin: 0 1;
     height: 1fr;
   }
 
@@ -151,7 +151,6 @@ ContentsView,
 DiffView {
   margin-bottom: 2;
 }
-
 
 CustomHeader {
   border-bottom: dashed $panel;
@@ -293,7 +292,6 @@ Label {
   text-align: center;
   border-left: none;
   border-right: none;
-  width: 1fr;
 
   &MainSectionLabel {
     background-tint: $surface-lighten-1;
@@ -301,6 +299,7 @@ Label {
     border-bottom: inner $surface-lighten-1;
     border-top: inner $surface-lighten-1;
     color: $text-accent;
+    width: 1fr;
   }
 
   &SubSectionLabel {
@@ -308,6 +307,7 @@ Label {
     background: $panel;
     border-bottom: wide $panel;
     color: $text-success;
+    width: 1fr;
   }
 
   &FlatSectionLabel {
@@ -315,12 +315,13 @@ Label {
     background: $primary-muted;
     border-bottom: wide $primary-muted;
     color: $primary-lighten-3;
+    width: 1fr;
   }
 }
 
 RadioSet {
   border: none;
-  border-top: wide $surface-lighten-1;
+  border-top: outer $surface-lighten-2;
   border-bottom: inner $surface;
   background: $surface;
   background-tint: $surface;

@@ -101,7 +101,6 @@ class _DiffViewBase(LabeledView):
 
     def on_mount(self) -> None:
         super().on_mount()
-        self.data_table = self.query_exactly_one(DataTable[str])
         self.tcss_map = {
             " ": Tcss.context,
             "@@": Tcss.context,
