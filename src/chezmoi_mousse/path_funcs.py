@@ -135,12 +135,7 @@ def file_unwanted_suffix(file_path: Path) -> bool:
 def get_rel_path(path: Path | None) -> str:
     if path is None:
         return ""
-    try:
-        # this happens early on before we have ran and parsed chezmoi dump-config
-        rel_path = str(path.relative_to(store.cfg.dest_dir))
-    except ValueError:
-        return ""
-    return rel_path
+    return str(path.relative_to(store.cfg.dest_dir))
 
 
 def path_seems_cache(path: Path) -> bool:
