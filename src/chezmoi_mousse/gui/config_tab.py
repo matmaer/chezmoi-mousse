@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
-from textual import on
+from textual import on, work
 from textual.containers import (
     Horizontal,
     ScrollableContainer,
@@ -25,6 +25,7 @@ from chezmoi_mousse.gui.common.messages import FlatBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
+    ReadCmd,
     Tcss,
 )
 
@@ -35,6 +36,8 @@ from .common.actionables import (
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
+
+    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["ConfigTab"]
@@ -47,7 +50,7 @@ class ConfigTab(TabPane):
 
     class PrettyTemplateData(Pretty): ...
 
-    template_data: reactive[str | None] = reactive(None, init=False)
+    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
         super().__init__(id=BtnLabel.config.pane_id, title=BtnLabel.config)
@@ -111,11 +114,23 @@ class ConfigTab(TabPane):
         elif msg.button.label == BtnLabel.diagram:
             self.switcher.current = store.config_ids.container.diagram
 
-    def _parse_template_data(self, template_data: str) -> None:
-        parsed_data = json.loads(template_data)
-        widget = self.query_exactly_one(ConfigTab.PrettyTemplateData)
-        widget.update(parsed_data)
+    @work
+    async def update_widget(self, cmd_result: CommandResult) -> None:
+        if cmd_result.cmd_enum is ReadCmd.doctor:
+            widget = self.query_exactly_one(DoctorTable)
+            widget.populate_dr_table(cmd_result.std_out)
+        elif cmd_result.cmd_enum is ReadCmd.cat_config:
+            widget = self.query_exactly_one(ConfigTab.CatConfigStatic)
+            widget.update(cmd_result.std_out)
+        elif cmd_result.cmd_enum is ReadCmd.ignored:
+            widget = self.query_exactly_one(ConfigTab.PrettyIgnored)
+            widget.update(cmd_result.std_out)
+        elif cmd_result.cmd_enum is ReadCmd.template_data:
+            parsed_data = json.loads(cmd_result.std_out)
+            widget = self.query_exactly_one(ConfigTab.PrettyTemplateData)
+            widget.update(parsed_data)
 
-    def watch_template_data(self, template_data: str | None) -> None:
-        if template_data is not None:
-            self._parse_template_data(template_data)
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
+            return
+        self.update_widget(cmd_result)

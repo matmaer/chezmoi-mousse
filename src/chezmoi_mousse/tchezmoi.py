@@ -41,7 +41,8 @@ def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
         return (f"{cmd.pretty_cmd} {rel_path}").rstrip()
     else:
         base_cmd = get_base_cmd(cmd)
-        return (f"{base_cmd} {cmd.pretty_cmd} {path_funcs.get_rel_path(path)}").rstrip()
+        write_verbs = " ".join(cmd.value)
+        return (f"{base_cmd} {write_verbs} {path_funcs.get_rel_path(path)}").rstrip()
 
 
 async def _construct_command_result(
@@ -85,51 +86,41 @@ async def _exec_chezmoi(
     path_arg: Path | None = None,
 ) -> CommandResult:
     exec_result: ExecResult = await create_subprocess_exec_result(cmd_enum, path_arg)
-    cmd_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
-    is_queued = app.post_message(CommandResultMsg(cmd_result))
+    command_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
+    if app.screen.name == "splash_screen":
+        await app.splash_screen.write_log_msg(cmd_result=command_result)
+    is_queued = app.post_message(CommandResultMsg(command_result))
     assert is_queued, "Failed to queue CommandResultMsg"
-    return cmd_result
+    return command_result
 
 
-async def run_chezmoi_command(
+async def run_chezmoi_cmd(
     app: ChezmoiGui,
     cmd_enum: ReadCmd | WriteCmd,
     path_arg: Path | None = None,
 ) -> CommandResult:
     if cmd_enum is ReadCmd.git_log and path_arg is not None:
-        cr: CommandResult = await _run_chezmoi_git_log_on_path(app, path_arg)
-    elif cmd_enum is ReadCmd.dump_config:
-        cr: CommandResult = await _run_dump_config(app)
+        source_path = (await _exec_chezmoi(app, ReadCmd.source_path, path_arg)).std_out
+        return await _exec_chezmoi(app, ReadCmd.git_log, Path(source_path))
     else:
-        cr: CommandResult = await _exec_chezmoi(app, cmd_enum, path_arg)
-    return cr
+        return await _exec_chezmoi(app, cmd_enum, path_arg)
 
 
-async def _run_chezmoi_git_log_on_path(
-    app: ChezmoiGui, path_arg: Path
-) -> CommandResult:
-    source_path_result = await _exec_chezmoi(app, ReadCmd.source_path, path_arg)
-    source_path = Path(source_path_result.std_out)
-    cmd_result = await _exec_chezmoi(app, ReadCmd.git_log, source_path)
-    return cmd_result
-
-
-async def _run_dump_config(app: ChezmoiGui) -> CommandResult:
-    cr: CommandResult = await _exec_chezmoi(app, ReadCmd.dump_config)
-    await store.decode_and_store_config(cr.std_out)
-    return cr
+async def run_in_task_group(app: ChezmoiGui, commands: tuple[ReadCmd, ...]) -> None:
+    async with asyncio.TaskGroup() as tg:
+        for cmd_enum in commands:
+            tg.create_task(run_chezmoi_cmd(app, cmd_enum))
 
 
 async def run_managed_commands(app: ChezmoiGui) -> None:
 
     async with asyncio.TaskGroup() as tg:
-        man_dir_task = tg.create_task(_exec_chezmoi(app, ReadCmd.managed_dirs))
-        man_file_task = tg.create_task(_exec_chezmoi(app, ReadCmd.managed_files))
-        status_dirs_task = tg.create_task(_exec_chezmoi(app, ReadCmd.status_dirs))
-        status_files_task = tg.create_task(_exec_chezmoi(app, ReadCmd.status_files))
-        unman_dirs_task = tg.create_task(_exec_chezmoi(app, ReadCmd.unmanaged_dirs))
-        unman_files_task = tg.create_task(_exec_chezmoi(app, ReadCmd.unmanaged_files))
-
+        man_dir_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.managed_dirs))
+        man_file_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.managed_files))
+        status_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_dirs))
+        status_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_files))
+        unman_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_dirs))
+        unman_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_files))
     tree_paths = ChezmoiTreePaths(
         _man_dirs_list=man_dir_task.result().out_list,
         _man_files_list=man_file_task.result().out_list,
@@ -138,7 +129,6 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _unman_dirs_list=unman_dirs_task.result().out_list,
         _unman_files_list=unman_files_task.result().out_list,
     )
-
     await store.handle_new_tree_paths(tree_paths)
 
 

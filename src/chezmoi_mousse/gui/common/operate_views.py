@@ -116,7 +116,7 @@ class DiffView(BaseView):
     async def get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
         if path not in store.cm_path_sets.status_paths:
             return []
-        diff_result = await tchezmoi.run_chezmoi_command(self.app, diff_cmd, path)
+        diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
         widgets: list[Label | Static] = []
 
         def get_prefix(line: str) -> str:
@@ -233,7 +233,7 @@ class GitLogView(BaseView):
             pretty_cells = self.data_cache[path]
         else:
             path_arg = None if path == store.cfg.dest_dir else path
-            cmd_result = await tchezmoi.run_chezmoi_command(
+            cmd_result = await tchezmoi.run_chezmoi_cmd(
                 self.app, ReadCmd.git_log, path_arg
             )
             pretty_cells = await self._get_styled_cells(cmd_result.out_list)

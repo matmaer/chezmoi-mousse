@@ -1,10 +1,6 @@
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 from rich.text import Text
-from textual import work
-from textual.reactive import reactive
 from textual.widgets import DataTable
 
 from chezmoi_mousse.str_enums import ColorVar
@@ -13,7 +9,6 @@ if TYPE_CHECKING:
     from textual import getters
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.named_tuples import CommandResult
 
 
 __all__ = ["DoctorTable"]
@@ -22,8 +17,6 @@ __all__ = ["DoctorTable"]
 class DoctorTable(DataTable[Text]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
-
-    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
         super().__init__(show_cursor=False)
@@ -37,17 +30,12 @@ class DoctorTable(DataTable[Text]):
             "error": self.app.theme_variables[ColorVar.text_error],
         }
 
-    @work
-    async def _populate_dr_table(self, cmd_result: CommandResult) -> None:
+    def populate_dr_table(self, std_out: str) -> None:
         self.loading = True
-        doctor_lines = cmd_result.std_out.splitlines()
-        if cmd_result.returncode != 0:
-            self.notify(f"{cmd_result.std_err}", severity="error")
-            return
-        elif not doctor_lines:
+        doctor_lines = std_out.splitlines()
+        if not doctor_lines:
             self.notify("No doctor output available to display.", severity="error")
             return
-
         self.add_columns(*doctor_lines[0].split())
         rows: list[list[Text]] = []
 
@@ -75,7 +63,3 @@ class DoctorTable(DataTable[Text]):
                 rows.append(new_row)
         self.add_rows(rows)
         self.loading = False
-
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is not None:
-            self._populate_dr_table(cmd_result)

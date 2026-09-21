@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from enum import Enum, StrEnum, auto
 from functools import cache, cached_property
 from typing import Self
@@ -391,7 +389,7 @@ class ProblemChars(StrEnum):
 
 class ReactiveVar(StrEnum):
     cmd_result = auto()
-    template_data = auto()
+    cmd_std_out = auto()
     path = auto()
 
 
@@ -442,10 +440,10 @@ class StatusCode(StrEnum):
 
     @classmethod
     @cache
-    def _get_dir_color_var(cls, status_code: StatusCode) -> ColorVar:
-        mapping: dict[StatusCode, ColorVar] = {
+    def _get_dir_color_var(cls, status_code: Self) -> ColorVar:
+        mapping: dict[str, ColorVar] = {
             # D combos
-            StatusCode.DA: ColorVar.text_error,
+            cls.DA: ColorVar.text_error,
             cls.DD: ColorVar.bogus,  # probably impossible status pair
             cls.DM: ColorVar.text_error,
             cls.DS: ColorVar.text_error,
@@ -467,8 +465,8 @@ class StatusCode(StrEnum):
 
     @classmethod
     @cache
-    def _get_file_color_var(cls, status_code: StatusCode) -> ColorVar:
-        mapping: dict[StatusCode, ColorVar] = {
+    def _get_file_color_var(cls, status_code: Self) -> ColorVar:
+        mapping: dict[str, ColorVar] = {
             # D combos
             cls.DA: ColorVar.error,
             cls.DD: ColorVar.bogus,  # probably impossible status pair
@@ -633,25 +631,10 @@ class ReadCmd(Enum):
             ),
         )
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
-        # for 'chezmoi git' commands, if the pretty verb string contains no '--' flags,
-        # the pretty command does not need the option terminator so we remove it.
-        if (
-            self in (self.git_dir, self.git_log, self.git_remote)
-            and self.value.count("--") == 1
-        ):
+        if "git" in verb_str and verb_str.count("--") == 1:
+            # remove the option terminator
             verb_str = verb_str.replace(" --", "")
         return f"chezmoi {verb_str}"
-
-    @classmethod
-    @cache
-    def splash_commands(cls) -> tuple[Self, ...]:
-        return (
-            cls(cls.doctor),
-            cls(cls.cat_config),
-            cls(cls.git_remote),
-            cls(cls.ignored),
-            cls(cls.template_data),
-        )
 
 
 class WriteCmd(Enum):
@@ -661,19 +644,3 @@ class WriteCmd(Enum):
     destroy = ("destroy",)
     forget = ("forget",)
     re_add = ("re-add",)
-
-    @classmethod
-    @cache
-    def get_write_cmd(cls, op_btn_label: BtnLabel) -> Self:
-        mapping: dict[BtnLabel, Self] = {
-            BtnLabel.add_run: cls(cls.add),
-            BtnLabel.apply_run: cls(cls.apply),
-            BtnLabel.destroy_run: cls(cls.destroy),
-            BtnLabel.forget_run: cls(cls.forget),
-            BtnLabel.re_add_run: cls(cls.re_add),
-        }
-        return mapping[op_btn_label]
-
-    @cached_property
-    def pretty_cmd(self) -> str:
-        return f"chezmoi {self.value[0]}"

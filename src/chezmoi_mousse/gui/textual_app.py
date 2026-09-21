@@ -23,7 +23,6 @@ from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
     TabButtons,
 )
-from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -132,9 +131,8 @@ class ChezmoiGui(App[str]):
     def on_mount(self) -> None:
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
-        self.splash_screen = SplashScreen()
+        self.splash_screen = SplashScreen(name="splash_screen")
         self.register_theme(chezmoi_mousse_light)
-        self.pre_mount_cmd_results: list[CommandResult] = []
         self._run_startup_worker()
 
     @work
@@ -143,9 +141,13 @@ class ChezmoiGui(App[str]):
 
         self.init_phase = True
         results: list[CommandResult] = []
-        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.git_dir))
-        results.append(await tchezmoi.run_chezmoi_command(self, WriteCmd.init))
-        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.dump_config))
+        for cmd in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config):
+            cmd_result = await tchezmoi.run_chezmoi_cmd(self, cmd)
+            results.append(cmd_result)
+        await store.decode_and_store_config(results[-1].std_out)
+        await self.splash_screen.write_log_msg(
+            prefix_suffix=(ReadCmd.dump_config.pretty_cmd, LogStr.decoded)
+        )
 
         tabbed_content = self.query_exactly_one(TabbedContent)
 
@@ -161,53 +163,45 @@ class ChezmoiGui(App[str]):
         await tchezmoi.run_managed_commands(self)
         await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
         tabbed_content.active = BtnLabel.operate.pane_id
+
         operate_tab = self.query_exactly_one(OperateTab)
         operate_tab.set_view_path_reactives(store.cfg.dest_dir)
         await self.splash_screen.dismiss_after_fade_loop()
 
-    async def _run_init_commands(self) -> list[CommandResult]:
-        results: list[CommandResult] = []
-        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.git_dir))
-        results.append(await tchezmoi.run_chezmoi_command(self, WriteCmd.init))
-        results.append(await tchezmoi.run_chezmoi_command(self, ReadCmd.dump_config))
-        return results
+    @work
+    async def _run_splash_commands(self) -> None:
+        await tchezmoi.run_in_task_group(
+            self,
+            (
+                ReadCmd.doctor,
+                ReadCmd.cat_config,
+                ReadCmd.git_remote,
+                ReadCmd.ignored,
+                ReadCmd.template_data,
+            ),
+        )
 
     @work
     async def _log_cmd_result(self, cmd_result: CommandResult) -> None:
-        if isinstance(self.screen, SplashScreen):
-            await self.screen.write_log_msg(cmd_result=cmd_result)
-            if cmd_result.cmd_enum is ReadCmd.dump_config:
-                await self.splash_screen.write_log_msg(
-                    prefix_suffix=(ReadCmd.dump_config.pretty_cmd, LogStr.decoded)
-                )
-
         app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         setattr(app_log, ReactiveVar.cmd_result, cmd_result)
         cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
         setattr(cmd_log, ReactiveVar.cmd_result, cmd_result)
 
-    @work
-    async def _run_splash_commands(self) -> None:
-        for cmd in ReadCmd.splash_commands():
-            await tchezmoi.run_chezmoi_command(self, cmd)
-
     @on(CommandResultMsg)
-    async def handle_command_result(self, msg: CommandResultMsg) -> None:
+    def handle_command_result(self, msg: CommandResultMsg) -> None:
         if self.init_phase is True:
             return
         self._log_cmd_result(msg.cmd_result)
-        if msg.cmd_result.cmd_enum is ReadCmd.doctor:
-            doctor_table = self.query_exactly_one(DoctorTable)
-            setattr(doctor_table, ReactiveVar.cmd_result, msg.cmd_result)
-        elif msg.cmd_result.cmd_enum is ReadCmd.cat_config:
-            cat_config = self.query_exactly_one(ConfigTab.CatConfigStatic)
-            cat_config.update(msg.cmd_result.out_txt)
-        elif msg.cmd_result.cmd_enum is ReadCmd.ignored:
-            pretty_ignored = self.query_exactly_one(ConfigTab.PrettyIgnored)
-            pretty_ignored.update(msg.cmd_result.out_txt)
-        elif msg.cmd_result.cmd_enum is ReadCmd.template_data:
-            template_data = self.query_exactly_one(ConfigTab)
-            setattr(template_data, ReactiveVar.template_data, msg.cmd_result.std_out)
+        if msg.cmd_result.cmd_enum in (
+            ReadCmd.doctor,
+            ReadCmd.cat_config,
+            ReadCmd.ignored,
+            ReadCmd.template_data,
+        ):
+            config_tab = self.query_exactly_one(ConfigTab)
+            # the reactives trigger each update in a worker
+            setattr(config_tab, ReactiveVar.cmd_result, msg.cmd_result)
 
     # ##################
     # # Action Methods #
