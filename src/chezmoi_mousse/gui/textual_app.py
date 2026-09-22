@@ -25,6 +25,7 @@ from chezmoi_mousse.gui.common.actionables import (
 )
 from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
+from chezmoi_mousse.gui.common.operate_views import OperateViews
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tab import OperateTab
@@ -164,8 +165,8 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
         tabbed_content.active = BtnLabel.operate.pane_id
 
-        operate_tab = self.query_exactly_one(OperateTab)
-        operate_tab.set_view_path_reactives(store.cfg.dest_dir)
+        operate_views = self.query_exactly_one(OperateViews)
+        operate_views.path = store.cfg.dest_dir
         await self.splash_screen.dismiss_after_fade_loop()
 
     @work
