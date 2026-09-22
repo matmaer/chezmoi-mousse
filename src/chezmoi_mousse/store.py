@@ -29,6 +29,12 @@ cfg = DumpConfigKeys()
 cm_paths = ChezmoiTreePaths(
     _status_dirs_pcr={},
     _status_files_pcr={},
+    man_dir_set=frozenset(),
+    man_file_set=frozenset(),
+    status_dir_set=frozenset(),
+    status_file_set=frozenset(),
+    un_man_dir_set=frozenset(),
+    un_man_file_set=frozenset(),
 )
 
 
@@ -36,10 +42,22 @@ cm_changes = CmPathChanges(
     _old_tree_paths=ChezmoiTreePaths(
         _status_dirs_pcr={},
         _status_files_pcr={},
+        man_dir_set=frozenset(),
+        man_file_set=frozenset(),
+        status_dir_set=frozenset(),
+        status_file_set=frozenset(),
+        un_man_dir_set=frozenset(),
+        un_man_file_set=frozenset(),
     ),
     _new_tree_paths=ChezmoiTreePaths(
         _status_dirs_pcr={},
         _status_files_pcr={},
+        man_dir_set=frozenset(),
+        man_file_set=frozenset(),
+        status_dir_set=frozenset(),
+        status_file_set=frozenset(),
+        un_man_dir_set=frozenset(),
+        un_man_file_set=frozenset(),
     ),
 )
 
