@@ -5,7 +5,6 @@ from pathlib import Path
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import (
-    ChezmoiPathSets,
     ChezmoiTreePaths,
     CmPathChanges,
 )
@@ -36,16 +35,6 @@ cm_paths = ChezmoiTreePaths(
     _unman_files_pcr=[],
 )
 
-cm_path_sets: ChezmoiPathSets = ChezmoiPathSets(
-    _cm_paths=ChezmoiTreePaths(
-        _man_dirs_pcr=[],
-        _man_files_pcr=[],
-        _status_dirs_pcr={},
-        _status_files_pcr={},
-        _unman_dirs_pcr=[],
-        _unman_files_pcr=[],
-    )
-)
 
 cm_changes = CmPathChanges(
     _old_tree_paths=ChezmoiTreePaths(
@@ -80,7 +69,6 @@ async def handle_new_tree_paths(
         _new_tree_paths=new_tree_paths,
     )
     # The differences are calculated, now overwrite the store.tree_paths
-    cm_path_sets = ChezmoiPathSets(_cm_paths=new_tree_paths)
     cm_paths = new_tree_paths
 
 

@@ -6,7 +6,7 @@ from pathlib import Path
 from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import StatusCode as Sc
 
-__all__ = ["ChezmoiPathSets", "ChezmoiTreePaths", "CmPathChanges"]
+__all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 
 
 @dataclass(slots=True, kw_only=True)
@@ -149,37 +149,28 @@ class CmPathChanges:
 
 
 @dataclass
-class ChezmoiPathSets:
+class CmOpButtonSets:
     _cm_paths: ChezmoiTreePaths
 
-    missing: set[Path] = field(default_factory=set[Path])
     add_paths: set[Path] = field(default_factory=set[Path])
     apply_paths: set[Path] = field(default_factory=set[Path])
     destroy_paths: set[Path] = field(default_factory=set[Path])
     forget_paths: set[Path] = field(default_factory=set[Path])
     re_add_paths: set[Path] = field(default_factory=set[Path])
-    managed_paths: set[Path] = field(default_factory=set[Path])
-    status_paths: set[Path] = field(default_factory=set[Path])
 
     def __post_init__(self) -> None:
 
-        self.managed_paths: set[Path] = (
-            self._cm_paths.managed_dirs.keys() | self._cm_paths.managed_files.keys()
-        )
-        self.status_paths: set[Path] = (
-            self._cm_paths.status_files.keys() | self._cm_paths.real_status_dirs.keys()
-        )
-        self.missing = {p for p in (self.managed_paths) if not p.exists()}
-
         # TODO: improve this logic to decide if a button should be enabled or not
-        all_paths: dict[Path, Sc] = self._cm_paths.any_dirs | self._cm_paths.any_files
+        all_paths: dict[Path, Sc] = (
+            self._cm_paths.all_tree_dirs | self._cm_paths.all_tree_files
+        )
         for path, status in all_paths.items():
             if status == Sc.UU:
                 self.add_paths.add(path)
                 continue
             # we are now checking for status other than Sc.UU, aka managed paths
             self.forget_paths.add(path)
-            if path not in self.missing:
+            if path not in self._cm_paths.missing_managed:
                 self.destroy_paths.add(path)
             if status == Sc.SS:
                 continue
