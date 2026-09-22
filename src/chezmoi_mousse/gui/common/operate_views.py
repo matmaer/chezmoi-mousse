@@ -39,11 +39,14 @@ class ContentView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    path: reactive[Path | None] = reactive(None, init=False)
+
     cache: ClassVar[dict[Path, Text]] = {}
 
     class ContentStatic(Static): ...
 
     def compose(self) -> ComposeResult:
+        yield SubSectionLabel()
         yield FlatSectionLabel()
         yield ContentView.ContentStatic(markup=False)
 
@@ -53,6 +56,13 @@ class ContentView(Vertical):
 
     @work
     async def create_contents(self, path: Path) -> None:
+        if (
+            path == store.cfg.dest_dir
+            and path not in store.cm_paths.all_tree_files
+            and not path.is_file()
+        ):
+            self.flat_label.update(LabelStr.select_path_contents)
+            return
 
         if path in self.cache:
             f_content = self.cache[path]
@@ -63,22 +73,22 @@ class ContentView(Vertical):
                     self.app, path
                 )
                 self.flat_label.update(LabelStr.chezmoi_cat_output)
-            elif path in store.cm_paths.all_tree_files:
+            else:
                 self.flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
-            else:
-                self.flat_label.update(LabelStr.select_path_contents)
             self.cache[path] = f_content
 
         self.content_static.update(f_content)
 
-    def update_view(self, path: Path) -> None:
+    def watch_path(self, path: Path) -> None:
         self.create_contents(path)
 
 
 class DiffView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
+
+    path: reactive[Path | None] = reactive(None, init=False)
 
     cache: ClassVar[dict[Path, list[Static]]] = {}
 
@@ -96,12 +106,16 @@ class DiffView(Vertical):
     }
 
     def compose(self) -> ComposeResult:
+        yield SubSectionLabel()
         yield FlatSectionLabel()
         yield ScrollableContainer()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(ScrollableContainer)
+
+    def _can_show_diff(self, path: Path) -> bool:
+        return path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set
 
     async def get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
         if path not in store.cm_paths.status_paths:
@@ -153,26 +167,25 @@ class DiffView(Vertical):
 
         self.diff_container.loading = False
 
-    def update_view(self, path: Path) -> None:
+    def watch_path(self, path: Path) -> None:
         self._update_diff_view(path)
 
 
 class DiffReverseView(Vertical):
     cache: ClassVar[dict[Path, Text]] = {}
 
-    class DiffReverseStatic(Static): ...
+    path: reactive[Path | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
+        yield SubSectionLabel()
         yield FlatSectionLabel()
-        with ScrollableContainer():
-            yield DiffReverseView.DiffReverseStatic()
+        yield ScrollableContainer()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.diff_cmd = ReadCmd.diff
-        self.diff_static = self.query_exactly_one(DiffReverseView.DiffReverseStatic)
+        self.diff_cmd = ReadCmd.diff_reverse
 
-    def update_view(self, path: Path) -> None:
+    def watch_path(self, path: Path) -> None:
         pass
 
 
@@ -180,6 +193,7 @@ class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    path: reactive[Path | None] = reactive(None, init=False)
     cache: ClassVar[dict[Path, list[Static]]] = {}
 
     def compose(self) -> ComposeResult:
@@ -236,19 +250,9 @@ class GitLogView(Vertical):
             self.data_table.add_row(*row)
         self.data_table.display = True
 
-    def _can_show_diff(self, path: Path) -> bool:
-        return path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set
+    def watch_path(self, path: Path) -> None:
 
-    def update_view(self, path: Path) -> None:
-
-        if self._can_show_diff(path) and self.flat_label.display:
-            return
-        if self._can_show_diff(path) and not self.flat_label.display:
-            self.data_table.display = False
-            self.flat_label.display = True
-            self.flat_label.update(LabelStr.select_path_git_log)
-            return
-        elif path == store.cfg.dest_dir or path in store.cm_paths.man_tree_dirs:
+        if path == store.cfg.dest_dir or path in store.cm_paths.man_tree_dirs:
             self.flat_label.display = False
             self._update_datatable(path)
             self.data_table.display = True
@@ -264,20 +268,14 @@ class OperateViews(Vertical):
         super().__init__(classes=Tcss.operations_middle)
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel()
-        yield SubSectionLabel()
+        yield MainSectionLabel(LabelStr.dest_dir)
         yield GitLogView()
         yield ContentView()
         yield DiffView()
         yield DiffReverseView()
 
     def on_mount(self) -> None:
-        self.git_log_view = self.query_exactly_one(GitLogView)
-        self.content_view = self.query_exactly_one(ContentView)
-        self.diff_view = self.query_exactly_one(DiffView)
-        self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.main_section_label = self.query_exactly_one(MainSectionLabel)
-        self.sub_section_label = self.query_exactly_one(SubSectionLabel)
 
     def watch_path(self, path: Path | None) -> None:
         if path is None:
@@ -286,10 +284,3 @@ class OperateViews(Vertical):
             self.main_section_label.update(LabelStr.dest_dir)
         else:
             self.main_section_label.update(store.cm_paths.path_labels[path])
-        self.sub_section_label.update(str(path))
-
-        # Propagate the path down to child views
-        self.git_log_view.update_view(path)
-        self.content_view.update_view(path)
-        self.diff_view.update_view(path)
-        self.diff_reverse_view.update_view(path)
