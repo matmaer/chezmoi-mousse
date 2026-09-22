@@ -166,7 +166,7 @@ class ChezmoiGui(App[str]):
         tabbed_content.active = BtnLabel.operate.pane_id
 
         operate_views = self.query_exactly_one(OperateViews)
-        operate_views.path = store.cfg.dest_dir
+        setattr(operate_views, ReactiveVar.path, store.cfg.dest_dir)
         await self.splash_screen.dismiss_after_fade_loop()
 
     @work
