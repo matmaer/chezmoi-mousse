@@ -70,8 +70,7 @@ def get_unused(node_db: NodeDb) -> IssueList:
                 if isinstance(value_node, ast.Name) and value_node.id == "self":
                     used_internally.add(field_name)
             else:
-                if isinstance(value_node, ast.Name) and value_node.id == class_name:
-                    used_externally.add(field_name)
+                used_externally.add(field_name)
 
         # Evaluate usage for each field
         for field_node in fields:
