@@ -53,9 +53,6 @@ class BtnLabel(StrEnum):
     chezmoi_add = "chezmoi add"
     chezmoi_apply = "chezmoi apply"
     chezmoi_re_add = "chezmoi re-add"
-    refresh_tree = "Refresh Tree"
-    dest_dir_select = "not set"
-
     # Danger Zone operation buttons
     chezmoi_forget = "chezmoi forget"
     chezmoi_destroy = "chezmoi destroy"
@@ -63,9 +60,6 @@ class BtnLabel(StrEnum):
     # Tab buttons for content switcher within a main tab
     app_log = "Application"
     cmd_log = "Chezmoi-Commands"
-    contents = "Contents"
-    diff = "Diff"
-    git_log = "Git-Log"
 
     # Flat button labels
     cat_config = "Cat Config"
@@ -114,10 +108,6 @@ class Chars(StrEnum):
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
 
-    # Used by Tree and DirectoryTree subclasses, simply adds a space to the triangle
-    tree_collapsed = f"{right_triangle} "
-    tree_expanded = f"{down_triangle} "
-
 
 class ColorVar(StrEnum):
     bogus = "#FFFF00"
@@ -125,13 +115,11 @@ class ColorVar(StrEnum):
     dimmed = "foreground-darken-3"
     accent_darken_2 = "accent-darken-2"
     accent_darken_3 = "accent-darken-3"
-    foreground_darken_2 = "foreground-darken-2"
     info = "foreground-darken-1"
     text_block = "foreground-darken-1"
 
     accent = "accent"
     error = "error"
-    primary = "primary"
     secondary = "secondary"
     success = "success"
     warning = "warning"
@@ -185,7 +173,6 @@ class LabelStr(StrEnum):
     env_vars = "Environment Variables"
     expand_all = "Expand All"
     full_cmd = "Full Command"
-    git_log = "Git Log View"
     ignored_output = "Ignored Output"
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
@@ -195,7 +182,6 @@ class LabelStr(StrEnum):
     radio_diff_reverse = "Diff Reverse View"
     radio_git_log = "Git Log View"
     read_file_output = "Read file from disk output"
-    right_side = "Right Side Section"
     select_path_contents = "<- Select a file path to view its contents."
     select_path_diff = "<- Select a path with a status to view its diff."
     select_path_git_log = "<- Select a managed path to see the chezmoi git log."
@@ -393,7 +379,6 @@ class ProblemChars(StrEnum):
 
 class ReactiveVar(StrEnum):
     cmd_result = auto()
-    cmd_std_out = auto()
     path = auto()
 
 

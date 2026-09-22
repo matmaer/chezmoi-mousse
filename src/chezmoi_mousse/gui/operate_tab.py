@@ -206,23 +206,16 @@ class OperateTab(TabPane):
             tree_ids.un_wanted_xpd,
         )
 
-    def set_view_path_reactives(self, path: Path) -> None:
-        self.git_log_view.path = path
-        self.diff_view.path = path
-        self.diff_reverse_view.path = path
-        self.contents_view.path = path
-        return
-
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
         assert event.node.data is not None
-        self.set_view_path_reactives(event.node.data)
+        ...
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
-            self.set_view_path_reactives(store.cfg.dest_dir)
+            ...
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:

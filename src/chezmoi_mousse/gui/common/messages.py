@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from textual.widgets import Button
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.gui.common.managed_trees import NodeMap
     from chezmoi_mousse.named_tuples import CommandResult, SwitchStates
     from chezmoi_mousse.str_enums import BtnLabel
 
@@ -94,19 +93,4 @@ class TabBtnMsg(Message):
         self.button = button
         self.app_ids = app_ids
         self.btn_label = btn_label
-        super().__init__()
-
-
-class TreeStateMsg(Message):
-    """
-    Posted each time the tree catches one of the following events:
-    - Tree.NodeCollapsed
-    - Tree.NodeExpanded
-    - Tree.NodeSelected
-    """
-
-    def __init__(self, path: Path, tree_name: str, node_map: NodeMap) -> None:
-        self.path = path
-        self.tree_name = tree_name
-        self.node_map = node_map
         super().__init__()
