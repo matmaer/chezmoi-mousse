@@ -128,6 +128,9 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     def parse_paths(cmd_result: CommandResult) -> frozenset[Path]:
         return frozenset(Path(line) for line in cmd_result.out_list)
 
+    def parse_status_paths(cmd_result: CommandResult) -> frozenset[Path]:
+        return frozenset(Path(line[3:]) for line in cmd_result.out_list)
+
     def parse_status_output(cmd_result: CommandResult) -> dict[Path, Sc]:
         return {
             Path(line[3:]): Sc(line[:2])
@@ -140,8 +143,8 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _status_files_pcr=parse_status_output(status_files_task.result()),
         man_dir_set=parse_paths(man_dir_task.result()),
         man_file_set=parse_paths(man_file_task.result()),
-        _status_dir_set=parse_paths(status_dirs_task.result()),
-        _status_file_set=parse_paths(status_dirs_task.result()),
+        _status_dir_set=parse_status_paths(status_dirs_task.result()),
+        _status_file_set=parse_status_paths(status_files_task.result()),
         _un_man_dir_set=parse_paths(unman_dirs_task.result()),
         _un_man_file_set=parse_paths(unman_files_task.result()),
     )

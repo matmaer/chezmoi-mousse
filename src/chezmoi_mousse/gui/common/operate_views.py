@@ -35,20 +35,7 @@ if TYPE_CHECKING:
 __all__ = ["DiffReverseView", "DiffView", "GitLogView", "OperateViews"]
 
 
-# Base view class ONLY for reactive path state (No compose, no extra DOM)
-class BaseView(Vertical):
-    path: reactive[Path | None] = reactive(None, init=False)
-
-    def watch_path(self, path: Path | None) -> None:
-        if path is not None:
-            self.on_path_changed(path)
-
-    def on_path_changed(self, path: Path) -> None:
-        """Override in child views to react to path updates."""
-        pass
-
-
-class ContentView(BaseView):
+class ContentView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -57,14 +44,15 @@ class ContentView(BaseView):
     class ContentStatic(Static): ...
 
     def compose(self) -> ComposeResult:
+        yield FlatSectionLabel()
         yield ContentView.ContentStatic(markup=False)
 
     def on_mount(self) -> None:
+        self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(ContentView.ContentStatic)
 
     @work
     async def create_contents(self, path: Path) -> None:
-        flat_label = self.app.query_exactly_one(FlatSectionLabel)
 
         if path in self.cache:
             f_content = self.cache[path]
@@ -74,21 +62,21 @@ class ContentView(BaseView):
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, path
                 )
-                flat_label.update(LabelStr.chezmoi_cat_output)
+                self.flat_label.update(LabelStr.chezmoi_cat_output)
             elif path in store.cm_paths.all_tree_files:
-                flat_label.update(LabelStr.read_file_output)
+                self.flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
             else:
-                flat_label.update(LabelStr.select_path_contents)
+                self.flat_label.update(LabelStr.select_path_contents)
             self.cache[path] = f_content
 
         self.content_static.update(f_content)
 
-    def on_path_changed(self, path: Path) -> None:
+    def update_view(self, path: Path) -> None:
         self.create_contents(path)
 
 
-class DiffView(BaseView):
+class DiffView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -108,9 +96,11 @@ class DiffView(BaseView):
     }
 
     def compose(self) -> ComposeResult:
+        yield FlatSectionLabel()
         yield ScrollableContainer()
 
     def on_mount(self) -> None:
+        self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(ScrollableContainer)
 
     async def get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
@@ -141,18 +131,17 @@ class DiffView(BaseView):
 
     @work
     async def _update_diff_view(self, path: Path) -> None:
-        flat_label = self.app.query_exactly_one(FlatSectionLabel)
         cached: list[Static] = []
 
         if path in self.cache:
             cached = self.cache[path]
-            if not cached and flat_label.display is False:
+            if not cached and self.flat_label.display is False:
                 self.diff_container.remove_children()
-                flat_label.display = True
+                self.flat_label.display = True
                 return
 
         self.diff_container.loading = True
-        flat_label.display = False
+        self.flat_label.display = False
         self.diff_container.remove_children()
 
         if cached:
@@ -164,37 +153,41 @@ class DiffView(BaseView):
 
         self.diff_container.loading = False
 
-    def on_path_changed(self, path: Path) -> None:
+    def update_view(self, path: Path) -> None:
         self._update_diff_view(path)
 
 
-class DiffReverseView(BaseView):
+class DiffReverseView(Vertical):
     cache: ClassVar[dict[Path, Text]] = {}
 
     class DiffReverseStatic(Static): ...
 
     def compose(self) -> ComposeResult:
+        yield FlatSectionLabel()
         with ScrollableContainer():
             yield DiffReverseView.DiffReverseStatic()
 
     def on_mount(self) -> None:
+        self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_cmd = ReadCmd.diff
         self.diff_static = self.query_exactly_one(DiffReverseView.DiffReverseStatic)
 
-    def on_path_changed(self, path: Path) -> None:
+    def update_view(self, path: Path) -> None:
         pass
 
 
-class GitLogView(BaseView):
+class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
     cache: ClassVar[dict[Path, list[Static]]] = {}
 
     def compose(self) -> ComposeResult:
+        yield FlatSectionLabel()
         yield DataTable[str](show_cursor=False)
 
     def on_mount(self) -> None:
+        self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
         self.data_cache: dict[Path, list[list[str]]] = {}
@@ -246,18 +239,17 @@ class GitLogView(BaseView):
     def _can_show_diff(self, path: Path) -> bool:
         return path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set
 
-    def on_path_changed(self, path: Path) -> None:
-        flat_label = self.app.query_exactly_one(FlatSectionLabel)
+    def update_view(self, path: Path) -> None:
 
-        if self._can_show_diff(path) and flat_label.display:
+        if self._can_show_diff(path) and self.flat_label.display:
             return
-        if self._can_show_diff(path) and not flat_label.display:
+        if self._can_show_diff(path) and not self.flat_label.display:
             self.data_table.display = False
-            flat_label.display = True
-            flat_label.update(LabelStr.select_path_git_log)
+            self.flat_label.display = True
+            self.flat_label.update(LabelStr.select_path_git_log)
             return
         elif path == store.cfg.dest_dir or path in store.cm_paths.man_tree_dirs:
-            flat_label.display = False
+            self.flat_label.display = False
             self._update_datatable(path)
             self.data_table.display = True
 
@@ -274,7 +266,6 @@ class OperateViews(Vertical):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel()
         yield SubSectionLabel()
-        yield FlatSectionLabel()
         yield GitLogView()
         yield ContentView()
         yield DiffView()
@@ -287,7 +278,6 @@ class OperateViews(Vertical):
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.main_section_label = self.query_exactly_one(MainSectionLabel)
         self.sub_section_label = self.query_exactly_one(SubSectionLabel)
-        self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
 
     def watch_path(self, path: Path | None) -> None:
         if path is None:
@@ -299,7 +289,7 @@ class OperateViews(Vertical):
         self.sub_section_label.update(str(path))
 
         # Propagate the path down to child views
-        self.git_log_view.path = path
-        self.content_view.path = path
-        self.diff_view.path = path
-        self.diff_reverse_view.path = path
+        self.git_log_view.update_view(path)
+        self.content_view.update_view(path)
+        self.diff_view.update_view(path)
+        self.diff_reverse_view.update_view(path)
