@@ -13,7 +13,7 @@ from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
-from chezmoi_mousse.str_enums import ReadCmd, StatusCode as Sc, WriteCmd
+from chezmoi_mousse.str_enums import ReactiveVar, ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import (
@@ -89,6 +89,9 @@ async def _exec_chezmoi(
     command_result = await _construct_command_result(exec_result, cmd_enum, path_arg)
     if app.screen.name == "splash_screen":
         await app.splash_screen.write_log_msg(cmd_result=command_result)
+    if app.init_phase is False:
+        setattr(app.app_log, ReactiveVar.cmd_result, command_result)
+        setattr(app.cmd_log, ReactiveVar.cmd_result, command_result)
     is_queued = app.post_message(CommandResultMsg(command_result))
     assert is_queued, "Failed to queue CommandResultMsg"
     return command_result

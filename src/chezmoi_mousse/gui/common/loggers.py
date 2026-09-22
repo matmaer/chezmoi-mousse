@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from textual import work
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from textual.widgets import RichLog
@@ -26,9 +27,14 @@ class CmdLog(ScrollableContainer):
 
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
-    async def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is not None:
-            self.mount(CmdResultCollapsible(cmd_result=cmd_result))
+    @work
+    async def log_cmd_result(self, cmd_result: CommandResult) -> None:
+        self.mount(CmdResultCollapsible(cmd_result=cmd_result))
+
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
+            return
+        self.log_cmd_result(cmd_result)
 
 
 class RichLoggers(RichLog):
@@ -77,9 +83,14 @@ class AppLog(RichLoggers):
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogStr.debug_tab_enabled}")
 
-    async def watch_cmd_result(self, cmd_result: CommandResult) -> None:
-        if cmd_result.returncode == 0:
+    @work
+    async def log_cmd_result(self, cmd_result: CommandResult) -> None:
+
+        if cmd_result.returncode is not None:
             self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
+        else:
+            self.write_error(f"Received cmd result without returncode: {cmd_result}")
+
         if "doctor" in cmd_result.full_cmd:
             first_col: list[str] = [
                 line.split()[0]
@@ -103,3 +114,8 @@ class AppLog(RichLoggers):
             else:
                 self.write_success(LogStr.doctor_minor_issues_found)
             self.write_ready(LogStr.doctor_section.end)
+
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
+            return
+        self.log_cmd_result(cmd_result)

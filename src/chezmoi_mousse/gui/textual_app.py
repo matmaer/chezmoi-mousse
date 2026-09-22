@@ -156,9 +156,12 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(ConfigTab())
         await tabbed_content.add_pane(DebugTab())
 
+        self.app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
+        self.cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
         self.init_phase = False
         for cr in results:
-            self._log_cmd_result(cr)
+            setattr(self.cmd_log, ReactiveVar.cmd_result, cr)
+            setattr(self.app_log, ReactiveVar.cmd_result, cr)
         self._run_splash_commands()
 
         await tchezmoi.run_managed_commands(self)
@@ -182,18 +185,8 @@ class ChezmoiGui(App[str]):
             ),
         )
 
-    @work
-    async def _log_cmd_result(self, cmd_result: CommandResult) -> None:
-        app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
-        setattr(app_log, ReactiveVar.cmd_result, cmd_result)
-        cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        setattr(cmd_log, ReactiveVar.cmd_result, cmd_result)
-
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:
-        if self.init_phase is True:
-            return
-        self._log_cmd_result(msg.cmd_result)
         if msg.cmd_result.cmd_enum in (
             ReadCmd.doctor,
             ReadCmd.cat_config,
