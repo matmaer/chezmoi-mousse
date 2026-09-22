@@ -465,6 +465,7 @@ class StatusCode(StrEnum):
             cls.SS: ColorVar.secondary,
             cls.TT: ColorVar.text_primary,
             cls.UU: ColorVar.text_accent,
+            cls.XX: ColorVar.accent_darken_2,
         }
         return mapping[status_code]
 
@@ -489,6 +490,7 @@ class StatusCode(StrEnum):
             # Meta codes
             cls.SS: ColorVar.dimmed,
             cls.UU: ColorVar.accent,
+            cls.XX: ColorVar.accent_darken_3,
         }
         return mapping[status_code]
 
