@@ -244,7 +244,7 @@ class GitLogView(BaseView):
         self.data_table.display = True
 
     def _can_show_diff(self, path: Path) -> bool:
-        return path != store.cfg.dest_dir and path not in store.cm_paths.managed_paths
+        return path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set
 
     def on_path_changed(self, path: Path) -> None:
         flat_label = self.app.query_exactly_one(FlatSectionLabel)
