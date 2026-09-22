@@ -187,12 +187,6 @@ class LabelStr(StrEnum):
     full_cmd = "Full Command"
     git_log = "Git Log View"
     ignored_output = "Ignored Output"
-    managed_dir = "Managed Directory"
-    managed_file = "Managed File"
-    managed_no_status = "The path is managed but has no status for this context"
-    middle = "Middle Section"
-    n_dir = "Managed directory which contains nested status paths"
-    nested_status_dir = "Managed directory with nested status paths"
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
     not_set = "Not Set"
@@ -208,15 +202,25 @@ class LabelStr(StrEnum):
     show_unchanged = "Show Unchanged"
     show_unmanaged = "Show Unmanaged"
     show_unwanted = "Show Unwanted"
-    status_dir = "Managed directory with a status"
-    status_file = "Managed file with a status"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
     template_data_output = "Chezmoi Data Output"
     test_paths = " Test Paths "
+
+    # MainSectionLabel entries used in the OperateTab
+    _has_no_status = "has no status"
+    _has_status = "has a status"
+    space_file = f"Managed File ({_has_no_status})"
+    status_file = f"Managed File ({_has_status})"
+    _nested_sp = "nested status paths"
+    clean_space_dir = f"Managed Directory ({_has_no_status} and no {_nested_sp})"
+    dirty_space_dir = f"Managed Directory ({_has_no_status} but has {_nested_sp})"
+    clean_status_dir = f"Managed Directory ({_has_status} without {_nested_sp})"
+    dirty_status_dir = f"Managed Directory ({_has_status} and has {_nested_sp})"
     unmanaged_dir = "Unmanaged Directory"
     unmanaged_file = "Unmanaged File"
-    unmanaged_path = "Unmanaged Path"
+    unwanted_dir = f"{unmanaged_dir} (probably unwanted)"
+    unwanted_file = f"{unmanaged_file} (probably unwanted)"
 
     # Changed paths
     # added_managed_paths = "Added managed paths" # noqa: ERA001
@@ -437,6 +441,7 @@ class StatusCode(StrEnum):
     SS = "\x20\x20"  # Any path which don't occur at all in chezmoi status output
     TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
     UU = "UU"  # Unmanaged  path
+    XX = "XX"  # Unmanaged  and unwanted path
 
     @classmethod
     @cache
