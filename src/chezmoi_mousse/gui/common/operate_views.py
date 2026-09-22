@@ -70,12 +70,12 @@ class ContentView(BaseView):
             f_content = self.cache[path]
         else:
             f_content = Text("Looks like an empty file.")
-            if path in store.cm_path_sets.missing:
+            if path in store.cm_paths.missing_managed:
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, path
                 )
                 flat_label.update(LabelStr.chezmoi_cat_output)
-            elif path in store.cm_paths.any_files:
+            elif path in store.cm_paths.all_tree_files:
                 flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
             else:
@@ -114,7 +114,7 @@ class DiffView(BaseView):
         self.diff_container = self.query_exactly_one(ScrollableContainer)
 
     async def get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
-        if path not in store.cm_path_sets.status_paths:
+        if path not in store.cm_paths.status_paths:
             return []
         diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
         widgets: list[Label | Static] = []
@@ -244,9 +244,7 @@ class GitLogView(BaseView):
         self.data_table.display = True
 
     def _can_show_diff(self, path: Path) -> bool:
-        return (
-            path != store.cfg.dest_dir and path not in store.cm_path_sets.managed_paths
-        )
+        return path != store.cfg.dest_dir and path not in store.cm_paths.managed_paths
 
     def on_path_changed(self, path: Path) -> None:
         flat_label = self.app.query_exactly_one(FlatSectionLabel)
@@ -258,7 +256,7 @@ class GitLogView(BaseView):
             flat_label.display = True
             flat_label.update(LabelStr.select_path_git_log)
             return
-        elif path == store.cfg.dest_dir or path in store.cm_paths.managed_dirs:
+        elif path == store.cfg.dest_dir or path in store.cm_paths.man_tree_dirs:
             flat_label.display = False
             self._update_datatable(path)
             self.data_table.display = True
@@ -291,27 +289,13 @@ class OperateViews(Vertical):
         self.sub_section_label = self.query_exactly_one(SubSectionLabel)
         self.flat_section_label = self.query_exactly_one(FlatSectionLabel)
 
-    def _set_main_section_label(self, path: Path) -> None:
-        main_label = LabelStr.not_set
-        if path == store.cfg.dest_dir:
-            main_label = LabelStr.dest_dir
-        if path in store.cm_paths.managed_dirs:
-            main_label = LabelStr.managed_dir
-        if path in store.cm_paths.managed_files:
-            main_label = LabelStr.managed_file
-        if path in store.cm_paths.status_files:
-            main_label = LabelStr.status_file
-        if path in store.cm_paths.un_man_dirs:
-            main_label = LabelStr.unmanaged_dir
-        if path in store.cm_paths.un_man_files:
-            main_label = LabelStr.unmanaged_file
-        self.main_section_label.update(main_label)
-
     def watch_path(self, path: Path | None) -> None:
         if path is None:
             return
-
-        self._set_main_section_label(path)
+        if path == store.cfg.dest_dir:
+            self.main_section_label.update(LabelStr.dest_dir)
+        else:
+            self.main_section_label.update(store.cm_paths.path_labels[path])
         self.sub_section_label.update(str(path))
 
         # Propagate the path down to child views

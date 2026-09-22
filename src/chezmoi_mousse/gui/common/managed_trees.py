@@ -55,7 +55,7 @@ class OperateTree(Tree[Path]):
 
     def color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = status.dir_color if directory else status.file_color
-        italic = " italic" if path in store.cm_path_sets.missing else ""
+        italic = " italic" if path in store.cm_paths.missing_managed else ""
         color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
         return f"[{color}{italic}]{path.name}[/]"
 

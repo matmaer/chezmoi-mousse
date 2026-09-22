@@ -55,43 +55,43 @@ class LeftSideVertical(Vertical):
         yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
         yield OperateTree(
             store.op_ids.tree.status,
-            store.cm_paths.status_dirs,
-            store.cm_paths.status_files,
+            store.cm_paths.status_tree_dirs,
+            store.cm_paths.status_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.status_xpd,
-            store.cm_paths.status_dirs,
-            store.cm_paths.status_files,
+            store.cm_paths.status_tree_dirs,
+            store.cm_paths.status_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.managed,
-            store.cm_paths.managed_dirs,
-            store.cm_paths.managed_files,
+            store.cm_paths.man_tree_dirs,
+            store.cm_paths.man_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.managed_xpd,
-            store.cm_paths.managed_dirs,
-            store.cm_paths.managed_files,
+            store.cm_paths.man_tree_dirs,
+            store.cm_paths.man_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.un_managed,
-            store.cm_paths.un_man_dirs,
-            store.cm_paths.un_man_files,
+            store.cm_paths.un_man_tree_dirs,
+            store.cm_paths.un_man_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.un_managed_xpd,
-            store.cm_paths.un_man_dirs,
-            store.cm_paths.un_man_files,
+            store.cm_paths.un_man_tree_dirs,
+            store.cm_paths.un_man_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.un_wanted,
-            store.cm_paths.any_dirs,
-            store.cm_paths.any_files,
+            store.cm_paths.all_tree_dirs,
+            store.cm_paths.all_tree_files,
         )
         yield OperateTree(
             store.op_ids.tree.un_wanted_xpd,
-            store.cm_paths.any_dirs,
-            store.cm_paths.any_files,
+            store.cm_paths.all_tree_dirs,
+            store.cm_paths.all_tree_files,
         )
 
 

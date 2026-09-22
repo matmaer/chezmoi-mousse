@@ -137,8 +137,8 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _man_files_pcr=parse_paths(man_file_task.result()),
         _status_dirs_pcr=parse_status_output(status_dirs_task.result()),
         _status_files_pcr=parse_status_output(status_files_task.result()),
-        _unman_dirs_pcr=parse_paths(unman_dirs_task.result()),
-        _unman_files_pcr=parse_paths(unman_files_task.result()),
+        _un_man_dirs_pcr=parse_paths(unman_dirs_task.result()),
+        _un_man_files_pcr=parse_paths(unman_files_task.result()),
     )
     await store.handle_new_tree_paths(tree_paths)
 

@@ -31,8 +31,8 @@ cm_paths = ChezmoiTreePaths(
     _man_files_pcr=[],
     _status_dirs_pcr={},
     _status_files_pcr={},
-    _unman_dirs_pcr=[],
-    _unman_files_pcr=[],
+    _un_man_dirs_pcr=[],
+    _un_man_files_pcr=[],
 )
 
 
@@ -42,16 +42,16 @@ cm_changes = CmPathChanges(
         _man_files_pcr=[],
         _status_dirs_pcr={},
         _status_files_pcr={},
-        _unman_dirs_pcr=[],
-        _unman_files_pcr=[],
+        _un_man_dirs_pcr=[],
+        _un_man_files_pcr=[],
     ),
     _new_tree_paths=ChezmoiTreePaths(
         _man_dirs_pcr=[],
         _man_files_pcr=[],
         _status_dirs_pcr={},
         _status_files_pcr={},
-        _unman_dirs_pcr=[],
-        _unman_files_pcr=[],
+        _un_man_dirs_pcr=[],
+        _un_man_files_pcr=[],
     ),
 )
 
