@@ -48,7 +48,7 @@ class OperateTree(Tree[Path]):
     def on_mount(self) -> None:
         self.loading = True
         self.display = False
-        self.root.data = store.cfg.dest_dir_path
+        self.root.data = store.cfg.dest_dir
         self.guide_depth = 3
         self.show_root = False
         self.initial_tree_population(self.dir_nodes, self.file_nodes)

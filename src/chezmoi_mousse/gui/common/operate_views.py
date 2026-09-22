@@ -46,8 +46,8 @@ class ContentView(Vertical):
     class ContentStatic(Static): ...
 
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel()
-        yield FlatSectionLabel()
+        yield SubSectionLabel(str(store.cfg.dest_dir))
+        yield FlatSectionLabel(LabelStr.select_path_contents)
         yield ContentView.ContentStatic(markup=False)
 
     def on_mount(self) -> None:
@@ -106,8 +106,8 @@ class DiffView(Vertical):
     }
 
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel()
-        yield FlatSectionLabel()
+        yield SubSectionLabel(str(store.cfg.dest_dir))
+        yield FlatSectionLabel(LabelStr.select_path_diff)
         yield ScrollableContainer()
 
     def on_mount(self) -> None:
@@ -177,9 +177,9 @@ class DiffReverseView(Vertical):
     path: reactive[Path | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel()
-        yield FlatSectionLabel()
-        yield ScrollableContainer()
+        yield SubSectionLabel(str(store.cfg.dest_dir))
+        yield FlatSectionLabel(LabelStr.select_path_diff)
+        yield ScrollableContainer(Static("not yet implemented"))
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
@@ -194,17 +194,16 @@ class GitLogView(Vertical):
         app = getters.app(ChezmoiGui)
 
     path: reactive[Path | None] = reactive(None, init=False)
-    cache: ClassVar[dict[Path, list[Static]]] = {}
+    cache: ClassVar[dict[Path, list[list[str]]]] = {}
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel()
+        yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
         yield DataTable[str](show_cursor=False)
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
-        self.data_cache: dict[Path, list[list[str]]] = {}
 
     async def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
@@ -236,26 +235,26 @@ class GitLogView(Vertical):
     @work
     async def _update_datatable(self, path: Path) -> None:
         self.data_table.clear()
-        if path in self.data_cache:
-            pretty_cells = self.data_cache[path]
+        if path in self.cache:
+            pretty_cells = self.cache[path]
         else:
             path_arg = None if path == store.cfg.dest_dir else path
             cmd_result = await tchezmoi.run_chezmoi_cmd(
                 self.app, ReadCmd.git_log, path_arg
             )
             pretty_cells = await self._get_styled_cells(cmd_result.out_list)
-            self.data_cache[path] = pretty_cells
+            self.cache[path] = pretty_cells
 
         for row in pretty_cells:
             self.data_table.add_row(*row)
         self.data_table.display = True
 
     def watch_path(self, path: Path) -> None:
-
-        if path == store.cfg.dest_dir or path in store.cm_paths.man_tree_dirs:
-            self.flat_label.display = False
-            self._update_datatable(path)
-            self.data_table.display = True
+        if path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set:
+            self.data_table.display = False
+            self.flat_label.update(LabelStr.select_path_git_log)
+            return
+        self._update_datatable(path)
 
 
 class OperateViews(Vertical):
@@ -277,9 +276,7 @@ class OperateViews(Vertical):
     def on_mount(self) -> None:
         self.main_section_label = self.query_exactly_one(MainSectionLabel)
 
-    def watch_path(self, path: Path | None) -> None:
-        if path is None:
-            return
+    def watch_path(self, path: Path) -> None:
         if path == store.cfg.dest_dir:
             self.main_section_label.update(LabelStr.dest_dir)
         else:
