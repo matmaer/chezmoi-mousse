@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "AppLogMsg",
     "CommandResultMsg",
     "CurrentNodeMsg",
     "DirContentBtnMsg",
@@ -23,12 +22,6 @@ __all__ = [
     "OperateBtnMsg",
     "TabBtnMsg",
 ]
-
-
-class AppLogMsg(Message):
-    def __init__(self, log_line: str) -> None:
-        self.log_line = log_line
-        super().__init__()
 
 
 class CommandResultMsg(Message):

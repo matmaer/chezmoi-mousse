@@ -142,7 +142,7 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _un_man_dir_set=parse_paths(unman_dirs_task.result()),
         _un_man_file_set=parse_paths(unman_files_task.result()),
     )
-    await store.handle_new_tree_paths(tree_paths)
+    await store.handle_new_tree_paths(app, tree_paths)
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:

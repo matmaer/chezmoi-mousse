@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import (
@@ -13,6 +14,9 @@ from chezmoi_mousse.named_tuples import (
     InitData,
 )
 from chezmoi_mousse.str_enums import BtnLabel
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 init_data: InitData = InitData()
 live_run: bool = False
@@ -63,6 +67,7 @@ cm_changes = CmPathChanges(
 
 
 async def handle_new_tree_paths(
+    app: ChezmoiGui,
     new_tree_paths: ChezmoiTreePaths,
 ) -> None:
 
@@ -76,6 +81,7 @@ async def handle_new_tree_paths(
     )
     # The differences are calculated, now overwrite the store.tree_paths
     cm_paths = new_tree_paths
+    app.app_log.write_app_log_msg("Updated cm_paths and cm_changes in store.py")
 
 
 async def decode_and_store_config(std_out: str) -> None:

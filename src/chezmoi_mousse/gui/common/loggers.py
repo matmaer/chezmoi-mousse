@@ -40,6 +40,9 @@ class RichLoggers(RichLog):
         msg_color = self.app.theme_variables[color.value]
         return f"{log_time} [{msg_color}]{msg}[/]"
 
+    def write_app_log_msg(self, message: str) -> None:
+        self.write(self._get_log_line(message, ColorVar.secondary))
+
     def write_cmd(self, pretty_cmd: str, returncode: int) -> None:
         color = ColorVar.text_success if returncode == 0 else ColorVar.text_warning
         self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode})", color))
