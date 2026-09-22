@@ -13,7 +13,7 @@ from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
-from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+from chezmoi_mousse.str_enums import ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import (
@@ -121,13 +121,24 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         status_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_files))
         unman_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_dirs))
         unman_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_files))
+
+    def parse_paths(cmd_result: CommandResult) -> list[Path]:
+        return [Path(line) for line in cmd_result.out_list]
+
+    def parse_status_output(cmd_result: CommandResult) -> dict[Path, Sc]:
+        return {
+            Path(line[3:]): Sc(line[:2])
+            for line in cmd_result.out_list
+            if Sc.R.value not in line[:2]  # TODO: implement R
+        }
+
     tree_paths = ChezmoiTreePaths(
-        _man_dirs_list=man_dir_task.result().out_list,
-        _man_files_list=man_file_task.result().out_list,
-        _status_dirs_list=status_dirs_task.result().out_list,
-        _status_files_list=status_files_task.result().out_list,
-        _unman_dirs_list=unman_dirs_task.result().out_list,
-        _unman_files_list=unman_files_task.result().out_list,
+        _man_dirs_pcr=parse_paths(man_dir_task.result()),
+        _man_files_pcr=parse_paths(man_file_task.result()),
+        _status_dirs_pcr=parse_status_output(status_dirs_task.result()),
+        _status_files_pcr=parse_status_output(status_files_task.result()),
+        _unman_dirs_pcr=parse_paths(unman_dirs_task.result()),
+        _unman_files_pcr=parse_paths(unman_files_task.result()),
     )
     await store.handle_new_tree_paths(tree_paths)
 

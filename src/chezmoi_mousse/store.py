@@ -28,41 +28,41 @@ cfg = DumpConfigKeys()
 
 
 cm_paths = ChezmoiTreePaths(
-    _man_dirs_list=[],
-    _man_files_list=[],
-    _status_dirs_list=[],
-    _status_files_list=[],
-    _unman_dirs_list=[],
-    _unman_files_list=[],
+    _man_dirs_pcr=[],
+    _man_files_pcr=[],
+    _status_dirs_pcr={},
+    _status_files_pcr={},
+    _unman_dirs_pcr=[],
+    _unman_files_pcr=[],
 )
 
 cm_path_sets: ChezmoiPathSets = ChezmoiPathSets(
     _cm_paths=ChezmoiTreePaths(
-        _man_dirs_list=[],
-        _man_files_list=[],
-        _status_dirs_list=[],
-        _status_files_list=[],
-        _unman_dirs_list=[],
-        _unman_files_list=[],
+        _man_dirs_pcr=[],
+        _man_files_pcr=[],
+        _status_dirs_pcr={},
+        _status_files_pcr={},
+        _unman_dirs_pcr=[],
+        _unman_files_pcr=[],
     )
 )
 
 cm_changes = CmPathChanges(
     _old_tree_paths=ChezmoiTreePaths(
-        _man_dirs_list=[],
-        _man_files_list=[],
-        _status_dirs_list=[],
-        _status_files_list=[],
-        _unman_dirs_list=[],
-        _unman_files_list=[],
+        _man_dirs_pcr=[],
+        _man_files_pcr=[],
+        _status_dirs_pcr={},
+        _status_files_pcr={},
+        _unman_dirs_pcr=[],
+        _unman_files_pcr=[],
     ),
     _new_tree_paths=ChezmoiTreePaths(
-        _man_dirs_list=[],
-        _man_files_list=[],
-        _status_dirs_list=[],
-        _status_files_list=[],
-        _unman_dirs_list=[],
-        _unman_files_list=[],
+        _man_dirs_pcr=[],
+        _man_files_pcr=[],
+        _status_dirs_pcr={},
+        _status_files_pcr={},
+        _unman_dirs_pcr=[],
+        _unman_files_pcr=[],
     ),
 )
 
