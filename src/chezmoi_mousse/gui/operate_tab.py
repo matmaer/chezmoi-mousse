@@ -165,7 +165,6 @@ class OperateTab(TabPane):
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.content_view = self.query_exactly_one(ContentView)
-        self._set_all_path_reactives(store.cfg.dest_dir)
 
     #################################
     # Watchers and message handling #

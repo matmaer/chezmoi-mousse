@@ -10,10 +10,7 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
-    SubSectionLabel,
-)
+from chezmoi_mousse.gui.common.components import FlatSectionLabel
 from chezmoi_mousse.str_enums import (
     ColorVar,
     LabelStr,
@@ -45,24 +42,16 @@ class ContentView(Vertical):
     class ContentStatic(Static): ...
 
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel(str(store.cfg.dest_dir))
         yield FlatSectionLabel(LabelStr.select_path_contents)
         yield ContentView.ContentStatic(markup=False)
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(ContentView.ContentStatic)
+        self.content_static.display = False
 
     @work
     async def create_contents(self, path: Path) -> None:
-        if (
-            path == store.cfg.dest_dir
-            and path not in store.cm_paths.all_tree_files
-            and not path.is_file()
-        ):
-            self.flat_label.update(LabelStr.select_path_contents)
-            return
-
         if path in self.cache:
             f_content = self.cache[path]
         else:
@@ -80,10 +69,15 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_path(self, path: Path) -> None:
+        if path not in store.cm_paths.all_tree_files and path.is_dir():
+            self.flat_label.update(LabelStr.select_path_contents)
+            self.content_static.display = False
+            return
+        self.content_static.display = True
         self.create_contents(path)
 
 
-class DiffView(Vertical):
+class _DiffViewBase(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
@@ -104,21 +98,20 @@ class DiffView(Vertical):
         "unhandled": Tcss.unhandled,
     }
 
+    def __init__(self, diff_cmd: ReadCmd) -> None:
+        self.diff_cmd = diff_cmd
+        super().__init__()
+
     def compose(self) -> ComposeResult:
-        yield SubSectionLabel(str(store.cfg.dest_dir))
         yield FlatSectionLabel(LabelStr.select_path_diff)
         yield ScrollableContainer()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(ScrollableContainer)
-
-    def _can_show_diff(self, path: Path) -> bool:
-        return path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set
+        self.diff_container.display = False
 
     async def get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
-        if path not in store.cm_paths.status_paths:
-            return []
         diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
         widgets: list[Label | Static] = []
 
@@ -144,48 +137,36 @@ class DiffView(Vertical):
 
     @work
     async def _update_diff_view(self, path: Path) -> None:
-        cached: list[Static] = []
+
+        self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, path))
+        self.diff_container.display = True
+        self.diff_container.loading = True
 
         if path in self.cache:
-            cached = self.cache[path]
-            if not cached and self.flat_label.display is False:
-                self.diff_container.remove_children()
-                self.flat_label.display = True
-                return
-
-        self.diff_container.loading = True
-        self.flat_label.display = False
-        self.diff_container.remove_children()
-
-        if cached:
+            self.diff_container.remove_children()
             self.diff_container.mount_all(self.cache[path])
         else:
-            diff_statics = await self.get_diff_widgets(ReadCmd.diff, path)
+            diff_statics = await self.get_diff_widgets(self.diff_cmd, path)
             self.cache[path] = diff_statics
             self.diff_container.mount_all(self.cache[path])
-
         self.diff_container.loading = False
 
     def watch_path(self, path: Path) -> None:
-        self._update_diff_view(path)
+        if path in store.cm_paths.status_paths:
+            self._update_diff_view(path)
+            return
+        self.diff_container.display = False
+        self.flat_label.update(LabelStr.select_path_diff)
 
 
-class DiffReverseView(Vertical):
-    cache: ClassVar[dict[Path, Text]] = {}
+class DiffView(_DiffViewBase):
+    def __init__(self) -> None:
+        super().__init__(ReadCmd.diff)
 
-    path: reactive[Path | None] = reactive(None, init=False)
 
-    def compose(self) -> ComposeResult:
-        yield SubSectionLabel(str(store.cfg.dest_dir))
-        yield FlatSectionLabel(LabelStr.select_path_diff)
-        yield ScrollableContainer(Static("not yet implemented"))
-
-    def on_mount(self) -> None:
-        self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.diff_cmd = ReadCmd.diff_reverse
-
-    def watch_path(self, path: Path) -> None:
-        pass
+class DiffReverseView(_DiffViewBase):
+    def __init__(self) -> None:
+        super().__init__(ReadCmd.diff_reverse)
 
 
 class GitLogView(Vertical):
