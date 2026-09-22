@@ -122,8 +122,8 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         unman_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_dirs))
         unman_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_files))
 
-    def parse_paths(cmd_result: CommandResult) -> list[Path]:
-        return [Path(line) for line in cmd_result.out_list]
+    def parse_paths(cmd_result: CommandResult) -> frozenset[Path]:
+        return frozenset(Path(line) for line in cmd_result.out_list)
 
     def parse_status_output(cmd_result: CommandResult) -> dict[Path, Sc]:
         return {
@@ -133,12 +133,12 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         }
 
     tree_paths = ChezmoiTreePaths(
-        _man_dirs_pcr=parse_paths(man_dir_task.result()),
-        _man_files_pcr=parse_paths(man_file_task.result()),
+        man_dir_set=parse_paths(man_dir_task.result()),
+        man_file_set=parse_paths(man_file_task.result()),
         _status_dirs_pcr=parse_status_output(status_dirs_task.result()),
         _status_files_pcr=parse_status_output(status_files_task.result()),
-        _un_man_dirs_pcr=parse_paths(unman_dirs_task.result()),
-        _un_man_files_pcr=parse_paths(unman_files_task.result()),
+        un_man_dir_set=parse_paths(unman_dirs_task.result()),
+        un_man_file_set=parse_paths(unman_files_task.result()),
     )
     await store.handle_new_tree_paths(tree_paths)
 
