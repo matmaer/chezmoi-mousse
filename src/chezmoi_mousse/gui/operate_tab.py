@@ -157,7 +157,7 @@ class OperateTab(TabPane):
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
-        self.contents_view = self.query_exactly_one(ContentView)
+        self.content_view = self.query_exactly_one(ContentView)
 
     #################################
     # Watchers and message handling #
@@ -208,8 +208,10 @@ class OperateTab(TabPane):
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
-        assert event.node.data is not None
-        ...
+        self.git_log_view.path = event.node.data
+        self.content_view.path = event.node.data
+        self.diff_view.path = event.node.data
+        self.diff_reverse_view.path = event.node.data
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
@@ -222,21 +224,21 @@ class OperateTab(TabPane):
         event.stop()
         if event.pressed.label == LabelStr.radio_git_log:
             self.git_log_view.display = True
-            self.contents_view.display = False
+            self.content_view.display = False
             self.diff_view.display = False
             self.diff_reverse_view.display = False
         if event.pressed.label == LabelStr.radio_contents:
             self.git_log_view.display = False
-            self.contents_view.display = True
+            self.content_view.display = True
             self.diff_view.display = False
             self.diff_reverse_view.display = False
         if event.pressed.label == LabelStr.radio_diff:
             self.git_log_view.display = False
-            self.contents_view.display = False
+            self.content_view.display = False
             self.diff_view.display = True
             self.diff_reverse_view.display = False
         if event.pressed.label == LabelStr.radio_diff_reverse:
             self.git_log_view.display = False
-            self.contents_view.display = False
+            self.content_view.display = False
             self.diff_view.display = False
             self.diff_reverse_view.display = True
