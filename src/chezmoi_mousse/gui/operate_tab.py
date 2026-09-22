@@ -26,7 +26,6 @@ from chezmoi_mousse.gui.common.operate_views import (
     DiffReverseView,
     DiffView,
     GitLogView,
-    OperateViews,
 )
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -125,6 +124,7 @@ class RightSideVertical(Vertical):
 
 class OperateTab(TabPane):
     def __init__(self) -> None:
+        self.ids = store.op_ids
         super().__init__(
             id=BtnLabel.operate.pane_id,
             title=BtnLabel.operate,
@@ -133,7 +133,12 @@ class OperateTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical()
-            yield OperateViews()
+            with Vertical(id=self.ids.container.middle, classes=Tcss.operations_middle):
+                yield MainSectionLabel(LabelStr.dest_dir)
+                yield GitLogView()
+                yield ContentView()
+                yield DiffView()
+                yield DiffReverseView()
             yield RightSideVertical(
                 radio_labels=(
                     LabelStr.radio_git_log,
@@ -154,10 +159,13 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
+        view_container = self.query_one(self.ids.container.middle_q)
+        self.view_label = view_container.query_exactly_one(MainSectionLabel)
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.content_view = self.query_exactly_one(ContentView)
+        self._set_all_path_reactives(store.cfg.dest_dir)
 
     #################################
     # Watchers and message handling #
@@ -206,18 +214,27 @@ class OperateTab(TabPane):
             tree_ids.un_wanted_xpd,
         )
 
+    def _set_all_path_reactives(self, path: Path) -> None:
+        self.git_log_view.path = path
+        self.content_view.path = path
+        self.diff_view.path = path
+        self.diff_reverse_view.path = path
+
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
-        self.git_log_view.path = event.node.data
-        self.content_view.path = event.node.data
-        self.diff_view.path = event.node.data
-        self.diff_reverse_view.path = event.node.data
+        assert event.node.data is not None
+        if event.node.data == store.cfg.dest_dir:
+            self.view_label.update(LabelStr.dest_dir)
+        else:
+            self.view_label.update(store.cm_paths.path_labels[event.node.data])
+        self._set_all_path_reactives(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
-            ...
+            self.view_label.update(LabelStr.dest_dir)
+            self._set_all_path_reactives(store.cfg.dest_dir)
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:

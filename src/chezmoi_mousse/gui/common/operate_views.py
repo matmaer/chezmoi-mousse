@@ -12,7 +12,6 @@ from textual.widgets import DataTable, Static
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
-    MainSectionLabel,
     SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import (
@@ -32,7 +31,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["DiffReverseView", "DiffView", "GitLogView", "OperateViews"]
+__all__ = ["DiffReverseView", "DiffView", "GitLogView"]
 
 
 class ContentView(Vertical):
@@ -255,29 +254,3 @@ class GitLogView(Vertical):
             self.flat_label.update(LabelStr.select_path_git_log)
             return
         self._update_datatable(path)
-
-
-class OperateViews(Vertical):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    path: reactive[Path | None] = reactive(None, init=False)
-
-    def __init__(self) -> None:
-        super().__init__(classes=Tcss.operations_middle)
-
-    def compose(self) -> ComposeResult:
-        yield MainSectionLabel(LabelStr.dest_dir)
-        yield GitLogView()
-        yield ContentView()
-        yield DiffView()
-        yield DiffReverseView()
-
-    def on_mount(self) -> None:
-        self.main_section_label = self.query_exactly_one(MainSectionLabel)
-
-    def watch_path(self, path: Path) -> None:
-        if path == store.cfg.dest_dir:
-            self.main_section_label.update(LabelStr.dest_dir)
-        else:
-            self.main_section_label.update(store.cm_paths.path_labels[path])
