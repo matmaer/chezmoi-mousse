@@ -321,8 +321,8 @@ Label {
 
 RadioSet {
   border: none;
-  border-top: outer $surface-lighten-2;
-  border-bottom: inner $surface;
+  padding: 1 1 0 1;
+  border-bottom: wide $surface;
   background: $surface;
   background-tint: $surface;
 
@@ -330,6 +330,7 @@ RadioSet {
     &>RadioButton.-selected {
       &>.toggle--label {
         text-style: bold;
+        color: $text-success;
       }
     }
   }
@@ -339,7 +340,7 @@ RadioSet {
       &>.toggle--label {
         background: $surface;
         background-tint: $surface;
-        color: $block-cursor-foreground;
+        color: $text-success;
         text-style: $block-cursor-text-style;
       }
     }
@@ -347,6 +348,8 @@ RadioSet {
 }
 
 ToggleButton {
+  padding-bottom: 1;
+
   &>.toggle--button {
     background: $surface;
     background-tint: $surface;
