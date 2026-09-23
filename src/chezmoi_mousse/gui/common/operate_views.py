@@ -9,8 +9,8 @@ from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable, Static
 
-from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.gui.common.components import FlatSectionLabel
+from chezmoi_mousse import path_funcs, store, tchezmoi
+from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
 from chezmoi_mousse.str_enums import (
     ColorVar,
     LabelStr,
@@ -43,12 +43,46 @@ class ContentView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_contents)
+        yield ScrollableContainer()
         yield ContentView.ContentStatic(markup=False)
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(ContentView.ContentStatic)
         self.content_static.display = False
+        self.dir_contents = self.query_exactly_one(ScrollableContainer)
+
+    def create_dir_contents(self, path: Path) -> None:
+        self.dir_contents.remove_children()
+        widgets: list[SubSectionLabel | Static] = []
+        status_files_in: list[Path] = path_funcs.get_nested_in(
+            dir_path=path, check_paths=store.cm_paths.status_file_set
+        )
+        if status_files_in:
+            widgets.append(SubSectionLabel(LabelStr.status_files_in))
+            for path in status_files_in:
+                widgets.append(Static(str(path)))
+            widgets.append(Static(""))  # add a spacer between sections
+
+        status_dirs_in: list[Path] = path_funcs.get_nested_in(
+            dir_path=path, check_paths=store.cm_paths.status_dir_set
+        )
+        if status_dirs_in:
+            widgets.append(SubSectionLabel(LabelStr.status_dirs_in))
+            for path in status_dirs_in:
+                widgets.append(Static(str(path)))
+            widgets.append(Static(""))  # add a spacer between sections
+
+        managed_dirs_in: list[Path] = path_funcs.get_nested_in(
+            dir_path=path, check_paths=store.cm_paths.man_dir_set
+        )
+        if managed_dirs_in:
+            widgets.append(SubSectionLabel(LabelStr.unchanged_dirs_in))
+            for path in managed_dirs_in:
+                widgets.append(Static(str(path)))
+            widgets.append(Static(""))  # add a spacer between sections
+
+        self.dir_contents.mount_all(widgets)
 
     @work
     async def create_contents(self, path: Path) -> None:
@@ -69,10 +103,13 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_path(self, path: Path) -> None:
-        if path not in store.cm_paths.all_tree_files and path.is_dir():
+        if path in store.cm_paths.all_tree_dirs or path == store.cfg.dest_dir:
             self.flat_label.update(LabelStr.select_path_contents)
             self.content_static.display = False
+            self.dir_contents.display = True
+            self.create_dir_contents(path)
             return
+        self.dir_contents.display = False
         self.content_static.display = True
         self.create_contents(path)
 

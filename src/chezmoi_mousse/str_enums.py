@@ -208,6 +208,13 @@ class LabelStr(StrEnum):
     unwanted_dir = f"{unmanaged_dir} (probably unwanted)"
     unwanted_file = f"{unmanaged_file} (probably unwanted)"
 
+    # SubSectionLabel entries to label categories of paths inside a directory when
+    # the ContentView is displayed for a directory
+    unchanged_dirs_in = "Contains Unchanged Managed Directories"
+    unchanged_files_in = "Contains Unchanged Managed Files"
+    status_dirs_in = "Contains Directories With Status"
+    status_files_in = "Contains Files With Status"
+
     # Changed paths
     # added_managed_paths = "Added managed paths" # noqa: ERA001
     # changed_paths = "Changed Paths" # noqa: ERA001
