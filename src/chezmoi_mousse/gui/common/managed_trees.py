@@ -66,13 +66,6 @@ class OperateTree(Tree[Path]):
         self.node_map[path] = new_node
 
     @work
-    async def populate_tree(self, dirs: dict[Path, Sc], files: dict[Path, Sc]) -> None:
-        for path, status in dirs.items():
-            self.add_node(path, status, allow_expand=True)
-        for path, status in files.items():
-            self.add_node(path, status, allow_expand=False)
-
-    @work
     async def initial_tree_population(
         self, dirs: dict[Path, Sc], files: dict[Path, Sc]
     ) -> None:
@@ -87,8 +80,8 @@ class OperateTree(Tree[Path]):
             store.op_ids.tree.un_wanted_xpd,
         ):
             self.root.expand_all()
-        self.select_node(self.root)
-        self.unselect()  # otherwise it looks like the first node is selected
         if self.id == store.op_ids.tree.status:
             self.display = True
+            self.select_node(self.root)
+            self.unselect()  # otherwise it looks like the first node is selected
         self.loading = False
