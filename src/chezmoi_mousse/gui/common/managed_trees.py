@@ -53,7 +53,7 @@ class OperateTree(Tree[Path]):
         self.show_root = False
         self.initial_tree_population(self.dir_nodes, self.file_nodes)
 
-    def color_label(self, path: Path, status: Sc, directory: bool) -> str:
+    def _color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = status.dir_color if directory else status.file_color
         italic = " italic" if path in store.cm_paths.missing_managed else ""
         color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
@@ -61,7 +61,7 @@ class OperateTree(Tree[Path]):
 
     def add_node(self, path: Path, status: Sc, *, allow_expand: bool) -> None:
         parent_node = self.node_map.get(path.parent, self.root)
-        label = self.color_label(path, status, allow_expand)
+        label = self._color_label(path, status, allow_expand)
         new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
         self.node_map[path] = new_node
 
@@ -76,10 +76,16 @@ class OperateTree(Tree[Path]):
         if self.id in (
             store.op_ids.tree.status_xpd,
             store.op_ids.tree.managed_xpd,
+        ):
+            self.root.expand_all()
+        elif self.id in (
             store.op_ids.tree.un_managed_xpd,
             store.op_ids.tree.un_wanted_xpd,
         ):
-            self.root.expand_all()
+            for path, node in self.node_map.items():
+                if path in store.cm_paths.man_path_set:
+                    node.expand()
+
         if self.id == store.op_ids.tree.status:
             self.display = True
             self.select_node(self.root)

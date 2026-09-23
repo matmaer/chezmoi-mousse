@@ -146,7 +146,7 @@ class SwitchGroup(VerticalGroup):
     def __init__(self) -> None:
         self.ids = store.op_ids
         self.switch_labels = (
-            LabelStr.expand_all,
+            LabelStr.expand_managed,
             LabelStr.show_unchanged,
             LabelStr.show_unmanaged,
             LabelStr.show_unwanted,
@@ -164,13 +164,13 @@ class SwitchGroup(VerticalGroup):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        expand_all_switch = self.query_one(self.ids.switch.expand_all_q, Switch)
+        expand_managed_switch = self.query_one(self.ids.switch.expand_managed_q, Switch)
         unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
         unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
         unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
 
         switch_states: SwitchStates = SwitchStates(
-            expand_all=expand_all_switch.value,
+            expand_managed=expand_managed_switch.value,
             show_unchanged=unchanged_switch.value,
             show_unmanaged=unmanaged_switch.value,
             show_unwanted=unwanted_switch.value,

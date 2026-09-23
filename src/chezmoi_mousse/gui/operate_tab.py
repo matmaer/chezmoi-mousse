@@ -173,44 +173,38 @@ class OperateTab(TabPane):
     @on(SwitchGroupMsg)
     def handle_switch_group(self, msg: SwitchGroupMsg) -> None:
         switch_states: SwitchStates = msg.switch_states
-        tree_ids = store.op_ids.tree
 
-        if switch_states.expand_all:
+        if switch_states.expand_managed:
             if switch_states.show_unwanted:
-                shown_id = tree_ids.un_wanted_xpd
+                shown_id = store.op_ids.tree.un_wanted_xpd
             elif switch_states.show_unmanaged:
-                shown_id = tree_ids.un_managed_xpd
+                shown_id = store.op_ids.tree.un_managed_xpd
             elif switch_states.show_unchanged:
-                shown_id = tree_ids.managed_xpd
+                shown_id = store.op_ids.tree.managed_xpd
             else:
-                shown_id = tree_ids.status_xpd
+                shown_id = store.op_ids.tree.status_xpd
         else:
             if switch_states.show_unwanted:
-                shown_id = tree_ids.un_wanted
+                shown_id = store.op_ids.tree.un_wanted
             elif switch_states.show_unmanaged:
-                shown_id = tree_ids.un_managed
+                shown_id = store.op_ids.tree.un_managed
             elif switch_states.show_unchanged:
-                shown_id = tree_ids.managed
+                shown_id = store.op_ids.tree.managed
             else:
-                shown_id = tree_ids.status
+                shown_id = store.op_ids.tree.status
 
         for tree in self.query(OperateTree):
             tree.display = tree.id == shown_id
 
         # Show unwanted only makes sense for non-managed paths, as managed paths are
-        # always wanted and disable 'expand_all' for trees including unwanted paths.
+        # always wanted.
         switch_ids = store.op_ids.switch
         unwanted_switch = self.query_one(switch_ids.show_unwanted_q, Switch)
-        expand_all_switch = self.query_one(switch_ids.expand_all_q, Switch)
-        unwanted_switch.disabled = switch_states.expand_all or shown_id in (
-            tree_ids.status,
-            tree_ids.status_xpd,
-            tree_ids.managed,
-            tree_ids.managed_xpd,
-        )
-        expand_all_switch.disabled = shown_id in (
-            tree_ids.un_wanted,
-            tree_ids.un_wanted_xpd,
+        unwanted_switch.disabled = switch_states.expand_managed or shown_id in (
+            store.op_ids.tree.status,
+            store.op_ids.tree.status_xpd,
+            store.op_ids.tree.managed,
+            store.op_ids.tree.managed_xpd,
         )
 
     def _set_all_path_reactives(self, path: Path) -> None:

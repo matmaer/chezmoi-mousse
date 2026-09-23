@@ -86,5 +86,5 @@ class ScanDirItem(NamedTuple):
 class SwitchStates(NamedTuple):
     show_unchanged: bool
     show_unmanaged: bool
-    expand_all: bool
+    expand_managed: bool
     show_unwanted: bool

@@ -154,8 +154,8 @@ class _SwitchIds:
         self.show_unmanaged: str = ids.switch_id(switch_label=LabelStr.show_unmanaged)
         self.show_unmanaged_q: str = f"#{self.show_unmanaged}"
 
-        self.expand_all: str = ids.switch_id(switch_label=LabelStr.expand_all)
-        self.expand_all_q: str = f"#{self.expand_all}"
+        self.expand_managed: str = ids.switch_id(switch_label=LabelStr.expand_managed)
+        self.expand_managed_q: str = f"#{self.expand_managed}"
 
         self.show_unwanted: str = ids.switch_id(switch_label=LabelStr.show_unwanted)
         self.show_unwanted_q: str = f"#{self.show_unwanted}"

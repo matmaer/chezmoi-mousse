@@ -171,7 +171,7 @@ class LabelStr(StrEnum):
     doctor_output = "Doctor Output"
     dom_nodes = "DOM Nodes"
     env_vars = "Environment Variables"
-    expand_all = "Expand All"
+    expand_managed = "Expand Managed"
     full_cmd = "Full Command"
     ignored_output = "Ignored Output"
     no_managed_paths = "No managed paths yet"
