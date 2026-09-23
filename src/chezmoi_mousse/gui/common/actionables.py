@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from textual import on
 from textual.containers import (
@@ -16,10 +16,10 @@ from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import (
     FlatBtnMsg,
     OperateBtnMsg,
-    SwitchGroupMsg,
+    ShowTreeQidMsg,
     TabBtnMsg,
 )
-from chezmoi_mousse.named_tuples import SwitchStates
+from chezmoi_mousse.named_tuples import SwitchState
 from chezmoi_mousse.str_enums import LabelStr, Tcss
 
 if TYPE_CHECKING:
@@ -143,18 +143,41 @@ class OperateBtnGroup(HorizontalGroup):
 
 
 class SwitchGroup(VerticalGroup):
+    state_to_tree_map: ClassVar[dict[SwitchState, str]] = {
+        # Status trees
+        SwitchState(False, False, False, False): store.op_ids.tree.status_q,
+        SwitchState(True, False, False, False): store.op_ids.tree.status_xpd_q,
+        # Managed trees
+        SwitchState(False, True, False, False): store.op_ids.tree.managed_q,
+        SwitchState(True, True, False, False): store.op_ids.tree.managed_xpd_q,
+        # Unmanaged trees
+        SwitchState(False, False, True, False): store.op_ids.tree.un_managed_q,
+        SwitchState(False, True, True, False): store.op_ids.tree.un_managed_su_q,
+        SwitchState(True, False, True, False): store.op_ids.tree.un_managed_xpd_q,
+        SwitchState(True, True, True, False): store.op_ids.tree.un_managed_xpd_su_q,
+        # Uwwanted trees: show_unmanaged is False
+        SwitchState(False, False, False, True): store.op_ids.tree.un_wanted_q,
+        SwitchState(False, True, False, True): store.op_ids.tree.un_wanted_su_q,
+        SwitchState(True, False, False, True): store.op_ids.tree.un_wanted_xpd_q,
+        SwitchState(True, True, False, True): store.op_ids.tree.un_wanted_xpd_su_q,
+        # Uwwanted trees: show_unmanaged is True
+        SwitchState(False, False, True, True): store.op_ids.tree.un_wanted_q,
+        SwitchState(False, True, True, True): store.op_ids.tree.un_wanted_su_q,
+        SwitchState(True, False, True, True): store.op_ids.tree.un_wanted_xpd_q,
+        SwitchState(True, True, True, True): store.op_ids.tree.un_wanted_xpd_su_q,
+    }
+
     def __init__(self) -> None:
         self.ids = store.op_ids
-        self.switch_labels = (
+        super().__init__(classes=Tcss.switches_vert_group)
+
+    def compose(self) -> ComposeResult:
+        for switch_label in (
             LabelStr.expand_managed,
             LabelStr.show_unchanged,
             LabelStr.show_unmanaged,
             LabelStr.show_unwanted,
-        )
-        super().__init__(classes=Tcss.switches_vert_group)
-
-    def compose(self) -> ComposeResult:
-        for switch_label in self.switch_labels:
+        ):
             yield HorizontalGroup(
                 Switch(id=self.ids.switch_id(switch_label=switch_label)),
                 Label(switch_label),
@@ -164,18 +187,18 @@ class SwitchGroup(VerticalGroup):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        expand_managed_switch = self.query_one(self.ids.switch.expand_managed_q, Switch)
+        expand_switch = self.query_one(self.ids.switch.expand_managed_q, Switch)
         unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
         unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
         unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
 
-        switch_states: SwitchStates = SwitchStates(
-            expand_managed=expand_managed_switch.value,
+        switch_state: SwitchState = SwitchState(
+            expand_managed=expand_switch.value,
             show_unchanged=unchanged_switch.value,
             show_unmanaged=unmanaged_switch.value,
             show_unwanted=unwanted_switch.value,
         )
-        self.post_message(SwitchGroupMsg(switch_states=switch_states))
+        self.post_message(ShowTreeQidMsg(self.state_to_tree_map[switch_state]))
 
 
 class TabButtons(Horizontal):

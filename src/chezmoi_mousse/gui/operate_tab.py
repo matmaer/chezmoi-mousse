@@ -11,7 +11,6 @@ from textual.widgets import (
     Button,
     RadioButton,
     RadioSet,
-    Switch,
     TabPane,
     Tree,
 )
@@ -20,7 +19,7 @@ from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, SwitchGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.managed_trees import OperateTree
-from chezmoi_mousse.gui.common.messages import SwitchGroupMsg
+from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
 from chezmoi_mousse.gui.common.operate_views import (
     ContentView,
     DiffReverseView,
@@ -37,8 +36,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from textual.app import ComposeResult
-
-    from chezmoi_mousse.named_tuples import SwitchStates
 
 
 __all__ = ["OperateTab"]
@@ -78,7 +75,17 @@ class LeftSideVertical(Vertical):
             store.cm_paths.un_man_tree_files,
         )
         yield OperateTree(
+            store.op_ids.tree.un_managed_su,
+            store.cm_paths.un_man_tree_dirs,
+            store.cm_paths.un_man_tree_files,
+        )
+        yield OperateTree(
             store.op_ids.tree.un_managed_xpd,
+            store.cm_paths.un_man_tree_dirs,
+            store.cm_paths.un_man_tree_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.un_managed_xpd_su,
             store.cm_paths.un_man_tree_dirs,
             store.cm_paths.un_man_tree_files,
         )
@@ -88,7 +95,17 @@ class LeftSideVertical(Vertical):
             store.cm_paths.all_tree_files,
         )
         yield OperateTree(
+            store.op_ids.tree.un_wanted_su,
+            store.cm_paths.all_tree_dirs,
+            store.cm_paths.all_tree_files,
+        )
+        yield OperateTree(
             store.op_ids.tree.un_wanted_xpd,
+            store.cm_paths.all_tree_dirs,
+            store.cm_paths.all_tree_files,
+        )
+        yield OperateTree(
+            store.op_ids.tree.un_wanted_xpd_su,
             store.cm_paths.all_tree_dirs,
             store.cm_paths.all_tree_files,
         )
@@ -160,52 +177,56 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         view_container = self.query_one(self.ids.container.middle_q)
+        self.status_tree = self.query_one(self.ids.tree.status_q, OperateTree)
+        self.status_tree_xpd = self.query_one(self.ids.tree.status_xpd_q, OperateTree)
+        self.managed_tree = self.query_one(self.ids.tree.managed_q, OperateTree)
+        self.managed_tree_xpd = self.query_one(self.ids.tree.managed_xpd_q, OperateTree)
+        self.unmanaged_tree = self.query_one(self.ids.tree.un_managed_q, OperateTree)
+        self.unmanaged_tree_xpd = self.query_one(
+            self.ids.tree.un_managed_xpd_q, OperateTree
+        )
+        self.unwanted_tree = self.query_one(self.ids.tree.un_wanted_q, OperateTree)
+        self.unwanted_tree_xpd = self.query_one(
+            self.ids.tree.un_wanted_xpd_q, OperateTree
+        )
+        self.show_unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q)
+        self.show_unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q)
+        self.show_unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q)
         self.view_label = view_container.query_exactly_one(MainSectionLabel)
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.content_view = self.query_exactly_one(ContentView)
 
+    @property
+    def current_tree(self) -> OperateTree:
+        for tree in self.query(OperateTree).results():
+            if tree.display:
+                return tree
+        raise RuntimeError("No tree is displayed")
+
+    def set_tree_display(self, show_tree: OperateTree) -> None:
+        for tree in self.query(OperateTree).results():
+            if tree == show_tree:
+                tree.display = True
+            else:
+                tree.display = False
+
     #################################
     # Watchers and message handling #
     #################################
 
-    @on(SwitchGroupMsg)
-    def handle_switch_group(self, msg: SwitchGroupMsg) -> None:
-        switch_states: SwitchStates = msg.switch_states
+    @on(ShowTreeQidMsg)
+    def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
+        tree_qid: str = msg.tree_qid
+        self.notify(f"received {tree_qid}")
 
-        if switch_states.expand_managed:
-            if switch_states.show_unwanted:
-                shown_id = store.op_ids.tree.un_wanted_xpd
-            elif switch_states.show_unmanaged:
-                shown_id = store.op_ids.tree.un_managed_xpd
-            elif switch_states.show_unchanged:
-                shown_id = store.op_ids.tree.managed_xpd
-            else:
-                shown_id = store.op_ids.tree.status_xpd
-        else:
-            if switch_states.show_unwanted:
-                shown_id = store.op_ids.tree.un_wanted
-            elif switch_states.show_unmanaged:
-                shown_id = store.op_ids.tree.un_managed
-            elif switch_states.show_unchanged:
-                shown_id = store.op_ids.tree.managed
-            else:
-                shown_id = store.op_ids.tree.status
-
-        for tree in self.query(OperateTree):
-            tree.display = tree.id == shown_id
-
-        # Show unwanted only makes sense for non-managed paths, as managed paths are
-        # always wanted.
-        switch_ids = store.op_ids.switch
-        unwanted_switch = self.query_one(switch_ids.show_unwanted_q, Switch)
-        unwanted_switch.disabled = switch_states.expand_managed or shown_id in (
-            store.op_ids.tree.status,
-            store.op_ids.tree.status_xpd,
-            store.op_ids.tree.managed,
-            store.op_ids.tree.managed_xpd,
-        )
+        # hide the current tree:
+        all_trees = self.query(OperateTree).results()
+        for tree in all_trees:
+            tree.display = False
+        show_tree = self.query_exactly_one(tree_qid, OperateTree)
+        show_tree.display = True
 
     def _set_all_path_reactives(self, path: Path) -> None:
         self.git_log_view.path = path

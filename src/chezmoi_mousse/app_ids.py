@@ -147,15 +147,14 @@ class _OperateButtonIds:
 class _SwitchIds:
     def __init__(self, ids: AppIds) -> None:
 
-        # Apply and Re-Add tab
+        self.expand_managed: str = ids.switch_id(switch_label=LabelStr.expand_managed)
+        self.expand_managed_q: str = f"#{self.expand_managed}"
+
         self.show_unchanged: str = ids.switch_id(switch_label=LabelStr.show_unchanged)
         self.show_unchanged_q: str = f"#{self.show_unchanged}"
 
         self.show_unmanaged: str = ids.switch_id(switch_label=LabelStr.show_unmanaged)
         self.show_unmanaged_q: str = f"#{self.show_unmanaged}"
-
-        self.expand_managed: str = ids.switch_id(switch_label=LabelStr.expand_managed)
-        self.expand_managed_q: str = f"#{self.expand_managed}"
 
         self.show_unwanted: str = ids.switch_id(switch_label=LabelStr.show_unwanted)
         self.show_unwanted_q: str = f"#{self.show_unwanted}"
@@ -176,10 +175,18 @@ class _TreeIds:
 
         self.un_managed: str = ids.tree_id(tree_name=TreeName.un_managed)
         self.un_managed_q: str = f"#{self.un_managed}"
+        self.un_managed_su: str = ids.tree_id(tree_name=TreeName.un_managed_su)
+        self.un_managed_su_q: str = f"#{self.un_managed_su}"
         self.un_managed_xpd: str = ids.tree_id(tree_name=TreeName.un_managed_xpd)
         self.un_managed_xpd_q: str = f"#{self.un_managed_xpd}"
+        self.un_managed_xpd_su: str = ids.tree_id(tree_name=TreeName.un_managed_xpd_su)
+        self.un_managed_xpd_su_q: str = f"#{self.un_managed_xpd_su}"
 
         self.un_wanted: str = ids.tree_id(tree_name=TreeName.un_wanted)
         self.un_wanted_q: str = f"#{self.un_wanted}"
+        self.un_wanted_su: str = ids.tree_id(tree_name=TreeName.un_wanted_su)
+        self.un_wanted_su_q: str = f"#{self.un_wanted_su}"
         self.un_wanted_xpd: str = ids.tree_id(tree_name=TreeName.un_wanted_xpd)
         self.un_wanted_xpd_q: str = f"#{self.un_wanted_xpd}"
+        self.un_wanted_xpd_su: str = ids.tree_id(tree_name=TreeName.un_wanted_xpd_su)
+        self.un_wanted_xpd_su_q: str = f"#{self.un_wanted_xpd_su}"

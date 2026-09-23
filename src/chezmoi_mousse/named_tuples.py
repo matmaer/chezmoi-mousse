@@ -12,7 +12,7 @@ __all__ = [
     "DumpConfigKeys",
     "InitData",
     "ScanDirItem",
-    "SwitchStates",
+    "SwitchState",
 ]
 
 
@@ -83,7 +83,7 @@ class ScanDirItem(NamedTuple):
     matches_unwanted: bool
 
 
-class SwitchStates(NamedTuple):
+class SwitchState(NamedTuple):
     show_unchanged: bool
     show_unmanaged: bool
     expand_managed: bool

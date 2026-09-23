@@ -76,24 +76,24 @@ class ChezmoiTreePaths:
                 self.path_labels[path] = LabelStr.clean_status_dir
             elif path in self._dirty_status_dirs:
                 self.path_labels[path] = LabelStr.dirty_status_dir
-            self.status_tree_files[path] = status
-            self.all_tree_dirs[path] = status
+            self.status_tree_dirs[path] = status
             self.man_tree_dirs[path] = status
             self.un_man_tree_dirs[path] = status
+            self.all_tree_dirs[path] = status
 
         # process managed dirs without a status: overwrite status with Sc.TT if needed
         # and set the path_label
         for path in self._clean_space_dirs:
             self.path_labels[path] = LabelStr.clean_space_dir
-            self.all_tree_dirs[path] = Sc.SS
             self.man_tree_dirs[path] = Sc.SS
             self.un_man_tree_dirs[path] = Sc.SS
+            self.all_tree_dirs[path] = Sc.SS
         for path in self._dirty_space_dirs:
             self.path_labels[path] = LabelStr.dirty_space_dir
             self.status_tree_dirs[path] = Sc.TT
-            self.all_tree_dirs[path] = Sc.TT
             self.man_tree_dirs[path] = Sc.TT
             self.un_man_tree_dirs[path] = Sc.TT
+            self.all_tree_dirs[path] = Sc.TT
 
         # process unmanaged dirs
         for path in self._un_man_dir_set:
@@ -118,14 +118,14 @@ class ChezmoiTreePaths:
                 self.un_man_tree_files[path] = Sc.UU
 
         # 7. Sort all 8 tree dictionaries
-        self.all_tree_dirs = path_funcs.sort_path_dict(self.all_tree_dirs)
-        self.all_tree_files = path_funcs.sort_path_dict(self.all_tree_files)
-        self.man_tree_dirs = path_funcs.sort_path_dict(self.man_tree_dirs)
-        self.man_tree_files = path_funcs.sort_path_dict(self.man_tree_files)
         self.status_tree_dirs = path_funcs.sort_path_dict(self.status_tree_dirs)
         self.status_tree_files = path_funcs.sort_path_dict(self.status_tree_files)
+        self.man_tree_dirs = path_funcs.sort_path_dict(self.man_tree_dirs)
+        self.man_tree_files = path_funcs.sort_path_dict(self.man_tree_files)
         self.un_man_tree_dirs = path_funcs.sort_path_dict(self.un_man_tree_dirs)
         self.un_man_tree_files = path_funcs.sort_path_dict(self.un_man_tree_files)
+        self.all_tree_dirs = path_funcs.sort_path_dict(self.all_tree_dirs)
+        self.all_tree_files = path_funcs.sort_path_dict(self.all_tree_files)
 
     def populate_path_set_fields(self) -> None:
         self.man_path_set = self.man_dir_set | self.man_file_set

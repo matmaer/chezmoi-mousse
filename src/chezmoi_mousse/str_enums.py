@@ -538,9 +538,13 @@ class TreeName(StrEnum):
     status = auto()
     status_xpd = auto()
     un_managed = auto()
+    un_managed_su = auto()
     un_managed_xpd = auto()
+    un_managed_xpd_su = auto()
     un_wanted = auto()
+    un_wanted_su = auto()
     un_wanted_xpd = auto()
+    un_wanted_xpd_su = auto()
 
 
 ##############################################

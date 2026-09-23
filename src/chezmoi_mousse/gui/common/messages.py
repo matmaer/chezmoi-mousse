@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from textual.widgets import Button
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.named_tuples import CommandResult, SwitchStates
+    from chezmoi_mousse.named_tuples import CommandResult
     from chezmoi_mousse.str_enums import BtnLabel
 
 
@@ -20,6 +20,7 @@ __all__ = [
     "DirContentBtnMsg",
     "FlatBtnMsg",
     "OperateBtnMsg",
+    "ShowTreeQidMsg",
     "TabBtnMsg",
 ]
 
@@ -75,9 +76,9 @@ class OperateBtnMsg(Message):
         super().__init__()
 
 
-class SwitchGroupMsg(Message):
-    def __init__(self, switch_states: SwitchStates) -> None:
-        self.switch_states = switch_states
+class ShowTreeQidMsg(Message):
+    def __init__(self, tree_qid: str) -> None:
+        self.tree_qid = tree_qid
         super().__init__()
 
 
