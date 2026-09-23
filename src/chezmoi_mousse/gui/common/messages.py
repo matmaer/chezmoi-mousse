@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CommandResultMsg",
-    "CurrentNodeMsg",
     "DirContentBtnMsg",
     "FlatBtnMsg",
     "OperateBtnMsg",
@@ -28,24 +27,6 @@ __all__ = [
 class CommandResultMsg(Message):
     def __init__(self, results: CommandResult) -> None:
         self.cmd_result: CommandResult = results
-        super().__init__()
-
-
-class CurrentNodeMsg(Message):
-    def __init__(
-        self,
-        *,
-        app_ids: AppIds,
-        path: Path,
-        has_status: bool,
-        is_dest_dir: bool,
-        is_unmanaged: bool,
-    ) -> None:
-        self.app_ids = app_ids
-        self.path = path
-        self.has_status = has_status
-        self.is_dest_dir = is_dest_dir
-        self.is_unmanaged = is_unmanaged
         super().__init__()
 
 

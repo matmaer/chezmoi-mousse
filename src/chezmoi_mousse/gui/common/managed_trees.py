@@ -74,19 +74,16 @@ class OperateTree(Tree[Path]):
         for path, status in files.items():
             self.add_node(path, status, allow_expand=False)
         if self.id in (
-            store.op_ids.tree.status_xpd,
-            store.op_ids.tree.managed_xpd,
+            store.op_ids.tree.managed_only_sp_xpd,
+            store.op_ids.tree.managed_all_mp_xpd,
+            store.op_ids.tree.un_man_plus_sp_xpd,
+            store.op_ids.tree.un_man_plus_amp_xpd,
+            store.op_ids.tree.un_wanted_plus_sp_xpd,
+            store.op_ids.tree.un_wanted_plus_amp_xpd,
         ):
             self.root.expand_all()
-        elif self.id in (
-            store.op_ids.tree.un_managed_xpd,
-            store.op_ids.tree.un_wanted_xpd,
-        ):
-            for path, node in self.node_map.items():
-                if path in store.cm_paths.man_path_set:
-                    node.expand()
 
-        if self.id == store.op_ids.tree.status:
+        if self.id == store.op_ids.tree.managed_only_sp:
             self.display = True
             self.select_node(self.root)
             self.unselect()  # otherwise it looks like the first node is selected

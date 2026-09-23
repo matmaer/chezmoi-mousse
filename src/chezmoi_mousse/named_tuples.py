@@ -12,7 +12,6 @@ __all__ = [
     "DumpConfigKeys",
     "InitData",
     "ScanDirItem",
-    "SwitchState",
 ]
 
 
@@ -81,10 +80,3 @@ class ScanDirItem(NamedTuple):
     # set by the os_scan_dir function
     sibling_count: int
     matches_unwanted: bool
-
-
-class SwitchState(NamedTuple):
-    show_unchanged: bool
-    show_unmanaged: bool
-    expand_managed: bool
-    show_unwanted: bool

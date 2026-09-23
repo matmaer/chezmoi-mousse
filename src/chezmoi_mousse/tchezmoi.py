@@ -138,15 +138,25 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
             if Sc.R.value not in line[:2]  # TODO: implement R
         }
 
+    man_dir_set = parse_paths(man_dir_task.result())
+    man_file_set = parse_paths(man_file_task.result())
+    man_path_set = man_dir_set | man_file_set
+    missing_managed = frozenset(p for p in man_path_set if not p.exists())
+    status_dir_set = parse_status_paths(status_dirs_task.result())
+    status_file_set = parse_status_paths(status_files_task.result())
+
     tree_paths = ChezmoiTreePaths(
         _status_dirs_pcr=parse_status_output(status_dirs_task.result()),
         _status_files_pcr=parse_status_output(status_files_task.result()),
-        man_dir_set=parse_paths(man_dir_task.result()),
-        man_file_set=parse_paths(man_file_task.result()),
-        status_dir_set=parse_status_paths(status_dirs_task.result()),
-        status_file_set=parse_status_paths(status_files_task.result()),
         _un_man_dir_set=parse_paths(unman_dirs_task.result()),
         _un_man_file_set=parse_paths(unman_files_task.result()),
+        man_dir_set=man_dir_set,
+        man_file_set=man_file_set,
+        man_path_set=man_path_set,
+        missing_managed=missing_managed,
+        status_dir_set=status_dir_set,
+        status_file_set=status_file_set,
+        status_path_set=status_file_set | status_dir_set,
     )
     await store.handle_new_tree_paths(app, tree_paths)
 

@@ -163,30 +163,72 @@ class _SwitchIds:
 class _TreeIds:
     def __init__(self, ids: AppIds) -> None:
 
-        self.status: str = ids.tree_id(tree_name=TreeName.status)
-        self.status_q: str = f"#{self.status}"
-        self.status_xpd: str = ids.tree_id(tree_name=TreeName.status_xpd)
-        self.status_xpd_q: str = f"#{self.status_xpd}"
+        # status trees never include managed without status
+        self.managed_only_sp: str = ids.tree_id(tree_name=TreeName.managed_only_sp)
+        self.managed_only_sp_q: str = f"#{self.managed_only_sp}"
+        self.managed_only_sp_xpd: str = ids.tree_id(
+            tree_name=TreeName.managed_only_sp_xpd
+        )
+        self.managed_only_sp_xpd_q: str = f"#{self.managed_only_sp_xpd}"
 
-        self.managed: str = ids.tree_id(tree_name=TreeName.managed)
-        self.managed_q: str = f"#{self.managed}"
-        self.managed_xpd: str = ids.tree_id(tree_name=TreeName.managed_xpd)
-        self.managed_xpd_q: str = f"#{self.managed_xpd}"
+        # managed trees always with unchanged
+        self.managed_all_mp: str = ids.tree_id(tree_name=TreeName.managed_all_mp)
+        self.managed_all_mp_q: str = f"#{self.managed_all_mp}"
+        self.managed_all_mp_xpd: str = ids.tree_id(
+            tree_name=TreeName.managed_all_mp_xpd
+        )
+        self.managed_all_mp_xpd_q: str = f"#{self.managed_all_mp_xpd}"
 
-        self.un_managed: str = ids.tree_id(tree_name=TreeName.un_managed)
-        self.un_managed_q: str = f"#{self.un_managed}"
-        self.un_managed_su: str = ids.tree_id(tree_name=TreeName.un_managed_su)
-        self.un_managed_su_q: str = f"#{self.un_managed_su}"
-        self.un_managed_xpd: str = ids.tree_id(tree_name=TreeName.un_managed_xpd)
-        self.un_managed_xpd_q: str = f"#{self.un_managed_xpd}"
-        self.un_managed_xpd_su: str = ids.tree_id(tree_name=TreeName.un_managed_xpd_su)
-        self.un_managed_xpd_su_q: str = f"#{self.un_managed_xpd_su}"
+        # 1 --- UN_MANAGED TREE ---
 
-        self.un_wanted: str = ids.tree_id(tree_name=TreeName.un_wanted)
-        self.un_wanted_q: str = f"#{self.un_wanted}"
-        self.un_wanted_su: str = ids.tree_id(tree_name=TreeName.un_wanted_su)
-        self.un_wanted_su_q: str = f"#{self.un_wanted_su}"
-        self.un_wanted_xpd: str = ids.tree_id(tree_name=TreeName.un_wanted_xpd)
-        self.un_wanted_xpd_q: str = f"#{self.un_wanted_xpd}"
-        self.un_wanted_xpd_su: str = ids.tree_id(tree_name=TreeName.un_wanted_xpd_su)
-        self.un_wanted_xpd_su_q: str = f"#{self.un_wanted_xpd_su}"
+        # 1.1 UN_MANAGED TREE PLUS TREE STATUS PATHS
+
+        # 1.1.1 NON XPD
+        self.un_man_plus_sp: str = ids.tree_id(tree_name=TreeName.un_man_plus_sp)
+        self.un_man_plus_sp_q: str = f"#{self.un_man_plus_sp}"
+
+        # 1.1.2 XPD
+        self.un_man_plus_sp_xpd: str = ids.tree_id(
+            tree_name=TreeName.un_man_plus_sp_xpd
+        )
+        self.un_man_plus_sp_xpd_q: str = f"#{self.un_man_plus_sp_xpd}"
+
+        # 1.2 UN_MANAGED TREE PLUS ALL MANAGED PATHS
+
+        # 1.2.1 NON XPD
+        self.un_man_plus_amp: str = ids.tree_id(tree_name=TreeName.un_man_plus_amp)
+        self.un_man_plus_amp_q: str = f"#{self.un_man_plus_amp}"
+
+        # 1.2.2 XPD
+        self.un_man_plus_amp_xpd: str = ids.tree_id(
+            tree_name=TreeName.un_man_plus_amp_xpd
+        )
+        self.un_man_plus_amp_xpd_q: str = f"#{self.un_man_plus_amp_xpd}"
+
+        # 2 --- UN_WANTED TREE ---
+
+        # 2.1 UN_WANTED TREE PLUS TREE STATUS PATHS
+
+        # 2.1.1 NON XPD
+        self.un_wanted_plus_sp: str = ids.tree_id(tree_name=TreeName.un_wanted_plus_sp)
+        self.un_wanted_plus_sp_q: str = f"#{self.un_wanted_plus_sp}"
+
+        # 2.1.2 XPD
+        self.un_wanted_plus_sp_xpd: str = ids.tree_id(
+            tree_name=TreeName.un_wanted_plus_sp_xpd
+        )
+        self.un_wanted_plus_sp_xpd_q: str = f"#{self.un_wanted_plus_sp_xpd}"
+
+        # 2.2 UN_WANTED TREE PLUS ALL MANAGED PATHS
+
+        # 2.2.1 NON XPD
+        self.un_wanted_plus_amp: str = ids.tree_id(
+            tree_name=TreeName.un_wanted_plus_amp
+        )
+        self.un_wanted_plus_amp_q: str = f"#{self.un_wanted_plus_amp}"
+
+        # 2.2.2 XPD
+        self.un_wanted_plus_amp_xpd: str = ids.tree_id(
+            tree_name=TreeName.un_wanted_plus_amp_xpd
+        )
+        self.un_wanted_plus_amp_xpd_q: str = f"#{self.un_wanted_plus_amp_xpd}"

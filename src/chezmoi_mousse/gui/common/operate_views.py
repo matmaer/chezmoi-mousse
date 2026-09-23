@@ -103,7 +103,7 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_path(self, path: Path) -> None:
-        if path in store.cm_paths.all_tree_dirs or path == store.cfg.dest_dir:
+        if path in store.cm_paths.un_wanted_plus_amp_dirs or path == store.cfg.dest_dir:
             self.flat_label.update(LabelStr.select_path_contents)
             self.content_static.display = False
             self.dir_contents.display = True
@@ -189,7 +189,7 @@ class _DiffViewBase(Vertical):
         self.diff_container.loading = False
 
     def watch_path(self, path: Path) -> None:
-        if path in store.cm_paths.status_paths:
+        if path in store.cm_paths.status_path_set:
             self._update_diff_view(path)
             return
         self.diff_container.display = False

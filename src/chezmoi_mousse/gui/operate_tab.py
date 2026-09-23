@@ -29,6 +29,7 @@ from chezmoi_mousse.gui.common.operate_views import (
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
+    ReactiveVar,
     Tcss,
 )
 
@@ -50,64 +51,66 @@ class LeftSideVertical(Vertical):
     def compose(self) -> ComposeResult:
         yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
         yield OperateTree(
-            store.op_ids.tree.status,
-            store.cm_paths.status_tree_dirs,
-            store.cm_paths.status_tree_files,
+            store.op_ids.tree.managed_only_sp,  # separate dict
+            store.cm_paths.managed_only_sp_dirs,
+            store.cm_paths.managed_only_sp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.status_xpd,
-            store.cm_paths.status_tree_dirs,
-            store.cm_paths.status_tree_files,
+            store.op_ids.tree.managed_only_sp_xpd,
+            store.cm_paths.managed_only_sp_dirs,
+            store.cm_paths.managed_only_sp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.managed,
-            store.cm_paths.man_tree_dirs,
-            store.cm_paths.man_tree_files,
+            store.op_ids.tree.managed_all_mp,  # separate dict
+            store.cm_paths.managed_all_mp_dirs,
+            store.cm_paths.managed_all_mp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.managed_xpd,
-            store.cm_paths.man_tree_dirs,
-            store.cm_paths.man_tree_files,
+            store.op_ids.tree.managed_all_mp_xpd,
+            store.cm_paths.managed_all_mp_dirs,
+            store.cm_paths.managed_all_mp_files,
+        )
+        # UNMANAGED TREE VARIANTS
+        yield OperateTree(
+            store.op_ids.tree.un_man_plus_sp,  # separate dict
+            store.cm_paths.un_man_plus_sp_dirs,
+            store.cm_paths.un_man_plus_sp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.un_managed,
-            store.cm_paths.un_man_tree_dirs,
-            store.cm_paths.un_man_tree_files,
+            store.op_ids.tree.un_man_plus_sp_xpd,
+            store.cm_paths.un_man_plus_sp_dirs,
+            store.cm_paths.un_man_plus_sp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.un_managed_su,
-            store.cm_paths.un_man_tree_dirs,
-            store.cm_paths.un_man_tree_files,
+            store.op_ids.tree.un_man_plus_amp,  # separate dict
+            store.cm_paths.un_man_plus_amp_dirs,
+            store.cm_paths.un_man_plus_amp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.un_managed_xpd,
-            store.cm_paths.un_man_tree_dirs,
-            store.cm_paths.un_man_tree_files,
+            store.op_ids.tree.un_man_plus_amp_xpd,
+            store.cm_paths.un_man_plus_amp_dirs,
+            store.cm_paths.un_man_plus_amp_files,
+        )
+        # UNWANTED TREE VARIANTS
+        yield OperateTree(
+            store.op_ids.tree.un_wanted_plus_sp,  # separate dict
+            store.cm_paths.un_wanted_plus_sp_dirs,
+            store.cm_paths.un_wanted_plus_sp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.un_managed_xpd_su,
-            store.cm_paths.un_man_tree_dirs,
-            store.cm_paths.un_man_tree_files,
+            store.op_ids.tree.un_wanted_plus_sp_xpd,
+            store.cm_paths.un_wanted_plus_sp_dirs,
+            store.cm_paths.un_wanted_plus_sp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.un_wanted,
-            store.cm_paths.all_tree_dirs,
-            store.cm_paths.all_tree_files,
+            store.op_ids.tree.un_wanted_plus_amp,  # separate dict
+            store.cm_paths.un_wanted_plus_amp_dirs,
+            store.cm_paths.un_wanted_plus_amp_files,
         )
         yield OperateTree(
-            store.op_ids.tree.un_wanted_su,
-            store.cm_paths.all_tree_dirs,
-            store.cm_paths.all_tree_files,
-        )
-        yield OperateTree(
-            store.op_ids.tree.un_wanted_xpd,
-            store.cm_paths.all_tree_dirs,
-            store.cm_paths.all_tree_files,
-        )
-        yield OperateTree(
-            store.op_ids.tree.un_wanted_xpd_su,
-            store.cm_paths.all_tree_dirs,
-            store.cm_paths.all_tree_files,
+            store.op_ids.tree.un_wanted_plus_amp_xpd,
+            store.cm_paths.un_wanted_plus_amp_dirs,
+            store.cm_paths.un_wanted_plus_amp_files,
         )
 
 
@@ -177,18 +180,6 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         view_container = self.query_one(self.ids.container.middle_q)
-        self.status_tree = self.query_one(self.ids.tree.status_q, OperateTree)
-        self.status_tree_xpd = self.query_one(self.ids.tree.status_xpd_q, OperateTree)
-        self.managed_tree = self.query_one(self.ids.tree.managed_q, OperateTree)
-        self.managed_tree_xpd = self.query_one(self.ids.tree.managed_xpd_q, OperateTree)
-        self.unmanaged_tree = self.query_one(self.ids.tree.un_managed_q, OperateTree)
-        self.unmanaged_tree_xpd = self.query_one(
-            self.ids.tree.un_managed_xpd_q, OperateTree
-        )
-        self.unwanted_tree = self.query_one(self.ids.tree.un_wanted_q, OperateTree)
-        self.unwanted_tree_xpd = self.query_one(
-            self.ids.tree.un_wanted_xpd_q, OperateTree
-        )
         self.show_unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q)
         self.show_unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q)
         self.show_unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q)
@@ -229,10 +220,10 @@ class OperateTab(TabPane):
         show_tree.display = True
 
     def _set_all_path_reactives(self, path: Path) -> None:
-        self.git_log_view.path = path
-        self.content_view.path = path
-        self.diff_view.path = path
-        self.diff_reverse_view.path = path
+        setattr(self.git_log_view, ReactiveVar.path, path)
+        setattr(self.content_view, ReactiveVar.path, path)
+        setattr(self.diff_view, ReactiveVar.path, path)
+        setattr(self.diff_reverse_view, ReactiveVar.path, path)
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:

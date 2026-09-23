@@ -15,137 +15,202 @@ class ChezmoiTreePaths:
 
     _status_dirs_pcr: dict[Path, Sc]
     _status_files_pcr: dict[Path, Sc]
-
-    man_dir_set: frozenset[Path]
-    man_file_set: frozenset[Path]
     _un_man_dir_set: frozenset[Path]
     _un_man_file_set: frozenset[Path]
-    man_path_set: frozenset[Path] = frozenset()
-    missing_managed: frozenset[Path] = frozenset()
-
+    man_dir_set: frozenset[Path]
+    man_file_set: frozenset[Path]
+    man_path_set: frozenset[Path]
+    missing_managed: frozenset[Path]
     status_dir_set: frozenset[Path]
     status_file_set: frozenset[Path]
+    status_path_set: frozenset[Path]
 
-    status_paths: frozenset[Path] = frozenset()
-    _clean_status_dirs: frozenset[Path] = frozenset()
-    _dirty_status_dirs: frozenset[Path] = frozenset()
+    # fields for the 6 'raw data' operate trees, for dirs and files so 12 in total
 
-    _space_dirs: frozenset[Path] = frozenset()
-    _space_files: frozenset[Path] = frozenset()
-    _clean_space_dirs: frozenset[Path] = frozenset()
-    _dirty_space_dirs: frozenset[Path] = frozenset()
+    managed_only_sp_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    managed_only_sp_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
 
-    # fields for the 8 operate trees (we only need 4 as the other 4 are just the
-    # expanded version of the other 4 operate trees, we have 8 here because we have
-    # files and dirs in different dicts for each of those 4 trees
-    all_tree_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    all_tree_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    man_tree_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    man_tree_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    status_tree_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    status_tree_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    un_man_tree_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
-    un_man_tree_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    managed_all_mp_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    managed_all_mp_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+
+    un_man_plus_sp_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_man_plus_sp_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_man_plus_amp_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_man_plus_amp_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+
+    un_wanted_plus_sp_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_wanted_plus_sp_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_wanted_plus_amp_dirs: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
+    un_wanted_plus_amp_files: dict[Path, Sc] = field(default_factory=dict[Path, Sc])
 
     path_labels: dict[Path, LabelStr] = field(default_factory=dict[Path, LabelStr])
 
     def __post_init__(self) -> None:
 
-        self.populate_path_set_fields()
+        self.add_status_files_and_store_label(
+            dicts_to_update=(
+                self.managed_only_sp_files,
+                self.managed_all_mp_files,
+                self.un_man_plus_sp_files,
+                self.un_man_plus_amp_files,
+                self.un_wanted_plus_sp_files,
+                self.un_wanted_plus_amp_files,
+            )
+        )
+        self.add_space_files_and_store_label(
+            dicts_to_update=(
+                self.managed_all_mp_files,
+                self.un_man_plus_amp_files,
+                self.un_wanted_plus_amp_files,
+            )
+        )
 
-        # # add status files to all trees and set path_labels
+        dirs_with_nested_sp = {
+            path
+            for path in self.man_dir_set
+            if path_funcs.any_nested_in(dir_path=path, check_paths=self.status_path_set)
+        }
+        all_dir_dicts: tuple[dict[Path, Sc], ...] = (
+            self.managed_only_sp_dirs,
+            self.managed_all_mp_dirs,
+            self.un_man_plus_sp_dirs,
+            self.un_man_plus_amp_dirs,
+            self.un_wanted_plus_sp_dirs,
+            self.un_wanted_plus_amp_dirs,
+        )
+        self.add_status_directories_and_store_label(dirs_with_nested_sp, all_dir_dicts)
+
+        space_dir_set = self.man_dir_set - self.status_dir_set
+        clean_space_dirs = space_dir_set - dirs_with_nested_sp
+        dirty_space_dirs = space_dir_set & dirs_with_nested_sp
+        self.process_space_directories(clean_space_dirs, dirty_space_dirs)
+
+        self.sort_constructed_dicts()
+
+    def add_status_files_and_store_label(
+        self, dicts_to_update: tuple[dict[Path, Sc], ...]
+    ) -> None:
         for path, status in self._status_files_pcr.items():
+            assert path not in self.path_labels
             self.path_labels[path] = LabelStr.status_file
-            self.all_tree_files[path] = status
-            self.man_tree_files[path] = status
-            self.status_tree_files[path] = status
-            self.un_man_tree_files[path] = status
+            for d in dicts_to_update:
+                assert d.get(path, None) is None
+                d[path] = status
 
-        # add managed files without a status to all trees except the status tree and
-        # set path_labels which is different for clean and dirty status dirs
-        for path in self._space_files:
+    def add_space_files_and_store_label(
+        self, dicts_to_update: tuple[dict[Path, Sc], ...]
+    ) -> None:
+        space_files = self.man_file_set - self.status_file_set
+        dicts_to_update = (
+            self.managed_all_mp_files,
+            self.un_man_plus_amp_files,
+            self.un_wanted_plus_amp_files,
+        )
+        for path in space_files:
+            assert path not in self.path_labels
             self.path_labels[path] = LabelStr.space_file
-            self.all_tree_files[path] = Sc.SS
-            self.man_tree_files[path] = Sc.SS
-            self.un_man_tree_files[path] = Sc.SS
+            for d in dicts_to_update:
+                assert d.get(path, None) is None
+                d[path] = Sc.SS
 
-        # Set labels and real status code for status dirs
+    def add_status_directories_and_store_label(
+        self,
+        dirs_with_nested_status_paths: set[Path],
+        dicts_to_update: tuple[dict[Path, Sc], ...],
+    ) -> None:
+        clean_status_dirs = self.status_dir_set - dirs_with_nested_status_paths
+        dirty_status_dirs = self.status_dir_set & dirs_with_nested_status_paths
+
         for path, status in self._status_dirs_pcr.items():
-            status = self._status_dirs_pcr[path]
-            if path in self._clean_status_dirs:
+            assert path not in self.path_labels
+            if path in clean_status_dirs:
                 self.path_labels[path] = LabelStr.clean_status_dir
-            elif path in self._dirty_status_dirs:
+            elif path in dirty_status_dirs:
                 self.path_labels[path] = LabelStr.dirty_status_dir
-            self.status_tree_dirs[path] = status
-            self.man_tree_dirs[path] = status
-            self.un_man_tree_dirs[path] = status
-            self.all_tree_dirs[path] = status
+            for d in dicts_to_update:
+                assert d.get(path, None) is None
+                d[path] = status
 
+    def process_space_directories(
+        self, clean_space_dirs: frozenset[Path], dirty_space_dirs: frozenset[Path]
+    ) -> None:
         # process managed dirs without a status: overwrite status with Sc.TT if needed
         # and set the path_label
-        for path in self._clean_space_dirs:
+        for path in clean_space_dirs:
             self.path_labels[path] = LabelStr.clean_space_dir
-            self.man_tree_dirs[path] = Sc.SS
-            self.un_man_tree_dirs[path] = Sc.SS
-            self.all_tree_dirs[path] = Sc.SS
-        for path in self._dirty_space_dirs:
+        for path in dirty_space_dirs:
             self.path_labels[path] = LabelStr.dirty_space_dir
-            self.status_tree_dirs[path] = Sc.TT
-            self.man_tree_dirs[path] = Sc.TT
-            self.un_man_tree_dirs[path] = Sc.TT
-            self.all_tree_dirs[path] = Sc.TT
+            # call setdefault() to avoid overwriting dirs with a real status
+            self.managed_only_sp_dirs[path] = Sc.TT
+            self.un_man_plus_sp_dirs[path] = Sc.TT
+            self.un_wanted_plus_sp_dirs[path] = Sc.TT
+
+        # add managed dirs without a status to all trees except 'only_sp' tree
+        # call setdefault() to avoid overwriting Sc.TT
+        space_dirs = self.man_dir_set - self.status_dir_set
+        for path in space_dirs:
+            self.managed_all_mp_dirs.setdefault(path, Sc.SS)
+            self.un_man_plus_amp_dirs.setdefault(path, Sc.SS)
+            self.un_wanted_plus_amp_dirs.setdefault(path, Sc.SS)
 
         # process unmanaged dirs
         for path in self._un_man_dir_set:
             is_unwanted = path_funcs.is_unwanted_dir(path)
             if is_unwanted:
                 self.path_labels[path] = LabelStr.unwanted_dir
-                self.all_tree_dirs.setdefault(path, Sc.XX)
+                self.un_wanted_plus_sp_dirs.setdefault(path, Sc.XX)
+                self.un_wanted_plus_amp_dirs.setdefault(path, Sc.XX)
             else:
                 self.path_labels[path] = LabelStr.unmanaged_dir
-                self.all_tree_dirs[path] = Sc.UU
-                self.un_man_tree_dirs[path] = Sc.UU
+                self.un_man_plus_sp_dirs.setdefault(path, Sc.UU)
+                self.un_man_plus_amp_dirs.setdefault(path, Sc.UU)
+                self.un_wanted_plus_sp_dirs.setdefault(path, Sc.UU)
+                self.un_wanted_plus_amp_dirs.setdefault(path, Sc.UU)
 
         # process unmanaged files
         for path in self._un_man_file_set:
             is_unwanted = path_funcs.is_unwanted_file(path)
             if is_unwanted:
                 self.path_labels[path] = LabelStr.unwanted_file
-                self.all_tree_files[path] = Sc.XX
+                self.un_wanted_plus_sp_files.setdefault(path, Sc.XX)
+                self.un_wanted_plus_amp_files.setdefault(path, Sc.XX)
             else:
                 self.path_labels[path] = LabelStr.unmanaged_file
-                self.all_tree_files[path] = Sc.UU
-                self.un_man_tree_files[path] = Sc.UU
+                self.un_man_plus_sp_files.setdefault(path, Sc.UU)
+                self.un_man_plus_amp_files.setdefault(path, Sc.UU)
+                self.un_wanted_plus_sp_files.setdefault(path, Sc.UU)
+                self.un_wanted_plus_amp_files.setdefault(path, Sc.UU)
 
-        # 7. Sort all 8 tree dictionaries
-        self.status_tree_dirs = path_funcs.sort_path_dict(self.status_tree_dirs)
-        self.status_tree_files = path_funcs.sort_path_dict(self.status_tree_files)
-        self.man_tree_dirs = path_funcs.sort_path_dict(self.man_tree_dirs)
-        self.man_tree_files = path_funcs.sort_path_dict(self.man_tree_files)
-        self.un_man_tree_dirs = path_funcs.sort_path_dict(self.un_man_tree_dirs)
-        self.un_man_tree_files = path_funcs.sort_path_dict(self.un_man_tree_files)
-        self.all_tree_dirs = path_funcs.sort_path_dict(self.all_tree_dirs)
-        self.all_tree_files = path_funcs.sort_path_dict(self.all_tree_files)
+    def sort_constructed_dicts(self) -> None:
+        self.managed_only_sp_dirs = path_funcs.sort_path_dict(self.managed_only_sp_dirs)
+        self.managed_only_sp_files = path_funcs.sort_path_dict(
+            self.managed_only_sp_files
+        )
 
-    def populate_path_set_fields(self) -> None:
-        self.man_path_set = self.man_dir_set | self.man_file_set
-        self.missing_managed = frozenset(p for p in self.man_path_set if not p.exists())
-        self.status_paths = self.status_dir_set | self.status_file_set
+        self.managed_all_mp_dirs = path_funcs.sort_path_dict(self.managed_all_mp_dirs)
+        self.managed_all_mp_files = path_funcs.sort_path_dict(self.managed_all_mp_files)
 
-        self._space_files = self.man_file_set - self.status_file_set
-        self._space_dirs = self.man_dir_set - self.status_dir_set
+        self.un_man_plus_sp_dirs = path_funcs.sort_path_dict(self.un_man_plus_sp_dirs)
+        self.un_man_plus_sp_files = path_funcs.sort_path_dict(self.un_man_plus_sp_files)
 
-        # now process the directories, for their dirty or clean status
-        dirs_with_nested_sp = {
-            path
-            for path in self.man_dir_set
-            if path_funcs.any_nested_in(dir_path=path, check_paths=self.status_paths)
-        }
+        self.un_man_plus_amp_dirs = path_funcs.sort_path_dict(self.un_man_plus_amp_dirs)
+        self.un_man_plus_amp_files = path_funcs.sort_path_dict(
+            self.un_man_plus_amp_files
+        )
 
-        self._clean_space_dirs = self._space_dirs - dirs_with_nested_sp
-        self._dirty_space_dirs = self._space_dirs & dirs_with_nested_sp
-        self._clean_status_dirs = self.status_dir_set - dirs_with_nested_sp
-        self._dirty_status_dirs = self.status_dir_set & dirs_with_nested_sp
+        self.un_wanted_plus_sp_dirs = path_funcs.sort_path_dict(
+            self.un_wanted_plus_sp_dirs
+        )
+        self.un_wanted_plus_sp_files = path_funcs.sort_path_dict(
+            self.un_wanted_plus_sp_files
+        )
+
+        self.un_wanted_plus_amp_dirs = path_funcs.sort_path_dict(
+            self.un_wanted_plus_amp_dirs
+        )
+        self.un_wanted_plus_amp_files = path_funcs.sort_path_dict(
+            self.un_wanted_plus_amp_files
+        )
 
 
 @dataclass(slots=True, kw_only=True)
@@ -164,15 +229,14 @@ class CmPathChanges:
     def __post_init__(self) -> None:
         self.added_dirs = {
             path: status
-            for path, status in self._new_tree_paths.man_tree_dirs.items()
+            for path, status in self._new_tree_paths.managed_all_mp_dirs.items()
             if path not in self._old_tree_paths.man_dir_set
         }
         self.added_files = {
             path: status
-            for path, status in self._new_tree_paths.man_tree_files.items()
+            for path, status in self._new_tree_paths.managed_all_mp_files.items()
             if path not in self._old_tree_paths.man_file_set
         }
-
         self.removed_dirs = path_funcs.sort_paths(
             self._old_tree_paths.man_dir_set - self._new_tree_paths.man_dir_set
         )
@@ -190,10 +254,12 @@ class CmPathChanges:
             }
 
         self.changed_dirs = get_changes_dict(
-            self._old_tree_paths.man_tree_dirs, self._new_tree_paths.man_tree_dirs
+            self._old_tree_paths.managed_all_mp_dirs,
+            self._new_tree_paths.managed_all_mp_dirs,
         )
         self.changed_files = get_changes_dict(
-            self._old_tree_paths.man_tree_files, self._new_tree_paths.man_tree_files
+            self._old_tree_paths.managed_all_mp_files,
+            self._new_tree_paths.managed_all_mp_files,
         )
         self.top_removed_dirs = path_funcs.get_sorted_top_parents(self.removed_dirs)
 
@@ -212,7 +278,8 @@ class CmOpButtonSets:
 
         # TODO: improve this logic to decide if a button should be enabled or not
         all_paths: dict[Path, Sc] = (
-            self._cm_paths.all_tree_dirs | self._cm_paths.all_tree_files
+            self._cm_paths.un_wanted_plus_sp_dirs
+            | self._cm_paths.un_wanted_plus_sp_files
         )
         for path, status in all_paths.items():
             if status == Sc.UU:
