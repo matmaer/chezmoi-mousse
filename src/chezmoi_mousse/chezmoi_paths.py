@@ -23,8 +23,8 @@ class ChezmoiTreePaths:
     man_path_set: frozenset[Path] = frozenset()
     missing_managed: frozenset[Path] = frozenset()
 
-    _status_dir_set: frozenset[Path]
-    _status_file_set: frozenset[Path]
+    status_dir_set: frozenset[Path]
+    status_file_set: frozenset[Path]
 
     status_paths: frozenset[Path] = frozenset()
     _clean_status_dirs: frozenset[Path] = frozenset()
@@ -130,10 +130,10 @@ class ChezmoiTreePaths:
     def populate_path_set_fields(self) -> None:
         self.man_path_set = self.man_dir_set | self.man_file_set
         self.missing_managed = frozenset(p for p in self.man_path_set if not p.exists())
-        self.status_paths = self._status_dir_set | self._status_file_set
+        self.status_paths = self.status_dir_set | self.status_file_set
 
-        self._space_files = self.man_file_set - self._status_file_set
-        self._space_dirs = self.man_dir_set - self._status_dir_set
+        self._space_files = self.man_file_set - self.status_file_set
+        self._space_dirs = self.man_dir_set - self.status_dir_set
 
         # now process the directories, for their dirty or clean status
         dirs_with_nested_sp = {
@@ -144,8 +144,8 @@ class ChezmoiTreePaths:
 
         self._clean_space_dirs = self._space_dirs - dirs_with_nested_sp
         self._dirty_space_dirs = self._space_dirs & dirs_with_nested_sp
-        self._clean_status_dirs = self._status_dir_set - dirs_with_nested_sp
-        self._dirty_status_dirs = self._status_dir_set & dirs_with_nested_sp
+        self._clean_status_dirs = self.status_dir_set - dirs_with_nested_sp
+        self._dirty_status_dirs = self.status_dir_set & dirs_with_nested_sp
 
 
 @dataclass(slots=True, kw_only=True)
