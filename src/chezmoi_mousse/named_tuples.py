@@ -83,14 +83,8 @@ class ScanDirItem(NamedTuple):
     matches_unwanted: bool
 
 
-from chezmoi_mousse.str_enums import LabelStr
-
-SwitchStates = NamedTuple(
-    "SwitchStates",
-    [
-        (LabelStr.show_unchanged.name, bool),
-        (LabelStr.show_unmanaged.name, bool),
-        (LabelStr.expand_all.name, bool),
-        (LabelStr.show_unwanted.name, bool),
-    ],
-)
+class SwitchStates(NamedTuple):
+    show_unchanged: bool
+    show_unmanaged: bool
+    expand_all: bool
+    show_unwanted: bool
