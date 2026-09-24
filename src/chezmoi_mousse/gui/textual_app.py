@@ -18,7 +18,7 @@ from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.debug.debug_tab import DebugTab
+from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
     TabButtons,
@@ -157,6 +157,7 @@ class ChezmoiGui(App[str]):
 
         self.app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
         self.cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
+        self.debug_log = self.query_one(store.debug_ids.richlog.debug_q, DebugLog)
         self.init_phase = False
         for cr in results:
             setattr(self.cmd_log, ReactiveVar.cmd_result, cr)

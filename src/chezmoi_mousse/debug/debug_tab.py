@@ -51,7 +51,9 @@ __all__ = ["DebugTab"]
 
 class DebugLog(RichLoggers):
     def __init__(self) -> None:
-        super().__init__(markup=True, max_lines=10000, wrap=True)
+        super().__init__(
+            id=store.debug_ids.richlog.debug, markup=True, max_lines=10000, wrap=True
+        )
 
     def on_mount(self) -> None:
         self.write_ready(LogStr.debug_log_initialized)
