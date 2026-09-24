@@ -5,6 +5,7 @@ import os
 import tracemalloc
 from typing import TYPE_CHECKING
 
+from rich._inspect import Inspect
 from rich.markup import escape
 from textual import on, work
 from textual.containers import (
@@ -73,6 +74,10 @@ class DebugLog(RichLoggers):
 
     def write_info(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.info))
+
+    def write_inspect(self, some_object: object) -> None:
+        inspector = Inspect(some_object, all=False, methods=True, private=True)
+        self.write(inspector)
 
     def mro(self, mro: tuple[type, ...]) -> None:
         """Parameter mro accepts self.__class__.__mro__ or SomeClass.__mro__"""
