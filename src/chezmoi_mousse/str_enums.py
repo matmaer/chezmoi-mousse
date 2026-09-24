@@ -68,6 +68,7 @@ class BtnLabel(StrEnum):
     doctor = "Doctor"
     dom_nodes = "DOM Nodes"
     env_vars = "Env Vars"
+    git_config = "Git Config"
     ignored = "Ignored"
     template_data = "Template Data"
     test_paths = "Test Paths"
@@ -144,6 +145,7 @@ class ContainerName(StrEnum):
     dom_nodes = auto()
     env_vars = auto()
     flat_buttons = auto()
+    git_config = auto()
     git_ignored = auto()
     git_log = auto()
     left_side = auto()
@@ -159,21 +161,25 @@ class ContainerName(StrEnum):
 
 
 class LabelStr(StrEnum):
-    # Managed Tree tab
+    # Config tab
+    doctor_output = "Doctor Output"
     cat_config_output = "Cat Config Output"
+    ignored_output = "Ignored Output"
+    template_data_output = "Chezmoi Data Output"
+    chezmoi_git_config = "Chezmoi Git Config"
+    diagram = "Chezmoi Diagram"
+
+    # Managed Tree tab
     chezmoi_cat_output = "Chezmoi Cat output"
 
     command_outputs = "Command Output"
     context = "Context"
     debug_log = "Debug Log"
     dest_dir = "Destination Directory"
-    diagram = "Chezmoi Diagram"
-    doctor_output = "Doctor Output"
     dom_nodes = "DOM Nodes"
     env_vars = "Environment Variables"
     expand_managed = "Expand Managed"
     full_cmd = "Full Command"
-    ignored_output = "Ignored Output"
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
     not_set = "Not Set"
@@ -190,7 +196,6 @@ class LabelStr(StrEnum):
     show_unwanted = "Show Unwanted"
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
-    template_data_output = "Chezmoi Data Output"
     test_paths = " Test Paths "
 
     # MainSectionLabel entries used in the OperateTab

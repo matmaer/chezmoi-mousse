@@ -58,6 +58,14 @@ class DumpConfigKeys(NamedTuple):
             raise RuntimeError("Accessing auto_push before the config is parsed")
         return self.auto_push_bool
 
+    @property
+    def git_config_dict(self) -> dict[str, bool]:
+        return {
+            "auto_add": self.auto_add,
+            "auto_commit": self.auto_commit,
+            "auto_push": self.auto_push,
+        }
+
 
 class InitData(NamedTuple):
     which_chezmoi: str | None = None

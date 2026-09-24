@@ -46,6 +46,8 @@ __all__ = ["ConfigTab"]
 class ConfigTab(TabPane):
     class CatConfigStatic(Static): ...
 
+    class PrettyGitConfig(Pretty): ...
+
     class PrettyIgnored(Pretty): ...
 
     class PrettyTemplateData(Pretty): ...
@@ -57,6 +59,8 @@ class ConfigTab(TabPane):
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
+        git_config = self.switcher.query_exactly_one(ConfigTab.PrettyGitConfig)
+        git_config.update(store.cfg.git_config_dict)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -67,6 +71,7 @@ class ConfigTab(TabPane):
                     BtnLabel.cat_config,
                     BtnLabel.ignored,
                     BtnLabel.template_data,
+                    BtnLabel.git_config,
                     BtnLabel.diagram,
                 ),
             )
@@ -92,6 +97,11 @@ class ConfigTab(TabPane):
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
+                    MainSectionLabel(LabelStr.chezmoi_git_config),
+                    ScrollableContainer(ConfigTab.PrettyGitConfig("Not set")),
+                    id=store.config_ids.container.git_config,
+                )
+                yield Vertical(
                     MainSectionLabel(LabelStr.diagram),
                     Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
                     id=store.config_ids.container.diagram,
@@ -111,6 +121,8 @@ class ConfigTab(TabPane):
             self.switcher.current = store.config_ids.container.ignored
         elif msg.button.label == BtnLabel.template_data:
             self.switcher.current = store.config_ids.container.template_data
+        elif msg.button.label == BtnLabel.git_config:
+            self.switcher.current = store.config_ids.container.git_config
         elif msg.button.label == BtnLabel.diagram:
             self.switcher.current = store.config_ids.container.diagram
 
