@@ -24,15 +24,15 @@ if TYPE_CHECKING:
 type ScanDirResult = list[ScanDirItem]
 
 
-def get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
+def _get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:
     if isinstance(cmd, ReadCmd) or cmd is WriteCmd.init:
         return "chezmoi"
     return "chezmoi --dry-run" if store.live_run is False else "chezmoi"
 
 
-def get_full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
+def _get_full_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
     path_str = str(path) if path is not None else ""
-    return f"{get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}".rstrip()
+    return f"{_get_base_cmd(cmd)} {' '.join(cmd.value)} {path_str}".rstrip()
 
 
 def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
@@ -40,7 +40,7 @@ def pretty_cmd(cmd: ReadCmd | WriteCmd, path: Path | None) -> str:
     if isinstance(cmd, ReadCmd):
         return (f"{cmd.pretty_cmd} {rel_path}").rstrip()
     else:
-        base_cmd = get_base_cmd(cmd)
+        base_cmd = _get_base_cmd(cmd)
         write_verbs = " ".join(cmd.value)
         return (f"{base_cmd} {write_verbs} {path_funcs.get_rel_path(path)}").rstrip()
 
@@ -68,7 +68,7 @@ async def _construct_command_result(
         out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
     return CommandResult(
         cmd_enum=cmd_enum,
-        full_cmd=f"{get_full_cmd(cmd_enum, path_arg)}",
+        full_cmd=f"{_get_full_cmd(cmd_enum, path_arg)}",
         out_txt=out_txt,
         path_arg=path_arg,
         pretty_cmd=f"{pretty_cmd(cmd_enum, path_arg)}",

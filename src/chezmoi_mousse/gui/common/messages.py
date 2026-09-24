@@ -58,8 +58,8 @@ class OperateBtnMsg(Message):
 
 
 class ShowTreeQidMsg(Message):
-    def __init__(self, tree_qid: str) -> None:
-        self.tree_qid = tree_qid
+    def __init__(self, tree_id_q: str) -> None:
+        self.tree_id_q = tree_id_q
         super().__init__()
 
 

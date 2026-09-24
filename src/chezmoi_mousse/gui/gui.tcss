@@ -147,7 +147,6 @@
 AnimatedFade,
 AppLog,
 CmdLog,
-ContentsView,
 DiffView {
   margin-bottom: 2;
 }

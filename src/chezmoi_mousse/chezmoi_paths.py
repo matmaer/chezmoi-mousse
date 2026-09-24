@@ -47,7 +47,7 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
-        self.add_status_files_and_store_label(
+        self._add_status_files_and_store_label(
             dicts_to_update=(
                 self.managed_only_sp_files,
                 self.managed_all_mp_files,
@@ -57,7 +57,7 @@ class ChezmoiTreePaths:
                 self.un_wanted_plus_amp_files,
             )
         )
-        self.add_space_files_and_store_label(
+        self._add_space_files_and_store_label(
             dicts_to_update=(
                 self.managed_all_mp_files,
                 self.un_man_plus_amp_files,
@@ -78,16 +78,16 @@ class ChezmoiTreePaths:
             self.un_wanted_plus_sp_dirs,
             self.un_wanted_plus_amp_dirs,
         )
-        self.add_status_directories_and_store_label(dirs_with_nested_sp, all_dir_dicts)
+        self._add_status_directories_and_store_label(dirs_with_nested_sp, all_dir_dicts)
 
         space_dir_set = self.man_dir_set - self.status_dir_set
         clean_space_dirs = space_dir_set - dirs_with_nested_sp
         dirty_space_dirs = space_dir_set & dirs_with_nested_sp
-        self.process_space_directories(clean_space_dirs, dirty_space_dirs)
+        self._process_space_directories(clean_space_dirs, dirty_space_dirs)
 
-        self.sort_constructed_dicts()
+        self._sort_constructed_dicts()
 
-    def add_status_files_and_store_label(
+    def _add_status_files_and_store_label(
         self, dicts_to_update: tuple[dict[Path, Sc], ...]
     ) -> None:
         for path, status in self._status_files_pcr.items():
@@ -97,7 +97,7 @@ class ChezmoiTreePaths:
                 assert d.get(path, None) is None
                 d[path] = status
 
-    def add_space_files_and_store_label(
+    def _add_space_files_and_store_label(
         self, dicts_to_update: tuple[dict[Path, Sc], ...]
     ) -> None:
         space_files = self.man_file_set - self.status_file_set
@@ -113,7 +113,7 @@ class ChezmoiTreePaths:
                 assert d.get(path, None) is None
                 d[path] = Sc.SS
 
-    def add_status_directories_and_store_label(
+    def _add_status_directories_and_store_label(
         self,
         dirs_with_nested_status_paths: set[Path],
         dicts_to_update: tuple[dict[Path, Sc], ...],
@@ -131,7 +131,7 @@ class ChezmoiTreePaths:
                 assert d.get(path, None) is None
                 d[path] = status
 
-    def process_space_directories(
+    def _process_space_directories(
         self, clean_space_dirs: frozenset[Path], dirty_space_dirs: frozenset[Path]
     ) -> None:
         # process managed dirs without a status: overwrite status with Sc.TT if needed
@@ -181,7 +181,7 @@ class ChezmoiTreePaths:
                 self.un_wanted_plus_sp_files.setdefault(path, Sc.UU)
                 self.un_wanted_plus_amp_files.setdefault(path, Sc.UU)
 
-    def sort_constructed_dicts(self) -> None:
+    def _sort_constructed_dicts(self) -> None:
         self.managed_only_sp_dirs = path_funcs.sort_path_dict(self.managed_only_sp_dirs)
         self.managed_only_sp_files = path_funcs.sort_path_dict(
             self.managed_only_sp_files

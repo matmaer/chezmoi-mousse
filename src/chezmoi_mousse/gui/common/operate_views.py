@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["DiffReverseView", "DiffView", "GitLogView"]
+__all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView"]
 
 
 class ContentView(Vertical):
@@ -52,7 +52,8 @@ class ContentView(Vertical):
         self.content_static.display = False
         self.dir_contents = self.query_exactly_one(ScrollableContainer)
 
-    def create_dir_contents(self, path: Path) -> None:
+    @work
+    async def _create_dir_contents(self, path: Path) -> None:
         self.dir_contents.remove_children()
         widgets: list[SubSectionLabel | Static] = []
         status_files_in: list[Path] = path_funcs.get_nested_in(
@@ -85,7 +86,7 @@ class ContentView(Vertical):
         self.dir_contents.mount_all(widgets)
 
     @work
-    async def create_contents(self, path: Path) -> None:
+    async def _create_contents(self, path: Path) -> None:
         if path in self.cache:
             f_content = self.cache[path]
         else:
@@ -107,11 +108,11 @@ class ContentView(Vertical):
             self.flat_label.update(LabelStr.select_path_contents)
             self.content_static.display = False
             self.dir_contents.display = True
-            self.create_dir_contents(path)
+            self._create_dir_contents(path)
             return
         self.dir_contents.display = False
+        self._create_contents(path)
         self.content_static.display = True
-        self.create_contents(path)
 
 
 class _DiffViewBase(Vertical):
@@ -148,7 +149,7 @@ class _DiffViewBase(Vertical):
         self.diff_container = self.query_exactly_one(ScrollableContainer)
         self.diff_container.display = False
 
-    async def get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
+    async def _get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
         diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
         widgets: list[Label | Static] = []
 
@@ -183,7 +184,7 @@ class _DiffViewBase(Vertical):
             self.diff_container.remove_children()
             self.diff_container.mount_all(self.cache[path])
         else:
-            diff_statics = await self.get_diff_widgets(self.diff_cmd, path)
+            diff_statics = await self._get_diff_widgets(self.diff_cmd, path)
             self.cache[path] = diff_statics
             self.diff_container.mount_all(self.cache[path])
         self.diff_container.loading = False

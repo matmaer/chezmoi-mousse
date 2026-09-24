@@ -23,10 +23,7 @@ if TYPE_CHECKING:
 type NodeMap = dict[Path, TreeNode[Path]]
 
 
-__all__ = [
-    "NodeMap",
-    "OperateTree",
-]
+__all__ = ["OperateTree"]
 
 
 class OperateTree(Tree[Path]):
@@ -59,7 +56,9 @@ class OperateTree(Tree[Path]):
         color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
         return f"[{color}{italic}]{path.name}[/]"
 
-    def add_node(self, path: Path, status: Sc, *, allow_expand: bool) -> None:
+    def _add_node_with_color(
+        self, path: Path, status: Sc, *, allow_expand: bool
+    ) -> None:
         parent_node = self.node_map.get(path.parent, self.root)
         label = self._color_label(path, status, allow_expand)
         new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
@@ -70,9 +69,9 @@ class OperateTree(Tree[Path]):
         self, dirs: dict[Path, Sc], files: dict[Path, Sc]
     ) -> None:
         for path, status in dirs.items():
-            self.add_node(path, status, allow_expand=True)
+            self._add_node_with_color(path, status, allow_expand=True)
         for path, status in files.items():
-            self.add_node(path, status, allow_expand=False)
+            self._add_node_with_color(path, status, allow_expand=False)
         if self.id in (
             store.op_ids.tree.managed_only_sp_xpd,
             store.op_ids.tree.managed_all_mp_xpd,

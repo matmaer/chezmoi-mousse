@@ -34,6 +34,7 @@ __all__ = [
     "FlatButtonsVertical",
     "OperateBtn",
     "OperateBtnGroup",
+    "SwitchGroup",
     "TabBtn",
     "TabButtons",
 ]

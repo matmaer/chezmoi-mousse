@@ -179,10 +179,7 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
-        view_container = self.query_one(self.ids.container.middle_q)
-        self.show_unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q)
-        self.show_unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q)
-        self.show_unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q)
+        view_container = self.query_one(self.ids.container.middle_q, Vertical)
         self.view_label = view_container.query_exactly_one(MainSectionLabel)
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.diff_view = self.query_exactly_one(DiffView)
@@ -209,14 +206,12 @@ class OperateTab(TabPane):
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
-        tree_qid: str = msg.tree_qid
-        self.notify(f"received {tree_qid}")
 
         # hide the current tree:
         all_trees = self.query(OperateTree).results()
         for tree in all_trees:
             tree.display = False
-        show_tree = self.query_exactly_one(tree_qid, OperateTree)
+        show_tree = self.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
 
     def _set_all_path_reactives(self, path: Path) -> None:

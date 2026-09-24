@@ -127,7 +127,7 @@ class ConfigTab(TabPane):
             self.switcher.current = store.config_ids.container.diagram
 
     @work
-    async def update_widget(self, cmd_result: CommandResult) -> None:
+    async def _update_widget(self, cmd_result: CommandResult) -> None:
         if cmd_result.cmd_enum is ReadCmd.doctor:
             widget = self.query_exactly_one(DoctorTable)
             widget.populate_dr_table(cmd_result.std_out)
@@ -145,4 +145,4 @@ class ConfigTab(TabPane):
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:
             return
-        self.update_widget(cmd_result)
+        self._update_widget(cmd_result)
