@@ -37,7 +37,8 @@ class ContentView(Vertical):
 
     path: reactive[Path | None] = reactive(None, init=False)
 
-    cache: ClassVar[dict[Path, Text]] = {}
+    txt_cache: ClassVar[dict[Path, Text]] = {}
+    dir_content_cache: ClassVar[dict[Path, list[SubSectionLabel | Static]]] = {}
 
     class ContentStatic(Static): ...
 
@@ -54,41 +55,46 @@ class ContentView(Vertical):
 
     @work
     async def _create_dir_contents(self, path: Path) -> None:
+        self.dir_contents.display = False
         self.dir_contents.remove_children()
-        widgets: list[SubSectionLabel | Static] = []
-        status_files_in: list[Path] = path_funcs.get_nested_in(
-            dir_path=path, check_paths=store.cm_paths.status_file_set
-        )
-        if status_files_in:
-            widgets.append(SubSectionLabel(LabelStr.status_files_in))
-            for path in status_files_in:
-                widgets.append(Static(str(path)))
-            widgets.append(Static(""))  # add a spacer between sections
+        if path in self.dir_content_cache:
+            widgets = self.dir_content_cache[path]
+        else:
+            widgets: list[SubSectionLabel | Static] = []
+            status_files_in: list[Path] = path_funcs.get_nested_in(
+                dir_path=path, check_paths=store.cm_paths.status_file_set
+            )
+            if status_files_in:
+                widgets.append(SubSectionLabel(LabelStr.status_files_in))
+                for path in status_files_in:
+                    widgets.append(Static(str(path)))
+                widgets.append(Static(""))  # add a spacer between sections
 
-        status_dirs_in: list[Path] = path_funcs.get_nested_in(
-            dir_path=path, check_paths=store.cm_paths.status_dir_set
-        )
-        if status_dirs_in:
-            widgets.append(SubSectionLabel(LabelStr.status_dirs_in))
-            for path in status_dirs_in:
-                widgets.append(Static(str(path)))
-            widgets.append(Static(""))  # add a spacer between sections
+            status_dirs_in: list[Path] = path_funcs.get_nested_in(
+                dir_path=path, check_paths=store.cm_paths.status_dir_set
+            )
+            if status_dirs_in:
+                widgets.append(SubSectionLabel(LabelStr.status_dirs_in))
+                for path in status_dirs_in:
+                    widgets.append(Static(str(path)))
+                widgets.append(Static(""))  # add a spacer between sections
 
-        managed_dirs_in: list[Path] = path_funcs.get_nested_in(
-            dir_path=path, check_paths=store.cm_paths.man_dir_set
-        )
-        if managed_dirs_in:
-            widgets.append(SubSectionLabel(LabelStr.unchanged_dirs_in))
-            for path in managed_dirs_in:
-                widgets.append(Static(str(path)))
-            widgets.append(Static(""))  # add a spacer between sections
+            managed_dirs_in: list[Path] = path_funcs.get_nested_in(
+                dir_path=path, check_paths=store.cm_paths.man_dir_set
+            )
+            if managed_dirs_in:
+                widgets.append(SubSectionLabel(LabelStr.unchanged_dirs_in))
+                for path in managed_dirs_in:
+                    widgets.append(Static(str(path)))
+                widgets.append(Static(""))  # add a spacer between sections
 
         self.dir_contents.mount_all(widgets)
+        self.dir_contents.display = True
 
     @work
     async def _create_contents(self, path: Path) -> None:
-        if path in self.cache:
-            f_content = self.cache[path]
+        if path in self.txt_cache:
+            f_content = self.txt_cache[path]
         else:
             f_content = Text("Looks like an empty file.")
             if path in store.cm_paths.missing_managed:
@@ -99,7 +105,7 @@ class ContentView(Vertical):
             else:
                 self.flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
-            self.cache[path] = f_content
+            self.txt_cache[path] = f_content
 
         self.content_static.update(f_content)
 
