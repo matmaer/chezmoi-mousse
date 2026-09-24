@@ -6,14 +6,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.named_tuples import ScanDirItem
-from chezmoi_mousse.str_enums import PathFilters
+from chezmoi_mousse.named_tuples import ScanDirResult
+from chezmoi_mousse.str_enums import PathFilters, StatusCode
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-
-type ScanDirResult = list[ScanDirItem]
 
 
 def sort_paths(paths: Iterable[Path]) -> list[Path]:
@@ -166,59 +163,70 @@ def is_unwanted_dir(dir_path: Path) -> bool:
 
 def os_scan_dir(dir_path: Path) -> ScanDirResult:
 
-    if not dir_path.is_absolute():
-        raise ValueError(
-            (
-                "This function should only be called with absolute paths as we ",
-                "are caching the results.",
-            )
-        )
+    errors: list[str] = []
 
-    scan_dir_items: list[ScanDirItem] = []
-    # str(dir_path) to reduce possible exceptions which would be raised by pathlib
     try:
+        if str(dir_path) == "None":
+            errors.append("Received a path named 'None'")
+        if not dir_path.is_absolute():
+            errors.append("Error, did not receive an absolute path")
+        if store.cfg.dest_dir not in dir_path.parents:
+            errors.append(
+                f"Error, got a directory which is not a child of the destDir "
+                f"{store.cfg.dest_dir}"
+            )
+        if dir_path.is_symlink():
+            errors.append(f"Error, the provided path is a symlink: {dir_path}")
+        # str(dir_path) to reduce possible exceptions which would be raised by pathlib
         with os.scandir(str(dir_path)) as entry_generator:
             dir_entries: list[os.DirEntry[str]] = list(entry_generator)
-    except (FileNotFoundError, PermissionError, OSError):
-        return []
-
-    sibling_count = len(dir_entries)
-
-    for de in dir_entries:
-        de_path = Path(de.path)
-        is_dir = de.is_dir()
-        is_file = de.is_file()
-        is_symlink = de.is_symlink()
-        file_size = None
-        if is_symlink:
-            matches_unwanted = True
-        elif is_dir:
-            matches_unwanted = is_unwanted_dir(de_path)
-        elif is_file:
-            try:
-                file_size = de.stat().st_size
-            except OSError:
-                file_size = None
-                matches_unwanted = True
-            else:
-                matches_unwanted = is_unwanted_file(de_path)
-        else:
-            matches_unwanted = True
-
-        if matches_unwanted:
-            continue
-
-        scan_dir_items.append(
-            ScanDirItem(
-                scanned_dir=dir_path,
-                path=de_path,
-                is_dir=is_dir,
-                is_file=is_file,
-                is_symlink=is_symlink,
-                name=de.name,
-                file_size=file_size,
-                sibling_count=sibling_count,
-                matches_unwanted=matches_unwanted,
+        entry_count = len(dir_entries)
+        if entry_count > 500:
+            errors.append(f"The directory has too many children: {entry_count}")
+            return ScanDirResult(
+                errors=errors,
+                exceptions={},
+                symlinks=[],
+                dirs={},
+                files={},
             )
+    except (FileNotFoundError, PermissionError, OSError) as error:
+        errors.append(str(error))
+        return ScanDirResult(
+            errors=errors,
+            exceptions={},
+            symlinks=[],
+            dirs={},
+            files={},
         )
-    return scan_dir_items
+
+    exceptions: dict[Path, str] = {}
+    symlinks: list[Path] = []
+    dirs: dict[Path, StatusCode] = {}
+    files: dict[Path, StatusCode] = {}
+
+    for entry in dir_entries:
+        try:
+            path = Path(entry.path)
+            if path.is_symlink():
+                symlinks.append(path)
+            if entry.is_dir(follow_symlinks=False):
+                if is_unwanted_dir(path):
+                    dirs[path] = StatusCode.XX
+                else:
+                    dirs[path] = StatusCode.UU
+            elif entry.is_file(follow_symlinks=False):
+                if is_unwanted_file(path):
+                    files[path] = StatusCode.XX
+                else:
+                    files[path] = StatusCode.UU
+        except (FileNotFoundError, PermissionError, OSError) as exception:
+            exceptions[Path(entry)] = str(exception)
+
+    return ScanDirResult(
+        errors=errors,
+        exceptions=sort_path_dict(exceptions),
+        symlinks=sort_paths(symlinks),
+        dirs=sort_path_dict(dirs),
+        files=sort_path_dict(files),
+    )

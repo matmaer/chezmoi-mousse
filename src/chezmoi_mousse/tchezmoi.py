@@ -12,7 +12,7 @@ from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.named_tuples import CommandResult, ScanDirItem
+from chezmoi_mousse.named_tuples import CommandResult
 from chezmoi_mousse.str_enums import ReactiveVar, ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
@@ -20,8 +20,6 @@ if TYPE_CHECKING:
         ExecResult,
     )
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-
-type ScanDirResult = list[ScanDirItem]
 
 
 def _get_base_cmd(cmd: ReadCmd | WriteCmd) -> str:

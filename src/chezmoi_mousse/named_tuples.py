@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, NamedTuple
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+    from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
     "CommandResult",
     "DumpConfigKeys",
     "InitData",
-    "ScanDirItem",
+    "ScanDirResult",
 ]
 
 
@@ -73,18 +73,10 @@ class InitData(NamedTuple):
     pilot_mode: bool = False
 
 
-class ScanDirItem(NamedTuple):
-    # matches the argument passed to the os_scan_dir function
-    scanned_dir: Path
-    # absolute path matchingthe DirEntry.path attribute
-    path: Path
-    # matches DirEntry attribute
-    is_dir: bool
-    is_file: bool
-    is_symlink: bool
-    name: str
-    # # if it's a dir or if an exception occurs when calling .stat()
-    file_size: int | None
-    # set by the os_scan_dir function
-    sibling_count: int
-    matches_unwanted: bool
+class ScanDirResult(NamedTuple):
+    # status codes will be either Sc.UU (unmanaged) or Sc.XX (unwanted)
+    errors: list[str]
+    exceptions: dict[Path, str]
+    symlinks: list[Path]
+    dirs: dict[Path, StatusCode]
+    files: dict[Path, StatusCode]

@@ -92,7 +92,7 @@ class ContentView(Vertical):
         self.dir_contents.display = True
 
     @work
-    async def _create_contents(self, path: Path) -> None:
+    async def _create_file_contents(self, path: Path) -> None:
         if path in self.txt_cache:
             f_content = self.txt_cache[path]
         else:
@@ -115,9 +115,12 @@ class ContentView(Vertical):
             self.content_static.display = False
             self.dir_contents.display = True
             self._create_dir_contents(path)
-            return
+        elif path in store.cm_paths.un_wanted_plus_amp_files:
+            self._create_file_contents(path)
+        elif path not in store.cm_paths.path_labels:
+            self.notify(f"missing path_labels for {path}")
+
         self.dir_contents.display = False
-        self._create_contents(path)
         self.content_static.display = True
 
 

@@ -3,21 +3,18 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from textual import work
+from textual import on, work
 from textual.widgets import Tree
 
-from chezmoi_mousse import store
-from chezmoi_mousse.str_enums import (
-    ColorVar,
-    Tcss,
-)
+from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse.str_enums import ColorVar, LabelStr, StatusCode as Sc, Tcss
 
 if TYPE_CHECKING:
     from textual import getters
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.str_enums import StatusCode as Sc
+    from chezmoi_mousse.named_tuples import ScanDirResult
 
 
 type NodeMap = dict[Path, TreeNode[Path]]
@@ -43,6 +40,7 @@ class OperateTree(Tree[Path]):
         )
 
     def on_mount(self) -> None:
+        self.scanned_dirs: set[Path] = set()
         self.loading = True
         self.display = False
         self.root.data = store.cfg.dest_dir
@@ -92,3 +90,39 @@ class OperateTree(Tree[Path]):
             self.select_node(self.root)
             self.unselect()  # otherwise it looks like the first node is selected
         self.loading = False
+
+    @work
+    async def _populate_unmanaged_node(self, node: TreeNode[Path]) -> None:
+        assert isinstance(node.data, Path)
+        scan_dir_result: ScanDirResult = path_funcs.os_scan_dir(node.data)
+        self.scanned_dirs.add(node.data)
+        for path, status in scan_dir_result.dirs.items():
+            if status == Sc.UU:
+                store.cm_paths.path_labels[path] = LabelStr.unmanaged_dir
+            elif status == Sc.XX:
+                store.cm_paths.path_labels[path] = LabelStr.unwanted_dir
+            self._add_node_with_color(path, status, allow_expand=True)
+        for path, status in scan_dir_result.files.items():
+            if status == Sc.UU:
+                store.cm_paths.path_labels[path] = LabelStr.unmanaged_file
+            elif status == Sc.XX:
+                store.cm_paths.path_labels[path] = LabelStr.unwanted_file
+            self._add_node_with_color(path, status, allow_expand=False)
+
+    @on(Tree.NodeExpanded)
+    def populate_unmanaged_node(self, event: Tree.NodeExpanded[Path]) -> None:
+        if (
+            event.node.data == store.cfg.dest_dir
+            or self.id
+            in (
+                store.op_ids.tree.managed_only_sp,
+                store.op_ids.tree.managed_only_sp_xpd,
+                store.op_ids.tree.managed_all_mp,
+                store.op_ids.tree.managed_all_mp_xpd,
+            )
+            or event.node.data in self.scanned_dirs
+            or event.node.data in store.cm_paths.status_dir_set
+            or event.node.data in store.cm_paths.man_dir_set
+        ):
+            return
+        self._populate_unmanaged_node(event.node)
