@@ -11,6 +11,7 @@ from textual.containers import (
 )
 from textual.reactive import reactive
 from textual.widgets import (
+    Button,
     ContentSwitcher,
     Pretty,
     Static,
@@ -21,7 +22,6 @@ from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.ascii_constants import FLOW_DIAGRAM
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.gui.common.messages import FlatBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
@@ -29,10 +29,7 @@ from chezmoi_mousse.str_enums import (
     Tcss,
 )
 
-from .common.actionables import (
-    FlatBtn,
-    FlatButtonsVertical,
-)
+from .common.actionables import FlatButtonsVertical
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
@@ -107,37 +104,33 @@ class ConfigTab(TabPane):
                     id=store.config_ids.container.diagram,
                 )
 
-    @on(FlatBtnMsg)
-    def switch_content(self, msg: FlatBtnMsg) -> None:
-        if not isinstance(msg.button, FlatBtn):
-            return
-        msg.stop()
-
-        if msg.button.label == BtnLabel.doctor.value:
+    @on(Button.Pressed)
+    def switch_content(self, event: Button.Pressed) -> None:
+        if event.button.label == BtnLabel.doctor:
             self.switcher.current = store.config_ids.container.doctor
-        elif msg.button.label == BtnLabel.cat_config:
+        elif event.button.label == BtnLabel.cat_config:
             self.switcher.current = store.config_ids.container.cat_config
-        elif msg.button.label == BtnLabel.ignored:
+        elif event.button.label == BtnLabel.ignored:
             self.switcher.current = store.config_ids.container.ignored
-        elif msg.button.label == BtnLabel.template_data:
+        elif event.button.label == BtnLabel.template_data:
             self.switcher.current = store.config_ids.container.template_data
-        elif msg.button.label == BtnLabel.git_config:
+        elif event.button.label == BtnLabel.git_config:
             self.switcher.current = store.config_ids.container.git_config
-        elif msg.button.label == BtnLabel.diagram:
+        elif event.button.label == BtnLabel.diagram:
             self.switcher.current = store.config_ids.container.diagram
 
     @work
     async def _update_widget(self, cmd_result: CommandResult) -> None:
-        if cmd_result.cmd_enum is ReadCmd.doctor:
+        if cmd_result.cmd_enum == ReadCmd.doctor:
             widget = self.query_exactly_one(DoctorTable)
             widget.populate_dr_table(cmd_result.std_out)
-        elif cmd_result.cmd_enum is ReadCmd.cat_config:
+        elif cmd_result.cmd_enum == ReadCmd.cat_config:
             widget = self.query_exactly_one(ConfigTab.CatConfigStatic)
             widget.update(cmd_result.std_out)
-        elif cmd_result.cmd_enum is ReadCmd.ignored:
+        elif cmd_result.cmd_enum == ReadCmd.ignored:
             widget = self.query_exactly_one(ConfigTab.PrettyIgnored)
             widget.update(cmd_result.std_out)
-        elif cmd_result.cmd_enum is ReadCmd.template_data:
+        elif cmd_result.cmd_enum == ReadCmd.template_data:
             parsed_data = json.loads(cmd_result.std_out)
             widget = self.query_exactly_one(ConfigTab.PrettyTemplateData)
             widget.update(parsed_data)

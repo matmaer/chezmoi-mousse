@@ -13,12 +13,7 @@ from textual.containers import (
 from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse import store
-from chezmoi_mousse.gui.common.messages import (
-    FlatBtnMsg,
-    OperateBtnMsg,
-    ShowTreeQidMsg,
-    TabBtnMsg,
-)
+from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
 from chezmoi_mousse.str_enums import LabelStr, Tcss
 
 if TYPE_CHECKING:
@@ -29,53 +24,11 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "FlatBtn",
     "FlatButtonsVertical",
-    "OperateBtn",
     "OperateBtnGroup",
     "SwitchGroup",
-    "TabBtn",
     "TabButtons",
 ]
-
-
-class FlatBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(
-            classes=Tcss.flat_button,
-            flat=True,
-        )
-
-    def send_message(self, event: Button.Pressed) -> FlatBtnMsg:
-        return FlatBtnMsg(
-            button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
-        )
-
-
-class OperateBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(classes=Tcss.operate_button)
-
-    def send_message(self, event: Button.Pressed) -> OperateBtnMsg:
-        return OperateBtnMsg(
-            button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
-        )
-
-
-class TabBtn(Button):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        self.app_ids = app_ids
-        self.btn_label = btn_label
-        super().__init__(classes=Tcss.tab_button)
-
-    def send_message(self, event: Button.Pressed) -> TabBtnMsg:
-        return TabBtnMsg(
-            button=event.button, app_ids=self.app_ids, btn_label=self.btn_label
-        )
 
 
 class FlatButtonsVertical(Container):
@@ -86,16 +39,21 @@ class FlatButtonsVertical(Container):
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
-            yield FlatBtn(app_ids=self.app_ids, btn_label=label)
+            yield Button(
+                id=self.app_ids.btn_id(btn_label=label),
+                label=label,
+                classes=Tcss.flat_button,
+                flat=True,
+            )
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
 
-    @on(FlatBtnMsg)
-    def update_tcss_classes(self, msg: FlatBtnMsg) -> None:
+    @on(Button.Pressed)
+    def update_tcss_classes(self, event: Button.Pressed) -> None:
         for btn in self.query_children(Button).results():
             btn.remove_class(Tcss.last_clicked_flat_btn)
-        msg.button.add_class(Tcss.last_clicked_flat_btn)
+        event.button.add_class(Tcss.last_clicked_flat_btn)
 
 
 class OperateBtnGroup(HorizontalGroup):
@@ -108,7 +66,11 @@ class OperateBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield OperateBtn(app_ids=self.app_ids, btn_label=btn_label)
+            yield Button(
+                id=self.app_ids.btn_id(btn_label=btn_label),
+                label=btn_label,
+                classes=Tcss.operate_button,
+            )
 
 
 class SwitchGroup(VerticalGroup):
@@ -173,13 +135,17 @@ class TabButtons(Horizontal):
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield TabBtn(app_ids=self.app_ids, btn_label=btn_label)
+                yield Button(
+                    id=self.app_ids.btn_id(btn_label=btn_label),
+                    label=btn_label,
+                    classes=Tcss.tab_button,
+                )
 
     def on_mount(self) -> None:
-        self.query(TabBtn).first().add_class(Tcss.last_clicked_tab_btn)
+        self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
 
-    @on(TabBtnMsg)
-    def update_tcss_classes(self, msg: TabBtnMsg) -> None:
-        for btn in self.query(TabBtn).results():
+    @on(Button.Pressed)
+    def update_tcss_classes(self, event: Button.Pressed) -> None:
+        for btn in self.query(Button).results():
             btn.remove_class(Tcss.last_clicked_tab_btn)
-        msg.button.add_class(Tcss.last_clicked_tab_btn)
+        event.button.add_class(Tcss.last_clicked_tab_btn)

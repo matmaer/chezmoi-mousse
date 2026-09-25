@@ -13,6 +13,7 @@ from textual.containers import (
     Vertical,
 )
 from textual.widgets import (
+    Button,
     ContentSwitcher,
     RichLog,
     Static,
@@ -22,14 +23,11 @@ from textual.widgets import (
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.gui.common.actionables import (
-    FlatBtn,
     FlatButtonsVertical,
-    OperateBtn,
     OperateBtnGroup,
 )
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.loggers import RichLoggers
-from chezmoi_mousse.gui.common.messages import FlatBtnMsg, OperateBtnMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ColorVar,
@@ -229,20 +227,20 @@ class DebugTab(TabPane):
             store.debug_ids.richlog.env_vars_q, RichLog
         )
         self.mem_log_op_btn = self.query_one(
-            store.debug_ids.op_btn.log_memory_q, OperateBtn
+            store.debug_ids.op_btn.log_memory_q, Button
         )
         self.mem_log_op_btn.disabled = True
         self.list_test_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.list_test_paths_q, OperateBtn
+            store.debug_ids.op_btn.list_test_paths_q, Button
         )
         self.create_diffs_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_diffs_q, OperateBtn
+            store.debug_ids.op_btn.create_diffs_q, Button
         )
         self.create_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_paths_q, OperateBtn
+            store.debug_ids.op_btn.create_paths_q, Button
         )
         self.remove_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.remove_paths_q, OperateBtn
+            store.debug_ids.op_btn.remove_paths_q, Button
         )
         self.test_paths_op_btns = [
             self.list_test_paths_op_btn,
@@ -330,10 +328,8 @@ class DebugTab(TabPane):
     async def _log_env_vars(self) -> None:
         self.env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
 
-    @on(FlatBtnMsg)
-    def switch_content(self, event: FlatBtnMsg) -> None:
-        if not isinstance(event.button, FlatBtn):
-            return
+    @on(Button.Pressed)
+    def switch_content(self, event: Button.Pressed) -> None:
         event.stop()
         if event.button.label == BtnLabel.debug_log:
             self.mem_log_op_btn.disabled = False
@@ -351,21 +347,21 @@ class DebugTab(TabPane):
         elif event.button.label == BtnLabel.env_vars:
             self.switcher.current = store.debug_ids.container.env_vars
 
-    @on(OperateBtnMsg)
-    def handle_operate_buttons(self, msg: OperateBtnMsg) -> None:
-        msg.stop()
-        if msg.button.label == BtnLabel.log_memory.value:
+    @on(Button.Pressed)
+    def handle_operate_buttons(self, event: Button.Pressed) -> None:
+        event.stop()
+        if event.button.label == BtnLabel.log_memory:
             self._write_to_debug_log(auto=False)
             return
         result: str | list[str] = ""
-        if msg.button.label == BtnLabel.list_test_paths:
+        if event.button.label == BtnLabel.list_test_paths:
             self._list_existing_test_paths()
             return
-        if msg.button.label == BtnLabel.create_diffs:
+        if event.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
-        elif msg.button.label == BtnLabel.create_paths:
+        elif event.button.label == BtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
-        elif msg.button.label == BtnLabel.remove_paths:
+        elif event.button.label == BtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
         if isinstance(result, str):
             self.test_paths_static.update(result)

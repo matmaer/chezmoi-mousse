@@ -6,12 +6,8 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from textual.pilot import OutOfBounds
-from textual.widgets import TabbedContent
+from textual.widgets import Button, TabbedContent
 
-from chezmoi_mousse.gui.common.actionables import (
-    FlatBtn,
-    TabBtn,
-)
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.str_enums import BtnLabel
 
@@ -54,10 +50,10 @@ async def _toggle_binding(pilot: Pilot[str], key: str) -> None:
 
 
 async def _click_content_switcher_buttons(pilot: Pilot[str], tab_pane: TabPane) -> None:
-    tab_buttons = tuple(tab_pane.query(TabBtn).results())
+    tab_buttons = tuple(tab_pane.query(Button).results())
     for tab_button in tab_buttons[1:]:
         await _click_and_wait(pilot, tab_button)
-    flat_buttons = tuple(tab_pane.query(FlatBtn).results())
+    flat_buttons = tuple(tab_pane.query(Button).results())
     for flat_button in flat_buttons[1:]:
         await _click_and_wait(pilot, flat_button)
 
