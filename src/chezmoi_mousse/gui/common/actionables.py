@@ -188,8 +188,6 @@ class SwitchGroup(VerticalGroup):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        changed_switch = event.switch
-        self.notify(f"changed switch {changed_switch}")
         switch_state = (
             self.query_one(self.ids.switch.expand_managed_q, Switch).value,
             self.query_one(self.ids.switch.show_unchanged_q, Switch).value,

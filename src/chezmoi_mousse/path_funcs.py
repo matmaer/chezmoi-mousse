@@ -24,11 +24,6 @@ def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
-def get_sorted_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
-    sorted_keys = sort_paths(path_dict.keys())
-    return {path: path_dict[path] for path in sorted_keys}
-
-
 def get_nested_in(
     *, dir_path: Path, check_paths: set[Path] | frozenset[Path]
 ) -> list[Path]:

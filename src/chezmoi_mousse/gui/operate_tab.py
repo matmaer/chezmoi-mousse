@@ -186,20 +186,6 @@ class OperateTab(TabPane):
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.content_view = self.query_exactly_one(ContentView)
 
-    @property
-    def current_tree(self) -> OperateTree:
-        for tree in self.query(OperateTree).results():
-            if tree.display:
-                return tree
-        raise RuntimeError("No tree is displayed")
-
-    def set_tree_display(self, show_tree: OperateTree) -> None:
-        for tree in self.query(OperateTree).results():
-            if tree == show_tree:
-                tree.display = True
-            else:
-                tree.display = False
-
     #################################
     # Watchers and message handling #
     #################################
