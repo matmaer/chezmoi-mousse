@@ -174,12 +174,12 @@ class CmOpButtonSets:
             self._cm_paths.dir_node_data | self._cm_paths.file_node_data
         )
         for path, status in all_paths.items():
-            if status == Sc.UU:
+            if status in (Sc.UU, Sc.XX, Sc.TT):
                 self.add_paths.add(path)
-                continue
-            self.forget_paths.add(path)
-            if path not in self._cm_paths.missing_managed:
-                self.destroy_paths.add(path)
+            if status not in (Sc.UU, Sc.XX):
+                self.forget_paths.add(path)
+                if path not in self._cm_paths.missing_managed:
+                    self.destroy_paths.add(path)
             if status == Sc.SS:
                 continue
             if status[1] in (Sc.A, Sc.D, Sc.M):
@@ -190,8 +190,6 @@ class CmOpButtonSets:
         tt_paths = {path for path, status in all_paths.items() if status == Sc.TT}
 
         for path in tt_paths:
-            if path_funcs.any_nested_in(dir_path=path, check_paths=self.add_paths):
-                self.add_paths.add(path)
             if path_funcs.any_nested_in(dir_path=path, check_paths=self.apply_paths):
                 self.apply_paths.add(path)
             if path_funcs.any_nested_in(dir_path=path, check_paths=self.re_add_paths):
