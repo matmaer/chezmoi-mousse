@@ -70,12 +70,14 @@ class OperateTree(Tree[Path]):
             self._add_node_with_color(path, status, allow_expand=True)
         for path, status in files.items():
             self._add_node_with_color(path, status, allow_expand=False)
-        if self.id in (
+        if self.id == store.op_ids.tree.managed_only_sp:
+            self.display = True
+        elif self.id in (
             store.op_ids.tree.managed_only_sp_xpd,
             store.op_ids.tree.managed_all_mp_xpd,
         ):
             self.root.expand_all()
-        if self.id in (
+        elif self.id in (
             store.op_ids.tree.un_man_plus_sp_xpd,
             store.op_ids.tree.un_man_plus_amp_xpd,
             store.op_ids.tree.un_wanted_plus_sp_xpd,
@@ -85,10 +87,8 @@ class OperateTree(Tree[Path]):
                 if path in store.cm_paths.man_dir_set:
                     node.expand()
 
-        if self.id == store.op_ids.tree.managed_only_sp:
-            self.display = True
-            self.select_node(self.root)
-            self.unselect()  # otherwise it looks like the first node is selected
+        self.select_node(self.root)
+        self.unselect()  # otherwise it looks like the first node is selected
         self.loading = False
 
     @work
