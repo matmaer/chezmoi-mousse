@@ -101,11 +101,6 @@ class ChezmoiTreePaths:
         self, dicts_to_update: tuple[dict[Path, Sc], ...]
     ) -> None:
         space_files = self.man_file_set - self.status_file_set
-        dicts_to_update = (
-            self.managed_all_mp_files,
-            self.un_man_plus_amp_files,
-            self.un_wanted_plus_amp_files,
-        )
         for path in space_files:
             assert path not in self.path_labels
             self.path_labels[path] = LabelStr.space_file

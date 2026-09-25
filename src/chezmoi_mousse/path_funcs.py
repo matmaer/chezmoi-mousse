@@ -175,8 +175,6 @@ def _get_dir_path_iterable(dir_path: Path) -> Iterator[Path] | str:
                 error_info = f"The directory has too many children: {entry_count}"
     except (FileNotFoundError, PermissionError, OSError) as error:
         error_info = str(error)
-    if child_paths is None:
-        error_info = f"Error, calling iterdir() on {dir_path} failed."
     return error_info if child_paths is None else child_paths
 
 

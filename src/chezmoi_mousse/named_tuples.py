@@ -12,6 +12,7 @@ __all__ = [
     "DumpConfigKeys",
     "InitData",
     "IterDirResult",
+    "NodeData",
 ]
 
 
@@ -80,3 +81,10 @@ class IterDirResult(NamedTuple):
     symlinks: list[Path]
     dirs: dict[Path, StatusCode]
     files: dict[Path, StatusCode]
+
+
+class NodeData(NamedTuple):
+    main_label: str
+    path: Path
+    status_code: StatusCode
+    is_dir_node: bool

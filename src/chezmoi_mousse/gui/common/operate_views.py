@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import StrEnum
 from itertools import groupby
 from typing import TYPE_CHECKING, ClassVar
 
@@ -7,7 +8,7 @@ from rich.text import Text
 from textual import work
 from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import DataTable, Static
+from textual.widgets import Collapsible, DataTable, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
@@ -31,6 +32,31 @@ if TYPE_CHECKING:
 __all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView"]
 
 
+class DirContentTitles(StrEnum):
+    status_dirs = "Managed Directories (with status)"
+    status_files = "Managed Files (with status)"
+    managed_dirs = "Managed Directories (no status)"
+    managed_files = "Managed Files (no status)"
+    un_managed_dirs = "Directories (not managed)"
+    un_managed_files = "Files (not managed)"
+    un_wanted_dirs = "Directories (not managed, matches unwanted)"
+    un_wanted_files = "Files (not managed, matches unwanted)"
+
+
+class DirContensView(ScrollableContainer):
+    def compose(self) -> ComposeResult:
+        yield Collapsible(title=DirContentTitles.status_dirs)
+        yield Collapsible(title=DirContentTitles.status_files)
+        yield Collapsible(title=DirContentTitles.managed_dirs)
+        yield Collapsible(title=DirContentTitles.managed_files)
+        yield Collapsible(title=DirContentTitles.un_managed_dirs)
+        yield Collapsible(title=DirContentTitles.un_managed_files)
+        yield Collapsible(title=DirContentTitles.un_wanted_dirs)
+        yield Collapsible(title=DirContentTitles.un_wanted_files)
+
+    def update_collapsibles(self, dir_contents: dict[str, list[Path]]) -> None: ...
+
+
 class ContentView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -44,7 +70,7 @@ class ContentView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_contents)
-        yield ScrollableContainer()
+        yield DirContensView()
         yield ContentView.ContentStatic(markup=False)
 
     def on_mount(self) -> None:
