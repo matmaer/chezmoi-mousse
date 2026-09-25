@@ -18,8 +18,8 @@ from textual.widgets import (
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, SwitchGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
-from chezmoi_mousse.gui.common.managed_trees import OperateTree
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
+from chezmoi_mousse.gui.common.operate_tree import OperateTree
 from chezmoi_mousse.gui.common.operate_views import (
     ContentView,
     DiffReverseView,
