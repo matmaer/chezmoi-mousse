@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import (
     ChezmoiTreePaths,
+    CmOpButtonSets,
     CmPathChanges,
 )
 from chezmoi_mousse.named_tuples import (
@@ -46,33 +47,11 @@ cm_paths = ChezmoiTreePaths(
 
 
 cm_changes = CmPathChanges(
-    _old_tree_paths=ChezmoiTreePaths(
-        _status_dirs_pcr={},
-        _status_files_pcr={},
-        _un_man_dir_set=frozenset(),
-        _un_man_file_set=frozenset(),
-        man_dir_set=frozenset(),
-        man_file_set=frozenset(),
-        man_path_set=frozenset(),
-        missing_managed=frozenset(),
-        status_dir_set=frozenset(),
-        status_file_set=frozenset(),
-        status_path_set=frozenset(),
-    ),
-    _new_tree_paths=ChezmoiTreePaths(
-        _status_dirs_pcr={},
-        _status_files_pcr={},
-        _un_man_dir_set=frozenset(),
-        _un_man_file_set=frozenset(),
-        man_dir_set=frozenset(),
-        man_file_set=frozenset(),
-        man_path_set=frozenset(),
-        missing_managed=frozenset(),
-        status_dir_set=frozenset(),
-        status_file_set=frozenset(),
-        status_path_set=frozenset(),
-    ),
+    _old_tree_paths=cm_paths,
+    _new_tree_paths=cm_paths,
 )
+
+op_btn_sets = CmOpButtonSets(cm_paths)
 
 
 async def handle_new_tree_paths(
@@ -82,15 +61,17 @@ async def handle_new_tree_paths(
 
     global cm_paths
     global cm_changes
-    global cm_path_sets
-
+    global op_btn_sets
     cm_changes = CmPathChanges(
         _old_tree_paths=cm_paths,
         _new_tree_paths=new_tree_paths,
     )
-    # The differences are calculated, now overwrite the store.tree_paths
+
     cm_paths = new_tree_paths
-    app.app_log.write_app_log_msg("Updated cm_paths and cm_changes in store.py")
+    op_btn_sets = CmOpButtonSets(new_tree_paths)
+    app.app_log.write_app_log_msg(
+        "Updated cm_paths, cm_changes and op_btn_sets in store.py"
+    )
 
 
 async def decode_and_store_config(std_out: str) -> None:
