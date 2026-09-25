@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 def sort_paths(paths: Iterable[Path]) -> list[Path]:
     path_list = list(paths)
-    path_list.sort(key=lambda p: (len(p.parts), p))
+    path_list.sort(key=lambda p: (len(p.parts), str(p).lower()))
     return path_list
 
 
