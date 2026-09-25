@@ -136,15 +136,13 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_path(self, path: Path) -> None:
-        if path in store.cm_paths.un_wanted_plus_amp_dirs or path == store.cfg.dest_dir:
+        if path in store.cm_paths.dir_node_data or path == store.cfg.dest_dir:
             self.flat_label.update(LabelStr.select_path_contents)
             self.content_static.display = False
             self.dir_contents.display = True
             self._create_dir_contents(path)
-        elif path in store.cm_paths.un_wanted_plus_amp_files:
+        elif path in store.cm_paths.file_node_data:
             self._create_file_contents(path)
-        elif path not in store.cm_paths.path_labels:
-            self.notify(f"missing path_labels for {path}")
 
         self.dir_contents.display = False
         self.content_static.display = True

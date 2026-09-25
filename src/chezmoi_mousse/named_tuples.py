@@ -79,12 +79,11 @@ class IterDirResult(NamedTuple):
     error: str
     exceptions: dict[Path, str]
     symlinks: list[Path]
-    dirs: dict[Path, StatusCode]
-    files: dict[Path, StatusCode]
+    dirs: dict[Path, NodeData]
+    files: dict[Path, NodeData]
 
 
 class NodeData(NamedTuple):
     main_label: str
     path: Path
-    status_code: StatusCode
-    is_dir_node: bool
+    status: StatusCode

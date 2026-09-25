@@ -39,6 +39,8 @@ if TYPE_CHECKING:
 
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.named_tuples import NodeData
+
 
 __all__ = ["OperateTab"]
 
@@ -53,77 +55,53 @@ class LeftSideVertical(Vertical):
         yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
         yield OperateTree(
             TreeName.managed_only_sp,
-            tree_id=store.op_ids.tree.managed_only_sp,  # separate dict
-            dirs=store.cm_paths.managed_only_sp_dirs,
-            files=store.cm_paths.managed_only_sp_files,
+            store.op_ids.tree.managed_only_sp,
         )
         yield OperateTree(
             TreeName.managed_only_sp_xpd,
-            tree_id=store.op_ids.tree.managed_only_sp_xpd,
-            dirs=store.cm_paths.managed_only_sp_dirs,
-            files=store.cm_paths.managed_only_sp_files,
+            store.op_ids.tree.managed_only_sp_xpd,
         )
         yield OperateTree(
             TreeName.managed_all_mp,
-            tree_id=store.op_ids.tree.managed_all_mp,  # separate dict
-            dirs=store.cm_paths.managed_all_mp_dirs,
-            files=store.cm_paths.managed_all_mp_files,
+            store.op_ids.tree.managed_all_mp,
         )
         yield OperateTree(
             TreeName.managed_all_mp_xpd,
-            tree_id=store.op_ids.tree.managed_all_mp_xpd,
-            dirs=store.cm_paths.managed_all_mp_dirs,
-            files=store.cm_paths.managed_all_mp_files,
+            store.op_ids.tree.managed_all_mp_xpd,
         )
         # UNMANAGED TREE VARIANTS
         yield OperateTree(
             TreeName.un_man_plus_sp,
-            tree_id=store.op_ids.tree.un_man_plus_sp,  # separate dict
-            dirs=store.cm_paths.un_man_plus_sp_dirs,
-            files=store.cm_paths.un_man_plus_sp_files,
+            store.op_ids.tree.un_man_plus_sp,
         )
         yield OperateTree(
             TreeName.un_man_plus_sp_xpd,
-            tree_id=store.op_ids.tree.un_man_plus_sp_xpd,
-            dirs=store.cm_paths.un_man_plus_sp_dirs,
-            files=store.cm_paths.un_man_plus_sp_files,
+            store.op_ids.tree.un_man_plus_sp_xpd,
         )
         yield OperateTree(
             TreeName.un_man_plus_amp,
-            tree_id=store.op_ids.tree.un_man_plus_amp,  # separate dict
-            dirs=store.cm_paths.un_man_plus_amp_dirs,
-            files=store.cm_paths.un_man_plus_amp_files,
+            store.op_ids.tree.un_man_plus_amp,
         )
         yield OperateTree(
             TreeName.un_man_plus_amp_xpd,
-            tree_id=store.op_ids.tree.un_man_plus_amp_xpd,
-            dirs=store.cm_paths.un_man_plus_amp_dirs,
-            files=store.cm_paths.un_man_plus_amp_files,
+            store.op_ids.tree.un_man_plus_amp_xpd,
         )
         # UNWANTED TREE VARIANTS
         yield OperateTree(
             TreeName.un_wanted_plus_sp,
-            tree_id=store.op_ids.tree.un_wanted_plus_sp,  # separate dict
-            dirs=store.cm_paths.un_wanted_plus_sp_dirs,
-            files=store.cm_paths.un_wanted_plus_sp_files,
+            store.op_ids.tree.un_wanted_plus_sp,
         )
         yield OperateTree(
             TreeName.un_wanted_plus_sp_xpd,
-            tree_id=store.op_ids.tree.un_wanted_plus_sp_xpd,
-            dirs=store.cm_paths.un_wanted_plus_sp_dirs,
-            files=store.cm_paths.un_wanted_plus_sp_files,
+            store.op_ids.tree.un_wanted_plus_sp_xpd,
         )
         yield OperateTree(
             TreeName.un_wanted_plus_amp,
-            tree_id=store.op_ids.tree.un_wanted_plus_amp,  # separate dict
-            dirs=store.cm_paths.un_wanted_plus_amp_dirs,
-            files=store.cm_paths.un_wanted_plus_amp_files,
+            store.op_ids.tree.un_wanted_plus_amp,
         )
         yield OperateTree(
             TreeName.un_wanted_plus_amp_xpd,
-            tree_id=store.op_ids.tree.un_wanted_plus_amp_xpd,
-            dirs=store.cm_paths.un_wanted_plus_amp_dirs,
-            files=store.cm_paths.un_wanted_plus_amp_files,
+            store.op_ids.tree.un_wanted_plus_amp_xpd,
         )
 
 
@@ -219,26 +197,20 @@ class OperateTab(TabPane):
         setattr(self.diff_view, ReactiveVar.path, path)
         setattr(self.diff_reverse_view, ReactiveVar.path, path)
 
-    def _set_node_label(self, path: Path) -> None:
-        if path == store.cfg.dest_dir:
-            self.view_label.update(LabelStr.dest_dir)
-        else:
-            self.view_label.update(store.cm_paths.path_labels[path])
-
     @on(Tree.NodeSelected)
-    def set_path_for_views(self, event: Tree.NodeSelected[Path]) -> None:
-        assert event.node.data is not None
-        if event.node.data == store.cfg.dest_dir:
-            self._set_node_label(store.cfg.dest_dir)
-        else:
-            self._set_node_label(event.node.data)
-        self._set_all_path_reactives(event.node.data)
+    def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
+        if event.node.data is None:
+            self._set_all_path_reactives(store.cfg.dest_dir)
+            self.view_label.update(LabelStr.dest_dir)
+            return
+        self.view_label.update(event.node.data.main_label)
+        self._set_all_path_reactives(event.node.data.path)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
-            self._set_node_label(store.cfg.dest_dir)
+            self.view_label.update(LabelStr.dest_dir)
             self._set_all_path_reactives(store.cfg.dest_dir)
 
     @on(RadioSet.Changed)

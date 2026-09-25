@@ -153,15 +153,13 @@ class SwitchGroup(VerticalGroup):
         # Unmanaged trees
         (False, False, True, False): store.op_ids.tree.un_man_plus_sp_q,
         (False, True, True, False): store.op_ids.tree.un_man_plus_amp_q,
-        # Unmanaged trees XPD
         (True, False, True, False): store.op_ids.tree.un_man_plus_sp_xpd_q,
         (True, True, True, False): store.op_ids.tree.un_man_plus_amp_xpd_q,
-        # Uwwanted trees: show_unmanaged is False
+        # Unwanted trees
         (False, False, False, True): store.op_ids.tree.un_wanted_plus_sp_q,
         (False, True, False, True): store.op_ids.tree.un_wanted_plus_amp_q,
         (True, False, False, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,
         (True, True, False, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
-        # Uwwanted trees: show_unmanaged is True
         (False, False, True, True): store.op_ids.tree.un_wanted_plus_sp_q,
         (False, True, True, True): store.op_ids.tree.un_wanted_plus_amp_q,
         (True, False, True, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,

@@ -4,8 +4,8 @@ from itertools import islice
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.named_tuples import IterDirResult
-from chezmoi_mousse.str_enums import PathFilters, StatusCode
+from chezmoi_mousse.named_tuples import IterDirResult, NodeData
+from chezmoi_mousse.str_enums import LabelStr, PathFilters, StatusCode
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator
@@ -168,6 +168,8 @@ def _get_dir_path_iterable(dir_path: Path) -> Iterator[Path] | str:
             )
         elif dir_path.is_symlink():
             error_info = f"Error, the provided path is a symlink: {dir_path}"
+        elif dir_path.is_file():
+            error_info = f"Error, the provided path is a file: {dir_path}"
         else:
             child_paths = dir_path.iterdir()
             entry_count = len(tuple(child_paths))
@@ -178,28 +180,46 @@ def _get_dir_path_iterable(dir_path: Path) -> Iterator[Path] | str:
     return error_info if child_paths is None else child_paths
 
 
-def get_dir_children(dir_path: Path) -> IterDirResult:
+def get_unmanaged_children(dir_path: Path) -> IterDirResult:
     result: Iterable[Path] | str = _get_dir_path_iterable(dir_path)
     exceptions: dict[Path, str] = {}
     symlinks: list[Path] = []
-    dirs: dict[Path, StatusCode] = {}
-    files: dict[Path, StatusCode] = {}
+    dirs: dict[Path, NodeData] = {}
+    files: dict[Path, NodeData] = {}
 
     if not isinstance(result, str):
         for path in result:
             try:
+                if path in store.cm_paths.man_path_set:
+                    continue
                 if path.is_symlink():
                     symlinks.append(path)
                 elif path.is_dir():
                     if is_unwanted_dir(path):
-                        dirs[path] = StatusCode.XX
+                        dirs[path] = NodeData(
+                            main_label=LabelStr.unwanted_dir,
+                            path=path,
+                            status=StatusCode.XX,
+                        )
                     else:
-                        dirs[path] = StatusCode.UU
+                        dirs[path] = NodeData(
+                            main_label=LabelStr.unmanaged_dir,
+                            path=path,
+                            status=StatusCode.UU,
+                        )
                 elif path.is_file():
                     if is_unwanted_file(path):
-                        files[path] = StatusCode.XX
+                        files[path] = NodeData(
+                            main_label=LabelStr.unwanted_file,
+                            path=path,
+                            status=StatusCode.XX,
+                        )
                     else:
-                        files[path] = StatusCode.UU
+                        files[path] = NodeData(
+                            main_label=LabelStr.unmanaged_file,
+                            path=path,
+                            status=StatusCode.UU,
+                        )
             except (FileNotFoundError, PermissionError, OSError) as exception:
                 exceptions[path] = str(exception)
 

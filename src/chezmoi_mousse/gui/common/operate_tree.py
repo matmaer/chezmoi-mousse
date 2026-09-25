@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.widgets import Tree
 
 from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse.named_tuples import NodeData
 from chezmoi_mousse.str_enums import (
     ColorVar,
-    LabelStr,
     StatusCode as Sc,
     Tcss,
     TreeName,
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from textual import getters
     from textual.widgets.tree import TreeNode
 
@@ -23,67 +24,51 @@ if TYPE_CHECKING:
     from chezmoi_mousse.named_tuples import IterDirResult
 
 
-type NodeMap = dict[Path, TreeNode[Path]]
-
-
 __all__ = ["OperateTree"]
 
 
-class OperateTree(Tree[Path]):
+class OperateTree(Tree[NodeData]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(
-        self,
-        tree_name: TreeName,
-        *,
-        tree_id: str,
-        dirs: dict[Path, Sc],
-        files: dict[Path, Sc],
-    ) -> None:
-        self.tree_name = tree_name
-        self.node_map: NodeMap = {}
-        self.dir_nodes: dict[Path, Sc] = dirs
-        self.file_nodes: dict[Path, Sc] = files
+    def __init__(self, tree_name: TreeName, tree_id: str) -> None:
         super().__init__(
             id=tree_id,
             label="root",
+            name=tree_name.value,
             classes=Tcss.managed_tree,
         )
 
     def on_mount(self) -> None:
+        self.dir_node_map: dict[Path, TreeNode[NodeData]] = {}
         self.scanned_dirs: set[Path] = set()
         self.loading = True
         self.display = False
-        self.root.data = store.cfg.dest_dir
         self.guide_depth = 3
         self.show_root = False
-        self.is_managed_xpd_tree = self.tree_name in (
-            TreeName.managed_only_sp_xpd,
-            TreeName.managed_all_mp_xpd,
-        )
-        self.is_un_man_xpd_tree = self.tree_name in (
-            TreeName.un_man_plus_sp_xpd,
-            TreeName.un_man_plus_amp_xpd,
-        )
-        self.is_un_wanted_xpd_tree = self.tree_name in (
-            TreeName.un_wanted_plus_sp_xpd,
-            TreeName.un_wanted_plus_amp_xpd,
-        )
-        self.is_managed_tree = self.is_managed_xpd_tree or self.tree_name in (
-            TreeName.managed_only_sp,
-            TreeName.managed_all_mp,
-        )
-        self.is_un_man_tree = self.is_un_man_xpd_tree or self.tree_name in (
-            TreeName.un_man_plus_sp,
-            TreeName.un_man_plus_amp,
-        )
-        self.is_un_wanted_tree = self.is_un_wanted_xpd_tree or self.tree_name in (
-            TreeName.un_wanted_plus_sp,
-            TreeName.un_wanted_plus_amp,
-        )
+        self.initial_tree_population()
 
-        self.initial_tree_population(self.dir_nodes, self.file_nodes)
+    def _get_tree_nodes(self, node_data: dict[Path, NodeData]) -> dict[Path, NodeData]:
+        if self.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
+            return {
+                path: node_data
+                for path, node_data in node_data.items()
+                if node_data.status not in (Sc.SS, Sc.UU, Sc.XX)
+            }
+        if self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+            return {
+                path: node_data
+                for path, node_data in node_data.items()
+                if node_data.status not in (Sc.UU, Sc.XX)
+            }
+        if self.name in (TreeName.un_man_plus_sp, TreeName.un_man_plus_sp_xpd):
+            return {
+                path: node_data
+                for path, node_data in node_data.items()
+                if node_data.status is not Sc.XX
+            }
+        else:
+            return node_data
 
     def _color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = status.dir_color if directory else status.file_color
@@ -91,62 +76,83 @@ class OperateTree(Tree[Path]):
         color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
         return f"[{color}{italic}]{path.name}[/]"
 
-    def _add_node_with_color(
-        self, path: Path, status: Sc, *, allow_expand: bool
+    async def _add_node_with_color(
+        self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
-        parent_node = self.node_map.get(path.parent, self.root)
-        label = self._color_label(path, status, allow_expand)
-        new_node = parent_node.add(label=label, data=path, allow_expand=allow_expand)
-        self.node_map[path] = new_node
+        if path.parent == store.cfg.dest_dir:
+            parent_node = self.root
+        else:
+            parent_node = self.dir_node_map[path.parent]
+        label = self._color_label(path, node_data.status, allow_expand)
+        new_node = parent_node.add(
+            label=label,
+            data=node_data,
+            allow_expand=allow_expand,
+        )
+        if allow_expand:
+            self.dir_node_map[path] = new_node
 
-    @work
-    async def initial_tree_population(
-        self, dirs: dict[Path, Sc], files: dict[Path, Sc]
-    ) -> None:
-        for path, status in dirs.items():
-            self._add_node_with_color(path, status, allow_expand=True)
-        for path, status in files.items():
-            self._add_node_with_color(path, status, allow_expand=False)
-
-        if self.is_managed_xpd_tree:
+    def expand_xpd_nodes(self) -> None:
+        if self.name in (
+            TreeName.managed_only_sp_xpd,
+            TreeName.managed_all_mp_xpd,
+        ):
             self.root.expand_all()
-        elif self.is_un_man_xpd_tree or self.is_un_wanted_xpd_tree:
-            for path, node in self.node_map.items():
+        elif self.name in (
+            TreeName.un_man_plus_sp_xpd,
+            TreeName.un_man_plus_amp_xpd,
+            TreeName.un_wanted_plus_sp_xpd,
+            TreeName.un_wanted_plus_amp_xpd,
+        ):
+            for path, node in self.dir_node_map.items():
                 if path in store.cm_paths.man_dir_set:
                     node.expand()
 
-        if self.tree_name == TreeName.managed_only_sp:
+    @work
+    async def initial_tree_population(self) -> None:
+        dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
+        file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
+        for path, node_data in dir_nodes.items():
+            await self._add_node_with_color(path, node_data, allow_expand=True)
+        for path, node_data in file_nodes.items():
+            await self._add_node_with_color(path, node_data, allow_expand=False)
+        self.expand_xpd_nodes()
+        if self.name == TreeName.managed_only_sp:
             self.select_node(self.root)
             self.unselect()  # otherwise it looks like the first node is selected
             self.display = True
         self.loading = False
 
     @work
-    async def add_unmanaged_dir_children(self, node: TreeNode[Path]) -> None:
-        assert isinstance(node.data, Path)
-        scan_dir_result: IterDirResult = path_funcs.get_dir_children(node.data)
-        self.scanned_dirs.add(node.data)
+    async def add_unmanaged_dir_children(self, node_data: NodeData) -> None:
+        scan_dir_result: IterDirResult = path_funcs.get_unmanaged_children(
+            node_data.path
+        )
+        self.scanned_dirs.add(node_data.path)
         for path, status in scan_dir_result.dirs.items():
-            if status == Sc.UU:
-                store.cm_paths.path_labels[path] = LabelStr.unmanaged_dir
-            elif status == Sc.XX and self.is_un_wanted_tree:
-                store.cm_paths.path_labels[path] = LabelStr.unwanted_dir
-            self._add_node_with_color(path, status, allow_expand=True)
+            await self._add_node_with_color(path, status, allow_expand=True)
         for path, status in scan_dir_result.files.items():
-            if status == Sc.UU:
-                store.cm_paths.path_labels[path] = LabelStr.unmanaged_file
-            elif status == Sc.XX and self.is_un_wanted_tree:
-                store.cm_paths.path_labels[path] = LabelStr.unwanted_file
-            self._add_node_with_color(path, status, allow_expand=False)
+            await self._add_node_with_color(path, status, allow_expand=False)
 
     @on(Tree.NodeExpanded)
-    def populate_unmanaged_dir(self, event: Tree.NodeExpanded[Path]) -> None:
+    def populate_unmanaged_dir(self, event: Tree.NodeExpanded[NodeData]) -> None:
+        # dest dir node data is none
+        if event.node.data is None:
+            return
         if (
-            event.node.data == store.cfg.dest_dir
-            or event.node.data in store.cm_paths.status_dir_set
-            or event.node.data in store.cm_paths.man_dir_set
-            or event.node.data in self.scanned_dirs
+            # immediately skip for managed trees
+            self.name
+            in (
+                TreeName.managed_only_sp,
+                TreeName.managed_only_sp_xpd,
+                TreeName.managed_all_mp,
+                TreeName.managed_all_mp_xpd,
+            )
+            # for path.parent below, we have it from the 'chezmoi unmanaged' output
+            or event.node.data.path.parent
+            in (store.cm_paths.man_dir_set, store.cfg.dest_dir)
+            # skip if the directory has already been scanned
+            or event.node.data.path in self.scanned_dirs
         ):
             return
-        if self.is_un_man_tree or self.is_un_wanted_tree:
-            self.add_unmanaged_dir_children(event.node)
+        self.add_unmanaged_dir_children(event.node.data)
