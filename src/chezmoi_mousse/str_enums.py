@@ -9,6 +9,7 @@ __all__ = [
     "Chars",
     "ColorVar",
     "ContainerName",
+    "DirContentTitles",
     "GlobalArgs",
     "LabelStr",
     "LogStr",
@@ -158,6 +159,17 @@ class ContainerName(StrEnum):
     @property
     def container_id(self) -> str:
         return f"{self}_id"
+
+
+class DirContentTitles(StrEnum):
+    status_dirs = "Managed Directories (with status)"
+    status_files = "Managed Files (with status)"
+    managed_dirs = "Managed Directories (no status)"
+    managed_files = "Managed Files (no status)"
+    un_managed_dirs = "Directories (not managed)"
+    un_managed_files = "Files (not managed)"
+    un_wanted_dirs = "Directories (not managed, matches unwanted)"
+    un_wanted_files = "Files (not managed, matches unwanted)"
 
 
 class LabelStr(StrEnum):

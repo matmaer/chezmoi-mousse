@@ -23,7 +23,6 @@ from chezmoi_mousse.str_enums import LabelStr, Tcss
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
-    from textual.message import Message
 
     from chezmoi_mousse.app_ids import AppIds
     from chezmoi_mousse.str_enums import BtnLabel
@@ -40,37 +39,11 @@ __all__ = [
 ]
 
 
-class _BaseAppButton(Button):
-    def __init__(
-        self,
-        *,
-        app_ids: AppIds,
-        btn_label: BtnLabel,
-        classes: str | None = None,
-        flat: bool = False,
-    ) -> None:
+class FlatBtn(Button):
+    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
         self.app_ids = app_ids
         self.btn_label = btn_label
         super().__init__(
-            label=self.btn_label,
-            id=self.app_ids.btn_id(btn_label=self.btn_label),
-            classes=classes,
-            flat=flat,
-        )
-
-    def send_message(self, event: Button.Pressed) -> Message: ...
-
-    @on(Button.Pressed)
-    def _handle_press(self, event: Button.Pressed) -> None:
-        event.stop()
-        self.post_message(self.send_message(event))
-
-
-class FlatBtn(_BaseAppButton):
-    def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        super().__init__(
-            app_ids=app_ids,
-            btn_label=btn_label,
             classes=Tcss.flat_button,
             flat=True,
         )
@@ -81,13 +54,11 @@ class FlatBtn(_BaseAppButton):
         )
 
 
-class OperateBtn(_BaseAppButton):
+class OperateBtn(Button):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        super().__init__(
-            app_ids=app_ids,
-            btn_label=btn_label,
-            classes=Tcss.operate_button,
-        )
+        self.app_ids = app_ids
+        self.btn_label = btn_label
+        super().__init__(classes=Tcss.operate_button)
 
     def send_message(self, event: Button.Pressed) -> OperateBtnMsg:
         return OperateBtnMsg(
@@ -95,13 +66,11 @@ class OperateBtn(_BaseAppButton):
         )
 
 
-class TabBtn(_BaseAppButton):
+class TabBtn(Button):
     def __init__(self, *, app_ids: AppIds, btn_label: BtnLabel) -> None:
-        super().__init__(
-            app_ids=app_ids,
-            btn_label=btn_label,
-            classes=Tcss.tab_button,
-        )
+        self.app_ids = app_ids
+        self.btn_label = btn_label
+        super().__init__(classes=Tcss.tab_button)
 
     def send_message(self, event: Button.Pressed) -> TabBtnMsg:
         return TabBtnMsg(
