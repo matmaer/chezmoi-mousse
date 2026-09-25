@@ -11,7 +11,7 @@ __all__ = [
     "CommandResult",
     "DumpConfigKeys",
     "InitData",
-    "ScanDirResult",
+    "IterDirResult",
 ]
 
 
@@ -68,14 +68,14 @@ class DumpConfigKeys(NamedTuple):
 
 
 class InitData(NamedTuple):
+    pilot_mode: bool = False
     which_chezmoi: str | None = None
     which_git: str | None = None
-    pilot_mode: bool = False
 
 
-class ScanDirResult(NamedTuple):
+class IterDirResult(NamedTuple):
     # status codes will be either Sc.UU (unmanaged) or Sc.XX (unwanted)
-    errors: list[str]
+    error: str
     exceptions: dict[Path, str]
     symlinks: list[Path]
     dirs: dict[Path, StatusCode]
