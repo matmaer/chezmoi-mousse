@@ -24,7 +24,7 @@ class DoctorTable(DataTable[Text]):
     def on_mount(self) -> None:
         self.row_color = {
             "ok": self.app.theme_variables[ColorVar.text_success],
-            "info": self.app.theme_variables[ColorVar.info],
+            "info": self.app.theme_variables[ColorVar.foreground_darken_2],
             "warning": self.app.theme_variables[ColorVar.text_warning],
             "failed": self.app.theme_variables[ColorVar.text_error],
             "error": self.app.theme_variables[ColorVar.text_error],

@@ -43,6 +43,8 @@ class _ContainerIds:
         self.cat_config_q: str = f"#{self.cat_config}"
         self.cmd_log: str = ids.container_id(name=ContainerName.cmd_log)
         self.cmd_log_q: str = f"#{self.cmd_log}"
+        self.color_vars: str = ids.container_id(name=ContainerName.color_vars)
+        self.color_vars_q: str = f"#{self.color_vars}"
         self.dump_config: str = ids.container_id(name=ContainerName.contents)
         self.dump_config_q: str = f"#{self.dump_config}"
         self.contents: str = ids.container_id(name=ContainerName.contents)

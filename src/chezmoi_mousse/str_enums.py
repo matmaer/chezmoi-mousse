@@ -48,6 +48,7 @@ class BtnLabel(StrEnum):
     config = "Config"
     debug = "Debug"
     logs = "Logs"
+    colors = "Colors"
 
     # Gen 2 main tabs
     operate = "Operate"
@@ -112,30 +113,35 @@ class Chars(StrEnum):
 
 
 class ColorVar(StrEnum):
-    bogus = "#FFFF00"
-
-    dimmed = "foreground-darken-3"
-    accent_darken_2 = "accent-darken-2"
-    accent_darken_3 = "accent-darken-3"
-    info = "foreground-darken-1"
-    text_block = "foreground-darken-1"
+    text = "text"
+    foreground_darken_2 = "foreground-darken-2"
+    foreground_darken_3 = "foreground-darken-3"
+    secondary = "secondary"
 
     accent = "accent"
-    error = "error"
-    secondary = "secondary"
-    success = "success"
-    warning = "warning"
-
     text_accent = "text-accent"
+    accent_darken_3 = "accent-darken-3"
+
+    error = "error"
     text_error = "text-error"
+    error_darken_3 = "error-darken-3"
+
+    primary = "primary"
     text_primary = "text-primary"
-    text_secondary = "text-secondary"
+    primary_darken_3 = "primary-darken-3"
+
+    success = "success"
     text_success = "text-success"
+    success_darken_3 = "success-darken-3"
+
+    warning = "warning"
     text_warning = "text-warning"
+    warning_darken_3 = "warning-darken-3"
 
 
 class ContainerName(StrEnum):
     cat_config = auto()
+    color_vars = auto()
     contents = auto()
     cmd_log = auto()
     debug_log = auto()
@@ -186,6 +192,7 @@ class LabelStr(StrEnum):
     debug_log = "Debug Log"
     dom_nodes = "DOM Nodes"
     env_vars = "Environment Variables"
+    colors = "Colors from ColorVar StrEnum class"
 
     # Operate tab MainSectionLabel text
     dest_dir = "Destination Directory"
@@ -479,8 +486,37 @@ class StatusCode(StrEnum):
     def _get_dir_color_var(cls, status_code: Self) -> ColorVar:
         mapping: dict[str, ColorVar] = {
             # D combos
+            cls.DA: ColorVar.error_darken_3,
+            cls.DD: ColorVar.error,  # probably impossible status pair
+            cls.DM: ColorVar.error_darken_3,
+            cls.DS: ColorVar.error_darken_3,
+            # M combos
+            cls.MA: ColorVar.success,
+            cls.MD: ColorVar.error,
+            cls.MM: ColorVar.warning,
+            cls.MS: ColorVar.warning_darken_3,
+            # S combos
+            cls.SA: ColorVar.success_darken_3,
+            cls.SD: ColorVar.error,
+            cls.SM: ColorVar.warning,
+            # Meta codes
+            cls.SS: ColorVar.foreground_darken_3,
+            cls.UU: ColorVar.accent,
+            cls.XX: ColorVar.accent_darken_3,
+            # Meta codes dirs only
+            cls.TT: ColorVar.primary,
+            cls.YY: ColorVar.secondary,
+            cls.ZZ: ColorVar.accent,
+        }
+        return mapping[status_code]
+
+    @classmethod
+    @cache
+    def _get_file_color_var(cls, status_code: Self) -> ColorVar:
+        mapping: dict[str, ColorVar] = {
+            # D combos
             cls.DA: ColorVar.text_error,
-            cls.DD: ColorVar.bogus,  # probably impossible status pair
+            cls.DD: ColorVar.text_error,  # probably impossible status pair
             cls.DM: ColorVar.text_error,
             cls.DS: ColorVar.text_error,
             # M combos
@@ -493,37 +529,9 @@ class StatusCode(StrEnum):
             cls.SD: ColorVar.text_error,
             cls.SM: ColorVar.text_warning,
             # Meta codes
-            cls.SS: ColorVar.secondary,
-            cls.TT: ColorVar.text_primary,
+            cls.SS: ColorVar.foreground_darken_2,
             cls.UU: ColorVar.text_accent,
-            cls.XX: ColorVar.accent_darken_2,
-            cls.YY: ColorVar.text_accent,
-            cls.ZZ: ColorVar.accent_darken_2,
-        }
-        return mapping[status_code]
-
-    @classmethod
-    @cache
-    def _get_file_color_var(cls, status_code: Self) -> ColorVar:
-        mapping: dict[str, ColorVar] = {
-            # D combos
-            cls.DA: ColorVar.error,
-            cls.DD: ColorVar.bogus,  # probably impossible status pair
-            cls.DM: ColorVar.error,
-            cls.DS: ColorVar.error,
-            # M combos
-            cls.MA: ColorVar.success,
-            cls.MD: ColorVar.error,
-            cls.MM: ColorVar.warning,
-            cls.MS: ColorVar.warning,
-            # S combos
-            cls.SA: ColorVar.success,
-            cls.SD: ColorVar.error,
-            cls.SM: ColorVar.warning,
-            # Meta codes
-            cls.SS: ColorVar.dimmed,
-            cls.UU: ColorVar.accent,
-            cls.XX: ColorVar.accent_darken_3,
+            cls.XX: ColorVar.accent,
         }
         return mapping[status_code]
 

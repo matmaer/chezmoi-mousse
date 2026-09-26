@@ -286,10 +286,14 @@ class TestPaths:
             msg = f"[${ColorVar.text_warning}]No test paths were created because they "
             "already exist.[/]"
             return [msg] + [
-                f"[${ColorVar.dimmed}]{p}[/]" for p in sorted(existing_after)
+                f"[${ColorVar.foreground_darken_3}]{p}[/]"
+                for p in sorted(existing_after)
             ]
 
-        return [f"[${ColorVar.info} bold]Created paths:[/]", *sorted(created)]
+        return [
+            f"[${ColorVar.foreground_darken_2} bold]Created paths:[/]",
+            *sorted(created),
+        ]
 
     def remove_test_paths(self) -> list[str]:
         existing_paths = self.get_existing_test_paths()
@@ -309,7 +313,10 @@ class TestPaths:
             if p.exists() and p.parent == HOME_PATH and p.is_file():
                 p.unlink()
 
-        return [f"[${ColorVar.info} bold]Removed paths:[/]", *removed_entries]
+        return [
+            f"[${ColorVar.foreground_darken_2} bold]Removed paths:[/]",
+            *removed_entries,
+        ]
 
     def create_diffs(self) -> str:
         if not self.get_existing_test_paths():
@@ -368,6 +375,7 @@ class TestPaths:
             nested_dirs_1.mkdir(parents=True)
             modified.add(f"[${ColorVar.text_success}]{nested_dirs_1}[/]")
 
-        return f"[${ColorVar.info} bold]Modified paths:[/]\n" + "\n".join(
-            sorted(modified)
+        return (
+            f"[${ColorVar.foreground_darken_2} bold]Modified paths:[/]\n"
+            + "\n".join(sorted(modified))
         )

@@ -54,13 +54,13 @@ class RichLoggers(RichLog):
         self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode})", color))
 
     def write_dimmed(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.dimmed))
+        self.write(self._get_log_line(message, ColorVar.foreground_darken_3))
 
     def write_error(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.text_error))
 
     def write_ready(self, message: str) -> None:
-        self.write(self._get_log_line(f"--- {message} ---", ColorVar.accent_darken_2))
+        self.write(self._get_log_line(f"--- {message} ---", ColorVar.accent_darken_3))
 
     def write_success(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.text_success))

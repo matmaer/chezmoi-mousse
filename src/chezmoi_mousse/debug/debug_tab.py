@@ -62,7 +62,7 @@ class DebugLog(RichLoggers):
             self.write_error(LogStr.not_tracing)
 
     def write_text_block(self, message: str) -> None:
-        color = self.app.theme_variables[ColorVar.text_block.value]
+        color = self.app.theme_variables[ColorVar.foreground_darken_2]
         escaped_lines = [
             f"[{color}]{escape(line)}[/]"
             for line in message.splitlines()
@@ -71,7 +71,7 @@ class DebugLog(RichLoggers):
         self.write("  \n".join(escaped_lines))
 
     def write_info(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.info))
+        self.write(self._get_log_line(message, ColorVar.foreground_darken_2))
 
     def write_inspect(self, some_object: object) -> None:
         inspector = Inspect(some_object, all=False, methods=True, private=True)
@@ -152,6 +152,8 @@ class DebugTab(TabPane):
 
     class TestPathsView(Static): ...
 
+    class ColorVarStatic(Static): ...
+
     MiB = 1024 * 1024
     INTERVAL = 2
 
@@ -172,6 +174,7 @@ class DebugTab(TabPane):
                     BtnLabel.debug_log,
                     BtnLabel.dom_nodes,
                     BtnLabel.env_vars,
+                    BtnLabel.colors,
                 ),
             )
             with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
@@ -202,6 +205,11 @@ class DebugTab(TabPane):
                         auto_scroll=False,
                     ),
                     id=store.debug_ids.container.env_vars,
+                )
+                yield Vertical(
+                    MainSectionLabel(LabelStr.colors),
+                    DebugTab.ColorVarStatic(LabelStr.not_set, markup=True),
+                    id=store.debug_ids.container.color_vars,
                 )
         yield OperateBtnGroup(
             app_ids=store.debug_ids,
@@ -252,6 +260,15 @@ class DebugTab(TabPane):
         self._log_env_vars()
         self.app.call_later(self._log_dom_nodes)
         self.set_interval(self.INTERVAL, lambda: self._write_to_debug_log(auto=True))
+        self._log_colors()
+
+    def _log_colors(self) -> None:
+        self.color_var_static = self.query_exactly_one(DebugTab.ColorVarStatic)
+        to_write: list[str] = []
+        for color_var in ColorVar:
+            color = self.app.theme_variables[color_var.value]
+            to_write.append(f"[{color}]{color_var.name}:{color_var.value}[/]")
+        self.color_var_static.update("\n".join(to_write))
 
     def _list_existing_test_paths(self) -> None:
         path_lines = "\n".join(
@@ -279,9 +296,9 @@ class DebugTab(TabPane):
         elif pc2_decrease:
             color = "green bold"
         elif not pc2_change:
-            color = ColorVar.text_secondary
+            color = ColorVar.secondary
         else:
-            color = ColorVar.bogus
+            color = ColorVar.text_error
 
         rss_str = f"{rss:5.2f} MiB current heap"
         vms_str = f"{vms:5.2f} MiB peak"
@@ -346,6 +363,8 @@ class DebugTab(TabPane):
             self.switcher.current = store.debug_ids.container.dom_nodes
         elif event.button.label == BtnLabel.env_vars:
             self.switcher.current = store.debug_ids.container.env_vars
+        elif event.button.label == BtnLabel.colors:
+            self.switcher.current = store.debug_ids.container.color_vars
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:

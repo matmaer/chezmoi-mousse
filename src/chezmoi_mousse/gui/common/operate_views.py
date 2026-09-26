@@ -266,7 +266,7 @@ class GitLogView(Vertical):
             elif column_two.split(maxsplit=1)[0] == "Remove":
                 stylize(columns, ColorVar.text_error)
             elif column_two == no_commit_message:
-                stylize(columns, ColorVar.text_secondary)
+                stylize(columns, ColorVar.secondary)
             else:
                 stylize(columns, ColorVar.text_primary)
 

@@ -8,7 +8,6 @@ from textual.widgets import Tree
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.named_tuples import NodeData
 from chezmoi_mousse.str_enums import (
-    ColorVar,
     StatusCode as Sc,
     Tcss,
     TreeName,
@@ -103,7 +102,7 @@ class OperateTree(Tree[NodeData]):
     def _color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = status.dir_color if directory else status.file_color
         italic = " italic" if path in store.cm_paths.missing_managed else ""
-        color = self.app.theme_variables.get(color_var, ColorVar.bogus.value)
+        color = self.app.theme_variables[color_var]
         return f"[{color}{italic}]{path.name}[/]"
 
     async def _add_node_with_color(

@@ -103,7 +103,7 @@ class SplashScreen(Screen[None]):
             LogStr.checked: self.app.theme_variables[ColorVar.warning],
             LogStr.decoded: self.app.theme_variables[ColorVar.success],
             LogStr.missing: self.app.theme_variables[ColorVar.error],
-            LogStr.present: self.app.theme_variables[ColorVar.info],
+            LogStr.present: self.app.theme_variables[ColorVar.foreground_darken_2],
             LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_3],
             LogStr.success: self.app.theme_variables[ColorVar.text_primary],
             LogStr.trigger: self.app.theme_variables[ColorVar.text_accent],
