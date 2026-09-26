@@ -90,8 +90,7 @@ async def _exec_chezmoi(
     if app.init_phase is False:
         setattr(app.app_log, ReactiveVar.cmd_result, command_result)
         setattr(app.cmd_log, ReactiveVar.cmd_result, command_result)
-    is_queued = app.post_message(CommandResultMsg(command_result))
-    assert is_queued, "Failed to queue CommandResultMsg"
+    app.post_message(CommandResultMsg(command_result))
     return command_result
 
 
