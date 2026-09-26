@@ -40,6 +40,7 @@ class OperateTree(Tree[NodeData]):
 
     def on_mount(self) -> None:
         self.node_map: dict[Path, TreeNode[NodeData]] = {}
+        self.iterated_dirs: set[Path] = set()
         self.loading = True
         self.display = False
         self.guide_depth = 3
@@ -110,9 +111,8 @@ class OperateTree(Tree[NodeData]):
             parent_node = self.root
         else:
             parent_node = self.node_map[path.parent]
-        label = self._color_label(path, node_data.status)
         new_node = parent_node.add(
-            label=label,
+            label=self._color_label(path, node_data.status),
             data=node_data,
             allow_expand=allow_expand,
         )
@@ -148,30 +148,22 @@ class OperateTree(Tree[NodeData]):
 
     @work
     async def add_unmanaged_dir_children(self, dir_node_data: NodeData) -> None:
-        scan_dir_result: IterDirResult = path_funcs.get_unmanaged_children(
+        iter_dir_result: IterDirResult = path_funcs.get_unmanaged_children(
             dir_node_data.path
         )
-        for path, node_data in scan_dir_result.dirs.items():
+        self.iterated_dirs.add(dir_node_data.path)
+        for path, node_data in iter_dir_result.dirs.items():
             await self._add_node_with_color(path, node_data, allow_expand=True)
-        for path, node_data in scan_dir_result.files.items():
+        for path, node_data in iter_dir_result.files.items():
             await self._add_node_with_color(path, node_data, allow_expand=False)
 
     @on(Tree.NodeExpanded)
     def populate_unmanaged_dir(self, event: Tree.NodeExpanded[NodeData]) -> None:
         # dest dir node data is none
-        if event.node.data is None:
-            return
         if (
-            # immediately skip for managed trees
-            self.name
-            in (
-                TreeName.managed_only_sp,
-                TreeName.managed_only_sp_xpd,
-                TreeName.managed_all_mp,
-                TreeName.managed_all_mp_xpd,
-            )
-            # skip if the directory has already been scanned
-            or event.node.data.path in self.node_map
+            event.node.data is None
+            or event.node.data.path in store.cm_paths.man_dir_set
+            or event.node.data.path in self.iterated_dirs
         ):
             return
         self.add_unmanaged_dir_children(event.node.data)

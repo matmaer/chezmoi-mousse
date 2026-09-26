@@ -8,7 +8,7 @@ from chezmoi_mousse.named_tuples import IterDirResult, NodeData
 from chezmoi_mousse.str_enums import LabelStr, PathFilters, StatusCode
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator
+    from collections.abc import Generator, Iterable
     from pathlib import Path
 
 
@@ -23,9 +23,7 @@ def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
-def get_nested_in(
-    *, dir_path: Path, check_paths: set[Path] | frozenset[Path]
-) -> list[Path]:
+def get_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> list[Path]:
     nested_in = [
         path
         for path in check_paths
@@ -34,7 +32,7 @@ def get_nested_in(
     return sort_paths(nested_in)
 
 
-def any_nested_in(*, dir_path: Path, check_paths: set[Path] | frozenset[Path]) -> bool:
+def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
     return any(
         path != dir_path and path.is_relative_to(dir_path) for path in check_paths
     )
@@ -155,10 +153,10 @@ def is_unwanted_dir(dir_path: Path) -> bool:
     )
 
 
-def _get_dir_path_iterable(dir_path: Path) -> Iterator[Path] | str:
-    child_paths: Iterator[Path] | None = None
+def _get_dir_path_iterable(dir_path: Path) -> Generator[Path] | str:
+    generator: Generator[Path] | None = None
+    error_info: str | None = None
     try:
-        error_info: str = ""
         if not dir_path.is_absolute():
             error_info = "Error, did not receive an absolute path"
         elif store.cfg.dest_dir not in dir_path.parents:
@@ -171,17 +169,19 @@ def _get_dir_path_iterable(dir_path: Path) -> Iterator[Path] | str:
         elif dir_path.is_file():
             error_info = f"Error, the provided path is a file: {dir_path}"
         else:
-            child_paths = dir_path.iterdir()
-            entry_count = len(tuple(child_paths))
-            if entry_count > 500:
-                error_info = f"The directory has too many children: {entry_count}"
+            generator = dir_path.iterdir()
     except (FileNotFoundError, PermissionError, OSError) as error:
         error_info = str(error)
-    return error_info if child_paths is None else child_paths
+    if error_info is not None:
+        return error_info
+    elif generator is not None:
+        return generator
+    else:
+        return f"Unknown error occurred in _get_dir_path_iterable for {dir_path}"
 
 
 def get_unmanaged_children(dir_path: Path) -> IterDirResult:
-    result: Iterable[Path] | str = _get_dir_path_iterable(dir_path)
+    result: Generator[Path] | str = _get_dir_path_iterable(dir_path)
     exceptions: dict[Path, str] = {}
     symlinks: list[Path] = []
     dirs: dict[Path, NodeData] = {}
@@ -190,8 +190,6 @@ def get_unmanaged_children(dir_path: Path) -> IterDirResult:
     if not isinstance(result, str):
         for path in result:
             try:
-                if path in store.cm_paths.man_path_set:
-                    continue
                 if path.is_symlink():
                     symlinks.append(path)
                 elif path.is_dir():
