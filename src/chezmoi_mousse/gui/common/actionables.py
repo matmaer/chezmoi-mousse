@@ -87,15 +87,15 @@ class SwitchGroup(VerticalGroup):
         # Un-managed trees (show_unchanged is True)
         (False, True, True, False): store.op_ids.tree.un_man_plus_amp_q,
         (True, True, True, False): store.op_ids.tree.un_man_plus_amp_xpd_q,
-        # Unwanted trees when show_unmanaged is False
-        (False, False, False, True): store.op_ids.tree.un_wanted_plus_sp_q,
-        (False, True, False, True): store.op_ids.tree.un_wanted_plus_amp_q,
-        (True, False, False, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,
-        (True, True, False, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
-        # Unwanted trees when show_unmanaged is True
+        # Unwanted trees when show_unchanged is False (show_unmanaged switch disabled)
         (False, False, True, True): store.op_ids.tree.un_wanted_plus_sp_q,
-        (False, True, True, True): store.op_ids.tree.un_wanted_plus_amp_q,
         (True, False, True, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,
+        (False, False, False, True): store.op_ids.tree.un_wanted_plus_sp_q,
+        (True, False, False, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,
+        # Unwanted trees when show_unchanged is True (show_unmanaged switch disabled)
+        (False, True, False, True): store.op_ids.tree.un_wanted_plus_amp_q,
+        (True, True, False, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
+        (False, True, True, True): store.op_ids.tree.un_wanted_plus_amp_q,
         (True, True, True, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
     }
 

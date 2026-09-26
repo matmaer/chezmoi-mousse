@@ -188,20 +188,26 @@ class LabelStr(StrEnum):
     env_vars = "Environment Variables"
 
     # Operate tab MainSectionLabel text
-    _has_no_status = "has no status"
-    _has_status = "has a status"
-    _nested_sp = "nested status paths"
-    clean_space_dir = f"Managed Directory ({_has_no_status} and no {_nested_sp})"
-    clean_status_dir = f"Managed Directory ({_has_status} without {_nested_sp})"
     dest_dir = "Destination Directory"
-    dirty_space_dir = f"Managed Directory ({_has_no_status} but has {_nested_sp})"
-    dirty_status_dir = f"Managed Directory ({_has_status} and has {_nested_sp})"
-    space_file = f"Managed File ({_has_no_status})"
-    status_file = f"Managed File ({_has_status})"
     unmanaged_dir = "Unmanaged Directory"
     unmanaged_file = "Unmanaged File"
     unwanted_dir = f"{unmanaged_dir} (probably unwanted)"
     unwanted_file = f"{unmanaged_file} (probably unwanted)"
+
+    _has_no_status = "has no status"
+    _has_status = "has a status"
+    _nested_sp = "nested status paths"
+
+    status_dir = f"Managed Directory ({_has_status})"  # no children!
+    clean_status_dir = f"Managed Directory ({_has_status} without {_nested_sp})"
+    dirty_status_dir = f"Managed Directory ({_has_status} and has {_nested_sp})"
+
+    space_dir = f"Managed Directory ({_has_no_status})"  # no children!
+    clean_space_dir = f"Managed Directory ({_has_no_status} and no {_nested_sp})"
+    dirty_space_dir = f"Managed Directory ({_has_no_status} but has {_nested_sp})"
+
+    space_file = f"Managed File ({_has_no_status})"
+    status_file = f"Managed File ({_has_status})"
 
     # Operate tab FlatSectionLabel
     chezmoi_cat_output = "Chezmoi Cat output"

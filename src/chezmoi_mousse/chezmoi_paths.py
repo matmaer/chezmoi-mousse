@@ -36,8 +36,15 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
-        self._update_file_node_data_dict(self._status_files_pcr)
-        self._update_dir_node_data_dict(self._status_dirs_pcr)
+        self._update_file_node_data(
+            self._status_files_pcr, self.man_file_set, self._un_man_file_set
+        )
+        self._update_dir_node_data(
+            self._status_dirs_pcr,
+            self.man_dir_set,
+            self.status_path_set,
+            self._un_man_dir_set,
+        )
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self.update_button_sets(self.dir_node_data | self.file_node_data)
@@ -54,15 +61,20 @@ class ChezmoiTreePaths:
             status=status,
         )
 
-    def _update_file_node_data_dict(self, status_files_pcr: dict[Path, Sc]) -> None:
+    def _update_file_node_data(
+        self,
+        status_files_pcr: dict[Path, Sc],
+        man_file_set: frozenset[Path],
+        un_man_file_set: frozenset[Path],
+    ) -> None:
         for path, status in status_files_pcr.items():
             self._add_file_node_dict_key(LabelStr.status_file, path, status)
 
-        man_space_files = self.man_file_set - self.status_file_set
+        man_space_files = man_file_set - self.status_file_set
         for path in man_space_files:
             self._add_file_node_dict_key(LabelStr.space_file, path, Sc.SS)
 
-        for path in self._un_man_file_set:
+        for path in un_man_file_set:
             if path_funcs.is_unwanted_file(path):
                 self._add_file_node_dict_key(LabelStr.unwanted_file, path, Sc.XX)
             else:
@@ -80,24 +92,34 @@ class ChezmoiTreePaths:
             status=status,
         )
 
-    def _update_dir_node_data_dict(self, status_dirs_pcr: dict[Path, Sc]) -> None:
-        dirs_with_nested_sp = {
+    def _update_dir_node_data(
+        self,
+        status_dirs_pcr: dict[Path, Sc],
+        man_dir_set: frozenset[Path],
+        status_paths: frozenset[Path],
+        un_man_dir_set: frozenset[Path],
+    ) -> None:
+        all_dirs_with_nested_sp: set[Path] = {
             path
-            for path in self.man_dir_set
-            if path_funcs.any_nested_in(dir_path=path, check_paths=self.status_path_set)
+            for path in man_dir_set
+            if path_funcs.any_nested_in(dir_path=path, check_paths=status_paths)
         }
-        clean_status_dirs = self.status_dir_set - dirs_with_nested_sp
-        dirty_status_dirs = self.status_dir_set & dirs_with_nested_sp
+        status_dirs_with_nested_sp = status_dirs_pcr.keys() & all_dirs_with_nested_sp
+        dirty_status_dirs = status_dirs_pcr.keys() & status_dirs_with_nested_sp
+        clean_status_dirs = status_dirs_pcr.keys() - dirty_status_dirs
 
+        # we keep the path and real status, but just the label is different
         for path, status in status_dirs_pcr.items():
             if path in clean_status_dirs:
                 self._add_dir_node_dict_key(LabelStr.clean_status_dir, path, status)
             elif path in dirty_status_dirs:
                 self._add_dir_node_dict_key(LabelStr.dirty_status_dir, path, status)
+            else:
+                self._add_dir_node_dict_key(LabelStr.status_dir, path, status)
 
-        space_dir_set = self.man_dir_set - self.status_dir_set
-        clean_space_dirs = space_dir_set - dirs_with_nested_sp
-        dirty_space_dirs = space_dir_set & dirs_with_nested_sp
+        all_space_dirs = man_dir_set - status_dirs_pcr.keys()
+        dirty_space_dirs = all_space_dirs & all_dirs_with_nested_sp
+        clean_space_dirs = all_space_dirs - dirty_space_dirs
 
         for path in clean_space_dirs:
             self._add_dir_node_dict_key(LabelStr.clean_space_dir, path, Sc.SS)
@@ -105,7 +127,7 @@ class ChezmoiTreePaths:
         for path in dirty_space_dirs:
             self._add_dir_node_dict_key(LabelStr.dirty_space_dir, path, Sc.TT)
 
-        for path in self._un_man_dir_set:
+        for path in un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 self._add_dir_node_dict_key(LabelStr.unwanted_dir, path, Sc.XX)
             else:
