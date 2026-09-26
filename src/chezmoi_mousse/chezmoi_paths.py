@@ -28,6 +28,19 @@ class ChezmoiTreePaths:
 
     file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
+    add_btn_paths: set[Path] = field(default_factory=set[Path])
+    apply_btn_paths: set[Path] = field(default_factory=set[Path])
+    destroy_btn_paths: set[Path] = field(default_factory=set[Path])
+    forget_btn_paths: set[Path] = field(default_factory=set[Path])
+    re_add_btn_paths: set[Path] = field(default_factory=set[Path])
+
+    def __post_init__(self) -> None:
+
+        self._update_file_node_data_dict()
+        self._update_dir_node_data_dict()
+        self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
+        self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
+        self.update_button_sets(self.dir_node_data | self.file_node_data)
 
     def _add_file_node_dict_key(
         self, main_label: LabelStr, path: Path, status: Sc
@@ -94,12 +107,17 @@ class ChezmoiTreePaths:
             else:
                 self._add_dir_node_dict_key(LabelStr.unmanaged_dir, path, Sc.UU)
 
-    def __post_init__(self) -> None:
-
-        self._update_file_node_data_dict()
-        self._update_dir_node_data_dict()
-        self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
-        self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
+    def update_button_sets(self, all_path_data: dict[Path, NodeData]) -> None:
+        for path, node_data in all_path_data.items():
+            if node_data.status != Sc.SS:
+                self.add_btn_paths.add(path)
+            if node_data.status not in (Sc.UU, Sc.XX):
+                self.forget_btn_paths.add(path)
+                if path not in self.missing_managed:
+                    self.destroy_btn_paths.add(path)
+            if node_data.status not in (Sc.SS, Sc.UU, Sc.XX):
+                self.apply_btn_paths.add(path)
+                self.re_add_btn_paths.add(path)
 
 
 @dataclass(slots=True, kw_only=True)
@@ -155,42 +173,3 @@ class CmPathChanges:
             self._new_tree_paths.file_node_data,
         )
         self.top_removed_dirs = path_funcs.get_sorted_top_parents(self.removed_dirs)
-
-
-@dataclass
-class CmOpButtonSets:
-    _cm_paths: ChezmoiTreePaths
-
-    add_paths: set[Path] = field(default_factory=set[Path])
-    apply_paths: set[Path] = field(default_factory=set[Path])
-    destroy_paths: set[Path] = field(default_factory=set[Path])
-    forget_paths: set[Path] = field(default_factory=set[Path])
-    re_add_paths: set[Path] = field(default_factory=set[Path])
-
-    def __post_init__(self) -> None:
-
-        # TODO: improve this logic to decide if a button should be enabled or not
-        all_paths: dict[Path, NodeData] = (
-            self._cm_paths.dir_node_data | self._cm_paths.file_node_data
-        )
-        for path, status in all_paths.items():
-            if status in (Sc.UU, Sc.XX, Sc.TT):
-                self.add_paths.add(path)
-            if status not in (Sc.UU, Sc.XX):
-                self.forget_paths.add(path)
-                if path not in self._cm_paths.missing_managed:
-                    self.destroy_paths.add(path)
-            if status == Sc.SS:
-                continue
-            if status[1] in (Sc.A, Sc.D, Sc.M):
-                self.apply_paths.add(path)
-            if status[0] in (Sc.A, Sc.D, Sc.M):
-                self.re_add_paths.add(path)
-
-        tt_paths = {path for path, status in all_paths.items() if status == Sc.TT}
-
-        for path in tt_paths:
-            if path_funcs.any_nested_in(dir_path=path, check_paths=self.apply_paths):
-                self.apply_paths.add(path)
-            if path_funcs.any_nested_in(dir_path=path, check_paths=self.re_add_paths):
-                self.re_add_paths.add(path)

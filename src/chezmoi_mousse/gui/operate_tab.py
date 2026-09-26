@@ -176,6 +176,12 @@ class OperateTab(TabPane):
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.content_view = self.query_exactly_one(ContentView)
+        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
+        for btn in self.op_btn_group.query(Button).results():
+            if btn.label == BtnLabel.chezmoi_destroy:
+                btn.disabled = True
+            if btn.label == BtnLabel.chezmoi_forget:
+                btn.disabled = True
 
     #################################
     # Watchers and message handling #
@@ -191,6 +197,19 @@ class OperateTab(TabPane):
         show_tree = self.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
 
+    def _disable_enable_op_buttons(self, path: Path) -> None:
+        for btn in self.op_btn_group.query(Button).results():
+            if btn.label == BtnLabel.chezmoi_add:
+                btn.disabled = path not in store.cm_paths.add_btn_paths
+            if btn.label == BtnLabel.chezmoi_apply:
+                btn.disabled = path not in store.cm_paths.apply_btn_paths
+            if btn.label == BtnLabel.chezmoi_destroy:
+                btn.disabled = path not in store.cm_paths.destroy_btn_paths
+            if btn.label == BtnLabel.chezmoi_forget:
+                btn.disabled = path not in store.cm_paths.forget_btn_paths
+            if btn.label == BtnLabel.chezmoi_re_add:
+                btn.disabled = path not in store.cm_paths.re_add_btn_paths
+
     def _set_all_path_reactives(self, path: Path) -> None:
         setattr(self.git_log_view, ReactiveVar.path, path)
         setattr(self.content_view, ReactiveVar.path, path)
@@ -205,6 +224,7 @@ class OperateTab(TabPane):
             return
         self.view_label.update(event.node.data.main_label)
         self._set_all_path_reactives(event.node.data.path)
+        self._disable_enable_op_buttons(event.node.data.path)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
@@ -212,6 +232,11 @@ class OperateTab(TabPane):
             event.stop()
             self.view_label.update(LabelStr.dest_dir)
             self._set_all_path_reactives(store.cfg.dest_dir)
+            for btn in self.op_btn_group.query(Button).results():
+                if btn.label == BtnLabel.chezmoi_destroy:
+                    btn.disabled = True
+                if btn.label == BtnLabel.chezmoi_forget:
+                    btn.disabled = True
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:

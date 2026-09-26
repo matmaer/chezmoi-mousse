@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import (
     ChezmoiTreePaths,
-    CmOpButtonSets,
     CmPathChanges,
 )
 from chezmoi_mousse.named_tuples import (
@@ -51,8 +50,6 @@ cm_changes = CmPathChanges(
     _new_tree_paths=cm_paths,
 )
 
-op_btn_sets = CmOpButtonSets(cm_paths)
-
 
 async def handle_new_tree_paths(
     app: ChezmoiGui,
@@ -61,14 +58,12 @@ async def handle_new_tree_paths(
 
     global cm_paths
     global cm_changes
-    global op_btn_sets
     cm_changes = CmPathChanges(
         _old_tree_paths=cm_paths,
         _new_tree_paths=new_tree_paths,
     )
 
     cm_paths = new_tree_paths
-    op_btn_sets = CmOpButtonSets(new_tree_paths)
     app.app_log.write_app_log_msg(
         "Updated cm_paths, cm_changes and op_btn_sets in store.py"
     )
