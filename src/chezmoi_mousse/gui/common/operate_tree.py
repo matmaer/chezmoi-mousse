@@ -61,7 +61,12 @@ class OperateTree(Tree[NodeData]):
                 for path, node_data in node_data.items()
                 if node_data.status not in (Sc.UU, Sc.XX)
             }
-        if self.name in (TreeName.un_man_plus_sp, TreeName.un_man_plus_sp_xpd):
+        if self.name in (
+            TreeName.un_man_plus_sp,
+            TreeName.un_man_plus_sp_xpd,
+            TreeName.un_man_plus_amp,
+            TreeName.un_man_plus_amp_xpd,
+        ):
             return {
                 path: node_data
                 for path, node_data in node_data.items()
