@@ -48,7 +48,7 @@ class ChezmoiTreePaths:
         )
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
-        self.update_button_sets(self.dir_node_data | self.file_node_data)
+        self._update_button_sets(self.dir_node_data | self.file_node_data)
 
     def _add_file_node_dict_key(
         self, main_label: LabelStr, path: Path, status: Sc
@@ -154,7 +154,7 @@ class ChezmoiTreePaths:
                     LabelStr.space_dir_with_unwanted, path, Sc.ZZ
                 )
             else:
-                self._add_dir_node_dict_key(LabelStr.clean_space_dir, path, Sc.SS)
+                self._add_dir_node_dict_key(LabelStr.space_dir, path, Sc.SS)
 
         for path in un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
@@ -162,7 +162,7 @@ class ChezmoiTreePaths:
             else:
                 self._add_dir_node_dict_key(LabelStr.unmanaged_dir, path, Sc.UU)
 
-    def update_button_sets(self, all_path_data: dict[Path, NodeData]) -> None:
+    def _update_button_sets(self, all_path_data: dict[Path, NodeData]) -> None:
         for path, node_data in all_path_data.items():
             if node_data.status != Sc.SS:
                 self.add_btn_paths.add(path)

@@ -37,7 +37,6 @@ class BindingDescription(StrEnum):
     # Shared bindings
     maximize = "Maximize"
     minimize = "Minimize"
-    show_filters = "Show filters"
     enable_live_run = "Enable live run"
     switch_to_dry_run = "Switch to dry run"
 
@@ -118,25 +117,19 @@ class ColorVar(StrEnum):
     foreground_darken_3 = "foreground-darken-3"
     secondary = "secondary"
 
-    accent = "accent"
     text_accent = "text-accent"
     accent_darken_3 = "accent-darken-3"
 
     error = "error"
     text_error = "text-error"
-    error_darken_3 = "error-darken-3"
 
-    primary = "primary"
     text_primary = "text-primary"
-    primary_darken_3 = "primary-darken-3"
 
     success = "success"
     text_success = "text-success"
-    success_darken_3 = "success-darken-3"
 
     warning = "warning"
     text_warning = "text-warning"
-    warning_darken_3 = "warning-darken-3"
 
 
 class ContainerName(StrEnum):
@@ -248,7 +241,6 @@ class LabelStr(StrEnum):
     show_unwanted = "Show Unwanted"
 
     # other
-    command_outputs = "Command Output"
     context = "Context"
     full_cmd = "Full Command"
     no_managed_paths = "No managed paths yet"
@@ -295,7 +287,7 @@ class LogStr(StrEnum):
     missing = auto()
     present = auto()
     reports = auto()
-    skipped = auto()
+    # skipped = auto() # noqa: ERA001
     success = auto()
     trigger = auto()
 
@@ -555,28 +547,20 @@ class Tcss(StrEnum):
 class TreeName(StrEnum):
     """
     iu: include unchanged
-    xpd: expanded
-
     status trees: never include unchanged
     managed trees: always include unchanged
     """
 
     # the status trees include managed paths with a status or meta status
-    managed_only_sp = auto()  # base dict data
-    managed_only_sp_xpd = auto()
+    managed_only_sp = auto()
     # the man trees includes all managed paths, with or without a status or meta status
-    managed_all_mp = auto()  # base dict data
-    managed_all_mp_xpd = auto()
+    managed_all_mp = auto()
     # trees including unmanaged paths without unwanted paths
-    un_man_plus_sp = auto()  # base dict data
-    un_man_plus_sp_xpd = auto()
-    un_man_plus_amp = auto()  # base dict data
-    un_man_plus_amp_xpd = auto()
+    un_man_plus_sp = auto()
+    un_man_plus_amp = auto()
     # trees including any unmanaged path, including unwanted paths
-    un_wanted_plus_sp = auto()  # base dict data
-    un_wanted_plus_sp_xpd = auto()
-    un_wanted_plus_amp = auto()  # base dict data
-    un_wanted_plus_amp_xpd = auto()
+    un_wanted_plus_sp = auto()
+    un_wanted_plus_amp = auto()
 
 
 ##############################################

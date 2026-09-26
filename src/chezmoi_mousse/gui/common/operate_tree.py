@@ -45,55 +45,43 @@ class OperateTree(Tree[NodeData]):
         self.display = False
         self.guide_depth = 3
         self.show_root = False
-        self.initial_tree_population()
+        self._initial_tree_population()
 
     def _get_tree_nodes(
         self, node_data_dict: dict[Path, NodeData]
     ) -> dict[Path, NodeData]:
         result: dict[Path, NodeData] | None = None
-        if self.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
+        if self.name == TreeName.managed_only_sp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status not in (Sc.XX, Sc.UU, Sc.SS, Sc.YY, Sc.ZZ)
             }
-        elif self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+        elif self.name == TreeName.managed_all_mp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status not in (Sc.XX, Sc.UU)
             }
-        elif self.name in (
-            TreeName.un_man_plus_sp,
-            TreeName.un_man_plus_sp_xpd,
-        ):
+        elif self.name == TreeName.un_man_plus_sp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status not in (Sc.XX, Sc.SS, Sc.ZZ)
             }
-        elif self.name in (
-            TreeName.un_man_plus_amp,
-            TreeName.un_man_plus_amp_xpd,
-        ):
+        elif self.name == TreeName.un_man_plus_amp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status != Sc.XX
             }
-        elif self.name in (
-            TreeName.un_wanted_plus_sp,
-            TreeName.un_wanted_plus_sp_xpd,
-        ):
+        elif self.name == TreeName.un_wanted_plus_sp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status != Sc.SS
             }
-        elif self.name in (
-            TreeName.un_wanted_plus_amp,
-            TreeName.un_wanted_plus_amp_xpd,
-        ):
+        elif self.name == TreeName.un_wanted_plus_amp:
             result = dict(node_data_dict.items())
         else:
             raise ValueError(f"Unknown tree name: {self.name}")
@@ -117,28 +105,14 @@ class OperateTree(Tree[NodeData]):
         )
         self.node_map[path] = new_node
 
-    def expand_xpd_nodes(self) -> None:
-        if self.name in (
-            TreeName.managed_only_sp_xpd,
-            TreeName.managed_all_mp_xpd,
-            TreeName.un_man_plus_sp_xpd,
-            TreeName.un_man_plus_amp_xpd,
-            TreeName.un_wanted_plus_sp_xpd,
-            TreeName.un_wanted_plus_amp_xpd,
-        ):
-            for path, node in self.node_map.items():
-                if path in store.cm_paths.man_dir_set:
-                    node.expand()
-
     @work
-    async def initial_tree_population(self) -> None:
+    async def _initial_tree_population(self) -> None:
         dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
         for path, node_data in dir_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=False)
-        self.expand_xpd_nodes()
         self.select_node(self.root)
         self.unselect()  # otherwise it looks like the first node is selected
         if self.name == TreeName.managed_only_sp:
@@ -146,7 +120,7 @@ class OperateTree(Tree[NodeData]):
         self.loading = False
 
     @work
-    async def add_unmanaged_dir_children(self, dir_node_data: NodeData) -> None:
+    async def _add_unmanaged_dir_children(self, dir_node_data: NodeData) -> None:
         iter_dir_result: IterDirResult = path_funcs.get_unmanaged_children(
             dir_node_data.path
         )
@@ -165,4 +139,4 @@ class OperateTree(Tree[NodeData]):
             or event.node.data.path in self.iterated_dirs
         ):
             return
-        self.add_unmanaged_dir_children(event.node.data)
+        self._add_unmanaged_dir_children(event.node.data)

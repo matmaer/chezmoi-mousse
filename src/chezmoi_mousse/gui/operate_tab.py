@@ -7,10 +7,12 @@ from textual.containers import (
     Horizontal,
     Vertical,
 )
+from textual.reactive import reactive
 from textual.widgets import (
     Button,
     RadioButton,
     RadioSet,
+    Switch,
     TabPane,
     Tree,
 )
@@ -47,6 +49,8 @@ __all__ = ["OperateTab"]
 
 
 class LeftSideVertical(Vertical):
+    switch_state: reactive[bool] = reactive(False)
+
     def __init__(self) -> None:
         super().__init__(
             id=store.op_ids.container.left_side, classes=Tcss.operations_left
@@ -59,16 +63,8 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.managed_only_sp,
         )
         yield OperateTree(
-            TreeName.managed_only_sp_xpd,
-            store.op_ids.tree.managed_only_sp_xpd,
-        )
-        yield OperateTree(
             TreeName.managed_all_mp,
             store.op_ids.tree.managed_all_mp,
-        )
-        yield OperateTree(
-            TreeName.managed_all_mp_xpd,
-            store.op_ids.tree.managed_all_mp_xpd,
         )
         # UNMANAGED TREE VARIANTS
         yield OperateTree(
@@ -76,16 +72,8 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.un_man_plus_sp,
         )
         yield OperateTree(
-            TreeName.un_man_plus_sp_xpd,
-            store.op_ids.tree.un_man_plus_sp_xpd,
-        )
-        yield OperateTree(
             TreeName.un_man_plus_amp,
             store.op_ids.tree.un_man_plus_amp,
-        )
-        yield OperateTree(
-            TreeName.un_man_plus_amp_xpd,
-            store.op_ids.tree.un_man_plus_amp_xpd,
         )
         # UNWANTED TREE VARIANTS
         yield OperateTree(
@@ -93,37 +81,29 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.un_wanted_plus_sp,
         )
         yield OperateTree(
-            TreeName.un_wanted_plus_sp_xpd,
-            store.op_ids.tree.un_wanted_plus_sp_xpd,
-        )
-        yield OperateTree(
             TreeName.un_wanted_plus_amp,
             store.op_ids.tree.un_wanted_plus_amp,
         )
-        yield OperateTree(
-            TreeName.un_wanted_plus_amp_xpd,
-            store.op_ids.tree.un_wanted_plus_amp_xpd,
-        )
 
     @property
-    def current_displayed_tree_id(self) -> str | None:
+    def _current_displayed_tree_id(self) -> str | None:
         for tree in self.query_children(OperateTree).results():
             if tree.display is True:
                 return tree.id
         return None
 
     @property
-    def non_displayed_trees(self) -> list[OperateTree]:
+    def _non_displayed_trees(self) -> list[OperateTree]:
         return [
             tree
             for tree in self.query_children(OperateTree).results()
             if tree.display is False
         ]
 
-    def sync_to_trees(
+    def _sync_to_trees(
         self, node_data: NodeData, exclude: list[OperateTree] | None
     ) -> None:
-        for tree in self.non_displayed_trees:
+        for tree in self._non_displayed_trees:
             if exclude is not None and tree in exclude:
                 continue
             tree_node = tree.node_map.get(node_data.path)
@@ -135,22 +115,19 @@ class LeftSideVertical(Vertical):
         if event.node.data is None:
             return
         if (
-            self.current_displayed_tree_id is None
-            or event.control.id != self.current_displayed_tree_id
+            self._current_displayed_tree_id is None
+            or event.control.id != self._current_displayed_tree_id
         ):
             return
         if event.control.id == store.op_ids.tree.managed_only_sp:
-            self.sync_to_trees(event.node.data, exclude=None)
+            self._sync_to_trees(event.node.data, exclude=None)
         elif event.control.id == store.op_ids.tree.managed_all_mp:
             exclude: list[OperateTree] | None = None
             if event.node.data.status == Sc.SS:
                 exclude = [
-                    self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree),
-                    self.query_one(
-                        store.op_ids.tree.managed_only_sp_xpd_q, OperateTree
-                    ),
+                    self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
                 ]
-            self.sync_to_trees(event.node.data, exclude=exclude)
+            self._sync_to_trees(event.node.data, exclude=exclude)
 
     @on(Tree.NodeCollapsed)
     def sync_collapsed_node(self, event: Tree.NodeCollapsed[NodeData]) -> None: ...
@@ -316,3 +293,34 @@ class OperateTab(TabPane):
             self.content_view.display = False
             self.diff_view.display = False
             self.diff_reverse_view.display = True
+
+    @on(Switch.Changed)
+    def handle_expand_all_switch(self, event: Switch.Changed) -> None:
+        if event.switch.id != store.op_ids.switch.expand_managed:
+            return
+        event.stop()
+        show_unchanged = self.query_one(store.op_ids.switch.show_unchanged_q, Switch)
+        all_trees = self.query(OperateTree).results()
+        for tree in all_trees:
+            man_dir_nodes = (
+                [
+                    node
+                    for node in tree.node_map.values()
+                    if node.data and node.data.path in store.cm_paths.man_path_set
+                ]
+                if show_unchanged.value is True
+                else [
+                    node
+                    for node in tree.node_map.values()
+                    if node.data
+                    and (
+                        node.data.path in store.cm_paths.status_dir_set
+                        or node.data.status == Sc.TT
+                    )
+                ]
+            )
+            for node in man_dir_nodes:
+                if node.is_expanded and event.value is False:
+                    node.collapse()
+                elif node.is_collapsed and event.value is True:
+                    node.expand()
