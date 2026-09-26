@@ -81,10 +81,11 @@ class SwitchGroup(VerticalGroup):
         # Managed trees including all managed maths
         (False, True, False, False): store.op_ids.tree.managed_all_mp_q,
         (True, True, False, False): store.op_ids.tree.managed_all_mp_xpd_q,
-        # Unmanaged trees
+        # Un-managed trees (show_unchanged is False)
         (False, False, True, False): store.op_ids.tree.un_man_plus_sp_q,
-        (False, True, True, False): store.op_ids.tree.un_man_plus_amp_q,
         (True, False, True, False): store.op_ids.tree.un_man_plus_sp_xpd_q,
+        # Un-managed trees (show_unchanged is True)
+        (False, True, True, False): store.op_ids.tree.un_man_plus_amp_q,
         (True, True, True, False): store.op_ids.tree.un_man_plus_amp_xpd_q,
         # Unwanted trees when show_unmanaged is False
         (False, False, False, True): store.op_ids.tree.un_wanted_plus_sp_q,
