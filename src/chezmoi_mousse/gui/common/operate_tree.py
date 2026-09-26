@@ -39,8 +39,7 @@ class OperateTree(Tree[NodeData]):
         )
 
     def on_mount(self) -> None:
-        self.dir_node_map: dict[Path, TreeNode[NodeData]] = {}
-        self.scanned_dirs: set[Path] = set()
+        self.node_map: dict[Path, TreeNode[NodeData]] = {}
         self.loading = True
         self.display = False
         self.guide_depth = 3
@@ -111,29 +110,25 @@ class OperateTree(Tree[NodeData]):
         if path.parent == store.cfg.dest_dir:
             parent_node = self.root
         else:
-            parent_node = self.dir_node_map[path.parent]
+            parent_node = self.node_map[path.parent]
         label = self._color_label(path, node_data.status, allow_expand)
         new_node = parent_node.add(
             label=label,
             data=node_data,
             allow_expand=allow_expand,
         )
-        if allow_expand:
-            self.dir_node_map[path] = new_node
+        self.node_map[path] = new_node
 
     def expand_xpd_nodes(self) -> None:
         if self.name in (
             TreeName.managed_only_sp_xpd,
             TreeName.managed_all_mp_xpd,
-        ):
-            self.root.expand_all()
-        elif self.name in (
             TreeName.un_man_plus_sp_xpd,
             TreeName.un_man_plus_amp_xpd,
             TreeName.un_wanted_plus_sp_xpd,
             TreeName.un_wanted_plus_amp_xpd,
         ):
-            for path, node in self.dir_node_map.items():
+            for path, node in self.node_map.items():
                 if path in store.cm_paths.man_dir_set:
                     node.expand()
 
@@ -146,22 +141,21 @@ class OperateTree(Tree[NodeData]):
         for path, node_data in file_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=False)
         self.expand_xpd_nodes()
+        self.select_node(self.root)
+        self.unselect()  # otherwise it looks like the first node is selected
         if self.name == TreeName.managed_only_sp:
-            self.select_node(self.root)
-            self.unselect()  # otherwise it looks like the first node is selected
             self.display = True
         self.loading = False
 
     @work
-    async def add_unmanaged_dir_children(self, node_data: NodeData) -> None:
+    async def add_unmanaged_dir_children(self, dir_node_data: NodeData) -> None:
         scan_dir_result: IterDirResult = path_funcs.get_unmanaged_children(
-            node_data.path
+            dir_node_data.path
         )
-        self.scanned_dirs.add(node_data.path)
-        for path, status in scan_dir_result.dirs.items():
-            await self._add_node_with_color(path, status, allow_expand=True)
-        for path, status in scan_dir_result.files.items():
-            await self._add_node_with_color(path, status, allow_expand=False)
+        for path, node_data in scan_dir_result.dirs.items():
+            await self._add_node_with_color(path, node_data, allow_expand=True)
+        for path, node_data in scan_dir_result.files.items():
+            await self._add_node_with_color(path, node_data, allow_expand=False)
 
     @on(Tree.NodeExpanded)
     def populate_unmanaged_dir(self, event: Tree.NodeExpanded[NodeData]) -> None:
@@ -177,11 +171,8 @@ class OperateTree(Tree[NodeData]):
                 TreeName.managed_all_mp,
                 TreeName.managed_all_mp_xpd,
             )
-            # for path.parent below, we have it from the 'chezmoi unmanaged' output
-            or event.node.data.path.parent
-            in (store.cm_paths.man_dir_set, store.cfg.dest_dir)
             # skip if the directory has already been scanned
-            or event.node.data.path in self.scanned_dirs
+            or event.node.data.path in self.node_map
         ):
             return
         self.add_unmanaged_dir_children(event.node.data)
