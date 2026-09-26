@@ -44,6 +44,7 @@ class ChezmoiTreePaths:
             self.man_dir_set,
             self.status_path_set,
             self._un_man_dir_set,
+            self._un_man_file_set,
         )
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
@@ -98,6 +99,7 @@ class ChezmoiTreePaths:
         man_dir_set: frozenset[Path],
         status_paths: frozenset[Path],
         un_man_dir_set: frozenset[Path],
+        un_man_file_set: frozenset[Path],
     ) -> None:
         all_dirs_with_nested_sp: set[Path] = {
             path
@@ -119,13 +121,40 @@ class ChezmoiTreePaths:
 
         all_space_dirs = man_dir_set - status_dirs_pcr.keys()
         dirty_space_dirs = all_space_dirs & all_dirs_with_nested_sp
-        clean_space_dirs = all_space_dirs - dirty_space_dirs
+        unwanted_dirs = {
+            path for path in un_man_dir_set if path_funcs.is_unwanted_dir(path)
+        }
+        unwanted_files = {
+            path for path in un_man_file_set if path_funcs.is_unwanted_file(path)
+        }
+        unwanted_paths = unwanted_dirs | unwanted_files
+        wanted_unmanaged_paths = (un_man_dir_set | un_man_file_set) - unwanted_paths
+        dirs_with_nested_unmanaged = {
+            path
+            for path in all_space_dirs
+            if path_funcs.any_nested_in(
+                dir_path=path, check_paths=wanted_unmanaged_paths
+            )
+        }
+        dirs_with_nested_unwanted = {
+            path
+            for path in all_space_dirs
+            if path_funcs.any_nested_in(dir_path=path, check_paths=unwanted_paths)
+        }
 
-        for path in clean_space_dirs:
-            self._add_dir_node_dict_key(LabelStr.clean_space_dir, path, Sc.SS)
-
-        for path in dirty_space_dirs:
-            self._add_dir_node_dict_key(LabelStr.dirty_space_dir, path, Sc.TT)
+        for path in all_space_dirs:
+            if path in dirty_space_dirs:
+                self._add_dir_node_dict_key(LabelStr.dirty_space_dir, path, Sc.TT)
+            elif path in dirs_with_nested_unmanaged:
+                self._add_dir_node_dict_key(
+                    LabelStr.space_dir_with_unmanaged, path, Sc.YY
+                )
+            elif path in dirs_with_nested_unwanted:
+                self._add_dir_node_dict_key(
+                    LabelStr.space_dir_with_unwanted, path, Sc.ZZ
+                )
+            else:
+                self._add_dir_node_dict_key(LabelStr.clean_space_dir, path, Sc.SS)
 
         for path in un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
