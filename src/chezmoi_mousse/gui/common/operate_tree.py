@@ -48,32 +48,57 @@ class OperateTree(Tree[NodeData]):
         self.show_root = False
         self.initial_tree_population()
 
-    def _get_tree_nodes(self, node_data: dict[Path, NodeData]) -> dict[Path, NodeData]:
+    def _get_tree_nodes(
+        self, node_data_dict: dict[Path, NodeData]
+    ) -> dict[Path, NodeData]:
+        result: dict[Path, NodeData] | None = None
         if self.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
-            return {
+            result = {
                 path: node_data
-                for path, node_data in node_data.items()
-                if node_data.status not in (Sc.SS, Sc.UU, Sc.XX)
+                for path, node_data in node_data_dict.items()
+                if node_data.status not in (Sc.XX, Sc.UU, Sc.SS)
             }
-        if self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
-            return {
+        elif self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+            result = {
                 path: node_data
-                for path, node_data in node_data.items()
-                if node_data.status not in (Sc.UU, Sc.XX)
+                for path, node_data in node_data_dict.items()
+                if node_data.status not in (Sc.XX, Sc.UU)
             }
-        if self.name in (
+        elif self.name in (
             TreeName.un_man_plus_sp,
             TreeName.un_man_plus_sp_xpd,
+        ):
+            result = {
+                path: node_data
+                for path, node_data in node_data_dict.items()
+                if node_data.status not in (Sc.XX, Sc.SS)
+            }
+        elif self.name in (
             TreeName.un_man_plus_amp,
             TreeName.un_man_plus_amp_xpd,
         ):
-            return {
+            result = {
                 path: node_data
-                for path, node_data in node_data.items()
-                if node_data.status is not Sc.XX
+                for path, node_data in node_data_dict.items()
+                if node_data.status != Sc.XX
             }
+        elif self.name in (
+            TreeName.un_wanted_plus_sp,
+            TreeName.un_wanted_plus_sp_xpd,
+        ):
+            result = {
+                path: node_data
+                for path, node_data in node_data_dict.items()
+                if node_data.status != Sc.SS
+            }
+        elif self.name in (
+            TreeName.un_wanted_plus_amp,
+            TreeName.un_wanted_plus_amp_xpd,
+        ):
+            result = dict(node_data_dict.items())
         else:
-            return node_data
+            raise ValueError(f"Unknown tree name: {self.name}")
+        return path_funcs.sort_path_dict(result)
 
     def _color_label(self, path: Path, status: Sc, directory: bool) -> str:
         color_var = status.dir_color if directory else status.file_color
