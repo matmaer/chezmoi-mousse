@@ -119,12 +119,20 @@ class SwitchGroup(VerticalGroup):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
+        expand_managed_switch = self.query_one(self.ids.switch.expand_managed_q, Switch)
+        show_unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
+        show_unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
+        show_unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
         switch_state = (
-            self.query_one(self.ids.switch.expand_managed_q, Switch).value,
-            self.query_one(self.ids.switch.show_unchanged_q, Switch).value,
-            self.query_one(self.ids.switch.show_unmanaged_q, Switch).value,
-            self.query_one(self.ids.switch.show_unwanted_q, Switch).value,
+            expand_managed_switch.value,
+            show_unchanged_switch.value,
+            show_unmanaged_switch.value,
+            show_unwanted_switch.value,
         )
+        if show_unwanted_switch.value is True:
+            show_unmanaged_switch.disabled = True
+        else:
+            show_unmanaged_switch.disabled = False
         self.post_message(ShowTreeQidMsg(self.state_to_tree_map[switch_state]))
 
 
