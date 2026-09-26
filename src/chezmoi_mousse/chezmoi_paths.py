@@ -36,8 +36,8 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
-        self._update_file_node_data_dict()
-        self._update_dir_node_data_dict()
+        self._update_file_node_data_dict(self._status_files_pcr)
+        self._update_dir_node_data_dict(self._status_dirs_pcr)
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self.update_button_sets(self.dir_node_data | self.file_node_data)
@@ -45,15 +45,17 @@ class ChezmoiTreePaths:
     def _add_file_node_dict_key(
         self, main_label: LabelStr, path: Path, status: Sc
     ) -> None:
-        assert self.file_node_data.get(path, None) is None
+        assert self.file_node_data.get(path, None) is None, (
+            f"File node data for path {path} already exists"
+        )
         self.file_node_data[path] = NodeData(
             main_label=main_label,
             path=path,
             status=status,
         )
 
-    def _update_file_node_data_dict(self) -> None:
-        for path, status in self._status_files_pcr.items():
+    def _update_file_node_data_dict(self, status_files_pcr: dict[Path, Sc]) -> None:
+        for path, status in status_files_pcr.items():
             self._add_file_node_dict_key(LabelStr.status_file, path, status)
 
         man_space_files = self.man_file_set - self.status_file_set
@@ -69,14 +71,16 @@ class ChezmoiTreePaths:
     def _add_dir_node_dict_key(
         self, main_label: LabelStr, path: Path, status: Sc
     ) -> None:
-        assert self.dir_node_data.get(path, None) is None
+        assert self.dir_node_data.get(path, None) is None, (
+            f"Dir node data for path {path} already exists"
+        )
         self.dir_node_data[path] = NodeData(
             main_label=main_label,
             path=path,
             status=status,
         )
 
-    def _update_dir_node_data_dict(self) -> None:
+    def _update_dir_node_data_dict(self, status_dirs_pcr: dict[Path, Sc]) -> None:
         dirs_with_nested_sp = {
             path
             for path in self.man_dir_set
@@ -85,7 +89,7 @@ class ChezmoiTreePaths:
         clean_status_dirs = self.status_dir_set - dirs_with_nested_sp
         dirty_status_dirs = self.status_dir_set & dirs_with_nested_sp
 
-        for path, status in self._status_dirs_pcr.items():
+        for path, status in status_dirs_pcr.items():
             if path in clean_status_dirs:
                 self._add_dir_node_dict_key(LabelStr.clean_status_dir, path, status)
             elif path in dirty_status_dirs:
