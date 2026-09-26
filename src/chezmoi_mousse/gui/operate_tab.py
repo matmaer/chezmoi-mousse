@@ -30,6 +30,7 @@ from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
     ReactiveVar,
+    StatusCode as Sc,
     Tcss,
     TreeName,
 )
@@ -103,6 +104,59 @@ class LeftSideVertical(Vertical):
             TreeName.un_wanted_plus_amp_xpd,
             store.op_ids.tree.un_wanted_plus_amp_xpd,
         )
+
+    @property
+    def current_displayed_tree_id(self) -> str | None:
+        for tree in self.query_children(OperateTree).results():
+            if tree.display is True:
+                return tree.id
+        return None
+
+    @property
+    def non_displayed_trees(self) -> list[OperateTree]:
+        return [
+            tree
+            for tree in self.query_children(OperateTree).results()
+            if tree.display is False
+        ]
+
+    def sync_to_trees(
+        self, node_data: NodeData, exclude: list[OperateTree] | None
+    ) -> None:
+        for tree in self.non_displayed_trees:
+            if exclude is not None and tree in exclude:
+                continue
+            tree_node = tree.node_map.get(node_data.path)
+            if tree_node:
+                tree.select_node(tree_node)
+
+    @on(Tree.NodeSelected)
+    def sync_selected_node(self, event: Tree.NodeSelected[NodeData]) -> None:
+        if event.node.data is None:
+            return
+        if (
+            self.current_displayed_tree_id is None
+            or event.control.id != self.current_displayed_tree_id
+        ):
+            return
+        if event.control.id == store.op_ids.tree.managed_only_sp:
+            self.sync_to_trees(event.node.data, exclude=None)
+        elif event.control.id == store.op_ids.tree.managed_all_mp:
+            exclude: list[OperateTree] | None = None
+            if event.node.data.status == Sc.SS:
+                exclude = [
+                    self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree),
+                    self.query_one(
+                        store.op_ids.tree.managed_only_sp_xpd_q, OperateTree
+                    ),
+                ]
+            self.sync_to_trees(event.node.data, exclude=exclude)
+
+    @on(Tree.NodeCollapsed)
+    def sync_collapsed_node(self, event: Tree.NodeCollapsed[NodeData]) -> None: ...
+
+    @on(Tree.NodeExpanded)
+    def sync_expanded_node(self, event: Tree.NodeExpanded[NodeData]) -> None: ...
 
 
 class RightSideVertical(Vertical):
@@ -218,6 +272,7 @@ class OperateTab(TabPane):
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
+        event.stop()
         if event.node.data is None:
             self._set_all_path_reactives(store.cfg.dest_dir)
             self.view_label.update(LabelStr.dest_dir)

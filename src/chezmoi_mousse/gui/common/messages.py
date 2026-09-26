@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CommandResultMsg",
-    "OtherTreeMsg",
     "ShowTreeQidMsg",
 ]
 
@@ -18,12 +17,6 @@ __all__ = [
 class CommandResultMsg(Message):
     def __init__(self, results: CommandResult) -> None:
         self.cmd_result: CommandResult = results
-        super().__init__()
-
-
-class OtherTreeMsg(Message):
-    def __init__(self, other_tree_event: Message) -> None:
-        self.other_tree_event = other_tree_event
         super().__init__()
 
 
