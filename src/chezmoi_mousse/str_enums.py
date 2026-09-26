@@ -205,6 +205,12 @@ class LabelStr(StrEnum):
     space_dir = f"Managed Directory ({_has_no_status})"  # no children!
     clean_space_dir = f"Managed Directory ({_has_no_status} and no {_nested_sp})"
     dirty_space_dir = f"Managed Directory ({_has_no_status} but has {_nested_sp})"
+    space_dir_with_unmanaged = (
+        f"Managed Directory ({_has_no_status} and has nested unmanaged paths)"
+    )
+    space_dir_with_unwanted = (
+        f"Managed Directory ({_has_no_status} and has nested unwanted paths)"
+    )
 
     space_file = f"Managed File ({_has_no_status})"
     status_file = f"Managed File ({_has_status})"
@@ -465,6 +471,8 @@ class StatusCode(StrEnum):
     TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
     UU = "UU"  # Unmanaged  path
     XX = "XX"  # Unmanaged  and unwanted path
+    YY = "YY"  # Any path has status SS but contains nested unmanaged paths
+    ZZ = "ZZ"  # Any path has status SS but contains nested unwanted paths
 
     @classmethod
     @cache
@@ -489,6 +497,8 @@ class StatusCode(StrEnum):
             cls.TT: ColorVar.text_primary,
             cls.UU: ColorVar.text_accent,
             cls.XX: ColorVar.accent_darken_2,
+            cls.YY: ColorVar.text_accent,
+            cls.ZZ: ColorVar.accent_darken_2,
         }
         return mapping[status_code]
 

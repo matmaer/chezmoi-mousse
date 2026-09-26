@@ -56,7 +56,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.XX, Sc.UU, Sc.SS)
+                if node_data.status not in (Sc.XX, Sc.UU, Sc.SS, Sc.YY, Sc.ZZ)
             }
         elif self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
             result = {
@@ -71,7 +71,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.XX, Sc.SS)
+                if node_data.status not in (Sc.XX, Sc.SS, Sc.ZZ)
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
