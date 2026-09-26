@@ -483,55 +483,30 @@ class StatusCode(StrEnum):
 
     @classmethod
     @cache
-    def _get_dir_color_var(cls, status_code: Self) -> ColorVar:
+    def _get_color_var(cls, status_code: Self) -> ColorVar:
         mapping: dict[str, ColorVar] = {
             # D combos
-            cls.DA: ColorVar.error_darken_3,
-            cls.DD: ColorVar.error,  # probably impossible status pair
-            cls.DM: ColorVar.error_darken_3,
-            cls.DS: ColorVar.error_darken_3,
+            cls.DA: ColorVar.text_warning,
+            cls.DD: ColorVar.text_warning,  # probably impossible status pair
+            cls.DM: ColorVar.text_warning,
+            cls.DS: ColorVar.text_warning,
             # M combos
-            cls.MA: ColorVar.success,
-            cls.MD: ColorVar.error,
-            cls.MM: ColorVar.warning,
-            cls.MS: ColorVar.warning_darken_3,
-            # S combos
-            cls.SA: ColorVar.success_darken_3,
-            cls.SD: ColorVar.error,
-            cls.SM: ColorVar.warning,
-            # Meta codes
-            cls.SS: ColorVar.foreground_darken_3,
-            cls.UU: ColorVar.accent,
-            cls.XX: ColorVar.accent_darken_3,
-            # Meta codes dirs only
-            cls.TT: ColorVar.primary,
-            cls.YY: ColorVar.secondary,
-            cls.ZZ: ColorVar.accent,
-        }
-        return mapping[status_code]
-
-    @classmethod
-    @cache
-    def _get_file_color_var(cls, status_code: Self) -> ColorVar:
-        mapping: dict[str, ColorVar] = {
-            # D combos
-            cls.DA: ColorVar.text_error,
-            cls.DD: ColorVar.text_error,  # probably impossible status pair
-            cls.DM: ColorVar.text_error,
-            cls.DS: ColorVar.text_error,
-            # M combos
-            cls.MA: ColorVar.text_success,
-            cls.MD: ColorVar.text_error,
+            cls.MA: ColorVar.text_warning,
+            cls.MD: ColorVar.text_warning,
             cls.MM: ColorVar.text_warning,
             cls.MS: ColorVar.text_warning,
             # S combos
-            cls.SA: ColorVar.text_success,
-            cls.SD: ColorVar.text_error,
+            cls.SA: ColorVar.text_warning,
+            cls.SD: ColorVar.text_warning,
             cls.SM: ColorVar.text_warning,
             # Meta codes
-            cls.SS: ColorVar.foreground_darken_2,
-            cls.UU: ColorVar.text_accent,
-            cls.XX: ColorVar.accent,
+            cls.SS: ColorVar.foreground_darken_3,
+            cls.UU: ColorVar.text_success,
+            cls.XX: ColorVar.text_accent,
+            # Meta codes dirs only
+            cls.TT: ColorVar.text_primary,
+            cls.YY: ColorVar.text_success,
+            cls.ZZ: ColorVar.text_accent,
         }
         return mapping[status_code]
 
@@ -540,12 +515,8 @@ class StatusCode(StrEnum):
         return f"chezmoi {self.value[0]}"
 
     @property
-    def dir_color(self) -> ColorVar:
-        return self._get_dir_color_var(self)
-
-    @property
-    def file_color(self) -> ColorVar:
-        return self._get_file_color_var(self)
+    def tree_label_color(self) -> ColorVar:
+        return self._get_color_var(self)
 
 
 class Tcss(StrEnum):

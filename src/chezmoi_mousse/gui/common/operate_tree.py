@@ -98,10 +98,9 @@ class OperateTree(Tree[NodeData]):
             raise ValueError(f"Unknown tree name: {self.name}")
         return path_funcs.sort_path_dict(result)
 
-    def _color_label(self, path: Path, status: Sc, directory: bool) -> str:
-        color_var = status.dir_color if directory else status.file_color
+    def _color_label(self, path: Path, status: Sc) -> str:
         italic = " italic" if path in store.cm_paths.missing_managed else ""
-        color = self.app.theme_variables[color_var]
+        color = self.app.theme_variables[status.tree_label_color]
         return f"[{color}{italic}]{path.name}[/]"
 
     async def _add_node_with_color(
@@ -111,7 +110,7 @@ class OperateTree(Tree[NodeData]):
             parent_node = self.root
         else:
             parent_node = self.node_map[path.parent]
-        label = self._color_label(path, node_data.status, allow_expand)
+        label = self._color_label(path, node_data.status)
         new_node = parent_node.add(
             label=label,
             data=node_data,
