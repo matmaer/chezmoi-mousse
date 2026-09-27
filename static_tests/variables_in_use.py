@@ -84,6 +84,10 @@ def get_variable_issues(node_db: NodeDb) -> IssueList:
         elif enclosing:
             # Class-level variable assignment
             if assign_node.parent and assign_node.parent.node_type == "ClassDef":
+                assert isinstance(assign_node.parent.ast_node, ast.ClassDef)
+                # Enum members have a dedicated test (enum_members.py)
+                if assign_node.parent.is_enum_class:
+                    continue
                 # Ignore uppercase constants (e.g. ICON_NODE = "...") or annotated
                 # type hints
                 if not var_name.isupper():
