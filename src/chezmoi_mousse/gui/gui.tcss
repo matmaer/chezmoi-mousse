@@ -455,6 +455,16 @@ Switch {
     &>.switch--slider {
       color: $panel-lighten-3;
     }
+
+    &:hover {
+      &>.switch--slider {
+        color: $panel-lighten-3;
+      }
+
+      &.-on>.switch--slider {
+        color: $panel-lighten-3;
+      }
+    }
   }
 }
 
