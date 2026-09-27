@@ -47,7 +47,7 @@ class FalseLabel(Label):
         self.update(" no")
 
 
-class PathInfo(VerticalGroup):
+class PathInfo(ScrollableContainer):
     class DirInfo(VerticalGroup): ...
 
     class FileInfo(VerticalGroup): ...
@@ -202,7 +202,7 @@ class ContentView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_contents)
-        yield ContentView.FileContentStatic(markup=False)
+        yield self.FileContentStatic(markup=False)
         yield PathInfo()
 
     def on_mount(self) -> None:
@@ -245,6 +245,8 @@ class _DiffViewBase(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
+    class DiffWidgets(ScrollableContainer): ...
+
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
     cache: ClassVar[dict[Path, list[Static]]] = {}
@@ -268,12 +270,12 @@ class _DiffViewBase(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_diff)
-        yield ScrollableContainer()
+        yield self.DiffWidgets()
         yield PathInfo()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.diff_container = self.query_exactly_one(ScrollableContainer)
+        self.diff_container = self.query_exactly_one(_DiffViewBase.DiffWidgets)
         self.diff_container.display = False
         self.path_info = self.query_exactly_one(PathInfo)
 
@@ -357,6 +359,7 @@ class GitLogView(Vertical):
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
         self.path_info = self.query_exactly_one(PathInfo)
+        self.path_info.display = False
 
     async def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
