@@ -65,6 +65,14 @@ def _check_alternative_usage(
             if isinstance(ast_node.iter, ast.Name) and ast_node.iter.id in class_names:
                 return set(member_names)
 
+    # Dynamic construction by value, e.g. `StatusCode(line[:2])`, which can
+    # potentially resolve to any member
+    for call_node in node_db.by_type.get(ast.Call.__name__, set()):
+        assert isinstance(call_node.ast_node, ast.Call)
+        func = call_node.ast_node.func
+        if isinstance(func, ast.Name) and func.id in class_names:
+            return set(member_names)
+
     # Subscript lookups: MyEnum["MEMBER_NAME"]
     used_members: set[str] = set()
     for sub_node in node_db.by_type.get(ast.Subscript.__name__, set()):
