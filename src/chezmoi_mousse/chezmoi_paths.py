@@ -43,6 +43,7 @@ class ChezmoiTreePaths:
             self._status_dirs_pcr,
             self.man_dir_set,
             self.status_path_set,
+            self.man_path_set - self.status_path_set,
             self._un_man_dir_set,
             self._un_man_file_set,
         )
@@ -98,6 +99,7 @@ class ChezmoiTreePaths:
         status_dirs_pcr: dict[Path, Sc],
         man_dir_set: frozenset[Path],
         status_paths: frozenset[Path],
+        space_paths: frozenset[Path],
         un_man_dir_set: frozenset[Path],
         un_man_file_set: frozenset[Path],
     ) -> None:
@@ -153,8 +155,10 @@ class ChezmoiTreePaths:
                 self._add_dir_node_dict_key(
                     LabelStr.space_dir_with_unwanted, path, Sc.ZZ
                 )
-            else:
+            elif path_funcs.any_nested_in(dir_path=path, check_paths=space_paths):
                 self._add_dir_node_dict_key(LabelStr.space_dir, path, Sc.SS)
+            else:
+                self._add_dir_node_dict_key(LabelStr.clean_space_dir, path, Sc.SS)
 
         for path in un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
