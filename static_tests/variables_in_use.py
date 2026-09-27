@@ -77,8 +77,17 @@ def get_variable_issues(node_db: NodeDb) -> IssueList:
             continue
 
         enclosing: str = _find_enclosing_class(assign_node)
+        ast_node = assign_node.ast_node
+        assert isinstance(ast_node, (ast.Assign, ast.AnnAssign))
+        target = (
+            ast_node.targets[0] if isinstance(ast_node, ast.Assign) else ast_node.target
+        )
+        is_plain_name = isinstance(target, ast.Name)
 
         if assign_node.is_top_level:
+            # Skip attribute patches on external objects, e.g. `Cls.attr = value`
+            if not is_plain_name:
+                continue
             if var_name not in IGNORED_MODULE_VARS and var_name not in exported_names:
                 module_vars[var_name] = assign_node
         elif enclosing:
