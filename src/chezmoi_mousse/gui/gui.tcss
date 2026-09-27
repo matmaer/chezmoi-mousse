@@ -175,30 +175,6 @@ FlatButtonsVertical {
   width: auto;
 }
 
-SwitchSlider {
-  background-tint: $surface;
-  background: $surface;
-  border: round $primary;
-  border-left: none;
-  color: $foreground-darken-1;
-  dock: bottom;
-  layer: above;
-  offset-x: -100%;
-  margin-bottom: 4;
-  padding: 0 1 0 2;
-  transition: offset 380ms;
-  width: auto;
-
-  &.-visible {
-    offset-x: 0%;
-  }
-
-  & HorizontalGroup {
-    padding-bottom: 1;
-    width: auto;
-  }
-}
-
 TabButtons {
   height: 2;
   width: 100%;
