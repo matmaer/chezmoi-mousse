@@ -178,7 +178,8 @@ class PathInfo(ScrollableContainer):
         self.file_info.remove_children()
         self.file_info.mount_all(info_items)
 
-    def update_path_info(self, node_data: NodeData) -> None:
+    @work
+    async def update_path_info(self, node_data: NodeData) -> None:
         path = node_data.path
         if path in store.cm_paths.file_node_data or path.is_file():
             self.dir_info.display = False
@@ -361,7 +362,7 @@ class GitLogView(Vertical):
         self.path_info = self.query_exactly_one(PathInfo)
         self.path_info.display = False
 
-    async def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
+    def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
 
         def stylize(columns: list[str], log_color: ColorVar) -> None:
@@ -400,7 +401,7 @@ class GitLogView(Vertical):
                 self.app, ReadCmd.git_log, path_arg
             )
             self.flat_label.update(cmd_result.pretty_cmd)
-            pretty_cells = await self._get_styled_cells(cmd_result.out_list)
+            pretty_cells = self._get_styled_cells(cmd_result.out_list)
             self.cache[path] = pretty_cells
 
         for row in pretty_cells:
