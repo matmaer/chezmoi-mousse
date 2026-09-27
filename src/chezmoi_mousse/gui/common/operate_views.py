@@ -37,6 +37,16 @@ if TYPE_CHECKING:
 __all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView"]
 
 
+class TrueLabel(Label):
+    def on_mount(self) -> None:
+        self.update("yes")
+
+
+class FalseLabel(Label):
+    def on_mount(self) -> None:
+        self.update(" no")
+
+
 class PathInfo(VerticalGroup):
     class DirInfo(VerticalGroup): ...
 
@@ -44,7 +54,9 @@ class PathInfo(VerticalGroup):
 
     class InfoLabel(Label): ...
 
-    class TruthLabel(Label): ...
+    class TrueLabel(Label): ...
+
+    class FalseLabel(Label): ...
 
     class InfoItem(HorizontalGroup): ...
 
@@ -54,7 +66,7 @@ class PathInfo(VerticalGroup):
 
     def on_mount(self) -> None:
         self.yes = "yes"
-        self.no = " no"
+        self.no = "no"
         self.dir_info = self.query_exactly_one(PathInfo.DirInfo)
         self.file_info = self.query_exactly_one(PathInfo.FileInfo)
         self.file_info.display = False
@@ -64,64 +76,64 @@ class PathInfo(VerticalGroup):
         status = node_data.status
         info_items: list[PathInfo.InfoItem] = []
 
-        is_managed = self.yes if path in store.cm_paths.man_dir_set else self.no
-        has_status = self.yes if path in store.cm_paths.status_dir_set else self.no
-        has_nested_status = self.yes if status is Sc.TT else self.no
+        is_managed = TrueLabel() if path in store.cm_paths.man_dir_set else FalseLabel()
+        has_status = (
+            TrueLabel() if path in store.cm_paths.status_dir_set else FalseLabel()
+        )
+        has_nested_status = TrueLabel() if status is Sc.TT else FalseLabel()
         has_nested_managed = (
-            self.yes
+            TrueLabel()
             if path_funcs.any_nested_in(
                 dir_path=path, check_paths=store.cm_paths.man_path_set
             )
-            else self.no
+            else FalseLabel()
         )
-        has_nested_unmanaged = self.yes if status is Sc.YY else self.no
-        has_nested_unwanted = self.yes if node_data.status is Sc.XX else self.no
-        manches_unwanted = self.yes if status == Sc.XX else self.no
-        exists = self.yes if path not in store.cm_paths.missing_managed else self.no
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_is_managed), self.TruthLabel(is_managed)
-            )
+        has_nested_unmanaged = TrueLabel() if status is Sc.YY else FalseLabel()
+        has_nested_unwanted = TrueLabel() if node_data.status is Sc.XX else FalseLabel()
+        manches_unwanted = TrueLabel() if status == Sc.XX else FalseLabel()
+        exists = (
+            TrueLabel() if path not in store.cm_paths.missing_managed else FalseLabel()
         )
         info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_has_status), self.TruthLabel(has_status)
-            )
+            self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed)
+        )
+        info_items.append(
+            self.InfoItem(self.InfoLabel(LabelStr.d_has_status), has_status)
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_has_nested_status),
-                self.TruthLabel(has_nested_status),
+                has_nested_status,
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_has_nested_managed),
-                self.TruthLabel(has_nested_managed),
+                has_nested_managed,
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_has_nested_un_man),
-                self.TruthLabel(has_nested_unmanaged),
+                has_nested_unmanaged,
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_has_nested_un_wanted),
-                self.TruthLabel(has_nested_unwanted),
+                has_nested_unwanted,
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_match_un_wanted),
-                self.TruthLabel(manches_unwanted),
+                manches_unwanted,
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_exists),
-                self.TruthLabel(exists),
+                exists,
             )
         )
 
@@ -133,31 +145,33 @@ class PathInfo(VerticalGroup):
         status = node_data.status
         info_items: list[PathInfo.InfoItem] = []
 
-        is_managed = self.yes if path in store.cm_paths.man_file_set else self.no
-        has_status = self.yes if path in store.cm_paths.status_file_set else self.no
-        f_match_unwanted = self.yes if status is Sc.XX else self.no
-        exists = self.yes if path not in store.cm_paths.missing_managed else self.no
+        is_managed = (
+            TrueLabel() if path in store.cm_paths.man_file_set else FalseLabel()
+        )
+        has_status = (
+            TrueLabel() if path in store.cm_paths.status_file_set else FalseLabel()
+        )
+        f_match_unwanted = TrueLabel() if status is Sc.XX else FalseLabel()
+        exists = (
+            TrueLabel() if path not in store.cm_paths.missing_managed else FalseLabel()
+        )
 
         info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.f_is_managed), self.TruthLabel(is_managed)
-            )
+            self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed)
         )
         info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.f_has_status), self.TruthLabel(has_status)
-            )
+            self.InfoItem(self.InfoLabel(LabelStr.f_has_status), has_status)
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.f_match_un_wanted),
-                self.TruthLabel(f_match_unwanted),
+                f_match_unwanted,
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.f_exists),
-                self.TruthLabel(exists),
+                exists,
             )
         )
 

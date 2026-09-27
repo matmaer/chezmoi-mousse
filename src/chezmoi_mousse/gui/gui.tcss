@@ -171,6 +171,35 @@ FlatButtonsVertical {
   width: auto;
 }
 
+PathInfo {
+
+  InfoLabel {
+    background-tint: $panel;
+    background: $panel;
+    border-bottom: inner $panel;
+    border-top: inner $panel;
+    min-width: 40;
+    padding-right: 1;
+    text-align: right;
+  }
+
+  TrueLabel {
+    background-tint: $success-muted;
+    background: $success-muted;
+    border-bottom: inner $success-muted;
+    border-top: inner $success-muted;
+    color: $text-success;
+  }
+
+  FalseLabel {
+    background-tint: $error-muted;
+    background: $error-muted;
+    border-bottom: inner $error-muted;
+    border-top: inner $error-muted;
+    color: $text-error;
+  }
+}
+
 TabButtons {
   height: 2;
   width: 100%;
