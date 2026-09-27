@@ -60,6 +60,8 @@ class PathInfo(ScrollableContainer):
 
     class InfoItem(HorizontalGroup): ...
 
+    node_data: reactive[NodeData | None] = reactive(None, init=False)
+
     def compose(self) -> ComposeResult:
         yield PathInfo.DirInfo()
         yield PathInfo.FileInfo()
@@ -71,7 +73,8 @@ class PathInfo(ScrollableContainer):
         self.file_info = self.query_exactly_one(PathInfo.FileInfo)
         self.file_info.display = False
 
-    def set_dir_info(self, node_data: NodeData) -> None:
+    @work
+    async def set_dir_info(self, node_data: NodeData) -> None:
         path = node_data.path
         status = node_data.status
         info_items: list[PathInfo.InfoItem] = []
@@ -146,7 +149,8 @@ class PathInfo(ScrollableContainer):
         self.dir_info.remove_children()
         self.dir_info.mount_all(info_items)
 
-    def set_file_info(self, node_data: NodeData) -> None:
+    @work
+    async def set_file_info(self, node_data: NodeData) -> None:
         path = node_data.path
         status = node_data.status
         info_items: list[PathInfo.InfoItem] = []
@@ -184,8 +188,7 @@ class PathInfo(ScrollableContainer):
         self.file_info.remove_children()
         self.file_info.mount_all(info_items)
 
-    @work
-    async def update_path_info(self, node_data: NodeData) -> None:
+    def watch_node_data(self, node_data: NodeData) -> None:
         path = node_data.path
         if path in store.cm_paths.file_node_data or path.is_file():
             self.dir_info.display = False
@@ -244,7 +247,7 @@ class ContentView(Vertical):
         else:
             self.content_static.display = False
             self.flat_label.update(LabelStr.select_path_contents)
-            self.path_info.update_path_info(node_data)
+            self.path_info.node_data = node_data
             self.path_info.display = True
 
 
@@ -328,7 +331,7 @@ class _DiffViewBase(Vertical):
         if node_data.path not in store.cm_paths.status_path_set:
             self.flat_label.update(LabelStr.select_path_diff)
             self.diff_container.display = False
-            self.path_info.update_path_info(node_data)
+            self.path_info.node_data = node_data
             self.path_info.display = True
         else:
             self.path_info.display = False
@@ -420,6 +423,6 @@ class GitLogView(Vertical):
             self.data_table.display = False
             self.flat_label.update(LabelStr.select_path_git_log)
             self.path_info.display = True
-            self.path_info.update_path_info(node_data)
+            self.path_info.node_data = node_data
             return
         self._update_datatable_and_flat_label(path)
