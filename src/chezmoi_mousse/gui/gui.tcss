@@ -162,10 +162,6 @@ CustomHeader {
   }
 }
 
-DirContentBtn {
-  border: none;
-}
-
 DoctorTable {
   margin-bottom: 1;
 }
