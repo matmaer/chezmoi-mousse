@@ -39,6 +39,12 @@ def get_issues(node_db: NodeDb) -> IssueList:
     issue_list: IssueList = []
     defined_exports, export_nodes = _get_defined_exports(node_db)
 
+    # All known module qualnames, used to detect "from pkg import submodule"
+    # imports, which are plain submodule imports and not `__all__` symbols.
+    known_modules = {
+        next(iter(nodes)).module_qualname for nodes in node_db.by_path.values()
+    }
+
     # Track import relationships across the codebase:
     import_tracker: dict[tuple[str, str], set[str]] = {}
     # (target_module, imported_symbol) -> set of consuming modules
@@ -47,19 +53,18 @@ def get_issues(node_db: NodeDb) -> IssueList:
     import_from_nodes: NDSet = node_db.by_type.get(ast.ImportFrom.__name__, set())
     for imp_node in import_from_nodes:
         assert isinstance(imp_node.ast_node, ast.ImportFrom)
-        ast_imp = imp_node.ast_node
 
-        if not ast_imp.module or not ast_imp.module.startswith("chezmoi_mousse"):
+        if not imp_node.ast_node.module or not imp_node.ast_node.module.startswith(
+            "chezmoi_mousse"
+        ):
             continue
 
-        target_module = ast_imp.module
-        consumer_module = imp_node.module_qualname
-
-        for alias in ast_imp.names:
-            if alias.name != "*":
-                key = (target_module, alias.name)
-                import_tracker.setdefault(key, set()).add(consumer_module)
-                imported_symbols_by_module.add((consumer_module, alias.name))
+        for alias in imp_node.ast_node.names:
+            if f"{imp_node.ast_node.module}.{alias.name}" in known_modules:
+                continue
+            key = (imp_node.ast_node.module, alias.name)
+            import_tracker.setdefault(key, set()).add(imp_node.module_qualname)
+            imported_symbols_by_module.add((imp_node.module_qualname, alias.name))
 
     # 1. Flag modules imported from that lack an `__all__` declaration
     modules_imported_from = {src for src, _ in import_tracker}
