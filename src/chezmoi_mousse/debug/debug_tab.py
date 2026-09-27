@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
-__all__ = ["DebugTab"]
+__all__ = ["DebugLog", "DebugTab"]
 
 
 class DebugLog(RichLoggers):
