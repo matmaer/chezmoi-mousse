@@ -43,18 +43,15 @@ class BindingDescription(StrEnum):
 
 class BtnLabel(StrEnum):
     # Main tabs
-    add = "Add"
-    config = "Config"
-    debug = "Debug"
-    logs = "Logs"
-    colors = "Colors"
-
-    # Gen 2 main tabs
     operate = "Operate"
+    config = "Config"
+    logs = "Logs"
+    debug = "Debug"
+
+    # Run chezmoi mcommand buttons
     chezmoi_add = "chezmoi add"
     chezmoi_apply = "chezmoi apply"
     chezmoi_re_add = "chezmoi re-add"
-    # Danger Zone operation buttons
     chezmoi_forget = "chezmoi forget"
     chezmoi_destroy = "chezmoi destroy"
 
@@ -75,20 +72,11 @@ class BtnLabel(StrEnum):
     test_paths = "Test Paths"
 
     # Triggers chezmoi command labels
-    add_review = "Review Add Path"
-    add_run = "Run Chezmoi Add"
-    apply_review = "Review Apply Path"
-    apply_run = "Run Chezmoi Apply"
-    forget_review = "Review Forget Path"
-    forget_run = "Run Chezmoi Forget"
-    destroy_review = "Review Destroy Path"
-    destroy_run = "Run Chezmoi Destroy"
-    re_add_review = "Review Re-Add Path"
-    re_add_run = "Run Chezmoi Re-Add"
     refresh_trees = "Refresh Trees"
     reload = "Reload"
 
     # Debug tab buttons
+    colors = "Colors"
     create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
     list_test_paths = "List Test Paths"

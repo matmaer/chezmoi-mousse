@@ -101,33 +101,23 @@ class _RichLogIds:
 
 class _OperateButtonIds:
     def __init__(self, ids: AppIds) -> None:
-        self.add_review: str = ids.btn_id(btn_label=BtnLabel.add_review)
-        self.add_review_q: str = f"#{self.add_review}"
-        self.add_run: str = ids.btn_id(btn_label=BtnLabel.add_run)
-        self.add_run_q: str = f"#{self.add_run}"
+        self.chezmoi_add: str = ids.btn_id(btn_label=BtnLabel.chezmoi_add)
+        self.chezmoi_add_q: str = f"#{self.chezmoi_add}"
 
-        self.apply_review: str = ids.btn_id(btn_label=BtnLabel.apply_review)
-        self.apply_review_q: str = f"#{self.apply_review}"
-        self.apply_run: str = ids.btn_id(btn_label=BtnLabel.apply_run)
-        self.apply_run_q: str = f"#{self.apply_run}"
+        self.chezmoi_apply: str = ids.btn_id(btn_label=BtnLabel.chezmoi_apply)
+        self.chezmoi_apply_q: str = f"#{self.chezmoi_apply}"
 
-        self.destroy_review: str = ids.btn_id(btn_label=BtnLabel.destroy_review)
-        self.destroy_review_q: str = f"#{self.destroy_review}"
-        self.destroy_run: str = ids.btn_id(btn_label=BtnLabel.destroy_run)
-        self.destroy_run_q: str = f"#{self.destroy_run}"
+        self.chezmoi_destroy: str = ids.btn_id(btn_label=BtnLabel.chezmoi_destroy)
+        self.chezmoi_destroy_q: str = f"#{self.chezmoi_destroy}"
+
+        self.chezmoi_forget: str = ids.btn_id(btn_label=BtnLabel.chezmoi_forget)
+        self.chezmoi_forget_q: str = f"#{self.chezmoi_forget}"
+
+        self.chezmoi_re_add: str = ids.btn_id(btn_label=BtnLabel.chezmoi_re_add)
+        self.chezmoi_re_add_q: str = f"#{self.chezmoi_re_add}"
 
         self.exit_op_modal: str = ids.btn_id(btn_label=BtnLabel.cancel)
         self.exit_op_modal_q: str = f"#{self.exit_op_modal}"
-
-        self.forget_review: str = ids.btn_id(btn_label=BtnLabel.forget_review)
-        self.forget_review_q: str = f"#{self.forget_review}"
-        self.forget_run: str = ids.btn_id(btn_label=BtnLabel.forget_run)
-        self.forget_run_q: str = f"#{self.forget_run}"
-
-        self.re_add_review: str = ids.btn_id(btn_label=BtnLabel.re_add_review)
-        self.re_add_review_q: str = f"#{self.re_add_review}"
-        self.re_add_run: str = ids.btn_id(btn_label=BtnLabel.re_add_run)
-        self.re_add_run_q: str = f"#{self.re_add_run}"
 
         self.refresh_tree: str = ids.btn_id(btn_label=BtnLabel.refresh_trees)
         self.refresh_tree_q: str = f"#{self.refresh_tree}"

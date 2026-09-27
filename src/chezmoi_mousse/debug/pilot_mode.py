@@ -75,7 +75,6 @@ async def _start_pilot_mode(app: ChezmoiGui) -> None:
 
         tabs_to_check = [
             BtnLabel.operate,
-            BtnLabel.add,
             BtnLabel.logs,
             BtnLabel.config,
         ]
