@@ -230,7 +230,6 @@ class LabelStr(StrEnum):
 
     # other
     context = "Context"
-    full_cmd = "Full Command"
     no_managed_paths = "No managed paths yet"
     no_status_paths = "No paths with a status"
     not_set = "Not Set"
