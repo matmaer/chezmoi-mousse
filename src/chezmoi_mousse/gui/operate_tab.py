@@ -100,11 +100,9 @@ class LeftSideVertical(Vertical):
             if tree.display is False
         ]
 
-    def _sync_to_trees(
-        self, node_data: NodeData, exclude: list[OperateTree] | None
-    ) -> None:
+    def _sync_to_trees(self, node_data: NodeData, exclude: list[OperateTree]) -> None:
         for tree in self._non_displayed_trees:
-            if exclude is not None and tree in exclude:
+            if tree in exclude:
                 continue
             tree_node = tree.node_map.get(node_data.path)
             if tree_node:
@@ -117,17 +115,33 @@ class LeftSideVertical(Vertical):
         if (
             self._current_displayed_tree_id is None
             or event.control.id != self._current_displayed_tree_id
+            or (
+                event.control.id
+                in (
+                    store.op_ids.tree.un_wanted_plus_sp,
+                    store.op_ids.tree.un_wanted_plus_amp,
+                )
+                and event.node.data.status in (Sc.XX, Sc.ZZ)
+            )
         ):
             return
-        if event.control.id == store.op_ids.tree.managed_only_sp:
-            self._sync_to_trees(event.node.data, exclude=None)
-        elif event.control.id == store.op_ids.tree.managed_all_mp:
-            exclude: list[OperateTree] | None = None
-            if event.node.data.status == Sc.SS:
-                exclude = [
-                    self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
+        exclude: list[OperateTree] = []
+        if event.node.data.status in (Sc.SS, Sc.UU, Sc.XX, Sc.YY, Sc.ZZ):
+            exclude.append(
+                self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
+            )
+        if event.node.data.status in (Sc.UU, Sc.XX, Sc.YY, Sc.ZZ):
+            exclude.append(
+                self.query_one(store.op_ids.tree.managed_all_mp_q, OperateTree)
+            )
+        if event.node.data.status in (Sc.XX, Sc.ZZ):
+            exclude.extend(
+                [
+                    self.query_one(store.op_ids.tree.un_man_plus_sp_q, OperateTree),
+                    self.query_one(store.op_ids.tree.un_man_plus_amp_q, OperateTree),
                 ]
-            self._sync_to_trees(event.node.data, exclude=exclude)
+            )
+        self._sync_to_trees(event.node.data, exclude=exclude)
 
     @on(Tree.NodeCollapsed)
     def sync_collapsed_node(self, event: Tree.NodeCollapsed[NodeData]) -> None: ...
