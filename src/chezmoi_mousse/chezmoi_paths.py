@@ -39,7 +39,7 @@ class ChezmoiTreePaths:
         self._update_file_node_data(
             self._status_files_pcr, self.man_file_set, self._un_man_file_set
         )
-        self._update_dir_node_data(
+        self._update_dir_node_data_old(
             self._status_dirs_pcr,
             self.man_dir_set,
             self.status_path_set,
@@ -94,7 +94,7 @@ class ChezmoiTreePaths:
             status=status,
         )
 
-    def _update_dir_node_data(
+    def _update_dir_node_data_old(
         self,
         status_dirs_pcr: dict[Path, Sc],
         man_dir_set: frozenset[Path],
