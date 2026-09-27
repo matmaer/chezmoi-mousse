@@ -76,6 +76,8 @@ class PathInfo(VerticalGroup):
         )
         has_nested_unmanaged = self.yes if status is Sc.YY else self.no
         has_nested_unwanted = self.yes if node_data.status is Sc.XX else self.no
+        manches_unwanted = self.yes if status == Sc.XX else self.no
+        exists = self.yes if path not in store.cm_paths.missing_managed else self.no
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.d_is_managed), self.TruthLabel(is_managed)
@@ -110,6 +112,18 @@ class PathInfo(VerticalGroup):
                 self.TruthLabel(has_nested_unwanted),
             )
         )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_match_un_wanted),
+                self.TruthLabel(manches_unwanted),
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_exists),
+                self.TruthLabel(exists),
+            )
+        )
 
         self.dir_info.remove_children()
         self.dir_info.mount_all(info_items)
@@ -122,21 +136,28 @@ class PathInfo(VerticalGroup):
         is_managed = self.yes if path in store.cm_paths.man_file_set else self.no
         has_status = self.yes if path in store.cm_paths.status_file_set else self.no
         f_match_unwanted = self.yes if status is Sc.XX else self.no
+        exists = self.yes if path not in store.cm_paths.missing_managed else self.no
 
         info_items.append(
             self.InfoItem(
-                self.InfoLabel(LabelStr.d_is_managed), self.TruthLabel(is_managed)
+                self.InfoLabel(LabelStr.f_is_managed), self.TruthLabel(is_managed)
             )
         )
         info_items.append(
             self.InfoItem(
-                self.InfoLabel(LabelStr.d_has_status), self.TruthLabel(has_status)
+                self.InfoLabel(LabelStr.f_has_status), self.TruthLabel(has_status)
             )
         )
         info_items.append(
             self.InfoItem(
                 self.InfoLabel(LabelStr.f_match_un_wanted),
                 self.TruthLabel(f_match_unwanted),
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.f_exists),
+                self.TruthLabel(exists),
             )
         )
 

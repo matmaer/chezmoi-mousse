@@ -203,12 +203,6 @@ class LabelStr(StrEnum):
     radio_diff_reverse = "Diff Reverse View"
     radio_git_log = "Git Log View"
 
-    # Operate tab SubSectionLabels when a directory is selected in ContentView
-    status_dirs_in = "Contains Directories With Status"
-    status_files_in = "Contains Files With Status"
-    unchanged_dirs_in = "Contains Unchanged Managed Directories"
-    unchanged_files_in = "Contains Unchanged Managed Files"
-
     # Operate tab Switch labels
     expand_managed = "Expand Managed"
     show_unchanged = "Show Unchanged"
@@ -415,7 +409,6 @@ class ProblemChars(StrEnum):
 class ReactiveVar(StrEnum):
     cmd_result = auto()
     node_data = auto()
-    path = auto()
 
 
 class RichLogName(StrEnum):
