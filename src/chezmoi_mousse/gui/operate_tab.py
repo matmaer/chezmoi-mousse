@@ -28,6 +28,7 @@ from chezmoi_mousse.gui.common.operate_views import (
     DiffView,
     GitLogView,
 )
+from chezmoi_mousse.named_tuples import NodeData
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     LabelStr,
@@ -41,8 +42,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from textual.app import ComposeResult
-
-    from chezmoi_mousse.named_tuples import NodeData
 
 
 __all__ = ["OperateTab"]
@@ -181,6 +180,9 @@ class RightSideVertical(Vertical):
 class OperateTab(TabPane):
     def __init__(self) -> None:
         self.ids = store.op_ids
+        self.root_node_data: NodeData = NodeData(
+            path=store.cfg.dest_dir, status=Sc.QQ, main_label=LabelStr.dest_dir
+        )
         super().__init__(
             id=BtnLabel.operate.pane_id,
             title=BtnLabel.operate,
@@ -255,21 +257,19 @@ class OperateTab(TabPane):
             if btn.label == BtnLabel.chezmoi_re_add:
                 btn.disabled = path not in store.cm_paths.re_add_btn_paths
 
-    def _set_all_path_reactives(self, path: Path) -> None:
-        setattr(self.git_log_view, ReactiveVar.path, path)
-        setattr(self.content_view, ReactiveVar.path, path)
-        setattr(self.diff_view, ReactiveVar.path, path)
-        setattr(self.diff_reverse_view, ReactiveVar.path, path)
+    def _set_all_path_reactives(self, node_data: NodeData) -> None:
+        setattr(self.git_log_view, ReactiveVar.node_data, node_data)
+        setattr(self.content_view, ReactiveVar.node_data, node_data)
+        setattr(self.diff_view, ReactiveVar.node_data, node_data)
+        setattr(self.diff_reverse_view, ReactiveVar.node_data, node_data)
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
-        event.stop()
         if event.node.data is None:
-            self._set_all_path_reactives(store.cfg.dest_dir)
-            self.view_label.update(LabelStr.dest_dir)
             return
+        event.stop()
         self.view_label.update(event.node.data.main_label)
-        self._set_all_path_reactives(event.node.data.path)
+        self._set_all_path_reactives(event.node.data)
         self._disable_enable_op_buttons(event.node.data.path)
 
     @on(Button.Pressed)
@@ -277,7 +277,7 @@ class OperateTab(TabPane):
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
             self.view_label.update(LabelStr.dest_dir)
-            self._set_all_path_reactives(store.cfg.dest_dir)
+            self._set_all_path_reactives(self.root_node_data)
             for btn in self.op_btn_group.query(Button).results():
                 if btn.label == BtnLabel.chezmoi_destroy:
                     btn.disabled = True

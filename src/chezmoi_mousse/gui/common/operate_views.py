@@ -5,17 +5,22 @@ from typing import TYPE_CHECKING, ClassVar
 
 from rich.text import Text
 from textual import work
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import (
+    HorizontalGroup,
+    ScrollableContainer,
+    Vertical,
+    VerticalGroup,
+)
 from textual.reactive import reactive
-from textual.widgets import Collapsible, DataTable, Static
+from textual.widgets import DataTable, Label, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
+from chezmoi_mousse.gui.common.components import FlatSectionLabel
 from chezmoi_mousse.str_enums import (
     ColorVar,
-    DirContentTitles,
     LabelStr,
     ReadCmd,
+    StatusCode as Sc,
     Tcss,
 )
 
@@ -24,124 +29,188 @@ if TYPE_CHECKING:
 
     from textual import getters
     from textual.app import ComposeResult
-    from textual.widgets import Label
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.named_tuples import NodeData
 
 
 __all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView"]
 
 
-class DirContensView(ScrollableContainer):
-    def compose(self) -> ComposeResult:
-        yield Collapsible(title=DirContentTitles.status_dirs)
-        yield Collapsible(title=DirContentTitles.status_files)
-        yield Collapsible(title=DirContentTitles.managed_dirs)
-        yield Collapsible(title=DirContentTitles.managed_files)
-        yield Collapsible(title=DirContentTitles.un_managed_dirs)
-        yield Collapsible(title=DirContentTitles.un_managed_files)
-        yield Collapsible(title=DirContentTitles.un_wanted_dirs)
-        yield Collapsible(title=DirContentTitles.un_wanted_files)
+class PathInfo(VerticalGroup):
+    class DirInfo(VerticalGroup): ...
 
-    def update_collapsibles(self, dir_contents: dict[str, list[Path]]) -> None: ...
+    class FileInfo(VerticalGroup): ...
+
+    class InfoLabel(Label): ...
+
+    class TruthLabel(Label): ...
+
+    class InfoItem(HorizontalGroup): ...
+
+    def compose(self) -> ComposeResult:
+        yield PathInfo.DirInfo()
+        yield PathInfo.FileInfo()
+
+    def on_mount(self) -> None:
+        self.yes = "yes"
+        self.no = " no"
+        self.dir_info = self.query_exactly_one(PathInfo.DirInfo)
+        self.file_info = self.query_exactly_one(PathInfo.FileInfo)
+        self.file_info.display = False
+
+    def set_dir_info(self, node_data: NodeData) -> None:
+        path = node_data.path
+        status = node_data.status
+        info_items: list[PathInfo.InfoItem] = []
+
+        is_managed = self.yes if path in store.cm_paths.man_dir_set else self.no
+        has_status = self.yes if path in store.cm_paths.status_dir_set else self.no
+        has_nested_status = self.yes if status is Sc.TT else self.no
+        has_nested_managed = (
+            self.yes
+            if path_funcs.any_nested_in(
+                dir_path=path, check_paths=store.cm_paths.man_path_set
+            )
+            else self.no
+        )
+        has_nested_unmanaged = self.yes if status is Sc.YY else self.no
+        has_nested_unwanted = self.yes if node_data.status is Sc.XX else self.no
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_is_managed), self.TruthLabel(is_managed)
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_has_status), self.TruthLabel(has_status)
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_has_nested_status),
+                self.TruthLabel(has_nested_status),
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_has_nested_managed),
+                self.TruthLabel(has_nested_managed),
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_has_nested_un_man),
+                self.TruthLabel(has_nested_unmanaged),
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_has_nested_un_wanted),
+                self.TruthLabel(has_nested_unwanted),
+            )
+        )
+
+        self.dir_info.remove_children()
+        self.dir_info.mount_all(info_items)
+
+    def set_file_info(self, node_data: NodeData) -> None:
+        path = node_data.path
+        status = node_data.status
+        info_items: list[PathInfo.InfoItem] = []
+
+        is_managed = self.yes if path in store.cm_paths.man_file_set else self.no
+        has_status = self.yes if path in store.cm_paths.status_file_set else self.no
+        f_match_unwanted = self.yes if status is Sc.XX else self.no
+
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_is_managed), self.TruthLabel(is_managed)
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.d_has_status), self.TruthLabel(has_status)
+            )
+        )
+        info_items.append(
+            self.InfoItem(
+                self.InfoLabel(LabelStr.f_match_un_wanted),
+                self.TruthLabel(f_match_unwanted),
+            )
+        )
+
+        self.file_info.remove_children()
+        self.file_info.mount_all(info_items)
+
+    def update_path_info(self, node_data: NodeData) -> None:
+        path = node_data.path
+        if path in store.cm_paths.file_node_data or path.is_file():
+            self.dir_info.display = False
+            self.set_file_info(node_data)
+            self.file_info.display = True
+        else:
+            self.file_info.display = False
+            self.set_dir_info(node_data)
+            self.dir_info.display = True
 
 
 class ContentView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    txt_cache: ClassVar[dict[Path, Text]] = {}
-    dir_content_cache: ClassVar[dict[Path, list[SubSectionLabel | Static]]] = {}
+    file_content_cache: ClassVar[dict[Path, Text]] = {}
 
-    class ContentStatic(Static): ...
+    class FileContentStatic(Static): ...
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_contents)
-        yield DirContensView()
-        yield ContentView.ContentStatic(markup=False)
+        yield ContentView.FileContentStatic(markup=False)
+        yield PathInfo()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.content_static = self.query_exactly_one(ContentView.ContentStatic)
+        self.content_static = self.query_exactly_one(ContentView.FileContentStatic)
         self.content_static.display = False
-        self.dir_contents = self.query_exactly_one(ScrollableContainer)
+        self.path_info = self.query_exactly_one(PathInfo)
 
     @work
-    async def _create_dir_contents(self, path: Path) -> None:
-        self.dir_contents.display = False
-        self.dir_contents.remove_children()
-        if path in self.dir_content_cache:
-            widgets = self.dir_content_cache[path]
-        else:
-            widgets: list[SubSectionLabel | Static] = []
-            status_files_in: list[Path] = path_funcs.get_nested_in(
-                dir_path=path, check_paths=store.cm_paths.status_file_set
-            )
-            if status_files_in:
-                widgets.append(SubSectionLabel(LabelStr.status_files_in))
-                for path in status_files_in:
-                    widgets.append(Static(str(path)))
-                widgets.append(Static(""))  # add a spacer between sections
-
-            status_dirs_in: list[Path] = path_funcs.get_nested_in(
-                dir_path=path, check_paths=store.cm_paths.status_dir_set
-            )
-            if status_dirs_in:
-                widgets.append(SubSectionLabel(LabelStr.status_dirs_in))
-                for path in status_dirs_in:
-                    widgets.append(Static(str(path)))
-                widgets.append(Static(""))  # add a spacer between sections
-
-            managed_dirs_in: list[Path] = path_funcs.get_nested_in(
-                dir_path=path, check_paths=store.cm_paths.man_dir_set
-            )
-            if managed_dirs_in:
-                widgets.append(SubSectionLabel(LabelStr.unchanged_dirs_in))
-                for path in managed_dirs_in:
-                    widgets.append(Static(str(path)))
-                widgets.append(Static(""))  # add a spacer between sections
-
-        self.dir_contents.mount_all(widgets)
-        self.dir_contents.display = True
-
-    @work
-    async def _create_file_contents(self, path: Path) -> None:
-        if path in self.txt_cache:
-            f_content = self.txt_cache[path]
+    async def _update_file_content(self, path: Path) -> None:
+        if path in self.file_content_cache:
+            f_content = self.file_content_cache[path]
         else:
             f_content = Text("Looks like an empty file.")
             if path in store.cm_paths.missing_managed:
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, path
                 )
-                self.flat_label.update(LabelStr.chezmoi_cat_output)
+                self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.cat, path))
             else:
                 self.flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
-            self.txt_cache[path] = f_content
-
+            self.file_content_cache[path] = f_content
         self.content_static.update(f_content)
 
-    def watch_path(self, path: Path) -> None:
-        if path in store.cm_paths.dir_node_data or path == store.cfg.dest_dir:
-            self.flat_label.update(LabelStr.select_path_contents)
+    def watch_node_data(self, node_data: NodeData) -> None:
+        path = node_data.path
+        if path in store.cm_paths.file_node_data or path.is_file():
+            self.path_info.display = False
+            self._update_file_content(path)
+            self.content_static.display = True
+        else:
             self.content_static.display = False
-            self.dir_contents.display = True
-            self._create_dir_contents(path)
-        elif path in store.cm_paths.file_node_data:
-            self._create_file_contents(path)
-
-        self.dir_contents.display = False
-        self.content_static.display = True
+            self.flat_label.update(LabelStr.select_path_contents)
+            self.path_info.update_path_info(node_data)
+            self.path_info.display = True
 
 
 class _DiffViewBase(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    node_data: reactive[NodeData | None] = reactive(None, init=False)
 
     cache: ClassVar[dict[Path, list[Static]]] = {}
 
@@ -165,13 +234,15 @@ class _DiffViewBase(Vertical):
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_diff)
         yield ScrollableContainer()
+        yield PathInfo()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(ScrollableContainer)
         self.diff_container.display = False
+        self.path_info = self.query_exactly_one(PathInfo)
 
-    async def _get_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
+    async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
         diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
         widgets: list[Label | Static] = []
 
@@ -196,27 +267,32 @@ class _DiffViewBase(Vertical):
         return widgets
 
     @work
-    async def _update_diff_view(self, path: Path) -> None:
+    async def _update_diff_view(self, node_data: NodeData) -> None:
 
-        self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, path))
-        self.diff_container.display = True
-        self.diff_container.loading = True
-
-        if path in self.cache:
-            self.diff_container.remove_children()
-            self.diff_container.mount_all(self.cache[path])
+        if node_data.path in self.cache:
+            diff_widgets = self.cache[node_data.path]
         else:
-            diff_statics = await self._get_diff_widgets(self.diff_cmd, path)
-            self.cache[path] = diff_statics
-            self.diff_container.mount_all(self.cache[path])
-        self.diff_container.loading = False
+            diff_widgets = await self._create_diff_widgets(
+                self.diff_cmd, node_data.path
+            )
+            self.cache[node_data.path] = diff_widgets
 
-    def watch_path(self, path: Path) -> None:
-        if path in store.cm_paths.status_path_set:
-            self._update_diff_view(path)
-            return
-        self.diff_container.display = False
-        self.flat_label.update(LabelStr.select_path_diff)
+        self.diff_container.remove_children()
+        self.diff_container.mount_all(diff_widgets)
+
+    def watch_node_data(self, node_data: NodeData) -> None:
+        if node_data.path not in store.cm_paths.status_path_set:
+            self.flat_label.update(LabelStr.select_path_diff)
+            self.diff_container.display = False
+            self.path_info.update_path_info(node_data)
+            self.path_info.display = True
+        else:
+            self.path_info.display = False
+            self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
+            self.diff_container.loading = True
+            self.diff_container.display = True
+            self._update_diff_view(node_data)
+            self.diff_container.loading = False
 
 
 class DiffView(_DiffViewBase):
@@ -233,17 +309,19 @@ class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    path: reactive[Path | None] = reactive(None, init=False)
+    node_data: reactive[NodeData | None] = reactive(None, init=False)
     cache: ClassVar[dict[Path, list[list[str]]]] = {}
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
         yield DataTable[str](show_cursor=False)
+        yield PathInfo()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
+        self.path_info = self.query_exactly_one(PathInfo)
 
     async def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
@@ -291,9 +369,12 @@ class GitLogView(Vertical):
             self.data_table.add_row(*row)
         self.data_table.display = True
 
-    def watch_path(self, path: Path) -> None:
+    def watch_node_data(self, node_data: NodeData) -> None:
+        path = node_data.path
         if path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set:
             self.data_table.display = False
             self.flat_label.update(LabelStr.select_path_git_log)
+            self.path_info.display = True
+            self.path_info.update_path_info(node_data)
             return
         self._update_datatable_and_flat_label(path)

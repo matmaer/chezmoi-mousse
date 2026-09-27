@@ -8,6 +8,7 @@ from textual.widgets import Tree
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.named_tuples import NodeData
 from chezmoi_mousse.str_enums import (
+    LabelStr,
     StatusCode as Sc,
     Tcss,
     TreeName,
@@ -39,12 +40,15 @@ class OperateTree(Tree[NodeData]):
         )
 
     def on_mount(self) -> None:
-        self.node_map: dict[Path, TreeNode[NodeData]] = {}
         self.iterated_dirs: set[Path] = set()
         self.loading = True
         self.display = False
         self.guide_depth = 3
         self.show_root = False
+        self.root.data = NodeData(
+            path=store.cfg.dest_dir, status=Sc.QQ, main_label=LabelStr.dest_dir
+        )
+        self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
 
     def _get_tree_nodes(
@@ -90,10 +94,7 @@ class OperateTree(Tree[NodeData]):
     async def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
-        if path.parent == store.cfg.dest_dir:
-            parent_node = self.root
-        else:
-            parent_node = self.node_map[path.parent]
+        parent_node = self.node_map[path.parent]
 
         italic = " italic" if path in store.cm_paths.missing_managed else ""
         color = self.app.theme_variables[node_data.status.tree_label_color]

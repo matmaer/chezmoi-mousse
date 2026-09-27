@@ -9,7 +9,6 @@ __all__ = [
     "Chars",
     "ColorVar",
     "ContainerName",
-    "DirContentTitles",
     "GlobalArgs",
     "LabelStr",
     "LogStr",
@@ -148,17 +147,6 @@ class ContainerName(StrEnum):
         return f"{self}_id"
 
 
-class DirContentTitles(StrEnum):
-    status_dirs = "Managed Directories (with status)"
-    status_files = "Managed Files (with status)"
-    managed_dirs = "Managed Directories (no status)"
-    managed_files = "Managed Files (no status)"
-    un_managed_dirs = "Directories (not managed)"
-    un_managed_files = "Files (not managed)"
-    un_wanted_dirs = "Directories (not managed, matches unwanted)"
-    un_wanted_files = "Files (not managed, matches unwanted)"
-
-
 class LabelStr(StrEnum):
     # Config tab
     doctor_output = "Doctor Output"
@@ -204,7 +192,6 @@ class LabelStr(StrEnum):
     status_file = f"Managed File ({_has_status})"
 
     # Operate tab FlatSectionLabel
-    chezmoi_cat_output = "Chezmoi Cat output"
     read_file_output = "Read file from disk output"
     select_path_contents = "<- Select a file path to view its contents."
     select_path_diff = "<- Select a path with a status to view its diff."
@@ -227,6 +214,24 @@ class LabelStr(StrEnum):
     show_unchanged = "Show Unchanged"
     show_unmanaged = "Show Unmanaged"
     show_unwanted = "Show Unwanted"
+
+    # Operate tab PathInfo labels
+    # directories
+    d_is_managed = "Directory is managed"
+    d_match_un_wanted = "Directory matches un-wanted filter"
+    d_exists = "Directory exists on disk"
+    d_has_status = "Directory has a status"
+    d_has_commits = "Directory has commit history"
+    d_has_nested_status = "Directory has nested status paths"
+    d_has_nested_managed = "Directory has nested managed paths"
+    d_has_nested_un_man = "Directory has nested un-managed paths"
+    d_has_nested_un_wanted = "Directory has nested un-wanted paths"
+    # files
+    f_is_managed = "File is managed"
+    f_has_status = "File has a status"
+    f_has_commits = "File has commit history"
+    f_exists = "File exists on disk"
+    f_match_un_wanted = "File matches un-wanted filter"
 
     # other
     context = "Context"
@@ -409,6 +414,7 @@ class ProblemChars(StrEnum):
 
 class ReactiveVar(StrEnum):
     cmd_result = auto()
+    node_data = auto()
     path = auto()
 
 
@@ -453,12 +459,13 @@ class StatusCode(StrEnum):
     SM = "SM"  # Applied target clean; apply will modify target from source updates.
 
     # Meta statuses, self assigned for Tree widget rendering.
+    QQ = "QQ"  # the destDir
     SS = "\x20\x20"  # Any path which don't occur at all in chezmoi status output
     TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
-    UU = "UU"  # Unmanaged  path
-    XX = "XX"  # Unmanaged  and unwanted path
-    YY = "YY"  # Any path has status SS but contains nested unmanaged paths
-    ZZ = "ZZ"  # Any path has status SS but contains nested unwanted paths
+    UU = "UU"  # Unmanaged path
+    XX = "XX"  # Unmanaged and unwanted path
+    YY = "YY"  # Any dir with status UU but also contains nested UU paths
+    ZZ = "ZZ"  # Any dir with status XX but also contains nested XX paths
 
     @classmethod
     @cache
