@@ -80,7 +80,13 @@ class PathInfo(ScrollableContainer):
         has_status = (
             TrueLabel() if path in store.cm_paths.status_dir_set else FalseLabel()
         )
-        has_nested_status = TrueLabel() if status is Sc.TT else FalseLabel()
+        has_nested_status = (
+            TrueLabel()
+            if path_funcs.any_nested_in(
+                dir_path=path, check_paths=store.cm_paths.status_path_set
+            )
+            else FalseLabel()
+        )
         has_nested_managed = (
             TrueLabel()
             if path_funcs.any_nested_in(
