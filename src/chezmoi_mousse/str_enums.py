@@ -549,20 +549,28 @@ class Tcss(StrEnum):
 class TreeName(StrEnum):
     """
     iu: include unchanged
+    xpd: expanded
+
     status trees: never include unchanged
     managed trees: always include unchanged
     """
 
     # the status trees include managed paths with a status or meta status
-    managed_only_sp = auto()
+    managed_only_sp = auto()  # base dict data
+    managed_only_sp_xpd = auto()
     # the man trees includes all managed paths, with or without a status or meta status
-    managed_all_mp = auto()
+    managed_all_mp = auto()  # base dict data
+    managed_all_mp_xpd = auto()
     # trees including unmanaged paths without unwanted paths
-    un_man_plus_sp = auto()
-    un_man_plus_amp = auto()
+    un_man_plus_sp = auto()  # base dict data
+    un_man_plus_sp_xpd = auto()
+    un_man_plus_amp = auto()  # base dict data
+    un_man_plus_amp_xpd = auto()
     # trees including any unmanaged path, including unwanted paths
-    un_wanted_plus_sp = auto()
-    un_wanted_plus_amp = auto()
+    un_wanted_plus_sp = auto()  # base dict data
+    un_wanted_plus_sp_xpd = auto()
+    un_wanted_plus_amp = auto()  # base dict data
+    un_wanted_plus_amp_xpd = auto()
 
 
 ##############################################

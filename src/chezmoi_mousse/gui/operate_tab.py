@@ -12,7 +12,6 @@ from textual.widgets import (
     Button,
     RadioButton,
     RadioSet,
-    Switch,
     TabPane,
     Tree,
 )
@@ -62,8 +61,16 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.managed_only_sp,
         )
         yield OperateTree(
+            TreeName.managed_only_sp_xpd,
+            store.op_ids.tree.managed_only_sp_xpd,
+        )
+        yield OperateTree(
             TreeName.managed_all_mp,
             store.op_ids.tree.managed_all_mp,
+        )
+        yield OperateTree(
+            TreeName.managed_all_mp_xpd,
+            store.op_ids.tree.managed_all_mp_xpd,
         )
         # UNMANAGED TREE VARIANTS
         yield OperateTree(
@@ -71,8 +78,16 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.un_man_plus_sp,
         )
         yield OperateTree(
+            TreeName.un_man_plus_sp_xpd,
+            store.op_ids.tree.un_man_plus_sp_xpd,
+        )
+        yield OperateTree(
             TreeName.un_man_plus_amp,
             store.op_ids.tree.un_man_plus_amp,
+        )
+        yield OperateTree(
+            TreeName.un_man_plus_amp_xpd,
+            store.op_ids.tree.un_man_plus_amp_xpd,
         )
         # UNWANTED TREE VARIANTS
         yield OperateTree(
@@ -80,8 +95,16 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.un_wanted_plus_sp,
         )
         yield OperateTree(
+            TreeName.un_wanted_plus_sp_xpd,
+            store.op_ids.tree.un_wanted_plus_sp_xpd,
+        )
+        yield OperateTree(
             TreeName.un_wanted_plus_amp,
             store.op_ids.tree.un_wanted_plus_amp,
+        )
+        yield OperateTree(
+            TreeName.un_wanted_plus_amp_xpd,
+            store.op_ids.tree.un_wanted_plus_amp_xpd,
         )
 
     @property
@@ -126,18 +149,30 @@ class LeftSideVertical(Vertical):
             return
         exclude: list[OperateTree] = []
         if event.node.data.status in (Sc.SS, Sc.YY, Sc.ZZ, Sc.UU, Sc.XX):
-            exclude.append(
-                self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
+            exclude.extend(
+                [
+                    self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree),
+                    self.query_one(
+                        store.op_ids.tree.managed_only_sp_xpd_q, OperateTree
+                    ),
+                ]
             )
         if event.node.data.status in (Sc.UU, Sc.XX):
-            exclude.append(
-                self.query_one(store.op_ids.tree.managed_all_mp_q, OperateTree)
+            exclude.extend(
+                [
+                    self.query_one(store.op_ids.tree.managed_all_mp_q, OperateTree),
+                    self.query_one(store.op_ids.tree.managed_all_mp_xpd_q, OperateTree),
+                ]
             )
         if event.node.data.status in (Sc.XX):
             exclude.extend(
                 [
                     self.query_one(store.op_ids.tree.un_man_plus_sp_q, OperateTree),
                     self.query_one(store.op_ids.tree.un_man_plus_amp_q, OperateTree),
+                    self.query_one(store.op_ids.tree.un_man_plus_sp_xpd_q, OperateTree),
+                    self.query_one(
+                        store.op_ids.tree.un_man_plus_amp_xpd_q, OperateTree
+                    ),
                 ]
             )
         self._sync_to_trees(event.node.data, exclude=exclude)
@@ -307,34 +342,3 @@ class OperateTab(TabPane):
             self.content_view.display = False
             self.diff_view.display = False
             self.diff_reverse_view.display = True
-
-    @on(Switch.Changed)
-    def handle_expand_all_switch(self, event: Switch.Changed) -> None:
-        if event.switch.id != store.op_ids.switch.expand_managed:
-            return
-        event.stop()
-        show_unchanged = self.query_one(store.op_ids.switch.show_unchanged_q, Switch)
-        all_trees = self.query(OperateTree).results()
-        for tree in all_trees:
-            man_dir_nodes = (
-                [
-                    node
-                    for node in tree.node_map.values()
-                    if node.data and node.data.path in store.cm_paths.man_path_set
-                ]
-                if show_unchanged.value is True
-                else [
-                    node
-                    for node in tree.node_map.values()
-                    if node.data
-                    and (
-                        node.data.path in store.cm_paths.status_path_set
-                        or node.data.status == Sc.TT
-                    )
-                ]
-            )
-            for node in man_dir_nodes:
-                if node.is_expanded and event.value is False:
-                    node.collapse()
-                elif node.is_collapsed and event.value is True:
-                    node.expand()

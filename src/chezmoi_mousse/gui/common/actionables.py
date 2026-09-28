@@ -76,19 +76,27 @@ class OperateBtnGroup(HorizontalGroup):
 class SwitchGroup(VerticalGroup):
     state_to_tree_map: ClassVar[dict[tuple[bool, ...], str]] = {
         # Managed trees including only paths with a status or meta status
-        (False, False, False): store.op_ids.tree.managed_only_sp_q,
+        (False, False, False, False): store.op_ids.tree.managed_only_sp_q,
+        (True, False, False, False): store.op_ids.tree.managed_only_sp_xpd_q,
         # Managed trees including all managed maths
-        (True, False, False): store.op_ids.tree.managed_all_mp_q,
+        (False, True, False, False): store.op_ids.tree.managed_all_mp_q,
+        (True, True, False, False): store.op_ids.tree.managed_all_mp_xpd_q,
         # Un-managed trees (show_unchanged is False)
-        (False, True, False): store.op_ids.tree.un_man_plus_sp_q,
+        (False, False, True, False): store.op_ids.tree.un_man_plus_sp_q,
+        (True, False, True, False): store.op_ids.tree.un_man_plus_sp_xpd_q,
         # Un-managed trees (show_unchanged is True)
-        (True, True, False): store.op_ids.tree.un_man_plus_amp_q,
+        (False, True, True, False): store.op_ids.tree.un_man_plus_amp_q,
+        (True, True, True, False): store.op_ids.tree.un_man_plus_amp_xpd_q,
         # Unwanted trees when show_unchanged is False (show_unmanaged switch disabled)
-        (False, True, True): store.op_ids.tree.un_wanted_plus_sp_q,
-        (False, False, True): store.op_ids.tree.un_wanted_plus_sp_q,
+        (False, False, True, True): store.op_ids.tree.un_wanted_plus_sp_q,
+        (True, False, True, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,
+        (False, False, False, True): store.op_ids.tree.un_wanted_plus_sp_q,
+        (True, False, False, True): store.op_ids.tree.un_wanted_plus_sp_xpd_q,
         # Unwanted trees when show_unchanged is True (show_unmanaged switch disabled)
-        (True, False, True): store.op_ids.tree.un_wanted_plus_amp_q,
-        (True, True, True): store.op_ids.tree.un_wanted_plus_amp_q,
+        (False, True, False, True): store.op_ids.tree.un_wanted_plus_amp_q,
+        (True, True, False, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
+        (False, True, True, True): store.op_ids.tree.un_wanted_plus_amp_q,
+        (True, True, True, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
     }
 
     def __init__(self) -> None:
@@ -110,13 +118,13 @@ class SwitchGroup(VerticalGroup):
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
-        if event.switch.id == self.ids.switch.expand_managed:
-            return
         event.stop()
+        expand_managed_switch = self.query_one(self.ids.switch.expand_managed_q, Switch)
         show_unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
         show_unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
         show_unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
         switch_state = (
+            expand_managed_switch.value,
             show_unchanged_switch.value,
             show_unmanaged_switch.value,
             show_unwanted_switch.value,

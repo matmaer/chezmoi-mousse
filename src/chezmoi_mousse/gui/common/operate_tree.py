@@ -55,52 +55,50 @@ class OperateTree(Tree[NodeData]):
         self, node_data_dict: dict[Path, NodeData]
     ) -> dict[Path, NodeData]:
         result: dict[Path, NodeData] | None = None
-        if self.name == TreeName.managed_only_sp:
+        if self.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status in Sc.real_status_codes()
-                or node_data.status == Sc.TT
+                if node_data.status not in (Sc.XX, Sc.UU, Sc.SS, Sc.YY, Sc.ZZ)
             }
-        elif self.name == TreeName.managed_all_mp:
+        elif self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status in Sc.real_status_codes()
-                or node_data.status in (Sc.SS, Sc.TT, Sc.YY, Sc.ZZ)
+                if node_data.status not in (Sc.XX, Sc.UU)
             }
-        elif self.name == TreeName.un_man_plus_sp:
+        elif self.name in (
+            TreeName.un_man_plus_sp,
+            TreeName.un_man_plus_sp_xpd,
+        ):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if (
-                    node_data.status in Sc.real_status_codes()
-                    or node_data.status in (Sc.TT, Sc.UU, Sc.YY)
-                )
-                and node_data.status not in (Sc.XX, Sc.SS)
+                if node_data.status not in (Sc.XX, Sc.SS, Sc.ZZ)
             }
-        elif self.name == TreeName.un_man_plus_amp:
+        elif self.name in (
+            TreeName.un_man_plus_amp,
+            TreeName.un_man_plus_amp_xpd,
+        ):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if (
-                    node_data.status in Sc.real_status_codes()
-                    or node_data.status in (Sc.TT, Sc.UU, Sc.SS, Sc.YY)
-                )
-                and node_data.status != Sc.XX
+                if node_data.status != Sc.XX
             }
-        elif self.name == TreeName.un_wanted_plus_sp:
+        elif self.name in (
+            TreeName.un_wanted_plus_sp,
+            TreeName.un_wanted_plus_sp_xpd,
+        ):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if (
-                    node_data.status in Sc.real_status_codes()
-                    or node_data.status in (Sc.TT, Sc.UU, Sc.XX, Sc.YY, Sc.ZZ)
-                )
-                # and node_data.status != Sc.SS
+                if node_data.status != Sc.SS
             }
-        elif self.name == TreeName.un_wanted_plus_amp:
-            result = node_data_dict
+        elif self.name in (
+            TreeName.un_wanted_plus_amp,
+            TreeName.un_wanted_plus_amp_xpd,
+        ):
+            result = dict(node_data_dict.items())
         else:
             raise ValueError(f"Unknown tree name: {self.name}")
         return path_funcs.sort_path_dict(result)
@@ -120,6 +118,19 @@ class OperateTree(Tree[NodeData]):
         )
         self.node_map[path] = new_node
 
+    def _expand_xpd_nodes(self) -> None:
+        if self.name in (
+            TreeName.managed_only_sp_xpd,
+            TreeName.managed_all_mp_xpd,
+            TreeName.un_man_plus_sp_xpd,
+            TreeName.un_man_plus_amp_xpd,
+            TreeName.un_wanted_plus_sp_xpd,
+            TreeName.un_wanted_plus_amp_xpd,
+        ):
+            for path, node in self.node_map.items():
+                if path in store.cm_paths.man_dir_set:
+                    node.expand()
+
     @work
     async def _initial_tree_population(self) -> None:
         dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
@@ -136,6 +147,7 @@ class OperateTree(Tree[NodeData]):
             await self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=False)
+        self._expand_xpd_nodes()
         self.select_node(self.root)
         self.unselect()  # otherwise it looks like the first node is selected
         if self.name == TreeName.managed_only_sp:
