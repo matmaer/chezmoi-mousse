@@ -17,15 +17,17 @@ class ChezmoiTreePaths:
     _dest_dir: Path
     _status_dirs_pcr: dict[Path, Sc]
     _status_files_pcr: dict[Path, Sc]
-    _un_man_dir_set: frozenset[Path]
-    _un_man_file_set: frozenset[Path]
-    man_dir_set: frozenset[Path]
-    man_file_set: frozenset[Path]
-    man_path_set: frozenset[Path]
-    missing_managed: frozenset[Path]
-    status_dir_set: frozenset[Path]
-    status_file_set: frozenset[Path]
-    status_path_set: frozenset[Path]
+    man_dir_set: set[Path]
+    man_file_set: set[Path]
+    man_path_set: set[Path]
+    missing_managed: set[Path]
+    space_dir_set: set[Path]
+    space_file_set: set[Path]
+    space_path_set: set[Path]
+    status_path_set: set[Path]
+    un_man_dir_set: set[Path]
+    un_man_file_set: set[Path]
+    un_man_path_set: set[Path]
 
     file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
