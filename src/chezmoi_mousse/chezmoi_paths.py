@@ -40,16 +40,43 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
-        self._update_file_node_data(
+        un_wanted_files: set[Path] = self._update_file_node_data_and_report_unwanted(
             self._status_files_pcr, self.space_file_set, self.un_man_file_set
         )
-
-        tree_status_dirs = self._update_status_dir_node_data(
+        tree_status_dirs: dict[Path, Sc] = self._update_status_dir_node_data(
             self.space_dir_set, self._status_dirs_pcr, self.status_path_set
         )
+        tree_space_dirs = self.space_dir_set - tree_status_dirs.keys()
+
         self._update_space_dir_node_data(
-            self.space_dir_set, tree_status_dirs, self.un_man_dir_set
+            self.un_man_dir_set,
+            self.un_man_path_set,
+            self.man_path_set,
+            tree_space_dirs,
+            un_wanted_files,
         )
+
+        # sanity check fer debugging
+        all_paths: set[Path] = (
+            self._status_dirs_pcr.keys()
+            | self._status_files_pcr.keys()
+            | self.man_dir_set
+            | self.man_file_set
+            | self.man_path_set
+            | self.space_dir_set
+            | self.space_file_set
+            | self.space_path_set
+            | self.un_man_dir_set
+            | self.un_man_file_set
+            | self.un_man_path_set
+        )
+        node_data_paths: set[Path] = (
+            self.file_node_data.keys() | self.dir_node_data.keys()
+        )
+        # Debugging: check if all paths are accounted for, construct the difference
+        missing_paths: set[Path] = all_paths - node_data_paths
+        assert not missing_paths, f"Missing paths in node data: {missing_paths}"
+
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self._update_button_sets(self.dir_node_data | self.file_node_data)
@@ -66,12 +93,13 @@ class ChezmoiTreePaths:
             status=status,
         )
 
-    def _update_file_node_data(
+    def _update_file_node_data_and_report_unwanted(
         self,
         status_files_pcr: dict[Path, Sc],
         space_file_set: set[Path],
         un_man_file_set: set[Path],
-    ) -> None:
+    ) -> set[Path]:
+        unwanted_files: set[Path] = set()
         for path, status in status_files_pcr.items():
             self._add_file_node_dict_key(LabelStr.status_file, path, status)
 
@@ -81,8 +109,10 @@ class ChezmoiTreePaths:
         for path in un_man_file_set:
             if path_funcs.is_unwanted_file(path):
                 self._add_file_node_dict_key(LabelStr.un_wanted_file, path, Sc.XX)
+                unwanted_files.add(path)
             else:
                 self._add_file_node_dict_key(LabelStr.un_man_file, path, Sc.UU)
+        return unwanted_files
 
     def _add_dir_node_dict_key(
         self, main_label: LabelStr, path: Path, status: Sc
@@ -113,24 +143,56 @@ class ChezmoiTreePaths:
 
     def _update_space_dir_node_data(
         self,
-        space_dir_set: set[Path],
-        tree_status_dirs: dict[Path, Sc],
         un_man_dir_set: set[Path],
+        un_man_path_set: set[Path],
+        man_path_set: set[Path],
+        tree_space_dirs: set[Path],
+        un_wanted_files: set[Path],
     ) -> None:
-        for path in space_dir_set:
-            if path not in tree_status_dirs and path not in un_man_dir_set:
-                self._add_dir_node_dict_key(LabelStr.space_dir, path, Sc.SS)
 
-        unwanted_dirs = {
-            path for path in un_man_dir_set if path_funcs.is_unwanted_dir(path)
-        }
+        # calculate all un-managed paths, if they are un-wanted or not
+        un_wanted_dirs: set[Path] = set()
         for path in un_man_dir_set:
-            if path in tree_status_dirs:
-                continue
-            if path in unwanted_dirs:
-                self._add_dir_node_dict_key(LabelStr.un_wanted_dir, path, Sc.XX)
+            if path_funcs.is_unwanted_dir(path):
+                un_wanted_dirs.add(path)
+        un_wanted_paths = un_wanted_dirs | un_wanted_files
+        wanted_paths = un_man_path_set - un_wanted_paths
+
+        # calculate space directories which have unwanted paths
+        zz_dirs: set[Path] = set()
+        for path in tree_space_dirs:
+            if path_funcs.any_nested_in(dir_path=path, check_paths=un_wanted_paths):
+                zz_dirs.add(path)
+
+        # calculate space directories which have only wanted paths
+        yy_dirs: set[Path] = set()
+        for path in tree_space_dirs - zz_dirs:
+            if path_funcs.any_nested_in(dir_path=path, check_paths=wanted_paths):
+                yy_dirs.add(path)
+
+        # calculate space dirs containing no yy, zz but with nested managed paths
+        vv_dirs: set[Path] = set()
+        paths_to_check = tree_space_dirs - zz_dirs - yy_dirs
+        for path in paths_to_check:
+            if path_funcs.any_nested_in(dir_path=path, check_paths=man_path_set):
+                vv_dirs.add(path)
+
+        # add space paths to the dir_node_data dict
+        for path in tree_space_dirs:
+            if path in zz_dirs:
+                self._add_dir_node_dict_key(
+                    LabelStr.space_dir_with_un_wanted, path, Sc.XX
+                )
+            elif path in yy_dirs:
+                self._add_dir_node_dict_key(
+                    LabelStr.space_dir_with_un_managed, path, Sc.YY
+                )
+            elif path in vv_dirs:
+                self._add_dir_node_dict_key(
+                    LabelStr.space_dir_with_managed, path, Sc.VV
+                )
             else:
-                self._add_dir_node_dict_key(LabelStr.un_man_dir, path, Sc.UU)
+                self._add_dir_node_dict_key(LabelStr.space_dir, path, Sc.SS)
 
     def _update_button_sets(self, all_path_data: dict[Path, NodeData]) -> None:
         for path, node_data in all_path_data.items():

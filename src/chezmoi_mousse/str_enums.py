@@ -180,11 +180,14 @@ class LabelStr(StrEnum):
 
     space_dir = f"Managed Directory ({_has_no_status}"
 
-    space_dir_with_unmanaged = (
-        f"Managed Directory ({_has_no_status} and has nested unmanaged paths)"
+    space_dir_with_un_managed = (
+        f"Managed Directory ({_has_no_status} and has nested un-managed paths)"
     )
-    space_dir_with_unwanted = (
-        f"Managed Directory ({_has_no_status} and has nested unwanted paths)"
+    space_dir_with_un_wanted = (
+        f"Managed Directory ({_has_no_status} and has nested un-wanted paths)"
+    )
+    space_dir_with_managed = (
+        f"Managed Directory ({_has_no_status} and has nested managed paths)"
     )
 
     space_file = f"Managed File ({_has_no_status})"
@@ -451,13 +454,16 @@ class StatusCode(StrEnum):
     SM = "SM"  # Applied target clean; apply will modify target from source updates.
 
     # Meta statuses, self assigned for Tree widget rendering.
-    QQ = "QQ"  # the destDir
     SS = "\x20\x20"  # Any path which don't occur at all in chezmoi status output
+
+    QQ = "QQ"  # the destDir
     TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
     UU = "UU"  # Unmanaged path
     XX = "XX"  # Unmanaged and unwanted path
-    YY = "YY"  # Space dirs containing UU paths
-    ZZ = "ZZ"  # Space dirs containing XX paths
+
+    VV = "VV"  # Managed dirs containing no UU or XX paths
+    YY = "YY"  # Space dirs containing UU paths but no XX paths
+    ZZ = "ZZ"  # Spare dirs containing XX paths
 
     @classmethod
     def real_status_codes(cls) -> tuple[Self, ...]:
@@ -497,8 +503,9 @@ class StatusCode(StrEnum):
             cls.SS: ColorVar.foreground_darken_3,
             cls.UU: ColorVar.text_success,
             cls.XX: ColorVar.text_accent,
-            # Meta codes dirs only
+            # Meta code for space dirs containing nested status paths
             cls.TT: ColorVar.text_primary,
+            cls.VV: ColorVar.secondary,
             cls.YY: ColorVar.text_success,
             cls.ZZ: ColorVar.text_accent,
         }

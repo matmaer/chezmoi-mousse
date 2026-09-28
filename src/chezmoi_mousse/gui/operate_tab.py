@@ -148,7 +148,7 @@ class LeftSideVertical(Vertical):
         ):
             return
         exclude: list[OperateTree] = []
-        if event.node.data.status in (Sc.SS, Sc.YY, Sc.ZZ, Sc.UU, Sc.XX):
+        if event.node.data.status in (Sc.SS, Sc.UU, Sc.XX):
             exclude.extend(
                 [
                     self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree),
