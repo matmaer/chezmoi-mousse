@@ -175,12 +175,10 @@ class LabelStr(StrEnum):
     _has_status = "has a status"
     _nested_sp = "nested status paths"
 
-    status_dir = f"Managed Directory ({_has_status})"  # no children!
-    dirty_status_dir = f"Managed Directory ({_has_status} and has {_nested_sp})"
+    real_status_dir = f"Managed Directory ({_has_status})"
+    tt_status_dir = f"Managed Directory ({_has_no_status} (has {_nested_sp})"
 
-    space_dir_nc = f"Managed Directory ({_has_no_status} and {_no_children})"
-    clean_space_dir = f"Managed Directory ({_has_no_status} and no {_nested_sp})"
-    dirty_space_dir = f"Managed Directory ({_has_no_status} but has {_nested_sp})"
+    space_dir = f"Managed Directory ({_has_no_status}"
 
     space_dir_with_unmanaged = (
         f"Managed Directory ({_has_no_status} and has nested unmanaged paths)"
@@ -458,8 +456,24 @@ class StatusCode(StrEnum):
     TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
     UU = "UU"  # Unmanaged path
     XX = "XX"  # Unmanaged and unwanted path
-    YY = "YY"  # Any dir with status UU but also contains nested UU paths
-    ZZ = "ZZ"  # Any dir with status XX but also contains nested XX paths
+    YY = "YY"  # Space dirs containing UU paths
+    ZZ = "ZZ"  # Space dirs containing XX paths
+
+    @classmethod
+    def real_status_codes(cls) -> tuple[Self, ...]:
+        return (
+            cls(cls.DA),
+            cls(cls.DD),
+            cls(cls.DM),
+            cls(cls.DS),
+            cls(cls.MA),
+            cls(cls.MD),
+            cls(cls.MM),
+            cls(cls.MS),
+            cls(cls.SA),
+            cls(cls.SD),
+            cls(cls.SM),
+        )
 
     @classmethod
     @cache

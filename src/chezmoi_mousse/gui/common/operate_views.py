@@ -81,7 +81,7 @@ class PathInfo(ScrollableContainer):
 
         is_managed = TrueLabel() if path in store.cm_paths.man_dir_set else FalseLabel()
         has_status = (
-            TrueLabel() if path in store.cm_paths.status_dir_set else FalseLabel()
+            TrueLabel() if path in store.cm_paths.status_path_set else FalseLabel()
         )
         has_nested_status = (
             TrueLabel()
@@ -97,9 +97,7 @@ class PathInfo(ScrollableContainer):
             )
             else FalseLabel()
         )
-        has_nested_unmanaged = TrueLabel() if status is Sc.YY else FalseLabel()
-        has_nested_unwanted = TrueLabel() if node_data.status is Sc.XX else FalseLabel()
-        manches_unwanted = TrueLabel() if status == Sc.XX else FalseLabel()
+        matches_unwanted = TrueLabel() if status == Sc.XX else FalseLabel()
         exists = (
             TrueLabel() if path not in store.cm_paths.missing_managed else FalseLabel()
         )
@@ -123,20 +121,8 @@ class PathInfo(ScrollableContainer):
         )
         info_items.append(
             self.InfoItem(
-                self.InfoLabel(LabelStr.d_has_nested_un_man),
-                has_nested_unmanaged,
-            )
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_has_nested_un_wanted),
-                has_nested_unwanted,
-            )
-        )
-        info_items.append(
-            self.InfoItem(
                 self.InfoLabel(LabelStr.d_match_un_wanted),
-                manches_unwanted,
+                matches_unwanted,
             )
         )
         info_items.append(
@@ -152,16 +138,16 @@ class PathInfo(ScrollableContainer):
     @work
     async def set_file_info(self, node_data: NodeData) -> None:
         path = node_data.path
-        status = node_data.status
+
         info_items: list[PathInfo.InfoItem] = []
 
         is_managed = (
             TrueLabel() if path in store.cm_paths.man_file_set else FalseLabel()
         )
         has_status = (
-            TrueLabel() if path in store.cm_paths.status_file_set else FalseLabel()
+            TrueLabel() if path in store.cm_paths.status_path_set else FalseLabel()
         )
-        f_match_unwanted = TrueLabel() if status is Sc.XX else FalseLabel()
+        f_match_unwanted = TrueLabel() if node_data.status is Sc.XX else FalseLabel()
         exists = (
             TrueLabel() if path not in store.cm_paths.missing_managed else FalseLabel()
         )
