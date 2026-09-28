@@ -165,11 +165,12 @@ class LabelStr(StrEnum):
 
     # Operate tab MainSectionLabel text
     dest_dir = "Destination Directory"
-    unmanaged_dir = "Unmanaged Directory"
-    unmanaged_file = "Unmanaged File"
-    unwanted_dir = f"{unmanaged_dir} (probably unwanted)"
-    unwanted_file = f"{unmanaged_file} (probably unwanted)"
+    un_man_file = "Unmanaged File"
+    un_man_dir = "Unmanaged Directory"
+    un_wanted_dir = f"{un_man_dir} (matches un-wanted)"
+    un_wanted_file = f"{un_man_file} (matches un-wanted)"
 
+    _no_children = "no children"
     _has_no_status = "has no status"
     _has_status = "has a status"
     _nested_sp = "nested status paths"
@@ -177,9 +178,10 @@ class LabelStr(StrEnum):
     status_dir = f"Managed Directory ({_has_status})"  # no children!
     dirty_status_dir = f"Managed Directory ({_has_status} and has {_nested_sp})"
 
-    space_dir = f"Managed Directory ({_has_no_status})"  # no children!
+    space_dir_nc = f"Managed Directory ({_has_no_status} and {_no_children})"
     clean_space_dir = f"Managed Directory ({_has_no_status} and no {_nested_sp})"
     dirty_space_dir = f"Managed Directory ({_has_no_status} but has {_nested_sp})"
+
     space_dir_with_unmanaged = (
         f"Managed Directory ({_has_no_status} and has nested unmanaged paths)"
     )

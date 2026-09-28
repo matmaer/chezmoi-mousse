@@ -180,7 +180,7 @@ def _get_dir_path_iterable(dir_path: Path) -> Generator[Path] | str:
         return f"Unknown error occurred in _get_dir_path_iterable for {dir_path}"
 
 
-def get_unmanaged_children(dir_path: Path) -> IterDirResult:
+def get_un_man_children(dir_path: Path) -> IterDirResult:
     result: Generator[Path] | str = _get_dir_path_iterable(dir_path)
     exceptions: dict[Path, str] = {}
     symlinks: list[Path] = []
@@ -195,26 +195,26 @@ def get_unmanaged_children(dir_path: Path) -> IterDirResult:
                 elif path.is_dir():
                     if is_unwanted_dir(path):
                         dirs[path] = NodeData(
-                            main_label=LabelStr.unwanted_dir,
+                            main_label=LabelStr.un_wanted_dir,
                             path=path,
                             status=StatusCode.XX,
                         )
                     else:
                         dirs[path] = NodeData(
-                            main_label=LabelStr.unmanaged_dir,
+                            main_label=LabelStr.un_man_dir,
                             path=path,
                             status=StatusCode.UU,
                         )
                 elif path.is_file():
                     if is_unwanted_file(path):
                         files[path] = NodeData(
-                            main_label=LabelStr.unwanted_file,
+                            main_label=LabelStr.un_wanted_file,
                             path=path,
                             status=StatusCode.XX,
                         )
                     else:
                         files[path] = NodeData(
-                            main_label=LabelStr.unmanaged_file,
+                            main_label=LabelStr.un_man_file,
                             path=path,
                             status=StatusCode.UU,
                         )

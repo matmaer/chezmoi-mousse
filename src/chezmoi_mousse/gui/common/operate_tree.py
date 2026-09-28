@@ -122,7 +122,7 @@ class OperateTree(Tree[NodeData]):
 
     @work
     async def _add_unmanaged_dir_children(self, dir_node_data: NodeData) -> None:
-        iter_dir_result: IterDirResult = path_funcs.get_unmanaged_children(
+        iter_dir_result: IterDirResult = path_funcs.get_un_man_children(
             dir_node_data.path
         )
         self.iterated_dirs.add(dir_node_data.path)
