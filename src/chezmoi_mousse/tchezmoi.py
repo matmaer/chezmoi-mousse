@@ -143,6 +143,7 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     status_file_set = parse_status_paths(status_files_task.result())
 
     tree_paths = ChezmoiTreePaths(
+        _dest_dir=store.cfg.dest_dir,
         _status_dirs_pcr=parse_status_output(status_dirs_task.result()),
         _status_files_pcr=parse_status_output(status_files_task.result()),
         _un_man_dir_set=parse_paths(unman_dirs_task.result()),

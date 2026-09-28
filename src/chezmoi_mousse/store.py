@@ -16,6 +16,9 @@ from chezmoi_mousse.named_tuples import (
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
+    from chezmoi_mousse.chezmoi_paths import (
+        ChezmoiTreePaths,
+    )
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 init_data: InitData = InitData()
@@ -29,26 +32,9 @@ debug_ids = AppIds(BtnLabel.debug)
 
 cfg = DumpConfigKeys()
 
+cm_paths: ChezmoiTreePaths
 
-cm_paths = ChezmoiTreePaths(
-    _status_dirs_pcr={},
-    _status_files_pcr={},
-    _un_man_dir_set=frozenset(),
-    _un_man_file_set=frozenset(),
-    man_dir_set=frozenset(),
-    man_file_set=frozenset(),
-    man_path_set=frozenset(),
-    missing_managed=frozenset(),
-    status_dir_set=frozenset(),
-    status_file_set=frozenset(),
-    status_path_set=frozenset(),
-)
-
-
-cm_changes = CmPathChanges(
-    _old_tree_paths=cm_paths,
-    _new_tree_paths=cm_paths,
-)
+cm_changes: CmPathChanges | None = None
 
 
 async def handle_new_tree_paths(
@@ -58,15 +44,14 @@ async def handle_new_tree_paths(
 
     global cm_paths
     global cm_changes
+
     cm_changes = CmPathChanges(
-        _old_tree_paths=cm_paths,
+        _old_tree_paths=new_tree_paths if cm_changes is None else cm_paths,
         _new_tree_paths=new_tree_paths,
     )
 
     cm_paths = new_tree_paths
-    app.app_log.write_app_log_msg(
-        "Updated cm_paths, cm_changes and op_btn_sets in store.py"
-    )
+    app.app_log.write_app_log_msg("Updated cm_paths and cm_changes in store.py")
 
 
 async def decode_and_store_config(std_out: str) -> None:

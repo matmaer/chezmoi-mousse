@@ -14,6 +14,7 @@ __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 class ChezmoiTreePaths:
     """The raw source of truth received from chezmoi stdout."""
 
+    _dest_dir: Path
     _status_dirs_pcr: dict[Path, Sc]
     _status_files_pcr: dict[Path, Sc]
     _un_man_dir_set: frozenset[Path]
@@ -39,6 +40,7 @@ class ChezmoiTreePaths:
         self._update_file_node_data(
             self._status_files_pcr, self.man_file_set, self._un_man_file_set
         )
+        self._update_status_dir_node_data(self._status_dirs_pcr)
         self._update_dir_node_data_old(
             self._status_dirs_pcr,
             self.man_dir_set,
@@ -94,6 +96,64 @@ class ChezmoiTreePaths:
             status=status,
         )
 
+    def _update_status_dir_node_data(
+        self,
+        status_dirs_pcr: dict[Path, Sc],
+    ) -> None:
+        dirty_status_dirs: set[Path] = set()
+        child = self._dest_dir  # the common root, don't access this from store!
+
+        for path in reversed(status_dirs_pcr):
+            if child != path and child.is_relative_to(path):
+                dirty_status_dirs.add(path)
+            child = path
+
+        for path, status in status_dirs_pcr.items():
+            label = (
+                LabelStr.dirty_status_dir
+                if path in dirty_status_dirs
+                else LabelStr.status_dir
+            )
+            self._add_dir_node_dict_key(label, path, status)
+
+    def _update_space_dir_node_data(
+        self,
+        man_dir_set: frozenset[Path],
+        status_dirs_pcr: dict[Path, Sc],
+        status_path_set: set[Path],
+    ) -> None:
+        space_dir_set = man_dir_set - status_dirs_pcr.keys()
+        space_dirs = path_funcs.sort_paths(space_dir_set)
+        space_dirs_with_children: set[Path] = set()
+
+        child = self._dest_dir  # the common root, don't access this from store!
+        for path in reversed(space_dirs):
+            if child != path and child.is_relative_to(path):
+                space_dirs_with_children.add(path)
+            child = path
+
+        dirty_space_dirs: set[Path] = set()
+        visited_parents: set[Path] = set()
+        for status_path in status_path_set:
+            for parent in status_path.parents:
+                # Stop immediately if we reach or cross common_root
+                if parent == self._dest_dir or parent in visited_parents:
+                    break
+
+                visited_parents.add(parent)
+                if parent in space_dir_set:
+                    dirty_space_dirs.add(parent)
+
+        for path in space_dirs:
+            if path not in space_dirs_with_children:
+                # Leaf directory (no children, just a different label)
+                self._add_dir_node_dict_key(LabelStr.space_dir, path, Sc.SS)
+            elif path in dirty_space_dirs:
+                self._add_dir_node_dict_key(LabelStr.dirty_space_dir, path, Sc.TT)
+            else:
+                # also Sc.SS, but with a different label
+                self._add_dir_node_dict_key(LabelStr.clean_space_dir, path, Sc.SS)
+
     def _update_dir_node_data_old(
         self,
         status_dirs_pcr: dict[Path, Sc],
@@ -108,15 +168,6 @@ class ChezmoiTreePaths:
             for path in man_dir_set
             if path_funcs.any_nested_in(dir_path=path, check_paths=status_paths)
         }
-        status_dirs_with_nested_sp = status_dirs_pcr.keys() & all_dirs_with_nested_sp
-        dirty_status_dirs = status_dirs_pcr.keys() & status_dirs_with_nested_sp
-
-        # we keep the path and real status, but just the label is different
-        for path, status in status_dirs_pcr.items():
-            if path in dirty_status_dirs:
-                self._add_dir_node_dict_key(LabelStr.dirty_status_dir, path, status)
-            else:
-                self._add_dir_node_dict_key(LabelStr.status_dir, path, status)
 
         all_space_dirs = man_dir_set - status_dirs_pcr.keys()
         dirty_space_dirs = all_space_dirs & all_dirs_with_nested_sp
