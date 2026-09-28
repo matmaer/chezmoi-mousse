@@ -175,7 +175,6 @@ class LabelStr(StrEnum):
     _nested_sp = "nested status paths"
 
     status_dir = f"Managed Directory ({_has_status})"  # no children!
-    clean_status_dir = f"Managed Directory ({_has_status} without {_nested_sp})"
     dirty_status_dir = f"Managed Directory ({_has_status} and has {_nested_sp})"
 
     space_dir = f"Managed Directory ({_has_no_status})"  # no children!

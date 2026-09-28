@@ -110,13 +110,10 @@ class ChezmoiTreePaths:
         }
         status_dirs_with_nested_sp = status_dirs_pcr.keys() & all_dirs_with_nested_sp
         dirty_status_dirs = status_dirs_pcr.keys() & status_dirs_with_nested_sp
-        clean_status_dirs = status_dirs_pcr.keys() - dirty_status_dirs
 
         # we keep the path and real status, but just the label is different
         for path, status in status_dirs_pcr.items():
-            if path in clean_status_dirs:
-                self._add_dir_node_dict_key(LabelStr.clean_status_dir, path, status)
-            elif path in dirty_status_dirs:
+            if path in dirty_status_dirs:
                 self._add_dir_node_dict_key(LabelStr.dirty_status_dir, path, status)
             else:
                 self._add_dir_node_dict_key(LabelStr.status_dir, path, status)
