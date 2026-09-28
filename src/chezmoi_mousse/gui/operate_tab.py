@@ -120,20 +120,20 @@ class LeftSideVertical(Vertical):
                     store.op_ids.tree.un_wanted_plus_sp,
                     store.op_ids.tree.un_wanted_plus_amp,
                 )
-                and event.node.data.status in (Sc.XX, Sc.ZZ)
+                and event.node.data.status == Sc.XX
             )
         ):
             return
         exclude: list[OperateTree] = []
-        if event.node.data.status in (Sc.SS, Sc.UU, Sc.XX, Sc.YY, Sc.ZZ):
+        if event.node.data.status in (Sc.SS, Sc.YY, Sc.ZZ, Sc.UU, Sc.XX):
             exclude.append(
                 self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
             )
-        if event.node.data.status in (Sc.UU, Sc.XX, Sc.YY, Sc.ZZ):
+        if event.node.data.status in (Sc.UU, Sc.XX):
             exclude.append(
                 self.query_one(store.op_ids.tree.managed_all_mp_q, OperateTree)
             )
-        if event.node.data.status in (Sc.XX, Sc.ZZ):
+        if event.node.data.status in (Sc.XX):
             exclude.extend(
                 [
                     self.query_one(store.op_ids.tree.un_man_plus_sp_q, OperateTree),
@@ -328,7 +328,7 @@ class OperateTab(TabPane):
                     for node in tree.node_map.values()
                     if node.data
                     and (
-                        node.data.path in store.cm_paths.status_dir_set
+                        node.data.path in store.cm_paths.status_path_set
                         or node.data.status == Sc.TT
                     )
                 ]

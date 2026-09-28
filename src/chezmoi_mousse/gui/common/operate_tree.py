@@ -59,34 +59,48 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.XX, Sc.UU, Sc.SS, Sc.YY, Sc.ZZ)
+                if node_data.status in Sc.real_status_codes()
+                or node_data.status == Sc.TT
             }
         elif self.name == TreeName.managed_all_mp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.XX, Sc.UU)
+                if node_data.status in Sc.real_status_codes()
+                or node_data.status in (Sc.SS, Sc.TT, Sc.YY, Sc.ZZ)
             }
         elif self.name == TreeName.un_man_plus_sp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.XX, Sc.SS, Sc.ZZ)
+                if (
+                    node_data.status in Sc.real_status_codes()
+                    or node_data.status in (Sc.TT, Sc.UU, Sc.YY)
+                )
+                and node_data.status not in (Sc.XX, Sc.SS)
             }
         elif self.name == TreeName.un_man_plus_amp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status != Sc.XX
+                if (
+                    node_data.status in Sc.real_status_codes()
+                    or node_data.status in (Sc.TT, Sc.UU, Sc.SS, Sc.YY)
+                )
+                and node_data.status != Sc.XX
             }
         elif self.name == TreeName.un_wanted_plus_sp:
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status != Sc.SS
+                if (
+                    node_data.status in Sc.real_status_codes()
+                    or node_data.status in (Sc.TT, Sc.UU, Sc.XX, Sc.YY, Sc.ZZ)
+                )
+                # and node_data.status != Sc.SS
             }
         elif self.name == TreeName.un_wanted_plus_amp:
-            result = dict(node_data_dict.items())
+            result = node_data_dict
         else:
             raise ValueError(f"Unknown tree name: {self.name}")
         return path_funcs.sort_path_dict(result)
@@ -110,6 +124,14 @@ class OperateTree(Tree[NodeData]):
     async def _initial_tree_population(self) -> None:
         dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
+        # TODO: patch for missing parents, shouldn't happen
+        for path in (*dir_nodes, *file_nodes):
+            parent_path = path.parent
+            while parent_path != store.cfg.dest_dir:
+                if parent_path not in dir_nodes:
+                    dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
+                parent_path = parent_path.parent
+        dir_nodes = path_funcs.sort_path_dict(dir_nodes)
         for path, node_data in dir_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():
