@@ -42,16 +42,15 @@ class ChezmoiTreePaths:
         self._populate_file_node_data(
             self._status_files_pcr, self.space_file_set, self.un_man_file_set
         )
-        tree_status_dirs: dict[Path, Sc] = self._update_status_dir_node_data(
-            self.space_dir_set, self._status_dirs_pcr, self.status_path_set
-        )
-        tree_space_dirs = self.space_dir_set - tree_status_dirs.keys()
 
-        self._update_space_dir_node_data(
-            self.un_man_dir_set,
-            self.man_path_set,
-            tree_space_dirs,
+        self._populate_default_dir_node_data(
+            self._status_dirs_pcr, self.space_dir_set, self.un_man_dir_set
         )
+        self._update_node_data_for_tt_dirs(self.status_path_set)
+        self._update_node_data_for_vv_dirs()
+        self._update_node_data_for_yy_dirs()
+        self._update_node_data_for_zz_dirs()
+
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self._update_button_sets(self.dir_node_data | self.file_node_data)
@@ -81,53 +80,83 @@ class ChezmoiTreePaths:
                 self.file_node_data[path] = NodeData(
                     LabelStr.un_wanted_file, path, Sc.XX, exists=True
                 )
+            else:
                 self.file_node_data[path] = NodeData(
                     LabelStr.un_man_file, path, Sc.UU, exists=True
                 )
 
-    def _add_dir_node_dict_key(
-        self, main_label: LabelStr, path: Path, status: Sc
-    ) -> None:
-        assert self.dir_node_data.get(path, None) is None, (
-            f"Dir node data for path {path} already exists"
-        )
-        self.dir_node_data[path] = NodeData(
-            main_label=main_label, path=path, status=status, exists=path.exists()
-        )
-
-    def _update_status_dir_node_data(
+    def _populate_default_dir_node_data(
         self,
-        space_dir_set: set[Path],
         status_dirs_pcr: dict[Path, Sc],
-        status_path_set: set[Path],
-    ) -> dict[Path, Sc]:
-        tt_dirs: dict[Path, Sc] = {}
-        for path in space_dir_set:
-            if path_funcs.any_nested_in(dir_path=path, check_paths=status_path_set):
-                self._add_dir_node_dict_key(LabelStr.tt_status_dir, path, Sc.TT)
-                tt_dirs[path] = Sc.TT
-        for path, status in status_dirs_pcr.items():
-            self._add_dir_node_dict_key(LabelStr.real_status_dir, path, status)
-        return tt_dirs | status_dirs_pcr
-
-    def _update_space_dir_node_data(
-        self,
+        space_dir_set: set[Path],
         un_man_dir_set: set[Path],
-        man_path_set: set[Path],
-        tree_space_dirs: set[Path],
     ) -> None:
+        for path, status in status_dirs_pcr.items():
+            self.dir_node_data[path] = NodeData(
+                LabelStr.real_status_dir, path, status, exists=path.exists()
+            )
+        for path in space_dir_set:
+            self.dir_node_data[path] = NodeData(
+                LabelStr.man_dir_no_status, path, Sc.SS, exists=path.exists()
+            )
         for path in un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
-                self._add_dir_node_dict_key(LabelStr.un_wanted_dir, path, Sc.XX)
+                self.dir_node_data[path] = NodeData(
+                    LabelStr.un_wanted_dir, path, Sc.XX, exists=True
+                )
             else:
-                self._add_dir_node_dict_key(LabelStr.un_man_dir, path, Sc.UU)
-        for path in tree_space_dirs:
-            main_label = (
-                LabelStr.space_dir_with_managed
-                if path_funcs.any_nested_in(dir_path=path, check_paths=man_path_set)
-                else LabelStr.space_dir
-            )
-            self._add_dir_node_dict_key(main_label, path, Sc.VV)
+                self.dir_node_data[path] = NodeData(
+                    LabelStr.un_man_dir, path, Sc.UU, exists=True
+                )
+
+    def _update_node_data_for_tt_dirs(self, status_path_set: set[Path]) -> None:
+        for path, node_data in self.dir_node_data.items():
+            if node_data.status is not Sc.SS:
+                continue
+            if path_funcs.any_nested_in(dir_path=path, check_paths=status_path_set):
+                node_data.main_label = LabelStr.tt_status_dir
+                node_data.status = Sc.TT
+
+    def _update_node_data_for_vv_dirs(self) -> None:
+        for path, node_data in self.dir_node_data.items():
+            if node_data.status is not Sc.SS:
+                continue
+            if path_funcs.any_nested_in(dir_path=path, check_paths=self.man_path_set):
+                node_data.main_label = LabelStr.un_man_dir
+                node_data.status = Sc.VV
+
+    def _update_node_data_for_yy_dirs(self) -> None:
+        all_node_data = self.dir_node_data | self.file_node_data
+        uu_paths: set[Path] = {
+            path
+            for path, node_data in all_node_data.items()
+            if node_data.status is Sc.UU
+        }
+        xx_paths: set[Path] = {
+            path
+            for path, node_data in all_node_data.items()
+            if node_data.status is Sc.XX
+        }
+        paths_to_check: set[Path] = uu_paths - xx_paths
+        for path, node_data in self.dir_node_data.items():
+            if node_data.status is not Sc.SS:
+                continue
+            if path_funcs.any_nested_in(dir_path=path, check_paths=paths_to_check):
+                node_data.main_label = LabelStr.un_man_dir
+                node_data.status = Sc.YY
+
+    def _update_node_data_for_zz_dirs(self) -> None:
+        zz_paths: set[Path] = {
+            path
+            for path, node_data in self.dir_node_data.items()
+            if node_data.status is Sc.ZZ
+        }
+        for path, node_data in self.dir_node_data.items():
+            if node_data.status is not Sc.SS:
+                continue
+            if path_funcs.any_nested_in(dir_path=path, check_paths=zz_paths):
+                node_data.main_label = LabelStr.un_man_dir
+                node_data.status = Sc.ZZ
 
     def _update_button_sets(self, all_path_data: dict[Path, NodeData]) -> None:
         for path, node_data in all_path_data.items():

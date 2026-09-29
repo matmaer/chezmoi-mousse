@@ -505,7 +505,7 @@ class StatusCode(StrEnum):
             cls.XX: ColorVar.text_accent,
             # Meta code for space dirs containing nested status paths
             cls.TT: ColorVar.text_primary,
-            cls.VV: ColorVar.secondary,
+            cls.VV: ColorVar.foreground_darken_3,
             cls.YY: ColorVar.text_success,
             cls.ZZ: ColorVar.text_accent,
         }
