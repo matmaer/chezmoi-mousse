@@ -135,13 +135,15 @@ class OperateTree(Tree[NodeData]):
     async def _initial_tree_population(self) -> None:
         dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
-        # TODO: patch for missing parents, shouldn't happen
+
+        # add missing parent directories for all nodes
         for path in (*dir_nodes, *file_nodes):
             parent_path = path.parent
             while parent_path != store.cfg.dest_dir:
                 if parent_path not in dir_nodes:
                     dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
                 parent_path = parent_path.parent
+
         dir_nodes = path_funcs.sort_path_dict(dir_nodes)
         for path, node_data in dir_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=True)
