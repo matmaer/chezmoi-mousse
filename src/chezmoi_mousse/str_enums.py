@@ -176,9 +176,9 @@ class LabelStr(StrEnum):
     _nested_sp = "nested status paths"
 
     real_status_dir = f"Managed Directory ({_has_status})"
-    tt_status_dir = f"Managed Directory ({_has_no_status} (has {_nested_sp})"
+    tt_status_dir = f"Managed Directory ({_has_no_status}, has {_nested_sp})"
 
-    space_dir = f"Managed Directory ({_has_no_status}"
+    space_dir = f"Managed Directory ({_has_no_status})"
 
     space_dir_with_un_managed = (
         f"Managed Directory ({_has_no_status} and has nested un-managed paths)"
@@ -461,7 +461,7 @@ class StatusCode(StrEnum):
     UU = "UU"  # Unmanaged path
     XX = "XX"  # Unmanaged and unwanted path
 
-    VV = "VV"  # Managed dirs containing no UU or XX paths
+    VV = "VV"  # Managed dirs containing nested managed paths
     YY = "YY"  # Space dirs containing UU paths but no XX paths
     ZZ = "ZZ"  # Spare dirs containing XX paths
 
