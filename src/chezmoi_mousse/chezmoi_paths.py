@@ -39,7 +39,7 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
-        self._update_file_node_data(
+        self._populate_file_node_data(
             self._status_files_pcr, self.space_file_set, self.un_man_file_set
         )
         tree_status_dirs: dict[Path, Sc] = self._update_status_dir_node_data(
@@ -56,33 +56,34 @@ class ChezmoiTreePaths:
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self._update_button_sets(self.dir_node_data | self.file_node_data)
 
-    def _add_file_node_dict_key(
-        self, main_label: LabelStr, path: Path, status: Sc
-    ) -> None:
-        assert self.file_node_data.get(path, None) is None, (
-            f"File node data for path {path} already exists"
-        )
-        self.file_node_data[path] = NodeData(
-            main_label=main_label, path=path, status=status, exists=path.exists()
-        )
-
-    def _update_file_node_data(
+    def _populate_file_node_data(
         self,
         status_files_pcr: dict[Path, Sc],
         space_file_set: set[Path],
         un_man_file_set: set[Path],
     ) -> None:
         for path, status in status_files_pcr.items():
-            self._add_file_node_dict_key(LabelStr.status_file, path, status)
-
+            self.file_node_data[path] = NodeData(
+                main_label=LabelStr.status_file,
+                path=path,
+                status=status,
+                exists=path.exists(),
+            )
         for path in space_file_set:
-            self._add_file_node_dict_key(LabelStr.space_file, path, Sc.SS)
-
+            self.file_node_data[path] = NodeData(
+                main_label=LabelStr.space_file,
+                path=path,
+                status=Sc.SS,
+                exists=path.exists(),
+            )
         for path in un_man_file_set:
             if path_funcs.is_unwanted_file(path):
-                self._add_file_node_dict_key(LabelStr.un_wanted_file, path, Sc.XX)
-            else:
-                self._add_file_node_dict_key(LabelStr.un_man_file, path, Sc.UU)
+                self.file_node_data[path] = NodeData(
+                    LabelStr.un_wanted_file, path, Sc.XX, exists=True
+                )
+                self.file_node_data[path] = NodeData(
+                    LabelStr.un_man_file, path, Sc.UU, exists=True
+                )
 
     def _add_dir_node_dict_key(
         self, main_label: LabelStr, path: Path, status: Sc
