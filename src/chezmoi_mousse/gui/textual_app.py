@@ -18,6 +18,7 @@ from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse.data_types import InitData
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
@@ -29,7 +30,6 @@ from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.named_tuples import InitData
 from chezmoi_mousse.str_enums import (
     BindingAction,
     BindingDescription,
@@ -46,7 +46,7 @@ from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.named_tuples import CommandResult
+    from chezmoi_mousse.data_types import CommandResult
 
 
 __all__ = ["ChezmoiGui"]

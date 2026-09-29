@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from textual.message import Message
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.named_tuples import CommandResult
+    from chezmoi_mousse.data_types import CommandResult
 
 
 __all__ = [

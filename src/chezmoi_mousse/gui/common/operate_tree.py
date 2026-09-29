@@ -6,7 +6,7 @@ from textual import on, work
 from textual.widgets import Tree
 
 from chezmoi_mousse import path_funcs, store
-from chezmoi_mousse.named_tuples import NodeData
+from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.str_enums import (
     LabelStr,
     StatusCode as Sc,
@@ -20,8 +20,8 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.widgets.tree import TreeNode
 
+    from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.named_tuples import IterDirResult
 
 
 __all__ = ["OperateTree"]
@@ -95,7 +95,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status != Sc.SS
+                if node_data.status not in (Sc.SS, Sc.VV)
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
@@ -139,15 +139,25 @@ class OperateTree(Tree[NodeData]):
         dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
 
-        # add missing parent directories for all nodes
-        for path in (*dir_nodes, *file_nodes):
-            parent_path = path.parent
-            while parent_path != store.cfg.dest_dir:
-                if parent_path not in dir_nodes:
-                    dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
-                parent_path = parent_path.parent
+        # add missing parent directories for trees that could have missing parents
+        if self.name not in (
+            TreeName.managed_only_sp,
+            TreeName.managed_only_sp_xpd,
+            TreeName.managed_all_mp,
+            TreeName.managed_all_mp_xpd,
+        ):
+            for path in (*dir_nodes, *file_nodes):
+                parent_path = path.parent
+                while parent_path != store.cfg.dest_dir:
+                    if parent_path not in dir_nodes:
+                        dir_nodes[parent_path] = store.cm_paths.dir_node_data[
+                            parent_path
+                        ]
+                    parent_path = parent_path.parent
 
         dir_nodes = path_funcs.sort_path_dict(dir_nodes)
+        file_nodes = path_funcs.sort_path_dict(file_nodes)
+
         for path, node_data in dir_nodes.items():
             await self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():

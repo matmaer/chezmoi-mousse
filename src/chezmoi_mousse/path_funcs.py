@@ -4,7 +4,7 @@ from itertools import islice
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.named_tuples import IterDirResult, NodeData
+from chezmoi_mousse.data_types import IterDirResult, NodeData
 from chezmoi_mousse.str_enums import LabelStr, PathFilters, StatusCode
 
 if TYPE_CHECKING:

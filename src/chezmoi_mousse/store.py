@@ -9,7 +9,7 @@ from chezmoi_mousse.chezmoi_paths import (
     ChezmoiTreePaths,
     CmPathChanges,
 )
-from chezmoi_mousse.named_tuples import (
+from chezmoi_mousse.data_types import (
     DumpConfigKeys,
     InitData,
 )

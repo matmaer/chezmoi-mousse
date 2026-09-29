@@ -178,7 +178,7 @@ class LabelStr(StrEnum):
     real_status_dir = f"Managed Directory ({_has_status})"
     tt_status_dir = f"Managed Directory ({_has_no_status}, has {_nested_sp})"
 
-    space_dir = f"Managed Directory ({_has_no_status})"
+    man_dir_no_status = f"Managed Directory ({_has_no_status})"
 
     space_dir_with_un_managed = (
         f"Managed Directory ({_has_no_status} and has nested un-managed paths)"

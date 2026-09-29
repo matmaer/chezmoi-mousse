@@ -7,7 +7,7 @@ from textual.widgets import Collapsible, Label, Static
 from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.named_tuples import CommandResult
+    from chezmoi_mousse.data_types import CommandResult
 
 __all__ = [
     "CmdResultCollapsible",

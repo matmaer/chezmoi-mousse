@@ -34,7 +34,7 @@ from .common.actionables import FlatButtonsVertical
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.named_tuples import CommandResult
+    from chezmoi_mousse.data_types import CommandResult
 
 
 __all__ = ["ConfigTab"]

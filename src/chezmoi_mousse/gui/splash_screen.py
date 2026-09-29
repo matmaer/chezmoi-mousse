@@ -21,8 +21,8 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.data_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.named_tuples import CommandResult
 
 __all__ = ["SplashScreen"]
 

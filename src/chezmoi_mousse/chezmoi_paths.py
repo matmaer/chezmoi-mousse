@@ -5,7 +5,7 @@ from functools import cached_property
 from pathlib import Path
 
 from chezmoi_mousse import path_funcs
-from chezmoi_mousse.named_tuples import NodeData
+from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.str_enums import LabelStr, StatusCode as Sc
 
 __all__ = ["ChezmoiTreePaths", "CmPathChanges"]

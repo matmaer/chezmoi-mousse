@@ -30,8 +30,8 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.named_tuples import NodeData
 
 
 __all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView"]
