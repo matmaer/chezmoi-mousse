@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
@@ -83,7 +84,8 @@ class IterDirResult(NamedTuple):
     files: dict[Path, NodeData]
 
 
-class NodeData(NamedTuple):
+@dataclass(slots=True)
+class NodeData:
     main_label: str
     path: Path
     status: StatusCode
