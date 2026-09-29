@@ -155,6 +155,9 @@ class ChezmoiTreePaths:
         for path in un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 un_wanted_dirs.add(path)
+                self._add_dir_node_dict_key(LabelStr.un_wanted_dir, path, Sc.XX)
+            else:
+                self._add_dir_node_dict_key(LabelStr.un_man_dir, path, Sc.UU)
         un_wanted_paths = un_wanted_dirs | un_wanted_files
         wanted_paths = un_man_path_set - un_wanted_paths
 
@@ -170,26 +173,25 @@ class ChezmoiTreePaths:
             if path_funcs.any_nested_in(dir_path=path, check_paths=wanted_paths):
                 yy_dirs.add(path)
 
-        # calculate space dirs containing no yy, zz but with nested managed paths
+        # calculate space dirs with nested managed paths
         vv_dirs: set[Path] = set()
-        paths_to_check = tree_space_dirs - zz_dirs - yy_dirs
-        for path in paths_to_check:
+        for path in tree_space_dirs:
             if path_funcs.any_nested_in(dir_path=path, check_paths=man_path_set):
                 vv_dirs.add(path)
 
         # add space paths to the dir_node_data dict
         for path in tree_space_dirs:
-            if path in zz_dirs:
+            if path in vv_dirs:
+                self._add_dir_node_dict_key(
+                    LabelStr.space_dir_with_managed, path, Sc.VV
+                )
+            elif path in zz_dirs:
                 self._add_dir_node_dict_key(
                     LabelStr.space_dir_with_un_wanted, path, Sc.XX
                 )
             elif path in yy_dirs:
                 self._add_dir_node_dict_key(
                     LabelStr.space_dir_with_un_managed, path, Sc.YY
-                )
-            elif path in vv_dirs:
-                self._add_dir_node_dict_key(
-                    LabelStr.space_dir_with_managed, path, Sc.VV
                 )
             else:
                 self._add_dir_node_dict_key(LabelStr.space_dir, path, Sc.SS)
