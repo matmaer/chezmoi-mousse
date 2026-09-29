@@ -165,8 +165,8 @@ class LabelStr(StrEnum):
 
     # Operate tab MainSectionLabel text
     dest_dir = "Destination Directory"
-    un_man_file = "Unmanaged File"
-    un_man_dir = "Unmanaged Directory"
+    un_man_file = "Un-managed File"
+    un_man_dir = "Un-managed Directory"
     un_wanted_dir = f"{un_man_dir} (matches un-wanted)"
     un_wanted_file = f"{un_man_file} (matches un-wanted)"
 
