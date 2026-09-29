@@ -46,7 +46,10 @@ class OperateTree(Tree[NodeData]):
         self.guide_depth = 3
         self.show_root = False
         self.root.data = NodeData(
-            path=store.cfg.dest_dir, status=Sc.QQ, main_label=LabelStr.dest_dir
+            path=store.cfg.dest_dir,
+            status=Sc.QQ,
+            main_label=LabelStr.dest_dir,
+            exists=True,
         )
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
@@ -108,7 +111,7 @@ class OperateTree(Tree[NodeData]):
     ) -> None:
         parent_node = self.node_map[path.parent]
 
-        italic = " italic" if path in store.cm_paths.missing_managed else ""
+        italic = " italic" if not node_data.exists else ""
         color = self.app.theme_variables[node_data.status.tree_label_color]
 
         new_node = parent_node.add(

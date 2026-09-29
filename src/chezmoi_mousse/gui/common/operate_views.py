@@ -98,9 +98,7 @@ class PathInfo(ScrollableContainer):
             else FalseLabel()
         )
         matches_unwanted = TrueLabel() if status == Sc.XX else FalseLabel()
-        exists = (
-            TrueLabel() if path not in store.cm_paths.missing_managed else FalseLabel()
-        )
+        exists = TrueLabel() if node_data.exists else FalseLabel()
         info_items.append(
             self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed)
         )
@@ -148,9 +146,7 @@ class PathInfo(ScrollableContainer):
             TrueLabel() if path in store.cm_paths.status_path_set else FalseLabel()
         )
         f_match_unwanted = TrueLabel() if node_data.status is Sc.XX else FalseLabel()
-        exists = (
-            TrueLabel() if path not in store.cm_paths.missing_managed else FalseLabel()
-        )
+        exists = TrueLabel() if node_data.exists else FalseLabel()
 
         info_items.append(
             self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed)
@@ -208,12 +204,13 @@ class ContentView(Vertical):
         self.path_info = self.query_exactly_one(PathInfo)
 
     @work
-    async def _update_file_content(self, path: Path) -> None:
+    async def _update_file_content(self, node_data: NodeData) -> None:
+        path = node_data.path
         if path in self.file_content_cache:
             f_content = self.file_content_cache[path]
         else:
             f_content = Text("Looks like an empty file.")
-            if path in store.cm_paths.missing_managed:
+            if not node_data.exists:
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, path
                 )
@@ -228,7 +225,7 @@ class ContentView(Vertical):
         path = node_data.path
         if path in store.cm_paths.file_node_data or path.is_file():
             self.path_info.display = False
-            self._update_file_content(path)
+            self._update_file_content(node_data)
             self.content_static.display = True
         else:
             self.content_static.display = False

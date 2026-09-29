@@ -87,3 +87,4 @@ class NodeData(NamedTuple):
     main_label: str
     path: Path
     status: StatusCode
+    exists: bool

@@ -198,12 +198,14 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             main_label=LabelStr.un_wanted_dir,
                             path=path,
                             status=StatusCode.XX,
+                            exists=True,
                         )
                     else:
                         dirs[path] = NodeData(
                             main_label=LabelStr.un_man_dir,
                             path=path,
                             status=StatusCode.UU,
+                            exists=True,
                         )
                 elif path.is_file():
                     if is_unwanted_file(path):
@@ -211,12 +213,14 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             main_label=LabelStr.un_wanted_file,
                             path=path,
                             status=StatusCode.XX,
+                            exists=True,
                         )
                     else:
                         files[path] = NodeData(
                             main_label=LabelStr.un_man_file,
                             path=path,
                             status=StatusCode.UU,
+                            exists=True,
                         )
             except (FileNotFoundError, PermissionError, OSError) as exception:
                 exceptions[path] = str(exception)

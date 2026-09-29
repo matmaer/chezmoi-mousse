@@ -216,7 +216,10 @@ class OperateTab(TabPane):
     def __init__(self) -> None:
         self.ids = store.op_ids
         self.root_node_data: NodeData = NodeData(
-            path=store.cfg.dest_dir, status=Sc.QQ, main_label=LabelStr.dest_dir
+            path=store.cfg.dest_dir,
+            status=Sc.QQ,
+            main_label=LabelStr.dest_dir,
+            exists=True,
         )
         super().__init__(
             id=BtnLabel.operate.pane_id,

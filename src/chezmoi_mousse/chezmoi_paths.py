@@ -21,7 +21,6 @@ class ChezmoiTreePaths:
     man_dir_set: set[Path]
     man_file_set: set[Path]
     man_path_set: set[Path]
-    missing_managed: set[Path]
     space_dir_set: set[Path]
     space_file_set: set[Path]
     space_path_set: set[Path]
@@ -64,9 +63,7 @@ class ChezmoiTreePaths:
             f"File node data for path {path} already exists"
         )
         self.file_node_data[path] = NodeData(
-            main_label=main_label,
-            path=path,
-            status=status,
+            main_label=main_label, path=path, status=status, exists=path.exists()
         )
 
     def _update_file_node_data(
@@ -94,9 +91,7 @@ class ChezmoiTreePaths:
             f"Dir node data for path {path} already exists"
         )
         self.dir_node_data[path] = NodeData(
-            main_label=main_label,
-            path=path,
-            status=status,
+            main_label=main_label, path=path, status=status, exists=path.exists()
         )
 
     def _update_status_dir_node_data(
@@ -139,7 +134,7 @@ class ChezmoiTreePaths:
                 self.add_btn_paths.add(path)
             if node_data.status not in (Sc.UU, Sc.XX):
                 self.forget_btn_paths.add(path)
-                if path not in self.missing_managed:
+                if node_data.exists:
                     self.destroy_btn_paths.add(path)
             if node_data.status not in (Sc.SS, Sc.UU, Sc.XX):
                 self.apply_btn_paths.add(path)

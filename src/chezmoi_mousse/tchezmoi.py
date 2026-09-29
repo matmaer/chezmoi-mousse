@@ -140,7 +140,6 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     un_man_file_set: set[Path] = parse_paths(unman_files_task.result())
 
     man_path_set: set[Path] = man_dir_set | man_file_set
-    missing_managed: set[Path] = {p for p in man_path_set if not p.exists()}
     space_dir_set: set[Path] = man_dir_set - status_dirs_pcr.keys()
     space_file_set: set[Path] = man_file_set - status_files_pcr.keys()
 
@@ -151,7 +150,6 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         man_dir_set=man_dir_set,
         man_file_set=man_file_set,
         man_path_set=man_path_set,
-        missing_managed=missing_managed,
         space_dir_set=space_dir_set,
         space_file_set=space_file_set,
         space_path_set=space_file_set | space_dir_set,
