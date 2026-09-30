@@ -235,7 +235,8 @@ class _DiffViewBase(Vertical):
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    cache: ClassVar[dict[Path, list[Static]]] = {}
+    d_cache: ClassVar[dict[Path, list[Static]]] = {}
+    r_cache: ClassVar[dict[Path, list[Static]]] = {}
 
     tcss_map: ClassVar[dict[str, Tcss]] = {
         " ": Tcss.context,
@@ -291,17 +292,14 @@ class _DiffViewBase(Vertical):
 
     @work
     async def _update_diff_view(self, node_data: NodeData) -> None:
+        cache = self.d_cache if self.diff_cmd is ReadCmd.diff else self.r_cache
+        path = node_data.path
 
-        if node_data.path in self.cache:
-            diff_widgets = self.cache[node_data.path]
-        else:
-            diff_widgets = await self._create_diff_widgets(
-                self.diff_cmd, node_data.path
-            )
-            self.cache[node_data.path] = diff_widgets
+        if path not in cache:
+            cache[path] = await self._create_diff_widgets(self.diff_cmd, path)
 
         self.diff_container.remove_children()
-        self.diff_container.mount_all(diff_widgets)
+        self.diff_container.mount_all(cache[path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.has_status:
