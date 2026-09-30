@@ -7,6 +7,7 @@ __all__ = [
     "BindingDescription",
     "BtnLabel",
     "Chars",
+    "ChezmoiPrompts",
     "ColorVar",
     "ContainerName",
     "GlobalArgs",
@@ -47,7 +48,7 @@ class BtnLabel(StrEnum):
     logs = "Logs"
     debug = "Debug"
 
-    # Run chezmoi mcommand buttons
+    # Run chezmoi command buttons
     chezmoi_add = "chezmoi add"
     chezmoi_apply = "chezmoi apply"
     chezmoi_re_add = "chezmoi re-add"
@@ -84,6 +85,7 @@ class BtnLabel(StrEnum):
 
     # Other
     cancel = "Cancel"
+    close = "Close"
 
     @property
     def pane_id(self) -> str:
@@ -96,6 +98,32 @@ class Chars(StrEnum):
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
+
+
+class ChezmoiPrompts(Enum):
+    # each member its name corresponds to a chezmoi prompt item and the member its value
+    # corresponds to the value we send to the chezmoi process
+    all = "a"
+    diff = "d"
+    edit = "e"
+    get = "g"
+    no = "n"
+    no_to_all = "N"
+    quit = "q"
+    save = "s"
+    yes = "y"
+
+    @property
+    def btn_label(self) -> str:
+        return f"{self.name.replace('_', '-')}"
+
+    @property
+    def prompt_item(self) -> str:
+        return f"{self.name.replace('_', '-')}"
+
+    @property
+    def reply(self) -> str:
+        return self.value
 
 
 class ColorVar(StrEnum):
@@ -137,6 +165,7 @@ class ContainerName(StrEnum):
     git_log = auto()
     left_side = auto()
     middle = auto()
+    prompt_buttons = auto()
     right_side = auto()
     operate_buttons = auto()
     template_data = auto()
