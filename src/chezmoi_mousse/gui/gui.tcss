@@ -65,6 +65,7 @@
 
 .operate_pane {
   &>.operations_left {
+    max-width: 30%;
     width: auto;
 
     &>.dest_dir_button {
@@ -90,6 +91,7 @@
     &>.managed_tree {
       height: 1fr;
       width: auto;
+      max-width: 1fr;
     }
   }
 
