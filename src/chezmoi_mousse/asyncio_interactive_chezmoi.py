@@ -17,8 +17,7 @@ type PromptHandler = Callable[[str], Awaitable[str]]
 async def _managed_process(
     *cmd: str,
 ) -> AsyncGenerator[asyncio.subprocess.Process]:
-    """Spawns an asyncio subprocess with guaranteed graceful cleanup on
-    exit/cancellation."""
+    # Wrapper to try graceful exit and cleanup (with SIGTERM) instead of just killing
     process = await asyncio.create_subprocess_exec(
         *cmd,
         stdin=asyncio.subprocess.PIPE,
@@ -29,21 +28,21 @@ async def _managed_process(
         yield process
     finally:
         if process.returncode is None:
-            # 1. Ask chezmoi nicely to terminate and release file locks
+            # Ask the command nicely to terminate and release file locks
             with suppress(ProcessLookupError):
                 process.send_signal(signal.SIGTERM)
 
-            # 2. Give chezmoi a grace period to flush git state and exit
+            # Give the command a grace period to flush state and exit
             try:
                 await asyncio.wait_for(process.wait(), timeout=2.0)
             except TimeoutError:
-                # 3. Fallback to force kill if it hangs or ignores SIGTERM
+                # Fallback to force kill if the command hangs or ignores SIGTERM
                 with suppress(ProcessLookupError):
                     process.kill()
                 await process.wait()
 
 
-async def run_interactive_stream(
+async def run_chezmoi_interactive(
     cmd: tuple[str, ...],
     on_output: OutputHandler,
     on_prompt: PromptHandler,
@@ -77,7 +76,7 @@ async def run_interactive_stream(
                 decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
                 accumulated_text += decoded_chunk
 
-                # Flush completed lines to the UI
+                # Return lines as they become available
                 if "\n" in accumulated_text:
                     complete_lines, accumulated_text = accumulated_text.rsplit("\n", 1)
                     on_output(complete_lines + "\n")
