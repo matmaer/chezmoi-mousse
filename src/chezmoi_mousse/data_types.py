@@ -111,3 +111,11 @@ class NodeData:
     @property
     def has_status(self) -> bool:
         return self.in_status_dirs_cr or self.in_status_files_cr
+
+    @property
+    def is_known_file(self) -> bool:
+        return self.in_managed_files_cr or self.in_un_man_files_cr
+
+    @property
+    def is_known_dir(self) -> bool:
+        return self.in_managed_dirs_cr or self.in_un_man_dirs_cr
