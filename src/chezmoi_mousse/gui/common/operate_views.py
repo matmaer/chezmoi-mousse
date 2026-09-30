@@ -187,7 +187,7 @@ class ContentView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_contents)
-        yield self.FileContentStatic(markup=False)
+        yield ScrollableContainer(ContentView.FileContentStatic(markup=False))
         yield PathInfo()
 
     def on_mount(self) -> None:
