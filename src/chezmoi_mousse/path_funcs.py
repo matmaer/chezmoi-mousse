@@ -38,6 +38,10 @@ def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
     )
 
 
+def any_parents_for(path: Path, *, check_paths: set[Path]) -> bool:
+    return any(parent in check_paths for parent in path.parents)
+
+
 def get_sorted_top_parents(
     paths: Iterable[Path] | dict[Path, bool],
 ) -> list[Path]:
