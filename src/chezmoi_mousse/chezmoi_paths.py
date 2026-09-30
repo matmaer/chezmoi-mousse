@@ -54,6 +54,13 @@ class ChezmoiTreePaths:
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self._update_button_sets(self.dir_node_data | self.file_node_data)
 
+        all_paths = self.man_path_set | self.un_man_path_set
+        node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
+        # assert all paths are accounted for
+        assert all_paths == node_data_paths, (
+            "Mismatch between all paths and node data paths"
+        )
+
     def _populate_file_node_data(
         self,
         status_files_pcr: dict[Path, Sc],
