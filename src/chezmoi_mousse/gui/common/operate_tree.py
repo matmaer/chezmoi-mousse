@@ -8,6 +8,7 @@ from textual.widgets import Tree
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.str_enums import (
+    ColorVar,
     LabelStr,
     StatusCode as Sc,
     Tcss,
@@ -113,6 +114,9 @@ class OperateTree(Tree[NodeData]):
 
         italic = " italic" if not node_data.exists else ""
         color = self.app.theme_variables[node_data.status.tree_label_color]
+
+        if node_data.status is Sc.VV and self.name not in TreeName.managed_trees():
+            color = self.app.theme_variables[ColorVar.text]
 
         new_node = parent_node.add(
             label=f"[{color}{italic}]{path.name}[/]",

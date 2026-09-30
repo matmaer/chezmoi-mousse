@@ -493,7 +493,7 @@ Tree {
   }
 
   &>.tree--highlight {
-    color: cyan;
+    text-style: bold;
   }
 
   &>.tree--guides {

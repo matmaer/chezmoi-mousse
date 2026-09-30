@@ -579,6 +579,15 @@ class TreeName(StrEnum):
     un_wanted_plus_amp = auto()  # base dict data
     un_wanted_plus_amp_xpd = auto()
 
+    @classmethod
+    def managed_trees(cls) -> tuple[Self, ...]:
+        return (
+            cls(cls.managed_only_sp_xpd),
+            cls(cls.managed_only_sp),
+            cls(cls.managed_all_mp),
+            cls(cls.managed_all_mp_xpd),
+        )
+
 
 ##############################################
 # Enums for the chezmoi command construction #
