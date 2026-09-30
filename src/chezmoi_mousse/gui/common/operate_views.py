@@ -74,7 +74,7 @@ class PathInfo(ScrollableContainer):
         self.file_info.display = False
 
     @work
-    async def set_dir_info(self, node_data: NodeData) -> None:
+    async def _set_dir_info(self, node_data: NodeData) -> None:
         path = node_data.path
         status = node_data.status
         info_items: list[PathInfo.InfoItem] = []
@@ -134,7 +134,7 @@ class PathInfo(ScrollableContainer):
         self.dir_info.mount_all(info_items)
 
     @work
-    async def set_file_info(self, node_data: NodeData) -> None:
+    async def _set_file_info(self, node_data: NodeData) -> None:
         path = node_data.path
 
         info_items: list[PathInfo.InfoItem] = []
@@ -174,11 +174,11 @@ class PathInfo(ScrollableContainer):
         path = node_data.path
         if path in store.cm_paths.file_node_data or path.is_file():
             self.dir_info.display = False
-            self.set_file_info(node_data)
+            self._set_file_info(node_data)
             self.file_info.display = True
         else:
             self.file_info.display = False
-            self.set_dir_info(node_data)
+            self._set_dir_info(node_data)
             self.dir_info.display = True
 
 

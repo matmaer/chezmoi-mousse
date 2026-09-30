@@ -23,15 +23,6 @@ def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
-def get_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> list[Path]:
-    nested_in = [
-        path
-        for path in check_paths
-        if path != dir_path and dir_path.is_relative_to(dir_path)
-    ]
-    return sort_paths(nested_in)
-
-
 def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
     return any(
         path != dir_path and path.is_relative_to(dir_path) for path in check_paths

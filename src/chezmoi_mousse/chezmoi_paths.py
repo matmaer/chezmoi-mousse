@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from functools import cached_property
 from pathlib import Path
 
 from chezmoi_mousse import path_funcs
@@ -15,19 +14,17 @@ __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 class ChezmoiTreePaths:
     """The raw source of truth received from chezmoi stdout."""
 
-    _dest_dir: Path
     _status_dirs_pcr: dict[Path, Sc]
     _status_files_pcr: dict[Path, Sc]
     man_dir_set: set[Path]
     man_file_set: set[Path]
     man_path_set: set[Path]
-    space_dir_set: set[Path]
-    space_file_set: set[Path]
-    space_path_set: set[Path]
+    _space_dir_set: set[Path]
+    _space_file_set: set[Path]
     status_path_set: set[Path]
-    un_man_dir_set: set[Path]
-    un_man_file_set: set[Path]
-    un_man_path_set: set[Path]
+    _un_man_dir_set: set[Path]
+    _un_man_file_set: set[Path]
+    _un_man_path_set: set[Path]
 
     file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
@@ -40,7 +37,7 @@ class ChezmoiTreePaths:
     def __post_init__(self) -> None:
 
         self._populate_file_node_data(
-            self._status_files_pcr, self.space_file_set, self.un_man_file_set
+            self._status_files_pcr, self._space_file_set, self._un_man_file_set
         )
 
         self._populate_default_dir_node_data()
@@ -54,7 +51,7 @@ class ChezmoiTreePaths:
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
         self._update_button_sets(self.dir_node_data | self.file_node_data)
 
-        all_paths = self.man_path_set | self.un_man_path_set
+        all_paths = self.man_path_set | self._un_man_path_set
         node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
         # assert all paths are accounted for
         assert all_paths == node_data_paths, (
@@ -96,11 +93,11 @@ class ChezmoiTreePaths:
             self.dir_node_data[path] = NodeData(
                 LabelStr.real_status_dir, path, status, exists=path.exists()
             )
-        for path in self.space_dir_set:
+        for path in self._space_dir_set:
             self.dir_node_data[path] = NodeData(
                 LabelStr.man_dir_no_status, path, Sc.SS, exists=path.exists()
             )
-        for path in self.un_man_dir_set:
+        for path in self._un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 self.dir_node_data[path] = NodeData(
                     LabelStr.un_wanted_dir, path, Sc.XX, exists=True
@@ -178,9 +175,6 @@ class ChezmoiTreePaths:
             if node_data.status not in (Sc.SS, Sc.UU, Sc.XX):
                 self.apply_btn_paths.add(path)
                 self.re_add_btn_paths.add(path)
-
-    @cached_property
-    def space_paths(self) -> dict[Path, Sc]: ...
 
 
 @dataclass(slots=True, kw_only=True)

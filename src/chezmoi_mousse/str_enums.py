@@ -177,19 +177,7 @@ class LabelStr(StrEnum):
 
     real_status_dir = f"Managed Directory ({_has_status})"
     tt_status_dir = f"Managed Directory ({_has_no_status}, has {_nested_sp})"
-
     man_dir_no_status = f"Managed Directory ({_has_no_status})"
-
-    space_dir_with_un_managed = (
-        f"Managed Directory ({_has_no_status} and has nested un-managed paths)"
-    )
-    space_dir_with_un_wanted = (
-        f"Managed Directory ({_has_no_status} and has nested un-wanted paths)"
-    )
-    space_dir_with_managed = (
-        f"Managed Directory ({_has_no_status} and has nested managed paths)"
-    )
-
     space_file = f"Managed File ({_has_no_status})"
     status_file = f"Managed File ({_has_status})"
 
@@ -217,22 +205,16 @@ class LabelStr(StrEnum):
     d_match_un_wanted = "Directory matches un-wanted filter"
     d_exists = "Directory exists on disk"
     d_has_status = "Directory has a status"
-    d_has_commits = "Directory has commit history"
     d_has_nested_status = "Directory has nested status paths"
     d_has_nested_managed = "Directory has nested managed paths"
-    d_has_nested_un_man = "Directory has nested un-managed paths"
-    d_has_nested_un_wanted = "Directory has nested un-wanted paths"
     # files
     f_is_managed = "File is managed"
     f_has_status = "File has a status"
-    f_has_commits = "File has commit history"
     f_exists = "File exists on disk"
     f_match_un_wanted = "File matches un-wanted filter"
 
     # other
     context = "Context"
-    no_managed_paths = "No managed paths yet"
-    no_status_paths = "No paths with a status"
     not_set = "Not Set"
 
     # CommandResult collapsible sections
@@ -464,22 +446,6 @@ class StatusCode(StrEnum):
     VV = "VV"  # Managed dirs containing nested managed paths
     YY = "YY"  # Space dirs containing UU paths but no XX paths
     ZZ = "ZZ"  # Spare dirs containing XX paths
-
-    @classmethod
-    def real_status_codes(cls) -> tuple[Self, ...]:
-        return (
-            cls(cls.DA),
-            cls(cls.DD),
-            cls(cls.DM),
-            cls(cls.DS),
-            cls(cls.MA),
-            cls(cls.MD),
-            cls(cls.MM),
-            cls(cls.MS),
-            cls(cls.SA),
-            cls(cls.SD),
-            cls(cls.SM),
-        )
 
     @classmethod
     @cache
