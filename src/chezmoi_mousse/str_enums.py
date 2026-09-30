@@ -230,7 +230,7 @@ class LabelStr(StrEnum):
     # Operate tab PathInfo labels
     # directories
     d_is_managed = "Directory is managed"
-    d_match_un_wanted = "Directory matches un-wanted filter"
+    d_un_wanted = "Directory matches un-wanted filter"
     d_exists = "Directory exists on disk"
     d_has_status = "Directory has a status"
     d_has_nested_status = "Directory has nested status paths"
@@ -239,7 +239,7 @@ class LabelStr(StrEnum):
     f_is_managed = "File is managed"
     f_has_status = "File has a status"
     f_exists = "File exists on disk"
-    f_match_un_wanted = "File matches un-wanted filter"
+    f_un_wanted = "File matches un-wanted filter"
 
     # other
     context = "Context"

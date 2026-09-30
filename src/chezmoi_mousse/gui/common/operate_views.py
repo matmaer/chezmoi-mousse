@@ -79,10 +79,9 @@ class PathInfo(ScrollableContainer):
     async def _set_dir_info(self, node_data: NodeData) -> None:
 
         path = node_data.path
-        matches_unwanted = node_data.matches_unwanted
         status = node_data.status
         if node_data.path not in self.cache:
-            is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
+            is_managed_label = TrueLabel() if node_data.managed else FalseLabel()
             has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
             has_nested_status_label = TrueLabel() if status is Sc.TT else FalseLabel()
             has_nested_managed_label = (
@@ -92,7 +91,7 @@ class PathInfo(ScrollableContainer):
                 )
                 else FalseLabel()
             )
-            matches_unwanted_label = TrueLabel() if matches_unwanted else FalseLabel()
+            unwanted_label = TrueLabel() if node_data.un_wanted else FalseLabel()
             exists = TrueLabel() if node_data.exists else FalseLabel()
             self.cache[path] = [
                 self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed_label),
@@ -105,9 +104,7 @@ class PathInfo(ScrollableContainer):
                     self.InfoLabel(LabelStr.d_has_nested_managed),
                     has_nested_managed_label,
                 ),
-                self.InfoItem(
-                    self.InfoLabel(LabelStr.d_match_un_wanted), matches_unwanted_label
-                ),
+                self.InfoItem(self.InfoLabel(LabelStr.d_un_wanted), unwanted_label),
                 self.InfoItem(self.InfoLabel(LabelStr.d_exists), exists),
             ]
 
@@ -118,17 +115,13 @@ class PathInfo(ScrollableContainer):
     async def _set_file_info(self, node_data: NodeData) -> None:
 
         if node_data.path not in self.cache:
-            is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
+            is_managed_label = TrueLabel() if node_data.managed else FalseLabel()
             has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
-            matches_unwanted_label = (
-                TrueLabel() if node_data.matches_unwanted else FalseLabel()
-            )
+            un_wanted_label = TrueLabel() if node_data.un_wanted else FalseLabel()
             self.cache[node_data.path] = [
                 self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed_label),
                 self.InfoItem(self.InfoLabel(LabelStr.f_has_status), has_status_label),
-                self.InfoItem(
-                    self.InfoLabel(LabelStr.f_match_un_wanted), matches_unwanted_label
-                ),
+                self.InfoItem(self.InfoLabel(LabelStr.f_un_wanted), un_wanted_label),
                 self.InfoItem(
                     self.InfoLabel(LabelStr.f_exists),
                     TrueLabel() if node_data.exists else FalseLabel(),
@@ -139,7 +132,7 @@ class PathInfo(ScrollableContainer):
         self.file_info.mount_all(self.cache[node_data.path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.is_known_dir or node_data.path.is_dir():
+        if node_data.known_dir or node_data.path.is_dir():
             self.file_info.display = False
             self._set_dir_info(node_data)
             self.dir_info.display = True
@@ -190,7 +183,7 @@ class ContentView(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self.path_info.node_data = node_data
-        if node_data.is_known_dir or node_data.path.is_dir():
+        if node_data.known_dir or node_data.path.is_dir():
             self.content_static.display = False
             self.flat_label.update(LabelStr.select_path_contents)
             self.path_info.display = True
@@ -371,7 +364,7 @@ class GitLogView(Vertical):
     def watch_node_data(self, node_data: NodeData) -> None:
         path = node_data.path
         self.path_info.node_data = node_data
-        if path != store.cfg.dest_dir and not node_data.is_managed:
+        if path != store.cfg.dest_dir and not node_data.managed:
             self.data_table.display = False
             self.flat_label.update(LabelStr.select_path_git_log)
             self.path_info.display = True

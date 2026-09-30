@@ -105,21 +105,21 @@ class NodeData:
         return self.in_status_dirs_cr or self.in_status_files_cr
 
     @property
-    def is_known_file(self) -> bool:
+    def known_file(self) -> bool:
         return self.in_managed_files_cr or self.in_un_man_files_cr
 
     @property
-    def is_known_dir(self) -> bool:
+    def known_dir(self) -> bool:
         return self.in_managed_dirs_cr or self.in_un_man_dirs_cr
 
     @property
-    def is_managed(self) -> bool:
+    def managed(self) -> bool:
         return self.in_managed_dirs_cr or self.in_managed_files_cr
 
     @property
-    def is_un_managed(self) -> bool:
+    def un_managed(self) -> bool:
         return self.in_un_man_dirs_cr or self.in_un_man_files_cr
 
     @property
-    def matches_unwanted(self) -> bool:
+    def un_wanted(self) -> bool:
         return self.matches_unwanted_dir or self.matches_unwanted_file
