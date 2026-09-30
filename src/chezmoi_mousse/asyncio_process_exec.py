@@ -5,12 +5,11 @@ import subprocess
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.str_enums import GlobalArgs, ReadCmd
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from chezmoi_mousse.str_enums import WriteCmd
+    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
 
 
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
@@ -36,30 +35,20 @@ def _get_chezmoi_cmd() -> str:
     return store.init_data.which_chezmoi
 
 
-def _get_base_cmd_tuple(*, live_run: bool) -> tuple[str, ...]:
-    chezmoi_cmd = _get_chezmoi_cmd()
-    if live_run is True:
-        return (
-            chezmoi_cmd,
-            *GlobalArgs.global_defaults.value,
-        )
-    return (
-        chezmoi_cmd,
-        GlobalArgs.dry_run.value,
-        *GlobalArgs.global_defaults.value,
-    )
-
-
 async def create_subprocess_exec_result(
     cmd_enum: ReadCmd | WriteCmd,
     path: Path | None,
     time_out: int = 15,
 ) -> ExecResult:
-    live_run = store.live_run or isinstance(cmd_enum, ReadCmd)
-    base_cmd = _get_base_cmd_tuple(live_run=live_run)
-    exec_args = base_cmd + cmd_enum.value
-    if path is not None:
-        exec_args = (*exec_args, str(path))
+    chezmoi_cmd = _get_chezmoi_cmd()
+    exec_args = (
+        (chezmoi_cmd, *cmd_enum.value, str(path))
+        if path is not None
+        else (
+            chezmoi_cmd,
+            *cmd_enum.value,
+        )
+    )
 
     process = await asyncio.create_subprocess_exec(
         *exec_args,
