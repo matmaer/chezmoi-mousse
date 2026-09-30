@@ -134,8 +134,8 @@ class OperateTree(Tree[NodeData]):
             TreeName.un_wanted_plus_sp_xpd,
             TreeName.un_wanted_plus_amp_xpd,
         ):
-            for path, node in self.node_map.items():
-                if path in store.cm_paths.man_dir_set:
+            for node in self.node_map.values():
+                if node.data is not None and node.data.in_managed_dirs_cr:
                     node.expand()
 
     @work
@@ -189,7 +189,7 @@ class OperateTree(Tree[NodeData]):
         # dest dir node data is none
         if (
             event.node.data is None
-            or event.node.data.path in store.cm_paths.man_dir_set
+            or event.node.data.in_managed_dirs_cr
             or event.node.data.path in self.iterated_dirs
         ):
             return

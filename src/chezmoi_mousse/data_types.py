@@ -99,3 +99,15 @@ class NodeData:
     is_space_path: bool = False
     matches_unwanted_dir: bool = False
     matches_unwanted_file: bool = False
+
+    @property
+    def is_managed(self) -> bool:
+        return self.in_managed_dirs_cr or self.in_managed_files_cr
+
+    @property
+    def is_un_managed(self) -> bool:
+        return self.in_un_man_dirs_cr or self.in_un_man_files_cr
+
+    @property
+    def has_status(self) -> bool:
+        return self.in_status_dirs_cr or self.in_status_files_cr

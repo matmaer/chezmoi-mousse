@@ -79,10 +79,8 @@ class PathInfo(ScrollableContainer):
         status = node_data.status
         info_items: list[PathInfo.InfoItem] = []
 
-        is_managed = TrueLabel() if path in store.cm_paths.man_dir_set else FalseLabel()
-        has_status = (
-            TrueLabel() if path in store.cm_paths.status_path_set else FalseLabel()
-        )
+        is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
+        has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
         has_nested_status = (
             TrueLabel()
             if path_funcs.any_nested_in(
@@ -100,10 +98,10 @@ class PathInfo(ScrollableContainer):
         matches_unwanted = TrueLabel() if status == Sc.XX else FalseLabel()
         exists = TrueLabel() if node_data.exists else FalseLabel()
         info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed)
+            self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed_label)
         )
         info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.d_has_status), has_status)
+            self.InfoItem(self.InfoLabel(LabelStr.d_has_status), has_status_label)
         )
         info_items.append(
             self.InfoItem(
@@ -135,24 +133,19 @@ class PathInfo(ScrollableContainer):
 
     @work
     async def _set_file_info(self, node_data: NodeData) -> None:
-        path = node_data.path
 
         info_items: list[PathInfo.InfoItem] = []
 
-        is_managed = (
-            TrueLabel() if path in store.cm_paths.man_file_set else FalseLabel()
-        )
-        has_status = (
-            TrueLabel() if path in store.cm_paths.status_path_set else FalseLabel()
-        )
+        is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
+        has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
         f_match_unwanted = TrueLabel() if node_data.status is Sc.XX else FalseLabel()
         exists = TrueLabel() if node_data.exists else FalseLabel()
 
         info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed)
+            self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed_label)
         )
         info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.f_has_status), has_status)
+            self.InfoItem(self.InfoLabel(LabelStr.f_has_status), has_status_label)
         )
         info_items.append(
             self.InfoItem(
@@ -311,18 +304,18 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(diff_widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.path not in store.cm_paths.status_path_set:
-            self.flat_label.update(LabelStr.select_path_diff)
-            self.diff_container.display = False
-            self.path_info.node_data = node_data
-            self.path_info.display = True
-        else:
+        if node_data.has_status:
             self.path_info.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
             self.diff_container.loading = True
             self.diff_container.display = True
             self._update_diff_view(node_data)
             self.diff_container.loading = False
+        else:
+            self.flat_label.update(LabelStr.select_path_diff)
+            self.diff_container.display = False
+            self.path_info.node_data = node_data
+            self.path_info.display = True
 
 
 class DiffView(_DiffViewBase):
