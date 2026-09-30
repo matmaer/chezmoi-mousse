@@ -28,11 +28,6 @@ class ChezmoiTreePaths:
 
     file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
-    add_btn_paths: set[Path] = field(default_factory=set[Path])
-    apply_btn_paths: set[Path] = field(default_factory=set[Path])
-    destroy_btn_paths: set[Path] = field(default_factory=set[Path])
-    forget_btn_paths: set[Path] = field(default_factory=set[Path])
-    re_add_btn_paths: set[Path] = field(default_factory=set[Path])
 
     def __post_init__(self) -> None:
 
@@ -49,7 +44,6 @@ class ChezmoiTreePaths:
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
-        self._update_button_sets(self.dir_node_data | self.file_node_data)
 
         all_paths = self.man_path_set | self._un_man_path_set
         node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
@@ -163,18 +157,6 @@ class ChezmoiTreePaths:
             if path_funcs.any_nested_in(dir_path=path, check_paths=zz_paths):
                 node_data.main_label = LabelStr.un_man_dir
                 node_data.status = Sc.ZZ
-
-    def _update_button_sets(self, all_path_data: dict[Path, NodeData]) -> None:
-        for path, node_data in all_path_data.items():
-            if node_data.status != Sc.SS:
-                self.add_btn_paths.add(path)
-            if node_data.status not in (Sc.UU, Sc.XX):
-                self.forget_btn_paths.add(path)
-                if node_data.exists:
-                    self.destroy_btn_paths.add(path)
-            if node_data.status not in (Sc.SS, Sc.UU, Sc.XX):
-                self.apply_btn_paths.add(path)
-                self.re_add_btn_paths.add(path)
 
 
 @dataclass(slots=True, kw_only=True)
