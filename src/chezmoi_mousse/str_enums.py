@@ -213,6 +213,7 @@ class LabelStr(StrEnum):
     select_path_contents = "<- Select a file path to view its contents."
     select_path_diff = "<- Select a path with a status to view its diff."
     select_path_git_log = "<- Select a managed path to see the chezmoi git log."
+    no_git_log = "No git log available for this path."
 
     # Operate tab radio buttons
     radio_contents = "Contents View"

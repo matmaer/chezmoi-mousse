@@ -62,6 +62,8 @@ class PathInfo(ScrollableContainer):
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
+    cache: ClassVar[dict[Path, list[PathInfo.InfoItem]]] = {}
+
     def compose(self) -> ComposeResult:
         yield PathInfo.DirInfo()
         yield PathInfo.FileInfo()
@@ -75,104 +77,76 @@ class PathInfo(ScrollableContainer):
 
     @work
     async def _set_dir_info(self, node_data: NodeData) -> None:
-        path = node_data.path
-        status = node_data.status
-        info_items: list[PathInfo.InfoItem] = []
 
-        is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
-        has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
-        has_nested_status = (
-            TrueLabel()
-            if path_funcs.any_nested_in(
-                dir_path=path, check_paths=store.cm_paths.status_path_set
+        path = node_data.path
+        matches_unwanted = node_data.matches_unwanted
+        status = node_data.status
+        if node_data.path not in self.cache:
+            is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
+            has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
+            has_nested_status_label = TrueLabel() if status is Sc.TT else FalseLabel()
+            has_nested_managed_label = (
+                TrueLabel()
+                if path_funcs.any_nested_in(
+                    dir_path=path, check_paths=store.cm_paths.man_path_set
+                )
+                else FalseLabel()
             )
-            else FalseLabel()
-        )
-        has_nested_managed = (
-            TrueLabel()
-            if path_funcs.any_nested_in(
-                dir_path=path, check_paths=store.cm_paths.man_path_set
-            )
-            else FalseLabel()
-        )
-        matches_unwanted = TrueLabel() if status == Sc.XX else FalseLabel()
-        exists = TrueLabel() if node_data.exists else FalseLabel()
-        info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed_label)
-        )
-        info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.d_has_status), has_status_label)
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_has_nested_status),
-                has_nested_status,
-            )
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_has_nested_managed),
-                has_nested_managed,
-            )
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_match_un_wanted),
-                matches_unwanted,
-            )
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.d_exists),
-                exists,
-            )
-        )
+            matches_unwanted_label = TrueLabel() if matches_unwanted else FalseLabel()
+            exists = TrueLabel() if node_data.exists else FalseLabel()
+            self.cache[path] = [
+                self.InfoItem(self.InfoLabel(LabelStr.d_is_managed), is_managed_label),
+                self.InfoItem(self.InfoLabel(LabelStr.d_has_status), has_status_label),
+                self.InfoItem(
+                    self.InfoLabel(LabelStr.d_has_nested_status),
+                    has_nested_status_label,
+                ),
+                self.InfoItem(
+                    self.InfoLabel(LabelStr.d_has_nested_managed),
+                    has_nested_managed_label,
+                ),
+                self.InfoItem(
+                    self.InfoLabel(LabelStr.d_match_un_wanted), matches_unwanted_label
+                ),
+                self.InfoItem(self.InfoLabel(LabelStr.d_exists), exists),
+            ]
 
         self.dir_info.remove_children()
-        self.dir_info.mount_all(info_items)
+        self.dir_info.mount_all(self.cache[path])
 
     @work
     async def _set_file_info(self, node_data: NodeData) -> None:
 
-        info_items: list[PathInfo.InfoItem] = []
-
-        is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
-        has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
-        f_match_unwanted = TrueLabel() if node_data.status is Sc.XX else FalseLabel()
-        exists = TrueLabel() if node_data.exists else FalseLabel()
-
-        info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed_label)
-        )
-        info_items.append(
-            self.InfoItem(self.InfoLabel(LabelStr.f_has_status), has_status_label)
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.f_match_un_wanted),
-                f_match_unwanted,
+        if node_data.path not in self.cache:
+            is_managed_label = TrueLabel() if node_data.is_managed else FalseLabel()
+            has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
+            matches_unwanted_label = (
+                TrueLabel() if node_data.matches_unwanted else FalseLabel()
             )
-        )
-        info_items.append(
-            self.InfoItem(
-                self.InfoLabel(LabelStr.f_exists),
-                exists,
-            )
-        )
+            self.cache[node_data.path] = [
+                self.InfoItem(self.InfoLabel(LabelStr.f_is_managed), is_managed_label),
+                self.InfoItem(self.InfoLabel(LabelStr.f_has_status), has_status_label),
+                self.InfoItem(
+                    self.InfoLabel(LabelStr.f_match_un_wanted), matches_unwanted_label
+                ),
+                self.InfoItem(
+                    self.InfoLabel(LabelStr.f_exists),
+                    TrueLabel() if node_data.exists else FalseLabel(),
+                ),
+            ]
 
         self.file_info.remove_children()
-        self.file_info.mount_all(info_items)
+        self.file_info.mount_all(self.cache[node_data.path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        path = node_data.path
-        if path in store.cm_paths.file_node_data or path.is_file():
-            self.dir_info.display = False
-            self._set_file_info(node_data)
-            self.file_info.display = True
-        else:
+        if node_data.is_known_dir or node_data.path.is_dir():
             self.file_info.display = False
             self._set_dir_info(node_data)
             self.dir_info.display = True
+        else:
+            self.dir_info.display = False
+            self._set_file_info(node_data)
+            self.file_info.display = True
 
 
 class ContentView(Vertical):
@@ -215,16 +189,15 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        path = node_data.path
-        if path in store.cm_paths.file_node_data or path.is_file():
+        self.path_info.node_data = node_data
+        if node_data.is_known_dir or node_data.path.is_dir():
+            self.content_static.display = False
+            self.flat_label.update(LabelStr.select_path_contents)
+            self.path_info.display = True
+        else:
             self.path_info.display = False
             self._update_file_content(node_data)
             self.content_static.display = True
-        else:
-            self.content_static.display = False
-            self.flat_label.update(LabelStr.select_path_contents)
-            self.path_info.node_data = node_data
-            self.path_info.display = True
 
 
 class _DiffViewBase(Vertical):
@@ -302,6 +275,7 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(cache[path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        self.path_info.node_data = node_data
         if node_data.has_status:
             self.path_info.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
@@ -312,7 +286,6 @@ class _DiffViewBase(Vertical):
         else:
             self.flat_label.update(LabelStr.select_path_diff)
             self.diff_container.display = False
-            self.path_info.node_data = node_data
             self.path_info.display = True
 
 
@@ -387,16 +360,21 @@ class GitLogView(Vertical):
             pretty_cells = self._get_styled_cells(cmd_result.out_list)
             self.cache[path] = pretty_cells
 
+        if not pretty_cells:
+            self.data_table.display = False
+            self.flat_label.update(LabelStr.no_git_log)
+
         for row in pretty_cells:
             self.data_table.add_row(*row)
         self.data_table.display = True
 
     def watch_node_data(self, node_data: NodeData) -> None:
         path = node_data.path
-        if path != store.cfg.dest_dir and path not in store.cm_paths.man_path_set:
+        self.path_info.node_data = node_data
+        if path != store.cfg.dest_dir and not node_data.is_managed:
             self.data_table.display = False
             self.flat_label.update(LabelStr.select_path_git_log)
             self.path_info.display = True
-            self.path_info.node_data = node_data
-            return
-        self._update_datatable_and_flat_label(path)
+        else:
+            self.path_info.display = False
+            self._update_datatable_and_flat_label(path)
