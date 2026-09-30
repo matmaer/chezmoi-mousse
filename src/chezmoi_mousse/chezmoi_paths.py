@@ -31,9 +31,7 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
-        self._populate_file_node_data(
-            self._status_files_pcr, self._space_file_set, self._un_man_file_set
-        )
+        self._populate_file_node_data()
 
         self._populate_default_dir_node_data()
         self._update_node_data_for_tt_dirs()  # overwrite Sc.SS with Sc.TT
@@ -54,51 +52,81 @@ class ChezmoiTreePaths:
 
     def _populate_file_node_data(
         self,
-        status_files_pcr: dict[Path, Sc],
-        space_file_set: set[Path],
-        un_man_file_set: set[Path],
     ) -> None:
-        for path, status in status_files_pcr.items():
+        for path, status in self._status_files_pcr.items():
             self.file_node_data[path] = NodeData(
                 main_label=LabelStr.status_file,
                 path=path,
                 status=status,
                 exists=path.exists(),
+                in_status_files_cr=True,
+                in_managed_files_cr=True,
+                is_space_path=False,
             )
-        for path in space_file_set:
+        for path in self._space_file_set:
             self.file_node_data[path] = NodeData(
                 main_label=LabelStr.space_file,
                 path=path,
                 status=Sc.SS,
                 exists=path.exists(),
+                in_managed_files_cr=True,
+                is_space_path=True,
             )
-        for path in un_man_file_set:
+        for path in self._un_man_file_set:
             if path_funcs.is_unwanted_file(path):
                 self.file_node_data[path] = NodeData(
-                    LabelStr.un_wanted_file, path, Sc.XX, exists=True
+                    main_label=LabelStr.un_wanted_file,
+                    path=path,
+                    status=Sc.XX,
+                    exists=True,
+                    in_un_man_files_cr=True,
+                    matches_unwanted_file=True,
                 )
             else:
                 self.file_node_data[path] = NodeData(
-                    LabelStr.un_man_file, path, Sc.UU, exists=True
+                    main_label=LabelStr.un_man_file,
+                    path=path,
+                    status=Sc.UU,
+                    exists=True,
+                    in_un_man_files_cr=True,
                 )
 
     def _populate_default_dir_node_data(self) -> None:
         for path, status in self._status_dirs_pcr.items():
             self.dir_node_data[path] = NodeData(
-                LabelStr.real_status_dir, path, status, exists=path.exists()
+                main_label=LabelStr.real_status_dir,
+                path=path,
+                status=status,
+                exists=path.exists(),
+                in_status_dirs_cr=True,
+                in_managed_dirs_cr=True,
             )
         for path in self._space_dir_set:
             self.dir_node_data[path] = NodeData(
-                LabelStr.man_dir_no_status, path, Sc.SS, exists=path.exists()
+                main_label=LabelStr.man_dir_no_status,
+                path=path,
+                status=Sc.SS,
+                exists=path.exists(),
+                in_managed_dirs_cr=True,
+                is_space_path=True,
             )
         for path in self._un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 self.dir_node_data[path] = NodeData(
-                    LabelStr.un_wanted_dir, path, Sc.XX, exists=True
+                    main_label=LabelStr.un_wanted_dir,
+                    path=path,
+                    status=Sc.XX,
+                    exists=True,
+                    in_un_man_dirs_cr=True,
+                    matches_unwanted_dir=True,
                 )
             else:
                 self.dir_node_data[path] = NodeData(
-                    LabelStr.un_man_dir, path, Sc.UU, exists=True
+                    main_label=LabelStr.un_man_dir,
+                    path=path,
+                    status=Sc.UU,
+                    exists=True,
+                    in_un_man_dirs_cr=True,
                 )
 
     def _update_node_data_for_tt_dirs(self) -> None:
