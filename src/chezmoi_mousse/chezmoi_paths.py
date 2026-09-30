@@ -43,13 +43,12 @@ class ChezmoiTreePaths:
             self._status_files_pcr, self.space_file_set, self.un_man_file_set
         )
 
-        self._populate_default_dir_node_data(
-            self._status_dirs_pcr, self.space_dir_set, self.un_man_dir_set
-        )
-        self._update_node_data_for_tt_dirs(self.status_path_set)
-        self._update_node_data_for_vv_dirs()
-        self._update_node_data_for_yy_dirs()
-        self._update_node_data_for_zz_dirs()
+        self._populate_default_dir_node_data()
+        self._update_node_data_for_tt_dirs()  # overwrite Sc.SS with Sc.TT
+        self._update_node_data_for_vv_dirs()  # overwrite remaining Sc.SS with Sc.VV
+        self._update_uu_dirs_with_xx_parent()  # overwrite Sc.UU with Sc.XX
+        self._update_node_data_for_yy_dirs()  # overwrite remaining Sc.SS with Sc.YY
+        self._update_node_data_for_zz_dirs()  # overwrite remaining Sc.SS with Sc.ZZ
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
@@ -85,21 +84,16 @@ class ChezmoiTreePaths:
                     LabelStr.un_man_file, path, Sc.UU, exists=True
                 )
 
-    def _populate_default_dir_node_data(
-        self,
-        status_dirs_pcr: dict[Path, Sc],
-        space_dir_set: set[Path],
-        un_man_dir_set: set[Path],
-    ) -> None:
-        for path, status in status_dirs_pcr.items():
+    def _populate_default_dir_node_data(self) -> None:
+        for path, status in self._status_dirs_pcr.items():
             self.dir_node_data[path] = NodeData(
                 LabelStr.real_status_dir, path, status, exists=path.exists()
             )
-        for path in space_dir_set:
+        for path in self.space_dir_set:
             self.dir_node_data[path] = NodeData(
                 LabelStr.man_dir_no_status, path, Sc.SS, exists=path.exists()
             )
-        for path in un_man_dir_set:
+        for path in self.un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 self.dir_node_data[path] = NodeData(
                     LabelStr.un_wanted_dir, path, Sc.XX, exists=True
@@ -109,11 +103,13 @@ class ChezmoiTreePaths:
                     LabelStr.un_man_dir, path, Sc.UU, exists=True
                 )
 
-    def _update_node_data_for_tt_dirs(self, status_path_set: set[Path]) -> None:
+    def _update_node_data_for_tt_dirs(self) -> None:
         for path, node_data in self.dir_node_data.items():
             if node_data.status is not Sc.SS:
                 continue
-            if path_funcs.any_nested_in(dir_path=path, check_paths=status_path_set):
+            if path_funcs.any_nested_in(
+                dir_path=path, check_paths=self.status_path_set
+            ):
                 node_data.main_label = LabelStr.tt_status_dir
                 node_data.status = Sc.TT
 
@@ -125,6 +121,18 @@ class ChezmoiTreePaths:
                 node_data.main_label = LabelStr.un_man_dir
                 node_data.status = Sc.VV
 
+    def _update_uu_dirs_with_xx_parent(self) -> None:
+        xx_dirs: set[Path] = {
+            node_data.path
+            for node_data in self.dir_node_data.values()
+            if node_data.status is Sc.XX
+        }
+        for node_data in self.dir_node_data.values():
+            if node_data.status is not Sc.UU:
+                continue
+            if path_funcs.any_parents_for(node_data.path, check_paths=xx_dirs):
+                self.dir_node_data[node_data.path].status = Sc.XX
+
     def _update_node_data_for_yy_dirs(self) -> None:
         all_node_data = self.dir_node_data | self.file_node_data
         uu_paths: set[Path] = {
@@ -132,16 +140,10 @@ class ChezmoiTreePaths:
             for path, node_data in all_node_data.items()
             if node_data.status is Sc.UU
         }
-        xx_paths: set[Path] = {
-            path
-            for path, node_data in all_node_data.items()
-            if node_data.status is Sc.XX
-        }
-        paths_to_check: set[Path] = uu_paths - xx_paths
         for path, node_data in self.dir_node_data.items():
             if node_data.status is not Sc.SS:
                 continue
-            if path_funcs.any_nested_in(dir_path=path, check_paths=paths_to_check):
+            if path_funcs.any_nested_in(dir_path=path, check_paths=uu_paths):
                 node_data.main_label = LabelStr.un_man_dir
                 node_data.status = Sc.YY
 
