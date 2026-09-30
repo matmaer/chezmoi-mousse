@@ -97,6 +97,13 @@ def get_variable_issues(node_db: NodeDb) -> IssueList:
                 # Enum members have a dedicated test (enum_members.py)
                 if assign_node.parent.is_enum_class:
                     continue
+                # Dataclass fields have a dedicated test (dataclass_fields.py)
+                if (
+                    "dataclass" in assign_node.parent.decorator_names
+                    and isinstance(ast_node, ast.AnnAssign)
+                    and isinstance(ast_node.target, ast.Name)
+                ):
+                    continue
                 # Ignore uppercase constants (e.g. ICON_NODE = "...") or annotated
                 # type hints
                 if not var_name.isupper():
