@@ -77,6 +77,8 @@ class _ContainerIds:
         self.env_vars_q: str = f"#{self.env_vars}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
+        self.prompt_buttons: str = ids.container_id(name=ContainerName.prompt_buttons)
+        self.prompt_buttons_q: str = f"#{self.prompt_buttons}"
         self.right_side: str = ids.container_id(name=ContainerName.right_side)
         self.right_side_q: str = f"#{self.right_side}"
         self.template_data: str = ids.container_id(name=ContainerName.template_data)

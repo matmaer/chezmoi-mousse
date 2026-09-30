@@ -10,7 +10,6 @@ __all__ = [
     "ChezmoiPrompts",
     "ColorVar",
     "ContainerName",
-    "GlobalArgs",
     "LabelStr",
     "LogStr",
     "PathFilters",
@@ -199,7 +198,6 @@ class LabelStr(StrEnum):
     un_wanted_dir = f"{un_man_dir} (matches un-wanted)"
     un_wanted_file = f"{un_man_file} (matches un-wanted)"
 
-    _no_children = "no children"
     _has_no_status = "has no status"
     _has_status = "has a status"
     _nested_sp = "nested status paths"
@@ -517,19 +515,19 @@ class StatusCode(StrEnum):
 
 class Tcss(StrEnum):
     # Operation tabs
+    operate_pane = auto()
     operations_left = auto()
     operations_middle = auto()
     operations_right = auto()
-    switch_with_label = auto()
-    operate_pane = auto()
     dest_dir_button = auto()
-    switches_vert_group = auto()
     managed_tree = auto()
+    switch_with_label = auto()
+    switches_vert_group = auto()
 
     # Other
     added = auto()
-    cmd_output = auto()
     changed = auto()
+    cmd_output = auto()
     context = auto()
     flat_button = auto()
     flow_diagram = auto()
@@ -540,6 +538,8 @@ class Tcss(StrEnum):
     live_run_color = auto()
     op_btn_group = auto()
     operate_button = auto()
+    prompt_btn_group = auto()
+    prompt_button = auto()
     refresh_button = auto()
     removed = auto()
     single_button_vertical = auto()

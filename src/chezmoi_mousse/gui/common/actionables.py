@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 __all__ = [
     "FlatButtonsVertical",
     "OperateBtnGroup",
+    "PromptBtnGroup",
     "SwitchGroup",
     "TabButtons",
 ]
@@ -71,6 +72,18 @@ class OperateBtnGroup(HorizontalGroup):
                 label=btn_label,
                 classes=Tcss.operate_button,
             )
+
+
+class PromptBtnGroup(HorizontalGroup):
+    def __init__(self, labels: tuple[str, ...]) -> None:
+        self.labels = labels
+        super().__init__(
+            id=store.op_ids.container.prompt_buttons, classes=Tcss.prompt_btn_group
+        )
+
+    def compose(self) -> ComposeResult:
+        for btn_label in self.labels:
+            yield Button(label=btn_label, classes=Tcss.prompt_button)
 
 
 class SwitchGroup(VerticalGroup):

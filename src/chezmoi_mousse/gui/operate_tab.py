@@ -20,7 +20,11 @@ from textual.widgets import (
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import NodeData
-from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, SwitchGroup
+from chezmoi_mousse.gui.common.actionables import (
+    OperateBtnGroup,
+    PromptBtnGroup,
+    SwitchGroup,
+)
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
 from chezmoi_mousse.gui.common.operate_tree import OperateTree
@@ -32,6 +36,7 @@ from chezmoi_mousse.gui.common.operate_views import (
 )
 from chezmoi_mousse.str_enums import (
     BtnLabel,
+    ChezmoiPrompts,
     LabelStr,
     ReactiveVar,
     StatusCode as Sc,
@@ -59,7 +64,18 @@ class ChezmoiCmdModal(ModalScreen[None]):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Static(f"{self.btn_label}: Not yet implemented")
-            yield OperateBtnGroup(store.op_ids, labels=(BtnLabel.cancel,))
+            yield PromptBtnGroup(
+                labels=(
+                    ChezmoiPrompts.all.btn_label,
+                    ChezmoiPrompts.diff.btn_label,
+                    ChezmoiPrompts.edit.btn_label,
+                    ChezmoiPrompts.no.btn_label,
+                    ChezmoiPrompts.no_to_all.btn_label,
+                    ChezmoiPrompts.quit.btn_label,
+                    ChezmoiPrompts.yes.btn_label,
+                    BtnLabel.close,
+                ),
+            )
 
     @on(Button.Pressed)
     def cancel(self) -> None:

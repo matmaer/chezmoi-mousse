@@ -160,6 +160,32 @@ ChezmoiCmdModal {
     max-width: 1fr;
     margin: 1 2 0 2;
     width: auto;
+
+    &>.prompt_btn_group {
+      width: 1fr;
+      dock: bottom;
+
+      &>.prompt_button {
+        background-tint: $surface;
+        background: $surface;
+        border-bottom: inner $surface;
+        border-top: wide $panel;
+        color: $foreground-darken-1;
+        margin: 0 1;
+        text-style: none;
+        width: 1fr;
+
+        &:hover {
+          text-style: none;
+          border-top: wide $surface-lighten-3;
+          color: $text-accent;
+        }
+
+        &:focus {
+          text-style: none;
+        }
+      }
+    }
   }
 }
 
