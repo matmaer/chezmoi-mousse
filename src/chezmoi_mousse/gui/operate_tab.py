@@ -8,10 +8,12 @@ from textual.containers import (
     Vertical,
 )
 from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     RadioButton,
     RadioSet,
+    Static,
     TabPane,
     Tree,
 )
@@ -40,10 +42,28 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from textual import getters
     from textual.app import ComposeResult
+
+    from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
 __all__ = ["OperateTab"]
+
+
+class ChezmoiCmdModal(ModalScreen[None]):
+    def __init__(self, btn_label: str) -> None:
+        self.btn_label = btn_label
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Static(f"{self.btn_label}: Not yet implemented")
+            yield OperateBtnGroup(store.op_ids, labels=(BtnLabel.cancel,))
+
+    @on(Button.Pressed)
+    def cancel(self) -> None:
+        self.dismiss()
 
 
 class LeftSideVertical(Vertical):
@@ -213,6 +233,9 @@ class RightSideVertical(Vertical):
 
 
 class OperateTab(TabPane):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
     def __init__(self) -> None:
         self.ids = store.op_ids
         self.root_node_data: NodeData = NodeData(
@@ -321,6 +344,18 @@ class OperateTab(TabPane):
                     btn.disabled = True
                 if btn.label == BtnLabel.chezmoi_forget:
                     btn.disabled = True
+
+    @on(Button.Pressed)
+    def handle_operate_button(self, event: Button.Pressed) -> None:
+        if event.button.label in (
+            BtnLabel.chezmoi_add,
+            BtnLabel.chezmoi_apply,
+            BtnLabel.chezmoi_re_add,
+            BtnLabel.chezmoi_forget,
+            BtnLabel.chezmoi_destroy,
+        ):
+            event.stop()
+        self.app.push_screen(ChezmoiCmdModal(str(event.button.label)))
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:

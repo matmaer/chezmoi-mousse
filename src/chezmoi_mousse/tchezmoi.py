@@ -92,8 +92,16 @@ async def run_chezmoi_cmd(
     if cmd_enum is ReadCmd.git_log and path_arg is not None:
         source_path = (await _exec_chezmoi(app, ReadCmd.source_path, path_arg)).std_out
         return await _exec_chezmoi(app, ReadCmd.git_log, Path(source_path))
-    else:
+    elif cmd_enum in ReadCmd:
         return await _exec_chezmoi(app, cmd_enum, path_arg)
+    # Only works for apply and re-add, not for add, forget and destroy
+    if path_arg is None and cmd_enum in (
+        WriteCmd.add,
+        WriteCmd.destroy,
+        WriteCmd.forget,
+    ):
+        app.notify(f"Cannot run chezmoi on the destDir for {cmd_enum.name}.")
+    return await _exec_chezmoi(app, cmd_enum, path_arg)
 
 
 async def run_in_task_group(app: ChezmoiGui, commands: tuple[ReadCmd, ...]) -> None:
@@ -103,33 +111,31 @@ async def run_in_task_group(app: ChezmoiGui, commands: tuple[ReadCmd, ...]) -> N
 
 
 @staticmethod
-async def get_affected_paths(app: ChezmoiGui, write_cmd: WriteCmd, path: Path) -> str:
-    # Only works for apply and re-add, not for add, forget and destroy
-    if path == store.cfg.dest_dir and write_cmd in (
-        WriteCmd.add,
-        WriteCmd.destroy,
-        WriteCmd.forget,
+async def get_affected_paths(
+    app: ChezmoiGui, write_cmd: WriteCmd, path: Path
+) -> list[Path]:
+    if write_cmd not in (
+        WriteCmd.dry_add,
+        WriteCmd.dry_apply,
+        WriteCmd.dry_re_add,
+        WriteCmd.dry_forget,
+        WriteCmd.dry_destroy,
     ):
-        fake_output = (
-            f"Cannot run chezmoi on the destDir for {write_cmd.name}.\n"
-            "The command simply didn't run at all."
+        app.notify(
+            f"Wrong write command:{write_cmd.name} for get_affected_paths.",
+            severity="error",
         )
-        command_result = await _construct_command_result(
-            (fake_output, fake_output, -1), write_cmd, path
-        )
-        app.post_message(CommandResultMsg(command_result))
-
-    exec_result: ExecResult = await create_subprocess_exec_result(write_cmd, path)
-    command_result = await _construct_command_result(exec_result, write_cmd, path)
+        return []
+    command_result = await _exec_chezmoi(app, write_cmd, path)
     # Matches standard git diff paths (capturing the target path in group 1)
     path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
-    affected_paths_str: set[str] = set()
+    affected_paths: set[Path] = set()
 
     for line in command_result.out_list:
         match = path_pattern.match(line)
         if match:
-            affected_paths_str.add(match.group(1))
-    return "\n".join(sorted(affected_paths_str))
+            affected_paths.add(Path(match.group(1)))
+    return path_funcs.sort_paths(affected_paths)
 
 
 async def run_managed_commands(app: ChezmoiGui) -> None:

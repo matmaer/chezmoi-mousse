@@ -755,3 +755,14 @@ class WriteCmd(Enum):
             # remove the option terminator
             verb_str = verb_str.replace(" --", "")
         return f"chezmoi {verb_str}"
+
+    @classmethod
+    def dry_cmds(cls) -> tuple[Self, ...]:
+        return (
+            cls(cls.dry_init),
+            cls(cls.dry_add),
+            cls(cls.dry_apply),
+            cls(cls.dry_destroy),
+            cls(cls.dry_forget),
+            cls(cls.dry_re_add),
+        )

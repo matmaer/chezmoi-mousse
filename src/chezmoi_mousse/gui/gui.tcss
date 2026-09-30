@@ -151,6 +151,18 @@ DiffView {
   margin-bottom: 2;
 }
 
+ChezmoiCmdModal {
+  align: center middle;
+
+  &>Vertical {
+    border: round $warning-darken-2;
+    min-width: 70;
+    max-width: 1fr;
+    margin: 1 2 0 2;
+    width: auto;
+  }
+}
+
 CustomHeader {
   border-bottom: dashed $panel;
   color: $primary;
