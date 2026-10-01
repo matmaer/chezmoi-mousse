@@ -287,12 +287,11 @@ class _DiffViewBase(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.has_status:
-            self.view_vertical.display = True
             self.path_info_vertical.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
             self._update_diff_view(node_data)
+            self.view_vertical.display = True
         else:
-            self.flat_label.update(LabelStr.select_path_diff)
             self.view_vertical.display = False
             self.path_info_vertical.display = True
 
@@ -358,7 +357,7 @@ class GitLogView(Vertical):
         return pretty_cells
 
     @work
-    async def _update_datatable_and_flat_label(self, path: Path) -> None:
+    async def _update_datatable_and_flat_label(self, path: Path) -> bool:
         self.data_table.clear()
         if path in self.cache:
             self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
@@ -373,18 +372,21 @@ class GitLogView(Vertical):
             self.cache[path] = pretty_cells
 
         if not pretty_cells:
-            self.data_table.display = False
-            self.flat_label.update(LabelStr.no_git_log)
+            return False
 
         for row in pretty_cells:
             self.data_table.add_row(*row)
-        self.data_table.display = True
+        return True
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.path == store.cfg.dest_dir or node_data.managed:
-            self.path_info_vertical.display = False
-            self._update_datatable_and_flat_label(node_data.path)
-            self.view_vertical.display = True
+            has_data = self._update_datatable_and_flat_label(node_data.path)
+            if has_data:
+                self.path_info_vertical.display = False
+                self.view_vertical.display = True
+            else:
+                self.view_vertical.display = False
+                self.path_info_vertical.display = True
         else:
             self.flat_label.update(LabelStr.select_path_git_log)
             self.path_info_vertical.display = True

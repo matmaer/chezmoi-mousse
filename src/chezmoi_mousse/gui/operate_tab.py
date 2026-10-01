@@ -292,13 +292,15 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
-        view_container = self.query_one(self.ids.container.middle_q, Vertical)
-        self.view_label = view_container.query_exactly_one(MainSectionLabel)
+        middle_vertical = self.query_one(self.ids.container.middle_q, Vertical)
+        self.middle_section_label = middle_vertical.query_exactly_one(MainSectionLabel)
+        self.middle_section_label.update(LabelStr.dest_dir)
+        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.git_log_view = self.query_exactly_one(GitLogView)
+        self.content_view = self.query_exactly_one(ContentView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
-        self.content_view = self.query_exactly_one(ContentView)
-        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
+        self._set_all_path_reactives(self.root_node_data)
 
     #################################
     # Watchers and message handling #
@@ -325,14 +327,14 @@ class OperateTab(TabPane):
         if event.node.data is None:
             return
         event.stop()
-        self.view_label.update(event.node.data.main_label)
+        self.middle_section_label.update(event.node.data.main_label)
         self._set_all_path_reactives(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
-            self.view_label.update(LabelStr.dest_dir)
+            self.middle_section_label.update(LabelStr.dest_dir)
             self._set_all_path_reactives(self.root_node_data)
             for btn in self.op_btn_group.query(Button).results():
                 if btn.label == BtnLabel.chezmoi_destroy:
