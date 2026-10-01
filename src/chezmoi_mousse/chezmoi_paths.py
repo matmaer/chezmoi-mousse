@@ -14,6 +14,7 @@ __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 class ChezmoiTreePaths:
     """The raw source of truth received from chezmoi stdout."""
 
+    _dest_dir: Path
     _status_dirs_pcr: dict[Path, Sc]
     _status_files_pcr: dict[Path, Sc]
     man_dir_set: set[Path]
