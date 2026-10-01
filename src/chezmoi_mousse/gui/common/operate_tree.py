@@ -104,6 +104,8 @@ class OperateTree(Tree[NodeData]):
     async def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
+        if path == store.cfg.dest_dir:
+            return
         parent_node = self.node_map[path.parent]
 
         italic = " italic" if not node_data.exists else ""
