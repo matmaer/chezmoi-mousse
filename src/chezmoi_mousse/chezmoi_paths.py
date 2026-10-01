@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from functools import cached_property
 from pathlib import Path
 
 from chezmoi_mousse import path_funcs
@@ -53,6 +52,7 @@ class ChezmoiTreePaths:
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
 
         all_paths = self.man_path_set | self._un_man_path_set
+        all_paths.add(self._dest_dir)
         node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
         # assert all paths are accounted for
         assert all_paths == node_data_paths, (
@@ -225,7 +225,7 @@ class ChezmoiTreePaths:
                 node_data.main_label = LabelStr.un_man_dir
                 node_data.status = Sc.ZZ
 
-    @cached_property
+    @property
     def dest_dir_node_data(self) -> NodeData:
         return self.dir_node_data[self._dest_dir]
 
