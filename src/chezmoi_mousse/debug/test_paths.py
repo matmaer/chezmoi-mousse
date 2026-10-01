@@ -24,6 +24,51 @@ TEST_FILE_3 = "_test_file_3.toml"
 TRICKY_UTF8 = "_test_file_tricky_utf8.txt"
 
 
+PYTHON_FILE_CONTENTS = """
+from dataclasses import dataclass, field
+
+
+@dataclass
+class UserSession:
+    session_id: str
+    is_active: bool = True
+    metadata: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def status_code(self) -> int:
+        pass
+
+    async def fetch_events(self, limit: int = 10) -> list[str]:
+        pass
+
+
+def calculate_metrics(values: list[float], scale: float = 1.0) -> float | None:
+    pass
+"""
+
+PYTHON_FILE_DIFF_CONTENTS = """
+from dataclasses import dataclass, field
+
+
+@dataclass
+class UserSession:
+    session_id: str
+    is_active: bool = False
+    metadata: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def status_code(self) -> int:
+        pass
+
+    async def fetch_events(self, limit: int = 20) -> list[str]:
+        pass
+
+
+def calculate_metrics(values: list[float], scale: float = 3.0) -> float | None:
+    pass
+"""
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class _AllTestPaths:
     # dir names
@@ -184,11 +229,9 @@ class TestPaths:
         return [str(file_path)]
 
     def _create_python_file(self) -> list[str]:
-        file_path = self.all_paths.python_file_path
-        shutil.copyfile(
-            Path(__file__).resolve().parent.parent / "str_enums.py", file_path
-        )
-        return [str(file_path)]
+        with Path.open(self.all_paths.python_file_path, "w", encoding="utf-8") as f:
+            f.write(PYTHON_FILE_DIFF_CONTENTS)
+        return [str(self.all_paths.python_file_path)]
 
     def _create_tricky_utf8_file(self) -> list[str]:
         file_path = self.all_paths.tricky_utf8_file_path
@@ -266,7 +309,7 @@ class TestPaths:
     def get_existing_test_paths(self) -> list[Path]:
         return [p for p in self.all_paths.all_test_paths if p.exists()]
 
-    def create_paths_on_disk(self) -> list[str]:
+    def _old_create_paths_on_disk(self) -> list[str]:
         # record existing expected paths before creating anything
         existing_before = set(self.get_existing_test_paths())
 
@@ -295,7 +338,7 @@ class TestPaths:
             *sorted(created),
         ]
 
-    def remove_test_paths(self) -> list[str]:
+    def _old_remove_test_paths(self) -> list[str]:
         existing_paths = self.get_existing_test_paths()
         if not existing_paths:
             return [f"[${ColorVar.text_warning} bold]No test paths to remove.[/]"]
@@ -318,7 +361,7 @@ class TestPaths:
             *removed_entries,
         ]
 
-    def create_diffs(self) -> str:
+    def _old_create_diffs(self) -> str:
         if not self.get_existing_test_paths():
             return f"[${ColorVar.text_warning} bold]No test paths exist to modify.[/]"
         modified: set[str] = set()
@@ -365,6 +408,13 @@ class TestPaths:
             else:
                 dir_with_status.chmod(0o750)
             modified.add(f"[${ColorVar.text_warning}]{dir_with_status}[/]")
+
+        # Set the python diff contents
+        python_file_path = self.all_paths.python_file_path
+        if python_file_path.exists():
+            with Path.open(python_file_path, "w", encoding="utf-8") as f:
+                f.write(PYTHON_FILE_DIFF_CONTENTS)
+            modified.add(f"[${ColorVar.text_warning}]{python_file_path}[/]")
 
         # Delete or create the NESTED_DIRS_1
         nested_dirs_1 = NESTED_DIRS_1

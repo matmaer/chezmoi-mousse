@@ -376,13 +376,9 @@ class DebugTab(TabPane):
         if event.button.label == BtnLabel.list_test_paths:
             self._list_existing_test_paths()
             return
-        if event.button.label == BtnLabel.create_diffs:
-            result = self.test_paths.create_diffs()
+        elif event.button.label == BtnLabel.create_diffs:
+            self.notify("Creating diffs needs to be re-implemented.")
         elif event.button.label == BtnLabel.create_paths:
-            result = self.test_paths.create_paths_on_disk()
-        elif event.button.label == BtnLabel.remove_paths:
-            result = self.test_paths.remove_test_paths()
-        if isinstance(result, str):
-            self.test_paths_static.update(result)
+            self.notify("Creating paths needs to be re-implemented.")
         else:
             self.test_paths_static.update("\n".join(result))
