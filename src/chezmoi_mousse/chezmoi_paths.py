@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 
 from chezmoi_mousse import path_funcs
@@ -32,6 +33,8 @@ class ChezmoiTreePaths:
 
     def __post_init__(self) -> None:
 
+        self._add_dest_dir_node_data()
+
         self._populate_file_node_data()
 
         self._populate_default_dir_node_data()
@@ -54,6 +57,18 @@ class ChezmoiTreePaths:
         # assert all paths are accounted for
         assert all_paths == node_data_paths, (
             "Mismatch between all paths and node data paths"
+        )
+
+    def _add_dest_dir_node_data(self) -> None:
+        self.dir_node_data[self._dest_dir] = NodeData(
+            main_label=LabelStr.dest_dir,
+            path=self._dest_dir,
+            status=Sc.QQ,
+            exists=True,
+            dest_dir=True,
+            has_nested_status=bool(self.status_path_set),
+            has_nested_managed=bool(self.man_path_set),
+            has_nested_managed_dirs=bool(self.man_dir_set),
         )
 
     def _populate_file_node_data(
@@ -209,6 +224,10 @@ class ChezmoiTreePaths:
             if path_funcs.any_nested_in(dir_path=path, check_paths=zz_paths):
                 node_data.main_label = LabelStr.un_man_dir
                 node_data.status = Sc.ZZ
+
+    @cached_property
+    def dest_dir_node_data(self) -> NodeData:
+        return self.dir_node_data[self._dest_dir]
 
 
 @dataclass(slots=True, kw_only=True)

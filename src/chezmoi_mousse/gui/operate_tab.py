@@ -19,7 +19,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store
-from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     PromptBtnGroup,
@@ -48,6 +47,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -252,12 +252,6 @@ class OperateTab(TabPane):
 
     def __init__(self) -> None:
         self.ids = store.op_ids
-        self.root_node_data: NodeData = NodeData(
-            path=store.cfg.dest_dir,
-            status=Sc.QQ,
-            main_label=LabelStr.dest_dir,
-            exists=True,
-        )
         super().__init__(
             id=BtnLabel.operate.pane_id,
             title=BtnLabel.operate,
@@ -300,7 +294,7 @@ class OperateTab(TabPane):
         self.content_view = self.query_exactly_one(ContentView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
-        self._set_all_path_reactives(self.root_node_data)
+        self._set_all_path_reactives(store.cm_paths.dest_dir_node_data)
 
     #################################
     # Watchers and message handling #
@@ -335,7 +329,7 @@ class OperateTab(TabPane):
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
             self.middle_section_label.update(LabelStr.dest_dir)
-            self._set_all_path_reactives(self.root_node_data)
+            self._set_all_path_reactives(store.cm_paths.dest_dir_node_data)
             for btn in self.op_btn_group.query(Button).results():
                 if btn.label == BtnLabel.chezmoi_destroy:
                     btn.disabled = True

@@ -90,6 +90,7 @@ class NodeData:
     path: Path
     status: StatusCode
     exists: bool
+    dest_dir: bool = False
     has_nested_status: bool = False
     has_nested_managed: bool = False
     has_nested_managed_dirs: bool = False
@@ -113,7 +114,7 @@ class NodeData:
 
     @property
     def known_dir(self) -> bool:
-        return self.in_managed_dirs_cr or self.in_un_man_dirs_cr
+        return self.in_managed_dirs_cr or self.in_un_man_dirs_cr or self.dest_dir
 
     @property
     def managed(self) -> bool:
