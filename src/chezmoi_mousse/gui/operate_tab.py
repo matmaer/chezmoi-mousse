@@ -38,7 +38,6 @@ from chezmoi_mousse.str_enums import (
     ChezmoiPrompts,
     LabelStr,
     ReactiveVar,
-    StatusCode as Sc,
     Tcss,
     TreeName,
 )
@@ -177,12 +176,12 @@ class LeftSideVertical(Vertical):
                     store.op_ids.tree.un_wanted_plus_sp,
                     store.op_ids.tree.un_wanted_plus_amp,
                 )
-                and event.node.data.status == Sc.XX
+                and event.node.data.status == None
             )
         ):
             return
         exclude: list[OperateTree] = []
-        if event.node.data.status in (Sc.SS, Sc.UU, Sc.XX):
+        if event.node.data.status in (None, None):
             exclude.extend(
                 [
                     self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree),
@@ -191,14 +190,14 @@ class LeftSideVertical(Vertical):
                     ),
                 ]
             )
-        if event.node.data.status in (Sc.UU, Sc.XX):
+        if event.node.data.status in (None, None):
             exclude.extend(
                 [
                     self.query_one(store.op_ids.tree.managed_all_mp_q, OperateTree),
                     self.query_one(store.op_ids.tree.managed_all_mp_xpd_q, OperateTree),
                 ]
             )
-        if event.node.data.status in (Sc.XX):
+        if event.node.data.status is None:
             exclude.extend(
                 [
                     self.query_one(store.op_ids.tree.un_man_plus_sp_q, OperateTree),

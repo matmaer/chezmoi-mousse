@@ -1,5 +1,5 @@
 from enum import Enum, StrEnum, auto
-from functools import cache, cached_property
+from functools import cached_property
 from typing import Self
 
 __all__ = [
@@ -146,6 +146,7 @@ class ColorVar(StrEnum):
 
     warning = "warning"
     text_warning = "text-warning"
+    warning_lighten_3 = "warning-lighten-3"
 
 
 class ContainerName(StrEnum):
@@ -205,7 +206,7 @@ class LabelStr(StrEnum):
     _nested_sp = "nested status paths"
 
     real_status_dir = f"Managed Directory ({_has_status})"
-    tt_status_dir = f"Managed Directory ({_has_no_status}, has {_nested_sp})"
+    man_d_no_nested_status = f"Managed Directory ({_has_no_status}, has {_nested_sp})"
     man_dir_no_status = f"Managed Directory ({_has_no_status})"
     space_file = f"Managed File ({_has_no_status})"
     status_file = f"Managed File ({_has_status})"
@@ -464,59 +465,11 @@ class StatusCode(StrEnum):
     SA = "SA"  # Applied target missing; apply will create/restore target file.
     SD = "SD"  # Applied target clean; apply will delete target per source rules.
     SM = "SM"  # Applied target clean; apply will modify target from source updates.
-
-    # Meta statuses, self assigned for Tree widget rendering.
-    SS = "\x20\x20"  # Any path which don't occur at all in chezmoi status output
-
-    QQ = "QQ"  # the destDir
-    TT = "TT"  # Dir without status with nested status paths (to be shown in the Tree)
-    UU = "UU"  # Unmanaged path
-    XX = "XX"  # Unmanaged and unwanted path
-
-    VV = "VV"  # Managed dirs containing nested managed paths
-    YY = "YY"  # Space dirs containing UU paths but no XX paths
     ZZ = "ZZ"  # Spare dirs containing XX paths
-
-    @classmethod
-    @cache
-    def _get_color_var(cls, status_code: Self) -> ColorVar:
-        mapping: dict[str, ColorVar] = {
-            # D combos
-            cls.DA: ColorVar.text_warning,
-            cls.DD: ColorVar.text_warning,  # probably impossible status pair
-            cls.DM: ColorVar.text_warning,
-            cls.DS: ColorVar.text_warning,
-            # M combos
-            cls.MA: ColorVar.text_warning,
-            cls.MD: ColorVar.text_warning,
-            cls.MM: ColorVar.text_warning,
-            cls.MS: ColorVar.text_warning,
-            # S combos
-            cls.SA: ColorVar.text_warning,
-            cls.SD: ColorVar.text_warning,
-            cls.SM: ColorVar.text_warning,
-            # Meta codes
-            cls.SS: ColorVar.foreground_darken_3,
-            cls.UU: ColorVar.text_success,
-            cls.XX: ColorVar.text_accent,
-            # Meta code for space dirs containing nested status paths
-            cls.TT: ColorVar.text_primary,
-            cls.VV: ColorVar.foreground_darken_3,
-            cls.YY: ColorVar.text_success,
-            cls.ZZ: ColorVar.text_accent,
-        }
-        return mapping[status_code]
 
     @cached_property
     def pretty_cmd(self) -> str:
         return f"chezmoi {self.value[0]}"
-
-    @property
-    def tree_label_color(self) -> ColorVar:
-        try:
-            return self._get_color_var(self)
-        except KeyError:
-            return ColorVar.error_muted
 
 
 class Tcss(StrEnum):

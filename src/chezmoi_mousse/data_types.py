@@ -76,7 +76,7 @@ class InitData(NamedTuple):
 
 
 class IterDirResult(NamedTuple):
-    # status codes will be either Sc.UU (unmanaged) or Sc.XX (unwanted)
+    # status codes will be either Sc.UU (unmanaged) or None (unwanted)
     error: str
     exceptions: dict[Path, str]
     symlinks: list[Path]
@@ -88,19 +88,18 @@ class IterDirResult(NamedTuple):
 class NodeData:
     main_label: str
     path: Path
-    status: StatusCode
+    status: StatusCode | None
     exists: bool
     dest_dir: bool = False
     has_nested_status: bool = False
     has_nested_managed: bool = False
     has_nested_managed_dirs: bool = False
-    in_managed_dirs_cr: bool = False
+    managed_dir: bool = False
     in_managed_files_cr: bool = False
     in_status_dirs_cr: bool = False
     in_status_files_cr: bool = False
     in_un_man_dirs_cr: bool = False
     in_un_man_files_cr: bool = False
-    is_space_path: bool = False
     matches_unwanted_dir: bool = False
     matches_unwanted_file: bool = False
 
@@ -114,15 +113,15 @@ class NodeData:
 
     @property
     def known_dir(self) -> bool:
-        return self.in_managed_dirs_cr or self.in_un_man_dirs_cr or self.dest_dir
+        return self.managed_dir or self.in_un_man_dirs_cr or self.dest_dir
 
     @property
     def managed(self) -> bool:
-        return self.in_managed_dirs_cr or self.in_managed_files_cr
+        return self.managed_dir or self.in_managed_files_cr
 
     @property
     def managed_edge_dir(self) -> bool:
-        return self.in_managed_dirs_cr and not self.has_nested_managed_dirs
+        return self.managed_dir and not self.has_nested_managed_dirs
 
     @property
     def un_managed(self) -> bool:

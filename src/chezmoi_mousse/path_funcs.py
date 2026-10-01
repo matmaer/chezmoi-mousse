@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import IterDirResult, NodeData
-from chezmoi_mousse.str_enums import LabelStr, PathFilters, StatusCode
+from chezmoi_mousse.str_enums import LabelStr, PathFilters
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
@@ -192,14 +192,14 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         dirs[path] = NodeData(
                             main_label=LabelStr.un_wanted_dir,
                             path=path,
-                            status=StatusCode.XX,
+                            status=None,
                             exists=True,
                         )
                     else:
                         dirs[path] = NodeData(
                             main_label=LabelStr.un_man_dir,
                             path=path,
-                            status=StatusCode.UU,
+                            status=None,
                             exists=True,
                         )
                 elif path.is_file():
@@ -207,14 +207,14 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         files[path] = NodeData(
                             main_label=LabelStr.un_wanted_file,
                             path=path,
-                            status=StatusCode.XX,
+                            status=None,
                             exists=True,
                         )
                     else:
                         files[path] = NodeData(
                             main_label=LabelStr.un_man_file,
                             path=path,
-                            status=StatusCode.UU,
+                            status=None,
                             exists=True,
                         )
             except (FileNotFoundError, PermissionError, OSError) as exception:

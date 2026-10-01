@@ -42,9 +42,7 @@ class ChezmoiTreePaths:
         self._update_has_nested_managed()
         self._update_has_nested_managed_dirs()
 
-        self._update_node_data_for_tt_dirs()  # overwrite Sc.SS with Sc.TT
-        self._update_node_data_for_vv_dirs()  # overwrite remaining Sc.SS with Sc.VV
-        self._update_uu_dirs_with_xx_parent()  # overwrite Sc.UU with Sc.XX
+        self._update_uu_dirs_with_xx_parent()  # overwrite Sc.UU with None
         self._update_node_data_for_yy_dirs()  # overwrite remaining Sc.SS with Sc.YY
         self._update_node_data_for_zz_dirs()  # overwrite remaining Sc.SS with Sc.ZZ
 
@@ -63,7 +61,7 @@ class ChezmoiTreePaths:
         self.dir_node_data[self._dest_dir] = NodeData(
             main_label=LabelStr.dest_dir,
             path=self._dest_dir,
-            status=Sc.QQ,
+            status=None,
             exists=True,
             dest_dir=True,
             has_nested_status=bool(self.status_path_set),
@@ -82,23 +80,21 @@ class ChezmoiTreePaths:
                 exists=path.exists(),
                 in_status_files_cr=True,
                 in_managed_files_cr=True,
-                is_space_path=False,
             )
         for path in self._space_file_set:
             self.file_node_data[path] = NodeData(
                 main_label=LabelStr.space_file,
                 path=path,
-                status=Sc.SS,
+                status=None,
                 exists=path.exists(),
                 in_managed_files_cr=True,
-                is_space_path=True,
             )
         for path in self._un_man_file_set:
             if path_funcs.is_unwanted_file(path):
                 self.file_node_data[path] = NodeData(
                     main_label=LabelStr.un_wanted_file,
                     path=path,
-                    status=Sc.XX,
+                    status=None,
                     exists=True,
                     in_un_man_files_cr=True,
                     matches_unwanted_file=True,
@@ -107,8 +103,8 @@ class ChezmoiTreePaths:
                 self.file_node_data[path] = NodeData(
                     main_label=LabelStr.un_man_file,
                     path=path,
-                    status=Sc.UU,
                     exists=True,
+                    status=None,
                     in_un_man_files_cr=True,
                 )
 
@@ -120,23 +116,22 @@ class ChezmoiTreePaths:
                 status=status,
                 exists=path.exists(),
                 in_status_dirs_cr=True,
-                in_managed_dirs_cr=True,
+                managed_dir=True,
             )
         for path in self._space_dir_set:
             self.dir_node_data[path] = NodeData(
                 main_label=LabelStr.man_dir_no_status,
                 path=path,
-                status=Sc.SS,
+                status=None,
                 exists=path.exists(),
-                in_managed_dirs_cr=True,
-                is_space_path=True,
+                managed_dir=True,
             )
         for path in self._un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 self.dir_node_data[path] = NodeData(
                     main_label=LabelStr.un_wanted_dir,
                     path=path,
-                    status=Sc.XX,
+                    status=None,
                     exists=True,
                     in_un_man_dirs_cr=True,
                     matches_unwanted_dir=True,
@@ -145,7 +140,7 @@ class ChezmoiTreePaths:
                 self.dir_node_data[path] = NodeData(
                     main_label=LabelStr.un_man_dir,
                     path=path,
-                    status=Sc.UU,
+                    status=None,
                     exists=True,
                     in_un_man_dirs_cr=True,
                 )
@@ -155,6 +150,7 @@ class ChezmoiTreePaths:
             if path_funcs.any_nested_in(
                 dir_path=path, check_paths=self.status_path_set
             ):
+                self.dir_node_data[path].main_label = LabelStr.man_d_no_nested_status
                 self.dir_node_data[path].has_nested_status = True
 
     def _update_has_nested_managed(self) -> None:
@@ -167,50 +163,31 @@ class ChezmoiTreePaths:
             if path_funcs.any_nested_in(dir_path=path, check_paths=self.man_dir_set):
                 self.dir_node_data[path].has_nested_managed_dirs = True
 
-    def _update_node_data_for_tt_dirs(self) -> None:
-        for path, node_data in self.dir_node_data.items():
-            if node_data.status is not Sc.SS:
-                continue
-            if path_funcs.any_nested_in(
-                dir_path=path, check_paths=self.status_path_set
-            ):
-                node_data.main_label = LabelStr.tt_status_dir
-                node_data.status = Sc.TT
-
-    def _update_node_data_for_vv_dirs(self) -> None:
-        for path, node_data in self.dir_node_data.items():
-            node_data.has_nested_managed = True
-            if node_data.status is not Sc.SS:
-                continue
-            if path_funcs.any_nested_in(dir_path=path, check_paths=self.man_path_set):
-                node_data.main_label = LabelStr.un_man_dir
-                node_data.status = Sc.VV
-
     def _update_uu_dirs_with_xx_parent(self) -> None:
         xx_dirs: set[Path] = {
             node_data.path
             for node_data in self.dir_node_data.values()
-            if node_data.status is Sc.XX
+            if node_data.status is None
         }
         for node_data in self.dir_node_data.values():
-            if node_data.status is not Sc.UU:
+            if node_data.status is not None:
                 continue
             if path_funcs.any_parents_for(node_data.path, check_paths=xx_dirs):
-                self.dir_node_data[node_data.path].status = Sc.XX
+                self.dir_node_data[node_data.path].status = None
 
     def _update_node_data_for_yy_dirs(self) -> None:
         all_node_data = self.dir_node_data | self.file_node_data
         uu_paths: set[Path] = {
             path
             for path, node_data in all_node_data.items()
-            if node_data.status is Sc.UU
+            if node_data.status is None
         }
         for path, node_data in self.dir_node_data.items():
-            if node_data.status is not Sc.SS:
+            if node_data.status is not None:
                 continue
             if path_funcs.any_nested_in(dir_path=path, check_paths=uu_paths):
                 node_data.main_label = LabelStr.un_man_dir
-                node_data.status = Sc.YY
+                node_data.status = None
 
     def _update_node_data_for_zz_dirs(self) -> None:
         zz_paths: set[Path] = {
@@ -219,7 +196,7 @@ class ChezmoiTreePaths:
             if node_data.status is Sc.ZZ
         }
         for path, node_data in self.dir_node_data.items():
-            if node_data.status is not Sc.SS:
+            if node_data.status is not None:
                 continue
             if path_funcs.any_nested_in(dir_path=path, check_paths=zz_paths):
                 node_data.main_label = LabelStr.un_man_dir

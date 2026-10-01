@@ -20,7 +20,6 @@ from chezmoi_mousse.str_enums import (
     ColorVar,
     LabelStr,
     ReadCmd,
-    StatusCode as Sc,
     Tcss,
 )
 
@@ -88,11 +87,12 @@ class PathInfo(ScrollableContainer):
     async def _set_dir_info(self, node_data: NodeData) -> None:
 
         path = node_data.path
-        status = node_data.status
         if node_data.path not in self.cache:
             is_managed_label = TrueLabel() if node_data.managed else FalseLabel()
             has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
-            has_nested_status_label = TrueLabel() if status is Sc.TT else FalseLabel()
+            has_nested_status_label = (
+                TrueLabel() if node_data.has_nested_status else FalseLabel()
+            )
             has_nested_managed_label = (
                 TrueLabel()
                 if path_funcs.any_nested_in(

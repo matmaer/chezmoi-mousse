@@ -57,13 +57,13 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.SS, Sc.VV, Sc.UU, Sc.XX, Sc.YY, Sc.ZZ)
+                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_status
             }
         elif self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.UU, Sc.XX, Sc.YY, Sc.ZZ)
+                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_managed
             }
         elif self.name in (
             TreeName.un_man_plus_sp,
@@ -72,7 +72,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.SS, Sc.VV, Sc.XX, Sc.ZZ)
+                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_status
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -81,7 +81,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.XX, Sc.ZZ)
+                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_managed
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -90,7 +90,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (Sc.SS, Sc.VV)
+                if node_data.status is not None or node_data.has_nested_status
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
@@ -101,6 +101,50 @@ class OperateTree(Tree[NodeData]):
             raise ValueError(f"Unknown tree name: {self.name}")
         return path_funcs.sort_path_dict(result)
 
+    def _tree_label_color(self, node_data: NodeData) -> ColorVar:
+        status_code = node_data.status
+        mapping: dict[str, ColorVar] = {
+            # D combos
+            Sc.DA: ColorVar.text_warning,
+            Sc.DD: ColorVar.text_warning,  # probably impossible status pair
+            Sc.DM: ColorVar.text_warning,
+            Sc.DS: ColorVar.text_warning,
+            # M combos
+            Sc.MA: ColorVar.text_warning,
+            Sc.MD: ColorVar.text_warning,
+            Sc.MM: ColorVar.text_warning,
+            Sc.MS: ColorVar.text_warning,
+            # S combos
+            Sc.SA: ColorVar.text_warning,
+            Sc.SD: ColorVar.text_warning,
+            Sc.SM: ColorVar.text_warning,
+            # Meta codes
+            "None": ColorVar.foreground_darken_3,
+            "un-managed": ColorVar.text_success,
+            # Meta code for space dirs containing nested status paths
+            # Sc.VV: ColorVar.foreground_darken_3,
+            # Sc.YY: ColorVar.text_success,
+            Sc.ZZ: ColorVar.text_accent,
+        }
+        color_var = ColorVar.error_muted
+        if node_data.in_status_dirs_cr:
+            color_var = ColorVar.warning_lighten_3
+        elif node_data.has_nested_status:
+            color_var = ColorVar.text_primary
+        elif (
+            node_data.has_nested_managed_dirs
+            and self.name not in TreeName.managed_trees()
+        ):
+            color_var = ColorVar.text
+        else:
+            try:
+                if status_code is None:
+                    status_code = "None"
+                color_var = mapping[status_code]
+            except KeyError:
+                color_var = ColorVar.error_muted
+        return color_var
+
     async def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
@@ -109,10 +153,7 @@ class OperateTree(Tree[NodeData]):
         parent_node = self.node_map[path.parent]
 
         italic = " italic" if not node_data.exists else ""
-        color = self.app.theme_variables[node_data.status.tree_label_color]
-
-        if node_data.status is Sc.VV and self.name not in TreeName.managed_trees():
-            color = self.app.theme_variables[ColorVar.text]
+        color = self.app.theme_variables[self._tree_label_color(node_data)]
 
         new_node = parent_node.add(
             label=f"[{color}{italic}]{path.name}[/]",
@@ -131,7 +172,7 @@ class OperateTree(Tree[NodeData]):
             TreeName.un_wanted_plus_amp_xpd,
         ):
             for node in self.node_map.values():
-                if node.data is not None and node.data.in_managed_dirs_cr:
+                if node.data is not None and node.data.managed_dir:
                     node.expand()
 
     @work
@@ -140,20 +181,15 @@ class OperateTree(Tree[NodeData]):
         file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
 
         # add missing parent directories for trees that could have missing parents
-        if self.name not in (
-            TreeName.managed_only_sp,
-            TreeName.managed_only_sp_xpd,
-            TreeName.managed_all_mp,
-            TreeName.managed_all_mp_xpd,
-        ):
-            for path in (*dir_nodes, *file_nodes):
-                parent_path = path.parent
-                while parent_path != store.cfg.dest_dir:
-                    if parent_path not in dir_nodes:
-                        dir_nodes[parent_path] = store.cm_paths.dir_node_data[
-                            parent_path
-                        ]
-                    parent_path = parent_path.parent
+        for path in (*dir_nodes, *file_nodes):
+            parent_path = path.parent
+            while (
+                parent_path != store.cfg.dest_dir
+                and parent_path not in store.cfg.dest_dir.parents
+            ):
+                if parent_path not in dir_nodes:
+                    dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
+                parent_path = parent_path.parent
 
         dir_nodes = path_funcs.sort_path_dict(dir_nodes)
         file_nodes = path_funcs.sort_path_dict(file_nodes)
@@ -185,7 +221,7 @@ class OperateTree(Tree[NodeData]):
         # dest dir node data is none
         if (
             event.node.data is None
-            or event.node.data.in_managed_dirs_cr
+            or event.node.data.managed_dir
             or event.node.data.path in self.iterated_dirs
         ):
             return
