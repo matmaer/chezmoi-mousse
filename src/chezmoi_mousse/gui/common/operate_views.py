@@ -15,7 +15,7 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Label, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.gui.common.components import FlatSectionLabel
+from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
 from chezmoi_mousse.str_enums import (
     ColorVar,
     LabelStr,
@@ -60,6 +60,12 @@ class InfoItem(HorizontalGroup): ...
 
 
 class FileContentStatic(Static): ...
+
+
+class ViewVertical(Vertical): ...
+
+
+class PathInfoVertical(Vertical): ...
 
 
 class PathInfo(ScrollableContainer):
@@ -154,14 +160,20 @@ class ContentView(Vertical):
     file_content_cache: ClassVar[dict[Path, Text]] = {}
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(LabelStr.select_path_contents)
-        yield ScrollableContainer(FileContentStatic(markup=False))
-        yield PathInfo()
+        with ViewVertical():
+            yield FlatSectionLabel(LabelStr.not_set)
+            yield ScrollableContainer(FileContentStatic(markup=False))
+        with PathInfoVertical():
+            yield SubSectionLabel(LabelStr.select_path_contents)
+            yield ScrollableContainer(PathInfo())
 
     def on_mount(self) -> None:
+        self.view_vertical = self.query_exactly_one(ViewVertical)
+        self.view_vertical.display = False
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(FileContentStatic)
-        self.content_static.display = False
+
+        self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
         self.path_info = self.query_exactly_one(PathInfo)
 
     @work
@@ -184,13 +196,12 @@ class ContentView(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.known_dir or node_data.path.is_dir():
-            self.content_static.display = False
-            self.flat_label.update(LabelStr.select_path_contents)
-            self.path_info.display = True
+            self.view_vertical.display = False
+            self.path_info_vertical.display = True
         else:
-            self.path_info.display = False
+            self.path_info_vertical.display = False
             self._update_file_content(node_data)
-            self.content_static.display = True
+            self.view_vertical.display = True
 
 
 class DiffWidgets(ScrollableContainer): ...
@@ -223,14 +234,20 @@ class _DiffViewBase(Vertical):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(LabelStr.select_path_diff)
-        yield DiffWidgets()
-        yield PathInfo()
+        with ViewVertical():
+            yield FlatSectionLabel(LabelStr.not_set)
+            yield ScrollableContainer(DiffWidgets())
+        with PathInfoVertical():
+            yield SubSectionLabel(LabelStr.select_path_diff)
+            yield ScrollableContainer(PathInfo())
 
     def on_mount(self) -> None:
+        self.view_vertical = self.query_exactly_one(ViewVertical)
+        self.view_vertical.display = False
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(DiffWidgets)
-        self.diff_container.display = False
+
+        self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
         self.path_info = self.query_exactly_one(PathInfo)
 
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
@@ -270,13 +287,14 @@ class _DiffViewBase(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.has_status:
-            self.path_info.display = False
+            self.view_vertical.display = True
+            self.path_info_vertical.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
             self._update_diff_view(node_data)
         else:
             self.flat_label.update(LabelStr.select_path_diff)
-            self.diff_container.display = False
-            self.path_info.display = True
+            self.view_vertical.display = False
+            self.path_info_vertical.display = True
 
 
 class DiffView(_DiffViewBase):
@@ -297,16 +315,20 @@ class GitLogView(Vertical):
     cache: ClassVar[dict[Path, list[list[str]]]] = {}
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
-        yield DataTable[str](show_cursor=False)
-        yield PathInfo()
+        with ViewVertical():
+            yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
+            yield DataTable[str](show_cursor=False)
+        with PathInfoVertical():
+            yield SubSectionLabel()
+            yield ScrollableContainer(PathInfo())
 
     def on_mount(self) -> None:
+        self.view_vertical = self.query_exactly_one(ViewVertical)
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
+        self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
         self.path_info = self.query_exactly_one(PathInfo)
-        self.path_info.display = False
 
     def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
@@ -360,9 +382,10 @@ class GitLogView(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.path == store.cfg.dest_dir or node_data.managed:
-            self.path_info.display = False
+            self.path_info_vertical.display = False
             self._update_datatable_and_flat_label(node_data.path)
+            self.view_vertical.display = True
         else:
-            self.data_table.display = False
             self.flat_label.update(LabelStr.select_path_git_log)
-            self.path_info.display = True
+            self.path_info_vertical.display = True
+            self.view_vertical.display = False
