@@ -126,6 +126,8 @@ class ChezmoiPrompts(Enum):
 
 
 class ColorVar(StrEnum):
+    error_muted = "error-muted"
+
     text = "text"
     foreground_darken_2 = "foreground-darken-2"
     foreground_darken_3 = "foreground-darken-3"
@@ -511,7 +513,10 @@ class StatusCode(StrEnum):
 
     @property
     def tree_label_color(self) -> ColorVar:
-        return self._get_color_var(self)
+        try:
+            return self._get_color_var(self)
+        except KeyError:
+            return ColorVar.error_muted
 
 
 class Tcss(StrEnum):
