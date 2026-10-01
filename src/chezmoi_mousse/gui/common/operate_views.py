@@ -272,10 +272,7 @@ class _DiffViewBase(Vertical):
         if node_data.has_status:
             self.path_info.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
-            self.diff_container.loading = True
-            self.diff_container.display = True
             self._update_diff_view(node_data)
-            self.diff_container.loading = False
         else:
             self.flat_label.update(LabelStr.select_path_diff)
             self.diff_container.display = False
