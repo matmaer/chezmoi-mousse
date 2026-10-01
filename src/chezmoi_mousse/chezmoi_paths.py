@@ -34,6 +34,11 @@ class ChezmoiTreePaths:
         self._populate_file_node_data()
 
         self._populate_default_dir_node_data()
+
+        self._update_has_nested_status()
+        self._update_has_nested_managed()
+        self._update_has_nested_managed_dirs()
+
         self._update_node_data_for_tt_dirs()  # overwrite Sc.SS with Sc.TT
         self._update_node_data_for_vv_dirs()  # overwrite remaining Sc.SS with Sc.VV
         self._update_uu_dirs_with_xx_parent()  # overwrite Sc.UU with Sc.XX
@@ -129,6 +134,23 @@ class ChezmoiTreePaths:
                     in_un_man_dirs_cr=True,
                 )
 
+    def _update_has_nested_status(self) -> None:
+        for path in self.man_dir_set:
+            if path_funcs.any_nested_in(
+                dir_path=path, check_paths=self.status_path_set
+            ):
+                self.dir_node_data[path].has_nested_status = True
+
+    def _update_has_nested_managed(self) -> None:
+        for path in self.man_dir_set:
+            if path_funcs.any_nested_in(dir_path=path, check_paths=self.man_path_set):
+                self.dir_node_data[path].has_nested_managed = True
+
+    def _update_has_nested_managed_dirs(self) -> None:
+        for path in self.man_dir_set:
+            if path_funcs.any_nested_in(dir_path=path, check_paths=self.man_dir_set):
+                self.dir_node_data[path].has_nested_managed_dirs = True
+
     def _update_node_data_for_tt_dirs(self) -> None:
         for path, node_data in self.dir_node_data.items():
             if node_data.status is not Sc.SS:
@@ -141,6 +163,7 @@ class ChezmoiTreePaths:
 
     def _update_node_data_for_vv_dirs(self) -> None:
         for path, node_data in self.dir_node_data.items():
+            node_data.has_nested_managed = True
             if node_data.status is not Sc.SS:
                 continue
             if path_funcs.any_nested_in(dir_path=path, check_paths=self.man_path_set):

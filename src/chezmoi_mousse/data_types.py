@@ -90,6 +90,9 @@ class NodeData:
     path: Path
     status: StatusCode
     exists: bool
+    has_nested_status: bool = False
+    has_nested_managed: bool = False
+    has_nested_managed_dirs: bool = False
     in_managed_dirs_cr: bool = False
     in_managed_files_cr: bool = False
     in_status_dirs_cr: bool = False
@@ -115,6 +118,10 @@ class NodeData:
     @property
     def managed(self) -> bool:
         return self.in_managed_dirs_cr or self.in_managed_files_cr
+
+    @property
+    def managed_edge_dir(self) -> bool:
+        return self.in_managed_dirs_cr and not self.has_nested_managed_dirs
 
     @property
     def un_managed(self) -> bool:
