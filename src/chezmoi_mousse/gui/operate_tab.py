@@ -346,7 +346,7 @@ class OperateTab(TabPane):
             BtnLabel.chezmoi_destroy,
         ):
             event.stop()
-        self.app.push_screen(ChezmoiCmdModal(str(event.button.label)))
+            self.app.push_screen(ChezmoiCmdModal(str(event.button.label)))
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:
