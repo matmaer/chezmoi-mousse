@@ -206,7 +206,11 @@ class OperateTree(Tree[NodeData]):
                     else ColorVar.primary_darken_1
                 )
             if node_data.managed_dir:
-                return ColorVar.foreground_darken_2
+                return (
+                    ColorVar.foreground_darken_3
+                    if self.name in TreeName.managed_trees()
+                    else ColorVar.text
+                )
             if not node_data.managed_dir and not node_data.un_wanted_dir:
                 return ColorVar.text_success
             if node_data.un_wanted_dir:
