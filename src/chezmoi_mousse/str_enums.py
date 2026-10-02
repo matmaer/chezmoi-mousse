@@ -569,8 +569,6 @@ class _ChezmoiGitArgs(Enum):
 class _GlobalArgs(Enum):
     global_defaults = (
         "--color=off",
-        "--force=true",
-        "--interactive=false",
         "--keep-going=false",
         "--mode=file",
         "--no-pager=true",
@@ -579,6 +577,10 @@ class _GlobalArgs(Enum):
         "--use-builtin-diff=true",
         "--use-builtin-git=true",
     )
+    force_true = "--force=true"
+    force_false = "--force=false"
+    interactive_false = "--interactive=false"
+    interactive_true = "--interactive=true"
     dry_run_arg = "--dry-run=true"
     verbose_arg = "--verbose"
 
@@ -602,91 +604,136 @@ class _VerbArgs(StrEnum):
 class ReadCmd(Enum):
     cat = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "cat",
     )
     cat_config = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "cat-config",
     )
     diff = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "diff",
     )
-    diff_reverse = (*_GlobalArgs.global_defaults.value, "diff", _VerbArgs.reverse)
+    diff_reverse = (
+        *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.force_true.value,
+        "diff",
+        _VerbArgs.reverse,
+    )
     doctor = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "doctor",
     )
     dump_config = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "dump-config",
         _VerbArgs.format_json,
     )
     git_dir = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "git",
         *_ChezmoiGitArgs.git_dir.value,
     )
     git_log = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "git",
         *_ChezmoiGitArgs.git_log.value,
     )
     git_remote = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "git",
         *_ChezmoiGitArgs.git_remote.value,
     )
     ignored = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "ignored",
     )
     managed_dirs = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "managed",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_dirs,
     )
     managed_files = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "managed",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
     source_path = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "source-path",
     )
     status_dirs = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "status",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_dirs,
     )
     status_files = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "status",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
     unmanaged_dirs = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "unmanaged",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_dirs,
     )
     unmanaged_files = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         "unmanaged",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
-    template_data = (*_GlobalArgs.global_defaults.value, "data", _VerbArgs.format_json)
+    template_data = (
+        *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
+        "data",
+        _VerbArgs.format_json,
+    )
 
     @cached_property
     def pretty_cmd(self) -> str:
         ugly_args: tuple[str, ...] = (
             *_GlobalArgs.global_defaults.value,
+            _GlobalArgs.interactive_false.value,
+            _GlobalArgs.force_true.value,
             *_ChezmoiGitArgs.global_args.value,
             *_ChezmoiGitArgs.git_log_args.value,
             _ChezmoiGitArgs.verbose.value,
@@ -714,26 +761,38 @@ class _WriteVerb(StrEnum):
 class WriteCmd(Enum):
     init = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_false.value,
+        _GlobalArgs.force_true.value,
         _WriteVerb.init,
     )
     add = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_true.value,
+        _GlobalArgs.force_false.value,
         _WriteVerb.add,
     )
     apply = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_true.value,
+        _GlobalArgs.force_false.value,
         _WriteVerb.apply,
     )
     destroy = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_true.value,
+        _GlobalArgs.force_false.value,
         _WriteVerb.destroy,
     )
     forget = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_true.value,
+        _GlobalArgs.force_false.value,
         _WriteVerb.forget,
     )
     re_add = (
         *_GlobalArgs.global_defaults.value,
+        _GlobalArgs.interactive_true.value,
+        _GlobalArgs.force_false.value,
         _WriteVerb.re_add,
     )
     dry_init = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.init)
@@ -745,7 +804,13 @@ class WriteCmd(Enum):
 
     @cached_property
     def pretty_cmd(self) -> str:
-        ugly_args: tuple[str, ...] = (*_GlobalArgs.global_defaults.value,)
+        ugly_args: tuple[str, ...] = (
+            *_GlobalArgs.global_defaults.value,
+            _GlobalArgs.interactive_false.value,
+            _GlobalArgs.interactive_true.value,
+            _GlobalArgs.force_true.value,
+            _GlobalArgs.force_false.value,
+        )
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
         if "git" in verb_str and verb_str.count("--") == 1:
             # remove the option terminator
