@@ -56,6 +56,9 @@ if TYPE_CHECKING:
 __all__ = ["OperateTab"]
 
 
+class AffectedPathsStatic(Static): ...
+
+
 class ChezmoiCmdModal(ModalScreen[None]):
     def __init__(self, btn_label: str, path: Path) -> None:
         self.btn_label = btn_label
@@ -67,6 +70,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
         with Vertical():
             yield Static(f"{self.btn_label}: Not yet implemented")
             yield Static(f"Path: {self.path}")
+            yield AffectedPathsStatic("not yet implemented")
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.btn_label,
@@ -79,6 +83,10 @@ class ChezmoiCmdModal(ModalScreen[None]):
                     BtnLabel.close,
                 ),
             )
+
+    def on_mount(self) -> None:
+        affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
+        affected_paths_static.update("not yet implemented")
 
     @on(Button.Pressed)
     def cancel(self) -> None:
