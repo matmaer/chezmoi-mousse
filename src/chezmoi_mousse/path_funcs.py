@@ -119,7 +119,7 @@ def _file_unwanted_suffix(file_path: Path) -> bool:
 
 
 def get_rel_path(path: Path | None) -> str:
-    if path is None:
+    if store.cfg.dest_dir_path is None or path is None or path == store.cfg.dest_dir:
         return ""
     return str(path.relative_to(store.cfg.dest_dir))
 
