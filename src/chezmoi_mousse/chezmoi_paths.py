@@ -40,7 +40,7 @@ class ChezmoiTreePaths:
 
         self._populate_file_node_data()
 
-        self._populate_default_dir_node_data()
+        self._populate_dir_node_data()
 
         self._update_has_nested_status()
         self._update_has_nested_managed()
@@ -129,53 +129,39 @@ class ChezmoiTreePaths:
                 has_nested_un_managed=False,
             )
 
-    def _populate_default_dir_node_data(self) -> None:
-        for path in self.man_dir_set:
+    def _populate_dir_node_data(self) -> None:
+        for path in self.man_dir_set | self._un_man_dir_set:
             status_dir = path in self._status_dirs_pcr
+            managed_dir = path in self.man_dir_set
             status = self._status_dirs_pcr.get(path, None)
-            main_label = (
-                LabelStr.real_status_dir if status_dir else LabelStr.man_dir_no_status
-            )
+            is_un_unwanted = False if managed_dir else path_funcs.is_unwanted_dir(path)
+            if managed_dir:
+                main_label = (
+                    LabelStr.real_status_dir
+                    if status_dir
+                    else LabelStr.man_dir_no_status
+                )
+            else:
+                main_label = (
+                    LabelStr.un_wanted_dir if is_un_unwanted else LabelStr.un_man_dir
+                )
+
             has_nested_un_managed = path_funcs.any_nested_in(
                 dir_path=path, check_paths=self._un_man_path_set
             )
+
             self.dir_node_data[path] = NodeData(
-                exists=path.exists(),
-                main_label=main_label,  # different
-                file_path=False,
-                dir_path=True,
-                managed_dir=True,
-                managed_file=False,
-                path=path,
-                status_dir=status_dir,  # different
-                status_file=False,
-                status=status,  # different
-                un_man_dir=False,
-                un_man_file=False,
-                un_wanted_dir=False,
-                un_wanted_file=False,
-                has_nested_un_managed=has_nested_un_managed,
-            )
-        for path in self._un_man_dir_set:
-            is_un_unwanted = path_funcs.is_unwanted_dir(path)
-            main_label = (
-                LabelStr.un_wanted_dir if is_un_unwanted else LabelStr.un_man_dir
-            )
-            has_nested_un_managed = path_funcs.any_nested_in(
-                dir_path=path, check_paths=self._un_man_path_set
-            )
-            self.dir_node_data[path] = NodeData(
-                exists=True,
+                exists=(path.exists() if managed_dir else True),
                 main_label=main_label,
                 file_path=False,
                 dir_path=True,
-                managed_dir=False,
+                managed_dir=managed_dir,
                 managed_file=False,
                 path=path,
-                status_dir=False,
+                status_dir=status_dir,
                 status_file=False,
-                status=None,
-                un_man_dir=True,
+                status=status,
+                un_man_dir=(path in self._un_man_dir_set),
                 un_man_file=False,
                 un_wanted_dir=is_un_unwanted,
                 un_wanted_file=False,
