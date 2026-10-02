@@ -44,6 +44,8 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from textual import getters
     from textual.app import ComposeResult
 
@@ -55,13 +57,16 @@ __all__ = ["OperateTab"]
 
 
 class ChezmoiCmdModal(ModalScreen[None]):
-    def __init__(self, btn_label: str) -> None:
+    def __init__(self, btn_label: str, path: Path) -> None:
         self.btn_label = btn_label
+        self.path = path
+
         super().__init__()
 
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Static(f"{self.btn_label}: Not yet implemented")
+            yield Static(f"Path: {self.path}")
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.btn_label,
@@ -311,6 +316,7 @@ class OperateTab(TabPane):
         show_tree.display = True
 
     def _set_all_path_reactives(self, node_data: NodeData) -> None:
+        self.current_path = node_data.path
         setattr(self.git_log_view, ReactiveVar.node_data, node_data)
         setattr(self.content_view, ReactiveVar.node_data, node_data)
         setattr(self.diff_view, ReactiveVar.node_data, node_data)
@@ -346,7 +352,9 @@ class OperateTab(TabPane):
             BtnLabel.chezmoi_destroy,
         ):
             event.stop()
-            self.app.push_screen(ChezmoiCmdModal(str(event.button.label)))
+            self.app.push_screen(
+                ChezmoiCmdModal(str(event.button.label), self.current_path)
+            )
 
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:
