@@ -317,7 +317,7 @@ class GitLogView(Vertical):
             yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
             yield DataTable[str](show_cursor=False)
         with PathInfoVertical():
-            yield SubSectionLabel()
+            yield SubSectionLabel(LabelStr.no_git_log)
             yield ScrollableContainer(PathInfo())
 
     def on_mount(self) -> None:

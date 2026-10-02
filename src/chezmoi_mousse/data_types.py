@@ -89,7 +89,6 @@ class NodeData:
     dir_path: bool
     exists: bool
     file_path: bool
-    has_nested_managed: bool
     has_nested_status: bool
     has_nested_un_managed: bool | None
     has_un_wanted_dir_parent: bool

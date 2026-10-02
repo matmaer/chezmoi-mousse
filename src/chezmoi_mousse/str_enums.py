@@ -566,7 +566,7 @@ class _ChezmoiGitArgs(Enum):
     git_remote = (_option_terminator, *global_args, "remote", verbose)
 
 
-class GlobalArgs(Enum):
+class _GlobalArgs(Enum):
     global_defaults = (
         "--color=off",
         "--force=true",
@@ -601,84 +601,92 @@ class _VerbArgs(StrEnum):
 
 class ReadCmd(Enum):
     cat = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "cat",
     )
     cat_config = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "cat-config",
     )
     diff = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "diff",
     )
-    diff_reverse = (*GlobalArgs.global_defaults.value, "diff", _VerbArgs.reverse)
+    diff_reverse = (*_GlobalArgs.global_defaults.value, "diff", _VerbArgs.reverse)
     doctor = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "doctor",
     )
     dump_config = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "dump-config",
         _VerbArgs.format_json,
     )
-    git_dir = (*GlobalArgs.global_defaults.value, "git", *_ChezmoiGitArgs.git_dir.value)
-    git_log = (*GlobalArgs.global_defaults.value, "git", *_ChezmoiGitArgs.git_log.value)
+    git_dir = (
+        *_GlobalArgs.global_defaults.value,
+        "git",
+        *_ChezmoiGitArgs.git_dir.value,
+    )
+    git_log = (
+        *_GlobalArgs.global_defaults.value,
+        "git",
+        *_ChezmoiGitArgs.git_log.value,
+    )
     git_remote = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "git",
         *_ChezmoiGitArgs.git_remote.value,
     )
     ignored = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "ignored",
     )
     managed_dirs = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "managed",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_dirs,
     )
     managed_files = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "managed",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
     source_path = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "source-path",
     )
     status_dirs = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "status",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_dirs,
     )
     status_files = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "status",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
     unmanaged_dirs = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "unmanaged",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_dirs,
     )
     unmanaged_files = (
-        *GlobalArgs.global_defaults.value,
+        *_GlobalArgs.global_defaults.value,
         "unmanaged",
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
-    template_data = (*GlobalArgs.global_defaults.value, "data", _VerbArgs.format_json)
+    template_data = (*_GlobalArgs.global_defaults.value, "data", _VerbArgs.format_json)
 
     @cached_property
     def pretty_cmd(self) -> str:
         ugly_args: tuple[str, ...] = (
-            *GlobalArgs.global_defaults.value,
+            *_GlobalArgs.global_defaults.value,
             *_ChezmoiGitArgs.global_args.value,
             *_ChezmoiGitArgs.git_log_args.value,
             _ChezmoiGitArgs.verbose.value,
@@ -694,7 +702,7 @@ class ReadCmd(Enum):
         return f"chezmoi {verb_str}"
 
 
-class WriteVerb(StrEnum):
+class _WriteVerb(StrEnum):
     init = "init"
     add = "add"
     apply = "apply"
@@ -705,52 +713,41 @@ class WriteVerb(StrEnum):
 
 class WriteCmd(Enum):
     init = (
-        *GlobalArgs.global_defaults.value,
-        WriteVerb.init,
+        *_GlobalArgs.global_defaults.value,
+        _WriteVerb.init,
     )
     add = (
-        *GlobalArgs.global_defaults.value,
-        WriteVerb.add,
+        *_GlobalArgs.global_defaults.value,
+        _WriteVerb.add,
     )
     apply = (
-        *GlobalArgs.global_defaults.value,
-        WriteVerb.apply,
+        *_GlobalArgs.global_defaults.value,
+        _WriteVerb.apply,
     )
     destroy = (
-        *GlobalArgs.global_defaults.value,
-        WriteVerb.destroy,
+        *_GlobalArgs.global_defaults.value,
+        _WriteVerb.destroy,
     )
     forget = (
-        *GlobalArgs.global_defaults.value,
-        WriteVerb.forget,
+        *_GlobalArgs.global_defaults.value,
+        _WriteVerb.forget,
     )
     re_add = (
-        *GlobalArgs.global_defaults.value,
-        WriteVerb.re_add,
+        *_GlobalArgs.global_defaults.value,
+        _WriteVerb.re_add,
     )
-    dry_init = (*GlobalArgs.global_defaults.dry_run, WriteVerb.init)
-    dry_add = (*GlobalArgs.global_defaults.dry_run, WriteVerb.add)
-    dry_apply = (*GlobalArgs.global_defaults.dry_run, WriteVerb.apply)
-    dry_destroy = (*GlobalArgs.global_defaults.dry_run, WriteVerb.destroy)
-    dry_forget = (*GlobalArgs.global_defaults.dry_run, WriteVerb.forget)
-    dry_re_add = (*GlobalArgs.global_defaults.dry_run, WriteVerb.re_add)
+    dry_init = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.init)
+    dry_add = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.add)
+    dry_apply = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.apply)
+    dry_destroy = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.destroy)
+    dry_forget = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.forget)
+    dry_re_add = (*_GlobalArgs.global_defaults.dry_run, _WriteVerb.re_add)
 
     @cached_property
     def pretty_cmd(self) -> str:
-        ugly_args: tuple[str, ...] = (*GlobalArgs.global_defaults.value,)
+        ugly_args: tuple[str, ...] = (*_GlobalArgs.global_defaults.value,)
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
         if "git" in verb_str and verb_str.count("--") == 1:
             # remove the option terminator
             verb_str = verb_str.replace(" --", "")
         return f"chezmoi {verb_str}"
-
-    @classmethod
-    def dry_cmds(cls) -> tuple[Self, ...]:
-        return (
-            cls(cls.dry_init),
-            cls(cls.dry_add),
-            cls(cls.dry_apply),
-            cls(cls.dry_destroy),
-            cls(cls.dry_forget),
-            cls(cls.dry_re_add),
-        )

@@ -230,7 +230,7 @@ class TestPaths:
 
     def _create_python_file(self) -> list[str]:
         with Path.open(self.all_paths.python_file_path, "w", encoding="utf-8") as f:
-            f.write(PYTHON_FILE_DIFF_CONTENTS)
+            f.write(PYTHON_FILE_CONTENTS)
         return [str(self.all_paths.python_file_path)]
 
     def _create_tricky_utf8_file(self) -> list[str]:
