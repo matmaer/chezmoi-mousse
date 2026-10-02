@@ -98,7 +98,7 @@ class NodeData:
     un_man_file: bool
     un_wanted_dir: bool
     un_wanted_file: bool
-    has_nested_unmanaged: bool | None
+    has_nested_un_managed: bool | None
     dest_dir: bool = False
     has_nested_managed_dirs: bool = False
     has_nested_managed: bool = False

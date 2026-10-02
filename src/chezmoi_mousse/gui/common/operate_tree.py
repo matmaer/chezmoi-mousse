@@ -9,7 +9,6 @@ from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.str_enums import (
     ColorVar,
-    LabelStr,
     StatusCode as Sc,
     Tcss,
     TreeName,
@@ -46,24 +45,7 @@ class OperateTree(Tree[NodeData]):
         self.display = False
         self.guide_depth = 3
         self.show_root = False
-        self.root.data = NodeData(
-            exists=True,
-            main_label=LabelStr.dest_dir,
-            managed_dir=False,
-            managed_file=False,
-            path=store.cfg.dest_dir,
-            status_dir=False,
-            status_file=False,
-            status=None,
-            un_man_dir=False,
-            un_man_file=False,
-            un_wanted_dir=False,
-            un_wanted_file=False,
-            has_nested_managed_dirs=False,
-            has_nested_managed=False,
-            has_nested_status=False,
-            has_nested_unmanaged=False,
-        )
+        self.root.data = store.cm_paths.dest_dir_node_data
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
 

@@ -202,7 +202,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             un_man_file=False,
                             un_wanted_dir=True,
                             un_wanted_file=False,
-                            has_nested_unmanaged=None,
+                            has_nested_un_managed=None,
                         )
                     else:
                         dirs[path] = NodeData(
@@ -218,7 +218,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             managed_dir=False,
                             un_wanted_dir=False,
                             un_wanted_file=False,
-                            has_nested_unmanaged=None,
+                            has_nested_un_managed=None,
                         )
                 elif path.is_file():
                     if is_unwanted_file(path):
@@ -235,7 +235,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             un_wanted_file=True,
                             managed_file=False,
                             managed_dir=False,
-                            has_nested_unmanaged=False,
+                            has_nested_un_managed=False,
                         )
                     else:
                         files[path] = NodeData(
@@ -251,7 +251,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             un_wanted_file=False,
                             managed_file=False,
                             managed_dir=False,
-                            has_nested_unmanaged=False,
+                            has_nested_un_managed=False,
                         )
             except (FileNotFoundError, PermissionError, OSError) as exception:
                 exceptions[path] = str(exception)
