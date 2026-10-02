@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING, ClassVar
 
 from textual import on, work
@@ -87,7 +86,6 @@ class ChezmoiCmdModal(ModalScreen[None]):
     def __init__(self, btn_label: str, path: Path) -> None:
         self.btn_label = btn_label
         self.path = path
-
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -145,46 +143,18 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
     @work
     async def run_interactive(self) -> None:
-        await tchezmoi.run_chezmoi_interactive(
+        async for event in tchezmoi.run_chezmoi_interactive(
             self.app, self.btn_label_to_cmd[self.btn_label], self.path
-        )
-
-    def _append_output(self, text: str) -> None:
-        """Callback passed as on_output to stream output to the UI widget."""
-        affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
-        current_text = str(affected_paths_static.content)
-        affected_paths_static.update(f"{current_text}{text}")
-
-    async def _handle_prompt(self, prompt_text: str) -> str:
-        """Callback passed as on_prompt to interrupt process and wait for UI button
-        click."""
-        self._append_output(prompt_text)
-
-        # Show prompt buttons (e.g. yes, no, all, quit, etc.)
-        for button in self.prompt_buttons:
-            if button.label in (self.run_label, BtnLabel.cancel, BtnLabel.close):
-                button.display = False
-            else:
-                button.display = True
-
-        # Create a future and await the user clicking a button in
-        # handle_prompt_btn_pressed
-        self._prompt_future = asyncio.get_running_loop().create_future()
-        try:
-            choice = await self._prompt_future
-            return choice
-        finally:
-            self._prompt_future = None
-            # Hide prompt buttons again
-            for button in self.prompt_buttons:
-                if button.label != BtnLabel.close:
-                    button.display = False
+        ):
+            print(event)
 
     @on(Button.Pressed)
     def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:
-        if event.button.label in (BtnLabel.cancel, BtnLabel.close):
+        button_label = str(event.button.label)
+
+        if button_label in (BtnLabel.cancel, BtnLabel.close):
             self.dismiss()
-        elif event.button.label == self.run_label:
+        elif button_label == self.run_label:
             for button in self.prompt_buttons:
                 if button.label == BtnLabel.cancel:
                     button.display = False
