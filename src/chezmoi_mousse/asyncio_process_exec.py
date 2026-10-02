@@ -141,9 +141,9 @@ async def run_chezmoi_interactive_process(
                 )
 
                 if not raw_chunk:
+                    # EOF: flush remaining output, it must be yielded before leaving
                     if buffer:
-                        payload = buffer.splitlines()
-                        buffer = ""
+                        yield StreamEvent(data=buffer.splitlines(), is_prompt=False)
                     break
 
                 last_process_activity = time.monotonic()
@@ -161,11 +161,14 @@ async def run_chezmoi_interactive_process(
                     is_prompt = not buffer.endswith("\n")
 
                     if is_prompt:
-                        payload = (
-                            buffer.rsplit(">", 1)[1].split("/")
+                        # --no-tty=true: "Apply .foo (diff/yes/no/all/quit)? "
+                        # tty mode: "> yes/no/all/quit"
+                        choices = (
+                            buffer.rsplit(">", 1)[1]
                             if ">" in buffer
-                            else buffer.split("/")
+                            else buffer.rsplit("(", 1)[-1].split(")")[0]
                         )
+                        payload = choices.strip().split("/")
                         buffer = ""  # Only clear buffer when yielding prompt!
                     else:
                         payload = buffer.splitlines()
@@ -175,7 +178,11 @@ async def run_chezmoi_interactive_process(
                 # Receive input directly back from asend()
                 user_choice = yield StreamEvent(data=payload, is_prompt=is_prompt)
 
-                if is_prompt and user_choice is not None:
+                if is_prompt:
+                    if user_choice is None:
+                        raise ValueError(
+                            "A prompt needs a reply; to cancel call aclose() instead"
+                        )
                     pipe_stdin.write(f"{user_choice}\n".encode())
                     await pipe_stdin.drain()
 

@@ -599,9 +599,10 @@ class _GlobalArgs(Enum):
         _interactive_false,
         _force_true,
     )
+    # --no-tty=true makes chezmoi prompt over stdin/stdout instead of /dev/tty
     interactive = (
         *_global_defaults,
-        _no_tty_false,
+        _no_tty_true,
         _interactive_true,
         _force_false,
     )

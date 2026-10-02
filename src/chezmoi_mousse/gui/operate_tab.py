@@ -203,19 +203,25 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
         except StopAsyncIteration:
             self._append_output("\nProcess completed.")
+        finally:
+            # on cancel/dismiss the worker is cancelled, this terminates chezmoi
+            await gen.aclose()
 
     @on(Button.Pressed)
     def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:
         button_label = str(event.button.label)
 
         if button_label in (BtnLabel.cancel, BtnLabel.close):
+            for worker in self.workers:
+                worker.cancel()
             self.dismiss()
         elif button_label == self.run_label:
             self.run_interactive()
         elif self._prompt_future is not None and not self._prompt_future.done():
-            # Standard single character choice string
-            choice_char = button_label.lower()[0] if button_label else "y"
-            self._prompt_future.set_result(choice_char)
+            for prompt in ChezmoiPrompts:
+                if prompt.btn_label == button_label:
+                    self._prompt_future.set_result(prompt.reply)
+                    break
 
 
 class LeftSideVertical(Vertical):

@@ -238,3 +238,6 @@ async def run_chezmoi_interactive(
             response = yield event
     except StopAsyncIteration:
         return
+    finally:
+        # also runs on aclose(), terminating the chezmoi process
+        await gen.aclose()
