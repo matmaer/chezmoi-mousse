@@ -127,6 +127,7 @@ async def get_affected_paths(
         WriteCmd.dry_forget,
         WriteCmd.dry_destroy,
     ):
+        app.notify(f"Running dry command: {write_cmd.name} on path: {path}")
         command_result = await _exec_chezmoi(app, write_cmd, path)
         # Matches standard git diff paths (capturing the target path in group 1)
         path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
@@ -136,11 +137,12 @@ async def get_affected_paths(
             if match:
                 affected_paths.add(Path(match.group(1)))
         return path_funcs.sort_paths(affected_paths)
-    app.notify(
-        f"Wrong write command:{write_cmd.name} for get_affected_paths.",
-        severity="error",
-    )
-    return []
+    else:
+        app.notify(
+            f"Wrong write command:{write_cmd.name} for get_affected_paths.",
+            severity="error",
+        )
+        return []
 
 
 async def run_managed_commands(app: ChezmoiGui) -> None:
@@ -224,7 +226,15 @@ async def run_chezmoi_interactive(
     app: ChezmoiGui,
     cmd_enum: WriteCmd,
     path_arg: Path | None,
-) -> AsyncGenerator[StreamEvent]:
+) -> AsyncGenerator[StreamEvent, str | None]:
     app.notify(f"Running {cmd_enum.name} on {path_arg}")
-    async for event in run_chezmoi_interactive_process(cmd_enum, path_arg):
-        yield event
+
+    gen = run_chezmoi_interactive_process(cmd_enum, path_arg)
+    response: str | None = None
+
+    try:
+        while True:
+            event = await gen.asend(response)
+            response = yield event
+    except StopAsyncIteration:
+        return

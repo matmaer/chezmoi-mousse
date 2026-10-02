@@ -770,11 +770,11 @@ class WriteCmd(Enum):
         _WriteVerb.re_add,
     )
     dry_add = (
-        *_GlobalArgs.interactive.value,
+        *_GlobalArgs.non_interactive.value,
         _WriteVerb.add,
     )
     dry_apply = (
-        *_GlobalArgs.interactive.value,
+        *_GlobalArgs.non_interactive.value,
         _WriteVerb.apply,
     )
     dry_destroy = (

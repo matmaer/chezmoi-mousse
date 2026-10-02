@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, ClassVar
 
 from textual import on, work
@@ -89,6 +90,8 @@ class ChezmoiCmdModal(ModalScreen[None]):
     def __init__(self, btn_label: str, path: Path) -> None:
         self.btn_label = btn_label
         self.path = path
+        self._prompt_future: asyncio.Future[str] | None = None
+        self._output_buffer = ""
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -147,12 +150,59 @@ class ChezmoiCmdModal(ModalScreen[None]):
         )
         self.affected_paths_static.update("\n".join(str(p) for p in affected_paths_cr))
 
+    def _append_output(self, text: str) -> None:
+        """Appends output text to InteractiveOutputStatic."""
+        self._output_buffer += text
+        self.interactive_output_static.update(self._output_buffer)
+
+    async def _await_user_choice(self) -> str:
+        """Shows prompt options and pauses worker until a button is clicked."""
+        for button in self.prompt_buttons:
+            if button.label in (self.run_label, BtnLabel.cancel, BtnLabel.close):
+                button.display = False
+            else:
+                button.display = True
+
+        self._prompt_future = asyncio.get_running_loop().create_future()
+        try:
+            return await self._prompt_future
+        finally:
+            self._prompt_future = None
+            for button in self.prompt_buttons:
+                if button.label != BtnLabel.close:
+                    button.display = False
+
     @work
     async def run_interactive(self) -> None:
-        async for event in tchezmoi.run_chezmoi_interactive(
-            self.app, self.btn_label_to_cmd[self.btn_label], self.path
-        ):
-            print(event)
+        self.affected_paths_static.display = False
+        self.interactive_output_static.display = True
+        for button in self.prompt_buttons:
+            if button.label == BtnLabel.close:
+                button.display = True
+            if button.label in (BtnLabel.cancel, self.run_label):
+                button.display = False
+
+        cmd_enum = self.btn_label_to_cmd[self.btn_label]
+        gen = tchezmoi.run_chezmoi_interactive(self.app, cmd_enum, self.path)
+
+        response: str | None = None
+        try:
+            while True:
+                event = await gen.asend(response)
+
+                if event.is_prompt:
+                    prompt_text = f"\nPrompt options: {' / '.join(event.data)}\n"
+                    self._append_output(prompt_text)
+
+                    # Pause worker on asyncio.Future until UI button is pressed
+                    response = await self._await_user_choice()
+                else:
+                    lines_text = "\n".join(event.data) + "\n"
+                    self._append_output(lines_text)
+                    response = None
+
+        except StopAsyncIteration:
+            self._append_output("\nProcess completed.")
 
     @on(Button.Pressed)
     def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:
@@ -161,12 +211,11 @@ class ChezmoiCmdModal(ModalScreen[None]):
         if button_label in (BtnLabel.cancel, BtnLabel.close):
             self.dismiss()
         elif button_label == self.run_label:
-            for button in self.prompt_buttons:
-                if button.label == BtnLabel.cancel:
-                    button.display = False
-                elif button.label == BtnLabel.close:
-                    button.display = True
             self.run_interactive()
+        elif self._prompt_future is not None and not self._prompt_future.done():
+            # Standard single character choice string
+            choice_char = button_label.lower()[0] if button_label else "y"
+            self._prompt_future.set_result(choice_char)
 
 
 class LeftSideVertical(Vertical):

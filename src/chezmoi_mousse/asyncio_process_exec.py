@@ -111,11 +111,9 @@ async def _managed_process(
 async def run_chezmoi_interactive_process(
     cmd_enum: WriteCmd,
     path: Path | None,
-    read_timeout: float = 0.05,
-    max_process_idle_seconds: float = 15.0,
 ) -> AsyncGenerator[StreamEvent, str | None]:
-    # yields StreamEvent objects. Accepts response strings via agen.asend(choice)
-
+    read_timeout: float = 0.05
+    max_process_idle_seconds: float = 15.0
     chezmoi_cmd = _get_chezmoi_cmd()
     exec_args = (
         (chezmoi_cmd, *cmd_enum.value, str(path))
@@ -158,25 +156,27 @@ async def run_chezmoi_interactive_process(
                     ) from read_time_out
 
                 if buffer:
+                    # An interactive prompt typically ends without a newline
+                    # (waiting for input)
                     is_prompt = not buffer.endswith("\n")
+
                     if is_prompt:
                         payload = (
                             buffer.rsplit(">", 1)[1].split("/")
                             if ">" in buffer
                             else buffer.split("/")
                         )
+                        buffer = ""  # Only clear buffer when yielding prompt!
                     else:
                         payload = buffer.splitlines()
-
-                    buffer = ""
+                        buffer = ""
 
             if payload is not None:
-                # Yield event and receive user response via `asend()` if it was a prompt
-                user_response = yield StreamEvent(data=payload, is_prompt=is_prompt)
+                # Receive input directly back from asend()
+                user_choice = yield StreamEvent(data=payload, is_prompt=is_prompt)
 
-                if is_prompt and user_response is not None:
-                    # Write user choice directly to process stdin pipe
-                    pipe_stdin.write(f"{user_response}\n".encode())
+                if is_prompt and user_choice is not None:
+                    pipe_stdin.write(f"{user_choice}\n".encode())
                     await pipe_stdin.drain()
 
                 last_process_activity = time.monotonic()
