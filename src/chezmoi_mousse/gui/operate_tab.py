@@ -19,6 +19,7 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store
+from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     PromptBtnGroup,

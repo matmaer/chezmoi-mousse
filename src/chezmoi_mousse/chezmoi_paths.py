@@ -59,14 +59,22 @@ class ChezmoiTreePaths:
 
     def _add_dest_dir_node_data(self) -> None:
         self.dir_node_data[self._dest_dir] = NodeData(
-            main_label=LabelStr.dest_dir,
-            path=self._dest_dir,
-            status=None,
-            exists=True,
             dest_dir=True,
-            has_nested_status=bool(self.status_path_set),
-            has_nested_managed=bool(self.man_path_set),
+            exists=True,
+            main_label=LabelStr.dest_dir,
+            managed_dir=False,
+            managed_file=False,
+            path=self._dest_dir,
+            status_dir=False,
+            status_file=False,
+            status=None,
+            un_man_dir=False,
+            un_man_file=False,
+            un_wanted_dir=False,
+            un_wanted_file=False,
             has_nested_managed_dirs=bool(self.man_dir_set),
+            has_nested_managed=bool(self.man_path_set),
+            has_nested_status=bool(self.status_path_set),
         )
 
     def _populate_file_node_data(
@@ -74,75 +82,127 @@ class ChezmoiTreePaths:
     ) -> None:
         for path, status in self._status_files_pcr.items():
             self.file_node_data[path] = NodeData(
-                main_label=LabelStr.status_file,
-                path=path,
-                status=status,
                 exists=path.exists(),
-                in_status_files_cr=True,
-                in_managed_files_cr=True,
+                main_label=LabelStr.status_file,
+                managed_dir=False,
+                managed_file=True,
+                path=path,
+                status_dir=False,
+                status_file=True,
+                status=status,
+                un_man_dir=False,
+                un_man_file=False,
+                un_wanted_dir=False,
+                un_wanted_file=False,
             )
         for path in self._space_file_set:
             self.file_node_data[path] = NodeData(
-                main_label=LabelStr.space_file,
-                path=path,
-                status=None,
                 exists=path.exists(),
-                in_managed_files_cr=True,
+                main_label=LabelStr.space_file,
+                managed_dir=False,
+                managed_file=True,
+                path=path,
+                status_dir=False,
+                status_file=False,
+                status=None,
+                un_man_dir=False,
+                un_man_file=False,
+                un_wanted_dir=False,
+                un_wanted_file=False,
             )
         for path in self._un_man_file_set:
             if path_funcs.is_unwanted_file(path):
                 self.file_node_data[path] = NodeData(
-                    main_label=LabelStr.un_wanted_file,
-                    path=path,
-                    status=None,
                     exists=True,
-                    in_un_man_files_cr=True,
-                    matches_unwanted_file=True,
+                    main_label=LabelStr.un_wanted_file,
+                    managed_dir=False,
+                    managed_file=False,
+                    path=path,
+                    status_dir=False,
+                    status_file=False,
+                    status=None,
+                    un_man_dir=False,
+                    un_man_file=True,
+                    un_wanted_dir=False,
+                    un_wanted_file=True,
                 )
             else:
                 self.file_node_data[path] = NodeData(
-                    main_label=LabelStr.un_man_file,
-                    path=path,
                     exists=True,
+                    main_label=LabelStr.un_man_file,
+                    managed_dir=False,
+                    managed_file=False,
+                    path=path,
+                    status_dir=False,
+                    status_file=False,
                     status=None,
-                    in_un_man_files_cr=True,
+                    un_man_dir=False,
+                    un_man_file=True,
+                    un_wanted_dir=False,
+                    un_wanted_file=False,
                 )
 
     def _populate_default_dir_node_data(self) -> None:
         for path, status in self._status_dirs_pcr.items():
             self.dir_node_data[path] = NodeData(
-                main_label=LabelStr.real_status_dir,
-                path=path,
-                status=status,
                 exists=path.exists(),
-                in_status_dirs_cr=True,
+                main_label=LabelStr.real_status_dir,
                 managed_dir=True,
+                managed_file=False,
+                path=path,
+                status_dir=True,
+                status_file=False,
+                status=status,
+                un_man_dir=False,
+                un_man_file=False,
+                un_wanted_dir=False,
+                un_wanted_file=False,
             )
         for path in self._space_dir_set:
             self.dir_node_data[path] = NodeData(
-                main_label=LabelStr.man_dir_no_status,
-                path=path,
-                status=None,
                 exists=path.exists(),
+                main_label=LabelStr.man_dir_no_status,
                 managed_dir=True,
+                managed_file=False,
+                path=path,
+                status_dir=False,
+                status_file=False,
+                status=None,
+                un_man_dir=False,
+                un_man_file=False,
+                un_wanted_dir=False,
+                un_wanted_file=False,
             )
         for path in self._un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
                 self.dir_node_data[path] = NodeData(
-                    main_label=LabelStr.un_wanted_dir,
-                    path=path,
-                    status=None,
                     exists=True,
-                    in_un_man_dirs_cr=True,
-                    matches_unwanted_dir=True,
+                    main_label=LabelStr.un_wanted_dir,
+                    managed_dir=False,
+                    managed_file=False,
+                    path=path,
+                    status_dir=False,
+                    status_file=False,
+                    status=None,
+                    un_man_dir=True,
+                    un_man_file=False,
+                    un_wanted_dir=True,
+                    un_wanted_file=False,
                 )
             else:
                 self.dir_node_data[path] = NodeData(
-                    main_label=LabelStr.un_man_dir,
-                    path=path,
-                    status=None,
                     exists=True,
-                    in_un_man_dirs_cr=True,
+                    main_label=LabelStr.un_man_dir,
+                    managed_dir=False,
+                    managed_file=False,
+                    path=path,
+                    status_dir=False,
+                    status_file=False,
+                    status=None,
+                    un_man_dir=True,
+                    un_man_file=False,
+                    un_wanted_dir=False,
+                    un_wanted_file=False,
                 )
 
     def _update_has_nested_status(self) -> None:

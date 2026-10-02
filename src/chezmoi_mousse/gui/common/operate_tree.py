@@ -9,6 +9,7 @@ from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.str_enums import (
     ColorVar,
+    LabelStr,
     StatusCode as Sc,
     Tcss,
     TreeName,
@@ -45,7 +46,23 @@ class OperateTree(Tree[NodeData]):
         self.display = False
         self.guide_depth = 3
         self.show_root = False
-        self.root.data = store.cm_paths.dest_dir_node_data
+        self.root.data = NodeData(
+            exists=True,
+            main_label=LabelStr.dest_dir,
+            managed_dir=False,
+            managed_file=False,
+            path=store.cfg.dest_dir,
+            status_dir=False,
+            status_file=False,
+            status=None,
+            un_man_dir=False,
+            un_man_file=False,
+            un_wanted_dir=False,
+            un_wanted_file=False,
+            has_nested_managed_dirs=False,
+            has_nested_managed=False,
+            has_nested_status=False,
+        )
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
 
@@ -103,7 +120,7 @@ class OperateTree(Tree[NodeData]):
 
     def _tree_label_color(self, node_data: NodeData) -> ColorVar:
         status_code = node_data.status
-        mapping: dict[str, ColorVar] = {
+        mapping: dict[str | None, ColorVar] = {
             # D combos
             Sc.DA: ColorVar.text_warning,
             Sc.DD: ColorVar.text_warning,  # probably impossible status pair
@@ -119,30 +136,31 @@ class OperateTree(Tree[NodeData]):
             Sc.SD: ColorVar.text_warning,
             Sc.SM: ColorVar.text_warning,
             # Meta codes
-            "None": ColorVar.foreground_darken_3,
-            "un-managed": ColorVar.text_success,
+            # "un-managed": ColorVar.text_success,
             # Meta code for space dirs containing nested status paths
             # Sc.VV: ColorVar.foreground_darken_3,
             # Sc.YY: ColorVar.text_success,
-            Sc.ZZ: ColorVar.text_accent,
+            # Sc.ZZ: ColorVar.text_accent,
         }
-        color_var = ColorVar.error_muted
-        if node_data.in_status_dirs_cr:
-            color_var = ColorVar.warning_lighten_3
-        elif node_data.has_nested_status:
+        color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
+        if color_var is not ColorVar.error_muted:
+            if node_data.status_dir:
+                color_var = ColorVar.warning_lighten_3
+            return color_var
+
+        if node_data.has_nested_status:
             color_var = ColorVar.text_primary
         elif (
             node_data.has_nested_managed_dirs
             and self.name not in TreeName.managed_trees()
         ):
             color_var = ColorVar.text
-        else:
-            try:
-                if status_code is None:
-                    status_code = "None"
-                color_var = mapping[status_code]
-            except KeyError:
-                color_var = ColorVar.error_muted
+        elif status_code is ColorVar.error_muted:
+            if node_data.known_dir:
+                status_code = ColorVar.foreground_darken_2
+            else:
+                status_code = ColorVar.foreground_darken_3
+
         return color_var
 
     async def _add_node_with_color(
