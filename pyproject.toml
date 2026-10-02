@@ -111,4 +111,4 @@ combine-as-imports = true
 
 [tool.codespell]
 check-filenames = true
-ignore-words-list = "ReAdd,re-add"
+ignore-words-list = "ReAdd,re-add,asend"
