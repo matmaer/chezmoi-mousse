@@ -224,8 +224,7 @@ async def run_chezmoi_interactive(
     app: ChezmoiGui,
     cmd_enum: WriteCmd,
     path_arg: Path | None,
-    replies: asyncio.Queue[str],
 ) -> AsyncGenerator[StreamEvent]:
     app.notify(f"Running {cmd_enum.name} on {path_arg}")
-    async for event in run_chezmoi_interactive_process(cmd_enum, path_arg, replies):
+    async for event in run_chezmoi_interactive_process(cmd_enum, path_arg):
         yield event
