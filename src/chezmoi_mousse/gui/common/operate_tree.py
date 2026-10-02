@@ -62,6 +62,7 @@ class OperateTree(Tree[NodeData]):
             has_nested_managed_dirs=False,
             has_nested_managed=False,
             has_nested_status=False,
+            has_nested_unmanaged=False,
         )
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
@@ -74,14 +75,25 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_status
+                if node_data.status_dir
+                or node_data.status_file
+                or node_data.has_nested_status
             }
-        elif self.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+        elif self.name in (
+            TreeName.managed_all_mp,
+            TreeName.managed_all_mp_xpd,
+        ):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_managed
+                if not (node_data.un_man_dir or node_data.un_man_file)
+                or (
+                    node_data.status_dir
+                    or node_data.status_file
+                    or node_data.has_nested_status
+                )
             }
+
         elif self.name in (
             TreeName.un_man_plus_sp,
             TreeName.un_man_plus_sp_xpd,
@@ -89,7 +101,12 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_status
+                if not node_data.un_wanted_file
+                or not node_data.un_wanted_dir
+                or node_data.status_dir
+                or node_data.status_file
+                or node_data.un_man_dir
+                or node_data.un_man_file
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -98,7 +115,12 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status not in (None, Sc.ZZ) or node_data.has_nested_managed
+                if not node_data.un_wanted_file
+                or not node_data.un_wanted_dir
+                or node_data.managed_dir
+                or node_data.managed_file
+                or node_data.un_man_dir
+                or node_data.un_man_file
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -107,13 +129,27 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status is not None or node_data.has_nested_status
+                if not node_data.un_wanted_file
+                or not node_data.un_wanted_dir
+                or node_data.status_dir
+                or node_data.status_file
+                or node_data.un_man_dir
+                or node_data.un_man_file
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
             TreeName.un_wanted_plus_amp_xpd,
         ):
-            result = dict(node_data_dict.items())
+            result = {
+                path: node_data
+                for path, node_data in node_data_dict.items()
+                if not node_data.un_wanted_file
+                or not node_data.un_wanted_dir
+                or node_data.managed_dir
+                or node_data.managed_file
+                or node_data.un_man_dir
+                or node_data.un_man_file
+            }
         else:
             raise ValueError(f"Unknown tree name: {self.name}")
         return path_funcs.sort_path_dict(result)

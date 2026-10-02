@@ -465,7 +465,6 @@ class StatusCode(StrEnum):
     SA = "SA"  # Applied target missing; apply will create/restore target file.
     SD = "SD"  # Applied target clean; apply will delete target per source rules.
     SM = "SM"  # Applied target clean; apply will modify target from source updates.
-    ZZ = "ZZ"  # Spare dirs containing XX paths
 
     @cached_property
     def pretty_cmd(self) -> str:

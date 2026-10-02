@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse import path_funcs
 from chezmoi_mousse.data_types import NodeData
-from chezmoi_mousse.str_enums import LabelStr, StatusCode as Sc
+from chezmoi_mousse.str_enums import LabelStr
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.str_enums import StatusCode as Sc
 
 __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 
@@ -42,9 +46,7 @@ class ChezmoiTreePaths:
         self._update_has_nested_managed()
         self._update_has_nested_managed_dirs()
 
-        self._update_uu_dirs_with_xx_parent()  # overwrite Sc.UU with None
-        self._update_node_data_for_yy_dirs()  # overwrite remaining Sc.SS with Sc.YY
-        self._update_node_data_for_zz_dirs()  # overwrite remaining Sc.SS with Sc.ZZ
+        self._update_uu_dirs_with_xx_parent()
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
@@ -75,6 +77,7 @@ class ChezmoiTreePaths:
             has_nested_managed_dirs=bool(self.man_dir_set),
             has_nested_managed=bool(self.man_path_set),
             has_nested_status=bool(self.status_path_set),
+            has_nested_unmanaged=bool(self._un_man_path_set),
         )
 
     def _populate_file_node_data(
@@ -94,6 +97,7 @@ class ChezmoiTreePaths:
                 un_man_file=False,
                 un_wanted_dir=False,
                 un_wanted_file=False,
+                has_nested_unmanaged=False,
             )
         for path in self._space_file_set:
             self.file_node_data[path] = NodeData(
@@ -109,6 +113,7 @@ class ChezmoiTreePaths:
                 un_man_file=False,
                 un_wanted_dir=False,
                 un_wanted_file=False,
+                has_nested_unmanaged=False,
             )
         for path in self._un_man_file_set:
             if path_funcs.is_unwanted_file(path):
@@ -125,6 +130,7 @@ class ChezmoiTreePaths:
                     un_man_file=True,
                     un_wanted_dir=False,
                     un_wanted_file=True,
+                    has_nested_unmanaged=False,
                 )
             else:
                 self.file_node_data[path] = NodeData(
@@ -140,6 +146,7 @@ class ChezmoiTreePaths:
                     un_man_file=True,
                     un_wanted_dir=False,
                     un_wanted_file=False,
+                    has_nested_unmanaged=False,
                 )
 
     def _populate_default_dir_node_data(self) -> None:
@@ -157,6 +164,9 @@ class ChezmoiTreePaths:
                 un_man_file=False,
                 un_wanted_dir=False,
                 un_wanted_file=False,
+                has_nested_unmanaged=path_funcs.any_nested_in(
+                    dir_path=path, check_paths=self._un_man_path_set
+                ),
             )
         for path in self._space_dir_set:
             self.dir_node_data[path] = NodeData(
@@ -172,6 +182,9 @@ class ChezmoiTreePaths:
                 un_man_file=False,
                 un_wanted_dir=False,
                 un_wanted_file=False,
+                has_nested_unmanaged=path_funcs.any_nested_in(
+                    dir_path=path, check_paths=self._un_man_path_set
+                ),
             )
         for path in self._un_man_dir_set:
             if path_funcs.is_unwanted_dir(path):
@@ -188,6 +201,9 @@ class ChezmoiTreePaths:
                     un_man_file=False,
                     un_wanted_dir=True,
                     un_wanted_file=False,
+                    has_nested_unmanaged=path_funcs.any_nested_in(
+                        dir_path=path, check_paths=self._un_man_path_set
+                    ),
                 )
             else:
                 self.dir_node_data[path] = NodeData(
@@ -203,6 +219,9 @@ class ChezmoiTreePaths:
                     un_man_file=False,
                     un_wanted_dir=False,
                     un_wanted_file=False,
+                    has_nested_unmanaged=path_funcs.any_nested_in(
+                        dir_path=path, check_paths=self._un_man_path_set
+                    ),
                 )
 
     def _update_has_nested_status(self) -> None:
@@ -234,33 +253,6 @@ class ChezmoiTreePaths:
                 continue
             if path_funcs.any_parents_for(node_data.path, check_paths=xx_dirs):
                 self.dir_node_data[node_data.path].status = None
-
-    def _update_node_data_for_yy_dirs(self) -> None:
-        all_node_data = self.dir_node_data | self.file_node_data
-        uu_paths: set[Path] = {
-            path
-            for path, node_data in all_node_data.items()
-            if node_data.status is None
-        }
-        for path, node_data in self.dir_node_data.items():
-            if node_data.status is not None:
-                continue
-            if path_funcs.any_nested_in(dir_path=path, check_paths=uu_paths):
-                node_data.main_label = LabelStr.un_man_dir
-                node_data.status = None
-
-    def _update_node_data_for_zz_dirs(self) -> None:
-        zz_paths: set[Path] = {
-            path
-            for path, node_data in self.dir_node_data.items()
-            if node_data.status is Sc.ZZ
-        }
-        for path, node_data in self.dir_node_data.items():
-            if node_data.status is not None:
-                continue
-            if path_funcs.any_nested_in(dir_path=path, check_paths=zz_paths):
-                node_data.main_label = LabelStr.un_man_dir
-                node_data.status = Sc.ZZ
 
     @property
     def dest_dir_node_data(self) -> NodeData:
