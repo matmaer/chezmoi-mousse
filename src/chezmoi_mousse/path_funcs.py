@@ -210,8 +210,6 @@ def get_un_man_children(dir_path: Path, un_wanted_dir_set: set[Path]) -> IterDir
                         status_dir=False,
                         status_file=False,
                         status=None,
-                        un_man_dir=True,
-                        un_man_file=False,
                         un_wanted_dir=unwanted,
                         un_wanted_file=False,
                     )
@@ -235,8 +233,6 @@ def get_un_man_children(dir_path: Path, un_wanted_dir_set: set[Path]) -> IterDir
                         status_dir=False,
                         status_file=False,
                         status=None,
-                        un_man_dir=False,
-                        un_man_file=True,
                         un_wanted_dir=False,
                         un_wanted_file=is_unwanted,
                     )

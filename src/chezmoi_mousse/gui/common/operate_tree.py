@@ -76,7 +76,7 @@ class OperateTree(Tree[NodeData]):
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status_file
-                or (node_data.un_man_file and not node_data.un_wanted_file)
+                or (not node_data.managed_file and not node_data.un_wanted_file)
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -86,7 +86,7 @@ class OperateTree(Tree[NodeData]):
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.managed_file
-                or (node_data.un_man_file and not node_data.un_wanted_file)
+                or (not node_data.managed_file and not node_data.un_wanted_file)
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -95,7 +95,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status_file or node_data.un_man_file
+                if node_data.status_file or not node_data.managed_file
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
@@ -104,7 +104,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.managed_file or node_data.un_man_file
+                if node_data.managed_file
             }
         return path_funcs.sort_path_dict(result)
 
@@ -135,7 +135,7 @@ class OperateTree(Tree[NodeData]):
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.status_dir
-                or (node_data.un_man_dir and not node_data.un_wanted_dir)
+                or (not node_data.managed_dir and not node_data.un_wanted_dir)
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -145,7 +145,7 @@ class OperateTree(Tree[NodeData]):
                 path: node_data
                 for path, node_data in node_data_dict.items()
                 if node_data.managed_dir
-                or (node_data.un_man_dir and not node_data.un_wanted_dir)
+                or (not node_data.managed_dir and not node_data.un_wanted_dir)
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -154,7 +154,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.status_dir or node_data.un_man_dir
+                if node_data.status_dir or not node_data.managed_dir
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
@@ -163,7 +163,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in node_data_dict.items()
-                if node_data.managed_dir or node_data.un_man_dir
+                if node_data.managed_dir or not node_data.managed_dir
             }
         return path_funcs.sort_path_dict(result)
 
@@ -192,7 +192,7 @@ class OperateTree(Tree[NodeData]):
                 return color_var
             if node_data.managed_file:
                 return ColorVar.foreground_darken_3
-            if node_data.un_man_file:
+            if not node_data.managed_file and not node_data.un_wanted_file:
                 return ColorVar.text_success
             if node_data.un_wanted_file:
                 return ColorVar.text_accent
@@ -207,7 +207,7 @@ class OperateTree(Tree[NodeData]):
                 )
             if node_data.managed_dir:
                 return ColorVar.foreground_darken_2
-            if node_data.un_man_dir:
+            if not node_data.managed_dir and not node_data.un_wanted_dir:
                 return ColorVar.text_success
             if node_data.un_wanted_dir:
                 return ColorVar.text_accent

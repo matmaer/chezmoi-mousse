@@ -71,8 +71,6 @@ class ChezmoiTreePaths:
             status_dir=False,
             status_file=False,
             status=None,
-            un_man_dir=False,
-            un_man_file=False,
             un_wanted_dir=False,
             un_wanted_file=False,
         )
@@ -111,8 +109,6 @@ class ChezmoiTreePaths:
                 status_dir=False,
                 status_file=status_file,
                 status=status,
-                un_man_dir=False,
-                un_man_file=not managed,
                 un_wanted_dir=False,
                 un_wanted_file=is_unwanted,
             )
@@ -121,7 +117,7 @@ class ChezmoiTreePaths:
         for path in self.man_dir_set | self._un_man_dir_set:
             managed = path in self.man_dir_set
             status = self._status_dirs_pcr.get(path, None)
-            is_un_unwanted = False if managed else path_funcs.is_unwanted_dir(path)
+            is_un_unwanted = False if managed else path in self.un_wanted_dir_set
             has_nested_managed = path_funcs.any_nested_in(
                 dir_path=path, check_paths=self.man_path_set
             )
@@ -167,8 +163,6 @@ class ChezmoiTreePaths:
                 status_dir=status is not None,
                 status_file=False,
                 status=status,
-                un_man_dir=path in self._un_man_dir_set,
-                un_man_file=False,
                 un_wanted_dir=is_un_unwanted,
                 un_wanted_file=False,
             )

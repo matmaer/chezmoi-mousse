@@ -100,8 +100,6 @@ class NodeData:
     status_dir: bool
     status_file: bool
     status: StatusCode | None
-    un_man_dir: bool
-    un_man_file: bool
     un_wanted_dir: bool
     un_wanted_file: bool
     dest_dir: bool = False
