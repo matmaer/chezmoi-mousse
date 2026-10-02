@@ -1,3 +1,4 @@
+import os
 import random
 import shutil
 from dataclasses import dataclass, fields
@@ -307,9 +308,28 @@ class TestPaths:
         return sorted(created_files)
 
     def get_existing_test_paths(self) -> list[Path]:
-        return [p for p in self.all_paths.all_test_paths if p.exists()]
+        home = Path.home()
+        test_dir = home / "_test_dir"
+        matches: list[Path] = []
 
-    def _old_create_paths_on_disk(self) -> list[str]:
+        matches.extend([p for p in home.iterdir() if p.name.startswith("_test_")])
+
+        for root, dirs, files in os.walk(test_dir):
+            depth = len(Path(root).relative_to(test_dir).parts)
+
+            if depth >= 5:
+                dirs.clear()
+                continue
+
+            matches.extend(
+                Path(root) / name
+                for name in [*dirs, *files]
+                if name.startswith("_test_")
+            )
+
+        return matches
+
+    def create_paths_on_disk(self) -> list[str]:
         # record existing expected paths before creating anything
         existing_before = set(self.get_existing_test_paths())
 
@@ -338,7 +358,7 @@ class TestPaths:
             *sorted(created),
         ]
 
-    def _old_remove_test_paths(self) -> list[str]:
+    def remove_test_paths(self) -> list[str]:
         existing_paths = self.get_existing_test_paths()
         if not existing_paths:
             return [f"[${ColorVar.text_warning} bold]No test paths to remove.[/]"]
@@ -352,7 +372,7 @@ class TestPaths:
 
         # Remove any test files left in the home directory (those listed in
         # `existing_paths`).
-        for p in existing_paths:
+        for p in (Path(p) for p in existing_paths):
             if p.exists() and p.parent == HOME_PATH and p.is_file():
                 p.unlink()
 
@@ -361,7 +381,7 @@ class TestPaths:
             *removed_entries,
         ]
 
-    def _old_create_diffs(self) -> str:
+    def create_diffs(self) -> str:
         if not self.get_existing_test_paths():
             return f"[${ColorVar.text_warning} bold]No test paths exist to modify.[/]"
         modified: set[str] = set()
