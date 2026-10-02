@@ -90,6 +90,15 @@ class BtnLabel(StrEnum):
     def pane_id(self) -> str:
         return f"{self.name}_pane_id"
 
+    @property
+    def run_interactive(self) -> str:
+        if self.value.startswith("chezmoi_"):
+            return f"Run interactive {self.value}"
+        else:
+            raise ValueError(
+                f"Cannot return interactive for button label: {self.value}"
+            )
+
 
 class Chars(StrEnum):
     burger = "\u2261"  # IDENTICAL TO
