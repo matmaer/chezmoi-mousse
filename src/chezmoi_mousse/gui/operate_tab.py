@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import asyncio
+from typing import TYPE_CHECKING, ClassVar
 
-from textual import on
+from textual import on, work
 from textual.containers import (
     Horizontal,
     Vertical,
@@ -18,14 +19,18 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import store
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     PromptBtnGroup,
     SwitchGroup,
 )
-from chezmoi_mousse.gui.common.components import MainSectionLabel
+from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
+    MainSectionLabel,
+    SubSectionLabel,
+)
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
 from chezmoi_mousse.gui.common.operate_tree import OperateTree
 from chezmoi_mousse.gui.common.operate_views import (
@@ -41,6 +46,7 @@ from chezmoi_mousse.str_enums import (
     ReactiveVar,
     Tcss,
     TreeName,
+    WriteCmd,
 )
 
 if TYPE_CHECKING:
@@ -60,6 +66,24 @@ class AffectedPathsStatic(Static): ...
 
 
 class ChezmoiCmdModal(ModalScreen[None]):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
+    btn_label_to_cmd: ClassVar[dict[str, WriteCmd]] = {
+        BtnLabel.chezmoi_add: WriteCmd.add,
+        BtnLabel.chezmoi_apply: WriteCmd.apply,
+        BtnLabel.chezmoi_destroy: WriteCmd.destroy,
+        BtnLabel.chezmoi_forget: WriteCmd.forget,
+        BtnLabel.chezmoi_re_add: WriteCmd.re_add,
+    }
+    btn_label_to_dry_cmd: ClassVar[dict[str, WriteCmd]] = {
+        BtnLabel.chezmoi_add: WriteCmd.dry_add,
+        BtnLabel.chezmoi_apply: WriteCmd.dry_apply,
+        BtnLabel.chezmoi_destroy: WriteCmd.dry_destroy,
+        BtnLabel.chezmoi_forget: WriteCmd.dry_forget,
+        BtnLabel.chezmoi_re_add: WriteCmd.dry_re_add,
+    }
+
     def __init__(self, btn_label: str, path: Path) -> None:
         self.btn_label = btn_label
         self.path = path
@@ -68,9 +92,9 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Static(f"{self.btn_label}: Not yet implemented")
-            yield Static(f"Path: {self.path}")
-            yield AffectedPathsStatic("not yet implemented")
+            yield SubSectionLabel(LabelStr.not_set)
+            yield FlatSectionLabel(f"{self.btn_label} Command")
+            yield AffectedPathsStatic()
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.btn_label,
@@ -80,17 +104,93 @@ class ChezmoiCmdModal(ModalScreen[None]):
                     ChezmoiPrompts.no_to_all.btn_label,
                     ChezmoiPrompts.quit.btn_label,
                     ChezmoiPrompts.yes.btn_label,
+                    BtnLabel.cancel,
                     BtnLabel.close,
                 ),
             )
 
     def on_mount(self) -> None:
+        prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
+        self.run_label = f"Run interactive {self.btn_label}"
+        prompt_btn_group.mount(
+            Button(label=self.run_label, classes=Tcss.prompt_button), before=0
+        )
+        self.prompt_buttons = prompt_btn_group.query(Button)
+        for button in self.prompt_buttons:
+            if button.label == BtnLabel.cancel or button.label == self.run_label:
+                continue
+            button.display = False
+
+        # set main section label with the command to run
+        sub_section_label = self.query_exactly_one(SubSectionLabel)
+        run_cmd = f"{self.btn_label_to_cmd[self.btn_label].pretty_cmd} {self.path}"
+        sub_section_label.update(f"Dry run: {run_cmd}")
+
+        # set flat section label with the dry run command
+        flat_section_label = self.query_exactly_one(FlatSectionLabel)
+        dry_run_cmd = (
+            f"{self.btn_label_to_dry_cmd[self.btn_label].pretty_cmd} {self.path}"
+        )
+        flat_section_label.update(dry_run_cmd)
+        self.run_affected_paths_cmd()
+
+    @work
+    async def run_affected_paths_cmd(self) -> None:
         affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
-        affected_paths_static.update("not yet implemented")
+        dry_cmd = self.btn_label_to_dry_cmd[self.btn_label]
+        affected_paths_cr: list[Path] = await tchezmoi.get_affected_paths(
+            self.app, dry_cmd, self.path
+        )
+        affected_paths_static.update("\n".join(str(p) for p in affected_paths_cr))
+
+    @work
+    async def run_interactive(self) -> None:
+        await tchezmoi.run_chezmoi_interactive(
+            self.app, self.btn_label_to_cmd[self.btn_label], self.path
+        )
+
+    def _append_output(self, text: str) -> None:
+        """Callback passed as on_output to stream output to the UI widget."""
+        affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
+        current_text = str(affected_paths_static.content)
+        affected_paths_static.update(f"{current_text}{text}")
+
+    async def _handle_prompt(self, prompt_text: str) -> str:
+        """Callback passed as on_prompt to interrupt process and wait for UI button
+        click."""
+        self._append_output(prompt_text)
+
+        # Show prompt buttons (e.g. yes, no, all, quit, etc.)
+        for button in self.prompt_buttons:
+            if button.label in (self.run_label, BtnLabel.cancel, BtnLabel.close):
+                button.display = False
+            else:
+                button.display = True
+
+        # Create a future and await the user clicking a button in
+        # handle_prompt_btn_pressed
+        self._prompt_future = asyncio.get_running_loop().create_future()
+        try:
+            choice = await self._prompt_future
+            return choice
+        finally:
+            self._prompt_future = None
+            # Hide prompt buttons again
+            for button in self.prompt_buttons:
+                if button.label != BtnLabel.close:
+                    button.display = False
 
     @on(Button.Pressed)
-    def cancel(self) -> None:
-        self.dismiss()
+    def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:
+        if event.button.label in (BtnLabel.cancel, BtnLabel.close):
+            self.dismiss()
+        elif event.button.label == self.run_label:
+            for button in self.prompt_buttons:
+                if button.label == BtnLabel.cancel:
+                    button.display = False
+                elif button.label == BtnLabel.close:
+                    button.display = True
+            self.run_interactive()
 
 
 class LeftSideVertical(Vertical):

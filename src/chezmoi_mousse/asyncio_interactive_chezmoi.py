@@ -42,7 +42,7 @@ async def _managed_process(
                 await process.wait()
 
 
-async def run_chezmoi_interactive(
+async def run_chezmoi_interactive_process(
     cmd: tuple[str, ...],
     on_output: OutputHandler,
     on_prompt: PromptHandler,

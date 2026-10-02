@@ -213,3 +213,11 @@ async def get_highlighted_chezmoi_cat_output(
     text_contents = Text(f_contents)
     ReprHighlighter().highlight(text_contents)
     return text_contents
+
+
+async def run_chezmoi_interactive(
+    app: ChezmoiGui,
+    cmd_enum: WriteCmd,
+    path: Path,
+) -> None:
+    app.notify(f"Running {cmd_enum.name} on {path}")
