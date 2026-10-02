@@ -64,6 +64,9 @@ __all__ = ["OperateTab"]
 class AffectedPathsStatic(Static): ...
 
 
+class InteractiveOutputStatic(Static): ...
+
+
 class ChezmoiCmdModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -93,6 +96,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
             yield SubSectionLabel(LabelStr.not_set)
             yield FlatSectionLabel(f"{self.btn_label} Command")
             yield AffectedPathsStatic()
+            yield InteractiveOutputStatic()
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.btn_label,
