@@ -188,79 +188,53 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                 if path.is_symlink():
                     symlinks.append(path)
                 elif path.is_dir():
-                    if is_unwanted_dir(path):
-                        dirs[path] = NodeData(
-                            exists=True,
-                            main_label=LabelStr.un_wanted_dir,
-                            file_path=False,
-                            dir_path=True,
-                            managed_dir=False,
-                            managed_file=False,
-                            path=path,
-                            status_dir=False,
-                            status_file=False,
-                            status=None,
-                            un_man_dir=True,
-                            un_man_file=False,
-                            un_wanted_dir=True,
-                            un_wanted_file=False,
-                            has_nested_un_managed=None,
-                        )
-                    else:
-                        dirs[path] = NodeData(
-                            main_label=LabelStr.un_man_dir,
-                            file_path=False,
-                            dir_path=True,
-                            path=path,
-                            status=None,
-                            exists=True,
-                            status_dir=False,
-                            status_file=False,
-                            un_man_dir=True,
-                            un_man_file=False,
-                            managed_file=False,
-                            managed_dir=False,
-                            un_wanted_dir=False,
-                            un_wanted_file=False,
-                            has_nested_un_managed=None,
-                        )
+                    unwanted = is_unwanted_dir(path)
+                    main_label = (
+                        LabelStr.un_wanted_dir if unwanted else LabelStr.un_man_dir
+                    )
+                    dirs[path] = NodeData(
+                        dir_path=True,
+                        exists=True,
+                        file_path=False,
+                        has_nested_managed=False,
+                        has_nested_status=False,
+                        has_nested_un_managed=None,
+                        main_label=main_label,
+                        managed_dir=False,
+                        managed_file=False,
+                        path=path,
+                        status_dir=False,
+                        status_file=False,
+                        status=None,
+                        un_man_dir=True,
+                        un_man_file=False,
+                        un_wanted_dir=unwanted,
+                        un_wanted_file=False,
+                    )
                 elif path.is_file():
-                    if is_unwanted_file(path):
-                        files[path] = NodeData(
-                            main_label=LabelStr.un_wanted_file,
-                            path=path,
-                            status=None,
-                            exists=True,
-                            file_path=True,
-                            dir_path=False,
-                            status_dir=False,
-                            status_file=False,
-                            un_man_dir=False,
-                            un_man_file=True,
-                            un_wanted_dir=False,
-                            un_wanted_file=True,
-                            managed_file=False,
-                            managed_dir=False,
-                            has_nested_un_managed=False,
-                        )
-                    else:
-                        files[path] = NodeData(
-                            main_label=LabelStr.un_man_file,
-                            path=path,
-                            file_path=True,
-                            status=None,
-                            exists=True,
-                            dir_path=False,
-                            status_dir=False,
-                            status_file=False,
-                            un_man_dir=False,
-                            un_man_file=True,
-                            un_wanted_dir=False,
-                            un_wanted_file=False,
-                            managed_file=False,
-                            managed_dir=False,
-                            has_nested_un_managed=False,
-                        )
+                    is_unwanted = is_unwanted_file(path)
+                    main_label = (
+                        LabelStr.un_wanted_file if is_unwanted else LabelStr.un_man_file
+                    )
+                    files[path] = NodeData(
+                        dir_path=False,
+                        exists=True,
+                        file_path=True,
+                        has_nested_managed=False,
+                        has_nested_status=False,
+                        has_nested_un_managed=False,
+                        main_label=main_label,
+                        managed_dir=False,
+                        managed_file=False,
+                        path=path,
+                        status_dir=False,
+                        status_file=False,
+                        status=None,
+                        un_man_dir=False,
+                        un_man_file=True,
+                        un_wanted_dir=False,
+                        un_wanted_file=is_unwanted,
+                    )
             except (FileNotFoundError, PermissionError, OSError) as exception:
                 exceptions[path] = str(exception)
 
