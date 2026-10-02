@@ -122,28 +122,30 @@ class ChezmoiCmdModal(ModalScreen[None]):
             if button.label == BtnLabel.cancel or button.label == self.run_label:
                 continue
             button.display = False
-
-        # set main section label with the command to run
-        sub_section_label = self.query_exactly_one(SubSectionLabel)
-        run_cmd = f"{self.btn_label_to_cmd[self.btn_label].pretty_cmd} {self.path}"
-        sub_section_label.update(f"Dry run: {run_cmd}")
-
-        # set flat section label with the dry run command
-        flat_section_label = self.query_exactly_one(FlatSectionLabel)
-        dry_run_cmd = (
-            f"{self.btn_label_to_dry_cmd[self.btn_label].pretty_cmd} {self.path}"
-        )
-        flat_section_label.update(dry_run_cmd)
+        self.affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
+        self.interactive_output_static = self.query_exactly_one(InteractiveOutputStatic)
+        self.interactive_output_static.display = False
         self.run_affected_paths_cmd()
 
     @work
     async def run_affected_paths_cmd(self) -> None:
-        affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
+        # set sub section label with the command to run
+        sub_section_label = self.query_exactly_one(SubSectionLabel)
+        pretty_run_cmd = (
+            f"{self.btn_label_to_cmd[self.btn_label].pretty_cmd} {self.path}"
+        )
+        sub_section_label.update(f"Dry run: {pretty_run_cmd}")
+        # set flat section label with the dry run command
+        flat_section_label = self.query_exactly_one(FlatSectionLabel)
+        flat_section_label.update(
+            f"{self.btn_label_to_dry_cmd[self.btn_label].pretty_cmd} {self.path}"
+        )
+        # run the command
         dry_cmd = self.btn_label_to_dry_cmd[self.btn_label]
         affected_paths_cr: list[Path] = await tchezmoi.get_affected_paths(
             self.app, dry_cmd, self.path
         )
-        affected_paths_static.update("\n".join(str(p) for p in affected_paths_cr))
+        self.affected_paths_static.update("\n".join(str(p) for p in affected_paths_cr))
 
     @work
     async def run_interactive(self) -> None:
