@@ -84,7 +84,10 @@ class PathInfo(ScrollableContainer):
     async def _set_dir_info(self, node_data: NodeData) -> None:
 
         path = node_data.path
-        if node_data.path not in self.cache:
+
+        if path in self.cache:
+            widgets = self.cache[path]
+        else:
             is_managed_label = TrueLabel() if node_data.managed_dir else FalseLabel()
             has_status_label = TrueLabel() if node_data.status_dir else FalseLabel()
             has_nested_status_label = (
@@ -99,7 +102,7 @@ class PathInfo(ScrollableContainer):
             )
             unwanted_label = TrueLabel() if node_data.un_wanted_dir else FalseLabel()
             exists = TrueLabel() if node_data.exists else FalseLabel()
-            self.cache[path] = [
+            widgets = [
                 InfoItem(InfoLabel(LabelStr.d_is_managed), is_managed_label),
                 InfoItem(InfoLabel(LabelStr.d_has_status), has_status_label),
                 InfoItem(
@@ -113,18 +116,19 @@ class PathInfo(ScrollableContainer):
                 InfoItem(InfoLabel(LabelStr.d_un_wanted), unwanted_label),
                 InfoItem(InfoLabel(LabelStr.d_exists), exists),
             ]
-
+        self.cache[path] = widgets
         self.dir_info.remove_children()
-        self.dir_info.mount_all(self.cache[path])
+        self.dir_info.mount_all(self.cache[node_data.path])
 
     @work
     async def _set_file_info(self, node_data: NodeData) -> None:
-
-        if node_data.path not in self.cache:
+        if node_data.path in self.cache:
+            widgets = self.cache[node_data.path]
+        else:
             is_managed_label = TrueLabel() if node_data.managed_file else FalseLabel()
             has_status_label = TrueLabel() if node_data.status_file else FalseLabel()
             un_wanted_label = TrueLabel() if node_data.un_wanted_file else FalseLabel()
-            self.cache[node_data.path] = [
+            widgets = [
                 InfoItem(InfoLabel(LabelStr.f_is_managed), is_managed_label),
                 InfoItem(InfoLabel(LabelStr.f_has_status), has_status_label),
                 InfoItem(InfoLabel(LabelStr.f_un_wanted), un_wanted_label),
@@ -133,7 +137,7 @@ class PathInfo(ScrollableContainer):
                     TrueLabel() if node_data.exists else FalseLabel(),
                 ),
             ]
-
+        self.cache[node_data.path] = widgets
         self.file_info.remove_children()
         self.file_info.mount_all(self.cache[node_data.path])
 
@@ -211,9 +215,6 @@ class _DiffViewBase(Vertical):
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    d_cache: ClassVar[dict[Path, list[Static]]] = {}
-    r_cache: ClassVar[dict[Path, list[Static]]] = {}
-
     tcss_map: ClassVar[dict[str, Tcss]] = {
         " ": Tcss.context,
         "@@": Tcss.context,
@@ -229,6 +230,7 @@ class _DiffViewBase(Vertical):
 
     def __init__(self, diff_cmd: ReadCmd) -> None:
         self.diff_cmd = diff_cmd
+        self.cache: dict[Path, list[Static]] = {}
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -248,47 +250,47 @@ class _DiffViewBase(Vertical):
         self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
         self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
 
-    async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
-        diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
-        widgets: list[Label | Static] = []
+    @work(exclusive=True)
+    async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
 
-        def get_prefix(line: str) -> str:
-            for p in self.tcss_map:
-                if line.startswith(p):
-                    return p
-            return " "
+        if path in self.cache:
+            widgets = self.cache[path]
 
-        for prefix, group_lines in groupby(diff_result.out_list, key=get_prefix):
-            group_list = list(group_lines)
-            if prefix in ("+", "-"):
-                text = "\n".join(group_list)
-                widgets.append(
-                    Static(text, classes=self.tcss_map[prefix].value, markup=False)
-                )
-            else:
-                for line in group_list:
+        else:
+            diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
+            widgets: list[Label | Static] = []
+
+            def get_prefix(line: str) -> str:
+                for p in self.tcss_map:
+                    if line.startswith(p):
+                        return p
+                return " "
+
+            for prefix, group_lines in groupby(diff_result.out_list, key=get_prefix):
+                group_list = list(group_lines)
+                if prefix in ("+", "-"):
+                    text = "\n".join(group_list)
                     widgets.append(
-                        Static(line, classes=self.tcss_map[prefix].value, markup=False)
+                        Static(text, classes=self.tcss_map[prefix].value, markup=False)
                     )
-        return widgets
-
-    @work
-    async def _update_diff_view(self, node_data: NodeData) -> None:
-        cache = self.d_cache if self.diff_cmd is ReadCmd.diff else self.r_cache
-        path = node_data.path
-
-        if path not in cache:
-            cache[path] = await self._create_diff_widgets(self.diff_cmd, path)
+                else:
+                    for line in group_list:
+                        widgets.append(
+                            Static(
+                                line, classes=self.tcss_map[prefix].value, markup=False
+                            )
+                        )
+        self.cache[path] = widgets
 
         self.diff_container.remove_children()
-        self.diff_container.mount_all(cache[path])
+        self.diff_container.mount_all(self.cache[path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self.path_info.node_data = node_data
         if node_data.status_file or node_data.status_dir:
             self.path_info_vertical.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
-            self._update_diff_view(node_data)
+            self._create_diff_widgets(self.diff_cmd, node_data.path)
             self.view_vertical.display = True
         else:
             self.view_vertical.display = False
@@ -368,13 +370,13 @@ class GitLogView(Vertical):
             )
             self.flat_label.update(cmd_result.pretty_cmd)
             pretty_cells = self._get_styled_cells(cmd_result.out_list)
-            self.cache[path] = pretty_cells
 
         if not pretty_cells:
             return False
 
         for row in pretty_cells:
             self.data_table.add_row(*row)
+        self.cache[path] = pretty_cells
         return True
 
     def watch_node_data(self, node_data: NodeData) -> None:
