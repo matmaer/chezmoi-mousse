@@ -175,10 +175,7 @@ class OperateTree(Tree[NodeData]):
                 else ColorVar.primary_darken_1
             )
 
-        elif (
-            node_data.has_nested_managed_dirs
-            and self.name not in TreeName.managed_trees()
-        ):
+        elif node_data.has_nested_managed and self.name not in TreeName.managed_trees():
             color_var = ColorVar.text
         elif status_code is ColorVar.error_muted:
             if node_data.known_dir:
