@@ -10,15 +10,21 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
 from chezmoi_mousse import path_funcs, store
-from chezmoi_mousse.asyncio_process_exec import create_subprocess_exec_result
+from chezmoi_mousse.asyncio_process_exec import (
+    create_subprocess_exec_result,
+    run_chezmoi_interactive_process,
+)
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import ReactiveVar, ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from chezmoi_mousse.asyncio_process_exec import (
         ExecResult,
+        StreamEvent,
     )
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -218,6 +224,8 @@ async def get_highlighted_chezmoi_cat_output(
 async def run_chezmoi_interactive(
     app: ChezmoiGui,
     cmd_enum: WriteCmd,
-    path: Path,
-) -> None:
-    app.notify(f"Running {cmd_enum.name} on {path}")
+    path_arg: Path | None = None,
+) -> AsyncGenerator[StreamEvent]:
+    app.notify(f"Running {cmd_enum.name} on {path_arg}")
+    async for event in run_chezmoi_interactive_process(cmd_enum, path_arg):
+        yield event
