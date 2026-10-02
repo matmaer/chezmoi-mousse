@@ -120,28 +120,27 @@ async def run_in_task_group(app: ChezmoiGui, commands: tuple[ReadCmd, ...]) -> N
 async def get_affected_paths(
     app: ChezmoiGui, write_cmd: WriteCmd, path: Path
 ) -> list[Path]:
-    if write_cmd not in (
+    if write_cmd in (
         WriteCmd.dry_add,
         WriteCmd.dry_apply,
         WriteCmd.dry_re_add,
         WriteCmd.dry_forget,
         WriteCmd.dry_destroy,
     ):
-        app.notify(
-            f"Wrong write command:{write_cmd.name} for get_affected_paths.",
-            severity="error",
-        )
-        return []
-    command_result = await _exec_chezmoi(app, write_cmd, path)
-    # Matches standard git diff paths (capturing the target path in group 1)
-    path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
-    affected_paths: set[Path] = set()
-
-    for line in command_result.out_list:
-        match = path_pattern.match(line)
-        if match:
-            affected_paths.add(Path(match.group(1)))
-    return path_funcs.sort_paths(affected_paths)
+        command_result = await _exec_chezmoi(app, write_cmd, path)
+        # Matches standard git diff paths (capturing the target path in group 1)
+        path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
+        affected_paths: set[Path] = set()
+        for line in command_result.out_list:
+            match = path_pattern.match(line)
+            if match:
+                affected_paths.add(Path(match.group(1)))
+        return path_funcs.sort_paths(affected_paths)
+    app.notify(
+        f"Wrong write command:{write_cmd.name} for get_affected_paths.",
+        severity="error",
+    )
+    return []
 
 
 async def run_managed_commands(app: ChezmoiGui) -> None:
