@@ -88,6 +88,8 @@ class IterDirResult(NamedTuple):
 class NodeData:
     exists: bool
     main_label: str
+    dir_path: bool
+    file_path: bool
     managed_dir: bool
     managed_file: bool
     path: Path

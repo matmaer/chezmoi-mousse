@@ -140,6 +140,7 @@ class ColorVar(StrEnum):
     text_error = "text-error"
 
     text_primary = "text-primary"
+    primary_darken_1 = "primary-darken-1"
 
     success = "success"
     text_success = "text-success"

@@ -192,6 +192,8 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         dirs[path] = NodeData(
                             exists=True,
                             main_label=LabelStr.un_wanted_dir,
+                            file_path=False,
+                            dir_path=True,
                             managed_dir=False,
                             managed_file=False,
                             path=path,
@@ -207,6 +209,8 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     else:
                         dirs[path] = NodeData(
                             main_label=LabelStr.un_man_dir,
+                            file_path=False,
+                            dir_path=True,
                             path=path,
                             status=None,
                             exists=True,
@@ -227,6 +231,8 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                             path=path,
                             status=None,
                             exists=True,
+                            file_path=True,
+                            dir_path=False,
                             status_dir=False,
                             status_file=False,
                             un_man_dir=False,
@@ -241,8 +247,10 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         files[path] = NodeData(
                             main_label=LabelStr.un_man_file,
                             path=path,
+                            file_path=True,
                             status=None,
                             exists=True,
+                            dir_path=False,
                             status_dir=False,
                             status_file=False,
                             un_man_dir=False,

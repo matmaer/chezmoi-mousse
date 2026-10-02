@@ -59,6 +59,8 @@ class ChezmoiTreePaths:
     def _add_dest_dir_node_data(self) -> None:
         self.dir_node_data[self._dest_dir] = NodeData(
             dest_dir=True,
+            file_path=False,
+            dir_path=True,
             exists=True,
             main_label=LabelStr.dest_dir,
             managed_dir=False,
@@ -90,6 +92,8 @@ class ChezmoiTreePaths:
             self.file_node_data[path] = NodeData(
                 exists=path.exists(),
                 main_label=main_label,
+                file_path=True,
+                dir_path=False,
                 managed_dir=False,
                 managed_file=True,
                 path=path,
@@ -110,6 +114,8 @@ class ChezmoiTreePaths:
             self.file_node_data[path] = NodeData(
                 exists=True,
                 main_label=main_label,
+                file_path=True,
+                dir_path=False,
                 managed_dir=False,
                 managed_file=False,
                 path=path,
@@ -136,6 +142,8 @@ class ChezmoiTreePaths:
             self.dir_node_data[path] = NodeData(
                 exists=path.exists(),
                 main_label=main_label,  # different
+                file_path=False,
+                dir_path=True,
                 managed_dir=True,
                 managed_file=False,
                 path=path,
@@ -148,7 +156,7 @@ class ChezmoiTreePaths:
                 un_wanted_file=False,
                 has_nested_un_managed=has_nested_un_managed,
             )
-        for path in self._un_man_path_set:
+        for path in self._un_man_dir_set:
             is_un_unwanted = path_funcs.is_unwanted_dir(path)
             main_label = (
                 LabelStr.un_wanted_dir if is_un_unwanted else LabelStr.un_man_dir
@@ -159,6 +167,8 @@ class ChezmoiTreePaths:
             self.dir_node_data[path] = NodeData(
                 exists=True,
                 main_label=main_label,
+                file_path=False,
+                dir_path=True,
                 managed_dir=False,
                 managed_file=False,
                 path=path,

@@ -161,13 +161,20 @@ class OperateTree(Tree[NodeData]):
             # Sc.ZZ: ColorVar.text_accent,
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
-        if color_var is not ColorVar.error_muted:
-            if node_data.status_dir:
-                color_var = ColorVar.warning_lighten_3
+
+        if node_data.status_file:
             return color_var
 
+        if node_data.status_dir:
+            return ColorVar.warning_lighten_3
+
         if node_data.has_nested_status:
-            color_var = ColorVar.text_primary
+            return (
+                ColorVar.text_primary
+                if self.name in TreeName.managed_trees()
+                else ColorVar.primary_darken_1
+            )
+
         elif (
             node_data.has_nested_managed_dirs
             and self.name not in TreeName.managed_trees()
