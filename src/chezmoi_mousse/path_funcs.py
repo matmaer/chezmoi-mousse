@@ -175,7 +175,7 @@ def _get_dir_path_iterable(dir_path: Path) -> Generator[Path] | str:
         return f"Unknown error occurred in _get_dir_path_iterable for {dir_path}"
 
 
-def get_un_man_children(dir_path: Path) -> IterDirResult:
+def get_un_man_children(dir_path: Path, un_wanted_dir_set: set[Path]) -> IterDirResult:
     result: Generator[Path] | str = _get_dir_path_iterable(dir_path)
     exceptions: dict[Path, str] = {}
     symlinks: list[Path] = []
@@ -184,6 +184,9 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
 
     if not isinstance(result, str):
         for path in result:
+            has_un_wanted_dir_parent = any_parents_for(
+                path=path, check_paths=un_wanted_dir_set
+            )
             try:
                 if path.is_symlink():
                     symlinks.append(path)
@@ -199,6 +202,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         has_nested_managed=False,
                         has_nested_status=False,
                         has_nested_un_managed=None,
+                        has_un_wanted_dir_parent=has_un_wanted_dir_parent,
                         main_label=main_label,
                         managed_dir=False,
                         managed_file=False,
@@ -223,6 +227,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         has_nested_managed=False,
                         has_nested_status=False,
                         has_nested_un_managed=False,
+                        has_un_wanted_dir_parent=has_un_wanted_dir_parent,
                         main_label=main_label,
                         managed_dir=False,
                         managed_file=False,

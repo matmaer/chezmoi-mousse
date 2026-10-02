@@ -86,10 +86,14 @@ class IterDirResult(NamedTuple):
 
 @dataclass(slots=True)
 class NodeData:
-    exists: bool
-    main_label: str
     dir_path: bool
+    exists: bool
     file_path: bool
+    has_nested_managed: bool
+    has_nested_status: bool
+    has_nested_un_managed: bool | None
+    has_un_wanted_dir_parent: bool
+    main_label: str
     managed_dir: bool
     managed_file: bool
     path: Path
@@ -100,7 +104,4 @@ class NodeData:
     un_man_file: bool
     un_wanted_dir: bool
     un_wanted_file: bool
-    has_nested_un_managed: bool | None
-    has_nested_managed: bool
-    has_nested_status: bool
     dest_dir: bool = False

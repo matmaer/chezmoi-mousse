@@ -57,9 +57,13 @@ class ChezmoiTreePaths:
     def _add_dest_dir_node_data(self) -> None:
         self.dir_node_data[self._dest_dir] = NodeData(
             dest_dir=True,
-            file_path=False,
             dir_path=True,
             exists=True,
+            file_path=False,
+            has_nested_managed=bool(self.man_path_set),
+            has_nested_status=bool(self.status_path_set),
+            has_nested_un_managed=bool(self._un_man_path_set),
+            has_un_wanted_dir_parent=False,
             main_label=LabelStr.dest_dir,
             managed_dir=False,
             managed_file=False,
@@ -71,9 +75,6 @@ class ChezmoiTreePaths:
             un_man_file=False,
             un_wanted_dir=False,
             un_wanted_file=False,
-            has_nested_managed=bool(self.man_path_set),
-            has_nested_status=bool(self.status_path_set),
-            has_nested_un_managed=bool(self._un_man_path_set),
         )
 
     def _populate_file_node_data(
@@ -92,11 +93,18 @@ class ChezmoiTreePaths:
                     LabelStr.un_wanted_file if is_unwanted else LabelStr.un_man_file
                 )
             status = self._status_files_pcr.get(path, None)
+            has_un_wanted_dir_parent = path_funcs.any_parents_for(
+                path=path, check_paths=self.un_wanted_dir_set
+            )
             self.file_node_data[path] = NodeData(
-                exists=True if managed else path.exists(),
-                main_label=main_label,
-                file_path=True,
                 dir_path=False,
+                exists=True if managed else path.exists(),
+                file_path=True,
+                has_nested_managed=False,
+                has_nested_status=False,
+                has_nested_un_managed=False,
+                has_un_wanted_dir_parent=has_un_wanted_dir_parent,
+                main_label=main_label,
                 managed_dir=False,
                 managed_file=managed,
                 path=path,
@@ -107,9 +115,6 @@ class ChezmoiTreePaths:
                 un_man_file=not managed,
                 un_wanted_dir=False,
                 un_wanted_file=is_unwanted,
-                has_nested_managed=False,
-                has_nested_un_managed=False,
-                has_nested_status=False,
             )
 
     def _populate_dir_node_data(self) -> None:
@@ -143,12 +148,19 @@ class ChezmoiTreePaths:
             has_nested_un_managed = path_funcs.any_nested_in(
                 dir_path=path, check_paths=self._un_man_path_set
             )
+            has_un_wanted_dir_parent = path_funcs.any_parents_for(
+                path=path, check_paths=self.un_wanted_dir_set
+            )
 
             self.dir_node_data[path] = NodeData(
-                exists=path.exists() if managed else True,
-                main_label=main_label,
-                file_path=False,
                 dir_path=True,
+                exists=path.exists() if managed else True,
+                file_path=False,
+                has_nested_managed=has_nested_managed,
+                has_nested_status=has_nested_status,
+                has_nested_un_managed=has_nested_un_managed,
+                has_un_wanted_dir_parent=has_un_wanted_dir_parent,
+                main_label=main_label,
                 managed_dir=managed,
                 managed_file=False,
                 path=path,
@@ -159,9 +171,6 @@ class ChezmoiTreePaths:
                 un_man_file=False,
                 un_wanted_dir=is_un_unwanted,
                 un_wanted_file=False,
-                has_nested_un_managed=has_nested_un_managed,
-                has_nested_managed=has_nested_managed,
-                has_nested_status=has_nested_status,
             )
 
     @property
