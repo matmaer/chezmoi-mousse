@@ -462,7 +462,9 @@ class StatusCode(StrEnum):
     # TODO: We currently completely skip any status R, so currently omitted here
     # NOTE: The first column can only contain M, D or a space, so not applicable
 
-    DA = "DA"  # Target deleted locally; apply will create/restore target file.
+    # Target deleted locally; apply will create/restore target file.
+    # Is a no-op when running chezmoi re-add
+    DA = "DA"
     DD = "DD"  # NOTE: probably impossible status pair
     DM = "DM"  # Target deleted locally; apply will create target from source.
     DS = "DS"  # Target deleted locally; no target apply action required.
