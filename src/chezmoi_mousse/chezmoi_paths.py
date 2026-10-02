@@ -19,17 +19,18 @@ class ChezmoiTreePaths:
     """The raw source of truth received from chezmoi stdout."""
 
     _dest_dir: Path
-    _status_dirs_pcr: dict[Path, Sc]
-    _status_files_pcr: dict[Path, Sc]
-    man_dir_set: set[Path]
-    man_file_set: set[Path]
-    man_path_set: set[Path]
     _space_dir_set: set[Path]
     _space_file_set: set[Path]
-    status_path_set: set[Path]
+    _status_dirs_pcr: dict[Path, Sc]
+    _status_files_pcr: dict[Path, Sc]
     _un_man_dir_set: set[Path]
     _un_man_file_set: set[Path]
     _un_man_path_set: set[Path]
+    man_dir_set: set[Path]
+    man_file_set: set[Path]
+    man_path_set: set[Path]
+    status_path_set: set[Path]
+    un_wanted_dir_set: set[Path]
 
     file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])

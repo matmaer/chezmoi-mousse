@@ -165,23 +165,20 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     un_man_dir_set: set[Path] = parse_paths(unman_dirs_task.result())
     un_man_file_set: set[Path] = parse_paths(unman_files_task.result())
 
-    man_path_set: set[Path] = man_dir_set | man_file_set
-    space_dir_set: set[Path] = man_dir_set - status_dirs_pcr.keys()
-    space_file_set: set[Path] = man_file_set - status_files_pcr.keys()
-
     tree_paths = ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
+        _space_dir_set=man_dir_set - status_dirs_pcr.keys(),
+        _space_file_set=man_file_set - status_files_pcr.keys(),
         _status_dirs_pcr=status_dirs_pcr,
         _status_files_pcr=status_files_pcr,
-        man_dir_set=man_dir_set,
-        man_file_set=man_file_set,
-        man_path_set=man_path_set,
-        _space_dir_set=space_dir_set,
-        _space_file_set=space_file_set,
-        status_path_set=status_files_pcr.keys() | status_dirs_pcr.keys(),
         _un_man_dir_set=un_man_dir_set,
         _un_man_file_set=un_man_file_set,
         _un_man_path_set=un_man_file_set | un_man_dir_set,
+        man_dir_set=man_dir_set,
+        man_file_set=man_file_set,
+        man_path_set=man_dir_set | man_file_set,
+        status_path_set=status_files_pcr.keys() | status_dirs_pcr.keys(),
+        un_wanted_dir_set={p for p in un_man_dir_set if path_funcs.is_unwanted_dir(p)},
     )
     await store.handle_new_tree_paths(app, tree_paths)
 
