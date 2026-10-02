@@ -113,28 +113,27 @@ async def run_chezmoi_interactive_process(
     path: Path | None,
     read_timeout: float = 0.05,
     max_process_idle_seconds: float = 15.0,
-) -> AsyncGenerator[StreamEvent]:
-    """Yields StreamEvent objects containing (lines_or_choices, is_prompt)."""
+) -> AsyncGenerator[StreamEvent, str | None]:
+    # yields StreamEvent objects. Accepts response strings via agen.asend(choice)
 
     chezmoi_cmd = _get_chezmoi_cmd()
     exec_args = (
         (chezmoi_cmd, *cmd_enum.value, str(path))
         if path is not None
-        else (
-            chezmoi_cmd,
-            *cmd_enum.value,
-        )
+        else (chezmoi_cmd, *cmd_enum.value)
     )
+
     async with _managed_process(*exec_args) as process:
         pipe_stdout = process.stdout
+        pipe_stdin = process.stdin
         assert pipe_stdout is not None
+        assert pipe_stdin is not None
 
         buffer = ""
-        result = ""
         last_process_activity = time.monotonic()
 
         while not pipe_stdout.at_eof():
-            payload: list[str] = []
+            payload: list[str] | None = None
             is_prompt = False
 
             try:
@@ -144,12 +143,11 @@ async def run_chezmoi_interactive_process(
                 )
 
                 if not raw_chunk:
-                    # EOF hit: flush remaining output on process completion
-                    result = buffer
-                    buffer = ""
+                    if buffer:
+                        payload = buffer.splitlines()
+                        buffer = ""
                     break
 
-                # Bytes arrived: accumulate strictly into buffer
                 last_process_activity = time.monotonic()
                 buffer += raw_chunk.decode("utf-8", errors="replace")
 
@@ -159,15 +157,26 @@ async def run_chezmoi_interactive_process(
                         f"Chezmoi inactive for {max_process_idle_seconds} seconds."
                     ) from read_time_out
 
-                # Nothing new arrived after 0.05s -> evaluate result
-                is_prompt = not result.endswith("\n")
-                if is_prompt:
-                    payload = list(result.rsplit(">", 1)[1].split("/"))
-                else:
-                    payload = list(result.splitlines())
+                if buffer:
+                    is_prompt = not buffer.endswith("\n")
+                    if is_prompt:
+                        payload = (
+                            buffer.rsplit(">", 1)[1].split("/")
+                            if ">" in buffer
+                            else buffer.split("/")
+                        )
+                    else:
+                        payload = buffer.splitlines()
 
-                buffer = ""
-                result = ""
+                    buffer = ""
 
-            yield StreamEvent(data=payload, is_prompt=is_prompt)
-            last_process_activity = time.monotonic()
+            if payload is not None:
+                # Yield event and receive user response via `asend()` if it was a prompt
+                user_response = yield StreamEvent(data=payload, is_prompt=is_prompt)
+
+                if is_prompt and user_response is not None:
+                    # Write user choice directly to process stdin pipe
+                    pipe_stdin.write(f"{user_response}\n".encode())
+                    await pipe_stdin.drain()
+
+                last_process_activity = time.monotonic()
