@@ -153,12 +153,6 @@ class OperateTree(Tree[NodeData]):
             Sc.SA: ColorVar.text_warning,
             Sc.SD: ColorVar.text_warning,
             Sc.SM: ColorVar.text_warning,
-            # Meta codes
-            # "un-managed": ColorVar.text_success,
-            # Meta code for space dirs containing nested status paths
-            # Sc.VV: ColorVar.foreground_darken_3,
-            # Sc.YY: ColorVar.text_success,
-            # Sc.ZZ: ColorVar.text_accent,
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
 

@@ -88,8 +88,8 @@ class PathInfo(ScrollableContainer):
 
         path = node_data.path
         if node_data.path not in self.cache:
-            is_managed_label = TrueLabel() if node_data.managed else FalseLabel()
-            has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
+            is_managed_label = TrueLabel() if node_data.managed_dir else FalseLabel()
+            has_status_label = TrueLabel() if node_data.status_dir else FalseLabel()
             has_nested_status_label = (
                 TrueLabel() if node_data.has_nested_status else FalseLabel()
             )
@@ -100,7 +100,7 @@ class PathInfo(ScrollableContainer):
                 )
                 else FalseLabel()
             )
-            unwanted_label = TrueLabel() if node_data.un_wanted else FalseLabel()
+            unwanted_label = TrueLabel() if node_data.un_wanted_dir else FalseLabel()
             exists = TrueLabel() if node_data.exists else FalseLabel()
             self.cache[path] = [
                 InfoItem(InfoLabel(LabelStr.d_is_managed), is_managed_label),
@@ -124,9 +124,9 @@ class PathInfo(ScrollableContainer):
     async def _set_file_info(self, node_data: NodeData) -> None:
 
         if node_data.path not in self.cache:
-            is_managed_label = TrueLabel() if node_data.managed else FalseLabel()
-            has_status_label = TrueLabel() if node_data.has_status else FalseLabel()
-            un_wanted_label = TrueLabel() if node_data.un_wanted else FalseLabel()
+            is_managed_label = TrueLabel() if node_data.managed_file else FalseLabel()
+            has_status_label = TrueLabel() if node_data.status_file else FalseLabel()
+            un_wanted_label = TrueLabel() if node_data.un_wanted_file else FalseLabel()
             self.cache[node_data.path] = [
                 InfoItem(InfoLabel(LabelStr.f_is_managed), is_managed_label),
                 InfoItem(InfoLabel(LabelStr.f_has_status), has_status_label),
@@ -141,7 +141,7 @@ class PathInfo(ScrollableContainer):
         self.file_info.mount_all(self.cache[node_data.path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.known_dir or node_data.path.is_dir():
+        if node_data.dir_path or node_data.path.is_dir():
             self.file_info.display = False
             self._set_dir_info(node_data)
             self.dir_info.display = True
@@ -195,7 +195,7 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.known_dir or node_data.path.is_dir():
+        if node_data.dir_path or node_data.path.is_dir():
             self.view_vertical.display = False
             self.path_info_vertical.display = True
         else:
@@ -286,7 +286,7 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(cache[path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.has_status:
+        if node_data.status_file or node_data.status_dir:
             self.path_info_vertical.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
             self._update_diff_view(node_data)
@@ -379,7 +379,11 @@ class GitLogView(Vertical):
         return True
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.path == store.cfg.dest_dir or node_data.managed:
+        if (
+            node_data.path == store.cfg.dest_dir
+            or node_data.managed_dir
+            or node_data.managed_file
+        ):
             has_data = self._update_datatable_and_flat_label(node_data.path)
             if has_data:
                 self.path_info_vertical.display = False

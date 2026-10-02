@@ -104,31 +104,3 @@ class NodeData:
     has_nested_managed: bool
     has_nested_status: bool
     dest_dir: bool = False
-
-    @property
-    def has_status(self) -> bool:
-        return self.status_dir or self.status_file
-
-    @property
-    def known_file(self) -> bool:
-        return self.managed_file or self.un_man_file
-
-    @property
-    def known_dir(self) -> bool:
-        return self.managed_dir or self.un_man_dir or self.dest_dir
-
-    @property
-    def managed(self) -> bool:
-        return self.managed_dir or self.managed_file
-
-    @property
-    def managed_edge_dir(self) -> bool:
-        return self.managed_dir and not self.has_nested_managed
-
-    @property
-    def un_managed(self) -> bool:
-        return self.un_man_dir or self.un_man_file
-
-    @property
-    def un_wanted(self) -> bool:
-        return self.un_wanted_dir or self.un_wanted_file
