@@ -101,10 +101,9 @@ class NodeData:
     un_wanted_dir: bool
     un_wanted_file: bool
     has_nested_un_managed: bool | None
+    has_nested_managed: bool
+    has_nested_status: bool
     dest_dir: bool = False
-    has_nested_managed_dirs: bool = False
-    has_nested_managed: bool = False
-    has_nested_status: bool = False
 
     @property
     def has_status(self) -> bool:
@@ -124,7 +123,7 @@ class NodeData:
 
     @property
     def managed_edge_dir(self) -> bool:
-        return self.managed_dir and not self.has_nested_managed_dirs
+        return self.managed_dir and not self.has_nested_managed
 
     @property
     def un_managed(self) -> bool:
