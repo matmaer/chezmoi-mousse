@@ -70,15 +70,12 @@ class PathInfoVertical(Vertical): ...
 class PathInfo(ScrollableContainer):
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    cache: ClassVar[dict[Path, list[InfoItem]]] = {}
-
     def compose(self) -> ComposeResult:
         yield DirInfo()
         yield FileInfo()
 
     def on_mount(self) -> None:
-        self.yes = "yes"
-        self.no = "no"
+        self.cache: dict[Path, list[InfoItem]] = {}
         self.dir_info = self.query_exactly_one(DirInfo)
         self.file_info = self.query_exactly_one(FileInfo)
         self.file_info.display = False
@@ -174,7 +171,7 @@ class ContentView(Vertical):
         self.content_static = self.query_exactly_one(FileContentStatic)
 
         self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
-        self.path_info = self.query_exactly_one(PathInfo)
+        self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
 
     @work
     async def _update_file_content(self, node_data: NodeData) -> None:
@@ -195,6 +192,7 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        self.path_info.node_data = node_data
         if node_data.dir_path or node_data.path.is_dir():
             self.view_vertical.display = False
             self.path_info_vertical.display = True
@@ -248,7 +246,7 @@ class _DiffViewBase(Vertical):
         self.diff_container = self.query_exactly_one(DiffWidgets)
 
         self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
-        self.path_info = self.query_exactly_one(PathInfo)
+        self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
 
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> list[Static]:
         diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
@@ -286,6 +284,7 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(cache[path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        self.path_info.node_data = node_data
         if node_data.status_file or node_data.status_dir:
             self.path_info_vertical.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
@@ -327,7 +326,7 @@ class GitLogView(Vertical):
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
         self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
-        self.path_info = self.query_exactly_one(PathInfo)
+        self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
 
     def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
@@ -379,6 +378,7 @@ class GitLogView(Vertical):
         return True
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        self.path_info.node_data = node_data
         if (
             node_data.path == store.cfg.dest_dir
             or node_data.managed_dir
