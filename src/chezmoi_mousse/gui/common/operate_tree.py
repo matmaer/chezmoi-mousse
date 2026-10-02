@@ -162,26 +162,30 @@ class OperateTree(Tree[NodeData]):
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
 
-        if node_data.status_file:
-            return color_var
-
-        if node_data.status_dir:
-            return ColorVar.warning_lighten_3
-
-        if node_data.has_nested_status:
-            return (
-                ColorVar.text_primary
-                if self.name in TreeName.managed_trees()
-                else ColorVar.primary_darken_1
-            )
-
-        elif node_data.has_nested_managed and self.name not in TreeName.managed_trees():
-            color_var = ColorVar.text
-        elif status_code is ColorVar.error_muted:
-            if node_data.known_dir:
-                status_code = ColorVar.foreground_darken_2
-            else:
-                status_code = ColorVar.foreground_darken_3
+        if node_data.file_path:
+            if node_data.status_file:
+                return color_var
+            if node_data.managed_file:
+                return ColorVar.foreground_darken_3
+            if node_data.un_man_file:
+                return ColorVar.text_success
+            if node_data.un_wanted_file:
+                return ColorVar.text_accent
+        elif node_data.dir_path:
+            if node_data.status_dir:
+                return ColorVar.warning_lighten_3
+            if node_data.has_nested_status:
+                return (
+                    ColorVar.text_primary
+                    if self.name in TreeName.managed_trees()
+                    else ColorVar.primary_darken_1
+                )
+            if node_data.managed_dir:
+                return ColorVar.foreground_darken_2
+            if node_data.un_man_dir:
+                return ColorVar.text_success
+            if node_data.un_wanted_dir:
+                return ColorVar.text_accent
 
         return color_var
 
