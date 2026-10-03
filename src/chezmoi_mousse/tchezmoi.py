@@ -222,22 +222,10 @@ async def get_highlighted_chezmoi_cat_output(
     return text_contents
 
 
-async def run_chezmoi_interactive(
+def run_chezmoi_interactive(
     app: ChezmoiGui,
     cmd_enum: WriteCmd,
     path_arg: Path | None,
 ) -> AsyncGenerator[StreamEvent, str | None]:
     app.notify(f"Running {cmd_enum.name} on {path_arg}")
-
-    gen = run_chezmoi_interactive_process(cmd_enum, path_arg)
-    response: str | None = None
-
-    try:
-        while True:
-            event = await gen.asend(response)
-            response = yield event
-    except StopAsyncIteration:
-        return
-    finally:
-        # also runs on aclose(), terminating the chezmoi process
-        await gen.aclose()
+    return run_chezmoi_interactive_process(cmd_enum, path_arg)
