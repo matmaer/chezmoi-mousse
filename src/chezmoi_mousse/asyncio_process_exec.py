@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import signal
 import subprocess
 import time
@@ -18,6 +19,9 @@ if TYPE_CHECKING:
 
 
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
+
+# e.g. "Apply .foo (diff/yes/no/all/quit)? "
+_PROMPT_RE = re.compile(r"\(([^()]*)\)\? $")
 
 
 __all__ = [
@@ -155,18 +159,15 @@ async def run_chezmoi_interactive_process(
                         f"Chezmoi inactive for {max_process_idle_seconds} seconds."
                     ) from read_time_out
 
-                if buffer:
-                    # An interactive prompt typically ends without a newline when
-                    # waiting for input.
+                if buffer.endswith("\n"):
+                    payload = buffer.splitlines()
+                    buffer = ""
+                elif prompt_match := _PROMPT_RE.search(buffer):
+                    # Silence for read_timeout plus a prompt-shaped ending.
                     # NOTE: prompt is different than running commands with a tty!
-                    is_prompt = not buffer.endswith("\n")
-                    if is_prompt:
-                        # e.g. "Apply .foo (diff/yes/no/all/quit)? "
-                        payload = buffer.rsplit("(", 1)[-1].split(")")[0].split("/")
-                        buffer = ""  # Only clear buffer when yielding prompt!
-                    else:
-                        payload = buffer.splitlines()
-                        buffer = ""
+                    is_prompt = True
+                    payload = prompt_match.group(1).split("/")
+                    buffer = ""  # Only clear buffer when yielding prompt!
 
             if payload is not None:
                 # Receive input directly back from asend()
