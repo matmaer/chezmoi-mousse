@@ -109,6 +109,7 @@ def check_tcss_type_selectors(node_db: NodeDb) -> IssueList:
 def check_hardcoded_tcss_strings(node_db: NodeDb) -> IssueList:
     issues: IssueList = []
     call_nodes = node_db.by_type.get(ast.Call.__name__, set())
+    tcss_mappings = _tcss_mapping_names(node_db)
 
     for node_data in call_nodes:
         assert isinstance(node_data.ast_node, ast.Call)
@@ -118,7 +119,11 @@ def check_hardcoded_tcss_strings(node_db: NodeDb) -> IssueList:
         for kw in call.keywords:
             if kw.arg == "classes":
                 _validate_tcss_expr(
-                    kw.value, node_data.rel_path, node_data.lineno, issues
+                    kw.value,
+                    node_data.rel_path,
+                    node_data.lineno,
+                    issues,
+                    tcss_mappings,
                 )
 
         # 2. Check method calls: widget.add_class("hardcoded")
@@ -128,25 +133,53 @@ def check_hardcoded_tcss_strings(node_db: NodeDb) -> IssueList:
             and call.args
         ):
             _validate_tcss_expr(
-                call.args[0], node_data.rel_path, node_data.lineno, issues
+                call.args[0],
+                node_data.rel_path,
+                node_data.lineno,
+                issues,
+                tcss_mappings,
             )
 
     return issues
 
 
+def _terminal_name(expr: ast.expr) -> str | None:
+    if isinstance(expr, ast.Name):
+        return expr.id
+    if isinstance(expr, ast.Attribute):
+        return expr.attr
+    return None
+
+
+def _tcss_mapping_names(node_db: NodeDb) -> set[str]:
+    """Names of variables annotated as dict[<key>, Tcss]."""
+    names: set[str] = set()
+    for data in node_db.by_type.get(ast.AnnAssign.__name__, set()):
+        node = data.ast_node
+        if not isinstance(node, ast.AnnAssign):
+            continue
+        ann = ast.unparse(node.annotation)
+        if re.search(r"dict\[[^\]]*,\s*Tcss\]", ann):
+            name = _terminal_name(node.target)
+            if name:
+                names.add(name)
+    return names
+
+
 def _validate_tcss_expr(
-    expr: ast.expr, rel_path: str, lineno: int | None, issues: IssueList
+    expr: ast.expr,
+    rel_path: str,
+    lineno: int | None,
+    issues: IssueList,
+    tcss_mappings: set[str],
 ) -> None:
     loc = f"{rel_path}:{lineno or 0}"
-    # temporary exception for DIFF_TCSS member lookup from the dict, e.g.
-    # widgets.append(
-    #     Static(text, classes=DIFF_TCSS[prefix].value, markup=False) ...
-    # )...
+    # Allow `<mapping>[key].value` where the mapping is annotated dict[..., Tcss]
     if (
         isinstance(expr, ast.Attribute)
+        and expr.attr == "value"
         and isinstance(expr.value, ast.Subscript)
-        and isinstance(expr.value.value, ast.Name)
-        and expr.value.value.id == "DIFF_TCSS"
+        and _terminal_name(expr.value.value) in tcss_mappings
     ):
         return
 
