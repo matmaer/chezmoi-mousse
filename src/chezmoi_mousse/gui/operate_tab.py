@@ -62,6 +62,10 @@ if TYPE_CHECKING:
 __all__ = ["OperateTab"]
 
 
+# Unanswered prompts quit chezmoi, so a forgotten modal can't leave it waiting forever
+PROMPT_TIMEOUT_SECONDS = 120
+
+
 class AffectedPathsStatic(Static): ...
 
 
@@ -167,7 +171,13 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
         self._prompt_future = asyncio.get_running_loop().create_future()
         try:
-            return await self._prompt_future
+            async with asyncio.timeout(PROMPT_TIMEOUT_SECONDS):
+                return await self._prompt_future
+        except TimeoutError:
+            self._append_output(
+                f"\nNo reply within {PROMPT_TIMEOUT_SECONDS} seconds, quitting.\n"
+            )
+            return ChezmoiPrompts.quit.reply
         finally:
             self._prompt_future = None
             for button in self.prompt_buttons:
