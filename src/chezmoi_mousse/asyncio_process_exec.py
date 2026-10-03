@@ -165,6 +165,15 @@ async def run_chezmoi_interactive_process(
                 elif prompt_match := _PROMPT_RE.search(buffer):
                     # Silence for read_timeout plus a prompt-shaped ending.
                     # NOTE: prompt is different than running commands with a tty!
+                    # Complete lines before the prompt line, e.g. the output of the
+                    # diff option, must not be lost.
+                    output_before_prompt, _, _prompt_line = buffer[
+                        : prompt_match.start()
+                    ].rpartition("\n")
+                    if output_before_prompt:
+                        yield StreamEvent(
+                            data=output_before_prompt.splitlines(), is_prompt=False
+                        )
                     is_prompt = True
                     payload = prompt_match.group(1).split("/")
                     buffer = ""  # Only clear buffer when yielding prompt!
