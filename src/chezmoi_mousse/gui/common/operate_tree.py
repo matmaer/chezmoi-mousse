@@ -238,35 +238,30 @@ class OperateTree(Tree[NodeData]):
         for path in changes.removed_files:
             if path in self.node_map:
                 self.node_map.pop(path).remove()
+
+        dir_nodes, file_nodes = self._wanted_nodes()
         changed = {**changes.changed_dirs, **changes.changed_files}
         for path, node_data in changed.items():
-            node = self.node_map.get(path)
-            if node is not None:
+            if path not in self.node_map:
+                continue
+            if path in dir_nodes or path in file_nodes:
+                node = self.node_map[path]
                 node.data = node_data
                 node.set_label(self._node_label(path, node_data))
-        self._add_new_nodes(changes)
-        self.refresh(layout=True)
+            else:
+                # e.g. a file lost its status in a tree showing only status files
+                self._remove_subtree(path)
 
-    def _add_new_nodes(self, changes: CmPathChanges) -> None:
-        new_paths = store.cm_paths
-        dir_nodes = self._get_dir_nodes(new_paths.dir_node_data)
-        file_nodes = self._get_file_nodes(new_paths.file_node_data)
-        wanted_dirs = {p: dir_nodes[p] for p in changes.added_dirs if p in dir_nodes}
-        wanted_files = {
-            p: file_nodes[p] for p in changes.added_files if p in file_nodes
-        }
-        for path in (*wanted_dirs, *wanted_files):
-            parent = path.parent
-            while parent != store.cfg.dest_dir and parent not in self.node_map:
-                wanted_dirs[parent] = new_paths.dir_node_data[parent]
-                parent = parent.parent
-        for wanted, allow_expand in ((wanted_dirs, True), (wanted_files, False)):
+        touched = {*changes.added_dirs, *changes.added_files, *changed}
+        for nodes, allow_expand in ((dir_nodes, True), (file_nodes, False)):
+            wanted = {p: d for p, d in nodes.items() if p in touched}
             for path, node_data in path_funcs.sort_path_dict(wanted).items():
                 if path not in self.node_map:
                     self._add_node_with_color(
                         path, node_data, allow_expand=allow_expand
                     )
         self._expand_xpd_nodes()
+        self.refresh(layout=True)
 
     def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
@@ -295,8 +290,7 @@ class OperateTree(Tree[NodeData]):
                 if node.data is not None and node.data.managed_dir:
                     node.expand()
 
-    @work
-    async def _initial_tree_population(self) -> None:
+    def _wanted_nodes(self) -> tuple[dict[Path, NodeData], dict[Path, NodeData]]:
         dir_nodes = self._get_dir_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_file_nodes(store.cm_paths.file_node_data)
 
@@ -310,6 +304,11 @@ class OperateTree(Tree[NodeData]):
                 if parent_path not in dir_nodes:
                     dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
                 parent_path = parent_path.parent
+        return dir_nodes, file_nodes
+
+    @work
+    async def _initial_tree_population(self) -> None:
+        dir_nodes, file_nodes = self._wanted_nodes()
 
         dir_nodes = path_funcs.sort_path_dict(dir_nodes)
         file_nodes = path_funcs.sort_path_dict(file_nodes)
