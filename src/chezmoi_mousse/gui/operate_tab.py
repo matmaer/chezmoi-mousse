@@ -155,13 +155,15 @@ class ChezmoiCmdModal(ModalScreen[None]):
         self._output_buffer += text
         self.interactive_output_static.update(self._output_buffer)
 
-    async def _await_user_choice(self) -> str:
-        """Shows prompt options and pauses worker until a button is clicked."""
+    async def _await_user_choice(self, options: list[str]) -> str:
+        """Shows the offered prompt options and pauses until a button is clicked."""
+        offered = {
+            prompt.btn_label
+            for prompt in ChezmoiPrompts
+            if prompt.prompt_item in options
+        }
         for button in self.prompt_buttons:
-            if button.label in (self.run_label, BtnLabel.cancel, BtnLabel.close):
-                button.display = False
-            else:
-                button.display = True
+            button.display = str(button.label) in offered | {BtnLabel.close}
 
         self._prompt_future = asyncio.get_running_loop().create_future()
         try:
@@ -195,7 +197,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
                     self._append_output(prompt_text)
 
                     # Pause worker on asyncio.Future until UI button is pressed
-                    response = await self._await_user_choice()
+                    response = await self._await_user_choice(event.data)
                 else:
                     lines_text = "\n".join(event.data) + "\n"
                     self._append_output(lines_text)
