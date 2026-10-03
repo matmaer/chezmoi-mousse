@@ -58,7 +58,7 @@ def _valid_tcss_type_selectors(node_db: NodeDb) -> set[str]:
     return (
         valid_python_classes
         | node_db.textual_imports
-        | {"CollapsibleTitle", "Contents", "Tab", "ToggleButton"}
+        | {"CollapsibleTitle", "Contents", "Tab", "Toast", "ToggleButton"}
     )
 
 
