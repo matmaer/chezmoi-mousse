@@ -156,19 +156,13 @@ async def run_chezmoi_interactive_process(
                     ) from read_time_out
 
                 if buffer:
-                    # An interactive prompt typically ends without a newline
-                    # (waiting for input)
+                    # An interactive prompt typically ends without a newline when
+                    # waiting for input.
+                    # NOTE: prompt is different than running commands with a tty!
                     is_prompt = not buffer.endswith("\n")
-
                     if is_prompt:
-                        # --no-tty=true: "Apply .foo (diff/yes/no/all/quit)? "
-                        # tty mode: "> yes/no/all/quit"
-                        choices = (
-                            buffer.rsplit(">", 1)[1]
-                            if ">" in buffer
-                            else buffer.rsplit("(", 1)[-1].split(")")[0]
-                        )
-                        payload = choices.strip().split("/")
+                        # e.g. "Apply .foo (diff/yes/no/all/quit)? "
+                        payload = buffer.rsplit("(", 1)[-1].split(")")[0].split("/")
                         buffer = ""  # Only clear buffer when yielding prompt!
                     else:
                         payload = buffer.splitlines()
