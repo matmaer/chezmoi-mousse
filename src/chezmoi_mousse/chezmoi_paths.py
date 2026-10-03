@@ -28,7 +28,7 @@ class ChezmoiTreePaths:
     _man_file_set: set[Path]
     man_path_set: set[Path]
     _status_path_set: set[Path]
-    un_wanted_dir_set: set[Path]
+    _un_wanted_dir_set: set[Path]
 
     file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
@@ -106,7 +106,7 @@ class ChezmoiTreePaths:
         for path in self._man_dir_set | self._un_man_dir_set:
             managed = path in self._man_dir_set
             status = self._status_dirs_pcr.get(path, None)
-            is_un_unwanted = False if managed else path in self.un_wanted_dir_set
+            is_un_unwanted = False if managed else path in self._un_wanted_dir_set
             has_nested_status = False
             if managed:
                 has_nested_status = path_funcs.any_nested_in(

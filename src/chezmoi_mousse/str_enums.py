@@ -70,10 +70,6 @@ class BtnLabel(StrEnum):
     template_data = "Template Data"
     test_paths = "Test Paths"
 
-    # Triggers chezmoi command labels
-    refresh_trees = "Refresh Trees"
-    reload = "Reload"
-
     # Debug tab buttons
     colors = "Colors"
     create_diffs = "Create Diffs"

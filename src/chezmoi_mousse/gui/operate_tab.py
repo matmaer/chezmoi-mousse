@@ -379,7 +379,7 @@ class LeftSideVertical(Vertical):
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == Chars.refresh:
             event.stop()
-            self.refresh_trees()
+            self._refresh_trees()
 
     def _update_trees(self) -> None:
         if store.cm_changes is None:
@@ -388,7 +388,7 @@ class LeftSideVertical(Vertical):
             tree.apply_changes(store.cm_changes)
 
     @work
-    async def refresh_trees(self) -> None:
+    async def _refresh_trees(self) -> None:
         self._current_displayed_tree.loading = True
         await tchezmoi.run_managed_commands(self.app)
         if store.cm_changes is not None and not store.cm_changes.changes_available:

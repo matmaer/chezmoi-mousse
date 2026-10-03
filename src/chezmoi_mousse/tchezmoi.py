@@ -180,8 +180,8 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _un_man_path_set=un_man_file_set | un_man_dir_set,
         _man_dir_set=man_dir_set,
         _man_file_set=man_file_set,
+        _un_wanted_dir_set={p for p in un_man_dir_set if path_funcs.is_unwanted_dir(p)},
         man_path_set=man_dir_set | man_file_set,
-        un_wanted_dir_set={p for p in un_man_dir_set if path_funcs.is_unwanted_dir(p)},
     )
     await store.handle_new_tree_paths(app, tree_paths)
 

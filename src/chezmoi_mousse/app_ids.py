@@ -121,12 +121,6 @@ class _OperateButtonIds:
         self.exit_op_modal: str = ids.btn_id(btn_label=BtnLabel.cancel)
         self.exit_op_modal_q: str = f"#{self.exit_op_modal}"
 
-        self.refresh_tree: str = ids.btn_id(btn_label=BtnLabel.refresh_trees)
-        self.refresh_tree_q: str = f"#{self.refresh_tree}"
-
-        self.reload: str = ids.btn_id(btn_label=BtnLabel.reload)
-        self.reload_q: str = f"#{self.reload}"
-
         # for test_paths only
         self.create_paths: str = ids.btn_id(btn_label=BtnLabel.create_paths)
         self.create_paths_q: str = f"#{self.create_paths}"
