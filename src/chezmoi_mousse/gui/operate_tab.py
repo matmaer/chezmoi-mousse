@@ -8,7 +8,6 @@ from textual.containers import (
     Horizontal,
     Vertical,
 )
-from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -41,6 +40,7 @@ from chezmoi_mousse.gui.common.operate_views import (
 )
 from chezmoi_mousse.str_enums import (
     BtnLabel,
+    Chars,
     ChezmoiPrompts,
     LabelStr,
     ReactiveVar,
@@ -225,7 +225,8 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
 
 class LeftSideVertical(Vertical):
-    switch_state: reactive[bool] = reactive(False)
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
     def __init__(self) -> None:
         super().__init__(
@@ -233,7 +234,11 @@ class LeftSideVertical(Vertical):
         )
 
     def compose(self) -> ComposeResult:
-        yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
+        yield Horizontal(
+            Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button),
+            Button(label=Chars.refresh, classes=Tcss.refresh_button),
+            classes=Tcss.tree_header,
+        )
         yield OperateTree(
             TreeName.managed_only_sp,
             store.op_ids.tree.managed_only_sp,
@@ -286,11 +291,11 @@ class LeftSideVertical(Vertical):
         )
 
     @property
-    def _current_displayed_tree_id(self) -> str | None:
+    def _current_displayed_tree(self) -> OperateTree:
         for tree in self.query_children(OperateTree).results():
             if tree.display is True:
-                return tree.id
-        return None
+                return tree
+        return self.query_one(store.op_ids.tree.managed_only_sp, OperateTree)
 
     @property
     def _non_displayed_trees(self) -> list[OperateTree]:
@@ -313,8 +318,8 @@ class LeftSideVertical(Vertical):
         if event.node.data is None:
             return
         if (
-            self._current_displayed_tree_id is None
-            or event.control.id != self._current_displayed_tree_id
+            self._current_displayed_tree.id is None
+            or event.control.id != self._current_displayed_tree.id
             or (
                 event.control.id
                 in (
@@ -361,6 +366,28 @@ class LeftSideVertical(Vertical):
     @on(Tree.NodeExpanded)
     def sync_expanded_node(self, event: Tree.NodeExpanded[NodeData]) -> None: ...
 
+    @on(Button.Pressed)
+    def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
+        if event.button.label == Chars.refresh:
+            event.stop()
+            self.refresh_trees()
+
+    def update_trees(self) -> None:
+        if store.cm_changes is None:
+            return
+        for tree in self.query(OperateTree).results():
+            tree.apply_changes(store.cm_changes)
+
+    @work
+    async def refresh_trees(self) -> None:
+        self._current_displayed_tree.loading = True
+        await tchezmoi.run_managed_commands(self.app)
+        if store.cm_changes is not None and not store.cm_changes.changes_available:
+            self.notify("No changes available, skipping refresh.", severity="warning")
+        else:
+            self.update_trees()
+        self._current_displayed_tree.loading = False
+
 
 class RightSideVertical(Vertical):
     def __init__(
@@ -379,10 +406,6 @@ class RightSideVertical(Vertical):
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)
         yield SwitchGroup()
-        yield Button(
-            label=BtnLabel.refresh_trees,
-            classes=Tcss.refresh_button,
-        )
 
     def on_mount(self) -> None:
         first_radio = self.query_exactly_one(RadioSet).query(RadioButton).first()

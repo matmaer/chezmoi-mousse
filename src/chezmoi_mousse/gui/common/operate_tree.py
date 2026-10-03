@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.widgets.tree import TreeNode
 
+    from chezmoi_mousse.chezmoi_paths import CmPathChanges
     from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -218,18 +219,64 @@ class OperateTree(Tree[NodeData]):
 
         return color_var
 
-    async def _add_node_with_color(
+    def _node_label(self, path: Path, node_data: NodeData) -> str:
+        italic = " italic" if not node_data.exists else ""
+        color = self.app.theme_variables[self._tree_label_color(node_data)]
+        return f"[{color}{italic}]{path.name}[/]"
+
+    def _remove_subtree(self, path: Path) -> None:
+        node = self.node_map.get(path)
+        if node is None:
+            return
+        for key in [k for k in self.node_map if k.is_relative_to(path)]:
+            del self.node_map[key]
+        node.remove()
+
+    def apply_changes(self, changes: CmPathChanges) -> None:
+        for path in changes.top_removed_dirs:
+            self._remove_subtree(path)
+        for path in changes.removed_files:
+            if path in self.node_map:
+                self.node_map.pop(path).remove()
+        changed = {**changes.changed_dirs, **changes.changed_files}
+        for path, node_data in changed.items():
+            node = self.node_map.get(path)
+            if node is not None:
+                node.data = node_data
+                node.set_label(self._node_label(path, node_data))
+        self._add_new_nodes(changes)
+        self.refresh(layout=True)
+
+    def _add_new_nodes(self, changes: CmPathChanges) -> None:
+        new_paths = store.cm_paths
+        dir_nodes = self._get_dir_nodes(new_paths.dir_node_data)
+        file_nodes = self._get_file_nodes(new_paths.file_node_data)
+        wanted_dirs = {p: dir_nodes[p] for p in changes.added_dirs if p in dir_nodes}
+        wanted_files = {
+            p: file_nodes[p] for p in changes.added_files if p in file_nodes
+        }
+        for path in (*wanted_dirs, *wanted_files):
+            parent = path.parent
+            while parent != store.cfg.dest_dir and parent not in self.node_map:
+                wanted_dirs[parent] = new_paths.dir_node_data[parent]
+                parent = parent.parent
+        for wanted, allow_expand in ((wanted_dirs, True), (wanted_files, False)):
+            for path, node_data in path_funcs.sort_path_dict(wanted).items():
+                if path not in self.node_map:
+                    self._add_node_with_color(
+                        path, node_data, allow_expand=allow_expand
+                    )
+        self._expand_xpd_nodes()
+
+    def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
         if path == store.cfg.dest_dir:
             return
         parent_node = self.node_map[path.parent]
 
-        italic = " italic" if not node_data.exists else ""
-        color = self.app.theme_variables[self._tree_label_color(node_data)]
-
         new_node = parent_node.add(
-            label=f"[{color}{italic}]{path.name}[/]",
+            label=self._node_label(path, node_data),
             data=node_data,
             allow_expand=allow_expand,
         )
@@ -268,9 +315,9 @@ class OperateTree(Tree[NodeData]):
         file_nodes = path_funcs.sort_path_dict(file_nodes)
 
         for path, node_data in dir_nodes.items():
-            await self._add_node_with_color(path, node_data, allow_expand=True)
+            self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():
-            await self._add_node_with_color(path, node_data, allow_expand=False)
+            self._add_node_with_color(path, node_data, allow_expand=False)
         self._expand_xpd_nodes()
         self.select_node(self.root)
         self.unselect()  # otherwise it looks like the first node is selected
@@ -285,9 +332,9 @@ class OperateTree(Tree[NodeData]):
         )
         self.iterated_dirs.add(dir_node_data.path)
         for path, node_data in iter_dir_result.dirs.items():
-            await self._add_node_with_color(path, node_data, allow_expand=True)
+            self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in iter_dir_result.files.items():
-            await self._add_node_with_color(path, node_data, allow_expand=False)
+            self._add_node_with_color(path, node_data, allow_expand=False)
 
     @on(Tree.NodeExpanded)
     def populate_unmanaged_dir(self, event: Tree.NodeExpanded[NodeData]) -> None:

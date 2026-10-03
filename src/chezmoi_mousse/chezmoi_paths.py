@@ -176,27 +176,26 @@ class CmPathChanges:
     changed_dirs: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     changed_files: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     top_removed_dirs: list[Path] = field(default_factory=list[Path])
+    changes_available: bool = False
 
     def __post_init__(self) -> None:
+        if self._new_tree_paths != self._old_tree_paths:
+            self.changes_available = True
         self.added_dirs = path_funcs.sort_paths(
-            [
-                path
-                for path in self._new_tree_paths.man_dir_set
-                if path not in self._old_tree_paths.man_dir_set
-            ]
+            self._new_tree_paths.dir_node_data.keys()
+            - self._old_tree_paths.dir_node_data.keys()
         )
         self.added_files = path_funcs.sort_paths(
-            [
-                path
-                for path in self._new_tree_paths.man_file_set
-                if path not in self._old_tree_paths.man_file_set
-            ]
+            self._new_tree_paths.file_node_data.keys()
+            - self._old_tree_paths.file_node_data.keys()
         )
         self.removed_dirs = path_funcs.sort_paths(
-            self._old_tree_paths.man_dir_set - self._new_tree_paths.man_dir_set
+            self._old_tree_paths.dir_node_data.keys()
+            - self._new_tree_paths.dir_node_data.keys()
         )
         self.removed_files = path_funcs.sort_paths(
-            self._old_tree_paths.man_file_set - self._new_tree_paths.man_file_set
+            self._old_tree_paths.file_node_data.keys()
+            - self._new_tree_paths.file_node_data.keys()
         )
 
         def get_changes_dict(

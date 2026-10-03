@@ -104,8 +104,9 @@ class Chars(StrEnum):
     burger = "\u2261"  # IDENTICAL TO
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
-    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    refresh = "\u21bb"  # CLOCKWISE OPEN CIRCLE ARROW
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
+    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
 
 
 class ChezmoiPrompts(Enum):
@@ -467,16 +468,16 @@ class StatusCode(StrEnum):
     DA = "DA"
     DD = "DD"  # NOTE: probably impossible status pair
     DM = "DM"  # Target deleted locally; apply will create target from source.
-    DS = "DS"  # Target deleted locally; no target apply action required.
+    DS = "D\x20"  # Target deleted locally; no target apply action required.
 
-    MA = "MA"  # Target modified without chezmoi edit; apply treats path as addition.
-    MD = "MD"  # Target modified without chezmoi edit; apply deletes target per rules.
-    MM = "MM"  # Target modified without chezmoi edit; apply will modify target.
-    MS = "MS"  # Target modified without chezmoi edit; no target apply action required.
+    MA = "MA"  # Target modified outside chezmoi; apply treats path as addition.
+    MD = "MD"  # Target modified outside chezmoi; apply deletes target per rules.
+    MM = "MM"  # Target modified outside chezmoi; apply will modify target.
+    MS = "M\x20"  # Target modified outside chezmoi; no target apply action required.
 
-    SA = "SA"  # Applied target missing; apply will create/restore target file.
-    SD = "SD"  # Applied target clean; apply will delete target per source rules.
-    SM = "SM"  # Applied target clean; apply will modify target from source updates.
+    SA = "\x20A"  # Applied target missing; apply will create/restore target file.
+    SD = "\x20D"  # Applied target clean; apply will delete target per source rules.
+    SM = "\x20M"  # Applied target clean; apply will modify target from source updates.
 
     @cached_property
     def pretty_cmd(self) -> str:
@@ -515,6 +516,7 @@ class Tcss(StrEnum):
     single_button_vertical = auto()
     splash_log = auto()
     tab_button = auto()
+    tree_header = auto()
     unhandled = auto()
 
 

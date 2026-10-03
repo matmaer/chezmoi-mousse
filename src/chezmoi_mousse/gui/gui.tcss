@@ -68,23 +68,50 @@
     max-width: 30%;
     width: auto;
 
-    &>.dest_dir_button {
-      background-tint: $surface-lighten-1;
-      background: $surface-lighten-1;
-      border-bottom: inner $surface-lighten-1;
-      border-top: inner $surface-lighten-1;
-      color: $text-primary;
-      padding: 0 1 0 1;
-      text-style: bold;
+    &>.tree_header {
+      height: 3;
       width: 100%;
+      min-width: 21;
 
-      &:hover {
-        color: $text-accent;
+      &>.dest_dir_button {
+        background-tint: $surface-lighten-1;
+        background: $surface-lighten-1;
+        border-bottom: inner $surface-lighten-1;
+        border-right: inner $surface-lighten-1;
+        border-top: inner $surface-lighten-1;
+        color: $text-primary;
         text-style: bold;
+        width: 1fr;
+
+        &:hover {
+          color: $text-accent;
+          text-style: bold;
+        }
+
+        &:focus {
+          text-style: bold;
+        }
       }
 
-      &:focus {
+      &>.refresh_button {
+        background-tint: $surface-lighten-1;
+        background: $surface-lighten-1;
+        border-bottom: inner $surface-lighten-1;
+        border-top: inner $surface-lighten-1;
+        color: $accent;
+        min-width: 3;
         text-style: bold;
+        width: 3;
+
+        &:hover {
+          text-style: bold;
+          color: $accent-lighten-3;
+        }
+
+        &:focus {
+          color: $accent-lighten-3;
+          text-style: bold;
+        }
       }
     }
 
@@ -110,27 +137,6 @@
         border-bottom: inner $surface;
         border-top: inner $surface;
         padding-left: 2;
-      }
-    }
-
-    &>.refresh_button {
-      background-tint: $surface;
-      background: $surface;
-      border-top: wide $surface;
-      border-bottom: inner $surface;
-      color: $primary-lighten-3;
-      min-width: 18;
-      text-style: none;
-      width: 100%;
-      height: 3;
-
-      &:hover {
-        text-style: none;
-        color: $accent-lighten-1;
-      }
-
-      &:focus {
-        text-style: none;
       }
     }
   }
@@ -386,6 +392,12 @@ RadioSet {
       }
     }
   }
+}
+
+Toast {
+  background-tint: $surface-lighten-1;
+  background: $surface-lighten-1;
+  width: auto;
 }
 
 ToggleButton {
