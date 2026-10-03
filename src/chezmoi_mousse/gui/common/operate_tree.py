@@ -263,6 +263,26 @@ class OperateTree(Tree[NodeData]):
         self._expand_xpd_nodes()
         self.refresh(layout=True)
 
+    @staticmethod
+    def _sort_key(path: Path, *, allow_expand: bool) -> tuple[bool, str]:
+        # dirs (allow_expand) first, then files, each sorted alphabetically
+        return not allow_expand, str(path).lower()
+
+    def _next_sibling(
+        self, parent_node: TreeNode[NodeData], path: Path, *, allow_expand: bool
+    ) -> TreeNode[NodeData] | None:
+        """The child to insert the new node before, None to append."""
+        key = self._sort_key(path, allow_expand=allow_expand)
+        children = parent_node.children
+        # nodes are normally added in sorted order, so appending is the common case
+        if not children or self._child_key(children[-1]) < key:
+            return None
+        return next(c for c in children if self._child_key(c) > key)
+
+    def _child_key(self, node: TreeNode[NodeData]) -> tuple[bool, str]:
+        assert node.data is not None
+        return self._sort_key(node.data.path, allow_expand=node.allow_expand)
+
     def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
@@ -273,6 +293,7 @@ class OperateTree(Tree[NodeData]):
         new_node = parent_node.add(
             label=self._node_label(path, node_data),
             data=node_data,
+            before=self._next_sibling(parent_node, path, allow_expand=allow_expand),
             allow_expand=allow_expand,
         )
         self.node_map[path] = new_node
