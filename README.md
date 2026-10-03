@@ -2,6 +2,9 @@
 [![Framework: Textual](https://img.shields.io/badge/framework-Textual-5967FF?logo=textual)](https://www.textualize.io/)
 [![Ruff](https://img.shields.io/github/actions/workflow/status/matmaer/chezmoi-mousse/linting.yml?branch=main&label=ruff&logo=ruff)](https://github.com/matmaer/chezmoi-mousse/actions/workflows/linting.yml)
 
+> [!NOTE]
+> 2026-10-03 New release coming up soon, allows to interface with chezmoi interactively via the GUI.
+
 > [!WARNING]
 > Do not run the app from the current head, we are implementing a new workflow to avoid this issue in the future, use the pre build binary instead (linux only).
 
