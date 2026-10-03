@@ -774,22 +774,32 @@ class WriteCmd(Enum):
     )
     dry_add = (
         *_GlobalArgs.non_interactive.value,
+        _GlobalArgs.dry_run_arg.value,
+        _GlobalArgs.verbose_arg.value,
         _WriteVerb.add,
     )
     dry_apply = (
         *_GlobalArgs.non_interactive.value,
+        _GlobalArgs.dry_run_arg.value,
+        _GlobalArgs.verbose_arg.value,
         _WriteVerb.apply,
     )
     dry_destroy = (
         *_GlobalArgs.non_interactive.value,
+        _GlobalArgs.dry_run_arg.value,
+        _GlobalArgs.verbose_arg.value,
         _WriteVerb.destroy,
     )
     dry_forget = (
         *_GlobalArgs.non_interactive.value,
+        _GlobalArgs.dry_run_arg.value,
+        _GlobalArgs.verbose_arg.value,
         _WriteVerb.forget,
     )
     dry_re_add = (
         *_GlobalArgs.non_interactive.value,
+        _GlobalArgs.dry_run_arg.value,
+        _GlobalArgs.verbose_arg.value,
         _WriteVerb.re_add,
     )
 
