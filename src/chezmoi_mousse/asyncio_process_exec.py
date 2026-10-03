@@ -6,10 +6,10 @@ import signal
 import subprocess
 import time
 from contextlib import asynccontextmanager, suppress
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
+from chezmoi_mousse.data_types import StreamEvent
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -27,6 +27,7 @@ _PROMPT_RE = re.compile(r"\(([^()]*)\)\? $")
 __all__ = [
     "ExecResult",
     "create_subprocess_exec_result",
+    "run_chezmoi_interactive_process",
 ]
 
 
@@ -79,12 +80,6 @@ async def create_subprocess_exec_result(
     std_err = (stderr_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
     assert process.returncode is not None, "process did not return a code"
     return std_out, std_err, process.returncode
-
-
-@dataclass(slots=True, frozen=True)
-class StreamEvent:
-    data: list[str]
-    is_prompt: bool
 
 
 @asynccontextmanager

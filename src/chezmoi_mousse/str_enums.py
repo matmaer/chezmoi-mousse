@@ -90,15 +90,6 @@ class BtnLabel(StrEnum):
     def pane_id(self) -> str:
         return f"{self.name}_pane_id"
 
-    @property
-    def run_interactive(self) -> str:
-        if self.value.startswith("chezmoi_"):
-            return f"Run interactive {self.value}"
-        else:
-            raise ValueError(
-                f"Cannot return interactive for button label: {self.value}"
-            )
-
 
 class Chars(StrEnum):
     burger = "\u2261"  # IDENTICAL TO
@@ -588,36 +579,25 @@ class _GlobalArgs(Enum):
         "--progress=false",
         "--use-builtin-diff=true",
         "--use-builtin-git=true",
+        "--no-tty=true",
     )
-    _no_tty_true = "--no-tty=true"
-    _no_tty_false = "--no-tty=false"
     _force_true = "--force=true"
     _force_false = "--force=false"
     _interactive_false = "--interactive=false"
     _interactive_true = "--interactive=true"
     non_interactive = (
         *_global_defaults,
-        _no_tty_true,
         _interactive_false,
         _force_true,
     )
     # --no-tty=true makes chezmoi prompt over stdin/stdout instead of /dev/tty
     interactive = (
         *_global_defaults,
-        _no_tty_true,
         _interactive_true,
         _force_false,
     )
     dry_run_arg = "--dry-run=true"
     verbose_arg = "--verbose"
-
-    @property
-    def dry_run(self) -> tuple[str, ...]:
-        return (
-            *self.non_interactive.value,
-            self.dry_run_arg.value,
-            self.verbose_arg.value,
-        )
 
 
 class _VerbArgs(StrEnum):

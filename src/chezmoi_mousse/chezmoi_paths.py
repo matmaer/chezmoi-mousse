@@ -24,8 +24,8 @@ class ChezmoiTreePaths:
     _un_man_dir_set: set[Path]
     _un_man_file_set: set[Path]
     _un_man_path_set: set[Path]
-    man_dir_set: set[Path]
-    man_file_set: set[Path]
+    _man_dir_set: set[Path]
+    _man_file_set: set[Path]
     man_path_set: set[Path]
     _status_path_set: set[Path]
     un_wanted_dir_set: set[Path]
@@ -59,8 +59,6 @@ class ChezmoiTreePaths:
             exists=True,
             file_path=False,
             has_nested_status=bool(self._status_path_set),
-            has_nested_un_managed=bool(self._un_man_path_set),
-            has_un_wanted_dir_parent=False,
             main_label=LabelStr.dest_dir,
             managed_dir=False,
             managed_file=False,
@@ -75,8 +73,8 @@ class ChezmoiTreePaths:
     def _populate_file_node_data(
         self,
     ) -> None:
-        for path in self.man_file_set | self._un_man_file_set:
-            managed = path in self.man_file_set
+        for path in self._man_file_set | self._un_man_file_set:
+            managed = path in self._man_file_set
             status_file = path in self._status_files_pcr
             is_unwanted = False if managed else path_funcs.is_unwanted_file(path)
             if managed:
@@ -88,16 +86,11 @@ class ChezmoiTreePaths:
                     LabelStr.un_wanted_file if is_unwanted else LabelStr.un_man_file
                 )
             status = self._status_files_pcr.get(path, None)
-            has_un_wanted_dir_parent = path_funcs.any_parents_for(
-                path=path, check_paths=self.un_wanted_dir_set
-            )
             self.file_node_data[path] = NodeData(
                 dir_path=False,
                 exists=True if managed else path.exists(),
                 file_path=True,
                 has_nested_status=False,
-                has_nested_un_managed=False,
-                has_un_wanted_dir_parent=has_un_wanted_dir_parent,
                 main_label=main_label,
                 managed_dir=False,
                 managed_file=managed,
@@ -110,8 +103,8 @@ class ChezmoiTreePaths:
             )
 
     def _populate_dir_node_data(self) -> None:
-        for path in self.man_dir_set | self._un_man_dir_set:
-            managed = path in self.man_dir_set
+        for path in self._man_dir_set | self._un_man_dir_set:
+            managed = path in self._man_dir_set
             status = self._status_dirs_pcr.get(path, None)
             is_un_unwanted = False if managed else path in self.un_wanted_dir_set
             has_nested_status = False
@@ -134,20 +127,11 @@ class ChezmoiTreePaths:
                     LabelStr.un_wanted_dir if is_un_unwanted else LabelStr.un_man_dir
                 )
 
-            has_nested_un_managed = path_funcs.any_nested_in(
-                dir_path=path, check_paths=self._un_man_path_set
-            )
-            has_un_wanted_dir_parent = path_funcs.any_parents_for(
-                path=path, check_paths=self.un_wanted_dir_set
-            )
-
             self.dir_node_data[path] = NodeData(
                 dir_path=True,
                 exists=path.exists() if managed else True,
                 file_path=False,
                 has_nested_status=has_nested_status,
-                has_nested_un_managed=has_nested_un_managed,
-                has_un_wanted_dir_parent=has_un_wanted_dir_parent,
                 main_label=main_label,
                 managed_dir=managed,
                 managed_file=False,
@@ -171,7 +155,6 @@ class CmPathChanges:
 
     added_dirs: list[Path] = field(default_factory=list[Path])
     added_files: list[Path] = field(default_factory=list[Path])
-    removed_dirs: list[Path] = field(default_factory=list[Path])
     removed_files: list[Path] = field(default_factory=list[Path])
     changed_dirs: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
     changed_files: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
@@ -189,10 +172,11 @@ class CmPathChanges:
             self._new_tree_paths.file_node_data.keys()
             - self._old_tree_paths.file_node_data.keys()
         )
-        self.removed_dirs = path_funcs.sort_paths(
+        removed_dirs = path_funcs.sort_paths(
             self._old_tree_paths.dir_node_data.keys()
             - self._new_tree_paths.dir_node_data.keys()
         )
+        self.top_removed_dirs = path_funcs.get_sorted_top_parents(removed_dirs)
         self.removed_files = path_funcs.sort_paths(
             self._old_tree_paths.file_node_data.keys()
             - self._new_tree_paths.file_node_data.keys()
@@ -215,4 +199,3 @@ class CmPathChanges:
             self._old_tree_paths.file_node_data,
             self._new_tree_paths.file_node_data,
         )
-        self.top_removed_dirs = path_funcs.get_sorted_top_parents(self.removed_dirs)

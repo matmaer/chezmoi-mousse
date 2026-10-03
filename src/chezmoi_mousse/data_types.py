@@ -14,6 +14,7 @@ __all__ = [
     "InitData",
     "IterDirResult",
     "NodeData",
+    "StreamEvent",
 ]
 
 
@@ -90,8 +91,6 @@ class NodeData:
     exists: bool
     file_path: bool
     has_nested_status: bool
-    has_nested_un_managed: bool | None
-    has_un_wanted_dir_parent: bool
     main_label: str
     managed_dir: bool
     managed_file: bool
@@ -102,3 +101,9 @@ class NodeData:
     un_wanted_dir: bool
     un_wanted_file: bool
     dest_dir: bool = False
+
+
+@dataclass(slots=True, frozen=True)
+class StreamEvent:
+    data: list[str]
+    is_prompt: bool

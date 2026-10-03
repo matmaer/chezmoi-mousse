@@ -132,10 +132,10 @@ class ChezmoiCmdModal(ModalScreen[None]):
         self.affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
         self.interactive_output_static = self.query_exactly_one(InteractiveOutputStatic)
         self.interactive_output_static.display = False
-        self.run_affected_paths_cmd()
+        self._run_affected_paths()
 
     @work
-    async def run_affected_paths_cmd(self) -> None:
+    async def _run_affected_paths(self) -> None:
         # set sub section label with the command to run
         sub_section_label = self.query_exactly_one(SubSectionLabel)
         pretty_run_cmd = (
@@ -185,7 +185,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
                     button.display = False
 
     @work
-    async def run_interactive(self) -> None:
+    async def _run_interactive(self) -> None:
         self.affected_paths_static.display = False
         self.interactive_output_static.display = True
         for button in self.prompt_buttons:
@@ -228,7 +228,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
                 worker.cancel()
             self.dismiss()
         elif button_label == self.run_label:
-            self.run_interactive()
+            self._run_interactive()
         elif self._prompt_future is not None and not self._prompt_future.done():
             for prompt in ChezmoiPrompts:
                 if prompt.btn_label == button_label:
@@ -307,7 +307,7 @@ class LeftSideVertical(Vertical):
         for tree in self.query_children(OperateTree).results():
             if tree.display is True:
                 return tree
-        return self.query_one(store.op_ids.tree.managed_only_sp, OperateTree)
+        return self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
 
     @property
     def _non_displayed_trees(self) -> list[OperateTree]:
@@ -384,7 +384,7 @@ class LeftSideVertical(Vertical):
             event.stop()
             self.refresh_trees()
 
-    def update_trees(self) -> None:
+    def _update_trees(self) -> None:
         if store.cm_changes is None:
             return
         for tree in self.query(OperateTree).results():
@@ -397,7 +397,7 @@ class LeftSideVertical(Vertical):
         if store.cm_changes is not None and not store.cm_changes.changes_available:
             self.notify("No changes available, skipping refresh.", severity="warning")
         else:
-            self.update_trees()
+            self._update_trees()
         self._current_displayed_tree.loading = False
 
 

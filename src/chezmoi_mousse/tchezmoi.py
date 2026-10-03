@@ -22,10 +22,8 @@ from chezmoi_mousse.str_enums import ReactiveVar, ReadCmd, StatusCode as Sc, Wri
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from chezmoi_mousse.asyncio_process_exec import (
-        ExecResult,
-        StreamEvent,
-    )
+    from chezmoi_mousse.asyncio_process_exec import ExecResult
+    from chezmoi_mousse.data_types import StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -180,8 +178,8 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _un_man_dir_set=un_man_dir_set,
         _un_man_file_set=un_man_file_set,
         _un_man_path_set=un_man_file_set | un_man_dir_set,
-        man_dir_set=man_dir_set,
-        man_file_set=man_file_set,
+        _man_dir_set=man_dir_set,
+        _man_file_set=man_file_set,
         man_path_set=man_dir_set | man_file_set,
         un_wanted_dir_set={p for p in un_man_dir_set if path_funcs.is_unwanted_dir(p)},
     )

@@ -348,7 +348,7 @@ class OperateTree(Tree[NodeData]):
     @work
     async def _add_unmanaged_dir_children(self, dir_node_data: NodeData) -> None:
         iter_dir_result: IterDirResult = path_funcs.get_un_man_children(
-            dir_node_data.path, store.cm_paths.un_wanted_dir_set
+            dir_node_data.path
         )
         self.iterated_dirs.add(dir_node_data.path)
         for path, node_data in iter_dir_result.dirs.items():
