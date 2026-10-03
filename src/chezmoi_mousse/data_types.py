@@ -101,6 +101,15 @@ class NodeData:
     un_wanted_dir: bool
     un_wanted_file: bool
     dest_dir: bool = False
+    has_nested_unmanaged: bool = False
+
+    @property
+    def managed(self) -> bool:
+        return self.managed_dir or self.managed_file
+
+    @property
+    def un_managed(self) -> bool:
+        return not self.managed
 
 
 @dataclass(slots=True, frozen=True)

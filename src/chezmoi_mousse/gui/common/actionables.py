@@ -14,13 +14,12 @@ from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
-from chezmoi_mousse.str_enums import LabelStr, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
     from chezmoi_mousse.app_ids import AppIds
-    from chezmoi_mousse.str_enums import BtnLabel
 
 
 __all__ = [
@@ -72,6 +71,16 @@ class OperateBtnGroup(HorizontalGroup):
                 label=btn_label,
                 classes=Tcss.operate_button,
             )
+
+    def on_mount(self) -> None:
+        buttons = self.query_children(Button).results()
+        for btn in buttons:
+            if btn.label in (
+                BtnLabel.chezmoi_add,
+                BtnLabel.chezmoi_destroy,
+                BtnLabel.chezmoi_forget,
+            ):
+                btn.disabled = True
 
 
 class PromptBtnGroup(HorizontalGroup):

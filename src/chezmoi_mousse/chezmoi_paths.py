@@ -59,6 +59,7 @@ class ChezmoiTreePaths:
             exists=True,
             file_path=False,
             has_nested_status=bool(self._status_path_set),
+            has_nested_unmanaged=bool(self._un_man_path_set),
             main_label=LabelStr.dest_dir,
             managed_dir=False,
             managed_file=False,
@@ -108,9 +109,13 @@ class ChezmoiTreePaths:
             status = self._status_dirs_pcr.get(path, None)
             is_un_unwanted = False if managed else path in self._un_wanted_dir_set
             has_nested_status = False
+            has_nested_unmanaged = False
             if managed:
                 has_nested_status = path_funcs.any_nested_in(
                     dir_path=path, check_paths=self._status_path_set
+                )
+                has_nested_unmanaged = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=self._un_man_path_set
                 )
             if managed:
                 main_label = (
@@ -132,6 +137,7 @@ class ChezmoiTreePaths:
                 exists=path.exists() if managed else True,
                 file_path=False,
                 has_nested_status=has_nested_status,
+                has_nested_unmanaged=has_nested_unmanaged,
                 main_label=main_label,
                 managed_dir=managed,
                 managed_file=False,

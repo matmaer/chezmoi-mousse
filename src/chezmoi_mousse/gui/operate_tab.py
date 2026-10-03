@@ -471,6 +471,20 @@ class OperateTab(TabPane):
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self._set_all_path_reactives(store.cm_paths.dest_dir_node_data)
+        buttons = self.op_btn_group.query(Button).results()
+        self.op_buttons: set[Button] = {
+            b
+            for b in buttons
+            if b.label
+            in (
+                BtnLabel.chezmoi_add,
+                BtnLabel.chezmoi_destroy,
+                BtnLabel.chezmoi_forget,
+                BtnLabel.chezmoi_apply,
+                BtnLabel.chezmoi_re_add,
+            )
+        }
+        self._update_btn_states(store.cm_paths.dest_dir_node_data)
 
     #################################
     # Watchers and message handling #
@@ -493,6 +507,22 @@ class OperateTab(TabPane):
         setattr(self.diff_view, ReactiveVar.node_data, node_data)
         setattr(self.diff_reverse_view, ReactiveVar.node_data, node_data)
 
+    def _update_btn_states(self, node_data: NodeData) -> None:
+        has_diff = bool(node_data.status) or node_data.has_nested_status
+        enabled = {
+            BtnLabel.chezmoi_add: not node_data.dest_dir
+            and (node_data.un_managed or has_diff or node_data.has_nested_unmanaged),
+            BtnLabel.chezmoi_forget: node_data.managed and not node_data.dest_dir,
+            BtnLabel.chezmoi_destroy: node_data.managed
+            and node_data.exists
+            and not node_data.dest_dir
+            and (node_data.file_path or not node_data.has_nested_unmanaged),
+            BtnLabel.chezmoi_apply: has_diff,
+            BtnLabel.chezmoi_re_add: node_data.exists and has_diff,
+        }
+        for btn in self.op_buttons:
+            btn.disabled = not enabled[BtnLabel(str(btn.label))]
+
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
         if event.node.data is None:
@@ -500,6 +530,7 @@ class OperateTab(TabPane):
         event.stop()
         self.middle_section_label.update(event.node.data.main_label)
         self._set_all_path_reactives(event.node.data)
+        self._update_btn_states(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
@@ -507,11 +538,7 @@ class OperateTab(TabPane):
             event.stop()
             self.middle_section_label.update(LabelStr.dest_dir)
             self._set_all_path_reactives(store.cm_paths.dest_dir_node_data)
-            for btn in self.op_btn_group.query(Button).results():
-                if btn.label == BtnLabel.chezmoi_destroy:
-                    btn.disabled = True
-                if btn.label == BtnLabel.chezmoi_forget:
-                    btn.disabled = True
+            self._update_btn_states(store.cm_paths.dest_dir_node_data)
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
