@@ -100,7 +100,10 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield SubSectionLabel(LabelStr.not_set)
+            yield SubSectionLabel(
+                f"autoadd enabled: {store.cfg.auto_add}, autocommit enabled: "
+                f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
+            )
             yield FlatSectionLabel(f"{self.btn_label} Command")
             yield AffectedPathsStatic()
             yield InteractiveOutputStatic()
@@ -136,12 +139,6 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
     @work
     async def _run_affected_paths(self) -> None:
-        # set sub section label with the command to run
-        sub_section_label = self.query_exactly_one(SubSectionLabel)
-        pretty_run_cmd = (
-            f"{self.btn_label_to_cmd[self.btn_label].pretty_cmd} {self.path}"
-        )
-        sub_section_label.update(f"Dry run: {pretty_run_cmd}")
         # set flat section label with the dry run command
         flat_section_label = self.query_exactly_one(FlatSectionLabel)
         flat_section_label.update(
