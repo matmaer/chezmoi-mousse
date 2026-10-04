@@ -267,15 +267,14 @@ class GitLogView(Vertical):
     @work
     async def _update_datatable_and_flat_label(self, node_data: NodeData) -> bool:
         source_path = node_data.source_path
-        path = source_path if source_path is not None else store.cfg.dest_dir
+        cache_path = source_path if source_path is not None else store.cfg.dest_dir
         self.data_table.clear()
-        if path in self.cache:
-            self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
-            pretty_cells = self.cache[path]
+        if cache_path in self.cache:
+            self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, source_path))
+            pretty_cells = self.cache[cache_path]
         else:
-            path_arg = None if path == store.cfg.dest_dir else path
             cmd_result = await tchezmoi.run_chezmoi_cmd(
-                self.app, ReadCmd.git_log, path_arg=path_arg
+                self.app, ReadCmd.git_log, verb_arg=source_path
             )
             self.flat_label.update(cmd_result.pretty_cmd)
             pretty_cells = self._get_styled_cells(cmd_result.out_list)
@@ -285,7 +284,7 @@ class GitLogView(Vertical):
 
         for row in pretty_cells:
             self.data_table.add_row(*row)
-        self.cache[path] = pretty_cells
+        self.cache[cache_path] = pretty_cells
         return True
 
     def watch_node_data(self, node_data: NodeData) -> None:

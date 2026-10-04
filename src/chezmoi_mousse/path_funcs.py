@@ -114,9 +114,9 @@ def _file_unwanted_suffix(file_path: Path) -> bool:
     return file_path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
 
 
-def get_rel_path(path: Path | None) -> str:
-    if store.cfg.dest_dir_path is None or path is None or path == store.cfg.dest_dir:
-        return ""
+def get_rel_path_str(path: Path) -> str:
+    if store.cfg.dest_dir_path is None or path == store.cfg.dest_dir:
+        return str(path)
     return str(path.relative_to(store.cfg.dest_dir))
 
 

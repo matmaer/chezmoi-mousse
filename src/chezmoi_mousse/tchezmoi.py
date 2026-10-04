@@ -27,9 +27,13 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-def pretty_cmd(cmd: ReadCmd | WriteCmd, pretty_verb_arg: str | None) -> str:
-    if pretty_verb_arg is None:
+def pretty_cmd(cmd: ReadCmd | WriteCmd, verb_arg: Path | str | None) -> str:
+    if verb_arg is None:
         pretty_verb_arg = ""
+    elif isinstance(verb_arg, Path):
+        pretty_verb_arg = path_funcs.get_rel_path_str(verb_arg)
+    else:
+        pretty_verb_arg = verb_arg
     return (f"{cmd.pretty_cmd} {pretty_verb_arg}").rstrip()
 
 
@@ -108,32 +112,23 @@ async def run_chezmoi_cmd(
             f"Passing a string to represent the pretty version of the verb arg is "
             f"mandatory for {ReadCmd.source_path.pretty_cmd}"
         )
-    elif cmd_enum is ReadCmd.source_path:
-        if isinstance(verb_arg, list):
-            chezmoi_args = (*cmd_enum.value, *verb_arg)
-        elif verb_arg is not None:
-            chezmoi_args = (*cmd_enum.value, str(verb_arg))
-        else:
-            chezmoi_args = cmd_enum.value
-    else:
-        if verb_arg is None:
-            chezmoi_args = cmd_enum.value
-            pretty_verb_arg = ""
-        elif isinstance(verb_arg, Path):
-            chezmoi_args = (*cmd_enum.value, str(verb_arg))
-            pretty_verb_arg = str(verb_arg.relative_to(store.cfg.dest_dir))
-        elif verb_arg == store.cfg.dest_dir:
-            chezmoi_args = (*cmd_enum.value,)
-            pretty_verb_arg = str(verb_arg)
-    if chezmoi_args is None:
-        raise ValueError("Cannot determine chezmoi_args tuple")
+
+    if isinstance(verb_arg, list):
+        chezmoi_args = (*cmd_enum.value, *verb_arg)
+    elif isinstance(verb_arg, Path):
+        chezmoi_args = (*cmd_enum.value, str(verb_arg))
+        pretty_verb_arg = path_funcs.get_rel_path_str(verb_arg)
+    elif verb_arg is None:
+        chezmoi_args = (*cmd_enum.value,)
     return await _exec_chezmoi(app, cmd_enum, chezmoi_args, pretty_verb_arg)
 
 
 async def run_in_task_group(app: ChezmoiGui, commands: tuple[ReadCmd, ...]) -> None:
     async with asyncio.TaskGroup() as tg:
         for cmd_enum in commands:
-            tg.create_task(run_chezmoi_cmd(app, cmd_enum, verb_arg=None))
+            tg.create_task(
+                run_chezmoi_cmd(app, cmd_enum, verb_arg=None, pretty_verb_arg=None)
+            )
 
 
 @staticmethod
