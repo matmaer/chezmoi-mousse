@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, NamedTuple
 
+from chezmoi_mousse.str_enums import BtnLabel
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -106,6 +108,27 @@ class NodeData:
     @property
     def managed(self) -> bool:
         return self.managed_dir or self.managed_file
+
+    @property
+    def enable_op_btn_map(self) -> dict[BtnLabel, bool]:
+        # basic button enable/disable rules, affected paths could still determine no-op
+        has_diff = bool(self.status) or self.has_nested_status
+        enable_add_btn = not self.dest_dir and (
+            not self.managed or has_diff or self.has_nested_unmanaged
+        )
+        enable_destroy_btn = (
+            self.managed
+            and self.exists
+            and not self.dest_dir
+            and (self.file_path or not self.has_nested_unmanaged)
+        )
+        return {
+            BtnLabel.chezmoi_add: enable_add_btn,
+            BtnLabel.chezmoi_forget: self.managed and not self.dest_dir,
+            BtnLabel.chezmoi_destroy: enable_destroy_btn,
+            BtnLabel.chezmoi_apply: has_diff,
+            BtnLabel.chezmoi_re_add: self.exists and has_diff,
+        }
 
 
 @dataclass(slots=True, frozen=True)

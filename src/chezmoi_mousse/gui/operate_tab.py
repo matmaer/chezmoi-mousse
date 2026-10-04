@@ -508,25 +508,8 @@ class OperateTab(TabPane):
         setattr(self.diff_reverse_view, ReactiveVar.node_data, node_data)
 
     def _update_btn_states(self, node_data: NodeData) -> None:
-        has_diff = bool(node_data.status) or node_data.has_nested_status
-        enable_add_btn = not node_data.dest_dir and (
-            not node_data.managed or has_diff or node_data.has_nested_unmanaged
-        )
-        enable_destroy_btn = (
-            node_data.managed
-            and node_data.exists
-            and not node_data.dest_dir
-            and (node_data.file_path or not node_data.has_nested_unmanaged)
-        )
-        enabled = {
-            BtnLabel.chezmoi_add: enable_add_btn,
-            BtnLabel.chezmoi_forget: node_data.managed and not node_data.dest_dir,
-            BtnLabel.chezmoi_destroy: enable_destroy_btn,
-            BtnLabel.chezmoi_apply: has_diff,
-            BtnLabel.chezmoi_re_add: node_data.exists and has_diff,
-        }
         for btn in self.op_buttons:
-            btn.disabled = not enabled[BtnLabel(str(btn.label))]
+            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
 
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:

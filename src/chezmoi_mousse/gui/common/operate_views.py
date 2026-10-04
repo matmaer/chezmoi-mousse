@@ -6,16 +6,18 @@ from typing import TYPE_CHECKING, ClassVar
 from rich.text import Text
 from textual import work
 from textual.containers import (
-    HorizontalGroup,
     ScrollableContainer,
     Vertical,
-    VerticalGroup,
 )
 from textual.reactive import reactive
 from textual.widgets import DataTable, Label, Static
 
-from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
+from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
+    PathInfo,
+    SubSectionLabel,
+)
 from chezmoi_mousse.str_enums import (
     ColorVar,
     LabelStr,
@@ -46,18 +48,6 @@ class FalseLabel(Label):
         self.update(" no")
 
 
-class DirInfo(VerticalGroup): ...
-
-
-class FileInfo(VerticalGroup): ...
-
-
-class InfoLabel(Label): ...
-
-
-class InfoItem(HorizontalGroup): ...
-
-
 class FileContentStatic(Static): ...
 
 
@@ -65,91 +55,6 @@ class ViewVertical(Vertical): ...
 
 
 class PathInfoVertical(Vertical): ...
-
-
-class PathInfo(ScrollableContainer):
-    node_data: reactive[NodeData | None] = reactive(None, init=False)
-
-    def compose(self) -> ComposeResult:
-        yield DirInfo()
-        yield FileInfo()
-
-    def on_mount(self) -> None:
-        self.cache: dict[Path, list[InfoItem]] = {}
-        self.dir_info = self.query_exactly_one(DirInfo)
-        self.file_info = self.query_exactly_one(FileInfo)
-        self.file_info.display = False
-
-    @work
-    async def _set_dir_info(self, node_data: NodeData) -> None:
-
-        path = node_data.path
-
-        if path in self.cache:
-            widgets = self.cache[path]
-        else:
-            is_managed_label = TrueLabel() if node_data.managed_dir else FalseLabel()
-            has_status_label = TrueLabel() if node_data.status_dir else FalseLabel()
-            has_nested_status_label = (
-                TrueLabel() if node_data.has_nested_status else FalseLabel()
-            )
-            has_nested_managed_label = (
-                TrueLabel()
-                if path_funcs.any_nested_in(
-                    dir_path=path, check_paths=store.cm_paths.man_path_set
-                )
-                else FalseLabel()
-            )
-            unwanted_label = TrueLabel() if node_data.un_wanted_dir else FalseLabel()
-            exists = TrueLabel() if node_data.exists else FalseLabel()
-            widgets = [
-                InfoItem(InfoLabel(LabelStr.d_is_managed), is_managed_label),
-                InfoItem(InfoLabel(LabelStr.d_has_status), has_status_label),
-                InfoItem(
-                    InfoLabel(LabelStr.d_has_nested_status),
-                    has_nested_status_label,
-                ),
-                InfoItem(
-                    InfoLabel(LabelStr.d_has_nested_managed),
-                    has_nested_managed_label,
-                ),
-                InfoItem(InfoLabel(LabelStr.d_un_wanted), unwanted_label),
-                InfoItem(InfoLabel(LabelStr.d_exists), exists),
-            ]
-        self.cache[path] = widgets
-        self.dir_info.remove_children()
-        self.dir_info.mount_all(self.cache[node_data.path])
-
-    @work
-    async def _set_file_info(self, node_data: NodeData) -> None:
-        if node_data.path in self.cache:
-            widgets = self.cache[node_data.path]
-        else:
-            is_managed_label = TrueLabel() if node_data.managed_file else FalseLabel()
-            has_status_label = TrueLabel() if node_data.status_file else FalseLabel()
-            un_wanted_label = TrueLabel() if node_data.un_wanted_file else FalseLabel()
-            widgets = [
-                InfoItem(InfoLabel(LabelStr.f_is_managed), is_managed_label),
-                InfoItem(InfoLabel(LabelStr.f_has_status), has_status_label),
-                InfoItem(InfoLabel(LabelStr.f_un_wanted), un_wanted_label),
-                InfoItem(
-                    InfoLabel(LabelStr.f_exists),
-                    TrueLabel() if node_data.exists else FalseLabel(),
-                ),
-            ]
-        self.cache[node_data.path] = widgets
-        self.file_info.remove_children()
-        self.file_info.mount_all(self.cache[node_data.path])
-
-    def watch_node_data(self, node_data: NodeData) -> None:
-        if node_data.dir_path or node_data.path.is_dir():
-            self.file_info.display = False
-            self._set_dir_info(node_data)
-            self.dir_info.display = True
-        else:
-            self.dir_info.display = False
-            self._set_file_info(node_data)
-            self.file_info.display = True
 
 
 class ContentView(Vertical):
@@ -166,7 +71,7 @@ class ContentView(Vertical):
             yield ScrollableContainer(FileContentStatic(markup=False))
         with PathInfoVertical():
             yield SubSectionLabel(LabelStr.select_path_contents)
-            yield ScrollableContainer(PathInfo())
+            yield PathInfo()
 
     def on_mount(self) -> None:
         self.view_vertical = self.query_exactly_one(ViewVertical)
@@ -239,7 +144,7 @@ class _DiffViewBase(Vertical):
             yield ScrollableContainer(DiffWidgets())
         with PathInfoVertical():
             yield SubSectionLabel(LabelStr.select_path_diff)
-            yield ScrollableContainer(PathInfo())
+            yield PathInfo()
 
     def on_mount(self) -> None:
         self.view_vertical = self.query_exactly_one(ViewVertical)
@@ -320,7 +225,7 @@ class GitLogView(Vertical):
             yield DataTable[str](show_cursor=False)
         with PathInfoVertical():
             yield SubSectionLabel(LabelStr.no_git_log)
-            yield ScrollableContainer(PathInfo())
+            yield PathInfo()
 
     def on_mount(self) -> None:
         self.view_vertical = self.query_exactly_one(ViewVertical)
