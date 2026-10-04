@@ -144,7 +144,7 @@
 
 
 .splash_log {
-  min-height: 16;
+  min-height: 18;
   height: auto;
 }
 

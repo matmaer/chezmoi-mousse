@@ -148,13 +148,22 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     async with asyncio.TaskGroup() as tg:
         man_dir_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.managed_dirs))
         man_file_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.managed_files))
+        man_source_dir_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.managed_source_dirs)
+        )
+        man_source_file_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.managed_source_files)
+        )
         status_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_dirs))
         status_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_files))
         unman_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_dirs))
         unman_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_files))
 
-    def parse_paths(cmd_result: CommandResult) -> set[Path]:
+    def parse_paths_to_set(cmd_result: CommandResult) -> set[Path]:
         return {Path(line) for line in cmd_result.out_list}
+
+    def parse_paths(cmd_result: CommandResult) -> list[Path]:
+        return [Path(line) for line in cmd_result.out_list]
 
     def parse_status_output(cmd_result: CommandResult) -> dict[Path, Sc]:
         return {
@@ -163,25 +172,30 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
             if Sc.R.value not in line[:2]  # TODO: implement R
         }
 
-    man_dir_set: set[Path] = parse_paths(man_dir_task.result())
-    man_file_set: set[Path] = parse_paths(man_file_task.result())
-    status_dirs_pcr: dict[Path, Sc] = parse_status_output(status_dirs_task.result())
-    status_files_pcr: dict[Path, Sc] = parse_status_output(status_files_task.result())
-    un_man_dir_set: set[Path] = parse_paths(unman_dirs_task.result())
-    un_man_file_set: set[Path] = parse_paths(unman_files_task.result())
+    target_dirs: list[Path] = parse_paths(man_dir_task.result())
+    target_files: list[Path] = parse_paths(man_file_task.result())
+    source_dirs: list[Path] = parse_paths(man_source_dir_task.result())
+    source_files: list[Path] = parse_paths(man_source_file_task.result())
+    man_dirs: dict[Path, Path] = dict(zip(target_dirs, source_dirs, strict=True))
+    man_files: dict[Path, Path] = dict(zip(target_files, source_files, strict=True))
+
+    status_dirs: dict[Path, Sc] = parse_status_output(status_dirs_task.result())
+    status_files: dict[Path, Sc] = parse_status_output(status_files_task.result())
+    un_man_dirs: set[Path] = parse_paths_to_set(unman_dirs_task.result())
+    un_man_files: set[Path] = parse_paths_to_set(unman_files_task.result())
 
     tree_paths = ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
-        _status_dirs_pcr=status_dirs_pcr,
-        _status_files_pcr=status_files_pcr,
-        _status_path_set=status_files_pcr.keys() | status_dirs_pcr.keys(),
-        _un_man_dir_set=un_man_dir_set,
-        _un_man_file_set=un_man_file_set,
-        _un_man_path_set=un_man_file_set | un_man_dir_set,
-        _man_dir_set=man_dir_set,
-        _man_file_set=man_file_set,
-        _un_wanted_dir_set={p for p in un_man_dir_set if path_funcs.is_unwanted_dir(p)},
-        man_path_set=man_dir_set | man_file_set,
+        _man_dirs=man_dirs,
+        _man_files=man_files,
+        _status_dirs=status_dirs,
+        _status_files=status_files,
+        _status_path_set=status_files.keys() | status_dirs.keys(),
+        _un_man_dirs=un_man_dirs,
+        _un_man_files=un_man_files,
+        _un_man_paths=un_man_files | un_man_dirs,
+        _un_wanted_dirs={p for p in un_man_dirs if path_funcs.is_unwanted_dir(p)},
+        man_paths=man_dirs.keys() | man_files.keys(),
     )
     await store.handle_new_tree_paths(app, tree_paths)
 

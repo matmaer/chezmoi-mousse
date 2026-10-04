@@ -137,7 +137,7 @@ class PathInfo(ScrollableContainer):
             has_nested_managed_label = (
                 self.TrueLabel()
                 if path_funcs.any_nested_in(
-                    dir_path=path, check_paths=store.cm_paths.man_path_set
+                    dir_path=path, check_paths=store.cm_paths.man_paths
                 )
                 else self.FalseLabel()
             )

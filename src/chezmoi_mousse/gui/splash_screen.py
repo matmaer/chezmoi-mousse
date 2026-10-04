@@ -15,7 +15,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
-from chezmoi_mousse.str_enums import ColorVar, LogStr, Tcss
+from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, Tcss, WriteCmd
 
 if TYPE_CHECKING:
     from textual import getters
@@ -99,7 +99,7 @@ class SplashScreen(Screen[None]):
 
     async def on_mount(self) -> None:
         self.repo_existed = True
-        self.color_map: dict[LogStr | int, str] = {
+        self.color_map: dict[str | int, str] = {
             LogStr.checked: self.app.theme_variables[ColorVar.warning],
             LogStr.decoded: self.app.theme_variables[ColorVar.success],
             LogStr.missing: self.app.theme_variables[ColorVar.error],
@@ -118,15 +118,17 @@ class SplashScreen(Screen[None]):
         prefix_suffix: tuple[str, LogStr] | None = None,
         cmd_result: CommandResult | None = None,
     ) -> None:
+        prefix = "unknown"
+        suffix = "unknown"
         if prefix_suffix:
             prefix = prefix_suffix[0]
             suffix = prefix_suffix[1]
         elif cmd_result:
-            prefix = cmd_result.pretty_cmd
             suffix = LogStr.success if cmd_result.returncode == 0 else LogStr.checked
-        else:
-            self.notify("Nothing to log for splash screen.", severity="error")
-            return
+            if isinstance(cmd_result.cmd_enum, ReadCmd):
+                prefix = cmd_result.cmd_enum.pretty_splash_cmd
+            elif isinstance(cmd_result.cmd_enum, WriteCmd):
+                prefix = cmd_result.cmd_enum.pretty_cmd
 
         dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix) - 4
         dots = "." * dots_count
