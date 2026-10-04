@@ -509,14 +509,19 @@ class OperateTab(TabPane):
 
     def _update_btn_states(self, node_data: NodeData) -> None:
         has_diff = bool(node_data.status) or node_data.has_nested_status
-        enabled = {
-            BtnLabel.chezmoi_add: not node_data.dest_dir
-            and (not node_data.managed or has_diff or node_data.has_nested_unmanaged),
-            BtnLabel.chezmoi_forget: node_data.managed and not node_data.dest_dir,
-            BtnLabel.chezmoi_destroy: node_data.managed
+        enable_add_btn = not node_data.dest_dir and (
+            not node_data.managed or has_diff or node_data.has_nested_unmanaged
+        )
+        enable_destroy_btn = (
+            node_data.managed
             and node_data.exists
             and not node_data.dest_dir
-            and (node_data.file_path or not node_data.has_nested_unmanaged),
+            and (node_data.file_path or not node_data.has_nested_unmanaged)
+        )
+        enabled = {
+            BtnLabel.chezmoi_add: enable_add_btn,
+            BtnLabel.chezmoi_forget: node_data.managed and not node_data.dest_dir,
+            BtnLabel.chezmoi_destroy: enable_destroy_btn,
             BtnLabel.chezmoi_apply: has_diff,
             BtnLabel.chezmoi_re_add: node_data.exists and has_diff,
         }
