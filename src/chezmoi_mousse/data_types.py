@@ -107,10 +107,6 @@ class NodeData:
     def managed(self) -> bool:
         return self.managed_dir or self.managed_file
 
-    @property
-    def un_managed(self) -> bool:
-        return not self.managed
-
 
 @dataclass(slots=True, frozen=True)
 class StreamEvent:

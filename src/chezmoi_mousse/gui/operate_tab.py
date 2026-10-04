@@ -511,7 +511,7 @@ class OperateTab(TabPane):
         has_diff = bool(node_data.status) or node_data.has_nested_status
         enabled = {
             BtnLabel.chezmoi_add: not node_data.dest_dir
-            and (node_data.un_managed or has_diff or node_data.has_nested_unmanaged),
+            and (not node_data.managed or has_diff or node_data.has_nested_unmanaged),
             BtnLabel.chezmoi_forget: node_data.managed and not node_data.dest_dir,
             BtnLabel.chezmoi_destroy: node_data.managed
             and node_data.exists
