@@ -224,6 +224,7 @@ def get_highlighted_file_contents(file_path: Path) -> Text:
 
 async def get_highlighted_chezmoi_cat_output(
     app: ChezmoiGui,
+    *,
     file_path: Path,
 ) -> Text:
     cmd_result = await _exec_chezmoi(app, ReadCmd.cat, file_path)

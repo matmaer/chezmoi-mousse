@@ -91,7 +91,7 @@ class ContentView(Vertical):
             f_content = Text("Looks like an empty file.")
             if not node_data.exists:
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
-                    self.app, path
+                    self.app, file_path=path
                 )
                 self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.cat, path))
             else:
@@ -155,7 +155,7 @@ class _DiffViewBase(Vertical):
         self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
         self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
 
-    @work(exclusive=True)
+    @work
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
 
         if path in self.cache:
@@ -187,14 +187,14 @@ class _DiffViewBase(Vertical):
                                 line, classes=self.tcss_map[prefix].value, markup=False
                             )
                         )
-        self.cache[path] = widgets
+            self.cache[path] = widgets
 
         self.diff_container.remove_children()
-        self.diff_container.mount_all(self.cache[path])
+        self.diff_container.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self.path_info.node_data = node_data
-        if node_data.status_file or node_data.status_dir:
+        if node_data.has_status:
             self.path_info_vertical.display = False
             self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
             self._create_diff_widgets(self.diff_cmd, node_data.path)
@@ -290,11 +290,7 @@ class GitLogView(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self.path_info.node_data = node_data
-        if (
-            node_data.path == store.cfg.dest_dir
-            or node_data.managed_dir
-            or node_data.managed_file
-        ):
+        if node_data.path == store.cfg.dest_dir or node_data.managed:
             has_data = self._update_datatable_and_flat_label(node_data)
             if has_data:
                 self.path_info_vertical.display = False

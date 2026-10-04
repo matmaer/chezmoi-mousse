@@ -126,10 +126,10 @@ class PathInfo(ScrollableContainer):
             widgets = self.cache[path]
         else:
             is_managed_label = (
-                self.TrueLabel() if node_data.managed_dir else self.FalseLabel()
+                self.TrueLabel() if node_data.managed else self.FalseLabel()
             )
             has_status_label = (
-                self.TrueLabel() if node_data.status_dir else self.FalseLabel()
+                self.TrueLabel() if node_data.has_status else self.FalseLabel()
             )
             has_nested_status_label = (
                 self.TrueLabel() if node_data.has_nested_status else self.FalseLabel()
@@ -173,10 +173,10 @@ class PathInfo(ScrollableContainer):
             widgets = self.cache[node_data.path]
         else:
             is_managed_label = (
-                self.TrueLabel() if node_data.managed_file else self.FalseLabel()
+                self.TrueLabel() if node_data.managed else self.FalseLabel()
             )
             has_status_label = (
-                self.TrueLabel() if node_data.status_file else self.FalseLabel()
+                self.TrueLabel() if node_data.has_status else self.FalseLabel()
             )
             un_wanted_label = (
                 self.TrueLabel() if node_data.un_wanted_file else self.FalseLabel()

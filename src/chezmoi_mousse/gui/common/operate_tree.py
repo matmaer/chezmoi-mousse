@@ -51,14 +51,14 @@ class OperateTree(Tree[NodeData]):
         self._initial_tree_population()
 
     def _get_file_nodes(
-        self, node_data_dict: dict[Path, NodeData]
+        self, file_node_dict: dict[Path, NodeData]
     ) -> dict[Path, NodeData]:
         result: dict[Path, NodeData] = {}
         if self.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.status_file
+                for path, node_data in file_node_dict.items()
+                if node_data.has_status
             }
         elif self.name in (
             TreeName.managed_all_mp,
@@ -66,8 +66,8 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.managed_file
+                for path, node_data in file_node_dict.items()
+                if node_data.managed
             }
         elif self.name in (
             TreeName.un_man_plus_sp,
@@ -75,9 +75,9 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.status_file
-                or (not node_data.managed_file and not node_data.un_wanted_file)
+                for path, node_data in file_node_dict.items()
+                if node_data.has_status
+                or (not node_data.managed and not node_data.un_wanted_file)
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -85,9 +85,9 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.managed_file
-                or (not node_data.managed_file and not node_data.un_wanted_file)
+                for path, node_data in file_node_dict.items()
+                if node_data.managed
+                or (not node_data.managed and not node_data.un_wanted_file)
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -95,8 +95,8 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.status_file or not node_data.managed_file
+                for path, node_data in file_node_dict.items()
+                if node_data.has_status or not node_data.managed
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
@@ -104,20 +104,20 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.managed_file
+                for path, node_data in file_node_dict.items()
+                if node_data.managed
             }
         return path_funcs.sort_path_dict(result)
 
     def _get_dir_nodes(
-        self, node_data_dict: dict[Path, NodeData]
+        self, dir_node_dict: dict[Path, NodeData]
     ) -> dict[Path, NodeData]:
         result: dict[Path, NodeData] = {}
         if self.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.status_dir or node_data.has_nested_status
+                for path, node_data in dir_node_dict.items()
+                if node_data.has_status or node_data.has_nested_status
             }
         elif self.name in (
             TreeName.managed_all_mp,
@@ -125,8 +125,8 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.managed_dir
+                for path, node_data in dir_node_dict.items()
+                if node_data.managed
             }
         elif self.name in (
             TreeName.un_man_plus_sp,
@@ -134,9 +134,9 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.status_dir
-                or (not node_data.managed_dir and not node_data.un_wanted_dir)
+                for path, node_data in dir_node_dict.items()
+                if node_data.has_status
+                or (not node_data.managed and not node_data.un_wanted_dir)
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -144,9 +144,9 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.managed_dir
-                or (not node_data.managed_dir and not node_data.un_wanted_dir)
+                for path, node_data in dir_node_dict.items()
+                if node_data.managed
+                or (not node_data.managed and not node_data.un_wanted_dir)
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -154,18 +154,14 @@ class OperateTree(Tree[NodeData]):
         ):
             result = {
                 path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.status_dir or not node_data.managed_dir
+                for path, node_data in dir_node_dict.items()
+                if node_data.has_status or not node_data.managed
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
             TreeName.un_wanted_plus_amp_xpd,
         ):
-            result = {
-                path: node_data
-                for path, node_data in node_data_dict.items()
-                if node_data.managed_dir or not node_data.managed_dir
-            }
+            result = dict(dir_node_dict.items())
         return path_funcs.sort_path_dict(result)
 
     def _tree_label_color(self, node_data: NodeData) -> ColorVar:
@@ -188,17 +184,8 @@ class OperateTree(Tree[NodeData]):
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
 
-        if node_data.file_path:
-            if node_data.status_file:
-                return color_var
-            if node_data.managed_file:
-                return ColorVar.foreground_darken_3
-            if not node_data.managed_file and not node_data.un_wanted_file:
-                return ColorVar.text_success
-            if node_data.un_wanted_file:
-                return ColorVar.text_accent
-        elif node_data.dir_path:
-            if node_data.status_dir:
+        if node_data.dir_path:
+            if node_data.has_status:
                 return ColorVar.warning_lighten_3
             if node_data.has_nested_status:
                 return (
@@ -206,15 +193,28 @@ class OperateTree(Tree[NodeData]):
                     if self.name in TreeName.managed_trees()
                     else ColorVar.primary_darken_1
                 )
-            if node_data.managed_dir:
+            if node_data.managed and node_data.dir_path:
                 return (
                     ColorVar.foreground_darken_3
                     if self.name in TreeName.managed_trees()
                     else ColorVar.text
                 )
-            if not node_data.managed_dir and not node_data.un_wanted_dir:
+            if (
+                not node_data.managed
+                and node_data.dir_path
+                and not node_data.un_wanted_dir
+            ):
                 return ColorVar.text_success
             if node_data.un_wanted_dir:
+                return ColorVar.text_accent
+        else:
+            if node_data.has_status:
+                return color_var
+            if node_data.managed:
+                return ColorVar.foreground_darken_3
+            if not node_data.managed and not node_data.un_wanted_file:
+                return ColorVar.text_success
+            if node_data.un_wanted_file:
                 return ColorVar.text_accent
 
         return color_var
@@ -308,7 +308,7 @@ class OperateTree(Tree[NodeData]):
             TreeName.un_wanted_plus_amp_xpd,
         ):
             for node in self.node_map.values():
-                if node.data is not None and node.data.managed_dir:
+                if node.data is not None and node.data.managed:
                     node.expand()
 
     def _wanted_nodes(self) -> tuple[dict[Path, NodeData], dict[Path, NodeData]]:
@@ -361,7 +361,7 @@ class OperateTree(Tree[NodeData]):
         # dest dir node data is none
         if (
             event.node.data is None
-            or event.node.data.managed_dir
+            or event.node.data.managed
             or event.node.data.path in self.iterated_dirs
         ):
             return

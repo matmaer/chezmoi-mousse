@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING
 
 from chezmoi_mousse.str_enums import BtnLabel
 
@@ -20,7 +20,8 @@ __all__ = [
 ]
 
 
-class CommandResult(NamedTuple):
+@dataclass(slots=True, frozen=True)
+class CommandResult:
     cmd_enum: WriteCmd | ReadCmd | None
     full_cmd: str
     out_txt: str
@@ -33,7 +34,8 @@ class CommandResult(NamedTuple):
     time_stamp: str
 
 
-class DumpConfigKeys(NamedTuple):
+@dataclass(slots=True, frozen=True)
+class DumpConfigKeys:
     dest_dir_path: Path | None = None
     auto_add_bool: bool | None = None
     auto_commit_bool: bool | None = None
@@ -72,13 +74,15 @@ class DumpConfigKeys(NamedTuple):
         }
 
 
-class InitData(NamedTuple):
+@dataclass(slots=True, frozen=True)
+class InitData:
     pilot_mode: bool = False
     which_chezmoi: str | None = None
     which_git: str | None = None
 
 
-class IterDirResult(NamedTuple):
+@dataclass(slots=True, frozen=True)
+class IterDirResult:
     # status codes will be either Sc.UU (unmanaged) or None (unwanted)
     error: str
     exceptions: dict[Path, str]
@@ -87,19 +91,15 @@ class IterDirResult(NamedTuple):
     files: dict[Path, NodeData]
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class NodeData:
     dir_path: bool
     exists: bool
-    file_path: bool
     has_nested_status: bool
     main_label: str
-    managed_dir: bool
-    managed_file: bool
+    managed: bool
     path: Path
     source_path: Path | None
-    status_dir: bool
-    status_file: bool
     status: StatusCode | None
     un_wanted_dir: bool
     un_wanted_file: bool
@@ -107,8 +107,8 @@ class NodeData:
     dest_dir: bool = False
 
     @property
-    def managed(self) -> bool:
-        return self.managed_dir or self.managed_file
+    def has_status(self) -> bool:
+        return self.status is not None
 
     @property
     def enable_op_btn_map(self) -> dict[BtnLabel, bool]:
@@ -121,7 +121,7 @@ class NodeData:
             self.managed
             and self.exists
             and not self.dest_dir
-            and (self.file_path or not self.has_nested_unmanaged)
+            and (not self.dir_path or not self.has_nested_unmanaged)
         )
         return {
             BtnLabel.chezmoi_add: enable_add_btn,
