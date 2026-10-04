@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
     from pathlib import Path
 
-    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+    from chezmoi_mousse.str_enums import WriteCmd
 
 
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
@@ -46,19 +46,11 @@ def _get_chezmoi_cmd() -> str:
 
 
 async def create_subprocess_exec_result(
-    cmd_enum: ReadCmd | WriteCmd,
-    path: Path | None,
+    chezmoi_args: tuple[str, ...],
     time_out: int = 15,
 ) -> ExecResult:
     chezmoi_cmd = _get_chezmoi_cmd()
-    exec_args = (
-        (chezmoi_cmd, *cmd_enum.value, str(path))
-        if path is not None
-        else (
-            chezmoi_cmd,
-            *cmd_enum.value,
-        )
-    )
+    exec_args = (chezmoi_cmd, *chezmoi_args)
 
     process = await asyncio.create_subprocess_exec(
         *exec_args,

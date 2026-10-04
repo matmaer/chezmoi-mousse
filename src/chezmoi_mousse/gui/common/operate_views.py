@@ -163,7 +163,7 @@ class _DiffViewBase(Vertical):
 
         else:
             diff_result = await tchezmoi.run_chezmoi_cmd(
-                self.app, diff_cmd, path_arg=path
+                self.app, diff_cmd, verb_arg=path
             )
             widgets: list[Label | Static] = []
 

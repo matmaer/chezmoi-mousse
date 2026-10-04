@@ -25,7 +25,6 @@ class CommandResult:
     cmd_enum: WriteCmd | ReadCmd | None
     full_cmd: str
     out_txt: str
-    path_arg: Path | None
     pretty_cmd: str
     returncode: int | None
     std_err: str

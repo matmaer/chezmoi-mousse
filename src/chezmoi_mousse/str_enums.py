@@ -601,7 +601,6 @@ class _VerbArgs(StrEnum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
-    path_style_source_absolute = "--path-style=source-absolute"
     reverse = "--reverse"
 
 
@@ -663,17 +662,9 @@ class ReadCmd(Enum):
         _VerbArgs.path_style_absolute,
         _VerbArgs.include_files,
     )
-    managed_source_dirs = (
+    source_path = (
         *_GlobalArgs.non_interactive.value,
-        "managed",
-        _VerbArgs.path_style_source_absolute,
-        _VerbArgs.include_dirs,
-    )
-    managed_source_files = (
-        *_GlobalArgs.non_interactive.value,
-        "managed",
-        _VerbArgs.path_style_source_absolute,
-        _VerbArgs.include_files,
+        "source-path",
     )
     status_dirs = (
         *_GlobalArgs.non_interactive.value,
@@ -726,8 +717,7 @@ class ReadCmd(Enum):
 
     @cached_property
     def pretty_splash_cmd(self) -> str:
-        pretty_cmd = str(self.pretty_cmd)
-        pretty = pretty_cmd.replace((_VerbArgs.path_style_source_absolute), "source")
+        pretty = str(self.pretty_cmd)
         pretty = pretty.replace("--include=", "")
         return pretty
 
