@@ -91,27 +91,16 @@ async def _exec_chezmoi(
 async def run_chezmoi_cmd(
     app: ChezmoiGui,
     cmd_enum: ReadCmd | WriteCmd,
-    path_arg: Path | None = None,
+    *,
+    path_arg: Path | None,
 ) -> CommandResult:
-    if cmd_enum is ReadCmd.git_log and path_arg is not None:
-        source_path = (await _exec_chezmoi(app, ReadCmd.source_path, path_arg)).std_out
-        return await _exec_chezmoi(app, ReadCmd.git_log, Path(source_path))
-    elif cmd_enum in ReadCmd:
-        return await _exec_chezmoi(app, cmd_enum, path_arg)
-    # Only works for apply and re-add, not for add, forget and destroy
-    if path_arg is None and cmd_enum in (
-        WriteCmd.add,
-        WriteCmd.destroy,
-        WriteCmd.forget,
-    ):
-        app.notify(f"Cannot run chezmoi on the destDir for {cmd_enum.name}.")
     return await _exec_chezmoi(app, cmd_enum, path_arg)
 
 
 async def run_in_task_group(app: ChezmoiGui, commands: tuple[ReadCmd, ...]) -> None:
     async with asyncio.TaskGroup() as tg:
         for cmd_enum in commands:
-            tg.create_task(run_chezmoi_cmd(app, cmd_enum))
+            tg.create_task(run_chezmoi_cmd(app, cmd_enum, path_arg=None))
 
 
 @staticmethod
@@ -146,18 +135,30 @@ async def get_affected_paths(
 async def run_managed_commands(app: ChezmoiGui) -> None:
 
     async with asyncio.TaskGroup() as tg:
-        man_dir_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.managed_dirs))
-        man_file_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.managed_files))
+        man_dir_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.managed_dirs, path_arg=None)
+        )
+        man_file_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.managed_files, path_arg=None)
+        )
         man_source_dir_task = tg.create_task(
-            run_chezmoi_cmd(app, ReadCmd.managed_source_dirs)
+            run_chezmoi_cmd(app, ReadCmd.managed_source_dirs, path_arg=None)
         )
         man_source_file_task = tg.create_task(
-            run_chezmoi_cmd(app, ReadCmd.managed_source_files)
+            run_chezmoi_cmd(app, ReadCmd.managed_source_files, path_arg=None)
         )
-        status_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_dirs))
-        status_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.status_files))
-        unman_dirs_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_dirs))
-        unman_files_task = tg.create_task(run_chezmoi_cmd(app, ReadCmd.unmanaged_files))
+        status_dirs_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.status_dirs, path_arg=None)
+        )
+        status_files_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.status_files, path_arg=None)
+        )
+        unman_dirs_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.unmanaged_dirs, path_arg=None)
+        )
+        unman_files_task = tg.create_task(
+            run_chezmoi_cmd(app, ReadCmd.unmanaged_files, path_arg=None)
+        )
 
     def parse_paths_to_set(cmd_result: CommandResult) -> set[Path]:
         return {Path(line) for line in cmd_result.out_list}

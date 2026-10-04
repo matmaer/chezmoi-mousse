@@ -162,7 +162,9 @@ class _DiffViewBase(Vertical):
             widgets = self.cache[path]
 
         else:
-            diff_result = await tchezmoi.run_chezmoi_cmd(self.app, diff_cmd, path)
+            diff_result = await tchezmoi.run_chezmoi_cmd(
+                self.app, diff_cmd, path_arg=path
+            )
             widgets: list[Label | Static] = []
 
             def get_prefix(line: str) -> str:
@@ -263,7 +265,9 @@ class GitLogView(Vertical):
         return pretty_cells
 
     @work
-    async def _update_datatable_and_flat_label(self, path: Path) -> bool:
+    async def _update_datatable_and_flat_label(self, node_data: NodeData) -> bool:
+        source_path = node_data.source_path
+        path = source_path if source_path is not None else store.cfg.dest_dir
         self.data_table.clear()
         if path in self.cache:
             self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, path))
@@ -271,7 +275,7 @@ class GitLogView(Vertical):
         else:
             path_arg = None if path == store.cfg.dest_dir else path
             cmd_result = await tchezmoi.run_chezmoi_cmd(
-                self.app, ReadCmd.git_log, path_arg
+                self.app, ReadCmd.git_log, path_arg=path_arg
             )
             self.flat_label.update(cmd_result.pretty_cmd)
             pretty_cells = self._get_styled_cells(cmd_result.out_list)
@@ -291,7 +295,7 @@ class GitLogView(Vertical):
             or node_data.managed_dir
             or node_data.managed_file
         ):
-            has_data = self._update_datatable_and_flat_label(node_data.path)
+            has_data = self._update_datatable_and_flat_label(node_data)
             if has_data:
                 self.path_info_vertical.display = False
                 self.view_vertical.display = True

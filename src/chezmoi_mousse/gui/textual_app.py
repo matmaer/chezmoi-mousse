@@ -142,7 +142,7 @@ class ChezmoiGui(App[str]):
         self.init_phase = True
         results: list[CommandResult] = []
         for cmd in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config):
-            cmd_result = await tchezmoi.run_chezmoi_cmd(self, cmd)
+            cmd_result = await tchezmoi.run_chezmoi_cmd(self, cmd, path_arg=None)
             results.append(cmd_result)
         await store.decode_and_store_config(results[-1].std_out)
         await self.splash_screen.write_log_msg(

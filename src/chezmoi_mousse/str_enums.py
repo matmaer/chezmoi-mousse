@@ -675,10 +675,6 @@ class ReadCmd(Enum):
         _VerbArgs.path_style_source_absolute,
         _VerbArgs.include_files,
     )
-    source_path = (
-        *_GlobalArgs.non_interactive.value,
-        "source-path",
-    )
     status_dirs = (
         *_GlobalArgs.non_interactive.value,
         "status",

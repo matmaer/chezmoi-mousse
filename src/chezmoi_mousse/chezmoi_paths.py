@@ -64,6 +64,7 @@ class ChezmoiTreePaths:
             managed_dir=False,
             managed_file=False,
             path=self._dest_dir,
+            source_path=None,
             status_dir=False,
             status_file=False,
             status=None,
@@ -87,6 +88,7 @@ class ChezmoiTreePaths:
                     LabelStr.un_wanted_file if is_unwanted else LabelStr.un_man_file
                 )
             status = self._status_files.get(path, None)
+            source_path = self._man_dirs.get(path)
             self.file_node_data[path] = NodeData(
                 dir_path=False,
                 exists=True if managed else path.exists(),
@@ -96,6 +98,7 @@ class ChezmoiTreePaths:
                 managed_dir=False,
                 managed_file=managed,
                 path=path,
+                source_path=source_path,
                 status_dir=False,
                 status_file=status_file,
                 status=status,
@@ -109,12 +112,12 @@ class ChezmoiTreePaths:
             status = self._status_dirs.get(path, None)
             is_un_unwanted = False if managed else path in self._un_wanted_dirs
             has_nested_status = False
-            has_nested_unmanaged = False
+            nested_unmanaged = False
             if managed:
                 has_nested_status = path_funcs.any_nested_in(
                     dir_path=path, check_paths=self._status_path_set
                 )
-                has_nested_unmanaged = path_funcs.any_nested_in(
+                nested_unmanaged = path_funcs.any_nested_in(
                     dir_path=path, check_paths=self._un_man_paths
                 )
             if managed:
@@ -131,17 +134,19 @@ class ChezmoiTreePaths:
                 main_label = (
                     LabelStr.un_wanted_dir if is_un_unwanted else LabelStr.un_man_dir
                 )
+            source_path = self._man_dirs.get(path)
 
             self.dir_node_data[path] = NodeData(
                 dir_path=True,
                 exists=path.exists() if managed else True,
                 file_path=False,
                 has_nested_status=has_nested_status,
-                has_nested_unmanaged=has_nested_unmanaged,
+                has_nested_unmanaged=nested_unmanaged,
                 main_label=main_label,
                 managed_dir=managed,
                 managed_file=False,
                 path=path,
+                source_path=source_path,
                 status_dir=status is not None,
                 status_file=False,
                 status=status,

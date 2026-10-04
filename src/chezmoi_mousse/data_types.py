@@ -97,13 +97,14 @@ class NodeData:
     managed_dir: bool
     managed_file: bool
     path: Path
+    source_path: Path | None
     status_dir: bool
     status_file: bool
     status: StatusCode | None
     un_wanted_dir: bool
     un_wanted_file: bool
-    dest_dir: bool = False
     has_nested_unmanaged: bool = False
+    dest_dir: bool = False
 
     @property
     def managed(self) -> bool:
