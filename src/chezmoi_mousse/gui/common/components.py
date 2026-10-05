@@ -11,7 +11,7 @@ from textual.containers import (
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import path_funcs, store
+from chezmoi_mousse.data_types import OperateViewData
 from chezmoi_mousse.str_enums import (
     Chars,
     ColorVar,
@@ -114,16 +114,15 @@ class PathInfo(ScrollableContainer):
 
     def on_mount(self) -> None:
         self.cache: dict[Path, list[HorizontalGroup]] = {}
+        self.paths = OperateViewData()
         self.dir_info = self.query_exactly_one(PathInfo.DirInfo)
         self.file_info = self.query_exactly_one(PathInfo.FileInfo)
 
     @work
     async def _set_dir_info(self, node_data: NodeData) -> None:
 
-        path = node_data.path
-
-        if path in self.cache:
-            widgets = self.cache[path]
+        if node_data.path in self.cache:
+            widgets = self.cache[node_data.path]
         else:
             is_managed_label = (
                 self.TrueLabel() if node_data.managed else self.FalseLabel()
@@ -135,11 +134,7 @@ class PathInfo(ScrollableContainer):
                 self.TrueLabel() if node_data.has_nested_status else self.FalseLabel()
             )
             has_nested_managed_label = (
-                self.TrueLabel()
-                if path_funcs.any_nested_in(
-                    dir_path=path, check_paths=store.cm_paths.man_paths
-                )
-                else self.FalseLabel()
+                self.TrueLabel() if node_data.has_nested_managed else self.FalseLabel()
             )
             unwanted_label = (
                 self.TrueLabel() if node_data.un_wanted_dir else self.FalseLabel()
@@ -163,7 +158,7 @@ class PathInfo(ScrollableContainer):
                 HorizontalGroup(self.InfoLabel(LabelStr.d_un_wanted), unwanted_label),
                 HorizontalGroup(self.InfoLabel(LabelStr.d_exists), exists),
             ]
-        self.cache[path] = widgets
+        self.cache[node_data.path] = widgets
         self.dir_info.remove_children()
         self.dir_info.mount_all(self.cache[node_data.path])
 

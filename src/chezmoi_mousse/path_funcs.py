@@ -191,6 +191,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     dirs[path] = NodeData(
                         dir_path=True,
                         exists=True,
+                        has_nested_managed=False,
                         has_nested_status=False,
                         main_label=main_label,
                         managed=False,
@@ -208,6 +209,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     files[path] = NodeData(
                         dir_path=False,
                         exists=True,
+                        has_nested_managed=False,
                         has_nested_status=False,
                         main_label=main_label,
                         managed=False,

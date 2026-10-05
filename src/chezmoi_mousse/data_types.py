@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
@@ -16,6 +15,7 @@ __all__ = [
     "InitData",
     "IterDirResult",
     "NodeData",
+    "OperateViewData",
     "StreamEvent",
 ]
 
@@ -24,7 +24,6 @@ __all__ = [
 class CommandResult:
     cmd_enum: WriteCmd | ReadCmd | None
     full_cmd: str
-    out_txt: str
     pretty_cmd: str
     returncode: int | None
     std_err: str
@@ -94,6 +93,7 @@ class IterDirResult:
 class NodeData:
     dir_path: bool
     exists: bool
+    has_nested_managed: bool
     has_nested_status: bool
     main_label: str
     managed: bool
@@ -129,6 +129,17 @@ class NodeData:
             BtnLabel.chezmoi_apply: has_diff,
             BtnLabel.chezmoi_re_add: self.exists and has_diff,
         }
+
+
+@dataclass(slots=True)
+class OperateViewData:
+    last_displayed_path: Path | None = None
+    displayed_paths: set[Path] = field(default_factory=set[Path])
+    no_show_paths: set[Path] = field(default_factory=set[Path])
+
+    @property
+    def known_paths(self) -> set[Path]:
+        return self.displayed_paths | self.no_show_paths
 
 
 @dataclass(slots=True, frozen=True)

@@ -86,7 +86,7 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in file_node_dict.items()
-                if node_data.managed
+                if (node_data.has_status or node_data.managed)
                 or (not node_data.managed and not node_data.un_wanted_file)
             }
         elif self.name in (
@@ -96,17 +96,13 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in file_node_dict.items()
-                if node_data.has_status or not node_data.managed
+                if (node_data.has_status and node_data.managed) or not node_data.managed
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
             TreeName.un_wanted_plus_amp_xpd,
         ):
-            result = {
-                path: node_data
-                for path, node_data in file_node_dict.items()
-                if node_data.managed
-            }
+            result = file_node_dict
         return path_funcs.sort_path_dict(result)
 
     def _get_dir_nodes(
@@ -135,8 +131,14 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in dir_node_dict.items()
-                if node_data.has_status
-                or (not node_data.managed and not node_data.un_wanted_dir)
+                if (
+                    (not node_data.managed or node_data.has_nested_unmanaged)
+                    and not node_data.un_wanted_dir
+                )
+                or (
+                    node_data.managed
+                    and (node_data.has_status or node_data.has_nested_status)
+                )
             }
         elif self.name in (
             TreeName.un_man_plus_amp,
@@ -145,8 +147,11 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in dir_node_dict.items()
-                if node_data.managed
-                or (not node_data.managed and not node_data.un_wanted_dir)
+                if (
+                    (not node_data.managed or node_data.has_nested_unmanaged)
+                    and not node_data.un_wanted_dir
+                )
+                or node_data.managed
             }
         elif self.name in (
             TreeName.un_wanted_plus_sp,
@@ -155,13 +160,17 @@ class OperateTree(Tree[NodeData]):
             result = {
                 path: node_data
                 for path, node_data in dir_node_dict.items()
-                if node_data.has_status or not node_data.managed
+                if (not node_data.managed or node_data.has_nested_unmanaged)
+                or (
+                    node_data.managed
+                    and (node_data.has_status or node_data.has_nested_status)
+                )
             }
         elif self.name in (
             TreeName.un_wanted_plus_amp,
             TreeName.un_wanted_plus_amp_xpd,
         ):
-            result = dict(dir_node_dict.items())
+            result = dir_node_dict
         return path_funcs.sort_path_dict(result)
 
     def _tree_label_color(self, node_data: NodeData) -> ColorVar:
@@ -315,7 +324,23 @@ class OperateTree(Tree[NodeData]):
         dir_nodes = self._get_dir_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_file_nodes(store.cm_paths.file_node_data)
 
+        if self.name in (
+            TreeName.managed_all_mp,
+            TreeName.managed_all_mp_xpd,
+            TreeName.managed_only_sp,
+            TreeName.managed_all_mp,
+            TreeName.un_man_plus_amp,
+            TreeName.un_man_plus_amp_xpd,
+            # TreeName.un_man_plus_sp,
+            # TreeName.un_man_plus_sp_xpd,
+            TreeName.un_wanted_plus_amp,
+            TreeName.un_wanted_plus_amp_xpd,
+            # TreeName.un_wanted_plus_sp,
+            # TreeName.un_wanted_plus_sp_xpd,
+        ):
+            return dir_nodes, file_nodes
         # add missing parent directories for trees that could have missing parents
+        missing_parents: set[Path] = set()
         for path in (*dir_nodes, *file_nodes):
             parent_path = path.parent
             while (
@@ -324,7 +349,14 @@ class OperateTree(Tree[NodeData]):
             ):
                 if parent_path not in dir_nodes:
                     dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
+                    missing_parents.add(parent_path)
                 parent_path = parent_path.parent
+        if missing_parents:
+            self.app.app_log.write_ready(f"missing parents in {self.id}")
+            missing_parents_str = "\n".join(
+                str(path) for path in sorted(missing_parents, key=str)
+            )
+            self.app.app_log.write_warning(f"\n{missing_parents_str}")
         return dir_nodes, file_nodes
 
     @work
@@ -339,8 +371,6 @@ class OperateTree(Tree[NodeData]):
         for path, node_data in file_nodes.items():
             self._add_node_with_color(path, node_data, allow_expand=False)
         self._expand_xpd_nodes()
-        self.select_node(self.root)
-        self.unselect()  # otherwise it looks like the first node is selected
         if self.name == TreeName.managed_only_sp:
             self.display = True
         self.loading = False

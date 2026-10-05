@@ -28,6 +28,7 @@ from chezmoi_mousse.gui.common.actionables import (
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     MainSectionLabel,
+    PathInfo,
     SubSectionLabel,
 )
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
@@ -43,7 +44,6 @@ from chezmoi_mousse.str_enums import (
     Chars,
     ChezmoiPrompts,
     LabelStr,
-    ReactiveVar,
     Tcss,
     TreeName,
     WriteCmd,
@@ -324,8 +324,8 @@ class LeftSideVertical(Vertical):
 
     @on(Tree.NodeSelected)
     def sync_selected_node(self, event: Tree.NodeSelected[NodeData]) -> None:
-        if event.node.data is None:
-            return
+        assert event.node.data is not None
+        self.notify(f"Syncing for {event.node.data.path}")
         if (
             self._current_displayed_tree.id is None
             or event.control.id != self._current_displayed_tree.id
@@ -422,6 +422,9 @@ class RightSideVertical(Vertical):
             first_radio.value = True
 
 
+class PathView(Vertical): ...
+
+
 class OperateTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -442,6 +445,9 @@ class OperateTab(TabPane):
                 yield ContentView()
                 yield DiffView()
                 yield DiffReverseView()
+                with PathView():
+                    yield SubSectionLabel(LabelStr.select_path_git_log)
+                    yield PathInfo()
             yield RightSideVertical(
                 radio_labels=(
                     LabelStr.radio_git_log,
@@ -462,29 +468,107 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
-        middle_vertical = self.query_one(self.ids.container.middle_q, Vertical)
-        self.middle_section_label = middle_vertical.query_exactly_one(MainSectionLabel)
-        self.middle_section_label.update(LabelStr.dest_dir)
-        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
+        # we can do this here as we await on mount in the splash screen
+        self.middle_section_label = self.query_one(
+            self.ids.container.middle_q, Vertical
+        ).query_exactly_one(MainSectionLabel)
+
         self.git_log_view = self.query_exactly_one(GitLogView)
         self.content_view = self.query_exactly_one(ContentView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
-        self._set_all_path_reactives(store.cm_paths.dest_dir_node_data)
-        buttons = self.op_btn_group.query(Button).results()
-        self.op_buttons: set[Button] = {
-            b
-            for b in buttons
-            if b.label
-            in (
-                BtnLabel.chezmoi_add,
-                BtnLabel.chezmoi_destroy,
-                BtnLabel.chezmoi_forget,
-                BtnLabel.chezmoi_apply,
-                BtnLabel.chezmoi_re_add,
-            )
-        }
+
+        self.path_view = self.query_exactly_one(PathView)
+        self.path_info = self.path_view.query_exactly_one(PathInfo)
+        self.no_show_label = self.path_view.query_exactly_one(SubSectionLabel)
+
+        self.op_buttons = (
+            self.query_exactly_one(OperateBtnGroup).query(Button).results()
+        )
         self._update_btn_states(store.cm_paths.dest_dir_node_data)
+
+        self.radio_set = self.query_exactly_one(RadioSet)
+
+        self.current_node = store.cm_paths.dest_dir_node_data
+
+    @property
+    def radio_to_view(
+        self,
+    ) -> dict[str, ContentView | DiffView | DiffReverseView | GitLogView]:
+        return {
+            LabelStr.radio_git_log: self.git_log_view,
+            LabelStr.radio_contents: self.content_view,
+            LabelStr.radio_diff: self.diff_view,
+            LabelStr.radio_diff_reverse: self.diff_reverse_view,
+        }
+
+    @property
+    def _current_radio_label(
+        self,
+    ) -> str:
+        current_radio_btn = self.radio_set.pressed_button
+        assert current_radio_btn is not None
+        return str(current_radio_btn.label)
+
+    @property
+    def _current_radio_view(
+        self,
+    ) -> ContentView | DiffView | DiffReverseView | GitLogView:
+        assert self.radio_set.pressed_button is not None
+        return self.radio_to_view[str(self.radio_set.pressed_button.label)]
+
+    def _update_no_show_label(self, radio_label: str) -> None:
+        if radio_label == LabelStr.radio_git_log:
+            self.no_show_label.update(LabelStr.select_path_git_log)
+        elif radio_label == LabelStr.radio_contents:
+            self.no_show_label.update(LabelStr.select_path_contents)
+        elif radio_label in (LabelStr.radio_diff, LabelStr.radio_diff_reverse):
+            self.no_show_label.update(LabelStr.select_path_diff)
+
+    def _update_btn_states(self, node_data: NodeData) -> None:
+        for btn in self.op_buttons:
+            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
+
+    def _update_all_widgets(self, node_data: NodeData) -> None:
+        self.current_path = node_data.path
+        self.middle_section_label.update(node_data.main_label)
+        self._update_no_show_label(str(self.radio_set.pressed_button))
+        self._update_btn_states(node_data)
+        self.middle_section_label.update(node_data.main_label)
+        self.path_info.node_data = node_data
+        self.path_view.display = False
+
+        if self._current_radio_label == LabelStr.radio_git_log:
+            if node_data.path in self.git_log_view.view_data.displayed_paths:
+                self.git_log_view.node_data = node_data
+                self.git_log_view.display = True
+            else:
+                self.git_log_view.display = False
+                self.path_view.display = True
+
+        elif self._current_radio_label == LabelStr.radio_diff:
+            if node_data.has_status:
+                self.diff_view.node_data = node_data
+                self.diff_view.display = True
+            else:
+                self.diff_view.display = False
+                self.path_view.display = True
+
+        elif self._current_radio_label == LabelStr.radio_diff_reverse:
+            if node_data.has_status:
+                self.diff_reverse_view.node_data = node_data
+                self.diff_reverse_view.display = True
+            else:
+                self.diff_reverse_view.display = False
+                self.path_view.display = True
+
+        elif self._current_radio_label == LabelStr.radio_contents:
+            if node_data.dir_path or node_data.path.is_dir():
+                self.content_view.display = False
+                self.path_info.display = True
+            else:
+                self.content_view.node_data = node_data
+                self.content_view.display = True
 
     #################################
     # Watchers and message handling #
@@ -492,7 +576,7 @@ class OperateTab(TabPane):
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
-
+        self.notify(f"{msg.tree_id_q} active", severity="warning")
         # hide the current tree:
         all_trees = self.query(OperateTree).results()
         for tree in all_trees:
@@ -500,33 +584,18 @@ class OperateTab(TabPane):
         show_tree = self.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
 
-    def _set_all_path_reactives(self, node_data: NodeData) -> None:
-        self.current_path = node_data.path
-        setattr(self.git_log_view, ReactiveVar.node_data, node_data)
-        setattr(self.content_view, ReactiveVar.node_data, node_data)
-        setattr(self.diff_view, ReactiveVar.node_data, node_data)
-        setattr(self.diff_reverse_view, ReactiveVar.node_data, node_data)
-
-    def _update_btn_states(self, node_data: NodeData) -> None:
-        for btn in self.op_buttons:
-            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
-
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
-        if event.node.data is None:
-            return
         event.stop()
-        self.middle_section_label.update(event.node.data.main_label)
-        self._set_all_path_reactives(event.node.data)
-        self._update_btn_states(event.node.data)
+        assert event.node.data is not None
+        self.notify(f"{event.node.data.path} selected in {event.control.id}")
+        self._update_all_widgets(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
-            self.middle_section_label.update(LabelStr.dest_dir)
-            self._set_all_path_reactives(store.cm_paths.dest_dir_node_data)
-            self._update_btn_states(store.cm_paths.dest_dir_node_data)
+            self._update_all_widgets(store.cm_paths.dest_dir_node_data)
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
@@ -545,23 +614,5 @@ class OperateTab(TabPane):
     @on(RadioSet.Changed)
     def toggle_view(self, event: RadioSet.Changed) -> None:
         event.stop()
-        if event.pressed.label == LabelStr.radio_git_log:
-            self.git_log_view.display = True
-            self.content_view.display = False
-            self.diff_view.display = False
-            self.diff_reverse_view.display = False
-        if event.pressed.label == LabelStr.radio_contents:
-            self.git_log_view.display = False
-            self.content_view.display = True
-            self.diff_view.display = False
-            self.diff_reverse_view.display = False
-        if event.pressed.label == LabelStr.radio_diff:
-            self.git_log_view.display = False
-            self.content_view.display = False
-            self.diff_view.display = True
-            self.diff_reverse_view.display = False
-        if event.pressed.label == LabelStr.radio_diff_reverse:
-            self.git_log_view.display = False
-            self.content_view.display = False
-            self.diff_view.display = False
-            self.diff_reverse_view.display = True
+        target_view = self.radio_to_view[str(event.pressed.label)]
+        self.notify(f"target view is {target_view}", severity="error")

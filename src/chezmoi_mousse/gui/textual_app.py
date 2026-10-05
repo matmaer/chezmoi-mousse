@@ -36,7 +36,6 @@ from chezmoi_mousse.str_enums import (
     BtnLabel,
     Chars,
     LogStr,
-    ReactiveVar,
     ReadCmd,
     Tcss,
     WriteCmd,
@@ -160,8 +159,8 @@ class ChezmoiGui(App[str]):
         self.debug_log = self.query_one(store.debug_ids.richlog.debug_q, DebugLog)
         self.init_phase = False
         for cr in results:
-            setattr(self.cmd_log, ReactiveVar.cmd_result, cr)
-            setattr(self.app_log, ReactiveVar.cmd_result, cr)
+            self.cmd_log.cmd_result = cr
+            self.app_log.cmd_result = cr
         self._run_splash_commands()
 
         await tchezmoi.run_managed_commands(self)
@@ -192,7 +191,7 @@ class ChezmoiGui(App[str]):
         ):
             config_tab = self.query_exactly_one(ConfigTab)
             # the reactives trigger each update in a worker
-            setattr(config_tab, ReactiveVar.cmd_result, msg.cmd_result)
+            config_tab.cmd_result = msg.cmd_result
 
     # ##################
     # # Action Methods #

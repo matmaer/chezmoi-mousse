@@ -17,7 +17,7 @@ from chezmoi_mousse.asyncio_process_exec import (
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.str_enums import ReactiveVar, ReadCmd, StatusCode as Sc, WriteCmd
+from chezmoi_mousse.str_enums import ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -53,19 +53,12 @@ async def _construct_command_result(
         out_lines.append(std_out)
         out_lines.append("Output on stderr:")
         out_lines.append(std_err)
-        out_txt = "\n\n".join(out_lines)
-    elif not std_out and std_err:
-        out_txt = std_err
     elif std_out and not std_err:
         out_list = std_out.splitlines()
-        out_txt = std_out
-    else:
-        out_txt = f"Output on stdout:\n{std_out}\n\nOutput on stderr:\n{std_err}"
     full_cmd: str = f"chezmoi {' '.join(chezmoi_args)}"
     return CommandResult(
         cmd_enum=cmd_enum,
         full_cmd=full_cmd,
-        out_txt=out_txt,
         pretty_cmd=f"{pretty_cmd(cmd_enum, pretty_verb_arg)}",
         returncode=result_code,
         std_err=std_err,
@@ -88,8 +81,8 @@ async def _exec_chezmoi(
     if app.screen.name == "splash_screen":
         await app.splash_screen.write_log_msg(cmd_result=command_result)
     if app.init_phase is False:
-        setattr(app.app_log, ReactiveVar.cmd_result, command_result)
-        setattr(app.cmd_log, ReactiveVar.cmd_result, command_result)
+        app.app_log.cmd_result = command_result
+        app.cmd_log.cmd_result = command_result
     app.post_message(CommandResultMsg(command_result))
     return command_result
 
@@ -244,8 +237,6 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _un_man_dirs=un_man_dirs,
         _un_man_files=un_man_files,
         _un_man_paths=un_man_files | un_man_dirs,
-        _un_wanted_dirs={p for p in un_man_dirs if path_funcs.is_unwanted_dir(p)},
-        man_paths=man_dirs.keys() | man_files.keys(),
     )
     await store.handle_new_tree_paths(app, tree_paths)
 

@@ -13,10 +13,9 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Label, Static
 
 from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse.data_types import OperateViewData
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
-    PathInfo,
-    SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import (
     ColorVar,
@@ -51,36 +50,27 @@ class FalseLabel(Label):
 class FileContentStatic(Static): ...
 
 
-class ViewVertical(Vertical): ...
-
-
-class PathInfoVertical(Vertical): ...
-
-
 class ContentView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
+    paths: OperateViewData
 
     file_content_cache: ClassVar[dict[Path, Text]] = {}
 
     def compose(self) -> ComposeResult:
-        with ViewVertical():
-            yield FlatSectionLabel(LabelStr.not_set)
-            yield ScrollableContainer(FileContentStatic(markup=False))
-        with PathInfoVertical():
-            yield SubSectionLabel(LabelStr.select_path_contents)
-            yield PathInfo()
+        yield FlatSectionLabel(LabelStr.not_set)
+        yield ScrollableContainer(FileContentStatic(markup=False))
 
     def on_mount(self) -> None:
-        self.view_vertical = self.query_exactly_one(ViewVertical)
-        self.view_vertical.display = False
+        # we can do this here as we await on mount in the splash screen
+        self.display = False
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(FileContentStatic)
-
-        self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
-        self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
+        self.view_data = OperateViewData()
+        self.node_data = store.cm_paths.dest_dir_node_data
+        self.view_data.no_show_paths.add(store.cfg.dest_dir)
 
     @work
     async def _update_file_content(self, node_data: NodeData) -> None:
@@ -101,14 +91,18 @@ class ContentView(Vertical):
         self.content_static.update(f_content)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        self.path_info.node_data = node_data
+
+        if node_data.path == self.view_data.last_displayed_path:
+            self.display = True
+            return
+
         if node_data.dir_path or node_data.path.is_dir():
-            self.view_vertical.display = False
-            self.path_info_vertical.display = True
-        else:
-            self.path_info_vertical.display = False
-            self._update_file_content(node_data)
-            self.view_vertical.display = True
+            self.display = False
+            return
+
+        self._update_file_content(node_data)
+        self.view_data.last_displayed_path = node_data.path
+        self.display = True
 
 
 class DiffWidgets(ScrollableContainer): ...
@@ -134,26 +128,20 @@ class _DiffViewBase(Vertical):
     }
 
     def __init__(self, diff_cmd: ReadCmd) -> None:
-        self.diff_cmd = diff_cmd
         self.cache: dict[Path, list[Static]] = {}
+        self.diff_cmd = diff_cmd
+        self.view_data = OperateViewData()
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        with ViewVertical():
-            yield FlatSectionLabel(LabelStr.not_set)
-            yield ScrollableContainer(DiffWidgets())
-        with PathInfoVertical():
-            yield SubSectionLabel(LabelStr.select_path_diff)
-            yield PathInfo()
+        yield FlatSectionLabel(LabelStr.not_set)
+        yield DiffWidgets()
 
     def on_mount(self) -> None:
-        self.view_vertical = self.query_exactly_one(ViewVertical)
-        self.view_vertical.display = False
+        # we can do all this here as we await on mount in the splash screen
+        self.display = False
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(DiffWidgets)
-
-        self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
-        self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
 
     @work
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
@@ -193,15 +181,19 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        self.path_info.node_data = node_data
-        if node_data.has_status:
-            self.path_info_vertical.display = False
-            self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
-            self._create_diff_widgets(self.diff_cmd, node_data.path)
-            self.view_vertical.display = True
-        else:
-            self.view_vertical.display = False
-            self.path_info_vertical.display = True
+
+        if node_data.path == self.view_data.last_displayed_path:
+            self.display = True
+            return
+
+        if not node_data.has_status:
+            self.display = False
+            return
+
+        self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
+        self._create_diff_widgets(self.diff_cmd, node_data.path)
+        self.view_data.last_displayed_path = node_data.path
+        self.display = True
 
 
 class DiffView(_DiffViewBase):
@@ -222,20 +214,17 @@ class GitLogView(Vertical):
     cache: ClassVar[dict[Path, list[list[str]]]] = {}
 
     def compose(self) -> ComposeResult:
-        with ViewVertical():
-            yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
-            yield DataTable[str](show_cursor=False)
-        with PathInfoVertical():
-            yield SubSectionLabel(LabelStr.no_git_log)
-            yield PathInfo()
+        yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
+        yield DataTable[str](show_cursor=False)
 
     def on_mount(self) -> None:
-        self.view_vertical = self.query_exactly_one(ViewVertical)
+        # we can do all this here as we await on mount in the splash screen
+        self.display = False
+        self.view_data = OperateViewData()
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
-        self.path_info_vertical = self.query_exactly_one(PathInfoVertical)
-        self.path_info = self.path_info_vertical.query_exactly_one(PathInfo)
+        self._update_widgets(store.cm_paths.dest_dir_node_data)
 
     def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
@@ -287,17 +276,36 @@ class GitLogView(Vertical):
         self.cache[cache_path] = pretty_cells
         return True
 
-    def watch_node_data(self, node_data: NodeData) -> None:
-        self.path_info.node_data = node_data
-        if node_data.path == store.cfg.dest_dir or node_data.managed:
-            has_data = self._update_datatable_and_flat_label(node_data)
-            if has_data:
-                self.path_info_vertical.display = False
-                self.view_vertical.display = True
-            else:
-                self.view_vertical.display = False
-                self.path_info_vertical.display = True
+    def _update_widgets(self, node_data: NodeData) -> None:
+        has_data = self._update_datatable_and_flat_label(node_data)
+        if has_data:
+            self.view_data.displayed_paths.add(node_data.path)
+            self.display = True
         else:
-            self.flat_label.update(LabelStr.select_path_git_log)
-            self.path_info_vertical.display = True
-            self.view_vertical.display = False
+            self.display = False
+            self.view_data.no_show_paths.add(node_data.path)
+
+    def watch_node_data(self, node_data: NodeData) -> None:
+
+        if node_data.path in self.view_data.no_show_paths:
+            self.display = False
+            return
+
+        if node_data.path == self.view_data.last_displayed_path:
+            self.display = True
+            return
+
+        if node_data.dest_dir and node_data.path not in self.view_data.no_show_paths:
+            self._update_widgets(node_data)
+            return
+
+        if not node_data.managed:
+            self.display = False
+            return
+
+        if (
+            node_data.path not in self.view_data.known_paths
+            or node_data.path in self.view_data.displayed_paths
+        ):
+            self._update_widgets(node_data)
+            return
