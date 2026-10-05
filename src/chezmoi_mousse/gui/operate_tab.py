@@ -446,7 +446,8 @@ class OperateTab(TabPane):
                 yield DiffView()
                 yield DiffReverseView()
                 with PathView():
-                    yield SubSectionLabel(LabelStr.select_path_git_log)
+                    yield FlatSectionLabel(LabelStr.select_path_git_log)
+                    yield SubSectionLabel(str(store.cm_paths.dest_dir_node_data.path))
                     yield PathInfo()
             yield RightSideVertical(
                 radio_labels=(
@@ -480,7 +481,8 @@ class OperateTab(TabPane):
 
         self.path_view = self.query_exactly_one(PathView)
         self.path_info = self.path_view.query_exactly_one(PathInfo)
-        self.no_show_label = self.path_view.query_exactly_one(SubSectionLabel)
+        self.path_view_path = self.path_view.query_exactly_one(SubSectionLabel)
+        self.no_show_label = self.path_view.query_exactly_one(FlatSectionLabel)
 
         self.op_buttons = (
             self.query_exactly_one(OperateBtnGroup).query(Button).results()
@@ -489,7 +491,7 @@ class OperateTab(TabPane):
 
         self.radio_set = self.query_exactly_one(RadioSet)
 
-        self.current_node = store.cm_paths.dest_dir_node_data
+        self.current_path = store.cm_paths.dest_dir_node_data.path
 
     @property
     def radio_to_view(
@@ -518,6 +520,7 @@ class OperateTab(TabPane):
         return self.radio_to_view[str(self.radio_set.pressed_button.label)]
 
     def _update_no_show_label(self, radio_label: str) -> None:
+        self.path_view_path.update(str(self.current_path))
         if radio_label == LabelStr.radio_git_log:
             self.no_show_label.update(LabelStr.select_path_git_log)
         elif radio_label == LabelStr.radio_contents:
@@ -588,7 +591,6 @@ class OperateTab(TabPane):
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
         event.stop()
         assert event.node.data is not None
-        self.notify(f"{event.node.data.path} selected in {event.control.id}")
         self._update_all_widgets(event.node.data)
 
     @on(Button.Pressed)
