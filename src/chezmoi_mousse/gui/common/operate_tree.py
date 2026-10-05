@@ -323,40 +323,6 @@ class OperateTree(Tree[NodeData]):
     def _wanted_nodes(self) -> tuple[dict[Path, NodeData], dict[Path, NodeData]]:
         dir_nodes = self._get_dir_nodes(store.cm_paths.dir_node_data)
         file_nodes = self._get_file_nodes(store.cm_paths.file_node_data)
-
-        if self.name in (
-            TreeName.managed_all_mp,
-            TreeName.managed_all_mp_xpd,
-            TreeName.managed_only_sp,
-            TreeName.managed_all_mp,
-            TreeName.un_man_plus_amp,
-            TreeName.un_man_plus_amp_xpd,
-            # TreeName.un_man_plus_sp,
-            # TreeName.un_man_plus_sp_xpd,
-            TreeName.un_wanted_plus_amp,
-            TreeName.un_wanted_plus_amp_xpd,
-            # TreeName.un_wanted_plus_sp,
-            # TreeName.un_wanted_plus_sp_xpd,
-        ):
-            return dir_nodes, file_nodes
-        # add missing parent directories for trees that could have missing parents
-        missing_parents: set[Path] = set()
-        for path in (*dir_nodes, *file_nodes):
-            parent_path = path.parent
-            while (
-                parent_path != store.cfg.dest_dir
-                and parent_path not in store.cfg.dest_dir.parents
-            ):
-                if parent_path not in dir_nodes:
-                    dir_nodes[parent_path] = store.cm_paths.dir_node_data[parent_path]
-                    missing_parents.add(parent_path)
-                parent_path = parent_path.parent
-        if missing_parents:
-            self.app.app_log.write_ready(f"missing parents in {self.id}")
-            missing_parents_str = "\n".join(
-                str(path) for path in sorted(missing_parents, key=str)
-            )
-            self.app.app_log.write_warning(f"\n{missing_parents_str}")
         return dir_nodes, file_nodes
 
     @work
