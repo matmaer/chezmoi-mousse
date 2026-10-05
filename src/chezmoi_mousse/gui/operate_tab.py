@@ -300,11 +300,11 @@ class LeftSideVertical(Vertical):
         )
 
     @property
-    def _current_displayed_tree(self) -> OperateTree:
+    def current_displayed_tree(self) -> OperateTree:
         for tree in self.query_children(OperateTree).results():
             if tree.display is True:
                 return tree
-        return self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree)
+        raise RuntimeError("Expected a tree to be displayed.")
 
     @property
     def _non_displayed_trees(self) -> list[OperateTree]:
@@ -314,66 +314,14 @@ class LeftSideVertical(Vertical):
             if tree.display is False
         ]
 
-    def _sync_to_trees(self, node_data: NodeData, exclude: list[OperateTree]) -> None:
-        for tree in self._non_displayed_trees:
-            if tree in exclude:
-                continue
-            tree_node = tree.node_map.get(node_data.path)
+    def sync_selected_node(self, path: Path) -> None:
+        non_displayed_trees = [
+            t for t in self.query_children(OperateTree).results() if t.display is False
+        ]
+        for tree in non_displayed_trees:
+            tree_node = tree.node_map.get(path)
             if tree_node:
                 tree.select_node(tree_node)
-
-    @on(Tree.NodeSelected)
-    def sync_selected_node(self, event: Tree.NodeSelected[NodeData]) -> None:
-        assert event.node.data is not None
-        self.notify(f"Syncing for {event.node.data.path}")
-        if (
-            self._current_displayed_tree.id is None
-            or event.control.id != self._current_displayed_tree.id
-            or (
-                event.control.id
-                in (
-                    store.op_ids.tree.un_wanted_plus_sp,
-                    store.op_ids.tree.un_wanted_plus_amp,
-                )
-                and event.node.data.status == None
-            )
-        ):
-            return
-        exclude: list[OperateTree] = []
-        if event.node.data.status in (None, None):
-            exclude.extend(
-                [
-                    self.query_one(store.op_ids.tree.managed_only_sp_q, OperateTree),
-                    self.query_one(
-                        store.op_ids.tree.managed_only_sp_xpd_q, OperateTree
-                    ),
-                ]
-            )
-        if event.node.data.status in (None, None):
-            exclude.extend(
-                [
-                    self.query_one(store.op_ids.tree.managed_all_mp_q, OperateTree),
-                    self.query_one(store.op_ids.tree.managed_all_mp_xpd_q, OperateTree),
-                ]
-            )
-        if event.node.data.status is None:
-            exclude.extend(
-                [
-                    self.query_one(store.op_ids.tree.un_man_plus_sp_q, OperateTree),
-                    self.query_one(store.op_ids.tree.un_man_plus_amp_q, OperateTree),
-                    self.query_one(store.op_ids.tree.un_man_plus_sp_xpd_q, OperateTree),
-                    self.query_one(
-                        store.op_ids.tree.un_man_plus_amp_xpd_q, OperateTree
-                    ),
-                ]
-            )
-        self._sync_to_trees(event.node.data, exclude=exclude)
-
-    @on(Tree.NodeCollapsed)
-    def sync_collapsed_node(self, event: Tree.NodeCollapsed[NodeData]) -> None: ...
-
-    @on(Tree.NodeExpanded)
-    def sync_expanded_node(self, event: Tree.NodeExpanded[NodeData]) -> None: ...
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
@@ -389,13 +337,11 @@ class LeftSideVertical(Vertical):
 
     @work
     async def _refresh_trees(self) -> None:
-        self._current_displayed_tree.loading = True
         await tchezmoi.run_managed_commands(self.app)
         if store.cm_changes is not None and not store.cm_changes.changes_available:
             self.notify("No changes available, skipping refresh.", severity="warning")
         else:
             self._update_trees()
-        self._current_displayed_tree.loading = False
 
 
 class RightSideVertical(Vertical):
@@ -470,6 +416,8 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         # we can do this here as we await on mount in the splash screen
+        self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
+
         self.middle_section_label = self.query_one(
             self.ids.container.middle_q, Vertical
         ).query_exactly_one(MainSectionLabel)
@@ -579,7 +527,6 @@ class OperateTab(TabPane):
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
-        self.notify(f"{msg.tree_id_q} active", severity="warning")
         # hide the current tree:
         all_trees = self.query(OperateTree).results()
         for tree in all_trees:
@@ -590,7 +537,12 @@ class OperateTab(TabPane):
     @on(Tree.NodeSelected)
     def set_path_for_views(self, event: Tree.NodeSelected[NodeData]) -> None:
         event.stop()
-        assert event.node.data is not None
+        if (
+            event.node.data is None
+            or event.control.id != self.left_side_vertical.current_displayed_tree.id
+        ):
+            return
+        self.left_side_vertical.sync_selected_node(event.node.data.path)
         self._update_all_widgets(event.node.data)
 
     @on(Button.Pressed)
