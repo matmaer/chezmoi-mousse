@@ -98,10 +98,7 @@ class OperateTree(Tree[NodeData]):
                 for path, node_data in file_node_dict.items()
                 if (node_data.has_status and node_data.managed) or not node_data.managed
             }
-        elif self.name in (
-            TreeName.un_wanted_plus_amp,
-            TreeName.un_wanted_plus_amp_xpd,
-        ):
+        else:
             result = file_node_dict
         return path_funcs.sort_path_dict(result)
 
@@ -166,14 +163,11 @@ class OperateTree(Tree[NodeData]):
                     and (node_data.has_status or node_data.has_nested_status)
                 )
             }
-        elif self.name in (
-            TreeName.un_wanted_plus_amp,
-            TreeName.un_wanted_plus_amp_xpd,
-        ):
+        else:
             result = dir_node_dict
         return path_funcs.sort_path_dict(result)
 
-    def _tree_label_color(self, node_data: NodeData) -> ColorVar:
+    def _label_color_var(self, node_data: NodeData) -> ColorVar:
         status_code = node_data.status
         # TODO: check for missing or impossible status pairs
         mapping: dict[str | None, ColorVar] = {
@@ -229,79 +223,61 @@ class OperateTree(Tree[NodeData]):
 
         return color_var
 
-    def _node_label(self, path: Path, node_data: NodeData) -> str:
-        italic = " italic" if not node_data.exists else ""
-        color = self.app.theme_variables[self._tree_label_color(node_data)]
-        return f"[{color}{italic}]{path.name}[/]"
-
-    def _remove_subtree(self, path: Path) -> None:
-        node = self.node_map.get(path)
-        if node is None:
-            return
-        for key in [k for k in self.node_map if k.is_relative_to(path)]:
-            del self.node_map[key]
-        node.remove()
-
     def apply_changes(self, changes: CmPathChanges) -> None:
-        for path in changes.top_removed_dirs:
-            self._remove_subtree(path)
-        for path in changes.removed_files:
-            if path in self.node_map:
-                self.node_map.pop(path).remove()
+        for path in changes.remove_tree_dirs:
+            node = self.node_map[path]
+            node.remove()
+        for path in changes.remove_tree_files:
+            node = self.node_map[path]
+            node.remove()
+        for path in changes.remove_node_map_paths:
+            del self.node_map[path]
 
-        dir_nodes, file_nodes = self._wanted_nodes()
-        changed = {**changes.changed_dirs, **changes.changed_files}
-        for path, node_data in changed.items():
-            if path not in self.node_map:
-                continue
-            if path in dir_nodes or path in file_nodes:
-                node = self.node_map[path]
-                node.data = node_data
-                node.set_label(self._node_label(path, node_data))
-            else:
-                # e.g. a file lost its status in a tree showing only status files
-                self._remove_subtree(path)
+        for path, node_data in changes.add_tree_dirs.items():
+            self._add_node_with_color(path, node_data, allow_expand=True)
 
-        touched = {*changes.added_dirs, *changes.added_files, *changed}
-        for nodes, allow_expand in ((dir_nodes, True), (file_nodes, False)):
-            wanted = {p: d for p, d in nodes.items() if p in touched}
-            for path, node_data in path_funcs.sort_path_dict(wanted).items():
-                if path not in self.node_map:
-                    self._add_node_with_color(
-                        path, node_data, allow_expand=allow_expand
-                    )
+        for path, node_data in changes.add_tree_files.items():
+            self._add_node_with_color(path, node_data, allow_expand=False)
+
+        for path, node_data in changes.change_tree_dirs.items():
+            self.node_map[path].remove()
+            self._add_node_with_color(path, node_data, allow_expand=True)
+
+        for path, node_data in changes.change_tree_files.items():
+            self.node_map[path].remove()
+            self._add_node_with_color(path, node_data, allow_expand=False)
+
         self._expand_xpd_nodes()
         self.refresh(layout=True)
 
-    @staticmethod
-    def _sort_key(path: Path, *, allow_expand: bool) -> tuple[bool, str]:
-        # dirs (allow_expand) first, then files, each sorted alphabetically
-        return not allow_expand, str(path).lower()
+    def _child_key(self, node: TreeNode[NodeData]) -> tuple[bool, str]:
+        assert node.data is not None
+        return (not node.allow_expand, str(node.data.path).lower())
 
     def _next_sibling(
         self, parent_node: TreeNode[NodeData], path: Path, *, allow_expand: bool
     ) -> TreeNode[NodeData] | None:
         """The child to insert the new node before, None to append."""
-        key = self._sort_key(path, allow_expand=allow_expand)
+        path_str = str(path).lower()
+        key = (not allow_expand, path_str)
         children = parent_node.children
         # nodes are normally added in sorted order, so appending is the common case
         if not children or self._child_key(children[-1]) < key:
             return None
         return next(c for c in children if self._child_key(c) > key)
 
-    def _child_key(self, node: TreeNode[NodeData]) -> tuple[bool, str]:
-        assert node.data is not None
-        return self._sort_key(node.data.path, allow_expand=node.allow_expand)
-
     def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
         if path == store.cfg.dest_dir:
             return
-        parent_node = self.node_map[path.parent]
+        parent_node = self.node_map[node_data.path.parent]
+        italic = " italic" if not node_data.exists else ""
+        color = self.app.theme_variables[self._label_color_var(node_data)]
+        node_label = f"[{color}{italic}]{path.name}[/]"
 
         new_node = parent_node.add(
-            label=self._node_label(path, node_data),
+            label=node_label,
             data=node_data,
             before=self._next_sibling(parent_node, path, allow_expand=allow_expand),
             allow_expand=allow_expand,
@@ -321,17 +297,10 @@ class OperateTree(Tree[NodeData]):
                 if node.data is not None and node.data.managed:
                     node.expand()
 
-    def _wanted_nodes(self) -> tuple[dict[Path, NodeData], dict[Path, NodeData]]:
-        dir_nodes = self._get_dir_nodes(store.cm_paths.dir_node_data)
-        file_nodes = self._get_file_nodes(store.cm_paths.file_node_data)
-        return dir_nodes, file_nodes
-
     @work
     async def _initial_tree_population(self) -> None:
-        dir_nodes, file_nodes = self._wanted_nodes()
-
-        dir_nodes = path_funcs.sort_path_dict(dir_nodes)
-        file_nodes = path_funcs.sort_path_dict(file_nodes)
+        dir_nodes = self._get_dir_nodes(store.cm_paths.dir_node_data)
+        file_nodes = self._get_file_nodes(store.cm_paths.file_node_data)
 
         for path, node_data in dir_nodes.items():
             self._add_node_with_color(path, node_data, allow_expand=True)

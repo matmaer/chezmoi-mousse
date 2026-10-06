@@ -14,6 +14,9 @@ if TYPE_CHECKING:
 __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 
 
+type NodeDict = dict[Path, NodeData]
+
+
 @dataclass(slots=True, kw_only=True)
 class ChezmoiTreePaths:
     """The raw source of truth received from chezmoi stdout."""
@@ -28,8 +31,8 @@ class ChezmoiTreePaths:
     _un_man_files: set[Path]
     _un_man_paths: set[Path]
 
-    file_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
-    dir_node_data: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
+    file_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
+    dir_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
 
     def __post_init__(self) -> None:
 
@@ -158,49 +161,56 @@ class CmPathChanges:
     _old_tree_paths: ChezmoiTreePaths
     _new_tree_paths: ChezmoiTreePaths
 
-    added_dirs: list[Path] = field(default_factory=list[Path])
-    added_files: list[Path] = field(default_factory=list[Path])
-    removed_files: list[Path] = field(default_factory=list[Path])
-    changed_dirs: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
-    changed_files: dict[Path, NodeData] = field(default_factory=dict[Path, NodeData])
-    top_removed_dirs: list[Path] = field(default_factory=list[Path])
     changes_available: bool = False
+    add_tree_dirs: NodeDict = field(default_factory=dict[Path, NodeData])
+    add_tree_files: NodeDict = field(default_factory=dict[Path, NodeData])
+    remove_tree_dirs: list[Path] = field(default_factory=list[Path])
+    remove_tree_files: list[Path] = field(default_factory=list[Path])
+    remove_node_map_paths: set[Path] = field(default_factory=set[Path])
+    change_tree_dirs: NodeDict = field(default_factory=dict[Path, NodeData])
+    change_tree_files: NodeDict = field(default_factory=dict[Path, NodeData])
 
     def __post_init__(self) -> None:
         if self._new_tree_paths != self._old_tree_paths:
             self.changes_available = True
-        self.added_dirs = path_funcs.sort_paths(
-            self._new_tree_paths.dir_node_data.keys()
-            - self._old_tree_paths.dir_node_data.keys()
+
+        def get_added_dict(new_nodes: NodeDict, old_nodes: NodeDict) -> NodeDict:
+            added = {k: v for k, v in new_nodes.items() if k not in old_nodes}
+            return path_funcs.sort_path_dict(added)
+
+        self.add_tree_dirs = get_added_dict(
+            self._new_tree_paths.dir_node_data, self._old_tree_paths.dir_node_data
         )
-        self.added_files = path_funcs.sort_paths(
-            self._new_tree_paths.file_node_data.keys()
-            - self._old_tree_paths.file_node_data.keys()
+        self.add_tree_files = get_added_dict(
+            self._new_tree_paths.file_node_data, self._old_tree_paths.file_node_data
         )
-        removed_dirs = path_funcs.sort_paths(
+
+        all_removed_dirs: set[Path] = (
             self._old_tree_paths.dir_node_data.keys()
             - self._new_tree_paths.dir_node_data.keys()
         )
-        self.top_removed_dirs = path_funcs.get_sorted_top_parents(removed_dirs)
-        self.removed_files = path_funcs.sort_paths(
+        self.remove_tree_dirs = path_funcs.get_sorted_top_parents(all_removed_dirs)
+        all_removed_files: set[Path] = (
             self._old_tree_paths.file_node_data.keys()
             - self._new_tree_paths.file_node_data.keys()
         )
+        self.remove_node_map_paths = all_removed_dirs | all_removed_files
+        self.remove_tree_files = [
+            path
+            for path in all_removed_files
+            if not any(parent in self.remove_tree_dirs for parent in path.parents)
+        ]
 
-        def get_changes_dict(
-            dict1: dict[Path, NodeData], dict2: dict[Path, NodeData]
-        ) -> dict[Path, NodeData]:
-            return {
-                key: dict2[key]
-                for key in dict1.keys() & dict2.keys()
-                if dict1[key] != dict2[key]
+        def get_changes_dict(dict1: NodeDict, dict2: NodeDict) -> NodeDict:
+            common_paths = dict1.keys() & dict2.keys()
+            changes_dict = {
+                k: dict2[k] for k in common_paths if dict1[k].status != dict2[k].status
             }
+            return path_funcs.sort_path_dict(changes_dict)
 
-        self.changed_dirs = get_changes_dict(
-            self._old_tree_paths.dir_node_data,
-            self._new_tree_paths.dir_node_data,
+        self.change_tree_dirs = get_changes_dict(
+            self._old_tree_paths.dir_node_data, self._new_tree_paths.dir_node_data
         )
-        self.changed_files = get_changes_dict(
-            self._old_tree_paths.file_node_data,
-            self._new_tree_paths.file_node_data,
+        self.change_tree_files = get_changes_dict(
+            self._old_tree_paths.file_node_data, self._new_tree_paths.file_node_data
         )
