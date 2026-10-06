@@ -324,24 +324,20 @@ class LeftSideVertical(Vertical):
                 tree.select_node(tree_node)
 
     @on(Button.Pressed)
-    def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
+    def handle_refresh_tree_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == Chars.refresh:
             event.stop()
             self._refresh_trees()
 
-    def _update_trees(self) -> None:
-        if store.cm_changes is None:
-            return
-        for tree in self.query(OperateTree).results():
-            tree.apply_changes(store.cm_changes)
-
     @work
     async def _refresh_trees(self) -> None:
         await tchezmoi.run_managed_commands(self.app)
-        if store.cm_changes is not None and not store.cm_changes.changes_available:
+        assert store.cm_changes is not None
+        if not store.cm_changes.changes_available:
             self.notify("No changes available, skipping refresh.", severity="warning")
         else:
-            self._update_trees()
+            for tree in self.query(OperateTree).results():
+                tree.apply_changes(store.cm_changes)
 
 
 class RightSideVertical(Vertical):
