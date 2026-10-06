@@ -137,7 +137,7 @@ class PathInfo(ScrollableContainer):
                 self.TrueLabel() if node_data.has_nested_managed else self.FalseLabel()
             )
             unwanted_label = (
-                self.TrueLabel() if node_data.un_wanted_dir else self.FalseLabel()
+                self.TrueLabel() if node_data.un_wanted else self.FalseLabel()
             )
             exists = self.TrueLabel() if node_data.exists else self.FalseLabel()
             widgets = [
@@ -174,7 +174,7 @@ class PathInfo(ScrollableContainer):
                 self.TrueLabel() if node_data.has_status else self.FalseLabel()
             )
             un_wanted_label = (
-                self.TrueLabel() if node_data.un_wanted_file else self.FalseLabel()
+                self.TrueLabel() if node_data.un_wanted else self.FalseLabel()
             )
             widgets = [
                 HorizontalGroup(

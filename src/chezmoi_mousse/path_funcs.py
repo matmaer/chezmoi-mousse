@@ -184,9 +184,9 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                 if path.is_symlink():
                     symlinks.append(path)
                 elif path.is_dir():
-                    unwanted = is_unwanted_dir(path)
+                    is_un_wanted = is_unwanted_dir(path)
                     main_label = (
-                        LabelStr.un_wanted_dir if unwanted else LabelStr.un_man_dir
+                        LabelStr.un_wanted_dir if is_un_wanted else LabelStr.un_man_dir
                     )
                     dirs[path] = NodeData(
                         dir_path=True,
@@ -198,13 +198,14 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         path=path,
                         source_path=None,
                         status=None,
-                        un_wanted_dir=unwanted,
-                        un_wanted_file=False,
+                        un_wanted=is_un_wanted,
                     )
                 elif path.is_file():
-                    is_unwanted = is_unwanted_file(path)
+                    is_un_wanted = is_unwanted_file(path)
                     main_label = (
-                        LabelStr.un_wanted_file if is_unwanted else LabelStr.un_man_file
+                        LabelStr.un_wanted_file
+                        if is_un_wanted
+                        else LabelStr.un_man_file
                     )
                     files[path] = NodeData(
                         dir_path=False,
@@ -216,8 +217,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                         path=path,
                         source_path=None,
                         status=None,
-                        un_wanted_dir=False,
-                        un_wanted_file=is_unwanted,
+                        un_wanted=is_un_wanted,
                     )
             except (FileNotFoundError, PermissionError, OSError) as exception:
                 exceptions[path] = str(exception)

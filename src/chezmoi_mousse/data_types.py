@@ -100,8 +100,7 @@ class NodeData:
     path: Path
     source_path: Path | None
     status: StatusCode | None
-    un_wanted_dir: bool
-    un_wanted_file: bool
+    un_wanted: bool
     has_nested_unmanaged: bool = False
     dest_dir: bool = False
 
@@ -131,21 +130,39 @@ class NodeData:
         }
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        show_in_all = self.status is not None or self.has_nested_status
-        un_wanted = self.un_wanted_dir or self.un_wanted_file
+        is_dir = self.dir_path
+        is_file = not self.dir_path
+        managed_file = is_file and self.managed
+        managed_dir = is_dir and self.managed
+
+        un_managed_file = not managed_file
+        un_managed_dir = not managed_dir
+
+        status_file = is_file and self.has_status
+        status_dir = is_dir and (self.has_status or self.has_nested_status)
+        has_status = status_file or status_dir
+
+        un_wanted_file = un_managed_file and self.un_wanted
+        un_wanted_dir = un_managed_dir and self.un_wanted
+        un_wanted_un_managed = un_wanted_file or un_wanted_dir
+
+        wanted_un_managed_file = un_managed_file and not un_wanted_un_managed
+        wanted_un_managed_dir = un_managed_dir and not un_wanted_un_managed
+        wanted_un_managed = wanted_un_managed_dir or wanted_un_managed_file
+
         if tree_name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
-            return show_in_all
+            return has_status
         elif tree_name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
             return self.managed
         elif tree_name in (TreeName.un_man_plus_sp, TreeName.un_man_plus_sp_xpd):
-            return not un_wanted or show_in_all
+            return wanted_un_managed or has_status
         elif tree_name in (TreeName.un_man_plus_amp, TreeName.un_man_plus_amp_xpd):
-            return not un_wanted or self.managed
+            return wanted_un_managed or self.managed
         elif tree_name in (
             TreeName.un_wanted_plus_sp,
             TreeName.un_wanted_plus_sp_xpd,
         ):
-            return not self.managed or show_in_all
+            return has_status or wanted_un_managed or un_wanted_un_managed
         else:
             return True
 

@@ -67,8 +67,7 @@ class ChezmoiTreePaths:
             path=self._dest_dir,
             source_path=None,
             status=None,
-            un_wanted_dir=False,
-            un_wanted_file=False,
+            un_wanted=False,
         )
 
     def _populate_file_node_data(
@@ -77,14 +76,14 @@ class ChezmoiTreePaths:
         for path in self._man_files.keys() | self._un_man_files:
             managed = path in self._man_files
             status_file = path in self._status_files
-            is_unwanted = False if managed else path_funcs.is_unwanted_file(path)
+            is_un_wanted = False if managed else path_funcs.is_unwanted_file(path)
             if managed:
                 main_label = (
                     LabelStr.status_file if status_file else LabelStr.space_file
                 )
             else:
                 main_label = (
-                    LabelStr.un_wanted_file if is_unwanted else LabelStr.un_man_file
+                    LabelStr.un_wanted_file if is_un_wanted else LabelStr.un_man_file
                 )
             status = self._status_files.get(path, None)
             source_path = self._man_dirs.get(path)
@@ -98,8 +97,7 @@ class ChezmoiTreePaths:
                 path=path,
                 source_path=source_path,
                 status=status,
-                un_wanted_dir=False,
-                un_wanted_file=is_unwanted,
+                un_wanted=is_un_wanted,
             )
 
     def _populate_dir_node_data(self) -> None:
@@ -147,8 +145,7 @@ class ChezmoiTreePaths:
                 path=path,
                 source_path=self._man_dirs.get(path),
                 status=status,
-                un_wanted_dir=is_un_unwanted,
-                un_wanted_file=False,
+                un_wanted=is_un_unwanted,
             )
 
     @property
