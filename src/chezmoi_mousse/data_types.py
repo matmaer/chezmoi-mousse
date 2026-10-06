@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.str_enums import BtnLabel
+from chezmoi_mousse.str_enums import BtnLabel, TreeName
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
@@ -129,6 +129,25 @@ class NodeData:
             BtnLabel.chezmoi_apply: has_diff,
             BtnLabel.chezmoi_re_add: self.exists and has_diff,
         }
+
+    def include_in_tree(self, tree_name: TreeName) -> bool:
+        show_in_all = self.status is not None or self.has_nested_status
+        un_wanted = self.un_wanted_dir or self.un_wanted_file
+        if tree_name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
+            return show_in_all
+        elif tree_name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+            return self.managed
+        elif tree_name in (TreeName.un_man_plus_sp, TreeName.un_man_plus_sp_xpd):
+            return not un_wanted or show_in_all
+        elif tree_name in (TreeName.un_man_plus_amp, TreeName.un_man_plus_amp_xpd):
+            return not un_wanted or self.managed
+        elif tree_name in (
+            TreeName.un_wanted_plus_sp,
+            TreeName.un_wanted_plus_sp_xpd,
+        ):
+            return not self.managed or show_in_all
+        else:
+            return True
 
 
 @dataclass(slots=True)
