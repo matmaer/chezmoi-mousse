@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from pathlib import Path
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.str_enums import BtnLabel, LabelStr, TreeName
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
@@ -15,7 +16,6 @@ __all__ = [
     "InitData",
     "IterDirResult",
     "NodeData",
-    "OperateViewData",
     "StreamEvent",
 ]
 
@@ -104,6 +104,10 @@ class NodeData:
     dest_dir: bool = False
 
     @property
+    def file_path(self) -> bool:
+        return not self.dir_path
+
+    @property
     def has_status(self) -> bool:
         return self.status is not None
 
@@ -138,16 +142,14 @@ class NodeData:
             return LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        is_dir = self.dir_path
-        is_file = not self.dir_path
-        managed_file = is_file and self.managed
-        managed_dir = is_dir and self.managed
+        managed_file = self.file_path and self.managed
+        managed_dir = self.dir_path and self.managed
 
         un_managed_file = not managed_file
         un_managed_dir = not managed_dir
 
-        status_file = is_file and self.has_status
-        status_dir = is_dir and (self.has_status or self.has_nested_status)
+        status_file = self.file_path and self.has_status
+        status_dir = self.dir_path and (self.has_status or self.has_nested_status)
         has_status = status_file or status_dir
 
         un_wanted_file = un_managed_file and self.un_wanted
@@ -173,17 +175,6 @@ class NodeData:
             return has_status or wanted_un_managed or un_wanted_un_managed
         else:
             return True
-
-
-@dataclass(slots=True)
-class OperateViewData:
-    last_displayed_path: Path | None = None
-    displayed_paths: set[Path] = field(default_factory=set[Path])
-    no_show_paths: set[Path] = field(default_factory=set[Path])
-
-    @property
-    def known_paths(self) -> set[Path]:
-        return self.displayed_paths | self.no_show_paths
 
 
 @dataclass(slots=True, frozen=True)
