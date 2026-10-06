@@ -40,24 +40,23 @@ if TYPE_CHECKING:
 __all__ = ["ConfigTab"]
 
 
+class CatConfigStatic(Static): ...
+
+
+class PrettyGitConfig(Pretty): ...
+
+
+class PrettyIgnored(Pretty): ...
+
+
+class PrettyTemplateData(Pretty): ...
+
+
 class ConfigTab(TabPane):
-    class CatConfigStatic(Static): ...
-
-    class PrettyGitConfig(Pretty): ...
-
-    class PrettyIgnored(Pretty): ...
-
-    class PrettyTemplateData(Pretty): ...
-
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     def __init__(self) -> None:
         super().__init__(id=BtnLabel.config.pane_id, title=BtnLabel.config)
-
-    def on_mount(self) -> None:
-        self.switcher = self.query_exactly_one(ContentSwitcher)
-        git_config = self.switcher.query_exactly_one(ConfigTab.PrettyGitConfig)
-        git_config.update(store.cfg.git_config_dict)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -80,22 +79,22 @@ class ConfigTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.cat_config_output),
-                    ConfigTab.CatConfigStatic("Not Found"),
+                    CatConfigStatic("Not Found"),
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.ignored_output),
-                    ScrollableContainer(ConfigTab.PrettyIgnored("Not Found")),
+                    ScrollableContainer(PrettyIgnored("Not Found")),
                     id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.template_data_output),
-                    ScrollableContainer(ConfigTab.PrettyTemplateData("Not Found")),
+                    ScrollableContainer(PrettyTemplateData("Not Found")),
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.chezmoi_git_config),
-                    ScrollableContainer(ConfigTab.PrettyGitConfig("Not set")),
+                    ScrollableContainer(PrettyGitConfig("Not set")),
                     id=store.config_ids.container.git_config,
                 )
                 yield Vertical(
@@ -103,6 +102,11 @@ class ConfigTab(TabPane):
                     Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
                     id=store.config_ids.container.diagram,
                 )
+
+    def on_mount(self) -> None:
+        self.switcher = self.query_exactly_one(ContentSwitcher)
+        git_config = self.switcher.query_exactly_one(PrettyGitConfig)
+        git_config.update(store.cfg.git_config_dict)
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -125,14 +129,14 @@ class ConfigTab(TabPane):
             widget = self.query_exactly_one(DoctorTable)
             widget.populate_dr_table(cmd_result.std_out)
         elif cmd_result.cmd_enum == ReadCmd.cat_config:
-            widget = self.query_exactly_one(ConfigTab.CatConfigStatic)
+            widget = self.query_exactly_one(CatConfigStatic)
             widget.update(cmd_result.std_out)
         elif cmd_result.cmd_enum == ReadCmd.ignored:
-            widget = self.query_exactly_one(ConfigTab.PrettyIgnored)
+            widget = self.query_exactly_one(PrettyIgnored)
             widget.update(cmd_result.std_out)
         elif cmd_result.cmd_enum == ReadCmd.template_data:
             parsed_data = json.loads(cmd_result.std_out)
-            widget = self.query_exactly_one(ConfigTab.PrettyTemplateData)
+            widget = self.query_exactly_one(PrettyTemplateData)
             widget.update(parsed_data)
 
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:

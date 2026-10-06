@@ -11,7 +11,6 @@ from textual.containers import (
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.data_types import OperateViewData
 from chezmoi_mousse.str_enums import (
     Chars,
     ColorVar,
@@ -91,32 +90,36 @@ class SubSectionLabel(Label): ...
 class FlatSectionLabel(Label): ...
 
 
+class TrueLabel(Label):
+    def on_mount(self) -> None:
+        self.update("yes")
+
+
+class FalseLabel(Label):
+    def on_mount(self) -> None:
+        self.update(" no")
+
+
+class InfoLabel(Label): ...
+
+
+class DirInfo(VerticalGroup): ...
+
+
+class FileInfo(VerticalGroup): ...
+
+
 class PathInfo(ScrollableContainer):
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    class TrueLabel(Label):
-        def on_mount(self) -> None:
-            self.update("yes")
-
-    class FalseLabel(Label):
-        def on_mount(self) -> None:
-            self.update(" no")
-
-    class DirInfo(VerticalGroup): ...
-
-    class FileInfo(VerticalGroup): ...
-
-    class InfoLabel(Label): ...
-
     def compose(self) -> ComposeResult:
-        yield self.DirInfo()
-        yield self.FileInfo()
+        yield DirInfo()
+        yield FileInfo()
 
     def on_mount(self) -> None:
         self.cache: dict[Path, list[HorizontalGroup]] = {}
-        self.paths = OperateViewData()
-        self.dir_info = self.query_exactly_one(PathInfo.DirInfo)
-        self.file_info = self.query_exactly_one(PathInfo.FileInfo)
+        self.dir_info = self.query_exactly_one(DirInfo)
+        self.file_info = self.query_exactly_one(FileInfo)
 
     @work
     async def _set_dir_info(self, node_data: NodeData) -> None:
@@ -124,39 +127,26 @@ class PathInfo(ScrollableContainer):
         if node_data.path in self.cache:
             widgets = self.cache[node_data.path]
         else:
-            is_managed_label = (
-                self.TrueLabel() if node_data.managed else self.FalseLabel()
+            status = TrueLabel() if node_data.has_status else FalseLabel()
+            exists = TrueLabel() if node_data.exists else FalseLabel()
+            un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
+            nested_status = TrueLabel() if node_data.has_nested_status else FalseLabel()
+            nested_managed = (
+                TrueLabel() if node_data.has_nested_managed else FalseLabel()
             )
-            has_status_label = (
-                self.TrueLabel() if node_data.has_status else self.FalseLabel()
+            nested_un_managed = (
+                TrueLabel() if node_data.has_nested_unmanaged else FalseLabel()
             )
-            has_nested_status_label = (
-                self.TrueLabel() if node_data.has_nested_status else self.FalseLabel()
-            )
-            has_nested_managed_label = (
-                self.TrueLabel() if node_data.has_nested_managed else self.FalseLabel()
-            )
-            unwanted_label = (
-                self.TrueLabel() if node_data.un_wanted else self.FalseLabel()
-            )
-            exists = self.TrueLabel() if node_data.exists else self.FalseLabel()
             widgets = [
+                HorizontalGroup(InfoLabel(LabelStr.d_has_status), status),
+                HorizontalGroup(InfoLabel(LabelStr.d_exists), exists),
+                HorizontalGroup(InfoLabel(LabelStr.d_un_wanted), un_wanted),
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
                 HorizontalGroup(
-                    self.InfoLabel(LabelStr.d_is_managed), is_managed_label
+                    InfoLabel(LabelStr.has_nested_un_managed),
+                    nested_un_managed,
                 ),
-                HorizontalGroup(
-                    self.InfoLabel(LabelStr.d_has_status), has_status_label
-                ),
-                HorizontalGroup(
-                    self.InfoLabel(LabelStr.d_has_nested_status),
-                    has_nested_status_label,
-                ),
-                HorizontalGroup(
-                    self.InfoLabel(LabelStr.d_has_nested_managed),
-                    has_nested_managed_label,
-                ),
-                HorizontalGroup(self.InfoLabel(LabelStr.d_un_wanted), unwanted_label),
-                HorizontalGroup(self.InfoLabel(LabelStr.d_exists), exists),
             ]
         self.cache[node_data.path] = widgets
         self.dir_info.remove_children()
@@ -167,27 +157,13 @@ class PathInfo(ScrollableContainer):
         if node_data.path in self.cache:
             widgets = self.cache[node_data.path]
         else:
-            is_managed_label = (
-                self.TrueLabel() if node_data.managed else self.FalseLabel()
-            )
-            has_status_label = (
-                self.TrueLabel() if node_data.has_status else self.FalseLabel()
-            )
-            un_wanted_label = (
-                self.TrueLabel() if node_data.un_wanted else self.FalseLabel()
-            )
+            exists = TrueLabel() if node_data.exists else FalseLabel()
+            status = TrueLabel() if node_data.has_status else FalseLabel()
+            un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
             widgets = [
-                HorizontalGroup(
-                    self.InfoLabel(LabelStr.f_is_managed), is_managed_label
-                ),
-                HorizontalGroup(
-                    self.InfoLabel(LabelStr.f_has_status), has_status_label
-                ),
-                HorizontalGroup(self.InfoLabel(LabelStr.f_un_wanted), un_wanted_label),
-                HorizontalGroup(
-                    self.InfoLabel(LabelStr.f_exists),
-                    self.TrueLabel() if node_data.exists else self.FalseLabel(),
-                ),
+                HorizontalGroup(InfoLabel(LabelStr.f_has_status), status),
+                HorizontalGroup(InfoLabel(LabelStr.f_exists), exists),
+                HorizontalGroup(InfoLabel(LabelStr.f_un_wanted), un_wanted),
             ]
         self.cache[node_data.path] = widgets
         self.file_info.remove_children()

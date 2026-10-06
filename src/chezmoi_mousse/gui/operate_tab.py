@@ -481,7 +481,6 @@ class OperateTab(TabPane):
         self.middle_section_label.update(node_data.main_label)
         self._update_no_show_label(str(self.radio_set.pressed_button))
         self._update_btn_states(node_data)
-        self.middle_section_label.update(node_data.main_label)
         self.path_info.node_data = node_data
         self.path_view.display = False
 

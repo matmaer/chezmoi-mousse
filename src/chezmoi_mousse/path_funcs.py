@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import IterDirResult, NodeData
-from chezmoi_mousse.str_enums import LabelStr, PathFilters
+from chezmoi_mousse.str_enums import PathFilters
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable
@@ -185,15 +185,11 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     symlinks.append(path)
                 elif path.is_dir():
                     is_un_wanted = is_unwanted_dir(path)
-                    main_label = (
-                        LabelStr.un_wanted_dir if is_un_wanted else LabelStr.un_man_dir
-                    )
                     dirs[path] = NodeData(
                         dir_path=True,
                         exists=True,
                         has_nested_managed=False,
                         has_nested_status=False,
-                        main_label=main_label,
                         managed=False,
                         path=path,
                         source_path=None,
@@ -202,17 +198,11 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     )
                 elif path.is_file():
                     is_un_wanted = is_unwanted_file(path)
-                    main_label = (
-                        LabelStr.un_wanted_file
-                        if is_un_wanted
-                        else LabelStr.un_man_file
-                    )
                     files[path] = NodeData(
                         dir_path=False,
                         exists=True,
                         has_nested_managed=False,
                         has_nested_status=False,
-                        main_label=main_label,
                         managed=False,
                         path=path,
                         source_path=None,

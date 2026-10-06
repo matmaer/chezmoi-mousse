@@ -193,20 +193,23 @@ class LabelStr(StrEnum):
 
     # Operate tab MainSectionLabel text
     dest_dir = "Destination Directory"
+    managed_dir = "Managed Directory"
+    managed_file = "Managed File"
     un_man_file = "Un-managed File"
     un_man_dir = "Un-managed Directory"
-    un_wanted_dir = f"{un_man_dir} (matches un-wanted)"
-    un_wanted_file = f"{un_man_file} (matches un-wanted)"
 
-    _has_no_status = "has no status"
-    _has_status = "has a status"
-    _nested_sp = "nested status paths"
-
-    real_status_dir = f"Managed Directory ({_has_status})"
-    man_d_no_nested_status = f"Managed Directory ({_has_no_status}, has {_nested_sp})"
-    man_dir_no_status = f"Managed Directory ({_has_no_status})"
-    space_file = f"Managed File ({_has_no_status})"
-    status_file = f"Managed File ({_has_status})"
+    # Operate tab PathInfo labels
+    # directories
+    d_exists = "Directory exists on disk"
+    d_has_status = "Directory has a status"
+    d_un_wanted = "Directory matches un-wanted filter"
+    has_nested_status = "Directory has nested status paths"
+    has_nested_managed = "Directory has nested managed paths"
+    has_nested_un_managed = "Directory has nested un-managed paths"
+    # files
+    f_exists = "File exists on disk"
+    f_has_status = "File has a status"
+    f_un_wanted = "File matches un-wanted filter"
 
     # Operate tab FlatSectionLabel
     read_file_output = "Read file from disk output"
@@ -225,20 +228,6 @@ class LabelStr(StrEnum):
     show_unchanged = "Show Unchanged"
     show_unmanaged = "Show Unmanaged"
     show_unwanted = "Show Unwanted"
-
-    # Operate tab PathInfo labels
-    # directories
-    d_is_managed = "Directory is managed"
-    d_un_wanted = "Directory matches un-wanted filter"
-    d_exists = "Directory exists on disk"
-    d_has_status = "Directory has a status"
-    d_has_nested_status = "Directory has nested status paths"
-    d_has_nested_managed = "Directory has nested managed paths"
-    # files
-    f_is_managed = "File is managed"
-    f_has_status = "File has a status"
-    f_exists = "File exists on disk"
-    f_un_wanted = "File matches un-wanted filter"
 
     # other
     context = "Context"

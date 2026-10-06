@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.str_enums import BtnLabel, TreeName
+from chezmoi_mousse.str_enums import BtnLabel, LabelStr, TreeName
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
@@ -95,7 +95,6 @@ class NodeData:
     exists: bool
     has_nested_managed: bool
     has_nested_status: bool
-    main_label: str
     managed: bool
     path: Path
     source_path: Path | None
@@ -128,6 +127,15 @@ class NodeData:
             BtnLabel.chezmoi_apply: has_diff,
             BtnLabel.chezmoi_re_add: self.exists and has_diff,
         }
+
+    @property
+    def main_label(self) -> LabelStr:
+        if self.dest_dir:
+            return LabelStr.dest_dir
+        elif self.dir_path:
+            return LabelStr.managed_dir if self.managed else LabelStr.un_man_dir
+        else:
+            return LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
         is_dir = self.dir_path
