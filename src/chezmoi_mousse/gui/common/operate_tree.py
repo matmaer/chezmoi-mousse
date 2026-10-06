@@ -175,20 +175,21 @@ class OperateTree(Tree[NodeData]):
 
     def _tree_label_color(self, node_data: NodeData) -> ColorVar:
         status_code = node_data.status
+        # TODO: check for missing or impossible status pairs
         mapping: dict[str | None, ColorVar] = {
             # D combos
             Sc.DA: ColorVar.text_warning,
-            Sc.DD: ColorVar.text_warning,  # probably impossible status pair
+            Sc.DD: ColorVar.text_error,
             Sc.DM: ColorVar.text_warning,
             Sc.DS: ColorVar.text_warning,
             # M combos
             Sc.MA: ColorVar.text_warning,
-            Sc.MD: ColorVar.text_warning,
+            Sc.MD: ColorVar.text_error,
             Sc.MM: ColorVar.text_warning,
             Sc.MS: ColorVar.text_warning,
             # S combos
             Sc.SA: ColorVar.text_warning,
-            Sc.SD: ColorVar.text_warning,
+            Sc.SD: ColorVar.text_error,
             Sc.SM: ColorVar.text_warning,
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
