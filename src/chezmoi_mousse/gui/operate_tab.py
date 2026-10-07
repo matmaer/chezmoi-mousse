@@ -459,7 +459,9 @@ class OperateTab(TabPane):
             if node_data.path in self.git_log_view.cache:
                 self.git_log_view.update_git_log_view(node_data, None)
                 self.git_log_view.display = True
-            elif node_data.path not in self.paths_without_git_log:
+            elif node_data.path not in self.paths_without_git_log and (
+                node_data.managed or node_data.dest_dir
+            ):
                 cr = await tchezmoi.run_chezmoi_cmd(
                     self.app, ReadCmd.git_log, verb_arg=node_data.source_path
                 )

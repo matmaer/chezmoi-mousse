@@ -166,10 +166,6 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        assert node_data.has_status, "NodeData must have a status"
-        if node_data.path == self.last_displayed_path:
-            return
-
         self.flat_label.update(
             escape(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
         )
