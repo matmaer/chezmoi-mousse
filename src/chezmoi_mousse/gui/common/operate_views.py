@@ -103,72 +103,57 @@ class _DiffViewBase(Vertical):
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
     tcss_map: ClassVar[dict[str, Tcss]] = {
+        "diff --git a/": Tcss.flat_section_label,
         " ": Tcss.context,
-        "@@": Tcss.context,
-        "index": Tcss.context,
         "-": Tcss.removed,
         "deleted": Tcss.removed,
-        "old": Tcss.removed,
+        "old mode ": Tcss.removed,
         "+": Tcss.added,
-        "new": Tcss.added,
-        "changed": Tcss.changed,
-        "unhandled": Tcss.unhandled,
+        "new mode ": Tcss.added,
+        "new file mode ": Tcss.added,
     }
 
     def __init__(self, diff_cmd: ReadCmd) -> None:
         self.diff_cmd = diff_cmd
-        self.cache: dict[Path, list[Static]] = {}
+        self.cache: dict[Path, list[tuple[str, str]]] = {}
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(LabelStr.not_set)
         yield DiffWidgets()
 
     def on_mount(self) -> None:
-        self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(DiffWidgets)
 
     @work
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
+        def get_prefix(line: str) -> str:
+            for p in self.tcss_map:
+                if line.startswith(p):
+                    return p
+            return " "
 
-        if path in self.cache:
-            widgets = self.cache[path]
-
-        else:
+        if path not in self.cache:
             diff_result = await tchezmoi.run_chezmoi_cmd(
                 self.app, diff_cmd, verb_arg=path
             )
-            widgets: list[Label | Static] = []
 
-            def get_prefix(line: str) -> str:
-                for p in self.tcss_map:
-                    if line.startswith(p):
-                        return p
-                return " "
-
+            groups: list[tuple[str, str]] = []
             for prefix, group_lines in groupby(diff_result.out_list, key=get_prefix):
                 group_list = list(group_lines)
-                if prefix in ("+", "-"):
-                    text = "\n".join(group_list)
-                    widgets.append(
-                        Static(text, classes=self.tcss_map[prefix].value, markup=False)
-                    )
+                if prefix in ("+", "-", " "):
+                    groups.append((prefix, "\n".join(group_list)))
                 else:
-                    for line in group_list:
-                        widgets.append(
-                            Static(
-                                line, classes=self.tcss_map[prefix].value, markup=False
-                            )
-                        )
-            self.cache[path] = widgets
+                    groups.extend((prefix, line) for line in group_list)
+            self.cache[path] = groups
 
+        widgets = [
+            Static(text, classes=self.tcss_map[prefix].value, markup=False)
+            for prefix, text in self.cache[path]
+        ]
         self.diff_container.remove_children()
         self.diff_container.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-        self.flat_label.update(
-            escape(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
-        )
         self._create_diff_widgets(self.diff_cmd, node_data.path)
         self.last_displayed_path = node_data.path
 
@@ -217,7 +202,7 @@ class GitLogView(Vertical):
             no_commit_message = "no commit message"
             rel_date, committer, message = line.split("\x1f", 2)
             column_one = f"{rel_date} by {committer}"
-            column_two = message.rstrip() if message.strip() else no_commit_message
+            column_two = message if message.strip() else no_commit_message
             columns: list[str] = [column_one, column_two]
             if column_two.split(maxsplit=1)[0] == "Add":
                 row = stylize(columns, ColorVar.text_success)

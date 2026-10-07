@@ -34,6 +34,15 @@
   }
 }
 
+.flat_section_label {
+  text-align: center;
+  background-tint: $primary-muted;
+  background: $primary-muted;
+  border-bottom: wide $primary-muted;
+  color: $primary-lighten-3;
+  width: 1fr;
+}
+
 .flow_diagram {
   min-width: 78;
 }
@@ -426,12 +435,6 @@ Static {
     background-tint: $success-muted;
     background: $success-muted;
     color: $text-success;
-  }
-
-  &.changed {
-    background-tint: $warning-muted;
-    background: $warning-muted;
-    color: $text-warning;
   }
 
   &.context {

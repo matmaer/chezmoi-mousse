@@ -456,10 +456,10 @@ class Tcss(StrEnum):
 
     # Other
     added = auto()
-    changed = auto()
     cmd_output = auto()
     context = auto()
     flat_button = auto()
+    flat_section_label = auto()
     flow_diagram = auto()
     full_cmd = auto()
     info = auto()
@@ -476,7 +476,6 @@ class Tcss(StrEnum):
     splash_log = auto()
     tab_button = auto()
     tree_header = auto()
-    unhandled = auto()
 
 
 class TreeName(StrEnum):
