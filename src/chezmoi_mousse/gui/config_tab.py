@@ -79,7 +79,7 @@ class ConfigTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.cat_config_output),
-                    CatConfigStatic("Not Found"),
+                    CatConfigStatic("Not Found", markup=False),
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(

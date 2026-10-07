@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from rich.markup import escape
 from textual import on, work
 from textual.widgets import Tree
 
@@ -159,7 +160,7 @@ class OperateTree(Tree[NodeData]):
         parent_node = self.node_map[node_data.path.parent]
         italic = " italic" if not node_data.exists else ""
         color = self.app.theme_variables[self._label_color_var(node_data)]
-        node_label = f"[{color}{italic}]{path.name}[/]"
+        node_label = f"[{color}{italic}]{escape(path.name)}[/]"
 
         new_node = parent_node.add(
             label=node_label,

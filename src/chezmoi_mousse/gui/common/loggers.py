@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from rich.markup import escape
 from textual import work
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
@@ -44,7 +45,7 @@ class RichLoggers(RichLog):
     def _get_log_line(self, msg: str, color: ColorVar) -> str:
         log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
         msg_color = self.app.theme_variables[color.value]
-        return f"{log_time} [{msg_color}]{msg}[/]"
+        return f"{log_time} [{msg_color}]{escape(msg)}[/]"
 
     def write_app_log_msg(self, message: str) -> None:
         self.write(self._get_log_line(message, ColorVar.secondary))

@@ -80,7 +80,7 @@ class ContentView(Vertical):
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, file_path=path
                 )
-                self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.cat, path))
+                self.flat_label.update(escape(tchezmoi.pretty_cmd(ReadCmd.cat, path)))
             else:
                 self.flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
@@ -170,7 +170,9 @@ class _DiffViewBase(Vertical):
         if node_data.path == self.last_displayed_path:
             return
 
-        self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
+        self.flat_label.update(
+            escape(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
+        )
         self._create_diff_widgets(self.diff_cmd, node_data.path)
         self.last_displayed_path = node_data.path
 
@@ -249,7 +251,7 @@ class GitLogView(Vertical):
 
         label_path = node_data.path if not node_data.dest_dir else None
         flat_label = tchezmoi.pretty_cmd(ReadCmd.git_log, label_path)
-        self.flat_label.update(flat_label)
+        self.flat_label.update(escape(flat_label))
 
         self.data_table.clear()
         for row in pretty_cells:
@@ -259,7 +261,7 @@ class GitLogView(Vertical):
 class PathView(Vertical):
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_git_log)
-        yield SubSectionLabel(str(store.cm_paths.dest_dir_node_data.path))
+        yield SubSectionLabel(escape(str(store.cm_paths.dest_dir_node_data.path)))
         yield PathInfo()
 
     def on_mount(self) -> None:

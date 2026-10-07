@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from rich.markup import escape
 from textual.containers import (
     HorizontalGroup,
     ScrollableContainer,
@@ -58,13 +59,13 @@ class CmdResultCollapsible(Collapsible):
                 if code == 0
                 else f"${ColorVar.text_warning}"
             )
-        return f"[{time_stamp}] [{color}]{cmd_str}[/] (returncode {code})"
+        return f"[{time_stamp}] [{color}]{escape(cmd_str)}[/] (returncode {code})"
 
     def _collapsible_contents(self, result: CommandResult) -> list[Label | Static]:
         curated_std_out = result.std_out or f"{LogStr.no_stdout}"
         curated_std_err = result.std_err or f"{LogStr.no_stderr}"
         contents: list[Label | Static] = []
-        contents.extend([Label(result.full_cmd, classes=Tcss.full_cmd)])
+        contents.extend([Label(escape(result.full_cmd), classes=Tcss.full_cmd)])
         contents.extend(
             [
                 SubSectionLabel(LabelStr.stdout_output),

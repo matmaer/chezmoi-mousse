@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, ClassVar
 
+from rich.markup import escape
 from textual import on, work
 from textual.containers import (
     Horizontal,
@@ -106,8 +107,8 @@ class ChezmoiCmdModal(ModalScreen[None]):
                 f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
             )
             yield FlatSectionLabel(f"{self.btn_label} Command")
-            yield AffectedPathsStatic()
-            yield InteractiveOutputStatic()
+            yield AffectedPathsStatic(markup=False)
+            yield InteractiveOutputStatic(markup=False)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.prompt_item,
@@ -143,7 +144,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
         # set flat section label with the dry run command
         flat_section_label = self.query_exactly_one(FlatSectionLabel)
         dry_cmd = self.btn_label_to_dry_cmd[self.btn_label]
-        flat_section_label.update(f"{dry_cmd.pretty_cmd} {self.path}")
+        flat_section_label.update(escape(f"{dry_cmd.pretty_cmd} {self.path}"))
         # run the command
         affected_paths_cr: list[Path] = await tchezmoi.get_affected_paths(
             self.app, dry_cmd, self.path
@@ -493,7 +494,7 @@ class OperateTab(TabPane):
             return  # no need to update or display path view
 
         # Update and display PathView
-        self.path_view.sub_label.update(str(self.current_path))
+        self.path_view.sub_label.update(escape(str(self.current_path)))
         self.path_view.path_info.node_data = node_data
         if self._active_radio_btn == LabelStr.radio_git_log:
             self.path_view.flat_label.update(LabelStr.select_path_git_log)
