@@ -107,6 +107,8 @@ class SplashScreen(Screen[None]):
             LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_3],
             LogStr.success: self.app.theme_variables[ColorVar.text_primary],
             LogStr.trigger: self.app.theme_variables[ColorVar.text_accent],
+            LogStr.on_managed_dirs: self.app.theme_variables[ColorVar.accent_darken_3],
+            LogStr.on_managed_files: self.app.theme_variables[ColorVar.accent_darken_3],
         }
         self.splash_log = self.query_exactly_one(RichLog)
         self.splash_log.styles.width = LOG_MSG_WIDTH

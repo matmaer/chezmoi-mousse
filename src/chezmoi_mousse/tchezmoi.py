@@ -17,7 +17,7 @@ from chezmoi_mousse.asyncio_process_exec import (
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.str_enums import ReadCmd, StatusCode as Sc, WriteCmd
+from chezmoi_mousse.str_enums import LogStr, ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -79,7 +79,11 @@ async def _exec_chezmoi(
         exec_result, cmd_enum, chezmoi_args, pretty_verb_arg
     )
     if app.screen.name == "splash_screen":
-        await app.splash_screen.write_log_msg(cmd_result=command_result)
+        if cmd_enum is ReadCmd.source_path:
+            prefix_suffix = (ReadCmd.source_path.pretty_cmd, LogStr(pretty_verb_arg))
+            await app.splash_screen.write_log_msg(prefix_suffix=prefix_suffix)
+        else:
+            await app.splash_screen.write_log_msg(cmd_result=command_result)
     if app.init_phase is False:
         app.app_log.cmd_result = command_result
         app.cmd_log.cmd_result = command_result
@@ -202,7 +206,7 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
                 app,
                 ReadCmd.source_path,
                 verb_arg=man_dirs_cr.out_list,
-                pretty_verb_arg="on managed dirs",
+                pretty_verb_arg=LogStr.on_managed_dirs,
             )
         )
         source_files_task = tg.create_task(
@@ -210,7 +214,7 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
                 app,
                 ReadCmd.source_path,
                 verb_arg=man_files_cr.out_list,
-                pretty_verb_arg="on managed files",
+                pretty_verb_arg=LogStr.on_managed_files,
             )
         )
 

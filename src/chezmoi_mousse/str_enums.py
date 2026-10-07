@@ -268,6 +268,10 @@ class LogStr(StrEnum):
     success = auto()
     trigger = auto()
 
+    # splash log string suffixes and pretty verb args
+    on_managed_dirs = "on managed dirs"
+    on_managed_files = "on managed dirs"
+
 
 class PathFilters(Enum):
     # TODO: create an ALWAYS_IGNORE category to realistically implement things like
