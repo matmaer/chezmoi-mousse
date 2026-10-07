@@ -74,7 +74,7 @@ class ChezmoiTreePaths:
             managed = path in self._man_files
             is_un_wanted = False if managed else path_funcs.is_unwanted_file(path)
             status = self._status_files.get(path, None)
-            source_path = self._man_dirs.get(path)
+            source_path = self._man_files.get(path)
             self.file_node_data[path] = NodeData(
                 dir_path=False,
                 exists=True if managed else path.exists(),
