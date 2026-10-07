@@ -55,7 +55,6 @@ if TYPE_CHECKING:
 
     from textual import getters
     from textual.app import ComposeResult
-    from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -306,28 +305,6 @@ class LeftSideVertical(Vertical):
                 return tree
         raise RuntimeError("Expected a tree to be displayed.")
 
-    @property
-    def cursor_node_data(self) -> NodeData:
-        tree = self.current_displayed_tree
-        cursor_node: TreeNode[NodeData] | None = None
-        try:
-            _ = tree.cursor_node
-        except:
-            return store.cm_paths.dest_dir_node_data
-        if cursor_node is not None and cursor_node.data is not None:
-            return cursor_node.data
-        else:
-            return store.cm_paths.dest_dir_node_data
-
-    def sync_selected_node(self, path: Path) -> None:
-        non_displayed_trees = [
-            t for t in self.query_children(OperateTree).results() if t.display is False
-        ]
-        for tree in non_displayed_trees:
-            tree_node = tree.node_map.get(path)
-            if tree_node:
-                tree.select_node(tree_node)
-
     @on(Button.Pressed)
     def handle_refresh_tree_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == Chars.refresh:
@@ -410,7 +387,6 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
-        # we can do this here as we await on mount in the splash screen
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.radio_set = self.query_exactly_one(RadioSet)
 
@@ -422,7 +398,11 @@ class OperateTab(TabPane):
 
         self.path_view = self.query_exactly_one(PathView)
 
-        self.current_path = store.cm_paths.dest_dir_node_data.path
+        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
+
+        self.current_node: NodeData = store.cm_paths.dest_dir_node_data
+        self.last_status_path: Path = store.cfg.dest_dir
+        self.last_managed_path: Path = store.cfg.dest_dir
 
     @property
     def _active_radio_btn(
@@ -434,7 +414,11 @@ class OperateTab(TabPane):
 
     @work
     async def _update_all_widgets(self, node_data: NodeData) -> None:
-        self.current_path = node_data.path
+        self.current_node = node_data
+        if node_data.has_status or node_data.has_nested_status:
+            self.last_status_path = node_data.path
+        elif node_data.managed or node_data.has_status or node_data.has_nested_status:
+            self.last_selected_managed_node = node_data
         # update operate buttons
         op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
         for btn in op_buttons:
@@ -483,8 +467,9 @@ class OperateTab(TabPane):
         ):
             self.content_view.node_data = node_data
             self.content_view.display = True
-        if any(
-            view.display == True
+
+        if all(
+            view.display == False
             for view in (
                 self.git_log_view,
                 self.diff_view,
@@ -492,21 +477,30 @@ class OperateTab(TabPane):
                 self.content_view,
             )
         ):
-            return  # no need to update or display path view
+            # Update and display PathView
+            self.path_view.sub_label.update(escape(str(node_data.path)))
+            self.path_view.path_info.node_data = node_data
+            if self._active_radio_btn == LabelStr.radio_git_log:
+                self.path_view.flat_label.update(LabelStr.select_path_git_log)
+            elif self._active_radio_btn == LabelStr.radio_contents:
+                self.path_view.flat_label.update(LabelStr.select_path_contents)
+            elif self._active_radio_btn in (
+                LabelStr.radio_diff,
+                LabelStr.radio_diff_reverse,
+            ):
+                self.path_view.flat_label.update(LabelStr.select_path_diff)
+            self.path_view.display = True
 
-        # Update and display PathView
-        self.path_view.sub_label.update(escape(str(self.current_path)))
-        self.path_view.path_info.node_data = node_data
-        if self._active_radio_btn == LabelStr.radio_git_log:
-            self.path_view.flat_label.update(LabelStr.select_path_git_log)
-        elif self._active_radio_btn == LabelStr.radio_contents:
-            self.path_view.flat_label.update(LabelStr.select_path_contents)
-        elif self._active_radio_btn in (
-            LabelStr.radio_diff,
-            LabelStr.radio_diff_reverse,
-        ):
-            self.path_view.flat_label.update(LabelStr.select_path_diff)
-        self.path_view.display = True
+        # update other trees in the background
+        non_displayed_trees = [
+            t
+            for t in self.left_side_vertical.query_children(OperateTree).results()
+            if t.display is False
+        ]
+        for tree in non_displayed_trees:
+            tree_node = tree.node_map.get(node_data.path)
+            if tree_node:
+                tree.select_node(tree_node)
 
     #################################
     # Watchers and message handling #
@@ -520,7 +514,6 @@ class OperateTab(TabPane):
             or event.control.id != self.left_side_vertical.current_displayed_tree.id
         ):
             return
-        self.left_side_vertical.sync_selected_node(event.node.data.path)
         self._update_all_widgets(event.node.data)
 
     @on(Button.Pressed)
@@ -540,25 +533,29 @@ class OperateTab(TabPane):
         ):
             event.stop()
             self.app.push_screen(
-                ChezmoiCmdModal(str(event.button.label), self.current_path)
+                ChezmoiCmdModal(str(event.button.label), self.current_node.path)
             )
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
         msg.stop()
         # hide the current tree:
-        all_trees = self.query(OperateTree).results()
+        all_trees = self.left_side_vertical.query_children(OperateTree).results()
         for tree in all_trees:
             tree.display = False
-        show_tree = self.query_one(msg.tree_id_q, OperateTree)
+        show_tree = self.left_side_vertical.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
+        # the selected node is not in the tree now shown, select a fallback node
+        if show_tree.node_map.get(self.current_node.path) is not None:
+            return
+
+        if self._active_radio_btn in (LabelStr.radio_diff, LabelStr.radio_diff_reverse):
+            show_tree.select_node(show_tree.node_map[self.last_status_path])
+
+        elif self._active_radio_btn == LabelStr.radio_git_log:
+            show_tree.select_node(show_tree.node_map[self.last_managed_path])
 
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:
         event.stop()
-        cursor_node_data = self.left_side_vertical.cursor_node_data
-        if cursor_node_data.path != self.current_path:
-            self.left_side_vertical.current_displayed_tree.node_map[
-                self.current_path
-            ].collapse()
-        self._update_all_widgets(cursor_node_data)
+        self._update_all_widgets(self.current_node)
