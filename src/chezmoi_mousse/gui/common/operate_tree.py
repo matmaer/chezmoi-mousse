@@ -209,10 +209,19 @@ class OperateTree(Tree[NodeData]):
 
     @on(Tree.NodeExpanded)
     def populate_unmanaged_dir(self, event: Tree.NodeExpanded[NodeData]) -> None:
-        # dest dir node data is none
+        event.stop()
         if (
             event.node.data is None
+            or event.node.data.dest_dir
             or event.node.data.managed
+            or event.node.data.has_status
+            or self.name
+            in (
+                TreeName.managed_all_mp,
+                TreeName.managed_all_mp_xpd,
+                TreeName.managed_only_sp,
+                TreeName.managed_only_sp_xpd,
+            )
             or event.node.data.path in self.iterated_dirs
         ):
             return

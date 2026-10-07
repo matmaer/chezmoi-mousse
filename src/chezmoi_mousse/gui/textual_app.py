@@ -189,6 +189,7 @@ class ChezmoiGui(App[str]):
             ReadCmd.ignored,
             ReadCmd.template_data,
         ):
+            msg.stop()
             config_tab = self.query_exactly_one(ConfigTab)
             # the reactives trigger each update in a worker
             config_tab.cmd_result = msg.cmd_result

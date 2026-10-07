@@ -65,7 +65,6 @@ class ContentView(Vertical):
         yield ScrollableContainer(FileContentStatic(markup=False))
 
     def on_mount(self) -> None:
-        self.last_displayed_path: Path | None = None
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(FileContentStatic)
 

@@ -314,8 +314,6 @@ class LeftSideVertical(Vertical):
             _ = tree.cursor_node
         except:
             return store.cm_paths.dest_dir_node_data
-        finally:
-            cursor_node = tree.cursor_node
         if cursor_node is not None and cursor_node.data is not None:
             return cursor_node.data
         else:
@@ -442,9 +440,10 @@ class OperateTab(TabPane):
         for btn in op_buttons:
             btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
         # update middle main section label
-        self.query_one(self.ids.container.middle_q, Vertical).query_exactly_one(
-            MainSectionLabel
-        ).update(node_data.main_label)
+        middle_label = self.query_one(
+            self.ids.container.middle_q, Vertical
+        ).query_exactly_one(MainSectionLabel)
+        middle_label.update(node_data.main_label)
         # hide all views
         for view in (
             self.git_log_view,
@@ -546,6 +545,7 @@ class OperateTab(TabPane):
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
+        msg.stop()
         # hide the current tree:
         all_trees = self.query(OperateTree).results()
         for tree in all_trees:
