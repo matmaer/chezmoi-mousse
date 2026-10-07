@@ -13,9 +13,10 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Label, Static
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.data_types import OperateViewData
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
+    PathInfo,
+    SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import (
     ColorVar,
@@ -34,7 +35,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView"]
+__all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView", "PathView"]
 
 
 class TrueLabel(Label):
@@ -55,28 +56,23 @@ class ContentView(Vertical):
         app = getters.app(ChezmoiGui)
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
-    paths: OperateViewData
 
-    file_content_cache: ClassVar[dict[Path, Text]] = {}
+    cache: ClassVar[dict[Path, Text]] = {}
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.not_set)
         yield ScrollableContainer(FileContentStatic(markup=False))
 
     def on_mount(self) -> None:
-        # we can do this here as we await on mount in the splash screen
-        self.display = False
+        self.last_displayed_path: Path | None = None
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.content_static = self.query_exactly_one(FileContentStatic)
-        self.view_data = OperateViewData()
-        self.node_data = store.cm_paths.dest_dir_node_data
-        self.view_data.no_show_paths.add(store.cfg.dest_dir)
 
     @work
     async def _update_file_content(self, node_data: NodeData) -> None:
         path = node_data.path
-        if path in self.file_content_cache:
-            f_content = self.file_content_cache[path]
+        if path in self.cache:
+            f_content = self.cache[path]
         else:
             f_content = Text("Looks like an empty file.")
             if not node_data.exists:
@@ -87,22 +83,16 @@ class ContentView(Vertical):
             else:
                 self.flat_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
-            self.file_content_cache[path] = f_content
+            self.cache[path] = f_content
         self.content_static.update(f_content)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-
-        if node_data.path == self.view_data.last_displayed_path:
-            self.display = True
-            return
-
-        if node_data.dir_path or node_data.path.is_dir():
-            self.display = False
+        assert node_data.file_path, "ContentView requires a file path"
+        if node_data.path == self.last_displayed_path:
             return
 
         self._update_file_content(node_data)
-        self.view_data.last_displayed_path = node_data.path
-        self.display = True
+        self.last_displayed_path = node_data.path
 
 
 class DiffWidgets(ScrollableContainer): ...
@@ -128,9 +118,9 @@ class _DiffViewBase(Vertical):
     }
 
     def __init__(self, diff_cmd: ReadCmd) -> None:
-        self.cache: dict[Path, list[Static]] = {}
         self.diff_cmd = diff_cmd
-        self.view_data = OperateViewData()
+        self.cache: dict[Path, list[Static]] = {}
+        self.last_displayed_path: Path | None = None
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -138,8 +128,6 @@ class _DiffViewBase(Vertical):
         yield DiffWidgets()
 
     def on_mount(self) -> None:
-        # we can do all this here as we await on mount in the splash screen
-        self.display = False
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
         self.diff_container = self.query_exactly_one(DiffWidgets)
 
@@ -181,19 +169,13 @@ class _DiffViewBase(Vertical):
         self.diff_container.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
-
-        if node_data.path == self.view_data.last_displayed_path:
-            self.display = True
-            return
-
-        if not node_data.has_status:
-            self.display = False
+        assert node_data.has_status, "NodeData must have a status"
+        if node_data.path == self.last_displayed_path:
             return
 
         self.flat_label.update(tchezmoi.pretty_cmd(self.diff_cmd, node_data.path))
         self._create_diff_widgets(self.diff_cmd, node_data.path)
-        self.view_data.last_displayed_path = node_data.path
-        self.display = True
+        self.last_displayed_path = node_data.path
 
 
 class DiffView(_DiffViewBase):
@@ -210,21 +192,17 @@ class GitLogView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    node_data: reactive[NodeData | None] = reactive(None, init=False)
     cache: ClassVar[dict[Path, list[list[str]]]] = {}
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(ReadCmd.git_log.pretty_cmd)
+        yield FlatSectionLabel()
         yield DataTable[str](show_cursor=False)
 
     def on_mount(self) -> None:
-        # we can do all this here as we await on mount in the splash screen
-        self.display = False
-        self.view_data = OperateViewData()
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
+        self.last_displayed_path: Path | None = None
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
-        self._update_widgets(store.cm_paths.dest_dir_node_data)
 
     def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
@@ -254,58 +232,34 @@ class GitLogView(Vertical):
         return pretty_cells
 
     @work
-    async def _update_datatable_and_flat_label(self, node_data: NodeData) -> bool:
-        source_path = node_data.source_path
-        cache_path = source_path if source_path is not None else store.cfg.dest_dir
+    async def update_git_log_view(
+        self, path: Path, log_lines: list[str] | None = None
+    ) -> None:
+        pretty_cells = []
+        if path == self.last_displayed_path:
+            return
+        if path in self.cache:
+            pretty_cells = self.cache[path]
+        elif log_lines is not None:
+            pretty_cells = self._get_styled_cells(log_lines)
+            self.cache[path] = pretty_cells
+
+        flat_label = tchezmoi.pretty_cmd(ReadCmd.git_log, path)
+        self.flat_label.update(flat_label)
+        self.last_displayed_path = path
+
         self.data_table.clear()
-        if cache_path in self.cache:
-            self.flat_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, source_path))
-            pretty_cells = self.cache[cache_path]
-        else:
-            cmd_result = await tchezmoi.run_chezmoi_cmd(
-                self.app, ReadCmd.git_log, verb_arg=source_path
-            )
-            self.flat_label.update(cmd_result.pretty_cmd)
-            pretty_cells = self._get_styled_cells(cmd_result.out_list)
-
-        if not pretty_cells:
-            return False
-
         for row in pretty_cells:
             self.data_table.add_row(*row)
-        self.cache[cache_path] = pretty_cells
-        return True
 
-    def _update_widgets(self, node_data: NodeData) -> None:
-        has_data = self._update_datatable_and_flat_label(node_data)
-        if has_data:
-            self.view_data.displayed_paths.add(node_data.path)
-            self.display = True
-        else:
-            self.display = False
-            self.view_data.no_show_paths.add(node_data.path)
 
-    def watch_node_data(self, node_data: NodeData) -> None:
+class PathView(Vertical):
+    def compose(self) -> ComposeResult:
+        yield FlatSectionLabel(LabelStr.select_path_git_log)
+        yield SubSectionLabel(str(store.cm_paths.dest_dir_node_data.path))
+        yield PathInfo()
 
-        if node_data.path in self.view_data.no_show_paths:
-            self.display = False
-            return
-
-        if node_data.path == self.view_data.last_displayed_path:
-            self.display = True
-            return
-
-        if node_data.dest_dir and node_data.path not in self.view_data.no_show_paths:
-            self._update_widgets(node_data)
-            return
-
-        if not node_data.managed:
-            self.display = False
-            return
-
-        if (
-            node_data.path not in self.view_data.known_paths
-            or node_data.path in self.view_data.displayed_paths
-        ):
-            self._update_widgets(node_data)
-            return
+    def on_mount(self) -> None:
+        self.flat_label = self.query_exactly_one(FlatSectionLabel)
+        self.sub_label = self.query_exactly_one(SubSectionLabel)
+        self.path_info = self.query_exactly_one(PathInfo)

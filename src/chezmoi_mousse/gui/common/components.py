@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from textual import work
 from textual.containers import (
     HorizontalGroup,
     ScrollableContainer,
@@ -121,8 +120,7 @@ class PathInfo(ScrollableContainer):
         self.dir_info = self.query_exactly_one(DirInfo)
         self.file_info = self.query_exactly_one(FileInfo)
 
-    @work
-    async def _set_dir_info(self, node_data: NodeData) -> None:
+    def _set_dir_info(self, node_data: NodeData) -> None:
 
         if node_data.path in self.cache:
             widgets = self.cache[node_data.path]
@@ -152,8 +150,7 @@ class PathInfo(ScrollableContainer):
         self.dir_info.remove_children()
         self.dir_info.mount_all(self.cache[node_data.path])
 
-    @work
-    async def _set_file_info(self, node_data: NodeData) -> None:
+    def _set_file_info(self, node_data: NodeData) -> None:
         if node_data.path in self.cache:
             widgets = self.cache[node_data.path]
         else:
