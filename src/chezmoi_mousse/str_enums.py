@@ -109,10 +109,6 @@ class ChezmoiPrompts(Enum):
     yes = "y"
 
     @property
-    def btn_label(self) -> str:
-        return f"{self.name.replace('_', '-')}"
-
-    @property
     def prompt_item(self) -> str:
         return f"{self.name.replace('_', '-')}"
 

@@ -110,13 +110,13 @@ class ChezmoiCmdModal(ModalScreen[None]):
             yield InteractiveOutputStatic()
             yield PromptBtnGroup(
                 labels=(
-                    ChezmoiPrompts.all.btn_label,
-                    ChezmoiPrompts.diff.btn_label,
-                    ChezmoiPrompts.edit.btn_label,
-                    ChezmoiPrompts.no.btn_label,
-                    ChezmoiPrompts.no_to_all.btn_label,
-                    ChezmoiPrompts.quit.btn_label,
-                    ChezmoiPrompts.yes.btn_label,
+                    ChezmoiPrompts.all.prompt_item,
+                    ChezmoiPrompts.diff.prompt_item,
+                    ChezmoiPrompts.edit.prompt_item,
+                    ChezmoiPrompts.no.prompt_item,
+                    ChezmoiPrompts.no_to_all.prompt_item,
+                    ChezmoiPrompts.quit.prompt_item,
+                    ChezmoiPrompts.yes.prompt_item,
                     BtnLabel.cancel,
                     BtnLabel.close,
                 ),
@@ -158,7 +158,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
         offered = {
-            prompt.btn_label
+            prompt.prompt_item
             for prompt in ChezmoiPrompts
             if prompt.prompt_item in options
         }
@@ -227,7 +227,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
             self._run_interactive()
         elif self._prompt_future is not None and not self._prompt_future.done():
             for prompt in ChezmoiPrompts:
-                if prompt.btn_label == button_label:
+                if prompt.prompt_item == button_label:
                     self._prompt_future.set_result(prompt.reply)
                     break
 
@@ -436,6 +436,7 @@ class OperateTab(TabPane):
 
     @work
     async def _update_all_widgets(self, node_data: NodeData) -> None:
+        self.current_path = node_data.path
         # update operate buttons
         op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
         for btn in op_buttons:
@@ -529,7 +530,7 @@ class OperateTab(TabPane):
             self._update_all_widgets(store.cm_paths.dest_dir_node_data)
 
     @on(Button.Pressed)
-    def handle_operate_button(self, event: Button.Pressed, path: Path) -> None:
+    def handle_operate_button(self, event: Button.Pressed) -> None:
         if event.button.label in (
             BtnLabel.chezmoi_add,
             BtnLabel.chezmoi_apply,
@@ -538,7 +539,9 @@ class OperateTab(TabPane):
             BtnLabel.chezmoi_destroy,
         ):
             event.stop()
-            self.app.push_screen(ChezmoiCmdModal(str(event.button.label), path))
+            self.app.push_screen(
+                ChezmoiCmdModal(str(event.button.label), self.current_path)
+            )
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
