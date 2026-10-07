@@ -494,7 +494,6 @@ class OperateTab(TabPane):
             return  # no need to update or display path view
 
         # Update and display PathView
-        self.notify("No view available for the selected node.")
         self.path_view.sub_label.update(str(self.current_path))
         self.path_view.path_info.node_data = node_data
         if self._active_radio_btn == LabelStr.radio_git_log:

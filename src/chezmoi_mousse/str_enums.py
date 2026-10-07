@@ -1,6 +1,5 @@
 from enum import Enum, StrEnum, auto
 from functools import cached_property
-from typing import Self
 
 __all__ = [
     "BindingAction",
@@ -110,7 +109,7 @@ class ChezmoiPrompts(Enum):
 
     @property
     def prompt_item(self) -> str:
-        return f"{self.name.replace('_', '-')}"
+        return self.name.replace("_", "-")
 
     @property
     def reply(self) -> str:
@@ -165,10 +164,6 @@ class ContainerName(StrEnum):
     operate_buttons = auto()
     template_data = auto()
     test_paths_view = auto()
-
-    @property
-    def container_id(self) -> str:
-        return f"{self}_id"
 
 
 class LabelStr(StrEnum):
@@ -337,7 +332,6 @@ class PathFilters(Enum):
         "kubeconfig",
         # Wireguard
         "wg0.conf",  # contains PrivateKey
-        "privatekey",
     )
 
     KEY_FILE_EXTENSIONS = (
@@ -444,10 +438,6 @@ class StatusCode(StrEnum):
     SD = "\x20D"  # Applied target clean; apply will delete target per source rules.
     SM = "\x20M"  # Applied target clean; apply will modify target from source updates.
 
-    @cached_property
-    def pretty_cmd(self) -> str:
-        return f"chezmoi {self.value[0]}"
-
 
 class Tcss(StrEnum):
     # Operation tabs
@@ -512,12 +502,12 @@ class TreeName(StrEnum):
     un_wanted_plus_amp_xpd = auto()
 
     @classmethod
-    def managed_trees(cls) -> tuple[Self, ...]:
+    def managed_trees(cls) -> tuple[str, ...]:
         return (
-            cls(cls.managed_only_sp_xpd),
-            cls(cls.managed_only_sp),
-            cls(cls.managed_all_mp),
-            cls(cls.managed_all_mp_xpd),
+            cls.managed_only_sp_xpd,
+            cls.managed_only_sp,
+            cls.managed_all_mp,
+            cls.managed_all_mp_xpd,
         )
 
 
@@ -695,9 +685,7 @@ class ReadCmd(Enum):
 
     @cached_property
     def pretty_splash_cmd(self) -> str:
-        pretty = str(self.pretty_cmd)
-        pretty = pretty.replace("--include=", "")
-        return pretty
+        return self.pretty_cmd.replace("--include=", "")
 
 
 class _WriteVerb(StrEnum):
