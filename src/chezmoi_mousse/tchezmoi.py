@@ -47,14 +47,6 @@ async def _construct_command_result(
     std_err = exec_result[1]
     result_code = exec_result[2]
     out_list = std_out.splitlines()
-    if not std_out and not std_err:
-        out_lines: list[str] = []
-        out_lines.append("Output on stdout:")
-        out_lines.append(std_out)
-        out_lines.append("Output on stderr:")
-        out_lines.append(std_err)
-    elif std_out and not std_err:
-        out_list = std_out.splitlines()
     full_cmd: str = f"chezmoi {' '.join(chezmoi_args)}"
     return CommandResult(
         cmd_enum=cmd_enum,

@@ -88,9 +88,6 @@ class ContentView(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         assert node_data.file_path, "ContentView requires a file path"
-        if node_data.path == self.last_displayed_path:
-            return
-
         self._update_file_content(node_data)
         self.last_displayed_path = node_data.path
 
@@ -120,7 +117,6 @@ class _DiffViewBase(Vertical):
     def __init__(self, diff_cmd: ReadCmd) -> None:
         self.diff_cmd = diff_cmd
         self.cache: dict[Path, list[Static]] = {}
-        self.last_displayed_path: Path | None = None
         super().__init__()
 
     def compose(self) -> ComposeResult:
