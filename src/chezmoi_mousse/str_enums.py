@@ -107,7 +107,7 @@ class ChezmoiPrompts(Enum):
     save = "s"
     yes = "y"
 
-    @property
+    @cached_property
     def prompt_item(self) -> str:
         return self.name.replace("_", "-")
 
