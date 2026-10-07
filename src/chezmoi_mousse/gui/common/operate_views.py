@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import groupby
 from typing import TYPE_CHECKING, ClassVar
 
+from rich.markup import escape
 from rich.text import Text
 from textual import work
 from textual.containers import (
@@ -196,57 +197,63 @@ class GitLogView(Vertical):
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.last_displayed_path: Path | None = None
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
 
-    def _get_styled_cells(self, log_lines: list[str]) -> list[list[str]]:
+    def _get_styled_cells(self, std_out: str) -> list[list[str]]:
         pretty_cells: list[list[str]] = []
 
-        def stylize(columns: list[str], log_color: ColorVar) -> None:
+        def stylize(columns: list[str], log_color: ColorVar) -> list[str]:
             color = self.app.theme_variables[log_color]
-            row: list[str] = [f"[{color}]{cell_text}[/]" for cell_text in columns]
-            pretty_cells.append(row)
+            row: list[str] = [
+                f"[{color}]{escape(cell_text)}[/]" for cell_text in columns
+            ]
+            return row
 
-        for line in log_lines:
+        # Split on the NUL record terminator only: str.splitlines() also splits
+        # on characters like \x1c-\x1e, \x85 and \u2028 if found in commit text!
+        for line in std_out.split("\x00"):
+            line = line.lstrip("\r\n")
+            if not line:
+                continue
             no_commit_message = "no commit message"
-            rel_date, committer, subject = line.rstrip("\x00").split("\x1f", 2)
+            rel_date, committer, message = line.split("\x1f", 2)
             column_one = f"{rel_date} by {committer}"
-            column_two = f"{subject}" if subject.strip() else no_commit_message
+            column_two = message.rstrip() if message.strip() else no_commit_message
             columns: list[str] = [column_one, column_two]
             if column_two.split(maxsplit=1)[0] == "Add":
-                stylize(columns, ColorVar.text_success)
+                row = stylize(columns, ColorVar.text_success)
             elif column_two.split(maxsplit=1)[0] == "Update":
-                stylize(columns, ColorVar.text_warning)
+                row = stylize(columns, ColorVar.text_warning)
             elif column_two.split(maxsplit=1)[0] == "Remove":
-                stylize(columns, ColorVar.text_error)
+                row = stylize(columns, ColorVar.text_error)
             elif column_two == no_commit_message:
-                stylize(columns, ColorVar.secondary)
+                row = stylize(columns, ColorVar.secondary)
             else:
-                stylize(columns, ColorVar.text_primary)
+                row = stylize(columns, ColorVar.text_primary)
+            pretty_cells.append(row)
 
         return pretty_cells
 
     @work
     async def update_git_log_view(
-        self, path: Path, log_lines: list[str] | None = None
+        self, node_data: NodeData, std_out: str | None = None
     ) -> None:
+        assert node_data.managed or node_data.dest_dir
         pretty_cells = []
-        if path == self.last_displayed_path:
-            return
-        if path in self.cache:
-            pretty_cells = self.cache[path]
-        elif log_lines is not None:
-            pretty_cells = self._get_styled_cells(log_lines)
-            self.cache[path] = pretty_cells
+        if node_data.path in self.cache or std_out is None:
+            pretty_cells = self.cache[node_data.path]
+        else:
+            pretty_cells = self._get_styled_cells(std_out)
+            self.cache[node_data.path] = pretty_cells
 
-        flat_label = tchezmoi.pretty_cmd(ReadCmd.git_log, path)
+        label_path = node_data.path if not node_data.dest_dir else None
+        flat_label = tchezmoi.pretty_cmd(ReadCmd.git_log, label_path)
         self.flat_label.update(flat_label)
-        self.last_displayed_path = path
 
         self.data_table.clear()
         for row in pretty_cells:
-            self.data_table.add_row(*row)
+            self.data_table.add_row(*row, height=None)
 
 
 class PathView(Vertical):

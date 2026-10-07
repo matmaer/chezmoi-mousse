@@ -527,7 +527,7 @@ class _ChezmoiGitArgs(Enum):
     # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
-        "--format=%ar%x1f%cn%x1f%s%x00",
+        "--format=%ar%x1f%cn%x1f%B%x00",
         "--max-count=100",
         "--no-color",
         "--no-decorate",

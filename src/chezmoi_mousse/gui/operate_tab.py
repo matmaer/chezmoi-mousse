@@ -456,7 +456,7 @@ class OperateTab(TabPane):
 
         if self._active_radio_btn == LabelStr.radio_git_log:
             if node_data.path in self.git_log_view.cache:
-                self.git_log_view.update_git_log_view(node_data.path, None)
+                self.git_log_view.update_git_log_view(node_data, None)
                 self.git_log_view.display = True
             elif node_data.path not in self.paths_without_git_log:
                 cr = await tchezmoi.run_chezmoi_cmd(
@@ -465,7 +465,7 @@ class OperateTab(TabPane):
                 if cr.returncode != 0:
                     self.paths_without_git_log.add(node_data.path)
                 else:
-                    self.git_log_view.update_git_log_view(node_data.path, cr.out_list)
+                    self.git_log_view.update_git_log_view(node_data, cr.std_out)
                     self.git_log_view.display = True
         elif self._active_radio_btn == LabelStr.radio_diff and node_data.has_status:
             self.diff_view.node_data = node_data
