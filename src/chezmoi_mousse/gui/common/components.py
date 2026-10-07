@@ -20,8 +20,6 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from textual.app import ComposeResult
 
     from chezmoi_mousse.data_types import CommandResult, NodeData
@@ -117,55 +115,45 @@ class PathInfo(ScrollableContainer):
         yield FileInfo()
 
     def on_mount(self) -> None:
-        self.cache: dict[Path, list[HorizontalGroup]] = {}
         self.dir_info = self.query_exactly_one(DirInfo)
         self.file_info = self.query_exactly_one(FileInfo)
 
     def _set_dir_info(self, node_data: NodeData) -> None:
 
-        if node_data.path in self.cache:
-            widgets = self.cache[node_data.path]
-        else:
-            status = TrueLabel() if node_data.has_status else FalseLabel()
-            exists = TrueLabel() if node_data.exists else FalseLabel()
-            un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
-            nested_status = TrueLabel() if node_data.has_nested_status else FalseLabel()
-            nested_managed = (
-                TrueLabel() if node_data.has_nested_managed else FalseLabel()
-            )
-            nested_un_managed = (
-                TrueLabel() if node_data.has_nested_unmanaged else FalseLabel()
-            )
-            widgets = [
-                HorizontalGroup(InfoLabel(LabelStr.d_has_status), status),
-                HorizontalGroup(InfoLabel(LabelStr.d_exists), exists),
-                HorizontalGroup(InfoLabel(LabelStr.d_un_wanted), un_wanted),
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
-                HorizontalGroup(
-                    InfoLabel(LabelStr.has_nested_un_managed),
-                    nested_un_managed,
-                ),
-            ]
-        self.cache[node_data.path] = widgets
+        status = TrueLabel() if node_data.has_status else FalseLabel()
+        exists = TrueLabel() if node_data.exists else FalseLabel()
+        un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
+        nested_status = TrueLabel() if node_data.has_nested_status else FalseLabel()
+        nested_managed = TrueLabel() if node_data.has_nested_managed else FalseLabel()
+        nested_un_managed = (
+            TrueLabel() if node_data.has_nested_unmanaged else FalseLabel()
+        )
+        widgets = [
+            HorizontalGroup(InfoLabel(LabelStr.d_has_status), status),
+            HorizontalGroup(InfoLabel(LabelStr.d_exists), exists),
+            HorizontalGroup(InfoLabel(LabelStr.d_un_wanted), un_wanted),
+            HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
+            HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
+            HorizontalGroup(
+                InfoLabel(LabelStr.has_nested_un_managed),
+                nested_un_managed,
+            ),
+        ]
+
         self.dir_info.remove_children()
-        self.dir_info.mount_all(self.cache[node_data.path])
+        self.dir_info.mount_all(widgets)
 
     def _set_file_info(self, node_data: NodeData) -> None:
-        if node_data.path in self.cache:
-            widgets = self.cache[node_data.path]
-        else:
-            exists = TrueLabel() if node_data.exists else FalseLabel()
-            status = TrueLabel() if node_data.has_status else FalseLabel()
-            un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
-            widgets = [
-                HorizontalGroup(InfoLabel(LabelStr.f_has_status), status),
-                HorizontalGroup(InfoLabel(LabelStr.f_exists), exists),
-                HorizontalGroup(InfoLabel(LabelStr.f_un_wanted), un_wanted),
-            ]
-        self.cache[node_data.path] = widgets
+        exists = TrueLabel() if node_data.exists else FalseLabel()
+        status = TrueLabel() if node_data.has_status else FalseLabel()
+        un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
+        widgets = [
+            HorizontalGroup(InfoLabel(LabelStr.f_has_status), status),
+            HorizontalGroup(InfoLabel(LabelStr.f_exists), exists),
+            HorizontalGroup(InfoLabel(LabelStr.f_un_wanted), un_wanted),
+        ]
         self.file_info.remove_children()
-        self.file_info.mount_all(self.cache[node_data.path])
+        self.file_info.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
         if node_data.dir_path or node_data.path.is_dir():
