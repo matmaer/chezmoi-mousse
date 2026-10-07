@@ -424,7 +424,6 @@ class OperateTab(TabPane):
         self.path_view = self.query_exactly_one(PathView)
 
         self.current_path = store.cm_paths.dest_dir_node_data.path
-        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
 
     @property
     def _active_radio_btn(
