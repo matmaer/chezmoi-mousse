@@ -60,9 +60,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-type RadioView = ContentView | DiffView | DiffReverseView | GitLogView
-
-
 __all__ = ["OperateTab"]
 
 
@@ -145,11 +142,9 @@ class ChezmoiCmdModal(ModalScreen[None]):
     async def _run_affected_paths(self) -> None:
         # set flat section label with the dry run command
         flat_section_label = self.query_exactly_one(FlatSectionLabel)
-        flat_section_label.update(
-            f"{self.btn_label_to_dry_cmd[self.btn_label].pretty_cmd} {self.path}"
-        )
-        # run the command
         dry_cmd = self.btn_label_to_dry_cmd[self.btn_label]
+        flat_section_label.update(f"{dry_cmd.pretty_cmd} {self.path}")
+        # run the command
         affected_paths_cr: list[Path] = await tchezmoi.get_affected_paths(
             self.app, dry_cmd, self.path
         )
