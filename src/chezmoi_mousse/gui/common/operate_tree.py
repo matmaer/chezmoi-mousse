@@ -49,20 +49,9 @@ class OperateTree(Tree[NodeData]):
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
 
-    def _get_file_nodes(
-        self, file_node_dict: dict[Path, NodeData]
-    ) -> dict[Path, NodeData]:
+    def _get_tree_nodes(self, node_dict: dict[Path, NodeData]) -> dict[Path, NodeData]:
         result: dict[Path, NodeData] = {}
-        for path, node_data in file_node_dict.items():
-            if node_data.include_in_tree(TreeName(self.name)):
-                result[path] = node_data
-        return path_funcs.sort_path_dict(result)
-
-    def _get_dir_nodes(
-        self, dir_node_dict: dict[Path, NodeData]
-    ) -> dict[Path, NodeData]:
-        result: dict[Path, NodeData] = {}
-        for path, node_data in dir_node_dict.items():
+        for path, node_data in node_dict.items():
             if node_data.include_in_tree(TreeName(self.name)):
                 result[path] = node_data
         return path_funcs.sort_path_dict(result)
@@ -195,8 +184,8 @@ class OperateTree(Tree[NodeData]):
 
     @work
     async def _initial_tree_population(self) -> None:
-        dir_nodes = self._get_dir_nodes(store.cm_paths.dir_node_data)
-        file_nodes = self._get_file_nodes(store.cm_paths.file_node_data)
+        dir_nodes = self._get_tree_nodes(store.cm_paths.dir_node_data)
+        file_nodes = self._get_tree_nodes(store.cm_paths.file_node_data)
 
         for path, node_data in dir_nodes.items():
             self._add_node_with_color(path, node_data, allow_expand=True)

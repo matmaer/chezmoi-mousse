@@ -19,7 +19,6 @@ from textual.widgets import (
 )
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     PromptBtnGroup,
@@ -556,10 +555,11 @@ class OperateTab(TabPane):
         show_tree.display = True
 
     @on(RadioSet.Changed)
-    def toggle_view(self, event: RadioSet.Changed) -> None:
+    def switch_radio_view(self, event: RadioSet.Changed) -> None:
         event.stop()
-        if self.left_side_vertical.cursor_node_data.path != self.current_path:
+        cursor_node_data = self.left_side_vertical.cursor_node_data
+        if cursor_node_data.path != self.current_path:
             self.left_side_vertical.current_displayed_tree.node_map[
                 self.current_path
             ].collapse()
-        self._update_all_widgets(self.left_side_vertical.cursor_node_data)
+        self._update_all_widgets(cursor_node_data)
