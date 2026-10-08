@@ -24,10 +24,9 @@ from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
     TabButtons,
 )
-from chezmoi_mousse.gui.common.loggers import AppLog, CmdLog
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.config_tab import ConfigTab
-from chezmoi_mousse.gui.logs_tab import LogsTab
+from chezmoi_mousse.gui.logs_tab import AppLog, CmdLog, LogsTab
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.str_enums import (

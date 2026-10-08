@@ -28,7 +28,7 @@ from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
 )
 from chezmoi_mousse.gui.common.components import MainSectionLabel
-from chezmoi_mousse.gui.common.loggers import RichLoggers
+from chezmoi_mousse.gui.logs_tab import RichLoggers
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ColorVar,
