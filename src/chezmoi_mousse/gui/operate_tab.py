@@ -362,6 +362,7 @@ class OperateTab(TabPane):
             yield LeftSideVertical()
             with Vertical(id=self.ids.container.middle, classes=Tcss.operations_middle):
                 yield MainSectionLabel(LabelStr.dest_dir)
+                yield SubSectionLabel(escape(str(store.cfg.dest_dir)))
                 yield GitLogView()
                 yield ContentView()
                 yield DiffView()
@@ -389,6 +390,7 @@ class OperateTab(TabPane):
     def on_mount(self) -> None:
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.radio_set = self.query_exactly_one(RadioSet)
+        self.path_label = self.query_exactly_one(SubSectionLabel)
 
         self.paths_without_git_log: set[Path] = set()
         self.git_log_view = self.query_exactly_one(GitLogView)
@@ -414,6 +416,7 @@ class OperateTab(TabPane):
 
     @work
     async def _update_all_widgets(self, node_data: NodeData) -> None:
+        self.path_label.update(escape(str(node_data.path)))
         self.current_node = node_data
         if node_data.has_status or node_data.has_nested_status:
             self.last_status_path = node_data.path
@@ -478,7 +481,6 @@ class OperateTab(TabPane):
             )
         ):
             # Update and display PathView
-            self.path_view.sub_label.update(escape(str(node_data.path)))
             self.path_view.path_info.node_data = node_data
             if self._active_radio_btn == LabelStr.radio_git_log:
                 self.path_view.flat_label.update(LabelStr.select_path_git_log)

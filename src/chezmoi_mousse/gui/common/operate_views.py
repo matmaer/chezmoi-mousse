@@ -13,11 +13,10 @@ from textual.containers import (
 from textual.reactive import reactive
 from textual.widgets import DataTable, Label, Static
 
-from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     PathInfo,
-    SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import (
     ColorVar,
@@ -241,10 +240,8 @@ class GitLogView(Vertical):
 class PathView(Vertical):
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.select_path_git_log)
-        yield SubSectionLabel(escape(str(store.cm_paths.dest_dir_node_data.path)))
         yield PathInfo()
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.sub_label = self.query_exactly_one(SubSectionLabel)
         self.path_info = self.query_exactly_one(PathInfo)
