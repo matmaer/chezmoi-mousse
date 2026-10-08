@@ -168,7 +168,7 @@ DiffView {
   margin-bottom: 2;
 }
 
-ChezmoiCmdModal {
+OperateModal {
   align: center middle;
 
   &>Vertical {
