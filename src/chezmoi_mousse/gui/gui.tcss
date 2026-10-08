@@ -73,7 +73,7 @@
 }
 
 .operate_pane {
-  &>.operations_left {
+  &>LeftSideVertical {
     max-width: 30%;
     width: auto;
 
@@ -124,19 +124,20 @@
       }
     }
 
-    &>.managed_tree {
+    &>OperateTree {
       height: 1fr;
       width: auto;
       max-width: 1fr;
+      scrollbar-gutter: stable;
     }
   }
 
-  &>.operations_middle {
+  &>MiddleVertical {
     margin: 0 1;
     height: 1fr;
   }
 
-  &>.operations_right {
+  &>RightSideVertical {
     width: 25;
 
     &>.switches_vert_group {

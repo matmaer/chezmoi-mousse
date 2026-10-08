@@ -163,11 +163,7 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         return [Path(line) for line in cmd_result.out_list]
 
     def parse_status_output(cmd_result: CommandResult) -> dict[Path, Sc]:
-        return {
-            Path(line[3:]): Sc(line[:2])
-            for line in cmd_result.out_list
-            if Sc.R.value not in line[:2]  # TODO: implement R
-        }
+        return {Path(line[3:]): Sc(line[:2]) for line in cmd_result.out_list}
 
     async with asyncio.TaskGroup() as tg:
         man_dirs_task = tg.create_task(

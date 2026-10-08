@@ -158,9 +158,7 @@ class ContainerName(StrEnum):
     git_ignored = auto()
     git_log = auto()
     left_side = auto()
-    middle = auto()
     prompt_buttons = auto()
-    right_side = auto()
     operate_buttons = auto()
     template_data = auto()
     test_paths_view = auto()
@@ -446,11 +444,7 @@ class StatusCode(StrEnum):
 class Tcss(StrEnum):
     # Operation tabs
     operate_pane = auto()
-    operations_left = auto()
-    operations_middle = auto()
-    operations_right = auto()
     dest_dir_button = auto()
-    managed_tree = auto()
     switch_with_label = auto()
     switches_vert_group = auto()
 
@@ -511,22 +505,6 @@ class TreeName(StrEnum):
     @property
     def is_managed_tree(self) -> bool:
         return self.name.startswith("managed_")
-
-    @property
-    def is_sp_tree(self) -> bool:
-        return self.name.endswith(("_sp", "_sp_xpd"))
-
-    @property
-    def is_amp_tree(self) -> bool:
-        return self.name.endswith(("_amp", "_amp_xpd"))
-
-    @property
-    def is_un_man_tree(self) -> bool:
-        return self.name.startswith("un_man_plus_")
-
-    @property
-    def is_un_wanted_tree(self) -> bool:
-        return self.name.startswith("un_wanted_plus_")
 
 
 ##############################################

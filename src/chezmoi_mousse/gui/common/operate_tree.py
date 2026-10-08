@@ -11,7 +11,6 @@ from chezmoi_mousse.data_types import NodeData
 from chezmoi_mousse.str_enums import (
     ColorVar,
     StatusCode as Sc,
-    Tcss,
     TreeName,
 )
 
@@ -38,7 +37,6 @@ class OperateTree(Tree[NodeData]):
             id=tree_id,
             label="root",
             name=tree_name.value,
-            classes=Tcss.managed_tree,
         )
 
     def on_mount(self) -> None:
@@ -71,17 +69,20 @@ class OperateTree(Tree[NodeData]):
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
         is_man_tree = TreeName(self.name).is_managed_tree
+        wanted = not node_data.un_wanted
 
         if node_data.dir_path:
             if node_data.has_status:
                 return ColorVar.warning_lighten_3
-            if node_data.has_nested_status:
+            if node_data.has_nested_status and node_data.has_nested_unmanaged:
                 return (
                     ColorVar.text_primary if is_man_tree else ColorVar.primary_darken_1
                 )
-            if node_data.managed and node_data.dir_path:
+            elif node_data.has_nested_status:
+                return ColorVar.text_primary
+            if node_data.managed:
                 return ColorVar.foreground_darken_3 if is_man_tree else ColorVar.text
-            if node_data.un_managed and node_data.dir_path and not node_data.un_wanted:
+            if node_data.un_managed and wanted:
                 return ColorVar.text_success
             if node_data.un_wanted:
                 return ColorVar.text_accent
@@ -90,7 +91,7 @@ class OperateTree(Tree[NodeData]):
                 return color_var
             if node_data.managed:
                 return ColorVar.foreground_darken_3
-            if node_data.un_managed and not node_data.un_wanted:
+            if node_data.un_managed and wanted:
                 return ColorVar.text_success
             if node_data.un_wanted:
                 return ColorVar.text_accent
@@ -184,16 +185,6 @@ class OperateTree(Tree[NodeData]):
         self._expand_xpd_nodes()
         if self.name == TreeName.managed_sp:
             self.display = True
-
-    @on(Tree.NodeSelected)
-    def limit_node_selected_event(self, event: Tree.NodeCollapsed[NodeData]) -> None:
-        if self.display is False:
-            event.stop()
-            return
-
-    @on(Tree.NodeCollapsed)
-    def stop_node_collapsed_event(self, event: Tree.NodeCollapsed[NodeData]) -> None:
-        event.stop()
 
     @on(Tree.NodeExpanded)
     def populate_un_managed_dir(self, event: Tree.NodeExpanded[NodeData]) -> None:

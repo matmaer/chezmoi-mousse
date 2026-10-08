@@ -59,11 +59,6 @@ class LeftSideVertical(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self) -> None:
-        super().__init__(
-            id=store.op_ids.container.left_side, classes=Tcss.operations_left
-        )
-
     def compose(self) -> ComposeResult:
         yield Horizontal(
             Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button),
@@ -152,9 +147,7 @@ class RightSideVertical(Vertical):
         radio_labels: tuple[LabelStr, ...],
     ) -> None:
         self.radio_labels = radio_labels
-        super().__init__(
-            id=store.op_ids.container.right_side, classes=Tcss.operations_right
-        )
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield MainSectionLabel(LabelStr.context)
@@ -167,6 +160,16 @@ class RightSideVertical(Vertical):
         first_radio = self.query_exactly_one(RadioSet).query(RadioButton).first()
         if first_radio:
             first_radio.value = True
+
+
+class MiddleVertical(Vertical):
+    def compose(self) -> ComposeResult:
+        yield MainSectionLabel()
+        yield GitLogView()
+        yield ContentView()
+        yield DiffView()
+        yield DiffReverseView()
+        yield PathView()
 
 
 class OperateTab(TabPane):
@@ -183,13 +186,7 @@ class OperateTab(TabPane):
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical()
-            with Vertical(id=self.ids.container.middle, classes=Tcss.operations_middle):
-                yield MainSectionLabel()
-                yield GitLogView()
-                yield ContentView()
-                yield DiffView()
-                yield DiffReverseView()
-                yield PathView()
+            yield MiddleVertical()
             yield RightSideVertical(
                 radio_labels=(
                     LabelStr.radio_git_log,
@@ -223,40 +220,13 @@ class OperateTab(TabPane):
 
         self._update_all_widgets(store.cm_paths.dest_dir_node_data)
 
-        self.current_node: NodeData = store.cm_paths.dest_dir_node_data
-        self.status_tree_fallback: NodeData = store.cm_paths.dest_dir_node_data
-        self.managed_tree_fallback: NodeData = store.cm_paths.dest_dir_node_data
-        self.un_wanted_tree_fallback: NodeData = store.cm_paths.dest_dir_node_data
-
-    @property
-    def _active_radio_btn(
-        self,
-    ) -> str:
-        current_radio_btn = self.radio_set.pressed_button
-        assert current_radio_btn is not None
-        return str(current_radio_btn.label)
-
     @work
     async def _update_all_widgets(self, node_data: NodeData) -> None:
-        self.current_node = node_data
-        if node_data.has_status or node_data.has_nested_status:
-            self.status_tree_fallback = node_data
-            self.managed_tree_fallback = node_data
-            self.un_managed_tree_fallback = node_data
-        elif node_data.managed or node_data.has_status or node_data.has_nested_status:
-            self.managed_tree_fallback = node_data
-            self.un_managed_tree_fallback = node_data
-        elif node_data.un_managed and not node_data.un_wanted:
-            self.un_managed_tree_fallback = node_data
-        # update operate buttons
-        op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
-        for btn in op_buttons:
-            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
-        # update middle main section label
-        middle_label = self.query_one(
-            self.ids.container.middle_q, Vertical
-        ).query_exactly_one(MainSectionLabel)
-        middle_label.update(node_data.main_label)
+        self.current_node: NodeData = node_data
+        current_radio_btn = self.radio_set.pressed_button
+        assert current_radio_btn is not None
+        active_radio_btn = str(current_radio_btn.label)
+
         # hide all views
         for view in (
             self.git_log_view,
@@ -267,7 +237,7 @@ class OperateTab(TabPane):
         ):
             view.display = False
 
-        if self._active_radio_btn == LabelStr.radio_git_log:
+        if active_radio_btn == LabelStr.radio_git_log:
             if node_data.path in self.git_log_view.cache:
                 self.git_log_view.update_git_log_view(node_data, None)
                 self.git_log_view.display = True
@@ -282,16 +252,13 @@ class OperateTab(TabPane):
                 else:
                     self.git_log_view.update_git_log_view(node_data, cr.std_out)
                     self.git_log_view.display = True
-        elif self._active_radio_btn == LabelStr.radio_diff and node_data.has_status:
+        elif active_radio_btn == LabelStr.radio_diff and node_data.has_status:
             self.diff_view.node_data = node_data
             self.diff_view.display = True
-        elif (
-            self._active_radio_btn == LabelStr.radio_diff_reverse
-            and node_data.has_status
-        ):
+        elif active_radio_btn == LabelStr.radio_diff_reverse and node_data.has_status:
             self.diff_reverse_view.node_data = node_data
             self.diff_reverse_view.display = True
-        elif self._active_radio_btn == LabelStr.radio_contents and (
+        elif active_radio_btn == LabelStr.radio_contents and (
             node_data.file_path or node_data.path.is_file()
         ):
             self.content_view.node_data = node_data
@@ -308,16 +275,26 @@ class OperateTab(TabPane):
         ):
             # Update and display PathView
             self.path_view.path_info.node_data = node_data
-            if self._active_radio_btn == LabelStr.radio_git_log:
+            if active_radio_btn == LabelStr.radio_git_log:
                 self.path_view.flat_label.update(LabelStr.select_path_git_log)
-            elif self._active_radio_btn == LabelStr.radio_contents:
+            elif active_radio_btn == LabelStr.radio_contents:
                 self.path_view.flat_label.update(LabelStr.select_path_contents)
-            elif self._active_radio_btn in (
+            elif active_radio_btn in (
                 LabelStr.radio_diff,
                 LabelStr.radio_diff_reverse,
             ):
                 self.path_view.flat_label.update(LabelStr.select_path_diff)
             self.path_view.display = True
+
+        # update operate buttons
+        op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
+        for btn in op_buttons:
+            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
+        # update middle main section label
+        middle_label = self.query_exactly_one(MiddleVertical).query_exactly_one(
+            MainSectionLabel
+        )
+        middle_label.update(node_data.main_label)
 
         # update other trees in the background
         non_displayed_trees = [
@@ -340,6 +317,7 @@ class OperateTab(TabPane):
         if (
             event.node.data is None
             or event.control.id != self.left_side_vertical.current_displayed_tree.id
+            or event.node.data.path == self.current_node.path
         ):
             return
         self._update_all_widgets(event.node.data)
@@ -367,30 +345,11 @@ class OperateTab(TabPane):
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
         msg.stop()
-        # hide the current tree:
         all_trees = self.left_side_vertical.query_children(OperateTree).results()
         for tree in all_trees:
             tree.display = False
         show_tree = self.left_side_vertical.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
-
-        # no fallback needed
-        show_tree_node = show_tree.node_map.get(self.current_node.path)
-        if (
-            show_tree_node is None
-            or show_tree_node.data is None
-            or show_tree_node.data == self.current_node
-        ):
-            return
-        else:
-            # fallback logic
-            tree_name = TreeName(show_tree.name)
-            if tree_name.is_managed_tree and tree_name.is_sp_tree:
-                self._update_all_widgets(self.status_tree_fallback)
-            elif tree_name.is_managed_tree and tree_name.is_sp_tree:
-                self._update_all_widgets(self.managed_tree_fallback)
-            elif tree_name.is_un_man_tree:
-                self._update_all_widgets(self.un_managed_tree_fallback)
 
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:
