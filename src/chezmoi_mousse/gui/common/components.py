@@ -113,8 +113,10 @@ class PathInfo(ScrollableContainer):
     def compose(self) -> ComposeResult:
         yield DirInfo()
         yield FileInfo()
+        yield SubSectionLabel()
 
     def on_mount(self) -> None:
+        self.source_label = self.query_exactly_one(SubSectionLabel)
         self.dir_info = self.query_exactly_one(DirInfo)
         self.file_info = self.query_exactly_one(FileInfo)
 
@@ -156,6 +158,11 @@ class PathInfo(ScrollableContainer):
         self.file_info.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        if node_data.source_path is None:
+            self.source_label.display = False
+        else:
+            self.source_label.display = True
+            self.source_label.update(f"Source path: {node_data.rel_source_path}")
         if node_data.dir_path or node_data.path.is_dir():
             self.file_info.display = False
             self._set_dir_info(node_data)

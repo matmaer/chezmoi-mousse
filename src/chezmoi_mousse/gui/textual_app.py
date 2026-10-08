@@ -183,13 +183,13 @@ class ChezmoiGui(App[str]):
 
     @on(CommandResultMsg)
     def handle_command_result(self, msg: CommandResultMsg) -> None:
+        msg.stop()
         if msg.cmd_result.cmd_enum in (
             ReadCmd.doctor,
             ReadCmd.cat_config,
             ReadCmd.ignored,
             ReadCmd.template_data,
         ):
-            msg.stop()
             config_tab = self.query_exactly_one(ConfigTab)
             # the reactives trigger each update in a worker
             config_tab.cmd_result = msg.cmd_result

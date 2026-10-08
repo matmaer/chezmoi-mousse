@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import BtnLabel, LabelStr, TreeName
 
 if TYPE_CHECKING:
@@ -112,6 +113,22 @@ class NodeData:
         return self.status is not None
 
     @property
+    def un_managed(self) -> bool:
+        return not self.managed
+
+    @property
+    def rel_path(self) -> str:
+        return path_funcs.get_rel_path_str(self.path)
+
+    @property
+    def rel_source_path(self) -> str | None:
+        return (
+            path_funcs.get_rel_path_str(self.source_path)
+            if self.source_path is not None
+            else None
+        )
+
+    @property
     def enable_op_btn_map(self) -> dict[BtnLabel, bool]:
         # basic button enable/disable rules, affected paths could still determine no-op
         has_diff = bool(self.status) or self.has_nested_status
@@ -133,13 +150,21 @@ class NodeData:
         }
 
     @property
-    def main_label(self) -> LabelStr:
+    def main_label(self) -> str:
         if self.dest_dir:
-            return LabelStr.dest_dir
+            label_str = LabelStr.dest_dir
         elif self.dir_path:
-            return LabelStr.managed_dir if self.managed else LabelStr.un_man_dir
+            label_str = LabelStr.managed_dir if self.managed else LabelStr.un_man_dir
         else:
-            return LabelStr.managed_file if self.managed else LabelStr.un_man_file
+            label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
+
+        path_str = " " + self.rel_path
+
+        if len(label_str) + len(path_str) > 70:
+            available = 70 - len(label_str)
+            path_str = f"{path_str[: available - 3]}..."
+
+        return label_str + path_str
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
         managed_file = self.file_path and self.managed
@@ -160,18 +185,15 @@ class NodeData:
         wanted_un_managed_dir = un_managed_dir and not un_wanted_un_managed
         wanted_un_managed = wanted_un_managed_dir or wanted_un_managed_file
 
-        if tree_name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
+        if tree_name.is_managed_tree and tree_name.is_sp_tree:
             return has_status
-        elif tree_name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+        elif tree_name in (TreeName.managed_amp, TreeName.managed_amp_xpd):
             return self.managed
-        elif tree_name in (TreeName.un_man_plus_sp, TreeName.un_man_plus_sp_xpd):
+        elif tree_name.is_un_man_tree and tree_name.is_sp_tree:
             return wanted_un_managed or has_status
         elif tree_name in (TreeName.un_man_plus_amp, TreeName.un_man_plus_amp_xpd):
             return wanted_un_managed or self.managed
-        elif tree_name in (
-            TreeName.un_wanted_plus_sp,
-            TreeName.un_wanted_plus_sp_xpd,
-        ):
+        elif tree_name.is_un_man_tree and tree_name.is_sp_tree:
             return has_status or wanted_un_managed or un_wanted_un_managed
         else:
             return True

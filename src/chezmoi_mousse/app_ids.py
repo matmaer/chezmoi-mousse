@@ -154,20 +154,16 @@ class _TreeIds:
     def __init__(self, ids: AppIds) -> None:
 
         # status trees never include managed without status
-        self.managed_only_sp: str = ids.tree_id(tree_name=TreeName.managed_only_sp)
-        self.managed_only_sp_q: str = f"#{self.managed_only_sp}"
-        self.managed_only_sp_xpd: str = ids.tree_id(
-            tree_name=TreeName.managed_only_sp_xpd
-        )
-        self.managed_only_sp_xpd_q: str = f"#{self.managed_only_sp_xpd}"
+        self.managed_sp: str = ids.tree_id(tree_name=TreeName.managed_sp)
+        self.managed_sp_q: str = f"#{self.managed_sp}"
+        self.managed_sp_xpd: str = ids.tree_id(tree_name=TreeName.managed_sp_xpd)
+        self.managed_sp_xpd_q: str = f"#{self.managed_sp_xpd}"
 
         # managed trees always with unchanged
-        self.managed_all_mp: str = ids.tree_id(tree_name=TreeName.managed_all_mp)
-        self.managed_all_mp_q: str = f"#{self.managed_all_mp}"
-        self.managed_all_mp_xpd: str = ids.tree_id(
-            tree_name=TreeName.managed_all_mp_xpd
-        )
-        self.managed_all_mp_xpd_q: str = f"#{self.managed_all_mp_xpd}"
+        self.managed_amp: str = ids.tree_id(tree_name=TreeName.managed_amp)
+        self.managed_amp_q: str = f"#{self.managed_amp}"
+        self.managed_amp_xpd: str = ids.tree_id(tree_name=TreeName.managed_amp_xpd)
+        self.managed_amp_xpd_q: str = f"#{self.managed_amp_xpd}"
 
         # 1 --- UN_MANAGED TREE ---
 

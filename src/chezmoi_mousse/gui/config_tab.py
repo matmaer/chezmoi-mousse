@@ -110,6 +110,7 @@ class ConfigTab(TabPane):
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:
+        event.stop()
         if event.button.label == BtnLabel.doctor:
             self.switcher.current = store.config_ids.container.doctor
         elif event.button.label == BtnLabel.cat_config:

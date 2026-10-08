@@ -98,11 +98,11 @@ class PromptBtnGroup(HorizontalGroup):
 class SwitchGroup(VerticalGroup):
     state_to_tree_map: ClassVar[dict[tuple[bool, ...], str]] = {
         # Managed trees including only paths with a status or meta status
-        (False, False, False, False): store.op_ids.tree.managed_only_sp_q,
-        (True, False, False, False): store.op_ids.tree.managed_only_sp_xpd_q,
+        (False, False, False, False): store.op_ids.tree.managed_sp_q,
+        (True, False, False, False): store.op_ids.tree.managed_sp_xpd_q,
         # Managed trees including all managed maths
-        (False, True, False, False): store.op_ids.tree.managed_all_mp_q,
-        (True, True, False, False): store.op_ids.tree.managed_all_mp_xpd_q,
+        (False, True, False, False): store.op_ids.tree.managed_amp_q,
+        (True, True, False, False): store.op_ids.tree.managed_amp_xpd_q,
         # Un-managed trees (show_unchanged is False)
         (False, False, True, False): store.op_ids.tree.un_man_plus_sp_q,
         (True, False, True, False): store.op_ids.tree.un_man_plus_sp_xpd_q,

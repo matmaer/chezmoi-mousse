@@ -217,6 +217,7 @@ class ChezmoiCmdModal(ModalScreen[None]):
 
     @on(Button.Pressed)
     def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:
+        event.stop()
         button_label = str(event.button.label)
 
         if button_label in (BtnLabel.cancel, BtnLabel.close):
@@ -248,20 +249,20 @@ class LeftSideVertical(Vertical):
             classes=Tcss.tree_header,
         )
         yield OperateTree(
-            TreeName.managed_only_sp,
-            store.op_ids.tree.managed_only_sp,
+            TreeName.managed_sp,
+            store.op_ids.tree.managed_sp,
         )
         yield OperateTree(
-            TreeName.managed_only_sp_xpd,
-            store.op_ids.tree.managed_only_sp_xpd,
+            TreeName.managed_sp_xpd,
+            store.op_ids.tree.managed_sp_xpd,
         )
         yield OperateTree(
-            TreeName.managed_all_mp,
-            store.op_ids.tree.managed_all_mp,
+            TreeName.managed_amp,
+            store.op_ids.tree.managed_amp,
         )
         yield OperateTree(
-            TreeName.managed_all_mp_xpd,
-            store.op_ids.tree.managed_all_mp_xpd,
+            TreeName.managed_amp_xpd,
+            store.op_ids.tree.managed_amp_xpd,
         )
         # UNMANAGED TREE VARIANTS
         yield OperateTree(
@@ -361,8 +362,7 @@ class OperateTab(TabPane):
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical()
             with Vertical(id=self.ids.container.middle, classes=Tcss.operations_middle):
-                yield MainSectionLabel(LabelStr.dest_dir)
-                yield SubSectionLabel(escape(str(store.cfg.dest_dir)))
+                yield MainSectionLabel()
                 yield GitLogView()
                 yield ContentView()
                 yield DiffView()
@@ -390,7 +390,6 @@ class OperateTab(TabPane):
     def on_mount(self) -> None:
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.radio_set = self.query_exactly_one(RadioSet)
-        self.path_label = self.query_exactly_one(SubSectionLabel)
 
         self.paths_without_git_log: set[Path] = set()
         self.git_log_view = self.query_exactly_one(GitLogView)
@@ -417,7 +416,6 @@ class OperateTab(TabPane):
 
     @work
     async def _update_all_widgets(self, node_data: NodeData) -> None:
-        self.path_label.update(escape(str(node_data.path)))
         self.current_node = node_data
         if node_data.has_status or node_data.has_nested_status:
             self.status_tree_fallback = node_data
@@ -554,24 +552,23 @@ class OperateTab(TabPane):
         show_tree = self.left_side_vertical.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
 
-        # the selected node is in the tree now shown, no fallback needed
+        # no fallback needed
         show_tree_node = show_tree.node_map.get(self.current_node.path)
-        if show_tree_node is not None:
-            return
-
-        # fallback logic
-
-        if show_tree.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
-            self._update_all_widgets(self.status_tree_fallback)
-        elif show_tree.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
-            self._update_all_widgets(self.managed_tree_fallback)
-        elif show_tree.name in (
-            TreeName.un_man_plus_amp,
-            TreeName.un_man_plus_amp_xpd,
-            TreeName.un_man_plus_amp,
-            TreeName.un_man_plus_amp_xpd,
+        if (
+            show_tree_node is None
+            or show_tree_node.data is None
+            or show_tree_node.data == self.current_node
         ):
-            self._update_all_widgets(self.un_managed_tree_fallback)
+            return
+        else:
+            # fallback logic
+            tree_name = TreeName(show_tree.name)
+            if tree_name.is_managed_tree and tree_name.is_sp_tree:
+                self._update_all_widgets(self.status_tree_fallback)
+            elif tree_name.is_managed_tree and tree_name.is_sp_tree:
+                self._update_all_widgets(self.managed_tree_fallback)
+            elif tree_name.is_un_man_tree:
+                self._update_all_widgets(self.un_managed_tree_fallback)
 
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:

@@ -488,30 +488,45 @@ class TreeName(StrEnum):
     """
 
     # the status trees include managed paths with a status or meta status
-    managed_only_sp = auto()  # base dict data
-    managed_only_sp_xpd = auto()
+    managed_sp = auto()  # base dict data
+    managed_sp_xpd = auto()
     # the man trees includes all managed paths, with or without a status or meta status
-    managed_all_mp = auto()  # base dict data
-    managed_all_mp_xpd = auto()
+    managed_amp = auto()  # base dict data
+    managed_amp_xpd = auto()
     # trees including unmanaged paths without unwanted paths
-    un_man_plus_sp = auto()  # base dict data
-    un_man_plus_sp_xpd = auto()
     un_man_plus_amp = auto()  # base dict data
     un_man_plus_amp_xpd = auto()
+    un_man_plus_sp = auto()  # base dict data
+    un_man_plus_sp_xpd = auto()
     # trees including any unmanaged path, including unwanted paths
-    un_wanted_plus_sp = auto()  # base dict data
-    un_wanted_plus_sp_xpd = auto()
     un_wanted_plus_amp = auto()  # base dict data
     un_wanted_plus_amp_xpd = auto()
+    un_wanted_plus_sp = auto()  # base dict data
+    un_wanted_plus_sp_xpd = auto()
 
-    @classmethod
-    def managed_trees(cls) -> tuple[str, ...]:
-        return (
-            cls.managed_only_sp_xpd,
-            cls.managed_only_sp,
-            cls.managed_all_mp,
-            cls.managed_all_mp_xpd,
-        )
+    @property
+    def is_xpd_tree(self) -> bool:
+        return self.name.endswith("_xpd")
+
+    @property
+    def is_managed_tree(self) -> bool:
+        return self.name.startswith("managed_")
+
+    @property
+    def is_sp_tree(self) -> bool:
+        return self.name.endswith(("_sp", "_sp_xpd"))
+
+    @property
+    def is_amp_tree(self) -> bool:
+        return self.name.endswith(("_amp", "_amp_xpd"))
+
+    @property
+    def is_un_man_tree(self) -> bool:
+        return self.name.startswith("un_man_plus_")
+
+    @property
+    def is_un_wanted_tree(self) -> bool:
+        return self.name.startswith("un_wanted_plus_")
 
 
 ##############################################
