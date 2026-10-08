@@ -81,7 +81,7 @@ class OperateTree(Tree[NodeData]):
                 )
             if node_data.managed and node_data.dir_path:
                 return ColorVar.foreground_darken_3 if is_man_tree else ColorVar.text
-            if not node_data.managed and node_data.dir_path and not node_data.un_wanted:
+            if node_data.un_managed and node_data.dir_path and not node_data.un_wanted:
                 return ColorVar.text_success
             if node_data.un_wanted:
                 return ColorVar.text_accent
@@ -90,7 +90,7 @@ class OperateTree(Tree[NodeData]):
                 return color_var
             if node_data.managed:
                 return ColorVar.foreground_darken_3
-            if not node_data.managed and not node_data.un_wanted:
+            if node_data.un_managed and not node_data.un_wanted:
                 return ColorVar.text_success
             if node_data.un_wanted:
                 return ColorVar.text_accent

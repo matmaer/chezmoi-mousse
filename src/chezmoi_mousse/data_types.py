@@ -117,7 +117,7 @@ class NodeData:
         return not self.managed
 
     @property
-    def rel_path(self) -> str:
+    def _rel_path(self) -> str:
         return path_funcs.get_rel_path_str(self.path)
 
     @property
@@ -133,7 +133,7 @@ class NodeData:
         # basic button enable/disable rules, affected paths could still determine no-op
         has_diff = bool(self.status) or self.has_nested_status
         enable_add_btn = not self.dest_dir and (
-            not self.managed or has_diff or self.has_nested_unmanaged
+            self.un_managed or has_diff or self.has_nested_unmanaged
         )
         enable_destroy_btn = (
             self.managed
@@ -158,7 +158,7 @@ class NodeData:
         else:
             label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
-        path_str = " " + self.rel_path
+        path_str = " " + self._rel_path
 
         if len(label_str) + len(path_str) > 70:
             available = 70 - len(label_str)

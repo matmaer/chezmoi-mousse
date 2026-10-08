@@ -246,7 +246,7 @@ class OperateTab(TabPane):
         elif node_data.managed or node_data.has_status or node_data.has_nested_status:
             self.managed_tree_fallback = node_data
             self.un_managed_tree_fallback = node_data
-        elif not node_data.managed and not node_data.un_wanted:
+        elif node_data.un_managed and not node_data.un_wanted:
             self.un_managed_tree_fallback = node_data
         # update operate buttons
         op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
