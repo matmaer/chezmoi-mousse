@@ -403,8 +403,9 @@ class OperateTab(TabPane):
         self._update_all_widgets(store.cm_paths.dest_dir_node_data)
 
         self.current_node: NodeData = store.cm_paths.dest_dir_node_data
-        self.last_status_path: Path = store.cfg.dest_dir
-        self.last_managed_path: Path = store.cfg.dest_dir
+        self.status_tree_fallback: NodeData = store.cm_paths.dest_dir_node_data
+        self.managed_tree_fallback: NodeData = store.cm_paths.dest_dir_node_data
+        self.un_wanted_tree_fallback: NodeData = store.cm_paths.dest_dir_node_data
 
     @property
     def _active_radio_btn(
@@ -419,9 +420,14 @@ class OperateTab(TabPane):
         self.path_label.update(escape(str(node_data.path)))
         self.current_node = node_data
         if node_data.has_status or node_data.has_nested_status:
-            self.last_status_path = node_data.path
+            self.status_tree_fallback = node_data
+            self.managed_tree_fallback = node_data
+            self.un_managed_tree_fallback = node_data
         elif node_data.managed or node_data.has_status or node_data.has_nested_status:
-            self.last_selected_managed_node = node_data
+            self.managed_tree_fallback = node_data
+            self.un_managed_tree_fallback = node_data
+        elif not node_data.managed and not node_data.un_wanted:
+            self.un_managed_tree_fallback = node_data
         # update operate buttons
         op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
         for btn in op_buttons:
@@ -547,15 +553,25 @@ class OperateTab(TabPane):
             tree.display = False
         show_tree = self.left_side_vertical.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
-        # the selected node is not in the tree now shown, select a fallback node
-        if show_tree.node_map.get(self.current_node.path) is not None:
+
+        # the selected node is in the tree now shown, no fallback needed
+        show_tree_node = show_tree.node_map.get(self.current_node.path)
+        if show_tree_node is not None:
             return
 
-        if self._active_radio_btn in (LabelStr.radio_diff, LabelStr.radio_diff_reverse):
-            show_tree.select_node(show_tree.node_map[self.last_status_path])
+        # fallback logic
 
-        elif self._active_radio_btn == LabelStr.radio_git_log:
-            show_tree.select_node(show_tree.node_map[self.last_managed_path])
+        if show_tree.name in (TreeName.managed_only_sp, TreeName.managed_only_sp_xpd):
+            self._update_all_widgets(self.status_tree_fallback)
+        elif show_tree.name in (TreeName.managed_all_mp, TreeName.managed_all_mp_xpd):
+            self._update_all_widgets(self.managed_tree_fallback)
+        elif show_tree.name in (
+            TreeName.un_man_plus_amp,
+            TreeName.un_man_plus_amp_xpd,
+            TreeName.un_man_plus_amp,
+            TreeName.un_man_plus_amp_xpd,
+        ):
+            self._update_all_widgets(self.un_managed_tree_fallback)
 
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:
