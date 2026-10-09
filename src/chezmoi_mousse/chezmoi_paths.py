@@ -25,33 +25,43 @@ class ChezmoiTreePaths:
     _man_files: dict[Path, Path]
     _status_dirs: dict[Path, Sc]
     _status_files: dict[Path, Sc]
-    _status_path_set: set[Path]
     _un_man_dirs: set[Path]
     _un_man_files: set[Path]
-    _un_man_paths: set[Path]
 
     file_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
     dir_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
 
     def __post_init__(self) -> None:
-
-        un_wanted_files = {
-            p for p in self._un_man_files if path_funcs.is_unwanted_file(p)
+        managed_paths = self._man_dirs.keys() | self._man_files.keys()
+        un_managed_paths = self._un_man_dirs | self._un_man_files
+        status_paths = self._status_dirs.keys() | self._status_files.keys()
+        wanted_files = {
+            p for p in self._un_man_files if not path_funcs.is_unwanted_file(p)
         }
-        un_wanted_dirs = {p for p in self._un_man_dirs if path_funcs.is_unwanted_dir(p)}
-        wanted_un_man_paths = (self._un_man_files | self._un_man_dirs) - (
-            un_wanted_files | un_wanted_dirs
+
+        wanted_dirs = {
+            p for p in self._un_man_dirs if not path_funcs.is_unwanted_dir(p)
+        }
+        wanted_paths = wanted_dirs | wanted_files
+
+        self._populate_file_node_data(wanted_files=wanted_files)
+        self._add_dest_dir_node_data(
+            managed_paths=managed_paths,
+            status_paths=status_paths,
+            un_managed_paths=un_managed_paths,
+            wanted_paths=wanted_paths,
         )
 
-        self._add_dest_dir_node_data()
-
-        self._populate_file_node_data(un_wanted_files)
-
-        self._populate_dir_node_data(un_wanted_dirs, wanted_un_man_paths)
+        self._populate_dir_node_data(
+            managed_paths=managed_paths,
+            status_paths=status_paths,
+            un_managed_paths=un_managed_paths,
+            wanted_paths=wanted_paths,
+        )
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
         self.dir_node_data = path_funcs.sort_path_dict(self.dir_node_data)
-        all_paths = self._man_dirs.keys() | self._man_files.keys() | self._un_man_paths
+        all_paths = managed_paths | un_managed_paths
         all_paths.add(self._dest_dir)
         node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
         # assert all paths are accounted for
@@ -59,72 +69,88 @@ class ChezmoiTreePaths:
             "Mismatch between all paths and node data paths"
         )
 
-    def _add_dest_dir_node_data(self) -> None:
-        has_nested_managed = bool(self._man_dirs.keys() | self._man_files.keys())
+    def _add_dest_dir_node_data(
+        self,
+        *,
+        managed_paths: set[Path],
+        status_paths: set[Path],
+        un_managed_paths: set[Path],
+        wanted_paths: set[Path],
+    ) -> None:
         self.dir_node_data[self._dest_dir] = NodeData(
             dest_dir=True,
             dir_path=True,
             exists=True,
-            has_nested_managed=has_nested_managed,
-            has_nested_status=bool(self._status_path_set),
-            has_nested_unmanaged=bool(self._un_man_paths),
             managed=False,
+            nested_managed=len(managed_paths) > 0,
+            nested_status=len(status_paths) > 0,
+            nested_un_managed=len(un_managed_paths) > 0,
+            nested_wanted=len(wanted_paths) > 0,
             path=self._dest_dir,
             source_path=None,
             status=None,
-            un_wanted=False,
+            wanted=True,
         )
 
-    def _populate_file_node_data(self, un_wanted_files: set[Path]) -> None:
+    def _populate_file_node_data(self, *, wanted_files: set[Path]) -> None:
         for path in self._man_files.keys() | self._un_man_files:
             managed = path in self._man_files
-            is_un_wanted = path in un_wanted_files
-            status = self._status_files.get(path, None)
-            source_path = self._man_files.get(path)
             self.file_node_data[path] = NodeData(
                 dir_path=False,
-                exists=True if managed else path.exists(),
-                has_nested_status=False,
-                has_nested_managed=False,
+                exists=True if not managed else path.exists(),
                 managed=managed,
+                nested_managed=False,
+                nested_status=False,
+                nested_un_managed=False,
+                nested_wanted=False,
                 path=path,
-                source_path=source_path,
-                status=status,
-                un_wanted=is_un_wanted,
+                source_path=self._man_files.get(path, None),
+                status=self._status_files.get(path, None),
+                wanted=path in wanted_files,
             )
 
     def _populate_dir_node_data(
-        self, un_wanted_dirs: set[Path], wanted_un_man_paths: set[Path]
+        self,
+        *,
+        managed_paths: set[Path],
+        status_paths: set[Path],
+        un_managed_paths: set[Path],
+        wanted_paths: set[Path],
     ) -> None:
+
         for path in self._man_dirs.keys() | self._un_man_dirs:
             managed = path in self._man_dirs
-            status = self._status_dirs.get(path, None)
-            is_un_unwanted = path in un_wanted_dirs
             has_nested_status = False
-            nested_unmanaged = False
+            has_nested_managed = False
+            has_nested_wanted = False
+            has_nested_un_managed = False
             if managed:
                 has_nested_status = path_funcs.any_nested_in(
-                    dir_path=path, check_paths=self._status_path_set
+                    dir_path=path, check_paths=status_paths
                 )
-                nested_unmanaged = path_funcs.any_nested_in(
-                    dir_path=path, check_paths=wanted_un_man_paths
+                has_nested_managed = path_funcs.any_nested_in(
+                    dir_path=path,
+                    check_paths=managed_paths,
                 )
-            has_nested_managed = path_funcs.any_nested_in(
-                dir_path=path,
-                check_paths=self._man_dirs.keys() | self._man_files.keys(),
+            has_nested_wanted = path_funcs.any_nested_in(
+                dir_path=path, check_paths=wanted_paths
+            )
+            has_nested_un_managed = path_funcs.any_nested_in(
+                dir_path=path, check_paths=un_managed_paths
             )
 
             self.dir_node_data[path] = NodeData(
                 dir_path=True,
                 exists=path.exists() if managed else True,
-                has_nested_managed=has_nested_managed,
-                has_nested_status=has_nested_status,
-                has_nested_unmanaged=nested_unmanaged,
                 managed=managed,
+                nested_managed=has_nested_managed,
+                nested_status=has_nested_status,
+                nested_un_managed=has_nested_un_managed,
+                nested_wanted=has_nested_wanted,
                 path=path,
                 source_path=self._man_dirs.get(path),
-                status=status,
-                un_wanted=is_un_unwanted,
+                status=self._status_dirs.get(path, None),
+                wanted=path in wanted_paths,
             )
 
     @property
@@ -165,7 +191,8 @@ class CmPathChanges:
             self._old_tree_paths.dir_node_data.keys()
             - self._new_tree_paths.dir_node_data.keys()
         )
-        self.remove_tree_dirs = path_funcs.get_sorted_top_parents(all_removed_dirs)
+        remove_tree_dirs = path_funcs.get_common_top_level(all_removed_dirs)
+        self.remove_tree_dirs = path_funcs.sort_paths(remove_tree_dirs)
         all_removed_files: set[Path] = (
             self._old_tree_paths.file_node_data.keys()
             - self._new_tree_paths.file_node_data.keys()

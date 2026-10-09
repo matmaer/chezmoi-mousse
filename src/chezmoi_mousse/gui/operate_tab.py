@@ -83,20 +83,20 @@ class LeftSideVertical(Vertical):
         )
         # UNMANAGED TREE VARIANTS
         yield OperateTree(
-            TreeName.un_man_plus_sp,
-            store.op_ids.tree.un_man_plus_sp,
+            TreeName.wanted_plus_sp,
+            store.op_ids.tree.wanted_plus_sp,
         )
         yield OperateTree(
-            TreeName.un_man_plus_sp_xpd,
-            store.op_ids.tree.un_man_plus_sp_xpd,
+            TreeName.wanted_plus_sp_xpd,
+            store.op_ids.tree.wanted_plus_sp_xpd,
         )
         yield OperateTree(
-            TreeName.un_man_plus_amp,
-            store.op_ids.tree.un_man_plus_amp,
+            TreeName.wanted_plus_amp,
+            store.op_ids.tree.wanted_plus_amp,
         )
         yield OperateTree(
-            TreeName.un_man_plus_amp_xpd,
-            store.op_ids.tree.un_man_plus_amp_xpd,
+            TreeName.wanted_plus_amp_xpd,
+            store.op_ids.tree.wanted_plus_amp_xpd,
         )
         # UNWANTED TREE VARIANTS
         yield OperateTree(
@@ -116,13 +116,6 @@ class LeftSideVertical(Vertical):
             store.op_ids.tree.un_wanted_plus_amp_xpd,
         )
 
-    @property
-    def current_displayed_tree(self) -> OperateTree:
-        for tree in self.query_children(OperateTree).results():
-            if tree.display is True:
-                return tree
-        raise RuntimeError("Expected a tree to be displayed.")
-
     @on(Button.Pressed)
     def handle_refresh_tree_btn_msg(self, event: Button.Pressed) -> None:
         if event.button.label == Chars.refresh:
@@ -136,7 +129,7 @@ class LeftSideVertical(Vertical):
         if not store.cm_changes.changes_available:
             self.notify("No changes available, skipping refresh.", severity="warning")
         else:
-            for tree in self.query(OperateTree).results():
+            for tree in self.query_children(OperateTree).results():
                 tree.apply_changes(store.cm_changes)
 
 
@@ -220,6 +213,14 @@ class OperateTab(TabPane):
 
         self._update_all_widgets(store.cm_paths.dest_dir_node_data)
 
+    @property
+    def _current_displayed_tree(self) -> OperateTree:
+        trees = self.left_side_vertical.query_children(OperateTree).results()
+        for tree in trees:
+            if tree and tree.display is True:
+                return tree
+        raise RuntimeError("Expected a tree to be displayed.")
+
     @work
     async def _update_all_widgets(self, node_data: NodeData) -> None:
         self.current_node: NodeData = node_data
@@ -297,15 +298,14 @@ class OperateTab(TabPane):
         middle_label.update(node_data.main_label)
 
         # update other trees in the background
-        non_displayed_trees = [
-            t
-            for t in self.left_side_vertical.query_children(OperateTree).results()
-            if t.display is False
-        ]
-        for tree in non_displayed_trees:
+        trees = self.left_side_vertical.query_children(OperateTree).results()
+        for tree in trees:
             tree_node = tree.node_map.get(node_data.path)
             if tree_node:
                 tree.select_node(tree_node)
+                tree.scroll_to_node(tree_node)
+            else:
+                tree.unselect()
 
     #################################
     # Watchers and message handling #
@@ -316,7 +316,7 @@ class OperateTab(TabPane):
         event.stop()
         if (
             event.node.data is None
-            or event.control.id != self.left_side_vertical.current_displayed_tree.id
+            or event.control.id != self._current_displayed_tree.id
             or event.node.data.path == self.current_node.path
         ):
             return
@@ -345,10 +345,8 @@ class OperateTab(TabPane):
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
         msg.stop()
-        all_trees = self.left_side_vertical.query_children(OperateTree).results()
-        for tree in all_trees:
-            tree.display = False
-        show_tree = self.left_side_vertical.query_one(msg.tree_id_q, OperateTree)
+        self._current_displayed_tree.display = False
+        show_tree = self.query_one(msg.tree_id_q, OperateTree)
         show_tree.display = True
 
     @on(RadioSet.Changed)

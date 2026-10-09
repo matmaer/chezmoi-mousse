@@ -211,24 +211,14 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     source_dirs: list[Path] = parse_paths(source_dirs_task.result())
     source_files: list[Path] = parse_paths(source_files_task.result())
 
-    man_dirs: dict[Path, Path] = dict(zip(target_dirs, source_dirs, strict=True))
-    man_files: dict[Path, Path] = dict(zip(target_files, source_files, strict=True))
-
-    status_dirs: dict[Path, Sc] = parse_status_output(status_dirs_task.result())
-    status_files: dict[Path, Sc] = parse_status_output(status_files_task.result())
-    un_man_dirs: set[Path] = parse_paths_to_set(unman_dirs_task.result())
-    un_man_files: set[Path] = parse_paths_to_set(unman_files_task.result())
-
     tree_paths = ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
-        _man_dirs=man_dirs,
-        _man_files=man_files,
-        _status_dirs=status_dirs,
-        _status_files=status_files,
-        _status_path_set=status_files.keys() | status_dirs.keys(),
-        _un_man_dirs=un_man_dirs,
-        _un_man_files=un_man_files,
-        _un_man_paths=un_man_files | un_man_dirs,
+        _man_dirs=dict(zip(target_dirs, source_dirs, strict=True)),
+        _man_files=dict(zip(target_files, source_files, strict=True)),
+        _status_dirs=parse_status_output(status_dirs_task.result()),
+        _status_files=parse_status_output(status_files_task.result()),
+        _un_man_dirs=parse_paths_to_set(unman_dirs_task.result()),
+        _un_man_files=parse_paths_to_set(unman_files_task.result()),
     )
     await store.handle_new_tree_paths(app, tree_paths)
 

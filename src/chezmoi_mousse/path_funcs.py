@@ -8,7 +8,7 @@ from chezmoi_mousse.data_types import IterDirResult, NodeData
 from chezmoi_mousse.str_enums import PathFilters
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterable
+    from collections.abc import Iterable
     from pathlib import Path
 
 
@@ -29,18 +29,15 @@ def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
     )
 
 
-def get_sorted_top_parents(
-    paths: Iterable[Path] | dict[Path, bool],
-) -> list[Path]:
+def get_common_top_level(paths: Iterable[Path]) -> set[Path]:
     """
-    Return the unique top-level parent paths from the proveded collection of paths.
+    Return the unique top-level parent paths from the provided collection of paths.
     """
-    top_parents: list[Path] = []
+    top_parents: set[Path] = set()
     for p in paths:
         if not any(parent in paths for parent in p.parents):
-            top_parents.append(p)
+            top_parents.add(p)
 
-    top_parents.sort(key=lambda p: len(p.parts))
     return top_parents
 
 
@@ -144,78 +141,48 @@ def is_unwanted_dir(dir_path: Path) -> bool:
     )
 
 
-def _get_dir_path_iterable(dir_path: Path) -> Generator[Path] | str:
-    generator: Generator[Path] | None = None
-    error_info: str | None = None
-    try:
-        if not dir_path.is_absolute():
-            error_info = "Error, did not receive an absolute path"
-        elif store.cfg.dest_dir not in dir_path.parents:
-            error_info = (
-                f"Error, got a directory which is not a child of the destDir "
-                f"{store.cfg.dest_dir}"
-            )
-        elif dir_path.is_symlink():
-            error_info = f"Error, the provided path is a symlink: {dir_path}"
-        elif dir_path.is_file():
-            error_info = f"Error, the provided path is a file: {dir_path}"
-        else:
-            generator = dir_path.iterdir()
-    except (FileNotFoundError, PermissionError, OSError) as error:
-        error_info = str(error)
-    if error_info is not None:
-        return error_info
-    elif generator is not None:
-        return generator
-    else:
-        return f"Unknown error occurred in _get_dir_path_iterable for {dir_path}"
-
-
 def get_un_man_children(dir_path: Path) -> IterDirResult:
-    result: Generator[Path] | str = _get_dir_path_iterable(dir_path)
-    exceptions: dict[Path, str] = {}
-    symlinks: list[Path] = []
+    error = ""
     dirs: dict[Path, NodeData] = {}
     files: dict[Path, NodeData] = {}
 
-    if not isinstance(result, str):
-        for path in result:
-            try:
-                if path.is_symlink():
-                    symlinks.append(path)
-                elif path.is_dir():
-                    is_un_wanted = is_unwanted_dir(path)
-                    dirs[path] = NodeData(
-                        dir_path=True,
-                        exists=True,
-                        has_nested_managed=False,
-                        has_nested_status=False,
-                        managed=False,
-                        path=path,
-                        source_path=None,
-                        status=None,
-                        un_wanted=is_un_wanted,
-                    )
-                elif path.is_file():
-                    is_un_wanted = is_unwanted_file(path)
-                    files[path] = NodeData(
-                        dir_path=False,
-                        exists=True,
-                        has_nested_managed=False,
-                        has_nested_status=False,
-                        managed=False,
-                        path=path,
-                        source_path=None,
-                        status=None,
-                        un_wanted=is_un_wanted,
-                    )
-            except (FileNotFoundError, PermissionError, OSError) as exception:
-                exceptions[path] = str(exception)
+    for path in dir_path.iterdir():
+        try:
+            if path.is_symlink():
+                continue
+            elif path.is_dir():
+                dirs[path] = NodeData(
+                    dir_path=True,
+                    exists=True,
+                    managed=False,
+                    nested_managed=False,
+                    nested_status=False,
+                    nested_un_managed=False,
+                    nested_wanted=False,
+                    path=path,
+                    source_path=None,
+                    status=None,
+                    wanted=not is_unwanted_dir(path),
+                )
+            elif path.is_file():
+                files[path] = NodeData(
+                    dir_path=False,
+                    exists=True,
+                    managed=False,
+                    nested_managed=False,
+                    nested_status=False,
+                    nested_un_managed=False,
+                    nested_wanted=False,
+                    path=path,
+                    source_path=None,
+                    status=None,
+                    wanted=not is_unwanted_file(path),
+                )
+        except (FileNotFoundError, PermissionError, OSError) as exception:
+            error = str(exception)
 
     return IterDirResult(
-        error=result if isinstance(result, str) else "",
-        exceptions=sort_path_dict(exceptions),
-        symlinks=sort_paths(symlinks),
+        error=error,
         dirs=sort_path_dict(dirs),
         files=sort_path_dict(files),
     )

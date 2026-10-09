@@ -188,17 +188,12 @@ class LabelStr(StrEnum):
     un_man_dir = "Un-managed Directory"
 
     # Operate tab PathInfo labels
-    # directories
-    d_exists = "Directory exists on disk"
-    d_has_status = "Directory has a status"
-    d_un_wanted = "Directory matches un-wanted filter"
-    has_nested_status = "Directory has nested status paths"
-    has_nested_managed = "Directory has nested managed paths"
-    has_nested_un_managed = "Directory has nested un-managed paths"
-    # files
-    f_exists = "File exists on disk"
-    f_has_status = "File has a status"
-    f_un_wanted = "File matches un-wanted filter"
+    has_nested_status = "Has nested status paths"
+    has_nested_managed = "Has nested managed paths"
+    has_nested_un_man = "Has nested un-managed paths"
+    path_exists = "Exists on disk"
+    path_has_status = "Has a status"
+    path_un_wanted = "Matches un-wanted filter"
 
     # Operate tab FlatSectionLabel
     read_file_output = "Read file from disk output"
@@ -488,10 +483,10 @@ class TreeName(StrEnum):
     managed_amp = auto()  # base dict data
     managed_amp_xpd = auto()
     # trees including unmanaged paths without unwanted paths
-    un_man_plus_amp = auto()  # base dict data
-    un_man_plus_amp_xpd = auto()
-    un_man_plus_sp = auto()  # base dict data
-    un_man_plus_sp_xpd = auto()
+    wanted_plus_amp = auto()  # base dict data
+    wanted_plus_amp_xpd = auto()
+    wanted_plus_sp = auto()  # base dict data
+    wanted_plus_sp_xpd = auto()
     # trees including any unmanaged path, including unwanted paths
     un_wanted_plus_amp = auto()  # base dict data
     un_wanted_plus_amp_xpd = auto()
@@ -505,6 +500,10 @@ class TreeName(StrEnum):
     @property
     def is_managed_tree(self) -> bool:
         return self.name.startswith("managed_")
+
+    @property
+    def is_wanted_tree(self) -> bool:
+        return self.name.startswith("wanted_")
 
 
 ##############################################

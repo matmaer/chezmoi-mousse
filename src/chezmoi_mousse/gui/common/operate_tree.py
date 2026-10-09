@@ -69,31 +69,34 @@ class OperateTree(Tree[NodeData]):
         }
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
         is_man_tree = TreeName(self.name).is_managed_tree
-        wanted = not node_data.un_wanted
 
-        if node_data.dir_path:
-            if node_data.has_status:
-                return ColorVar.warning_lighten_3
-            if node_data.has_nested_status and node_data.has_nested_unmanaged:
+        if node_data.has_status:
+            return color_var
+        elif (
+            node_data.status is None
+            and node_data.managed
+            and not node_data.nested_status
+        ):
+            return ColorVar.foreground_darken_3
+        elif node_data.dir_path:
+            if node_data.nested_status and node_data.nested_wanted:
                 return (
                     ColorVar.text_primary if is_man_tree else ColorVar.primary_darken_1
                 )
-            elif node_data.has_nested_status:
+            elif node_data.nested_status:
                 return ColorVar.text_primary
             if node_data.managed:
                 return ColorVar.foreground_darken_3 if is_man_tree else ColorVar.text
-            if node_data.un_managed and wanted:
+            if node_data.un_managed and node_data.wanted:
                 return ColorVar.text_success
-            if node_data.un_wanted:
+            elif not node_data.wanted:
                 return ColorVar.text_accent
         else:
-            if node_data.has_status:
-                return color_var
             if node_data.managed:
                 return ColorVar.foreground_darken_3
-            if node_data.un_managed and wanted:
+            elif node_data.wanted:
                 return ColorVar.text_success
-            if node_data.un_wanted:
+            elif not node_data.wanted:
                 return ColorVar.text_accent
 
         return color_var
@@ -125,21 +128,28 @@ class OperateTree(Tree[NodeData]):
         self._expand_xpd_nodes()
         self.refresh(layout=True)
 
-    def _child_key(self, node: TreeNode[NodeData]) -> tuple[bool, str]:
-        assert node.data is not None
-        return (not node.allow_expand, str(node.data.path).lower())
-
-    def _next_sibling(
-        self, parent_node: TreeNode[NodeData], path: Path, *, allow_expand: bool
+    def _get_before_node(
+        self, parent_node: TreeNode[NodeData], node_data: NodeData
     ) -> TreeNode[NodeData] | None:
-        """The child to insert the new node before, None to append."""
-        path_str = str(path).lower()
-        key = (not allow_expand, path_str)
-        children = parent_node.children
-        # nodes are normally added in sorted order, so appending is the common case
-        if not children or self._child_key(children[-1]) < key:
-            return None
-        return next(c for c in children if self._child_key(c) > key)
+        dir_nodes = [c for c in parent_node.children if c.allow_expand]
+        file_nodes = [c for c in parent_node.children if not c.allow_expand]
+        if node_data.dir_path:
+            for child in dir_nodes:
+                if (
+                    child.data is not None
+                    and str(node_data.path).lower() < str(child.data.path).lower()
+                ):
+                    return child
+            if file_nodes:
+                return file_nodes[0]
+        else:
+            for child in file_nodes:
+                if (
+                    child.data is not None
+                    and str(node_data.path).lower() < str(child.data.path).lower()
+                ):
+                    return self.node_map[child.data.path]
+        return None
 
     def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
@@ -154,7 +164,7 @@ class OperateTree(Tree[NodeData]):
         new_node = parent_node.add(
             label=node_label,
             data=node_data,
-            before=self._next_sibling(parent_node, path, allow_expand=allow_expand),
+            before=self._get_before_node(parent_node, node_data),
             allow_expand=allow_expand,
         )
         self.node_map[path] = new_node
@@ -199,7 +209,12 @@ class OperateTree(Tree[NodeData]):
         ):
             return
         iter_dir_result: IterDirResult = path_funcs.get_un_man_children(node_data.path)
+        self.iterated_dirs.add(node_data.path)
         for path, node_data in iter_dir_result.dirs.items():
+            if TreeName(self.name).is_wanted_tree and not node_data.wanted:
+                return
             self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in iter_dir_result.files.items():
+            if TreeName(self.name).is_wanted_tree and not node_data.wanted:
+                return
             self._add_node_with_color(path, node_data, allow_expand=False)

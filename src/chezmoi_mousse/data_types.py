@@ -82,10 +82,7 @@ class InitData:
 
 @dataclass(slots=True, frozen=True)
 class IterDirResult:
-    # status codes will be either Sc.UU (unmanaged) or None (unwanted)
     error: str
-    exceptions: dict[Path, str]
-    symlinks: list[Path]
     dirs: dict[Path, NodeData]
     files: dict[Path, NodeData]
 
@@ -94,14 +91,15 @@ class IterDirResult:
 class NodeData:
     dir_path: bool
     exists: bool
-    has_nested_managed: bool
-    has_nested_status: bool
     managed: bool
+    nested_managed: bool
+    nested_status: bool
+    nested_un_managed: bool
+    nested_wanted: bool
     path: Path
     source_path: Path | None
     status: StatusCode | None
-    un_wanted: bool
-    has_nested_unmanaged: bool = False
+    wanted: bool
     dest_dir: bool = False
 
     @property
@@ -117,30 +115,13 @@ class NodeData:
         return not self.managed
 
     @property
-    def _rel_path(self) -> str:
-        return path_funcs.get_rel_path_str(self.path)
-
-    @property
-    def rel_source_path(self) -> str | None:
-        return (
-            path_funcs.get_rel_path_str(self.source_path)
-            if self.source_path is not None
-            else None
-        )
-
-    @property
     def enable_op_btn_map(self) -> dict[BtnLabel, bool]:
         # basic button enable/disable rules, affected paths could still determine no-op
-        has_diff = bool(self.status) or self.has_nested_status
+        has_diff = self.status is not None or self.nested_status
         enable_add_btn = not self.dest_dir and (
-            self.un_managed or has_diff or self.has_nested_unmanaged
+            self.un_managed or has_diff or self.nested_wanted
         )
-        enable_destroy_btn = (
-            self.managed
-            and self.exists
-            and not self.dest_dir
-            and (not self.dir_path or not self.has_nested_unmanaged)
-        )
+        enable_destroy_btn = self.managed and self.exists and not self.nested_un_managed
         return {
             BtnLabel.chezmoi_add: enable_add_btn,
             BtnLabel.chezmoi_forget: self.managed and not self.dest_dir,
@@ -158,7 +139,7 @@ class NodeData:
         else:
             label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
-        path_str = " " + self._rel_path
+        path_str = " " + path_funcs.get_rel_path_str(self.path)
 
         if len(label_str) + len(path_str) > 70:
             available = 70 - len(label_str)
@@ -167,36 +148,34 @@ class NodeData:
         return label_str + path_str
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        managed_file = self.file_path and self.managed
         managed_dir = self.dir_path and self.managed
+        managed_file = self.file_path and self.managed
 
+        status_dir = managed_dir and (self.has_status or self.nested_status)
         status_file = managed_file and self.has_status
-        status_dir = managed_dir and (self.has_status or self.has_nested_status)
-        has_status = status_file or status_dir
+        status_path = status_file or status_dir
 
-        un_managed_file = self.file_path and self.un_managed
         un_managed_dir = self.dir_path and self.un_managed
+        un_managed_file = self.file_path and self.un_managed
+        un_managed_path = un_managed_dir or un_managed_file
 
-        un_wanted_file = un_managed_file and self.un_wanted
-        un_wanted_dir = un_managed_dir and self.un_wanted
-        un_wanted_un_managed = un_wanted_file or un_wanted_dir
+        wanted_dir = self.dir_path and self.wanted
+        wanted_file = self.file_path and self.wanted
+        wanted_path = wanted_dir or wanted_file
 
-        wanted_un_managed_file = un_managed_file and not un_wanted_un_managed
-        wanted_un_managed_dir = un_managed_dir and not un_wanted_un_managed
-        wanted_un_managed = wanted_un_managed_dir or wanted_un_managed_file
+        man_dir_with_wanted = managed_dir and self.nested_wanted
+        man_dir_with_un_managed = managed_dir and self.nested_un_managed
 
         if tree_name in (TreeName.managed_sp, TreeName.managed_sp_xpd):
-            return has_status
+            return status_path
         elif tree_name in (TreeName.managed_amp, TreeName.managed_amp_xpd):
             return self.managed
-        elif tree_name in (TreeName.un_man_plus_sp, TreeName.un_man_plus_sp_xpd):
-            # temporary fix
-            keep_parent = managed_dir and self.has_nested_unmanaged
-            return wanted_un_managed or has_status or keep_parent
-        elif tree_name in (TreeName.un_man_plus_amp, TreeName.un_man_plus_amp_xpd):
-            return wanted_un_managed or self.managed
-        elif tree_name in (TreeName.un_man_plus_amp, TreeName.un_man_plus_amp_xpd):
-            return has_status or wanted_un_managed or un_wanted_un_managed
+        elif tree_name in (TreeName.wanted_plus_sp, TreeName.wanted_plus_sp_xpd):
+            return status_path or man_dir_with_wanted or wanted_path
+        elif tree_name in (TreeName.wanted_plus_amp, TreeName.wanted_plus_amp_xpd):
+            return self.managed or man_dir_with_wanted or wanted_path
+        elif tree_name in (TreeName.un_wanted_plus_sp, TreeName.un_wanted_plus_sp_xpd):
+            return status_path or man_dir_with_un_managed or un_managed_path
         else:
             return True
 

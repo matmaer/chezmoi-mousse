@@ -11,6 +11,7 @@ from textual.containers import (
 from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
+from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import (
     Chars,
     ColorVar,
@@ -101,73 +102,49 @@ class FalseLabel(Label):
 class InfoLabel(Label): ...
 
 
-class DirInfo(VerticalGroup): ...
-
-
-class FileInfo(VerticalGroup): ...
+class InfoWidgets(VerticalGroup): ...
 
 
 class PathInfo(ScrollableContainer):
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
-        yield DirInfo()
-        yield FileInfo()
+        yield InfoWidgets()
         yield SubSectionLabel()
 
     def on_mount(self) -> None:
-        self.source_label = self.query_exactly_one(SubSectionLabel)
-        self.dir_info = self.query_exactly_one(DirInfo)
-        self.file_info = self.query_exactly_one(FileInfo)
+        self.path_label = self.query_exactly_one(SubSectionLabel)
+        self.info_widgets = self.query_exactly_one(InfoWidgets)
 
-    def _set_dir_info(self, node_data: NodeData) -> None:
-
+    def _set_path_info(self, node_data: NodeData) -> None:
         status = TrueLabel() if node_data.has_status else FalseLabel()
         exists = TrueLabel() if node_data.exists else FalseLabel()
-        un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
-        nested_status = TrueLabel() if node_data.has_nested_status else FalseLabel()
-        nested_managed = TrueLabel() if node_data.has_nested_managed else FalseLabel()
-        nested_un_managed = (
-            TrueLabel() if node_data.has_nested_unmanaged else FalseLabel()
+        un_wanted = (
+            FalseLabel() if node_data.wanted or node_data.managed else TrueLabel()
         )
         widgets = [
-            HorizontalGroup(InfoLabel(LabelStr.d_has_status), status),
-            HorizontalGroup(InfoLabel(LabelStr.d_exists), exists),
-            HorizontalGroup(InfoLabel(LabelStr.d_un_wanted), un_wanted),
-            HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
-            HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
-            HorizontalGroup(
-                InfoLabel(LabelStr.has_nested_un_managed),
-                nested_un_managed,
-            ),
+            HorizontalGroup(InfoLabel(LabelStr.path_has_status), status),
+            HorizontalGroup(InfoLabel(LabelStr.path_exists), exists),
+            HorizontalGroup(InfoLabel(LabelStr.path_un_wanted), un_wanted),
         ]
+        if node_data.dir_path or node_data.path.is_dir():
+            nested_status = TrueLabel() if node_data.nested_status else FalseLabel()
+            nested_managed = TrueLabel() if node_data.nested_managed else FalseLabel()
+            nested_un_man = TrueLabel() if node_data.nested_un_managed else FalseLabel()
+            dir_info = [
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_un_man), nested_un_man),
+            ]
+            widgets.extend(dir_info)
 
-        self.dir_info.remove_children()
-        self.dir_info.mount_all(widgets)
-
-    def _set_file_info(self, node_data: NodeData) -> None:
-        exists = TrueLabel() if node_data.exists else FalseLabel()
-        status = TrueLabel() if node_data.has_status else FalseLabel()
-        un_wanted = TrueLabel() if node_data.un_wanted else FalseLabel()
-        widgets = [
-            HorizontalGroup(InfoLabel(LabelStr.f_has_status), status),
-            HorizontalGroup(InfoLabel(LabelStr.f_exists), exists),
-            HorizontalGroup(InfoLabel(LabelStr.f_un_wanted), un_wanted),
-        ]
-        self.file_info.remove_children()
-        self.file_info.mount_all(widgets)
+        self.info_widgets.remove_children()
+        self.info_widgets.mount_all(widgets)
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        self._set_path_info(node_data)
         if node_data.source_path is None:
-            self.source_label.display = False
+            self.path_label.update(str(node_data.path))
         else:
-            self.source_label.display = True
-            self.source_label.update(f"Source path: {node_data.rel_source_path}")
-        if node_data.dir_path or node_data.path.is_dir():
-            self.file_info.display = False
-            self._set_dir_info(node_data)
-            self.dir_info.display = True
-        else:
-            self.dir_info.display = False
-            self._set_file_info(node_data)
-            self.file_info.display = True
+            rel_path = path_funcs.get_rel_path_str(node_data.source_path)
+            self.path_label.update(f"Source path: {rel_path}")
