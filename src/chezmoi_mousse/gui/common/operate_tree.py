@@ -171,9 +171,10 @@ class OperateTree(Tree[NodeData]):
 
     def _expand_xpd_nodes(self) -> None:
         if TreeName(self.name).is_xpd_tree:
-            for node in self.node_map.values():
-                if node.data is not None and node.data.managed:
-                    node.expand()
+            with self.prevent(Tree.NodeExpanded):
+                for node in self.node_map.values():
+                    if node.data is not None and node.data.managed:
+                        node.expand()
 
     @work
     async def _initial_tree_population(self) -> None:

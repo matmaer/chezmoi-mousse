@@ -300,10 +300,13 @@ class OperateTab(TabPane):
         # update other trees in the background
         trees = self.left_side_vertical.query_children(OperateTree).results()
         for tree in trees:
+            if tree.display:
+                continue
             tree_node = tree.node_map.get(node_data.path)
             if tree_node:
-                tree.select_node(tree_node)
-                tree.scroll_to_node(tree_node)
+                with tree.prevent(Tree.NodeSelected, Tree.NodeHighlighted):
+                    tree.select_node(tree_node)
+                tree.scroll_to_node(tree_node, animate=False)
             else:
                 tree.unselect()
 
@@ -327,6 +330,13 @@ class OperateTab(TabPane):
         if event.button.label == str(store.cfg.dest_dir):
             event.stop()
             self._update_all_widgets(store.cm_paths.dest_dir_node_data)
+        trees = self.left_side_vertical.query_children(OperateTree).results()
+        for tree in trees:
+            tree.unselect()
+            if tree.display:
+                tree.scroll_home()
+            else:
+                tree.scroll_home(animate=False)
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
