@@ -89,7 +89,7 @@ class ChezmoiTreePaths:
             path=self._dest_dir,
             source_path=None,
             status=None,
-            wanted=True,
+            wanted=None,
         )
 
     def _populate_file_node_data(self, *, wanted_files: set[Path]) -> None:

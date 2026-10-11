@@ -569,6 +569,15 @@ class _VerbArgs(StrEnum):
     reverse = "--reverse"
 
 
+class _WriteVerb(StrEnum):
+    init = "init"
+    add = "add"
+    apply = "apply"
+    destroy = "destroy"
+    forget = "forget"
+    re_add = "re-add"
+
+
 class ReadCmd(Enum):
     cat = (
         *_GlobalArgs.non_interactive.value,
@@ -661,64 +670,6 @@ class ReadCmd(Enum):
         _VerbArgs.format_json,
     )
 
-    @cached_property
-    def pretty_cmd(self) -> str:
-        ugly_args: tuple[str, ...] = (
-            *_GlobalArgs.non_interactive.value,
-            *_GlobalArgs.interactive.value,
-            *_ChezmoiGitArgs.global_args.value,
-            *_ChezmoiGitArgs.git_log_args.value,
-            _ChezmoiGitArgs.verbose.value,
-            *(
-                _VerbArgs.format_json.value,
-                _VerbArgs.path_style_absolute.value,
-            ),
-        )
-        verb_str = " ".join(a for a in self.value if a not in ugly_args)
-        if "git" in verb_str and verb_str.count("--") == 1:
-            # remove the option terminator
-            verb_str = verb_str.replace(" --", "")
-        return f"chezmoi {verb_str}"
-
-    @cached_property
-    def pretty_splash_cmd(self) -> str:
-        return self.pretty_cmd.replace("--include=", "")
-
-
-class _WriteVerb(StrEnum):
-    init = "init"
-    add = "add"
-    apply = "apply"
-    destroy = "destroy"
-    forget = "forget"
-    re_add = "re-add"
-
-
-class WriteCmd(Enum):
-    init = (
-        *_GlobalArgs.non_interactive.value,
-        _WriteVerb.init,
-    )
-    add = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.add,
-    )
-    apply = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.apply,
-    )
-    destroy = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.destroy,
-    )
-    forget = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.forget,
-    )
-    re_add = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.re_add,
-    )
     dry_add = (
         *_GlobalArgs.non_interactive.value,
         _GlobalArgs.dry_run_arg.value,
@@ -754,10 +705,56 @@ class WriteCmd(Enum):
     def pretty_cmd(self) -> str:
         ugly_args: tuple[str, ...] = (
             *_GlobalArgs.non_interactive.value,
-            *_GlobalArgs.interactive.value,
+            *_ChezmoiGitArgs.global_args.value,
+            *_ChezmoiGitArgs.git_log_args.value,
+            _ChezmoiGitArgs.verbose.value,
+            *(
+                _VerbArgs.format_json.value,
+                _VerbArgs.path_style_absolute.value,
+            ),
         )
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
         if "git" in verb_str and verb_str.count("--") == 1:
             # remove the option terminator
             verb_str = verb_str.replace(" --", "")
+        return f"chezmoi {verb_str}"
+
+    @cached_property
+    def pretty_splash_cmd(self) -> str:
+        return self.pretty_cmd.replace("--include=", "")
+
+
+class WriteCmd(Enum):
+    init = (
+        *_GlobalArgs.non_interactive.value,
+        _WriteVerb.init,
+    )
+    add = (
+        *_GlobalArgs.interactive.value,
+        _WriteVerb.add,
+    )
+    apply = (
+        *_GlobalArgs.interactive.value,
+        _WriteVerb.apply,
+    )
+    destroy = (
+        *_GlobalArgs.interactive.value,
+        _WriteVerb.destroy,
+    )
+    forget = (
+        *_GlobalArgs.interactive.value,
+        _WriteVerb.forget,
+    )
+    re_add = (
+        *_GlobalArgs.interactive.value,
+        _WriteVerb.re_add,
+    )
+
+    @cached_property
+    def pretty_cmd(self) -> str:
+        ugly_args: tuple[str, ...] = (
+            *_GlobalArgs.interactive.value,
+            *_GlobalArgs.non_interactive.value,
+        )
+        verb_str = " ".join(a for a in self.value if a not in ugly_args)
         return f"chezmoi {verb_str}"

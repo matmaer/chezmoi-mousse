@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, ClassVar
 
-from rich.markup import escape
 from textual import on, work
 from textual.containers import (
     Vertical,
@@ -22,12 +21,7 @@ from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     SubSectionLabel,
 )
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    ChezmoiPrompts,
-    Tcss,
-    WriteCmd,
-)
+from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, Tcss, WriteCmd
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -62,17 +56,11 @@ class OperateModal(ModalScreen[None]):
         BtnLabel.chezmoi_forget: WriteCmd.forget,
         BtnLabel.chezmoi_re_add: WriteCmd.re_add,
     }
-    btn_label_to_dry_cmd: ClassVar[dict[str, WriteCmd]] = {
-        BtnLabel.chezmoi_add: WriteCmd.dry_add,
-        BtnLabel.chezmoi_apply: WriteCmd.dry_apply,
-        BtnLabel.chezmoi_destroy: WriteCmd.dry_destroy,
-        BtnLabel.chezmoi_forget: WriteCmd.dry_forget,
-        BtnLabel.chezmoi_re_add: WriteCmd.dry_re_add,
-    }
 
-    def __init__(self, btn_label: str, path: Path) -> None:
+    def __init__(self, btn_label: str, path: Path, affected_paths: list[Path]) -> None:
         self.btn_label = btn_label
         self.path = path
+        self.affected_paths = affected_paths
         self._prompt_future: asyncio.Future[str] | None = None
         self._output_buffer = ""
         super().__init__()
@@ -83,7 +71,7 @@ class OperateModal(ModalScreen[None]):
                 f"autoadd enabled: {store.cfg.auto_add}, autocommit enabled: "
                 f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
             )
-            yield FlatSectionLabel(f"{self.btn_label} Command")
+            yield FlatSectionLabel()
             yield AffectedPathsStatic(markup=False)
             yield InteractiveOutputStatic(markup=False)
             yield PromptBtnGroup(
@@ -101,6 +89,7 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
+        self.affected_static = self.query_exactly_one(AffectedPathsStatic)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.run_label = f"Run interactive {self.btn_label}"
         prompt_btn_group.mount(
@@ -111,22 +100,8 @@ class OperateModal(ModalScreen[None]):
             if button.label == BtnLabel.cancel or button.label == self.run_label:
                 continue
             button.display = False
-        self.affected_paths_static = self.query_exactly_one(AffectedPathsStatic)
         self.interactive_output_static = self.query_exactly_one(InteractiveOutputStatic)
         self.interactive_output_static.display = False
-        self._run_affected_paths()
-
-    @work
-    async def _run_affected_paths(self) -> None:
-        # set flat section label with the dry run command
-        flat_section_label = self.query_exactly_one(FlatSectionLabel)
-        dry_cmd = self.btn_label_to_dry_cmd[self.btn_label]
-        flat_section_label.update(escape(f"{dry_cmd.pretty_cmd} {self.path}"))
-        # run the command
-        affected_paths_cr: list[Path] = await tchezmoi.get_affected_paths(
-            self.app, dry_cmd, self.path
-        )
-        self.affected_paths_static.update("\n".join(str(p) for p in affected_paths_cr))
 
     def _append_output(self, text: str) -> None:
         """Appends output text to InteractiveOutputStatic."""
@@ -160,7 +135,7 @@ class OperateModal(ModalScreen[None]):
 
     @work
     async def _run_interactive(self) -> None:
-        self.affected_paths_static.display = False
+        self.affected_static.display = False
         self.interactive_output_static.display = True
         for button in self.prompt_buttons:
             if button.label == BtnLabel.close:
