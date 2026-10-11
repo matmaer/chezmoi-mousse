@@ -60,7 +60,7 @@ async def decode_and_store_config(std_out: str) -> None:
     global cfg
     cfg = DumpConfigKeys(
         dest_dir_path=Path(parsed_std_out["destDir"]),
-        auto_add_bool=parsed_std_out["git"]["autoadd"],
-        auto_commit_bool=parsed_std_out["git"]["autocommit"],
-        auto_push_bool=parsed_std_out["git"]["autopush"],
+        _auto_add_bool=parsed_std_out["git"]["autoadd"],
+        _auto_commit_bool=parsed_std_out["git"]["autocommit"],
+        _auto_push_bool=parsed_std_out["git"]["autopush"],
     )

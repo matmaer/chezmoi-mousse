@@ -36,9 +36,9 @@ class CommandResult:
 @dataclass(slots=True, frozen=True)
 class DumpConfigKeys:
     dest_dir_path: Path | None = None
-    auto_add_bool: bool | None = None
-    auto_commit_bool: bool | None = None
-    auto_push_bool: bool | None = None
+    _auto_add_bool: bool | None = None
+    _auto_commit_bool: bool | None = None
+    _auto_push_bool: bool | None = None
 
     @property
     def dest_dir(self) -> Path:
@@ -48,21 +48,21 @@ class DumpConfigKeys:
 
     @property
     def auto_add(self) -> bool:
-        if self.auto_add_bool is None:
+        if self._auto_add_bool is None:
             raise RuntimeError("Accessing auto_add before the config is parsed")
-        return self.auto_add_bool
+        return self._auto_add_bool
 
     @property
     def auto_commit(self) -> bool:
-        if self.auto_commit_bool is None:
+        if self._auto_commit_bool is None:
             raise RuntimeError("Accessing auto_commit before the config is parsed")
-        return self.auto_commit_bool
+        return self._auto_commit_bool
 
     @property
     def auto_push(self) -> bool:
-        if self.auto_push_bool is None:
+        if self._auto_push_bool is None:
             raise RuntimeError("Accessing auto_push before the config is parsed")
-        return self.auto_push_bool
+        return self._auto_push_bool
 
     @property
     def git_config_dict(self) -> dict[str, bool]:

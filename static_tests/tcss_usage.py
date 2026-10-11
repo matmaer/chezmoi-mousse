@@ -184,27 +184,16 @@ def _validate_tcss_expr(
         return
 
     # Flag string literals directly: classes="flat_button"
-    if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
-        if expr.value not in EXCLUDE_TCSS_CLASSES:
-            issues.append(
-                (
-                    ast.unparse(expr),
-                    loc,
-                    "Hardcoded string literal used instead of Tcss enum",
-                )
-            )
-
-    # Allow Tcss.member attribute lookups, flag other dynamic/f-string expressions
-    elif not (
-        isinstance(expr, ast.Attribute)
-        and isinstance(expr.value, ast.Name)
-        and expr.value.id == "Tcss"
+    if (
+        isinstance(expr, ast.Constant)
+        and isinstance(expr.value, str)
+        and expr.value not in EXCLUDE_TCSS_CLASSES
     ):
         issues.append(
             (
                 ast.unparse(expr),
                 loc,
-                "Expression should be a Tcss enum member",
+                "Hardcoded string literal used instead of Tcss enum",
             )
         )
 
