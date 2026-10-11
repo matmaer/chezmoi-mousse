@@ -197,9 +197,9 @@ class LabelStr(StrEnum):
 
     # Operate tab FlatSectionLabel
     read_file_output = "Read file from disk output"
-    select_path_contents = "<- Select a file path to view its contents."
-    select_path_diff = "<- Select a path with a status to view its diff."
-    select_path_git_log = "<- Select a managed path to see the chezmoi git log."
+    select_file_path = "<- Select a file path to view its contents."
+    select_status_path = "<- Select a path with a status to view its diff."
+    select_git_log_path = "<- Select a managed path to see the chezmoi git log."
 
     # Operate tab radio buttons
     radio_contents = "Contents View"

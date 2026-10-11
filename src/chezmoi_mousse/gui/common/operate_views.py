@@ -11,7 +11,7 @@ from textual.containers import (
     Vertical,
 )
 from textual.reactive import reactive
-from textual.widgets import DataTable, Label, Static
+from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.gui.common.components import (
@@ -36,16 +36,6 @@ if TYPE_CHECKING:
 
 
 __all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView", "PathView"]
-
-
-class TrueLabel(Label):
-    def on_mount(self) -> None:
-        self.update("yes")
-
-
-class FalseLabel(Label):
-    def on_mount(self) -> None:
-        self.update(" no")
 
 
 class FileContentStatic(Static): ...
@@ -91,9 +81,6 @@ class ContentView(Vertical):
         self.last_displayed_path = node_data.path
 
 
-class DiffWidgets(ScrollableContainer): ...
-
-
 class _DiffViewBase(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -117,10 +104,10 @@ class _DiffViewBase(Vertical):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield DiffWidgets()
+        yield ScrollableContainer()
 
     def on_mount(self) -> None:
-        self.diff_container = self.query_exactly_one(DiffWidgets)
+        self.diff_container = self.query_exactly_one(ScrollableContainer)
 
     @work
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
@@ -239,7 +226,7 @@ class GitLogView(Vertical):
 
 class PathView(Vertical):
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(LabelStr.select_path_git_log)
+        yield FlatSectionLabel(LabelStr.select_git_log_path)
         yield PathInfo()
 
     def on_mount(self) -> None:

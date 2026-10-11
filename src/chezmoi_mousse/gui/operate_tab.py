@@ -201,6 +201,8 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
+        self.middle_vertical = self.query_exactly_one(MiddleVertical)
+        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.radio_set = self.query_exactly_one(RadioSet)
 
         self.paths_without_git_log: set[Path] = set()
@@ -208,7 +210,6 @@ class OperateTab(TabPane):
         self.content_view = self.query_exactly_one(ContentView)
         self.diff_view = self.query_exactly_one(DiffView)
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
-
         self.path_view = self.query_exactly_one(PathView)
 
         self._update_all_widgets(store.cm_paths.dest_dir_node_data)
@@ -221,14 +222,39 @@ class OperateTab(TabPane):
                 return tree
         raise RuntimeError("Expected a tree to be displayed.")
 
-    @work
-    async def _update_all_widgets(self, node_data: NodeData) -> None:
-        self.current_node: NodeData = node_data
-        current_radio_btn = self.radio_set.pressed_button
-        assert current_radio_btn is not None
-        active_radio_btn = str(current_radio_btn.label)
+    def _sync_non_displayed_trees(self, node_data: NodeData) -> None:
+        # update other trees in the background
+        trees = self.left_side_vertical.query_children(OperateTree).results()
+        for tree in trees:
+            if tree.display:
+                continue
+            tree_node = tree.node_map.get(node_data.path)
+            if tree_node:
+                with tree.prevent(
+                    Tree.NodeSelected,
+                    Tree.NodeExpanded,
+                    Tree.NodeHighlighted,
+                    Tree.NodeCollapsed,
+                ):
+                    tree.select_node(tree_node)
+                tree.scroll_to_node(tree_node, animate=False)
+            else:
+                tree.unselect()
 
-        # hide all views
+    def _update_all_widgets(self, node_data: NodeData) -> None:
+        self.current_node: NodeData = node_data
+
+        for btn in self.op_btn_group.query(Button).results():
+            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
+
+        middle_label = self.middle_vertical.query_exactly_one(MainSectionLabel)
+        middle_label.update(node_data.main_label)
+
+        self._sync_non_displayed_trees(node_data)
+        self._update_view_widgets(node_data)
+
+    @work
+    async def _update_view_widgets(self, node_data: NodeData) -> None:
         for view in (
             self.git_log_view,
             self.content_view,
@@ -237,8 +263,9 @@ class OperateTab(TabPane):
             self.path_view,
         ):
             view.display = False
-
-        if active_radio_btn == LabelStr.radio_git_log:
+        assert self.radio_set.pressed_button is not None
+        radio_label = str(self.radio_set.pressed_button.label)
+        if radio_label == LabelStr.radio_git_log:
             if node_data.path in self.git_log_view.cache:
                 self.git_log_view.update_git_log_view(node_data, None)
                 self.git_log_view.display = True
@@ -253,62 +280,32 @@ class OperateTab(TabPane):
                 else:
                     self.git_log_view.update_git_log_view(node_data, cr.std_out)
                     self.git_log_view.display = True
-        elif active_radio_btn == LabelStr.radio_diff and node_data.has_status:
-            self.diff_view.node_data = node_data
-            self.diff_view.display = True
-        elif active_radio_btn == LabelStr.radio_diff_reverse and node_data.has_status:
-            self.diff_reverse_view.node_data = node_data
-            self.diff_reverse_view.display = True
-        elif active_radio_btn == LabelStr.radio_contents and (
+        elif radio_label == LabelStr.radio_contents and (
             node_data.file_path or node_data.path.is_file()
         ):
             self.content_view.node_data = node_data
             self.content_view.display = True
-
-        if all(
-            view.display == False
-            for view in (
-                self.git_log_view,
-                self.diff_view,
-                self.diff_reverse_view,
-                self.content_view,
-            )
+        elif radio_label == LabelStr.radio_diff and node_data.has_status:
+            self.diff_view.node_data = node_data
+            self.diff_view.display = True
+        elif radio_label == LabelStr.radio_diff_reverse and node_data.has_status:
+            self.diff_reverse_view.node_data = node_data
+            self.diff_reverse_view.display = True
+        if not (
+            self.git_log_view.display
+            or self.content_view.display
+            or self.diff_view.display
+            or self.diff_reverse_view.display
         ):
-            # Update and display PathView
+            map: dict[str, LabelStr] = {
+                LabelStr.radio_git_log: LabelStr.select_git_log_path,
+                LabelStr.radio_contents: LabelStr.select_file_path,
+                LabelStr.radio_diff: LabelStr.select_status_path,
+                LabelStr.radio_diff_reverse: LabelStr.select_status_path,
+            }
             self.path_view.path_info.node_data = node_data
-            if active_radio_btn == LabelStr.radio_git_log:
-                self.path_view.flat_label.update(LabelStr.select_path_git_log)
-            elif active_radio_btn == LabelStr.radio_contents:
-                self.path_view.flat_label.update(LabelStr.select_path_contents)
-            elif active_radio_btn in (
-                LabelStr.radio_diff,
-                LabelStr.radio_diff_reverse,
-            ):
-                self.path_view.flat_label.update(LabelStr.select_path_diff)
+            self.path_view.flat_label.update(map[radio_label])
             self.path_view.display = True
-
-        # update operate buttons
-        op_buttons = self.query_exactly_one(OperateBtnGroup).query(Button).results()
-        for btn in op_buttons:
-            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
-        # update middle main section label
-        middle_label = self.query_exactly_one(MiddleVertical).query_exactly_one(
-            MainSectionLabel
-        )
-        middle_label.update(node_data.main_label)
-
-        # update other trees in the background
-        trees = self.left_side_vertical.query_children(OperateTree).results()
-        for tree in trees:
-            if tree.display:
-                continue
-            tree_node = tree.node_map.get(node_data.path)
-            if tree_node:
-                with tree.prevent(Tree.NodeSelected, Tree.NodeHighlighted):
-                    tree.select_node(tree_node)
-                tree.scroll_to_node(tree_node, animate=False)
-            else:
-                tree.unselect()
 
     #################################
     # Watchers and message handling #
@@ -327,16 +324,13 @@ class OperateTab(TabPane):
 
     @on(Button.Pressed)
     def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
-        if event.button.label == str(store.cfg.dest_dir):
-            event.stop()
-            self._update_all_widgets(store.cm_paths.dest_dir_node_data)
-        trees = self.left_side_vertical.query_children(OperateTree).results()
-        for tree in trees:
+        if event.button.label != str(store.cfg.dest_dir):
+            return
+        event.stop()
+        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
+        for tree in self.left_side_vertical.query_children(OperateTree).results():
             tree.unselect()
-            if tree.display:
-                tree.scroll_home()
-            else:
-                tree.scroll_home(animate=False)
+            tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
@@ -362,4 +356,4 @@ class OperateTab(TabPane):
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:
         event.stop()
-        self._update_all_widgets(self.current_node)
+        self._update_view_widgets(self.current_node)
