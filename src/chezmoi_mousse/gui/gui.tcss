@@ -532,11 +532,6 @@ TabbedContent {
 }
 
 Tree {
-  &>.tree--cursor {
-    color: cyan;
-    text-style: none;
-  }
-
   &>.tree--label {
     text-style: none;
   }

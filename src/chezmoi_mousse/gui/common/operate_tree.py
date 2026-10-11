@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
+from rich.style import Style
 from textual import on, work
 from textual.widgets import Tree
 
@@ -17,6 +18,7 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from rich.text import Text
     from textual import getters
     from textual.widgets.tree import TreeNode
 
@@ -47,6 +49,16 @@ class OperateTree(Tree[NodeData]):
         self.root.data = store.cm_paths.dest_dir_node_data
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
         self._initial_tree_population()
+
+    def render_label(
+        self, node: TreeNode[NodeData], base_style: Style, style: Style
+    ) -> Text:
+        """Override render_label for a cursor node so the label keeps its own color and
+        just underlines the cursor node.
+        """
+        if self.cursor_node is node:
+            style = Style(underline=True)
+        return super().render_label(node, base_style, style)
 
     def _label_color_var(self, node_data: NodeData) -> ColorVar:
         status_code = node_data.status
