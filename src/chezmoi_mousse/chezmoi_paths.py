@@ -166,8 +166,8 @@ class CmPathChanges:
     changes_available: bool = False
     add_tree_dirs: NodeDict = field(default_factory=dict[Path, NodeData])
     add_tree_files: NodeDict = field(default_factory=dict[Path, NodeData])
-    remove_tree_dirs: list[Path] = field(default_factory=list[Path])
-    remove_tree_files: list[Path] = field(default_factory=list[Path])
+    remove_tree_dirs: set[Path] = field(default_factory=set[Path])
+    remove_tree_files: set[Path] = field(default_factory=set[Path])
     remove_node_map_paths: set[Path] = field(default_factory=set[Path])
     change_tree_dirs: NodeDict = field(default_factory=dict[Path, NodeData])
     change_tree_files: NodeDict = field(default_factory=dict[Path, NodeData])
@@ -175,6 +175,12 @@ class CmPathChanges:
     def __post_init__(self) -> None:
         if self._new_tree_paths != self._old_tree_paths:
             self.changes_available = True
+
+        self.update_add_fields()
+        self.update_remove_fields()
+        self.update_change_fields()
+
+    def update_add_fields(self) -> None:
 
         def get_added_dict(new_nodes: NodeDict, old_nodes: NodeDict) -> NodeDict:
             added = {k: v for k, v in new_nodes.items() if k not in old_nodes}
@@ -187,33 +193,44 @@ class CmPathChanges:
             self._new_tree_paths.file_node_data, self._old_tree_paths.file_node_data
         )
 
-        all_removed_dirs: set[Path] = (
+    def update_remove_fields(self) -> None:
+        removed_dirs: set[Path] = (
             self._old_tree_paths.dir_node_data.keys()
             - self._new_tree_paths.dir_node_data.keys()
         )
-        remove_tree_dirs = path_funcs.get_common_top_level(all_removed_dirs)
-        self.remove_tree_dirs = path_funcs.sort_paths(remove_tree_dirs)
-        all_removed_files: set[Path] = (
+        removed_files: set[Path] = (
             self._old_tree_paths.file_node_data.keys()
             - self._new_tree_paths.file_node_data.keys()
         )
-        self.remove_node_map_paths = all_removed_dirs | all_removed_files
-        self.remove_tree_files = [
-            path
-            for path in all_removed_files
-            if not any(parent in self.remove_tree_dirs for parent in path.parents)
-        ]
+        self.remove_tree_dirs = path_funcs.get_common_top_level(removed_dirs)
+        self.remove_tree_files = {
+            p for p in removed_files if self.remove_tree_dirs.isdisjoint(p.parents)
+        }
+        self.remove_node_map_paths = removed_dirs | removed_files
+
+    def update_change_fields(self) -> None:
 
         def get_changes_dict(dict1: NodeDict, dict2: NodeDict) -> NodeDict:
-            common_paths = dict1.keys() & dict2.keys()
-            changes_dict = {
-                k: dict2[k] for k in common_paths if dict1[k].status != dict2[k].status
+            return {
+                k: node2
+                for k, node2 in dict2.items()
+                if k in dict1 and dict1[k].status != node2.status
             }
-            return path_funcs.sort_path_dict(changes_dict)
 
-        self.change_tree_dirs = get_changes_dict(
+        all_changed_dirs = get_changes_dict(
             self._old_tree_paths.dir_node_data, self._new_tree_paths.dir_node_data
         )
-        self.change_tree_files = get_changes_dict(
+        change_dir_top_level: set[Path] = path_funcs.get_common_top_level(
+            all_changed_dirs
+        )
+        change_tree_dirs = {
+            path: node_data
+            for path, node_data in self._new_tree_paths.dir_node_data.items()
+            if path in change_dir_top_level
+            or not change_dir_top_level.isdisjoint(path.parents)
+        }
+        self.change_tree_dirs = path_funcs.sort_path_dict(change_tree_dirs)
+        change_tree_files = get_changes_dict(
             self._old_tree_paths.file_node_data, self._new_tree_paths.file_node_data
         )
+        self.change_tree_files = path_funcs.sort_path_dict(change_tree_files)

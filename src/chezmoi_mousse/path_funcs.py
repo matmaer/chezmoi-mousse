@@ -30,15 +30,9 @@ def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
 
 
 def get_common_top_level(paths: Iterable[Path]) -> set[Path]:
-    """
-    Return the unique top-level parent paths from the provided collection of paths.
-    """
-    top_parents: set[Path] = set()
-    for p in paths:
-        if not any(parent in paths for parent in p.parents):
-            top_parents.add(p)
-
-    return top_parents
+    """Return the unique top-level parent paths from the provided paths."""
+    path_set = paths if isinstance(paths, set) else set(paths)
+    return {p for p in path_set if path_set.isdisjoint(p.parents)}
 
 
 def _dir_name_is_unwanted(dir_path: Path) -> bool:
