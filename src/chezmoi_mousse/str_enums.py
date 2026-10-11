@@ -465,6 +465,8 @@ class Tcss(StrEnum):
     splash_log = auto()
     tab_button = auto()
     tree_header = auto()
+    true_label = auto()
+    false_label = auto()
 
 
 class TreeName(StrEnum):

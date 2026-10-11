@@ -350,18 +350,23 @@ Label {
     color: $foreground-darken-1;
   }
 
-  &TrueLabel {
-    background-tint: $success-muted;
-    background: $success-muted;
-    border-bottom: wide $success-muted;
-    color: $text-success;
-  }
+  &TruthLabel {
+    height: 100%;
+    width: 7;
 
-  &FalseLabel {
-    background-tint: $error-muted;
-    background: $error-muted;
-    border-bottom: wide $error-muted;
-    color: $text-error;
+    &.true_label {
+      background-tint: $success-muted;
+      background: $success-muted;
+      border-bottom: wide $success-muted;
+      color: $text-success;
+    }
+
+    &.false_label {
+      background-tint: $error-muted;
+      background: $error-muted;
+      border-bottom: wide $error-muted;
+      color: $text-error;
+    }
   }
 }
 

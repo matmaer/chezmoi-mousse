@@ -89,14 +89,11 @@ class SubSectionLabel(Label): ...
 class FlatSectionLabel(Label): ...
 
 
-class TrueLabel(Label):
-    def on_mount(self) -> None:
-        self.update("yes")
-
-
-class FalseLabel(Label):
-    def on_mount(self) -> None:
-        self.update(" no")
+class TruthLabel(Label):
+    def __init__(self, truth: bool) -> None:
+        label_text = "yes" if truth else "no"
+        classes = Tcss.true_label if truth else Tcss.false_label
+        super().__init__(label_text, classes=classes)
 
 
 class InfoLabel(Label): ...
@@ -117,20 +114,18 @@ class PathInfo(ScrollableContainer):
         self.info_widgets = self.query_exactly_one(InfoWidgets)
 
     def _set_path_info(self, node_data: NodeData) -> None:
-        status = TrueLabel() if node_data.has_status else FalseLabel()
-        exists = TrueLabel() if node_data.exists else FalseLabel()
-        un_wanted = (
-            FalseLabel() if node_data.wanted or node_data.managed else TrueLabel()
-        )
+        status = TruthLabel(node_data.has_status)
+        exists = TruthLabel(node_data.exists)
+        un_wanted = TruthLabel(not node_data.wanted or node_data.managed)
         widgets = [
             HorizontalGroup(InfoLabel(LabelStr.path_has_status), status),
             HorizontalGroup(InfoLabel(LabelStr.path_exists), exists),
             HorizontalGroup(InfoLabel(LabelStr.path_un_wanted), un_wanted),
         ]
         if node_data.dir_path or node_data.path.is_dir():
-            nested_status = TrueLabel() if node_data.nested_status else FalseLabel()
-            nested_managed = TrueLabel() if node_data.nested_managed else FalseLabel()
-            nested_un_man = TrueLabel() if node_data.nested_un_managed else FalseLabel()
+            nested_status = TruthLabel(node_data.nested_status)
+            nested_managed = TruthLabel(node_data.nested_managed)
+            nested_un_man = TruthLabel(node_data.nested_un_managed)
             dir_info = [
                 HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
                 HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
