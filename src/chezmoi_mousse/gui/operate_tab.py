@@ -150,9 +150,11 @@ class RightSideVertical(Vertical):
         yield SwitchGroup()
 
     def on_mount(self) -> None:
-        first_radio = self.query_exactly_one(RadioSet).query(RadioButton).first()
-        if first_radio:
-            first_radio.value = True
+        radio_set = self.query_exactly_one(RadioSet)
+        first_radio = radio_set.query(RadioButton).first()
+        with radio_set.prevent(RadioSet.Changed):
+            if first_radio:
+                first_radio.value = True
 
 
 class MiddleVertical(Vertical):
