@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -103,6 +104,16 @@ class NodeData:
     dest_dir: bool = False
 
     @property
+    def rel_path(self) -> str:
+        return path_funcs.get_rel_path_str(self.path)
+
+    @property
+    def rel_source_path(self) -> str:
+        if self.source_path is None:
+            return self.rel_path
+        return path_funcs.get_rel_path_str(self.source_path)
+
+    @property
     def file_path(self) -> bool:
         return not self.dir_path
 
@@ -159,13 +170,29 @@ class NodeData:
         else:
             label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
-        path_str = " " + path_funcs.get_rel_path_str(self.path)
+        full_label = f"{label_str} {self.path}"
+        if len(full_label) <= 70:
+            return full_label
 
-        if len(label_str) + len(path_str) > 70:
-            available = 70 - len(label_str)
-            path_str = f"{path_str[: available - 3]}..."
+        max_path_length = 70 - len(label_str) - 5  # space, 3 dots plus os sep
 
-        return label_str + path_str
+        # Count how many parts fit from the right
+        count = 0
+        current_len = 0
+
+        for part in reversed(self.path.parts):
+            part_len = len(part) + 1
+            if current_len + part_len > max_path_length:
+                if count == 0:
+                    return f"{label_str} {self.path.name}"
+                break
+            current_len += part_len
+            count += 1
+
+        # self.path.parents[count - 1] is the directory where the loop stopped
+        trimmed_path = self.path.relative_to(self.path.parents[count - 1])
+
+        return f"{label_str} ...{os.sep}{trimmed_path}"
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
         include_dir_for_sp_tree = self.status_dir or self.nested_status
