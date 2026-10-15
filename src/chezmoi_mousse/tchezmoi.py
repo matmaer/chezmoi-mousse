@@ -35,6 +35,8 @@ if TYPE_CHECKING:
         WriteCmd,
     )
 
+__all__ = ["OperatePaths"]
+
 
 def pretty_cmd(cmd: ReadCmd | WriteCmd, verb_arg: Path | str | None) -> str:
     if verb_arg is None:

@@ -40,6 +40,7 @@ from chezmoi_mousse.str_enums import (
     Tcss,
     TreeName,
 )
+from chezmoi_mousse.tchezmoi import OperatePaths
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -199,6 +200,8 @@ class OperateTab(TabPane):
             )
 
     def on_mount(self) -> None:
+        self.operate_paths = OperatePaths()
+
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.middle_vertical = self.query_exactly_one(MiddleVertical)
         self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
@@ -243,14 +246,20 @@ class OperateTab(TabPane):
     def _update_all_widgets(self, node_data: NodeData) -> None:
         self.current_node: NodeData = node_data
 
-        for btn in self.op_btn_group.query(Button).results():
-            btn.disabled = not node_data.enable_op_btn_map[BtnLabel(str(btn.label))]
-
         middle_label = self.middle_vertical.query_exactly_one(MainSectionLabel)
         middle_label.update(node_data.main_label)
-
+        self._update_op_buttons(node_data)
         self._sync_non_displayed_trees(node_data)
         self._update_view_widgets(node_data)
+
+    @work
+    async def _update_op_buttons(self, node_data: NodeData) -> bool:
+        enable = False
+        for btn in self.op_btn_group.query(Button).results():
+            enable = await self.operate_paths.enable_button(
+                self.app, str(btn.label), node_data
+            )
+        return enable
 
     @work
     async def _update_view_widgets(self, node_data: NodeData) -> None:
