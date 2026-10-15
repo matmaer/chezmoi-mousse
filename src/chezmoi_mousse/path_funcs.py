@@ -132,6 +132,8 @@ def is_unwanted_file(file_path: Path) -> bool:
 
 
 def is_unwanted_dir(dir_path: Path) -> bool:
+    if dir_path == store.cfg.dest_dir:
+        return False
     return (
         _path_seems_cache(dir_path)
         or _dir_name_is_unwanted(dir_path)
