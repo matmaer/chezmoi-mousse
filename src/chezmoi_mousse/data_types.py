@@ -161,8 +161,7 @@ class NodeData:
     def wanted_path(self) -> bool:
         return self.wanted_dir or self.wanted_file
 
-    @property
-    def main_label(self) -> str:
+    def get_main_label(self, label_size: int) -> str:
         if self.dest_dir:
             label_str = LabelStr.dest_dir
         elif self.dir_path:
@@ -171,10 +170,10 @@ class NodeData:
             label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
         full_label = f"{label_str} {self.path}"
-        if len(full_label) <= 70:
+        if len(full_label) <= label_size:
             return full_label
 
-        max_path_length = 70 - len(label_str) - 5  # space, 3 dots plus os sep
+        max_path_length = label_size - len(label_str) - 5  # space, 3 dots plus os sep
 
         # Count how many parts fit from the right
         count = 0

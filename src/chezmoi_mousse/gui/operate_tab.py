@@ -21,7 +21,9 @@ from chezmoi_mousse.gui.common.actionables import (
     SwitchGroup,
 )
 from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
     MainSectionLabel,
+    SubSectionLabel,
 )
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
 from chezmoi_mousse.gui.common.operate_tree import OperateTree
@@ -157,9 +159,14 @@ class RightSideVertical(Vertical):
                 first_radio.value = True
 
 
+class NoShowLabel(FlatSectionLabel): ...
+
+
 class MiddleVertical(Vertical):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel()
+        yield NoShowLabel()
+        yield SubSectionLabel()
         yield GitLogView()
         yield ContentView()
         yield DiffView()
@@ -188,6 +195,7 @@ class OperateTab(TabPane):
                     LabelStr.radio_contents,
                     LabelStr.radio_diff,
                     LabelStr.radio_diff_reverse,
+                    LabelStr.radio_path_view,
                 ),
             )
             yield OperateBtnGroup(
@@ -203,6 +211,8 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         self.operate_paths = OperatePaths()
+        self.source_path_label = self.query_exactly_one(SubSectionLabel)
+        self.no_show_label = self.query_exactly_one(NoShowLabel)
 
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.middle_vertical = self.query_exactly_one(MiddleVertical)
@@ -249,7 +259,15 @@ class OperateTab(TabPane):
         self.current_node: NodeData = node_data
 
         middle_label = self.middle_vertical.query_exactly_one(MainSectionLabel)
-        middle_label.update(node_data.main_label)
+        size = middle_label.container_size.width
+        middle_label.update(node_data.get_main_label(size))
+
+        if node_data.source_path is None:
+            self.source_path_label.display = False
+        else:
+            self.source_path_label.update(f"source path: {node_data.rel_source_path}")
+            self.source_path_label.display = True
+
         self._update_op_buttons(node_data)
         self._sync_non_displayed_trees(node_data)
         self._update_view_widgets(node_data)
@@ -265,6 +283,7 @@ class OperateTab(TabPane):
 
     @work
     async def _update_view_widgets(self, node_data: NodeData) -> None:
+        self.no_show_label.display = False
         for view in (
             self.git_log_view,
             self.content_view,
@@ -301,11 +320,18 @@ class OperateTab(TabPane):
         elif radio_label == LabelStr.radio_diff_reverse and node_data.has_status:
             self.diff_reverse_view.node_data = node_data
             self.diff_reverse_view.display = True
-        if not (
-            self.git_log_view.display
-            or self.content_view.display
-            or self.diff_view.display
-            or self.diff_reverse_view.display
+        elif radio_label == LabelStr.radio_path_view:
+            self.no_show_label.display = False
+            self.path_view.node_data = node_data
+            self.path_view.display = True
+        if (
+            not (
+                self.git_log_view.display
+                or self.content_view.display
+                or self.diff_view.display
+                or self.diff_reverse_view.display
+            )
+            and radio_label != LabelStr.radio_path_view
         ):
             map: dict[str, LabelStr] = {
                 LabelStr.radio_git_log: LabelStr.select_git_log_path,
@@ -313,8 +339,9 @@ class OperateTab(TabPane):
                 LabelStr.radio_diff: LabelStr.select_status_path,
                 LabelStr.radio_diff_reverse: LabelStr.select_status_path,
             }
-            self.path_view.path_info.node_data = node_data
-            self.path_view.flat_label.update(map[radio_label])
+            self.no_show_label.update(map[radio_label])
+            self.no_show_label.display = True
+            self.path_view.node_data = node_data
             self.path_view.display = True
 
     #################################
