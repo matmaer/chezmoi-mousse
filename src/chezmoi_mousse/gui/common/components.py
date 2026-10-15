@@ -4,14 +4,10 @@ from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from textual.containers import (
-    HorizontalGroup,
-    ScrollableContainer,
     VerticalGroup,
 )
-from textual.reactive import reactive
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import (
     Chars,
     ColorVar,
@@ -21,14 +17,11 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from textual.app import ComposeResult
-
-    from chezmoi_mousse.data_types import CommandResult, NodeData
+    from chezmoi_mousse.data_types import CommandResult
 __all__ = [
     "CmdResultCollapsible",
     "FlatSectionLabel",
     "MainSectionLabel",
-    "PathInfo",
     "SubSectionLabel",
 ]
 
@@ -100,46 +93,3 @@ class InfoLabel(Label): ...
 
 
 class InfoWidgets(VerticalGroup): ...
-
-
-class PathInfo(ScrollableContainer):
-    node_data: reactive[NodeData | None] = reactive(None, init=False)
-
-    def compose(self) -> ComposeResult:
-        yield InfoWidgets()
-        yield SubSectionLabel()
-
-    def on_mount(self) -> None:
-        self.path_label = self.query_exactly_one(SubSectionLabel)
-        self.info_widgets = self.query_exactly_one(InfoWidgets)
-
-    def _set_path_info(self, node_data: NodeData) -> None:
-        status = TruthLabel(node_data.has_status)
-        exists = TruthLabel(node_data.exists)
-        un_wanted = TruthLabel(not node_data.wanted or node_data.managed)
-        widgets = [
-            HorizontalGroup(InfoLabel(LabelStr.path_has_status), status),
-            HorizontalGroup(InfoLabel(LabelStr.path_exists), exists),
-            HorizontalGroup(InfoLabel(LabelStr.path_un_wanted), un_wanted),
-        ]
-        if node_data.dir_path or node_data.path.is_dir():
-            nested_status = TruthLabel(node_data.nested_status)
-            nested_managed = TruthLabel(node_data.nested_managed)
-            nested_un_man = TruthLabel(node_data.nested_un_managed)
-            dir_info = [
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_un_man), nested_un_man),
-            ]
-            widgets.extend(dir_info)
-
-        self.info_widgets.remove_children()
-        self.info_widgets.mount_all(widgets)
-
-    def watch_node_data(self, node_data: NodeData) -> None:
-        self._set_path_info(node_data)
-        if node_data.source_path is None:
-            self.path_label.update(str(node_data.path))
-        else:
-            rel_path = path_funcs.get_rel_path_str(node_data.source_path)
-            self.path_label.update(f"Source path: {rel_path}")

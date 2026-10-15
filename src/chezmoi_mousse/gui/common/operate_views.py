@@ -7,6 +7,7 @@ from rich.markup import escape
 from rich.text import Text
 from textual import work
 from textual.containers import (
+    HorizontalGroup,
     ScrollableContainer,
     Vertical,
 )
@@ -16,7 +17,8 @@ from textual.widgets import DataTable, Static
 from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
-    PathInfo,
+    InfoLabel,
+    TruthLabel,
 )
 from chezmoi_mousse.str_enums import (
     ColorVar,
@@ -224,11 +226,32 @@ class GitLogView(Vertical):
             self.data_table.add_row(*row, height=None)
 
 
-class PathView(Vertical):
-    def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(LabelStr.select_git_log_path)
-        yield PathInfo()
+class PathView(ScrollableContainer):
+    node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    def on_mount(self) -> None:
-        self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.path_info = self.query_exactly_one(PathInfo)
+    @work
+    async def _set_path_info(self, node_data: NodeData) -> None:
+        status = TruthLabel(node_data.has_status)
+        exists = TruthLabel(node_data.exists)
+        un_wanted = TruthLabel(not node_data.wanted or node_data.managed)
+        widgets = [
+            HorizontalGroup(InfoLabel(LabelStr.path_has_status), status),
+            HorizontalGroup(InfoLabel(LabelStr.path_exists), exists),
+            HorizontalGroup(InfoLabel(LabelStr.path_un_wanted), un_wanted),
+        ]
+        if node_data.dir_path or node_data.path.is_dir():
+            nested_status = TruthLabel(node_data.nested_status)
+            nested_managed = TruthLabel(node_data.nested_managed)
+            nested_un_man = TruthLabel(node_data.nested_un_managed)
+            dir_info = [
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
+                HorizontalGroup(InfoLabel(LabelStr.has_nested_un_man), nested_un_man),
+            ]
+            widgets.extend(dir_info)
+
+        self.remove_children()
+        self.mount_all(widgets)
+
+    def watch_node_data(self, node_data: NodeData) -> None:
+        self._set_path_info(node_data)
