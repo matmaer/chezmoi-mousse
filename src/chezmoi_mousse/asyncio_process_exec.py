@@ -22,7 +22,7 @@ type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
 # e.g. "Apply .foo (diff/yes/no/all/quit)? "
 _PROMPT_RE = re.compile(r"\(([^()]*)\)\? $")
-
+_GLOBAL_TIMEOUT = 15
 
 __all__ = [
     "ExecResult",
@@ -47,7 +47,6 @@ def _get_chezmoi_cmd() -> str:
 
 async def create_subprocess_exec_result(
     chezmoi_args: tuple[str, ...],
-    time_out: int = 15,
 ) -> ExecResult:
     chezmoi_cmd = _get_chezmoi_cmd()
     exec_args = (chezmoi_cmd, *chezmoi_args)
@@ -58,14 +57,14 @@ async def create_subprocess_exec_result(
         stderr=asyncio.subprocess.PIPE,
     )
     try:
-        async with asyncio.timeout(time_out):
+        async with asyncio.timeout(_GLOBAL_TIMEOUT):
             stdout_bytes, stderr_bytes = await process.communicate()
     except TimeoutError as e:
         process.kill()
         await process.wait()
         raise subprocess.TimeoutExpired(
             cmd=exec_args,
-            timeout=time_out,
+            timeout=_GLOBAL_TIMEOUT,
         ) from e
 
     std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
@@ -104,7 +103,6 @@ async def run_chezmoi_interactive_process(
     path: Path | None,
 ) -> AsyncGenerator[StreamEvent, str | None]:
     read_timeout: float = 0.05
-    max_process_idle_seconds: float = 15.0
     chezmoi_cmd = _get_chezmoi_cmd()
     exec_args = (
         (chezmoi_cmd, *cmd_enum.value, str(path))
@@ -141,9 +139,9 @@ async def run_chezmoi_interactive_process(
                 buffer += raw_chunk.decode("utf-8", errors="replace")
 
             except TimeoutError as read_time_out:
-                if time.monotonic() - last_process_activity > max_process_idle_seconds:
+                if time.monotonic() - last_process_activity > _GLOBAL_TIMEOUT:
                     raise TimeoutError(
-                        f"Chezmoi inactive for {max_process_idle_seconds} seconds."
+                        f"Chezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
                     ) from read_time_out
 
                 if buffer.endswith("\n"):
