@@ -264,7 +264,7 @@ class LogStr(StrEnum):
 
     # splash log string suffixes and pretty verb args
     on_managed_dirs = "on managed dirs"
-    on_managed_files = "on managed dirs"
+    on_managed_files = "on managed files"
 
 
 class PathFilters(Enum):
