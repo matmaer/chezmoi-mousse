@@ -48,29 +48,6 @@ def pretty_cmd(cmd: ReadCmd | WriteCmd, verb_arg: Path | str | None) -> str:
     return (f"{cmd.pretty_cmd} {pretty_verb_arg}").rstrip()
 
 
-async def _construct_command_result(
-    exec_result: ExecResult,
-    cmd_enum: ReadCmd | WriteCmd,
-    chezmoi_args: tuple[str, ...],
-    pretty_verb_arg: str | None,
-) -> CommandResult:
-    std_out = exec_result[0]
-    std_err = exec_result[1]
-    result_code = exec_result[2]
-    out_list = std_out.splitlines()
-    full_cmd: str = f"chezmoi {' '.join(chezmoi_args)}"
-    return CommandResult(
-        cmd_enum=cmd_enum,
-        full_cmd=full_cmd,
-        pretty_cmd=f"{pretty_cmd(cmd_enum, pretty_verb_arg)}",
-        returncode=result_code,
-        std_err=std_err,
-        std_out=std_out,
-        out_list=out_list,
-        time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-    )
-
-
 async def _exec_chezmoi(
     app: ChezmoiGui,
     cmd_enum: ReadCmd | WriteCmd,
@@ -78,8 +55,15 @@ async def _exec_chezmoi(
     pretty_verb_arg: str | None,
 ) -> CommandResult:
     exec_result: ExecResult = await create_subprocess_exec_result(chezmoi_args)
-    command_result = await _construct_command_result(
-        exec_result, cmd_enum, chezmoi_args, pretty_verb_arg
+    command_result = CommandResult(
+        cmd_enum=cmd_enum,
+        full_cmd=f"chezmoi {' '.join(chezmoi_args)}",
+        pretty_cmd=f"{pretty_cmd(cmd_enum, pretty_verb_arg)}",
+        returncode=exec_result[2],
+        std_err=exec_result[1],
+        std_out=exec_result[0],
+        out_list=exec_result[0].splitlines(),
+        time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
     )
     if app.screen.name == "splash_screen":
         if cmd_enum is ReadCmd.source_path:
