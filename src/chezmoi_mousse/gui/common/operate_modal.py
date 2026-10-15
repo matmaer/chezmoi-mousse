@@ -39,7 +39,7 @@ __all__ = ["OperateModal"]
 PROMPT_TIMEOUT_SECONDS = 120
 
 
-class AffectedPathsStatic(Static): ...
+class OperatePathsStatic(Static): ...
 
 
 class InteractiveOutputStatic(Static): ...
@@ -72,7 +72,7 @@ class OperateModal(ModalScreen[None]):
                 f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
             )
             yield FlatSectionLabel()
-            yield AffectedPathsStatic(markup=False)
+            yield OperatePathsStatic(markup=False)
             yield InteractiveOutputStatic(markup=False)
             yield PromptBtnGroup(
                 labels=(
@@ -89,7 +89,7 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
-        self.affected_static = self.query_exactly_one(AffectedPathsStatic)
+        self.affected_static = self.query_exactly_one(OperatePathsStatic)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.run_label = f"Run interactive {self.btn_label}"
         prompt_btn_group.mount(
