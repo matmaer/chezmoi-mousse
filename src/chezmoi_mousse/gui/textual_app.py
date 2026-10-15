@@ -138,11 +138,11 @@ class ChezmoiGui(App[str]):
         await self.push_screen(self.splash_screen)
 
         self.init_phase = True
-        results: list[CommandResult] = []
+        pre_mount_results: list[CommandResult] = []
         for cmd in (ReadCmd.git_dir, WriteCmd.init, ReadCmd.dump_config):
             cmd_result = await tchezmoi.run_chezmoi_cmd(self, cmd, verb_arg=None)
-            results.append(cmd_result)
-        await store.decode_and_store_config(results[-1].std_out)
+            pre_mount_results.append(cmd_result)
+        await store.decode_and_store_config(pre_mount_results[-1].std_out)
         await self.splash_screen.write_log_msg(
             prefix_suffix=(ReadCmd.dump_config.pretty_cmd, LogStr.decoded)
         )
@@ -157,7 +157,7 @@ class ChezmoiGui(App[str]):
         self.cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
         self.debug_log = self.query_one(store.debug_ids.richlog.debug_q, DebugLog)
         self.init_phase = False
-        for cr in results:
+        for cr in pre_mount_results:
             self.cmd_log.cmd_result = cr
             self.app_log.cmd_result = cr
         self._run_splash_commands()
