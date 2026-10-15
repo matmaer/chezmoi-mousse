@@ -157,13 +157,13 @@ class OperatePaths:
         if node_data.path in self._affected_paths:
             return self._affected_paths[node_data.path][btn_label]
         else:
-            result: dict[str, list[Path]] = await run_affected_paths(app, node_data)
+            result: dict[str, list[Path]] = await _run_affected_paths(app, node_data)
             self._affected_paths[node_data.path] = result
             return self._affected_paths[node_data.path][btn_label]
 
 
 @staticmethod
-async def run_affected_paths(
+async def _run_affected_paths(
     app: ChezmoiGui, n_data: NodeData
 ) -> dict[str, list[Path]]:
     result: dict[ReadCmd, list[Path] | None] = {
@@ -210,8 +210,9 @@ async def run_affected_paths(
         ReadCmd.dry_re_add: BtnLabel.chezmoi_re_add,
     }
     to_run: list[ReadCmd] = [cmd for cmd, value in result.items() if value is None]
+    path_arg = None if n_data.dest_dir else n_data.path
     cmd_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
-        app, to_run, n_data.path
+        app, to_run, path_arg
     )
     for cmd, cr in cmd_results.items():
         result[cmd] = path_funcs.parse_paths(cr.out_list)
