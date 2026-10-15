@@ -206,6 +206,7 @@ class LabelStr(StrEnum):
     radio_diff = "Diff View"
     radio_diff_reverse = "Diff Reverse View"
     radio_git_log = "Git Log View"
+    radio_path_view = "Path Info"
 
     # Operate tab Switch labels
     expand_managed = "Expand Managed"
