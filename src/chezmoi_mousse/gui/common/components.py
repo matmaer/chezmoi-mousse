@@ -73,16 +73,19 @@ class CmdResultCollapsible(Collapsible):
         return contents
 
 
-class MainSectionLabel(Label): ...
-
-
-class SubSectionLabel(Label): ...
-
-
 class FlatSectionLabel(Label): ...
 
 
+class InfoLabel(Label): ...
+
+
+class MainSectionLabel(Label): ...
+
+
 class NoShowLabel(FlatSectionLabel): ...
+
+
+class SubSectionLabel(Label): ...
 
 
 class TruthLabel(Label):
@@ -90,6 +93,3 @@ class TruthLabel(Label):
         label_text = "yes" if truth else "no"
         classes = Tcss.true_label if truth else Tcss.false_label
         super().__init__(label_text, classes=classes)
-
-
-class InfoLabel(Label): ...

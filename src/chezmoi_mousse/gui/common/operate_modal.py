@@ -4,24 +4,18 @@ import asyncio
 from typing import TYPE_CHECKING, ClassVar
 
 from textual import on, work
-from textual.containers import (
-    Vertical,
-)
+from textual.containers import Vertical
 from textual.screen import ModalScreen
-from textual.widgets import (
-    Button,
-    Static,
-)
+from textual.widgets import Button, Static
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.gui.common.actionables import (
-    PromptBtnGroup,
+from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
+from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
+from chezmoi_mousse.str_enums import (
+    BtnLabel,
+    ChezmoiPrompts,
+    WriteCmd,
 )
-from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
-    SubSectionLabel,
-)
-from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, WriteCmd
 
 if TYPE_CHECKING:
     from pathlib import Path

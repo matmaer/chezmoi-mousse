@@ -730,6 +730,28 @@ class ReadCmd(Enum):
     def pretty_splash_cmd(self) -> str:
         return self.pretty_cmd.replace("--include=", "")
 
+    @property
+    def write_btn_label(self) -> BtnLabel:
+        map = {
+            ReadCmd.dry_add: BtnLabel.chezmoi_add,
+            ReadCmd.dry_apply: BtnLabel.chezmoi_apply,
+            ReadCmd.dry_destroy: BtnLabel.chezmoi_destroy,
+            ReadCmd.dry_forget: BtnLabel.chezmoi_forget,
+            ReadCmd.dry_re_add: BtnLabel.chezmoi_re_add,
+        }
+        return map[self]
+
+    @property
+    def write_cmd(self) -> "WriteCmd":
+        map = {
+            ReadCmd.dry_add: WriteCmd.add,
+            ReadCmd.dry_apply: WriteCmd.apply,
+            ReadCmd.dry_destroy: WriteCmd.destroy,
+            ReadCmd.dry_forget: WriteCmd.forget,
+            ReadCmd.dry_re_add: WriteCmd.re_add,
+        }
+        return map[self]
+
 
 class WriteCmd(Enum):
     init = (
@@ -766,3 +788,36 @@ class WriteCmd(Enum):
         )
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
         return f"chezmoi {verb_str}"
+
+    @property
+    def dry_cmd(self) -> ReadCmd:
+        map = {
+            WriteCmd.add: ReadCmd.dry_add,
+            WriteCmd.apply: ReadCmd.dry_apply,
+            WriteCmd.destroy: ReadCmd.dry_destroy,
+            WriteCmd.forget: ReadCmd.dry_forget,
+            WriteCmd.re_add: ReadCmd.dry_re_add,
+        }
+        return map[self]
+
+    @property
+    def write_btn_label(self) -> BtnLabel:
+        map = {
+            WriteCmd.add: BtnLabel.chezmoi_add,
+            WriteCmd.apply: BtnLabel.chezmoi_apply,
+            WriteCmd.destroy: BtnLabel.chezmoi_destroy,
+            WriteCmd.forget: BtnLabel.chezmoi_forget,
+            WriteCmd.re_add: BtnLabel.chezmoi_re_add,
+        }
+        return map[self]
+
+    @property
+    def write_run_label(self) -> str:
+        map = {
+            WriteCmd.add: BtnLabel.chezmoi_add.run_label,
+            WriteCmd.apply: BtnLabel.chezmoi_apply.run_label,
+            WriteCmd.destroy: BtnLabel.chezmoi_destroy.run_label,
+            WriteCmd.forget: BtnLabel.chezmoi_forget.run_label,
+            WriteCmd.re_add: BtnLabel.chezmoi_re_add.run_label,
+        }
+        return map[self]

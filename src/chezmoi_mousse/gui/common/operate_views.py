@@ -40,9 +40,6 @@ if TYPE_CHECKING:
 __all__ = ["ContentView", "DiffReverseView", "DiffView", "GitLogView", "PathView"]
 
 
-class FileContentStatic(Static): ...
-
-
 class ContentView(Vertical):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -53,11 +50,12 @@ class ContentView(Vertical):
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.not_set)
-        yield ScrollableContainer(FileContentStatic(markup=False))
+        yield ScrollableContainer(Static(markup=False))
 
     def on_mount(self) -> None:
         self.flat_label = self.query_exactly_one(FlatSectionLabel)
-        self.content_static = self.query_exactly_one(FileContentStatic)
+        scrollable_container = self.query_exactly_one(ScrollableContainer)
+        self.content_static = scrollable_container.query_exactly_one(Static)
 
     @work
     async def _update_file_content(self, node_data: NodeData) -> None:
