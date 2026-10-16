@@ -119,8 +119,11 @@ class OperateTree(Tree[NodeData]):
             node.remove()
         for path in changes.remove_tree_files:
             node = self.node_map[path]
+            node.remove()
         for path in changes.remove_node_map_paths:
-            del self.node_map[path]
+            tree_node = self.node_map.get(path)
+            if tree_node is not None:
+                del self.node_map[path]
 
         for path, node_data in changes.add_tree_dirs.items():
             self._add_node_with_color(path, node_data, allow_expand=True)
