@@ -38,6 +38,8 @@ if TYPE_CHECKING:
 
 __all__ = ["OperatePaths"]
 
+_PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
+
 
 def pretty_cmd(cmd: ReadCmd | WriteCmd, verb_arg: Path | str | None) -> str:
     if verb_arg is None:
@@ -216,12 +218,12 @@ async def _run_affected_paths(
     cmd_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
         app, to_run, path_arg
     )
+
     for cmd, cr in cmd_results.items():
         # Matches standard git diff paths (capturing the target path in group 1)
-        path_pattern = re.compile(r"^diff --git a/.* b/(.*)$")
         affected_paths: set[Path] = set()
         for line in cr.out_list:
-            match = path_pattern.match(line)
+            match = _PATH_PATTERN.match(line)
             if match:
                 affected_paths.add(Path(match.group(1)))
         result[cmd] = path_funcs.sort_paths(affected_paths)
