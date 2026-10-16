@@ -236,6 +236,9 @@ async def _run_affected_paths(
 
 async def run_managed_commands(app: ChezmoiGui) -> None:
 
+    def parse_paths(path_strings: list[str]) -> list[Path]:
+        return [Path(line) for line in path_strings]
+
     def parse_paths_to_set(cmd_result: CommandResult) -> set[Path]:
         return {Path(line) for line in cmd_result.out_list}
 
@@ -274,10 +277,10 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
             )
         )
 
-    target_dirs = path_funcs.parse_paths(man_dirs_cr.out_list)
-    target_files = path_funcs.parse_paths(man_files_cr.out_list)
-    source_dirs = path_funcs.parse_paths(source_dirs_task.result().out_list)
-    source_files = path_funcs.parse_paths(source_files_task.result().out_list)
+    target_dirs = parse_paths(man_dirs_cr.out_list)
+    target_files = parse_paths(man_files_cr.out_list)
+    source_dirs = parse_paths(source_dirs_task.result().out_list)
+    source_files = parse_paths(source_files_task.result().out_list)
 
     tree_paths = ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
