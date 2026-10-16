@@ -26,6 +26,7 @@ from chezmoi_mousse.gui.common.components import (
     SubSectionLabel,
 )
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
+from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.operate_tree import OperateTree
 from chezmoi_mousse.gui.common.operate_views import (
     ContentView,
@@ -371,14 +372,23 @@ class OperateTab(TabPane):
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
-        if event.button.label in (
+        if event.button.label not in (
             BtnLabel.chezmoi_add,
             BtnLabel.chezmoi_apply,
             BtnLabel.chezmoi_re_add,
             BtnLabel.chezmoi_forget,
             BtnLabel.chezmoi_destroy,
         ):
-            event.stop()
+            return
+        event.stop()
+        modal = OperateModal(
+            BtnLabel(str(event.button.label)),
+            self.current_node.path,
+            self.operate_paths.affected_paths(
+                self.current_node.path, str(event.button.label)
+            ),
+        )
+        self.app.push_screen(modal)
 
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:

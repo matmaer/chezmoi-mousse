@@ -144,6 +144,9 @@ class OperatePaths:
         default_factory=dict[Path, dict[str, list[Path]]]
     )
 
+    def affected_paths(self, path: Path, btn_label: str) -> list[Path]:
+        return self._affected_paths[path][btn_label]
+
     async def enable_button(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData
     ) -> bool:
@@ -321,9 +324,7 @@ async def get_highlighted_chezmoi_cat_output(
 
 
 def run_chezmoi_interactive(
-    app: ChezmoiGui,
     cmd_enum: WriteCmd,
     path_arg: Path | None,
 ) -> AsyncGenerator[StreamEvent, str | None]:
-    app.notify(f"Running {cmd_enum.name} on {path_arg}")
     return run_chezmoi_interactive_process(cmd_enum, path_arg)

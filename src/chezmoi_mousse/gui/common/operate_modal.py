@@ -21,7 +21,7 @@ from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     SubSectionLabel,
 )
-from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, Tcss, WriteCmd
+from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, WriteCmd
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -39,7 +39,7 @@ __all__ = ["OperateModal"]
 PROMPT_TIMEOUT_SECONDS = 120
 
 
-class OperatePathsStatic(Static): ...
+class AffectedPathsStatic(Static): ...
 
 
 class InteractiveOutputStatic(Static): ...
@@ -57,8 +57,10 @@ class OperateModal(ModalScreen[None]):
         BtnLabel.chezmoi_re_add: WriteCmd.re_add,
     }
 
-    def __init__(self, btn_label: str, path: Path, affected_paths: list[Path]) -> None:
-        self.btn_label = btn_label
+    def __init__(
+        self, op_btn: BtnLabel, path: Path, affected_paths: list[Path]
+    ) -> None:
+        self.op_btn = op_btn
         self.path = path
         self.affected_paths = affected_paths
         self._prompt_future: asyncio.Future[str] | None = None
@@ -72,7 +74,7 @@ class OperateModal(ModalScreen[None]):
                 f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
             )
             yield FlatSectionLabel()
-            yield OperatePathsStatic(markup=False)
+            yield AffectedPathsStatic(markup=False)
             yield InteractiveOutputStatic(markup=False)
             yield PromptBtnGroup(
                 labels=(
@@ -83,23 +85,26 @@ class OperateModal(ModalScreen[None]):
                     ChezmoiPrompts.no_to_all.prompt_item,
                     ChezmoiPrompts.quit.prompt_item,
                     ChezmoiPrompts.yes.prompt_item,
+                    self.op_btn.run_label,
                     BtnLabel.cancel,
                     BtnLabel.close,
                 ),
             )
 
     def on_mount(self) -> None:
-        self.affected_static = self.query_exactly_one(OperatePathsStatic)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
-        self.run_label = f"Run interactive {self.btn_label}"
-        prompt_btn_group.mount(
-            Button(label=self.run_label, classes=Tcss.prompt_button), before=0
-        )
         self.prompt_buttons = prompt_btn_group.query(Button)
-        for button in self.prompt_buttons:
-            if button.label == BtnLabel.cancel or button.label == self.run_label:
-                continue
-            button.display = False
+        self.affected_static = self.query_exactly_one(AffectedPathsStatic)
+        if self.affected_paths:
+            paths_text = "\n".join(f"• {p}" for p in self.affected_paths)
+            self.affected_static.update(f"Affected paths:\n{paths_text}")
+            for button in self.prompt_buttons:
+                if button.label in (BtnLabel.cancel, self.op_btn.run_label):
+                    button.display = True
+        else:
+            self.affected_static.update("Sorry this is a no-op, nothing to do.")
+            for button in self.prompt_buttons:
+                button.display = button.label == BtnLabel.cancel.value
         self.interactive_output_static = self.query_exactly_one(InteractiveOutputStatic)
         self.interactive_output_static.display = False
 
@@ -116,7 +121,7 @@ class OperateModal(ModalScreen[None]):
             if prompt.prompt_item in options
         }
         for button in self.prompt_buttons:
-            button.display = str(button.label) in offered | {BtnLabel.close}
+            button.display = str(button.label) in offered
 
         self._prompt_future = asyncio.get_running_loop().create_future()
         try:
@@ -129,22 +134,14 @@ class OperateModal(ModalScreen[None]):
             return ChezmoiPrompts.quit.reply
         finally:
             self._prompt_future = None
-            for button in self.prompt_buttons:
-                if button.label != BtnLabel.close:
-                    button.display = False
 
     @work
     async def _run_interactive(self) -> None:
         self.affected_static.display = False
         self.interactive_output_static.display = True
-        for button in self.prompt_buttons:
-            if button.label == BtnLabel.close:
-                button.display = True
-            if button.label in (BtnLabel.cancel, self.run_label):
-                button.display = False
 
-        cmd_enum = self.btn_label_to_cmd[self.btn_label]
-        gen = tchezmoi.run_chezmoi_interactive(self.app, cmd_enum, self.path)
+        cmd_enum = self.btn_label_to_cmd[self.op_btn]
+        gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path)
 
         response: str | None = None
         try:
@@ -164,6 +161,8 @@ class OperateModal(ModalScreen[None]):
 
         except StopAsyncIteration:
             self._append_output("\nProcess completed.")
+            for button in self.prompt_buttons:
+                button.display = button.label == BtnLabel.close
         finally:
             # on cancel/dismiss the worker is cancelled, this terminates chezmoi
             await gen.aclose()
@@ -177,7 +176,9 @@ class OperateModal(ModalScreen[None]):
             for worker in self.workers:
                 worker.cancel()
             self.dismiss()
-        elif button_label == self.run_label:
+        elif button_label == self.op_btn.run_label:
+            for button in self.prompt_buttons:
+                button.display = False
             self._run_interactive()
         elif self._prompt_future is not None and not self._prompt_future.done():
             for prompt in ChezmoiPrompts:

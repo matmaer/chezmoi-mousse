@@ -45,13 +45,6 @@ class BtnLabel(StrEnum):
     logs = "Logs"
     debug = "Debug"
 
-    # Run chezmoi command buttons
-    chezmoi_add = "chezmoi add"
-    chezmoi_apply = "chezmoi apply"
-    chezmoi_re_add = "chezmoi re-add"
-    chezmoi_forget = "chezmoi forget"
-    chezmoi_destroy = "chezmoi destroy"
-
     # Tab buttons for content switcher within a main tab
     app_log = "Application"
     cmd_log = "Chezmoi-Commands"
@@ -76,13 +69,25 @@ class BtnLabel(StrEnum):
     log_memory = "Log Memory Usage"
     remove_paths = "Remove Test Paths"
 
-    # Other
+    # Run chezmoi command buttons
+    chezmoi_add = "chezmoi add"
+    chezmoi_apply = "chezmoi apply"
+    chezmoi_re_add = "chezmoi re-add"
+    chezmoi_forget = "chezmoi forget"
+    chezmoi_destroy = "chezmoi destroy"
+    # Operate modal
     cancel = "Cancel"
     close = "Close"
 
     @property
     def pane_id(self) -> str:
         return f"{self.name}_pane_id"
+
+    @property
+    def run_label(self) -> str:  # Operate modal
+        if not self.name.startswith("chezmoi_"):
+            raise AttributeError(f"run_label not available for {self}")
+        return f"Run interactive {self.value}"
 
 
 class Chars(StrEnum):

@@ -94,6 +94,11 @@ class PromptBtnGroup(HorizontalGroup):
         for btn_label in self.labels:
             yield Button(label=btn_label, classes=Tcss.prompt_button)
 
+    def on_mount(self) -> None:
+        buttons = self.query_children(Button)
+        for btn in buttons:
+            btn.display = False
+
 
 class SwitchGroup(VerticalGroup):
     state_to_tree_map: ClassVar[dict[tuple[bool, ...], str]] = {
