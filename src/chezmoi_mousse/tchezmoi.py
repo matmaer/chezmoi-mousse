@@ -129,11 +129,10 @@ async def run_in_task_group(
     path: Path | None = None,
 ) -> dict[ReadCmd, CommandResult]:
     tasks_by_cmd: dict[ReadCmd, Task[CommandResult]] = {}
-    verb_arg = None if path is None else path
     async with asyncio.TaskGroup() as tg:
         for cmd_enum in commands:
             tasks_by_cmd[cmd_enum] = tg.create_task(
-                run_chezmoi_cmd(app, cmd_enum, verb_arg=verb_arg, pretty_verb_arg=None)
+                run_chezmoi_cmd(app, cmd_enum, verb_arg=path, pretty_verb_arg=None)
             )
     cmd_to_cr_map: dict[ReadCmd, CommandResult] = {
         cmd: task.result() for cmd, task in tasks_by_cmd.items()
