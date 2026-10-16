@@ -142,7 +142,6 @@ class _DiffViewBase(Vertical):
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self._create_diff_widgets(self.diff_cmd, node_data.path)
-        self.last_displayed_path = node_data.path
 
 
 class DiffView(_DiffViewBase):
@@ -210,7 +209,6 @@ class GitLogView(Vertical):
         self, node_data: NodeData, std_out: str | None = None
     ) -> None:
         assert node_data.managed or node_data.dest_dir
-        pretty_cells = []
         if node_data.path in self.cache or std_out is None:
             pretty_cells = self.cache[node_data.path]
         else:

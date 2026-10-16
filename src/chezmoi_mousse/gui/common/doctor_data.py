@@ -31,7 +31,6 @@ class DoctorTable(DataTable[Text]):
         }
 
     def populate_dr_table(self, std_out: str) -> None:
-        self.loading = True
         doctor_lines = std_out.splitlines()
         if not doctor_lines:
             self.notify("No doctor output available to display.", severity="error")

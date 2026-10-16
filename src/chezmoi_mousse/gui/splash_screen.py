@@ -9,7 +9,6 @@ from rich.style import Style
 from textual import events
 from textual.color import Gradient
 from textual.containers import Center, Middle
-from textual.reactive import reactive
 from textual.screen import Screen
 from textual.strip import Strip
 from textual.widgets import RichLog, Static
@@ -71,8 +70,6 @@ class SplashScreen(Screen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    log_message: reactive[str | None] = reactive(None, init=False)
-
     def _forward_event(self, event: events.Event) -> None:
         if isinstance(
             event,
@@ -98,7 +95,6 @@ class SplashScreen(Screen[None]):
             yield Center(RichLog(markup=True, classes=Tcss.splash_log))
 
     async def on_mount(self) -> None:
-        self.repo_existed = True
         self.color_map: dict[str | int, str] = {
             LogStr.checked: self.app.theme_variables[ColorVar.warning],
             LogStr.decoded: self.app.theme_variables[ColorVar.success],
