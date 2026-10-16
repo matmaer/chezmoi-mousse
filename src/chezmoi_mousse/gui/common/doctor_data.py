@@ -40,6 +40,9 @@ class DoctorTable(DataTable[Text]):
 
         for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
+            if len(row) < 3:
+                self.app.app_log.write_warning(f"Unable to parse row in git log: {row}")
+                continue
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [
                     Text(cell_text, style=self.row_color["info"]) for cell_text in row
