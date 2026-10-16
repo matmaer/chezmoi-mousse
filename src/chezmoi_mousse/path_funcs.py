@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import codecs
+import re
 from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -61,35 +63,33 @@ def _dir_has_many_children(dir_path: Path, max_entries: int = 200) -> bool:
         return False
 
 
+# Control bytes that never show up in text files. Allowed: bell, backspace, tab, LF,
+# VT, FF, CR and ESC (ANSI colors), everything else below 0x20 plus DEL is not text.
+_BINARY_BYTES_RE = re.compile(rb"[\x00-\x06\x0e-\x1a\x1c-\x1f\x7f]")
+_TEXT_BOMS = (
+    codecs.BOM_UTF8,
+    codecs.BOM_UTF32_LE,  # before UTF-16 LE, which is its prefix
+    codecs.BOM_UTF32_BE,
+    codecs.BOM_UTF16_LE,
+    codecs.BOM_UTF16_BE,
+)
+
+
 def _file_is_binary(file_path: Path) -> bool:
     try:
         with file_path.open("rb") as f:
-            data = f.read(1024)
+            data = f.read(8192)
     except OSError:
         return True  # if we can't read it, return True to treat it as unwanted
 
-    if not data:
-        return False  # empty files are not considered binary
+    # UTF-16/32 text is full of null bytes, a BOM identifies it as text
+    if data.startswith(_TEXT_BOMS):
+        return False
 
-    if b"\x00" in data:
-        return True  # null byte found, likely binary
-
-    try:
-        text = data.decode("utf-8-sig")  # decode with BOM handling
-    except UnicodeDecodeError:
-        return True  # likely binary
-
-    for char in text:
-        if char in "\t\n\r":
-            continue  # allow common whitespace characters
-
-        code = ord(char)
-        if 32 <= code <= 126 or code >= 127:
-            continue  # allow printable ASCII and extended characters
-
-        return True  # non-printable character found, likely binary
-
-    return False  # no non-printable characters found, likely text
+    # Working on raw bytes avoids decoding errors on a multi-byte character cut off
+    # by the read limit, and on text in legacy encodings. All bytes of a UTF-8
+    # multi-byte character are >= 0x80, so they never match.
+    return _BINARY_BYTES_RE.search(data) is not None
 
 
 def _file_is_large(file_path: Path) -> bool:
