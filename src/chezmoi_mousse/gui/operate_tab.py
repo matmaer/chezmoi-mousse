@@ -15,14 +15,14 @@ from textual.widgets import (
     Tree,
 )
 
-from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     SwitchGroup,
 )
 from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
     MainSectionLabel,
+    NoShowLabel,
     SubSectionLabel,
 )
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
@@ -160,9 +160,6 @@ class RightSideVertical(Vertical):
                 first_radio.value = True
 
 
-class NoShowLabel(FlatSectionLabel): ...
-
-
 class MiddleVertical(Vertical):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel()
@@ -266,7 +263,8 @@ class OperateTab(TabPane):
         if node_data.source_path is None:
             self.source_path_label.display = False
         else:
-            self.source_path_label.update(f"source path: {node_data.rel_source_path}")
+            rel_source_path = path_funcs.get_rel_path_str(node_data.source_path)
+            self.source_path_label.update(f"source path: {rel_source_path}")
             self.source_path_label.display = True
 
         self._update_op_buttons(node_data)

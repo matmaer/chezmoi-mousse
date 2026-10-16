@@ -176,11 +176,11 @@ class CmPathChanges:
         if self._new_tree_paths != self._old_tree_paths:
             self.changes_available = True
 
-        self.update_add_fields()
-        self.update_remove_fields()
-        self.update_change_fields()
+        self._update_add_fields()
+        self._update_remove_fields()
+        self._update_change_fields()
 
-    def update_add_fields(self) -> None:
+    def _update_add_fields(self) -> None:
 
         def get_added_dict(new_nodes: NodeDict, old_nodes: NodeDict) -> NodeDict:
             added = {k: v for k, v in new_nodes.items() if k not in old_nodes}
@@ -193,7 +193,7 @@ class CmPathChanges:
             self._new_tree_paths.file_node_data, self._old_tree_paths.file_node_data
         )
 
-    def update_remove_fields(self) -> None:
+    def _update_remove_fields(self) -> None:
         removed_dirs: set[Path] = (
             self._old_tree_paths.dir_node_data.keys()
             - self._new_tree_paths.dir_node_data.keys()
@@ -208,7 +208,7 @@ class CmPathChanges:
         }
         self.remove_node_map_paths = removed_dirs | removed_files
 
-    def update_change_fields(self) -> None:
+    def _update_change_fields(self) -> None:
 
         def get_changes_dict(dict1: NodeDict, dict2: NodeDict) -> NodeDict:
             return {

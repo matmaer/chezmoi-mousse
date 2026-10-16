@@ -150,10 +150,10 @@ class OperatePaths:
     async def enable_button(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData
     ) -> bool:
-        result = await self.get_affected_paths(app, btn_label, node_data)
+        result = await self._get_affected_paths(app, btn_label, node_data)
         return len(result) > 0
 
-    async def get_affected_paths(
+    async def _get_affected_paths(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData
     ) -> list[Path]:
         if node_data.path in self._affected_paths:

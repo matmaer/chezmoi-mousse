@@ -4,7 +4,6 @@ import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import LabelStr, TreeName
 
 if TYPE_CHECKING:
@@ -49,15 +48,9 @@ class DumpConfigKeys:
         return self.dest_dir_path
 
     @property
-    def source_dir(self) -> Path:
-        if self._source_dir_path is None:
-            raise RuntimeError("Accessing source_dir before the config is parsed")
-        return self._source_dir_path
-
-    @property
     def git_index(self) -> Path:
         if self._source_dir_path is None:
-            raise RuntimeError("Accessing source_dir before the config is parsed")
+            raise RuntimeError("Accessing git_index before the config is parsed")
         return self._source_dir_path / ".git" / "index"
 
     @property
@@ -117,16 +110,6 @@ class NodeData:
     dest_dir: bool = False
 
     @property
-    def rel_path(self) -> str:
-        return path_funcs.get_rel_path_str(self.path)
-
-    @property
-    def rel_source_path(self) -> str:
-        if self.source_path is None:
-            return self.rel_path
-        return path_funcs.get_rel_path_str(self.source_path)
-
-    @property
     def file_path(self) -> bool:
         return not self.dir_path
 
@@ -135,7 +118,7 @@ class NodeData:
         return self.status is not None
 
     @property
-    def managed_dir(self) -> bool:
+    def _managed_dir(self) -> bool:
         return self.dir_path and self.managed
 
     @property
@@ -143,8 +126,8 @@ class NodeData:
         return self.file_path and self.managed
 
     @property
-    def status_dir(self) -> bool:
-        return self.managed_dir and self.has_status
+    def _status_dir(self) -> bool:
+        return self._managed_dir and self.has_status
 
     @property
     def status_file(self) -> bool:
@@ -163,16 +146,16 @@ class NodeData:
         return self.file_path and self.un_managed
 
     @property
-    def wanted_dir(self) -> bool:
+    def _wanted_dir(self) -> bool:
         return self.dir_path and self.wanted is not None and self.wanted is True
 
     @property
-    def wanted_file(self) -> bool:
+    def _wanted_file(self) -> bool:
         return self.file_path and self.wanted is not None and self.wanted is True
 
     @property
-    def wanted_path(self) -> bool:
-        return self.wanted_dir or self.wanted_file
+    def _wanted_path(self) -> bool:
+        return self._wanted_dir or self._wanted_file
 
     def get_main_label(self, label_size: int) -> str:
         if self.dest_dir:
@@ -207,7 +190,7 @@ class NodeData:
         return f"{label_str} ...{os.sep}{trimmed_path}"
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        include_dir_for_sp_tree = self.status_dir or self.nested_status
+        include_dir_for_sp_tree = self._status_dir or self.nested_status
         include_sp = self.status_file or include_dir_for_sp_tree
 
         if tree_name in (TreeName.managed_sp, TreeName.managed_sp_xpd):
@@ -215,9 +198,9 @@ class NodeData:
         elif tree_name in (TreeName.managed_amp, TreeName.managed_amp_xpd):
             return self.managed
         elif tree_name in (TreeName.wanted_plus_sp, TreeName.wanted_plus_sp_xpd):
-            return include_sp or self.nested_wanted or self.wanted_path
+            return include_sp or self.nested_wanted or self._wanted_path
         elif tree_name in (TreeName.wanted_plus_amp, TreeName.wanted_plus_amp_xpd):
-            return self.managed or self.nested_wanted or self.wanted_path
+            return self.managed or self.nested_wanted or self._wanted_path
         elif tree_name in (TreeName.un_wanted_plus_sp, TreeName.un_wanted_plus_sp_xpd):
             return include_sp or self.nested_un_managed or self.un_managed
         else:

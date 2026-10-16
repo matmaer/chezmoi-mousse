@@ -3,9 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rich.markup import escape
-from textual.containers import (
-    VerticalGroup,
-)
 from textual.widgets import Collapsible, Label, Static
 
 from chezmoi_mousse.str_enums import (
@@ -21,8 +18,11 @@ if TYPE_CHECKING:
 __all__ = [
     "CmdResultCollapsible",
     "FlatSectionLabel",
+    "InfoLabel",
     "MainSectionLabel",
+    "NoShowLabel",
     "SubSectionLabel",
+    "TruthLabel",
 ]
 
 
@@ -82,6 +82,9 @@ class SubSectionLabel(Label): ...
 class FlatSectionLabel(Label): ...
 
 
+class NoShowLabel(FlatSectionLabel): ...
+
+
 class TruthLabel(Label):
     def __init__(self, truth: bool) -> None:
         label_text = "yes" if truth else "no"
@@ -90,6 +93,3 @@ class TruthLabel(Label):
 
 
 class InfoLabel(Label): ...
-
-
-class InfoWidgets(VerticalGroup): ...
