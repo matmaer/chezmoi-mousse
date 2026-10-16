@@ -12,20 +12,20 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-def _sort_paths(paths: Iterable[Path]) -> list[Path]:
+def sort_paths(paths: Iterable[Path]) -> list[Path]:
     path_list = list(paths)
     path_list.sort(key=lambda p: (len(p.parts), str(p).lower()))
     return path_list
 
 
 def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
-    sorted_keys = _sort_paths(path_dict.keys())
+    sorted_keys = sort_paths(path_dict.keys())
     return {path: path_dict[path] for path in sorted_keys}
 
 
 def parse_paths(path_strings: list[str]) -> list[Path]:
     parsed = [Path(line) for line in path_strings]
-    return _sort_paths(parsed)
+    return sort_paths(parsed)
 
 
 def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
