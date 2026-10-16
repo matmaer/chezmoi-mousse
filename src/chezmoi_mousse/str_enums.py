@@ -572,6 +572,7 @@ class _VerbArgs(StrEnum):
     include_dirs = "--include=dirs"
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
+    prompt = "--prompt=true"
     reverse = "--reverse"
 
 
@@ -738,6 +739,7 @@ class WriteCmd(Enum):
     add = (
         *_GlobalArgs.interactive.value,
         _WriteVerb.add,
+        _VerbArgs.prompt,
     )
     apply = (
         *_GlobalArgs.interactive.value,
