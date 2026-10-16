@@ -224,9 +224,9 @@ class OperateTree(Tree[NodeData]):
         self.iterated_dirs.add(node_data.path)
         for path, node_data in iter_dir_result.dirs.items():
             if TreeName(self.name).is_wanted_tree and not node_data.wanted:
-                return
+                continue
             self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in iter_dir_result.files.items():
             if TreeName(self.name).is_wanted_tree and not node_data.wanted:
-                return
+                continue
             self._add_node_with_color(path, node_data, allow_expand=False)
