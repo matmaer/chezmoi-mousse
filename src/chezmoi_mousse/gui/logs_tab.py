@@ -103,7 +103,7 @@ class AppLog(RichLoggers):
             if nothing_serious:
                 self.write_success(LogStr.doctor_no_issue_found)
             else:
-                self.write_success(LogStr.doctor_minor_issues_found)
+                self.write_warning(LogStr.doctor_minor_issues_found)
             self.write_ready(LogStr.doctor_section.end)
 
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
