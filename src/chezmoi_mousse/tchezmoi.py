@@ -165,7 +165,6 @@ class OperatePaths:
             return self._affected_paths[node_data.path][btn_label]
 
 
-@staticmethod
 async def _run_affected_paths(
     app: ChezmoiGui, n_data: NodeData
 ) -> dict[str, list[Path]]:
