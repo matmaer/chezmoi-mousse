@@ -145,13 +145,13 @@ class OperateTree(Tree[NodeData]):
     def _get_before_node(
         self, parent_node: TreeNode[NodeData], node_data: NodeData
     ) -> TreeNode[NodeData] | None:
-        dir_nodes = [c for c in parent_node.children if c.allow_expand]
         file_nodes = [c for c in parent_node.children if not c.allow_expand]
         if node_data.dir_path:
+            dir_nodes = [c for c in parent_node.children if c.allow_expand]
             for child in dir_nodes:
                 if (
                     child.data is not None
-                    and str(node_data.path).lower() < str(child.data.path).lower()
+                    and node_data.path.name.lower() < child.data.path.name.lower()
                 ):
                     return child
             if file_nodes:
@@ -160,9 +160,9 @@ class OperateTree(Tree[NodeData]):
             for child in file_nodes:
                 if (
                     child.data is not None
-                    and str(node_data.path).lower() < str(child.data.path).lower()
+                    and node_data.path.name.lower() < child.data.path.name.lower()
                 ):
-                    return self.node_map[child.data.path]
+                    return child
         return None
 
     def _add_node_with_color(

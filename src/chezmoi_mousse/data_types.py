@@ -156,23 +156,20 @@ class NodeData:
 
         max_path_length = label_size - len(label_str) - 5  # space, 3 dots plus os sep
 
-        # Count how many parts fit from the right
         count = 0
         current_len = 0
 
         for part in reversed(self.path.parts):
             part_len = len(part) + 1
             if current_len + part_len > max_path_length:
-                if count == 0:
-                    return f"{label_str} {self.path.name}"
                 break
             current_len += part_len
             count += 1
 
-        # self.path.parents[count - 1] is the directory where the loop stopped
-        trimmed_path = self.path.relative_to(self.path.parents[count - 1])
+        if count == 0:  # Fallback to full last component if even 1 part doesn't fit
+            return f"{label_str} ...{os.sep}{self.path.name}"
 
-        return f"{label_str} ...{os.sep}{trimmed_path}"
+        return f"{label_str} ...{os.sep}{Path(*self.path.parts[-count:])}"
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
         include_dir_for_sp_tree = self._status_dir or self.nested_status
