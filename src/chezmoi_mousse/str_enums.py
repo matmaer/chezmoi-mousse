@@ -53,6 +53,7 @@ class BtnLabel(StrEnum):
     cat_config = "Cat Config"
     debug_log = "Debug Log"
     diagram = "Diagram"
+    dump_config = "Config Dump"
     doctor = "Doctor"
     dom_nodes = "DOM Nodes"
     env_vars = "Env Vars"
@@ -153,6 +154,7 @@ class ContainerName(StrEnum):
     cmd_log = auto()
     debug_log = auto()
     diagram = auto()
+    dump_config = auto()
     diff = auto()
     diff_reverse = auto()
     doctor = auto()

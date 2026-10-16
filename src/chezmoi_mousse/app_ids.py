@@ -45,8 +45,6 @@ class _ContainerIds:
         self.cmd_log_q: str = f"#{self.cmd_log}"
         self.color_vars: str = ids.container_id(name=ContainerName.color_vars)
         self.color_vars_q: str = f"#{self.color_vars}"
-        self.dump_config: str = ids.container_id(name=ContainerName.contents)
-        self.dump_config_q: str = f"#{self.dump_config}"
         self.contents: str = ids.container_id(name=ContainerName.contents)
         self.contents_q: str = f"#{self.contents}"
         self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
@@ -61,6 +59,8 @@ class _ContainerIds:
         self.doctor_q: str = f"#{self.doctor}"
         self.dom_nodes: str = ids.container_id(name=ContainerName.dom_nodes)
         self.dom_nodes_q: str = f"#{self.dom_nodes}"
+        self.dump_config: str = ids.container_id(name=ContainerName.dump_config)
+        self.dump_config_q: str = f"#{self.dump_config}"
         self.flat_buttons: str = ids.container_id(name=ContainerName.flat_buttons)
         self.flat_buttons_q: str = f"#{self.flat_buttons}"
         self.git_config: str = ids.container_id(name=ContainerName.git_config)
