@@ -3,27 +3,34 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, ClassVar
 
+from rich.markup import escape
 from textual import on, work
-from textual.containers import Vertical
+from textual.containers import ScrollableContainer, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, Static
+from textual.widgets import Button, Collapsible, Static
 
-from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
 from chezmoi_mousse.str_enums import (
     BtnLabel,
+    Chars,
     ChezmoiPrompts,
+    ColorVar,
     WriteCmd,
 )
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from rich.text import Text
     from textual import getters
     from textual.app import ComposeResult
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.str_enums import (
+        ReadCmd,
+    )
 
 
 __all__ = ["OperateModal"]
@@ -34,6 +41,24 @@ PROMPT_TIMEOUT_SECONDS = 120
 
 
 class AffectedPathsStatic(Static): ...
+
+
+class AffectedPaths(Collapsible):
+    def __init__(
+        self, *, read_cmd: ReadCmd, path: Path | None, highlighted_paths: Text
+    ) -> None:
+        super().__init__(
+            ScrollableContainer(Static(highlighted_paths, markup=False)),
+            title=self._colored_title(read_cmd, path),
+            collapsed_symbol=Chars.right_triangle,
+            expanded_symbol=Chars.down_triangle,
+        )
+
+    def _colored_title(self, read_cmd: ReadCmd, path: Path | None) -> str:
+        color = f"${ColorVar.text_success}"
+        rel_path = "" if path is None else path_funcs.get_rel_path_str(path)
+        pretty_cmd = f"{read_cmd.pretty_cmd} {rel_path}".rstrip()
+        return f"[{color}]{escape(pretty_cmd)}[/]"
 
 
 class InteractiveOutputStatic(Static): ...
@@ -51,9 +76,7 @@ class OperateModal(ModalScreen[None]):
         BtnLabel.chezmoi_re_add: WriteCmd.re_add,
     }
 
-    def __init__(
-        self, op_btn: BtnLabel, path: Path, affected_paths: list[Path]
-    ) -> None:
+    def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: Text) -> None:
         self.op_btn = op_btn
         self.path = path
         self.affected_paths = affected_paths
@@ -90,8 +113,7 @@ class OperateModal(ModalScreen[None]):
         self.prompt_buttons = prompt_btn_group.query(Button)
         self.affected_static = self.query_exactly_one(AffectedPathsStatic)
         if self.affected_paths:
-            paths_text = "\n".join(f"• {p}" for p in self.affected_paths)
-            self.affected_static.update(f"Affected paths:\n{paths_text}")
+            self.affected_static.update(self.affected_paths)
             for button in self.prompt_buttons:
                 if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                     button.display = True
