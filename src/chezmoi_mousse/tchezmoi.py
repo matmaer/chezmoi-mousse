@@ -149,11 +149,11 @@ class OperatePaths:
     def affected_paths(self, path: Path, btn_label: str) -> list[Path]:
         return self._affected_paths[path][btn_label]
 
-    async def enable_button(
+    async def disable_button(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData
     ) -> bool:
         result = await self._get_affected_paths(app, btn_label, node_data)
-        return len(result) > 0
+        return len(result) == 0
 
     async def _get_affected_paths(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData

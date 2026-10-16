@@ -272,13 +272,11 @@ class OperateTab(TabPane):
         self._update_view_widgets(node_data)
 
     @work
-    async def _update_op_buttons(self, node_data: NodeData) -> bool:
-        enable = False
+    async def _update_op_buttons(self, node_data: NodeData) -> None:
         for btn in self.op_btn_group.query(Button).results():
-            enable = await self.operate_paths.enable_button(
+            btn.disabled = await self.operate_paths.disable_button(
                 self.app, str(btn.label), node_data
             )
-        return enable
 
     @work
     async def _update_view_widgets(self, node_data: NodeData) -> None:
