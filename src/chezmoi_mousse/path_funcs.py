@@ -111,7 +111,11 @@ def _file_unwanted_suffix(file_path: Path) -> bool:
 
 
 def get_rel_path_str(path: Path) -> str:
-    if store.cfg.dest_dir_path is None or path == store.cfg.dest_dir:
+    try:
+        dest_dir = store.cfg.dest_dir
+    except AttributeError:
+        dest_dir = None
+    if dest_dir is None or path == dest_dir:
         return str(path)
     return str(path.relative_to(store.cfg.dest_dir))
 

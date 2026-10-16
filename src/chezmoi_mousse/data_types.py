@@ -1,22 +1,25 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
+from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.str_enums import LabelStr, TreeName
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from typing import Any
 
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
     "CommandResult",
-    "DumpConfigKeys",
     "InitData",
     "IterDirResult",
     "NodeData",
+    "ParsedDumpConfig",
     "StreamEvent",
 ]
 
@@ -33,51 +36,33 @@ class CommandResult:
     time_stamp: str
 
 
-@dataclass(slots=True, frozen=True)
-class DumpConfigKeys:
-    dest_dir_path: Path | None = None
-    _auto_add_bool: bool | None = None
-    _auto_commit_bool: bool | None = None
-    _auto_push_bool: bool | None = None
-    _source_dir_path: Path | None = None
+@dataclass(frozen=True)
+class ParsedDumpConfig:
+    _dump_config_std_out: str
 
-    @property
+    @cached_property
+    def parsed_cfg(self) -> dict[str, Any]:
+        return json.loads(self._dump_config_std_out)
+
+    @cached_property
     def dest_dir(self) -> Path:
-        if self.dest_dir_path is None:
-            raise RuntimeError("Accessing dest_dir before the config is parsed")
-        return self.dest_dir_path
+        return Path(self.parsed_cfg["destDir"])
 
     @property
     def git_index(self) -> Path:
-        if self._source_dir_path is None:
-            raise RuntimeError("Accessing git_index before the config is parsed")
-        return self._source_dir_path / ".git" / "index"
+        return Path(self.parsed_cfg["sourceDir"]) / ".git" / "index"
 
     @property
     def auto_add(self) -> bool:
-        if self._auto_add_bool is None:
-            raise RuntimeError("Accessing auto_add before the config is parsed")
-        return self._auto_add_bool
+        return self.parsed_cfg["git"]["autoadd"]
 
     @property
     def auto_commit(self) -> bool:
-        if self._auto_commit_bool is None:
-            raise RuntimeError("Accessing auto_commit before the config is parsed")
-        return self._auto_commit_bool
+        return self.parsed_cfg["git"]["autocommit"]
 
     @property
     def auto_push(self) -> bool:
-        if self._auto_push_bool is None:
-            raise RuntimeError("Accessing auto_push before the config is parsed")
-        return self._auto_push_bool
-
-    @property
-    def git_config_dict(self) -> dict[str, bool]:
-        return {
-            "auto_add": self.auto_add,
-            "auto_commit": self.auto_commit,
-            "auto_push": self.auto_push,
-        }
+        return self.parsed_cfg["git"]["autopush"]
 
 
 @dataclass(slots=True, frozen=True)

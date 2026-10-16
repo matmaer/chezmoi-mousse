@@ -43,7 +43,7 @@ __all__ = ["ConfigTab"]
 class CatConfigStatic(Static): ...
 
 
-class PrettyGitConfig(Pretty): ...
+class PrettyDumpConfig(Pretty): ...
 
 
 class PrettyIgnored(Pretty): ...
@@ -65,9 +65,9 @@ class ConfigTab(TabPane):
                 labels=(
                     BtnLabel.doctor,
                     BtnLabel.cat_config,
+                    BtnLabel.dump_config,
                     BtnLabel.ignored,
                     BtnLabel.template_data,
-                    BtnLabel.git_config,
                     BtnLabel.diagram,
                 ),
             )
@@ -83,19 +83,19 @@ class ConfigTab(TabPane):
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
+                    MainSectionLabel(LabelStr.dump_config_output),
+                    ScrollableContainer(PrettyDumpConfig("Not set")),
+                    id=store.config_ids.container.dump_config,
+                )
+                yield Vertical(
                     MainSectionLabel(LabelStr.ignored_output),
-                    ScrollableContainer(PrettyIgnored("Not Found")),
+                    ScrollableContainer(PrettyIgnored("Not set")),
                     id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.template_data_output),
-                    ScrollableContainer(PrettyTemplateData("Not Found")),
+                    ScrollableContainer(PrettyTemplateData("Not set")),
                     id=store.config_ids.container.template_data,
-                )
-                yield Vertical(
-                    MainSectionLabel(LabelStr.chezmoi_git_config),
-                    ScrollableContainer(PrettyGitConfig("Not set")),
-                    id=store.config_ids.container.git_config,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.diagram),
@@ -105,8 +105,8 @@ class ConfigTab(TabPane):
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        git_config = self.switcher.query_exactly_one(PrettyGitConfig)
-        git_config.update(store.cfg.git_config_dict)
+        dump_config = self.switcher.query_exactly_one(PrettyDumpConfig)
+        dump_config.update(store.cfg.parsed_cfg)
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -115,12 +115,12 @@ class ConfigTab(TabPane):
             self.switcher.current = store.config_ids.container.doctor
         elif event.button.label == BtnLabel.cat_config:
             self.switcher.current = store.config_ids.container.cat_config
+        elif event.button.label == BtnLabel.dump_config:
+            self.switcher.current = store.config_ids.container.dump_config
         elif event.button.label == BtnLabel.ignored:
             self.switcher.current = store.config_ids.container.ignored
         elif event.button.label == BtnLabel.template_data:
             self.switcher.current = store.config_ids.container.template_data
-        elif event.button.label == BtnLabel.git_config:
-            self.switcher.current = store.config_ids.container.git_config
         elif event.button.label == BtnLabel.diagram:
             self.switcher.current = store.config_ids.container.diagram
 
@@ -139,6 +139,8 @@ class ConfigTab(TabPane):
             parsed_data = json.loads(cmd_result.std_out)
             widget = self.query_exactly_one(PrettyTemplateData)
             widget.update(parsed_data)
+        else:
+            self.notify(f"Unhandled cmd result for {cmd_result.cmd_enum}")
 
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:

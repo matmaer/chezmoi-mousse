@@ -63,8 +63,6 @@ class _ContainerIds:
         self.dump_config_q: str = f"#{self.dump_config}"
         self.flat_buttons: str = ids.container_id(name=ContainerName.flat_buttons)
         self.flat_buttons_q: str = f"#{self.flat_buttons}"
-        self.git_config: str = ids.container_id(name=ContainerName.git_config)
-        self.git_config_q: str = f"#{self.git_config}"
         self.git_log: str = ids.container_id(name=ContainerName.git_log)
         self.git_log_q: str = f"#{self.git_log}"
         self.ignored: str = ids.container_id(name=ContainerName.git_ignored)

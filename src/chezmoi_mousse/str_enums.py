@@ -57,7 +57,6 @@ class BtnLabel(StrEnum):
     doctor = "Doctor"
     dom_nodes = "DOM Nodes"
     env_vars = "Env Vars"
-    git_config = "Git Config"
     ignored = "Ignored"
     template_data = "Template Data"
     test_paths = "Test Paths"
@@ -161,7 +160,6 @@ class ContainerName(StrEnum):
     dom_nodes = auto()
     env_vars = auto()
     flat_buttons = auto()
-    git_config = auto()
     git_ignored = auto()
     git_log = auto()
     left_side = auto()
@@ -173,12 +171,12 @@ class ContainerName(StrEnum):
 
 class LabelStr(StrEnum):
     # Config tab
-    doctor_output = "Doctor Output"
     cat_config_output = "Cat Config Output"
+    diagram = "Chezmoi Diagram"
+    doctor_output = "Doctor Output"
+    dump_config_output = "Dump Config Output"
     ignored_output = "Ignored Output"
     template_data_output = "Chezmoi Data Output"
-    chezmoi_git_config = "Chezmoi Git Config"
-    diagram = "Chezmoi Diagram"
 
     # Debug tab
     test_paths = " Test Paths "

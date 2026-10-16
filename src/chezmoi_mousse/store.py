@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import CmPathChanges
 from chezmoi_mousse.data_types import (
-    DumpConfigKeys,
     InitData,
+    ParsedDumpConfig,
 )
 from chezmoi_mousse.str_enums import BtnLabel
 
@@ -25,7 +23,7 @@ config_ids = AppIds(BtnLabel.config)
 debug_ids = AppIds(BtnLabel.debug)
 
 
-cfg = DumpConfigKeys()
+cfg: ParsedDumpConfig
 
 cm_paths: ChezmoiTreePaths
 
@@ -50,13 +48,5 @@ async def handle_new_tree_paths(
 
 
 async def decode_and_store_config(std_out: str) -> None:
-    # Set store.cfg variable
-    parsed_std_out = json.loads(std_out)
     global cfg
-    cfg = DumpConfigKeys(
-        dest_dir_path=Path(parsed_std_out["destDir"]),
-        _auto_add_bool=parsed_std_out["git"]["autoadd"],
-        _auto_commit_bool=parsed_std_out["git"]["autocommit"],
-        _auto_push_bool=parsed_std_out["git"]["autopush"],
-        _source_dir_path=Path(parsed_std_out["sourceDir"]),
-    )
+    cfg = ParsedDumpConfig(_dump_config_std_out=std_out)
