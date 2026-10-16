@@ -91,11 +91,12 @@ class BtnLabel(StrEnum):
 
 
 class Chars(StrEnum):
+    bullet = "\u2022"  # BULLET
     burger = "\u2261"  # IDENTICAL TO
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
-    refresh = "\u21bb"  # CLOCKWISE OPEN CIRCLE ARROW
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
+    refresh = "\u21bb"  # CLOCKWISE OPEN CIRCLE ARROW
     right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
 
 
