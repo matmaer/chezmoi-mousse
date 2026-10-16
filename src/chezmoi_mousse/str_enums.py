@@ -602,7 +602,7 @@ class ReadCmd(Enum):
     diff_reverse = (
         *_GlobalArgs.non_interactive.value,
         "diff",
-        _VerbArgs.reverse,
+        _VerbArgs.reverse.value,
     )
     doctor = (
         *_GlobalArgs.non_interactive.value,
@@ -611,7 +611,7 @@ class ReadCmd(Enum):
     dump_config = (
         *_GlobalArgs.non_interactive.value,
         "dump-config",
-        _VerbArgs.format_json,
+        _VerbArgs.format_json.value,
     )
     git_dir = (
         *_GlobalArgs.non_interactive.value,
@@ -635,14 +635,14 @@ class ReadCmd(Enum):
     managed_dirs = (
         *_GlobalArgs.non_interactive.value,
         "managed",
-        _VerbArgs.path_style_absolute,
-        _VerbArgs.include_dirs,
+        _VerbArgs.path_style_absolute.value,
+        _VerbArgs.include_dirs.value,
     )
     managed_files = (
         *_GlobalArgs.non_interactive.value,
         "managed",
-        _VerbArgs.path_style_absolute,
-        _VerbArgs.include_files,
+        _VerbArgs.path_style_absolute.value,
+        _VerbArgs.include_files.value,
     )
     source_path = (
         *_GlobalArgs.non_interactive.value,
@@ -651,62 +651,62 @@ class ReadCmd(Enum):
     status_dirs = (
         *_GlobalArgs.non_interactive.value,
         "status",
-        _VerbArgs.path_style_absolute,
-        _VerbArgs.include_dirs,
+        _VerbArgs.path_style_absolute.value,
+        _VerbArgs.include_dirs.value,
     )
     status_files = (
         *_GlobalArgs.non_interactive.value,
         "status",
-        _VerbArgs.path_style_absolute,
-        _VerbArgs.include_files,
+        _VerbArgs.path_style_absolute.value,
+        _VerbArgs.include_files.value,
     )
     unmanaged_dirs = (
         *_GlobalArgs.non_interactive.value,
         "unmanaged",
-        _VerbArgs.path_style_absolute,
-        _VerbArgs.include_dirs,
+        _VerbArgs.path_style_absolute.value,
+        _VerbArgs.include_dirs.value,
     )
     unmanaged_files = (
         *_GlobalArgs.non_interactive.value,
         "unmanaged",
-        _VerbArgs.path_style_absolute,
-        _VerbArgs.include_files,
+        _VerbArgs.path_style_absolute.value,
+        _VerbArgs.include_files.value,
     )
     template_data = (
         *_GlobalArgs.non_interactive.value,
         "data",
-        _VerbArgs.format_json,
+        _VerbArgs.format_json.value,
     )
 
     dry_add = (
         *_GlobalArgs.non_interactive.value,
         _GlobalArgs.dry_run_arg.value,
         _GlobalArgs.verbose_arg.value,
-        _WriteVerb.add,
+        _WriteVerb.add.value,
     )
     dry_apply = (
         *_GlobalArgs.non_interactive.value,
         _GlobalArgs.dry_run_arg.value,
         _GlobalArgs.verbose_arg.value,
-        _WriteVerb.apply,
+        _WriteVerb.apply.value,
     )
     dry_destroy = (
         *_GlobalArgs.non_interactive.value,
         _GlobalArgs.dry_run_arg.value,
         _GlobalArgs.verbose_arg.value,
-        _WriteVerb.destroy,
+        _WriteVerb.destroy.value,
     )
     dry_forget = (
         *_GlobalArgs.non_interactive.value,
         _GlobalArgs.dry_run_arg.value,
         _GlobalArgs.verbose_arg.value,
-        _WriteVerb.forget,
+        _WriteVerb.forget.value,
     )
     dry_re_add = (
         *_GlobalArgs.non_interactive.value,
         _GlobalArgs.dry_run_arg.value,
         _GlobalArgs.verbose_arg.value,
-        _WriteVerb.re_add,
+        _WriteVerb.re_add.value,
     )
 
     @cached_property
@@ -757,28 +757,28 @@ class ReadCmd(Enum):
 class WriteCmd(Enum):
     init = (
         *_GlobalArgs.non_interactive.value,
-        _WriteVerb.init,
+        _WriteVerb.init.value,
     )
     add = (
         *_GlobalArgs.interactive.value,
-        _WriteVerb.add,
-        _VerbArgs.prompt,
+        _WriteVerb.add.value,
+        _VerbArgs.prompt.value,
     )
     apply = (
         *_GlobalArgs.interactive.value,
-        _WriteVerb.apply,
+        _WriteVerb.apply.value,
     )
     destroy = (
         *_GlobalArgs.interactive.value,
-        _WriteVerb.destroy,
+        _WriteVerb.destroy.value,
     )
     forget = (
         *_GlobalArgs.interactive.value,
-        _WriteVerb.forget,
+        _WriteVerb.forget.value,
     )
     re_add = (
         *_GlobalArgs.interactive.value,
-        _WriteVerb.re_add,
+        _WriteVerb.re_add.value,
     )
 
     @cached_property
