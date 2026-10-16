@@ -63,4 +63,5 @@ async def decode_and_store_config(std_out: str) -> None:
         _auto_add_bool=parsed_std_out["git"]["autoadd"],
         _auto_commit_bool=parsed_std_out["git"]["autocommit"],
         _auto_push_bool=parsed_std_out["git"]["autopush"],
+        _source_dir_path=Path(parsed_std_out["sourceDir"]),
     )

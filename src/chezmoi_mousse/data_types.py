@@ -40,12 +40,25 @@ class DumpConfigKeys:
     _auto_add_bool: bool | None = None
     _auto_commit_bool: bool | None = None
     _auto_push_bool: bool | None = None
+    _source_dir_path: Path | None = None
 
     @property
     def dest_dir(self) -> Path:
         if self.dest_dir_path is None:
             raise RuntimeError("Accessing dest_dir before the config is parsed")
         return self.dest_dir_path
+
+    @property
+    def source_dir(self) -> Path:
+        if self._source_dir_path is None:
+            raise RuntimeError("Accessing source_dir before the config is parsed")
+        return self._source_dir_path
+
+    @property
+    def git_index(self) -> Path:
+        if self._source_dir_path is None:
+            raise RuntimeError("Accessing source_dir before the config is parsed")
+        return self._source_dir_path / ".git" / "index"
 
     @property
     def auto_add(self) -> bool:

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import re
+import shutil
 import signal
 import subprocess
+import tempfile
 import time
 from contextlib import asynccontextmanager, suppress
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
@@ -13,7 +17,6 @@ from chezmoi_mousse.data_types import StreamEvent
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
-    from pathlib import Path
 
     from chezmoi_mousse.str_enums import WriteCmd
 
@@ -47,30 +50,52 @@ def _get_chezmoi_cmd() -> str:
 
 async def create_subprocess_exec_result(
     chezmoi_args: tuple[str, ...],
+    *,
+    use_isolated_index: bool,
 ) -> ExecResult:
     chezmoi_cmd = _get_chezmoi_cmd()
     exec_args = (chezmoi_cmd, *chezmoi_args)
 
-    process = await asyncio.create_subprocess_exec(
-        *exec_args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        async with asyncio.timeout(_GLOBAL_TIMEOUT):
-            stdout_bytes, stderr_bytes = await process.communicate()
-    except TimeoutError as e:
-        process.kill()
-        await process.wait()
-        raise subprocess.TimeoutExpired(
-            cmd=exec_args,
-            timeout=_GLOBAL_TIMEOUT,
-        ) from e
+    env_vars: dict[str, str] | None = None
+    temp_index_path: Path | None = None
 
-    std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
-    std_err = (stderr_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
-    assert process.returncode is not None, "process did not return a code"
-    return std_out, std_err, process.returncode
+    # Avoid locking the index when dry running a bunch of commands in parallel
+    if use_isolated_index and store.cfg.git_index.exists():
+        with tempfile.NamedTemporaryFile(prefix="cm_git_idx", delete=False) as tmp_file:
+            temp_index_path = Path(tmp_file.name)
+
+        shutil.copyfile(store.cfg.git_index, temp_index_path)
+        env_vars = os.environ.copy()
+        env_vars["GIT_INDEX_FILE"] = str(temp_index_path)
+
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *exec_args,
+            env=env_vars,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+        try:
+            async with asyncio.timeout(_GLOBAL_TIMEOUT):
+                stdout_bytes, stderr_bytes = await process.communicate()
+        except TimeoutError as time_out_error:
+            process.kill()
+            await process.wait()
+            raise subprocess.TimeoutExpired(
+                cmd=exec_args,
+                timeout=_GLOBAL_TIMEOUT,
+            ) from time_out_error
+
+        std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
+        std_err = (stderr_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
+        assert process.returncode is not None, "process did not return a code"
+        return std_out, std_err, process.returncode
+
+    finally:
+        if temp_index_path and temp_index_path.exists():
+            temp_index_path.unlink(missing_ok=True)
+            Path(f"{temp_index_path}.lock").unlink(missing_ok=True)
 
 
 @asynccontextmanager

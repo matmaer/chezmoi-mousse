@@ -54,7 +54,20 @@ async def _exec_chezmoi(
     chezmoi_args: tuple[str, ...],
     pretty_verb_arg: str | None,
 ) -> CommandResult:
-    exec_result: ExecResult = await create_subprocess_exec_result(chezmoi_args)
+    if cmd_enum in (
+        ReadCmd.dry_add,
+        ReadCmd.dry_apply,
+        ReadCmd.dry_destroy,
+        ReadCmd.dry_forget,
+        ReadCmd.dry_re_add,
+    ):
+        isolated_index = True
+    else:
+        isolated_index = False
+
+    exec_result: ExecResult = await create_subprocess_exec_result(
+        chezmoi_args, use_isolated_index=isolated_index
+    )
     command_result = CommandResult(
         cmd_enum=cmd_enum,
         full_cmd=f"chezmoi {' '.join(chezmoi_args)}",
