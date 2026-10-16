@@ -318,7 +318,6 @@ class OperateTab(TabPane):
             self.diff_reverse_view.node_data = node_data
             self.diff_reverse_view.display = True
         elif radio_label == LabelStr.radio_path_view:
-            self.no_show_label.display = False
             self.path_view.node_data = node_data
             self.path_view.display = True
         if (

@@ -57,7 +57,7 @@ def _dir_has_many_children(dir_path: Path, max_entries: int = 200) -> bool:
             next(islice(dir_path.iterdir(), max_entries, max_entries + 1), None)
             is not None
         )
-    except (PermissionError, FileNotFoundError, OSError):
+    except OSError:
         return False
 
 
@@ -179,7 +179,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     status=None,
                     wanted=not is_unwanted_file(path),
                 )
-        except (FileNotFoundError, PermissionError, OSError) as exception:
+        except OSError as exception:
             error = str(exception)
 
     return IterDirResult(

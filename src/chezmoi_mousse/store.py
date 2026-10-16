@@ -5,10 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
-from chezmoi_mousse.chezmoi_paths import (
-    ChezmoiTreePaths,
-    CmPathChanges,
-)
+from chezmoi_mousse.chezmoi_paths import CmPathChanges
 from chezmoi_mousse.data_types import (
     DumpConfigKeys,
     InitData,
@@ -16,9 +13,7 @@ from chezmoi_mousse.data_types import (
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.chezmoi_paths import (
-        ChezmoiTreePaths,
-    )
+    from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 init_data: InitData = InitData()

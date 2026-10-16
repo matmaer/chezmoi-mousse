@@ -147,11 +147,11 @@ class NodeData:
 
     @property
     def _wanted_dir(self) -> bool:
-        return self.dir_path and self.wanted is not None and self.wanted is True
+        return self.dir_path and self.wanted is True
 
     @property
     def _wanted_file(self) -> bool:
-        return self.file_path and self.wanted is not None and self.wanted is True
+        return self.file_path and self.wanted is True
 
     @property
     def _wanted_path(self) -> bool:
