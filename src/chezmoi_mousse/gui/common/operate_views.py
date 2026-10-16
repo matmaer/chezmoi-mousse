@@ -4,7 +4,6 @@ from itertools import groupby
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
-from rich.text import Text
 from textual import work
 from textual.containers import (
     HorizontalGroup,
@@ -30,6 +29,7 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from rich.text import Text
     from textual import getters
     from textual.app import ComposeResult
 
@@ -65,7 +65,6 @@ class ContentView(Vertical):
         if path in self.cache:
             f_content = self.cache[path]
         else:
-            f_content = Text("Looks like an empty file.")
             if not node_data.exists:
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, file_path=path
@@ -80,7 +79,6 @@ class ContentView(Vertical):
     def watch_node_data(self, node_data: NodeData) -> None:
         assert node_data.file_path, "ContentView requires a file path"
         self._update_file_content(node_data)
-        self.last_displayed_path = node_data.path
 
 
 class _DiffViewBase(Vertical):
@@ -231,7 +229,7 @@ class PathView(ScrollableContainer):
     async def _set_path_info(self, node_data: NodeData) -> None:
         status = TruthLabel(node_data.has_status)
         exists = TruthLabel(node_data.exists)
-        un_wanted = TruthLabel(not node_data.wanted or node_data.managed)
+        un_wanted = TruthLabel(node_data.wanted is False and not node_data.managed)
         widgets = [
             HorizontalGroup(InfoLabel(LabelStr.path_has_status), status),
             HorizontalGroup(InfoLabel(LabelStr.path_exists), exists),
