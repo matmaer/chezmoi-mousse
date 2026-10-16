@@ -193,8 +193,16 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, Te
         result[ReadCmd.dry_destroy] = Text()
         result[ReadCmd.dry_forget] = Text()
         result[ReadCmd.dry_re_add] = Text()
+    # basic affected paths for managed dirs without nested conditions
+    elif n_data.managed_dir:
+        if not n_data.nested_un_managed:
+            result[ReadCmd.dry_add] = Text()
+        if not (n_data.status_dir or n_data.nested_status):
+            result[ReadCmd.dry_apply] = Text()
+            result[ReadCmd.dry_re_add] = Text()
     # basic affected paths for files
     elif n_data.managed_file:
+        result[ReadCmd.dry_add] = Text()
         result[ReadCmd.dry_forget] = highlight_str(str(n_data.path))
         result[ReadCmd.dry_destroy] = highlight_str(str(n_data.path))
         if n_data.status_file:
@@ -223,8 +231,6 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, Te
             match = _PATH_PATTERN.match(line)
             if match:
                 affected_paths.append(f"{Chars.bullet} {match.group(1)}")
-            else:
-                affected_paths.append("")
         paths_str = "\n".join(affected_paths)
         result[cmd_enum] = highlight_str(paths_str)
 

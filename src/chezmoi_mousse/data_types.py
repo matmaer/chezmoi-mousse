@@ -103,7 +103,7 @@ class NodeData:
         return self.status is not None
 
     @property
-    def _managed_dir(self) -> bool:
+    def managed_dir(self) -> bool:
         return self.dir_path and self.managed
 
     @property
@@ -111,8 +111,8 @@ class NodeData:
         return self.file_path and self.managed
 
     @property
-    def _status_dir(self) -> bool:
-        return self._managed_dir and self.has_status
+    def status_dir(self) -> bool:
+        return self.managed_dir and self.has_status
 
     @property
     def status_file(self) -> bool:
@@ -172,7 +172,7 @@ class NodeData:
         return f"{label_str} ...{os.sep}{Path(*self.path.parts[-count:])}"
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        include_dir_for_sp_tree = self._status_dir or self.nested_status
+        include_dir_for_sp_tree = self.status_dir or self.nested_status
         include_sp = self.status_file or include_dir_for_sp_tree
 
         if tree_name in (TreeName.managed_sp, TreeName.managed_sp_xpd):
