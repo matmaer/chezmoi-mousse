@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
 # e.g. "Apply .foo (diff/yes/no/all/quit)? "
-_PROMPT_RE = re.compile(r"\(([^()]*)\)\? $")
+_PROMPT_RE = re.compile(r"\(([^()]*)\)\? \Z")
 _GLOBAL_TIMEOUT = 15
 
 __all__ = [
