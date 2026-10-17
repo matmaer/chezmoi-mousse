@@ -173,7 +173,6 @@ class ContainerName(StrEnum):
     flat_buttons = auto()
     git_ignored = auto()
     git_log = auto()
-    left_side = auto()
     prompt_buttons = auto()
     operate_buttons = auto()
     template_data = auto()

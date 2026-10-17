@@ -67,8 +67,6 @@ class _ContainerIds:
         self.git_log_q: str = f"#{self.git_log}"
         self.ignored: str = ids.container_id(name=ContainerName.git_ignored)
         self.ignored_q: str = f"#{self.ignored}"
-        self.left_side: str = ids.container_id(name=ContainerName.left_side)
-        self.left_side_q: str = f"#{self.left_side}"
         self.env_vars: str = ids.container_id(name=ContainerName.env_vars)
         self.env_vars_q: str = f"#{self.env_vars}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)

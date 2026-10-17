@@ -12,20 +12,22 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
+from textual.containers import HorizontalGroup
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.data_types import InitData
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
-from chezmoi_mousse.gui.common.actionables import (
-    FlatButtonsVertical,
-    TabButtons,
-)
+from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import AppLog, CmdLog, LogsTab
-from chezmoi_mousse.gui.operate_tab import OperateTab
+from chezmoi_mousse.gui.operate_tab import (
+    LeftSideVertical,
+    OperateTab,
+    RightSideVertical,
+)
 from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.str_enums import (
     BindingAction,
@@ -40,6 +42,7 @@ from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
+    from textual.containers import Vertical
 
     from chezmoi_mousse.data_types import CommandResult
 
@@ -192,37 +195,39 @@ class ChezmoiGui(App[str]):
         if isinstance(self.screen, SplashScreen):
             return
         active_tab_label = self.query_exactly_one(TabbedContent).active
-        left_side: FlatButtonsVertical | None = None
+        left_side: FlatButtonsVertical | Vertical | None = None
+        right_side: RightSideVertical | None = None
         operation_buttons = None
-        view_switcher_buttons = None
 
         header = self.query_exactly_one(Header)
         header.display = not header.display
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab_label == BtnLabel.logs:
-            logs_tab_buttons = self.query(TabButtons).last()
-            logs_tab_buttons.display = logs_tab_buttons.display is not True
-        elif active_tab_label == BtnLabel.config:
-            left_side = self.query_one(
-                store.config_ids.container.left_side_q, FlatButtonsVertical
+        if active_tab_label == BtnLabel.operate.pane_id:
+            left_side = self.query_exactly_one(LeftSideVertical)
+            right_side = self.query_exactly_one(RightSideVertical)
+            operation_buttons = self.query_one(
+                store.op_ids.container.operate_buttons_q, HorizontalGroup
             )
-        elif active_tab_label == BtnLabel.debug:
+        elif active_tab_label == BtnLabel.config.pane_id:
             left_side = self.query_one(
-                store.debug_ids.container.left_side_q, FlatButtonsVertical
+                store.config_ids.container.flat_buttons_q, FlatButtonsVertical
+            )
+        elif active_tab_label == BtnLabel.debug.pane_id:
+            left_side = self.query_one(
+                store.debug_ids.container.flat_buttons_q, FlatButtonsVertical
+            )
+            operation_buttons = self.query_one(
+                store.debug_ids.container.operate_buttons_q, HorizontalGroup
             )
 
         if left_side is not None:
             left_side.display = not left_side.display
+        if right_side is not None:
+            right_side.display = not right_side.display
         if operation_buttons is not None:
             operation_buttons.display = not operation_buttons.display
-        if view_switcher_buttons is not None:
-            view_switcher_buttons.display = not view_switcher_buttons.display
-
-        tab_pane = self.query_exactly_one(TabbedContent).active_pane
-        if tab_pane is None:
-            return
 
         new_description = (
             BindingDescription.maximize
