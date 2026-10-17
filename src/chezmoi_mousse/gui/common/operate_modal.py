@@ -8,7 +8,7 @@ from rich.markup import escape
 from textual import on, work
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible, Static
+from textual.widgets import Button, Collapsible, Label, Static
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.data_types import CommandResult
@@ -19,6 +19,7 @@ from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     MainSectionLabel,
     SubSectionLabel,
+    WarningLabel,
 )
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import (
@@ -37,7 +38,6 @@ if TYPE_CHECKING:
     from textual.containers import (
         HorizontalGroup,
     )
-    from textual.widgets import Label
 
     from chezmoi_mousse.data_types import StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -49,8 +49,7 @@ if TYPE_CHECKING:
 __all__ = ["OperateModal"]
 
 
-# Unanswered prompts quit chezmoi, so a forgotten modal can't leave it waiting forever
-PROMPT_TIMEOUT_SECONDS = 120
+PROMPT_TIMEOUT_SECONDS = 120  # timeout to revert to quit if a modal is forgotten
 
 
 class PathsInScope(VerticalGroup):
@@ -110,10 +109,10 @@ class ShowCmDiff(VerticalGroup):
         return widgets
 
 
-class ShowAnswerLabel(SubSectionLabel): ...
+class GeneralInfoLabel(MainSectionLabel): ...
 
 
-class GeneralInfoLabel(FlatSectionLabel): ...
+class AnswerNoLabel(Label): ...
 
 
 class OperateModal(ModalScreen[None]):
@@ -180,9 +179,16 @@ class OperateModal(ModalScreen[None]):
         container.mount(show_cm_diff, before=self.general_info_label)
         container.scroll_end()
 
-    def _create_show_answer_label(self, text: str) -> None:
+    def _create_warning_label(self, text: str) -> None:
         container = self.query_exactly_one(ScrollableContainer)
-        container.mount(ShowAnswerLabel(escape(text)), before=self.general_info_label)
+        before = self.general_info_label
+        container.mount(WarningLabel(escape(text)), before=before)
+        container.scroll_end()
+
+    def _create_green_label(self, text: str) -> None:
+        container = self.query_exactly_one(ScrollableContainer)
+        before = self.general_info_label
+        container.mount(SubSectionLabel(escape(text)), before=before)
         container.scroll_end()
 
     def _create_cmd_result(self, event: StreamEvent) -> None:
@@ -221,7 +227,7 @@ class OperateModal(ModalScreen[None]):
             async with asyncio.timeout(PROMPT_TIMEOUT_SECONDS):
                 return await self._prompt_future
         except TimeoutError:
-            self.general_info_label.update(
+            self._create_warning_label(
                 f"No reply within {PROMPT_TIMEOUT_SECONDS} seconds, quitting."
             )
             return ChezmoiPrompts.quit.reply
@@ -230,7 +236,6 @@ class OperateModal(ModalScreen[None]):
 
     @work
     async def _run_interactive(self) -> None:
-        self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
         gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path_arg)
 
@@ -246,11 +251,11 @@ class OperateModal(ModalScreen[None]):
                     # Pause worker on asyncio.Future until UI button is pressed
                     response = await self._await_user_choice(event.data)
                     if response == ChezmoiPrompts.no.reply:
-                        self._create_show_answer_label(f"{event.prompt_question}: no")
+                        self._create_warning_label(f"{event.prompt_question}: NO")
                     elif response == ChezmoiPrompts.yes.reply:
-                        self._create_show_answer_label(f"{event.prompt_question}: yes")
+                        self._create_green_label(f"{event.prompt_question}: YES")
                     elif response == ChezmoiPrompts.quit.reply:
-                        self._create_show_answer_label("asked to quit the operation")
+                        self._create_green_label("Asked to quit the operation")
                 elif event.returncode is not None:
                     self._create_cmd_result(event)
                     self.general_info_label.update(
@@ -259,6 +264,7 @@ class OperateModal(ModalScreen[None]):
                         else f"Process failed (returncode {event.returncode})."
                     )
                 elif response == ChezmoiPrompts.diff.reply:
+                    self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
                     lines_text = "\n".join(event.data) + "\n"
                     self._create_cm_git_diff(lines_text)
                     response = None

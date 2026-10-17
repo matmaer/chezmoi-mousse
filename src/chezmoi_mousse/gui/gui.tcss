@@ -369,6 +369,13 @@ Label {
       color: $text-error;
     }
   }
+
+  &WarningLabel {
+    background-tint: $panel;
+    background: $panel;
+    border-bottom: wide $panel;
+    color: $text-warning;
+  }
 }
 
 RadioSet {

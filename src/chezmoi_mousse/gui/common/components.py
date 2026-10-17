@@ -23,6 +23,7 @@ __all__ = [
     "NoShowLabel",
     "SubSectionLabel",
     "TruthLabel",
+    "WarningLabel",
 ]
 
 
@@ -91,3 +92,6 @@ class TruthLabel(Label):
         label_text = "yes" if truth else "no"
         classes = Tcss.true_label if truth else Tcss.false_label
         super().__init__(label_text, classes=classes)
+
+
+class WarningLabel(Label): ...
