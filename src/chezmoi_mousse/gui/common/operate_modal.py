@@ -240,6 +240,9 @@ class OperateModal(ModalScreen[None]):
         gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path_arg)
 
         response: str | None = None
+        question: str = ""
+        # Pressing diff again for the same prompt yields the same diff
+        last_diff_question: str | None = None
         try:
             while True:
                 event = await gen.asend(response)
@@ -247,6 +250,7 @@ class OperateModal(ModalScreen[None]):
                 if event.is_prompt:
                     prompt_text = f"{event.prompt_question} ({'/'.join(event.data)})?"
                     self.general_info_label.update(prompt_text)
+                    question = event.prompt_question
 
                     # Pause worker on asyncio.Future until UI button is pressed
                     response = await self._await_user_choice(event.data)
@@ -264,9 +268,12 @@ class OperateModal(ModalScreen[None]):
                         else f"Process failed (returncode {event.returncode})."
                     )
                 elif response == ChezmoiPrompts.diff.reply:
-                    self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
-                    lines_text = "\n".join(event.data) + "\n"
-                    self._create_cm_git_diff(lines_text)
+                    if question != last_diff_question:
+                        self.paths_in_scope.query_exactly_one(
+                            Collapsible
+                        ).collapsed = True
+                        self._create_cm_git_diff("\n".join(event.data) + "\n")
+                        last_diff_question = question
                     response = None
                 else:
                     response = None
