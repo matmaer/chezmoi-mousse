@@ -10,12 +10,9 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, RichLog, TabPane
 
 from chezmoi_mousse import store
+from chezmoi_mousse.gui.common.actionables import TabButtons
 from chezmoi_mousse.gui.common.components import CmdResultCollapsible
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LogStr
-
-from .common.actionables import (
-    TabButtons,
-)
 
 if TYPE_CHECKING:
     from textual import getters

@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["OperateTab"]
+__all__ = ["LeftSideVertical", "OperateTab", "RightSideVertical"]
 
 
 class LeftSideVertical(Vertical):
@@ -137,11 +137,7 @@ class LeftSideVertical(Vertical):
 
 
 class RightSideVertical(Vertical):
-    def __init__(
-        self,
-        *,
-        radio_labels: tuple[LabelStr, ...],
-    ) -> None:
+    def __init__(self, *, radio_labels: tuple[LabelStr, ...]) -> None:
         self.radio_labels = radio_labels
         super().__init__()
 
@@ -178,10 +174,7 @@ class OperateTab(TabPane):
 
     def __init__(self) -> None:
         self.ids = store.op_ids
-        super().__init__(
-            id=BtnLabel.operate.pane_id,
-            title=BtnLabel.operate,
-        )
+        super().__init__(id=BtnLabel.operate.pane_id, title=BtnLabel.operate)
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):

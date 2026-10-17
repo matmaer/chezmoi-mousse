@@ -1,67 +1,7 @@
 /* width /height valid scalar units '%', 'fr', 'h', 'vh', 'vw', or 'w' */
 
-.flat_button {
-  background-tint: $primary-muted;
-  background: $primary-muted;
-  border-bottom: inner $primary-muted;
-  border-left: none;
-  border-right: none;
-  border-top: inner $primary-muted;
-  color: $text-muted;
-  width: 100%;
-
-  &:hover {
-    color: $foreground;
-  }
-
-  &:focus {
-    text-style: bold;
-    color: $text-accent;
-  }
-
-  &.last_clicked_flat_btn {
-    color: $text-accent;
-    text-style: bold;
-
-    &:hover {
-      color: $text-accent;
-    }
-
-    &:focus {
-      text-style: bold;
-      color: $text-accent;
-    }
-  }
-}
-
-
 .flow_diagram {
   min-width: 78;
-}
-
-.op_btn_group {
-  dock: bottom;
-
-  &>.operate_button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-top: wide $primary-darken-3;
-    border-bottom: inner $surface-lighten-1;
-    color: $primary-lighten-3;
-    margin: 0 1;
-    text-style: none;
-    width: 1fr;
-
-    &:hover {
-      text-style: none;
-      color: $accent;
-      border-top: wide $accent-darken-3;
-    }
-
-    &:focus {
-      text-style: none;
-    }
-  }
 }
 
 .operate_pane {
@@ -132,7 +72,7 @@
   &>RightSideVertical {
     width: 25;
 
-    &>.switches_vert_group {
+    &>SwitchGroup {
       .switch_with_label {
         background-tint: $surface;
         background: $surface;
@@ -143,7 +83,6 @@
     }
   }
 }
-
 
 .splash_log {
   min-height: 20;
@@ -160,7 +99,6 @@ CmdLog,
 DiffView {
   margin-bottom: 2;
 }
-
 
 SelectPaths>Collapsible {
 
@@ -218,6 +156,73 @@ SelectPaths>Collapsible {
   }
 }
 
+DoctorTable {
+  margin-bottom: 1;
+}
+
+FlatButtonsVertical {
+  padding-right: 2;
+  width: auto;
+
+  &>Button {
+    background: $primary-muted;
+    background-tint: $primary-muted;
+    border: none;
+    border-bottom: inner $primary-muted;
+    border-top: inner $primary-muted;
+    color: $text-muted;
+    width: 100%;
+
+    &:hover {
+      color: $foreground;
+    }
+
+    &:focus {
+      text-style: bold;
+      color: $text-accent;
+    }
+
+    &.last_clicked_flat_btn {
+      color: $text-accent;
+      text-style: bold;
+
+      &:hover {
+        color: $text-accent;
+      }
+
+      &:focus {
+        text-style: bold;
+        color: $text-accent;
+      }
+    }
+  }
+}
+
+OperateBtnGroup {
+  dock: bottom;
+
+  &>Button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-top: wide $primary-darken-3;
+    border-bottom: inner $surface-lighten-1;
+    color: $primary-lighten-3;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+
+    &:hover {
+      text-style: none;
+      color: $accent;
+      border-top: wide $accent-darken-3;
+    }
+
+    &:focus {
+      text-style: none;
+    }
+  }
+}
+
 OperateModal {
   align: center middle;
 
@@ -232,7 +237,7 @@ OperateModal {
       width: 1fr;
       dock: bottom;
 
-      &>.prompt_button {
+      &>Button {
         background-tint: $panel;
         background: $panel;
         border-bottom: inner $panel;
@@ -254,15 +259,6 @@ OperateModal {
       }
     }
   }
-}
-
-DoctorTable {
-  margin-bottom: 1;
-}
-
-FlatButtonsVertical {
-  padding-right: 2;
-  width: auto;
 }
 
 TabButtons {

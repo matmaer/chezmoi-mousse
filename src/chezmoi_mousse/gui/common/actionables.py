@@ -40,10 +40,7 @@ class FlatButtonsVertical(Container):
     def compose(self) -> ComposeResult:
         for label in self.labels:
             yield Button(
-                id=self.app_ids.btn_id(btn_label=label),
-                label=label,
-                classes=Tcss.flat_button,
-                flat=True,
+                id=self.app_ids.btn_id(btn_label=label), label=label, flat=True
             )
 
     def on_mount(self) -> None:
@@ -60,17 +57,11 @@ class OperateBtnGroup(HorizontalGroup):
     def __init__(self, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
         self.app_ids = app_ids
         self.labels = labels
-        super().__init__(
-            id=app_ids.container.operate_buttons, classes=Tcss.op_btn_group
-        )
+        super().__init__(id=app_ids.container.operate_buttons)
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield Button(
-                id=self.app_ids.btn_id(btn_label=btn_label),
-                label=btn_label,
-                classes=Tcss.operate_button,
-            )
+            yield Button(id=self.app_ids.btn_id(btn_label=btn_label), label=btn_label)
 
     def on_mount(self) -> None:
         buttons = self.query_children(Button).results()
@@ -92,7 +83,7 @@ class PromptBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield Button(label=btn_label, classes=Tcss.prompt_button)
+            yield Button(label=btn_label)
 
     def on_mount(self) -> None:
         buttons = self.query_children(Button)
@@ -126,10 +117,6 @@ class SwitchGroup(VerticalGroup):
         (True, True, True, True): store.op_ids.tree.un_wanted_plus_amp_xpd_q,
     }
 
-    def __init__(self) -> None:
-        self.ids = store.op_ids
-        super().__init__(classes=Tcss.switches_vert_group)
-
     def compose(self) -> ComposeResult:
         for switch_label in (
             LabelStr.expand_managed,
@@ -138,7 +125,7 @@ class SwitchGroup(VerticalGroup):
             LabelStr.show_unwanted,
         ):
             yield HorizontalGroup(
-                Switch(id=self.ids.switch_id(switch_label=switch_label)),
+                Switch(id=store.op_ids.switch_id(switch_label=switch_label)),
                 Label(switch_label),
                 classes=Tcss.switch_with_label,
             )
@@ -146,10 +133,18 @@ class SwitchGroup(VerticalGroup):
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        expand_managed_switch = self.query_one(self.ids.switch.expand_managed_q, Switch)
-        show_unchanged_switch = self.query_one(self.ids.switch.show_unchanged_q, Switch)
-        show_unmanaged_switch = self.query_one(self.ids.switch.show_unmanaged_q, Switch)
-        show_unwanted_switch = self.query_one(self.ids.switch.show_unwanted_q, Switch)
+        expand_managed_switch = self.query_one(
+            store.op_ids.switch.expand_managed_q, Switch
+        )
+        show_unchanged_switch = self.query_one(
+            store.op_ids.switch.show_unchanged_q, Switch
+        )
+        show_unmanaged_switch = self.query_one(
+            store.op_ids.switch.show_unmanaged_q, Switch
+        )
+        show_unwanted_switch = self.query_one(
+            store.op_ids.switch.show_unwanted_q, Switch
+        )
         switch_state = (
             expand_managed_switch.value,
             show_unchanged_switch.value,

@@ -459,7 +459,6 @@ class Tcss(StrEnum):
     operate_pane = auto()
     dest_dir_button = auto()
     switch_with_label = auto()
-    switches_vert_group = auto()
 
     # Other
     added = auto()
@@ -467,15 +466,11 @@ class Tcss(StrEnum):
     command = auto()
     context = auto()
     false_label = auto()
-    flat_button = auto()
     flow_diagram = auto()
     info = auto()
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
-    op_btn_group = auto()
-    operate_button = auto()
     prompt_btn_group = auto()
-    prompt_button = auto()
     refresh_button = auto()
     removed = auto()
     select_all = auto()
