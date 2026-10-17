@@ -214,7 +214,7 @@ class OperateModal(ModalScreen[None]):
                 event = await gen.asend(response)
 
                 if event.is_prompt:
-                    prompt_text = f"Prompt options: {' / '.join(event.data)}"
+                    prompt_text = f"{event.prompt_question} ({'/'.join(event.data)})?"
                     self.general_info_label.update(prompt_text)
 
                     # Pause worker on asyncio.Future until UI button is pressed
