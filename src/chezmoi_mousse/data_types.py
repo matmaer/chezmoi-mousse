@@ -151,7 +151,7 @@ class NodeData:
             label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
         full_label = f"{label_str} {self.path}"
-        if len(full_label) <= label_size:
+        if len(full_label) <= label_size or self.dest_dir:
             return full_label
 
         max_path_length = label_size - len(label_str) - 5  # space, 3 dots plus os sep
