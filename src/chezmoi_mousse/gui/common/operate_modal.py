@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
 from textual import on, work
-from textual.containers import ScrollableContainer, Vertical
+from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible, Static
 
-from chezmoi_mousse import path_funcs, store, tchezmoi
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
-from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
+from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
+    MainSectionLabel,
+    SubSectionLabel,
+)
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     Chars,
@@ -21,8 +26,6 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from rich.text import Text
     from textual import getters
     from textual.app import ComposeResult
@@ -40,25 +43,31 @@ __all__ = ["OperateModal"]
 PROMPT_TIMEOUT_SECONDS = 120
 
 
-class AffectedPathsStatic(Static): ...
+class PathsInScope(VerticalGroup):
+    def __init__(self, read_cmd: ReadCmd, path_str: str, path_scope: Text) -> None:
+        self.read_cmd = read_cmd
+        self.path_str = path_str
+        self.path_scope = path_scope
+        super().__init__()
 
-
-class AffectedPaths(Collapsible):
-    def __init__(
-        self, *, read_cmd: ReadCmd, path: Path | None, highlighted_paths: Text
-    ) -> None:
-        super().__init__(
-            ScrollableContainer(Static(highlighted_paths, markup=False)),
-            title=self._colored_title(read_cmd, path),
+    def compose(self) -> ComposeResult:
+        yield FlatSectionLabel("Paths in Scope")
+        yield Collapsible(
+            ScrollableContainer(Static(self.path_scope, markup=False)),
             collapsed_symbol=Chars.right_triangle,
             expanded_symbol=Chars.down_triangle,
         )
 
-    def _colored_title(self, read_cmd: ReadCmd, path: Path | None) -> str:
-        color = f"${ColorVar.text_success}"
-        rel_path = "" if path is None else path_funcs.get_rel_path_str(path)
-        pretty_cmd = f"{read_cmd.pretty_cmd} {rel_path}".rstrip()
-        return f"[{color}]{escape(pretty_cmd)}[/]"
+    def on_mount(self) -> None:
+        collapsible = self.query_exactly_one(Collapsible)
+        collapsible.collapsed = False
+        pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str}".rstrip()
+        collapsible.title = f"[${ColorVar.text_success}]{escape(pretty_cmd)}[/]"
+
+
+class InterActiveOutputs(ScrollableContainer):
+    def compose(self) -> ComposeResult:
+        yield FlatSectionLabel("Paths in Scope")
 
 
 class InteractiveOutputStatic(Static): ...
@@ -77,8 +86,9 @@ class OperateModal(ModalScreen[None]):
     }
 
     def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: Text) -> None:
-        self.op_btn = op_btn
-        self.path = path
+        self.op_btn: BtnLabel = op_btn
+        self.path: Path = path
+        self.path_str: str = "" if path == store.cfg.dest_dir else str(Path)
         self.affected_paths = affected_paths
         self._prompt_future: asyncio.Future[str] | None = None
         self._output_buffer = ""
@@ -86,12 +96,13 @@ class OperateModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
+            yield MainSectionLabel(f"{self.op_btn.value} {self.path_str}".rstrip())
+            yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.affected_paths)
             yield SubSectionLabel(
                 f"autoadd enabled: {store.cfg.auto_add}, autocommit enabled: "
                 f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
             )
-            yield FlatSectionLabel()
-            yield AffectedPathsStatic(markup=False)
+            yield ScrollableContainer()
             yield InteractiveOutputStatic(markup=False)
             yield PromptBtnGroup(
                 labels=(
@@ -109,16 +120,15 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
+        self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
-        self.affected_static = self.query_exactly_one(AffectedPathsStatic)
         if self.affected_paths:
-            self.affected_static.update(self.affected_paths)
             for button in self.prompt_buttons:
                 if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                     button.display = True
         else:
-            self.affected_static.update("Sorry this is a no-op, nothing to do.")
+            self.mount(FlatSectionLabel("Sorry this is a no-op, nothing to do."))
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.cancel.value
         self.interactive_output_static = self.query_exactly_one(InteractiveOutputStatic)
@@ -153,7 +163,7 @@ class OperateModal(ModalScreen[None]):
 
     @work
     async def _run_interactive(self) -> None:
-        self.affected_static.display = False
+        self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
         self.interactive_output_static.display = True
 
         cmd_enum = self.btn_label_to_cmd[self.op_btn]

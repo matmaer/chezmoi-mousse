@@ -89,6 +89,19 @@ class BtnLabel(StrEnum):
             raise AttributeError(f"run_label not available for {self}")
         return f"Run interactive {self.value}"
 
+    @property
+    def dry_cmd(self) -> "ReadCmd":  # Operate modal
+        if not self.name.startswith("chezmoi_"):
+            raise AttributeError(f"run_label not available for {self}")
+        map = {
+            BtnLabel.chezmoi_add: ReadCmd.dry_add,
+            BtnLabel.chezmoi_apply: ReadCmd.dry_apply,
+            BtnLabel.chezmoi_re_add: ReadCmd.dry_re_add,
+            BtnLabel.chezmoi_forget: ReadCmd.dry_forget,
+            BtnLabel.chezmoi_destroy: ReadCmd.dry_destroy,
+        }
+        return map[self]
+
 
 class Chars(StrEnum):
     bullet = "\u2022"  # BULLET
