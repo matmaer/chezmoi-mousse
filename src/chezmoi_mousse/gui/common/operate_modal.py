@@ -91,14 +91,18 @@ class CmGitConfig(VerticalGroup):
 
 
 class ShowCmDiff(VerticalGroup):
-    def __init__(self, diff_txt: str = "") -> None:
+    def __init__(self, diff_txt: str = "", diff_title: str = "") -> None:
         self.diff_txt = diff_txt
+        self.diff_title = diff_title
         super().__init__()
 
     def compose(self) -> ComposeResult:
+        title = (
+            f"Chezmoi diff: {self.diff_title}" if self.diff_title else "Chezmoi diff"
+        )
         yield Collapsible(
             *self._collapsible_contents(),
-            title=f"[${ColorVar.text_success}]{'Chezmoi diff'}[/]",
+            title=f"[${ColorVar.text_success}]{escape(title)}[/]",
             collapsed=False,
         )
 
@@ -173,9 +177,9 @@ class OperateModal(ModalScreen[None]):
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.cancel.value
 
-    def _create_cm_git_diff(self, text: str) -> ShowCmDiff:
+    def _create_cm_git_diff(self, text: str, title: str) -> ShowCmDiff:
         container = self.query_exactly_one(ScrollableContainer)
-        show_cm_diff = ShowCmDiff(text)
+        show_cm_diff = ShowCmDiff(text, title)
         container.mount(show_cm_diff, before=self.general_info_label)
         container.scroll_end()
         return show_cm_diff
@@ -282,7 +286,9 @@ class OperateModal(ModalScreen[None]):
                     )
                 elif response == ChezmoiPrompts.diff.reply:
                     self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
-                    last_diff = self._create_cm_git_diff("\n".join(event.data) + "\n")
+                    last_diff = self._create_cm_git_diff(
+                        "\n".join(event.data) + "\n", question
+                    )
                     last_diff_question = question
                     response = None
                 else:
