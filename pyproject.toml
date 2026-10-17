@@ -45,7 +45,7 @@ addopts = [
     "--no-header",            # Hide boilerplate intro
     "--timeout=15"            # Fail tests taking longer than 15s
 ]
-testpaths = ["static_tests"]
+testpaths = ["static_tests", "unit_tests"]
 pythonpath = [".", "src"]
 # discovered test files, all .py files except starting with underscore
 python_files = ["[!_]*.py"]
