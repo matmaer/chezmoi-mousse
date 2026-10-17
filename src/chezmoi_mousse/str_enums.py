@@ -464,10 +464,10 @@ class Tcss(StrEnum):
     # Other
     added = auto()
     cmd_output = auto()
+    command = auto()
     context = auto()
     false_label = auto()
     flat_button = auto()
-    flat_section_label = auto()
     flow_diagram = auto()
     info = auto()
     last_clicked_flat_btn = auto()

@@ -9,7 +9,7 @@ from chezmoi_mousse.gui.common.components import InfoLabel, TruthLabel
 from chezmoi_mousse.str_enums import Tcss
 
 _DIFF_TCSS_MAP: dict[str, Tcss] = {
-    "diff --git a/": Tcss.flat_section_label,
+    "diff --git a/": Tcss.command,
     " ": Tcss.context,
     "-": Tcss.removed,
     "deleted": Tcss.removed,

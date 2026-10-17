@@ -34,14 +34,6 @@
   }
 }
 
-.flat_section_label {
-  text-align: center;
-  background-tint: $primary-muted;
-  background: $primary-muted;
-  border-bottom: wide $primary-muted;
-  color: $primary-lighten-3;
-  width: 1fr;
-}
 
 .flow_diagram {
   min-width: 78;
@@ -512,6 +504,15 @@ Static {
     background: $surface;
     color: $text;
     padding: 0 1;
+  }
+
+  &.command {
+    text-align: center;
+    background-tint: $primary-muted;
+    background: $primary-muted;
+    border-bottom: wide $primary-muted;
+    color: $primary-lighten-3;
+    width: 1fr;
   }
 
   &.info {
