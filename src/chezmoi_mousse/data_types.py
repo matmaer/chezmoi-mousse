@@ -195,3 +195,7 @@ class StreamEvent:
     is_prompt: bool
     # for prompts: the question preceding the options, e.g. "Apply .foo"
     prompt_question: str = ""
+    # only set on the final event of a process
+    returncode: int | None = None
+    std_out: str = ""
+    std_err: str = ""

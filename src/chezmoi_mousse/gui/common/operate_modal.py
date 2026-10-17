@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
@@ -10,9 +11,11 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible, Static
 
 from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.components import (
+    CmdResultCollapsible,
     FlatSectionLabel,
     MainSectionLabel,
     SubSectionLabel,
@@ -35,6 +38,7 @@ if TYPE_CHECKING:
     )
     from textual.widgets import Label
 
+    from chezmoi_mousse.data_types import StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import (
         ReadCmd,
@@ -180,6 +184,23 @@ class OperateModal(ModalScreen[None]):
         container.mount(ShowAnswerLabel(escape(text)), before=self.general_info_label)
         container.scroll_end()
 
+    def _create_cmd_result(self, event: StreamEvent) -> None:
+        cmd_enum = self.btn_label_to_cmd[self.op_btn]
+        args = (*cmd_enum.value, *([str(self.path_arg)] if self.path_arg else []))
+        result = CommandResult(
+            cmd_enum=cmd_enum,
+            full_cmd=f"chezmoi {' '.join(args)}",
+            pretty_cmd=tchezmoi.pretty_cmd(cmd_enum, self.path_arg),
+            returncode=event.returncode,
+            std_err=event.std_err,
+            std_out=event.std_out,
+            out_list=event.std_out.splitlines(),
+            time_stamp=datetime.now().strftime("%H:%M:%S"),
+        )
+        container = self.query_exactly_one(ScrollableContainer)
+        container.mount(CmdResultCollapsible(cmd_result=result))
+        container.scroll_end()
+
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
         offered = {
@@ -225,16 +246,21 @@ class OperateModal(ModalScreen[None]):
                         self._create_show_answer_label(f"{event.prompt_question}: yes")
                     elif response == ChezmoiPrompts.quit.reply:
                         self._create_show_answer_label("asked to quit the operation")
+                elif event.returncode is not None:
+                    self._create_cmd_result(event)
+                    self.general_info_label.update(
+                        "Process completed."
+                        if event.returncode == 0
+                        else f"Process failed (returncode {event.returncode})."
+                    )
                 elif response == ChezmoiPrompts.diff.reply:
                     lines_text = "\n".join(event.data) + "\n"
                     self._create_cm_git_diff(lines_text)
                     response = None
                 else:
-                    self.general_info_label.update("\n".join(event.data))
                     response = None
 
         except StopAsyncIteration:
-            self.general_info_label.update("Process completed.")
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.close
         finally:

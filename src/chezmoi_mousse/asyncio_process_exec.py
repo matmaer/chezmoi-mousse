@@ -107,7 +107,7 @@ async def _managed_process(
         *cmd,
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT,
+        stderr=asyncio.subprocess.PIPE,
     )
     try:
         yield process
@@ -140,8 +140,13 @@ async def run_chezmoi_interactive_process(
         pipe_stdin = process.stdin
         assert pipe_stdout is not None
         assert pipe_stdin is not None
+        assert process.stderr is not None
+
+        # Drained concurrently, a full stderr pipe would block chezmoi
+        stderr_task = asyncio.create_task(process.stderr.read())
 
         buffer = ""
+        full_std_out = ""
         last_process_activity = time.monotonic()
 
         while not pipe_stdout.at_eof():
@@ -193,8 +198,20 @@ async def run_chezmoi_interactive_process(
                 break
 
             last_process_activity = time.monotonic()
-            buffer += raw_chunk.decode("utf-8", errors="replace")
+            decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
+            buffer += decoded_chunk
+            full_std_out += decoded_chunk
 
         # EOF: flush remaining output, it must be yielded before leaving
         if buffer:
             yield StreamEvent(data=buffer.splitlines(), is_prompt=False)
+
+        returncode = await process.wait()
+        std_err = (await stderr_task).decode("utf-8", errors="replace")
+        yield StreamEvent(
+            data=[],
+            is_prompt=False,
+            returncode=returncode,
+            std_out=full_std_out.strip("\r\n"),
+            std_err=std_err.strip("\r\n"),
+        )
