@@ -8,7 +8,7 @@ from rich.markup import escape
 from textual import on, work
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible, Label, Static
+from textual.widgets import Button, Collapsible, Static
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.data_types import CommandResult
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from textual.containers import (
         HorizontalGroup,
     )
+    from textual.widgets import Label
 
     from chezmoi_mousse.data_types import StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -113,10 +114,7 @@ class ShowCmDiff(VerticalGroup):
         return widgets
 
 
-class GeneralInfoLabel(MainSectionLabel): ...
-
-
-class AnswerNoLabel(Label): ...
+class _GeneralInfoLabel(MainSectionLabel): ...
 
 
 class OperateModal(ModalScreen[None]):
@@ -147,7 +145,7 @@ class OperateModal(ModalScreen[None]):
                 yield PathsInScope(
                     self.op_btn.dry_cmd, self.path_str, self.affected_paths
                 )
-                yield GeneralInfoLabel("Ready to run", markup=False)
+                yield _GeneralInfoLabel("Ready to run", markup=False)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.prompt_item,
@@ -167,7 +165,7 @@ class OperateModal(ModalScreen[None]):
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
-        self.general_info_label = self.query_exactly_one(GeneralInfoLabel)
+        self.general_info_label = self.query_exactly_one(_GeneralInfoLabel)
         if self.affected_paths:
             for button in self.prompt_buttons:
                 if button.label in (BtnLabel.cancel, self.op_btn.run_label):
