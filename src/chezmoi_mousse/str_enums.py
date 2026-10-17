@@ -480,6 +480,7 @@ class Tcss(StrEnum):
     prompt_button = auto()
     refresh_button = auto()
     removed = auto()
+    select_all = auto()
     single_button_vertical = auto()
     splash_log = auto()
     tab_button = auto()

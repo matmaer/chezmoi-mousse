@@ -8,9 +8,9 @@ from rich.markup import escape
 from textual import on, work
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.screen import ModalScreen
-from textual.widgets import Button, Collapsible, Static
+from textual.widgets import Button, Checkbox, Collapsible, Static
 
-from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from textual.containers import HorizontalGroup
     from textual.widgets import Label
 
-    from chezmoi_mousse.data_types import StreamEvent
+    from chezmoi_mousse.data_types import IterDirResult, StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import ReadCmd
 
@@ -87,6 +87,33 @@ class CmGitConfig(VerticalGroup):
         return widgets
 
 
+class SelectPaths(VerticalGroup):
+    def __init__(self, dir_path: Path) -> None:
+        self.dir_path = dir_path
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Collapsible(
+            *self._collapsible_contents(),
+            title=f"[${ColorVar.text_success}]{'Select additional paths'}[/]",
+            collapsed=False,
+        )
+
+    def _collapsible_contents(self) -> list[Checkbox]:
+        widgets: list[Checkbox] = [
+            Checkbox("Select all directories", classes=Tcss.select_all)
+        ]
+        dir_children: IterDirResult = path_funcs.get_un_man_children(self.dir_path)
+        if dir_children.error:
+            self.notify(f"dir children has error {dir_children.error}")
+        for path in dir_children.dirs:
+            widgets.append(Checkbox(str(path)))
+        widgets.append(Checkbox("Select all files", classes=Tcss.select_all))
+        for path in dir_children.files:
+            widgets.append(Checkbox(str(path)))
+        return widgets
+
+
 class ShowCmDiff(VerticalGroup):
     def __init__(self, diff_txt: str = "", diff_title: str = "") -> None:
         self.diff_txt = diff_txt
@@ -127,6 +154,7 @@ class OperateModal(ModalScreen[None]):
 
     def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
+        self.path = path
         self.path_str: str = "" if path == store.cfg.dest_dir else str(path)
         self.path_arg: Path | None = None if path == store.cfg.dest_dir else path
         self.affected_paths = affected_paths
@@ -141,6 +169,7 @@ class OperateModal(ModalScreen[None]):
                 yield PathsInScope(
                     self.op_btn.dry_cmd, self.path_str, self.affected_paths
                 )
+                yield SelectPaths(self.path)
                 yield _GeneralInfoLabel("Ready to run", markup=False)
             yield PromptBtnGroup(
                 labels=(
@@ -158,6 +187,11 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
+        self.select_paths = self.query_exactly_one(SelectPaths)
+        self.select_paths.display = False
+        if self.op_btn == BtnLabel.chezmoi_add and self.path.is_dir():
+            self.select_paths.display = True
+            self.notify("pressed add dir")
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
