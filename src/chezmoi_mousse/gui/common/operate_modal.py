@@ -20,6 +20,7 @@ from chezmoi_mousse.gui.common.components import (
     MainSectionLabel,
     SubSectionLabel,
 )
+from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     ChezmoiPrompts,
@@ -200,6 +201,10 @@ class OperateModal(ModalScreen[None]):
         container = self.query_exactly_one(ScrollableContainer)
         container.mount(CmdResultCollapsible(cmd_result=result))
         container.scroll_end()
+        # same routing as tchezmoi._exec_chezmoi so the Logs tab shows the result
+        self.app.app_log.cmd_result = result
+        self.app.cmd_log.cmd_result = result
+        self.app.post_message(CommandResultMsg(result))
 
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
