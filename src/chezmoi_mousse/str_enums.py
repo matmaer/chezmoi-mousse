@@ -23,14 +23,16 @@ __all__ = [
 
 
 class BindingAction(StrEnum):
+    toggle_context = auto()
     toggle_maximized = auto()
-    toggle_switch_slider = auto()
+    toggle_tree = auto()
 
 
 class BindingDescription(StrEnum):
-    # Tab bindings
-    hide_filters = "Hide filters"
-    # Shared bindings
+    hide_context = "Hide Context"
+    hide_tree = "Hide Tree"
+    show_context = "Show Context"
+    show_tree = "Show Tree"
     maximize = "Maximize"
     minimize = "Minimize"
 

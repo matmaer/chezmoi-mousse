@@ -21,6 +21,7 @@ from chezmoi_mousse.data_types import InitData
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
 from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
+from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import AppLog, CmdLog, LogsTab
 from chezmoi_mousse.gui.operate_tab import (
@@ -63,14 +64,19 @@ class ChezmoiGui(App[str]):
             priority=True,
         ),
         Binding(
+            key="C,c",
+            action=BindingAction.toggle_context,
+            description=BindingDescription.hide_context,
+        ),
+        Binding(
+            key="T,t",
+            action=BindingAction.toggle_tree,
+            description=BindingDescription.hide_tree,
+        ),
+        Binding(
             key="M,m",
             action=BindingAction.toggle_maximized,
             description=BindingDescription.maximize,
-        ),
-        Binding(
-            key="F,f",
-            action=BindingAction.toggle_switch_slider,
-            description=BindingDescription.hide_filters,
         ),
     ]
 
@@ -175,7 +181,7 @@ class ChezmoiGui(App[str]):
     def _update_binding_description(
         self, binding_action: BindingAction, new_description: str
     ) -> None:
-        if isinstance(self.screen, SplashScreen):
+        if isinstance(self.screen, (SplashScreen, OperateModal)):
             return
         for key, binding in self._bindings:
             if binding.action == binding_action:
@@ -192,9 +198,9 @@ class ChezmoiGui(App[str]):
         self.refresh_bindings()
 
     def action_toggle_maximized(self) -> None:
-        if isinstance(self.screen, SplashScreen):
+        if isinstance(self.screen, (SplashScreen, OperateModal)):
             return
-        active_tab_label = self.query_exactly_one(TabbedContent).active
+        active_tab_id = self.query_exactly_one(TabbedContent).active
         left_side: FlatButtonsVertical | Vertical | None = None
         right_side: RightSideVertical | None = None
         operation_buttons = None
@@ -204,17 +210,17 @@ class ChezmoiGui(App[str]):
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab_label == BtnLabel.operate.pane_id:
+        if active_tab_id == BtnLabel.operate.pane_id:
             left_side = self.query_exactly_one(LeftSideVertical)
             right_side = self.query_exactly_one(RightSideVertical)
             operation_buttons = self.query_one(
                 store.op_ids.container.operate_buttons_q, HorizontalGroup
             )
-        elif active_tab_label == BtnLabel.config.pane_id:
+        elif active_tab_id == BtnLabel.config.pane_id:
             left_side = self.query_one(
                 store.config_ids.container.flat_buttons_q, FlatButtonsVertical
             )
-        elif active_tab_label == BtnLabel.debug.pane_id:
+        elif active_tab_id == BtnLabel.debug.pane_id:
             left_side = self.query_one(
                 store.debug_ids.container.flat_buttons_q, FlatButtonsVertical
             )
@@ -239,19 +245,59 @@ class ChezmoiGui(App[str]):
             new_description=new_description,
         )
 
+    def action_toggle_context(self) -> None:
+        if isinstance(self.screen, (SplashScreen, OperateModal)):
+            return
+        active_tab = self.query_exactly_one(TabbedContent).active
+        if active_tab != BtnLabel.operate.pane_id:
+            return
+        right_side = self.query_exactly_one(RightSideVertical)
+        right_side.display = not right_side.display
+
+        new_description = (
+            BindingDescription.hide_context
+            if right_side.display is True
+            else BindingDescription.show_context
+        )
+        self._update_binding_description(
+            binding_action=BindingAction.toggle_context,
+            new_description=new_description,
+        )
+
+    def action_toggle_tree(self) -> None:
+        if isinstance(self.screen, (SplashScreen, OperateModal)):
+            return
+        active_tab = self.query_exactly_one(TabbedContent).active
+        if active_tab != BtnLabel.operate.pane_id:
+            return
+        left_side = self.query_exactly_one(LeftSideVertical)
+        left_side.display = not left_side.display
+
+        new_description = (
+            BindingDescription.hide_tree
+            if left_side.display is True
+            else BindingDescription.show_tree
+        )
+        self._update_binding_description(
+            binding_action=BindingAction.toggle_tree,
+            new_description=new_description,
+        )
+
+    @on(TabbedContent.TabActivated)
+    def handle_tab_activated(self) -> None:
+        self.refresh_bindings()
+
     def check_action(
         self,
         action: str,
         parameters: tuple[object, ...],
     ) -> bool:
         _ = parameters
-        if isinstance(self.screen, SplashScreen):
+        if isinstance(self.screen, (SplashScreen, OperateModal)):
             return False
-        if action == BindingAction.toggle_maximized:
-            active_pane = self.query_exactly_one(TabbedContent).active_pane
+        if action in (BindingAction.toggle_tree, BindingAction.toggle_context):
             return isinstance(
-                active_pane,
-                (OperateTab, ConfigTab, LogsTab, DebugTab),
+                self.query_exactly_one(TabbedContent).active_pane, OperateTab
             )
         return True
 
