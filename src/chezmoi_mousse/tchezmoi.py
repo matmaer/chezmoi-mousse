@@ -41,7 +41,7 @@ __all__ = ["OperatePaths"]
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
 
 
-def highlight_str(to_highlight: str) -> Text:
+def _highlight_str(to_highlight: str) -> Text:
     text = Text(to_highlight)
     ReprHighlighter().highlight(text)
     return text
@@ -318,7 +318,7 @@ def get_highlighted_file_contents(file_path: Path) -> Text:
             f_contents += f"\n--- Read file limited to {max_chars} characters ---"
     except (PermissionError, OSError, UnicodeDecodeError) as e:
         f_contents = str(e)
-    return highlight_str(f_contents)
+    return _highlight_str(f_contents)
 
 
 async def get_highlighted_chezmoi_cat_output(
@@ -335,7 +335,7 @@ async def get_highlighted_chezmoi_cat_output(
     f_contents = cmd_result.std_out
     if not f_contents.strip():
         f_contents = "File is empty or contains only whitespace"
-    return highlight_str(f_contents)
+    return _highlight_str(f_contents)
 
 
 def run_chezmoi_interactive(

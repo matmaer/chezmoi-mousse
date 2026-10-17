@@ -823,14 +823,3 @@ class WriteCmd(Enum):
             WriteCmd.re_add: BtnLabel.chezmoi_re_add,
         }
         return map[self]
-
-    @property
-    def write_run_label(self) -> str:
-        map = {
-            WriteCmd.add: BtnLabel.chezmoi_add.run_label,
-            WriteCmd.apply: BtnLabel.chezmoi_apply.run_label,
-            WriteCmd.destroy: BtnLabel.chezmoi_destroy.run_label,
-            WriteCmd.forget: BtnLabel.chezmoi_forget.run_label,
-            WriteCmd.re_add: BtnLabel.chezmoi_re_add.run_label,
-        }
-        return map[self]
