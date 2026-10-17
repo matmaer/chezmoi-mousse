@@ -586,6 +586,7 @@ class _VerbArgs(StrEnum):
     include_files = "--include=files"
     path_style_absolute = "--path-style=absolute"
     prompt = "--prompt=true"
+    recursive_false = "--recursive=false"
     reverse = "--reverse"
 
 
@@ -695,6 +696,7 @@ class ReadCmd(Enum):
         _GlobalArgs.dry_run_arg.value,
         _GlobalArgs.verbose_arg.value,
         _WriteVerb.add.value,
+        _VerbArgs.recursive_false.value,
     )
     dry_apply = (
         *_GlobalArgs.non_interactive.value,
@@ -775,6 +777,7 @@ class WriteCmd(Enum):
         *_GlobalArgs.interactive.value,
         _WriteVerb.add.value,
         _VerbArgs.prompt.value,
+        _VerbArgs.recursive_false.value,
     )
     apply = (
         *_GlobalArgs.interactive.value,
