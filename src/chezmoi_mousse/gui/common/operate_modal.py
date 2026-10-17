@@ -177,7 +177,7 @@ class OperateModal(ModalScreen[None]):
 
     def _create_show_answer_label(self, text: str) -> None:
         container = self.query_exactly_one(ScrollableContainer)
-        container.mount(ShowAnswerLabel(text), before=self.general_info_label)
+        container.mount(ShowAnswerLabel(escape(text)), before=self.general_info_label)
         container.scroll_end()
 
     async def _await_user_choice(self, options: list[str]) -> str:
@@ -219,16 +219,16 @@ class OperateModal(ModalScreen[None]):
 
                     # Pause worker on asyncio.Future until UI button is pressed
                     response = await self._await_user_choice(event.data)
+                    if response == ChezmoiPrompts.no.reply:
+                        self._create_show_answer_label(f"{event.prompt_question}: no")
+                    elif response == ChezmoiPrompts.yes.reply:
+                        self._create_show_answer_label(f"{event.prompt_question}: yes")
+                    elif response == ChezmoiPrompts.quit.reply:
+                        self._create_show_answer_label("asked to quit the operation")
                 elif response == ChezmoiPrompts.diff.reply:
                     lines_text = "\n".join(event.data) + "\n"
                     self._create_cm_git_diff(lines_text)
                     response = None
-                elif response == ChezmoiPrompts.no.reply:
-                    self._create_show_answer_label("the reply was no for this path")
-                elif response == ChezmoiPrompts.yes.reply:
-                    self._create_show_answer_label("the reply was yes for this path")
-                elif response == ChezmoiPrompts.quit.reply:
-                    self.general_info_label.update("asked to quit the operation")
                 else:
                     self.general_info_label.update("\n".join(event.data))
                     response = None

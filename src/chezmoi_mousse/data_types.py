@@ -193,3 +193,5 @@ class NodeData:
 class StreamEvent:
     data: list[str]
     is_prompt: bool
+    # for prompts: the question preceding the options, e.g. "Apply .foo"
+    prompt_question: str = ""

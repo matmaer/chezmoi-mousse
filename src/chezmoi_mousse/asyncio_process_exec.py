@@ -164,7 +164,7 @@ async def run_chezmoi_interactive_process(
                 # NOTE: prompt is different than running commands with a tty!
                 # Complete lines before the prompt line, e.g. the output of the
                 # diff option, must not be lost.
-                output_before_prompt, _, _prompt_line = buffer[
+                output_before_prompt, _, prompt_question = buffer[
                     : prompt_match.start()
                 ].rpartition("\n")
                 if output_before_prompt:
@@ -175,7 +175,11 @@ async def run_chezmoi_interactive_process(
                 buffer = ""  # Only clear buffer when yielding prompt!
 
                 # Receive input directly back from asend()
-                user_choice = yield StreamEvent(data=prompt_options, is_prompt=True)
+                user_choice = yield StreamEvent(
+                    data=prompt_options,
+                    is_prompt=True,
+                    prompt_question=prompt_question.strip(),
+                )
                 if user_choice is None:
                     raise ValueError(
                         "A prompt needs a reply; to cancel call aclose() instead"
