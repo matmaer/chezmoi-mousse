@@ -1,16 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
 from textual import on, work
-from textual.containers import (
-    ScrollableContainer,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible, Static
 
@@ -20,6 +15,7 @@ from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     MainSectionLabel,
+    SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -30,6 +26,8 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from textual import getters
     from textual.app import ComposeResult
     from textual.containers import (
@@ -61,11 +59,8 @@ class PathsInScope(VerticalGroup):
         yield Collapsible(
             *self._collapsible_contents(),
             title=f"[${ColorVar.text_success}]{'Paths in Scope'}[/]",
+            collapsed=False,
         )
-
-    def on_mount(self) -> None:
-        collapsible = self.query_exactly_one(Collapsible)
-        collapsible.collapsed = False
 
     def _collapsible_contents(self) -> list[Label | Static]:
         contents: list[Label | Static] = []
@@ -91,7 +86,29 @@ class CmGitConfig(VerticalGroup):
         return widgets
 
 
-class InteractiveOutputStatic(Static): ...
+class ShowCmDiff(VerticalGroup):
+    def __init__(self, diff_txt: str | None = None) -> None:
+        self.diff_txt = diff_txt
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Collapsible(
+            *self._collapsible_contents(),
+            title=f"[${ColorVar.text_success}]{'Chezmoi diff'}[/]",
+            collapsed=False,
+        )
+
+    def _collapsible_contents(self) -> list[Static]:
+        if self.diff_txt is None:
+            return [Static("No diff to show")]
+        widgets = widget_factory.diff_statics(self.diff_txt)
+        return widgets
+
+
+class ShowAnswerLabel(SubSectionLabel): ...
+
+
+class GeneralInfoLabel(FlatSectionLabel): ...
 
 
 class OperateModal(ModalScreen[None]):
@@ -109,19 +126,20 @@ class OperateModal(ModalScreen[None]):
     def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
         self.path: Path = path
-        self.path_str: str = "" if path == store.cfg.dest_dir else str(Path)
+        self.path_str: str = "" if path == store.cfg.dest_dir else str(path)
         self.affected_paths = affected_paths
         self._prompt_future: asyncio.Future[str] | None = None
-        self._output_buffer = ""
         super().__init__()
 
     def compose(self) -> ComposeResult:
         with Vertical():
             yield MainSectionLabel(f"{self.op_btn.value} {self.path_str}".rstrip())
-            yield CmGitConfig()
-            yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.affected_paths)
-            yield ScrollableContainer()
-            yield InteractiveOutputStatic(markup=False)
+            with ScrollableContainer():
+                yield CmGitConfig()
+                yield PathsInScope(
+                    self.op_btn.dry_cmd, self.path_str, self.affected_paths
+                )
+                yield GeneralInfoLabel("Ready to run", markup=False)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.all.prompt_item,
@@ -141,21 +159,26 @@ class OperateModal(ModalScreen[None]):
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
+        self.general_info_label = self.query_exactly_one(GeneralInfoLabel)
         if self.affected_paths:
             for button in self.prompt_buttons:
                 if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                     button.display = True
         else:
-            self.mount(FlatSectionLabel("Sorry this is a no-op, nothing to do."))
+            self.general_info_label.update("Sorry this is a no-op, nothing to do.")
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.cancel.value
-        self.interactive_output_static = self.query_exactly_one(InteractiveOutputStatic)
-        self.interactive_output_static.display = False
 
-    def _append_output(self, text: str) -> None:
-        """Appends output text to InteractiveOutputStatic."""
-        self._output_buffer += text
-        self.interactive_output_static.update(self._output_buffer)
+    def _create_cm_git_diff(self, text: str) -> None:
+        container = self.query_exactly_one(ScrollableContainer)
+        show_cm_diff = ShowCmDiff(text)
+        container.mount(show_cm_diff, before=self.general_info_label)
+        container.scroll_end()
+
+    def _create_show_answer_label(self, text: str) -> None:
+        container = self.query_exactly_one(ScrollableContainer)
+        container.mount(ShowAnswerLabel(text), before=self.general_info_label)
+        container.scroll_end()
 
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
@@ -172,8 +195,8 @@ class OperateModal(ModalScreen[None]):
             async with asyncio.timeout(PROMPT_TIMEOUT_SECONDS):
                 return await self._prompt_future
         except TimeoutError:
-            self._append_output(
-                f"\nNo reply within {PROMPT_TIMEOUT_SECONDS} seconds, quitting.\n"
+            self.general_info_label.update(
+                f"No reply within {PROMPT_TIMEOUT_SECONDS} seconds, quitting."
             )
             return ChezmoiPrompts.quit.reply
         finally:
@@ -182,8 +205,6 @@ class OperateModal(ModalScreen[None]):
     @work
     async def _run_interactive(self) -> None:
         self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
-        self.interactive_output_static.display = True
-
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
         gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path)
 
@@ -193,18 +214,27 @@ class OperateModal(ModalScreen[None]):
                 event = await gen.asend(response)
 
                 if event.is_prompt:
-                    prompt_text = f"\nPrompt options: {' / '.join(event.data)}\n"
-                    self._append_output(prompt_text)
+                    prompt_text = f"Prompt options: {' / '.join(event.data)}"
+                    self.general_info_label.update(prompt_text)
 
                     # Pause worker on asyncio.Future until UI button is pressed
                     response = await self._await_user_choice(event.data)
-                else:
+                elif response == ChezmoiPrompts.diff.reply:
                     lines_text = "\n".join(event.data) + "\n"
-                    self._append_output(lines_text)
+                    self._create_cm_git_diff(lines_text)
+                    response = None
+                elif response == ChezmoiPrompts.no.reply:
+                    self._create_show_answer_label("the reply was no for this path")
+                elif response == ChezmoiPrompts.yes.reply:
+                    self._create_show_answer_label("the reply was yes for this path")
+                elif response == ChezmoiPrompts.quit.reply:
+                    self.general_info_label.update("asked to quit the operation")
+                else:
+                    self.general_info_label.update("\n".join(event.data))
                     response = None
 
         except StopAsyncIteration:
-            self._append_output("\nProcess completed.")
+            self.general_info_label.update("Process completed.")
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.close
         finally:
