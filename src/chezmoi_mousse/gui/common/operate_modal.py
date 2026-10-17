@@ -127,6 +127,7 @@ class OperateModal(ModalScreen[None]):
         self.op_btn: BtnLabel = op_btn
         self.path: Path = path
         self.path_str: str = "" if path == store.cfg.dest_dir else str(path)
+        self.path_arg: Path | None = None if path == store.cfg.dest_dir else path
         self.affected_paths = affected_paths
         self._prompt_future: asyncio.Future[str] | None = None
         super().__init__()
@@ -206,7 +207,7 @@ class OperateModal(ModalScreen[None]):
     async def _run_interactive(self) -> None:
         self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
-        gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path)
+        gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path_arg)
 
         response: str | None = None
         try:
