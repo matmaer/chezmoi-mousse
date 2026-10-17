@@ -470,7 +470,6 @@ class Tcss(StrEnum):
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
-    full_cmd = auto()
     info = auto()
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()

@@ -284,11 +284,12 @@ TabButtons {
 
 Collapsible {
   border-top: none;
-  padding-bottom: 0;
-  padding-left: 0;
+  padding: 0;
 
   &>Contents {
-    padding: 0 0 1 1;
+    margin-right: 1;
+    margin-top: 1;
+    padding-left: 1;
   }
 }
 
@@ -435,16 +436,6 @@ Static {
     background-tint: $surface;
     background: $surface;
     color: $text-disabled;
-  }
-
-  &.full_cmd {
-    background-tint: $primary-muted;
-    background: $primary-muted;
-    border-top: wide $primary-muted;
-    border-bottom: inner $primary-muted;
-    color: $primary-lighten-3;
-    text-align: center;
-    width: 1fr;
   }
 
   &.cmd_output {
