@@ -19,9 +19,9 @@ from chezmoi_mousse.gui.common.components import (
 )
 from chezmoi_mousse.str_enums import (
     BtnLabel,
-    Chars,
     ChezmoiPrompts,
     ColorVar,
+    Tcss,
     WriteCmd,
 )
 
@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from rich.text import Text
     from textual import getters
     from textual.app import ComposeResult
+    from textual.widgets import Label
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import (
@@ -51,18 +52,21 @@ class PathsInScope(VerticalGroup):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel("Paths in Scope")
         yield Collapsible(
-            ScrollableContainer(Static(self.path_scope, markup=False)),
-            collapsed_symbol=Chars.right_triangle,
-            expanded_symbol=Chars.down_triangle,
+            *self._collapsible_contents(),
+            title=f"[${ColorVar.text_success}]{'Paths in Scope'}[/]",
         )
 
     def on_mount(self) -> None:
         collapsible = self.query_exactly_one(Collapsible)
         collapsible.collapsed = False
+
+    def _collapsible_contents(self) -> list[Label | Static]:
+        contents: list[Label | Static] = []
         pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str}".rstrip()
-        collapsible.title = f"[${ColorVar.text_success}]{escape(pretty_cmd)}[/]"
+        contents.append(FlatSectionLabel(f"{escape(pretty_cmd)} (paths)"))
+        contents.append(Static(self.path_scope, markup=False, classes=Tcss.cmd_output))
+        return contents
 
 
 class InterActiveOutputs(ScrollableContainer):
