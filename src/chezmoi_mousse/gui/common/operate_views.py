@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, ClassVar
 from rich.markup import escape
 from textual import work
 from textual.containers import (
-    HorizontalGroup,
     ScrollableContainer,
     Vertical,
 )
@@ -16,8 +15,6 @@ from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
-    InfoLabel,
-    TruthLabel,
 )
 from chezmoi_mousse.str_enums import (
     ColorVar,
@@ -197,27 +194,18 @@ class PathView(ScrollableContainer):
 
     @work
     async def _set_path_info(self, node_data: NodeData) -> None:
-        status = TruthLabel(node_data.has_status)
-        exists = TruthLabel(node_data.exists)
-        un_wanted = TruthLabel(node_data.wanted is False and not node_data.managed)
-        widgets = [
-            HorizontalGroup(InfoLabel(LabelStr.path_has_status), status),
-            HorizontalGroup(InfoLabel(LabelStr.path_exists), exists),
-            HorizontalGroup(InfoLabel(LabelStr.path_un_wanted), un_wanted),
-        ]
+        truth_dict: dict[str, bool] = {}
+        truth_dict[LabelStr.path_has_status] = node_data.has_status
+        truth_dict[LabelStr.path_exists] = node_data.exists
+        truth_dict[LabelStr.path_un_wanted] = (
+            node_data.wanted is False and not node_data.managed
+        )
         if node_data.dir_path or node_data.path.is_dir():
-            nested_status = TruthLabel(node_data.nested_status)
-            nested_managed = TruthLabel(node_data.nested_managed)
-            nested_un_man = TruthLabel(node_data.nested_un_managed)
-            dir_info = [
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_status), nested_status),
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_managed), nested_managed),
-                HorizontalGroup(InfoLabel(LabelStr.has_nested_un_man), nested_un_man),
-            ]
-            widgets.extend(dir_info)
-
+            truth_dict[LabelStr.has_nested_status] = node_data.nested_status
+            truth_dict[LabelStr.has_nested_managed] = node_data.nested_managed
+            truth_dict[LabelStr.has_nested_un_man] = node_data.nested_un_managed
         self.remove_children()
-        self.mount_all(widgets)
+        self.mount_all(widget_factory.truth_widgets(truth_dict))
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self._set_path_info(node_data)

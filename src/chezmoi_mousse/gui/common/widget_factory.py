@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from itertools import groupby
 
+from textual.containers import HorizontalGroup
 from textual.widgets import Static
 
+from chezmoi_mousse.gui.common.components import InfoLabel, TruthLabel
 from chezmoi_mousse.str_enums import Tcss
 
 _DIFF_TCSS_MAP: dict[str, Tcss] = {
@@ -39,3 +41,10 @@ def diff_statics(diff_str: str) -> list[Static]:
         Static(text, classes=_DIFF_TCSS_MAP[prefix].value, markup=False)
         for prefix, text in groups
     ]
+
+
+def truth_widgets(truth_dict: dict[str, bool]) -> list[HorizontalGroup]:
+    widgets: list[HorizontalGroup] = []
+    for info_label, truth in truth_dict.items():
+        widgets.append(HorizontalGroup(InfoLabel(info_label), TruthLabel(truth)))
+    return widgets
