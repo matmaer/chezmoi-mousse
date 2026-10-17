@@ -23,7 +23,6 @@ __all__ = [
 
 
 class BindingAction(StrEnum):
-    toggle_dry_run = auto()
     toggle_maximized = auto()
     toggle_switch_slider = auto()
 
@@ -34,8 +33,6 @@ class BindingDescription(StrEnum):
     # Shared bindings
     maximize = "Maximize"
     minimize = "Minimize"
-    enable_live_run = "Enable live run"
-    switch_to_dry_run = "Switch to dry run"
 
 
 class BtnLabel(StrEnum):
@@ -467,13 +464,13 @@ class Tcss(StrEnum):
     added = auto()
     cmd_output = auto()
     context = auto()
+    false_label = auto()
     flat_button = auto()
     flat_section_label = auto()
     flow_diagram = auto()
     info = auto()
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
-    live_run_color = auto()
     op_btn_group = auto()
     operate_button = auto()
     prompt_btn_group = auto()
@@ -486,7 +483,6 @@ class Tcss(StrEnum):
     tab_button = auto()
     tree_header = auto()
     true_label = auto()
-    false_label = auto()
 
 
 class TreeName(StrEnum):
@@ -537,7 +533,6 @@ class _ChezmoiGitArgs(Enum):
     _option_terminator = "--"
     global_args = ("--no-pager", "--no-advice")
     verbose = "--verbose"
-    # _dry_run = "--dry-run" # noqa: ERA001
     git_log_args = (
         "--date-order",
         "--format=%ar%x1f%cn%x1f%B%x00",

@@ -264,17 +264,6 @@ OperateModal {
   }
 }
 
-CustomHeader {
-  border-bottom: dashed $panel;
-  color: $primary;
-  height: 2;
-  text-style: bold;
-
-  &>.live_run_color {
-    color: $warning;
-  }
-}
-
 DoctorTable {
   margin-bottom: 1;
 }
@@ -370,6 +359,13 @@ DataTable {
 Footer {
   background-tint: $panel;
   background: $panel;
+}
+
+Header {
+  border-bottom: dashed $panel;
+  color: $primary;
+  height: 2;
+  text-style: bold;
 }
 
 Label {

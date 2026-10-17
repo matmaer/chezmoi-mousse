@@ -12,10 +12,8 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
-from textual.reactive import reactive
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
-from textual.widgets._header import HeaderTitle
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.data_types import InitData
@@ -36,7 +34,6 @@ from chezmoi_mousse.str_enums import (
     Chars,
     LogStr,
     ReadCmd,
-    Tcss,
     WriteCmd,
 )
 from chezmoi_mousse.theme import chezmoi_mousse_dark, chezmoi_mousse_light
@@ -51,27 +48,6 @@ __all__ = ["ChezmoiGui"]
 
 
 RadioButton.BUTTON_INNER = Chars.radio_button
-
-
-class CustomHeader(Header):
-    DRY_MODE: ClassVar[str] = (
-        "-  c h e z m o i  m o u s s e  --  d r y  r u n  m o d e  -"
-    )
-    LIVE_MODE: ClassVar[str] = "-  c h e z m o i  m o u s s e  --  l i v e  m o d e  -"
-
-    live_run: reactive[bool] = reactive(False)
-
-    def on_mount(self) -> None:
-        self.icon = Chars.burger
-
-    def watch_live_run(self, live_run: bool) -> None:
-        header_title = self.query_exactly_one(HeaderTitle)
-        if live_run is True:
-            self.screen.title = self.LIVE_MODE
-            header_title.add_class(Tcss.live_run_color)
-        elif live_run is False:
-            self.screen.title = self.DRY_MODE
-            header_title.remove_class(Tcss.live_run_color)
 
 
 class ChezmoiGui(App[str]):
@@ -93,14 +69,10 @@ class ChezmoiGui(App[str]):
             action=BindingAction.toggle_switch_slider,
             description=BindingDescription.hide_filters,
         ),
-        Binding(
-            key="D,d",
-            action=BindingAction.toggle_dry_run,
-            description=BindingDescription.enable_live_run,
-        ),
     ]
 
     CSS_PATH = "gui.tcss"
+    TITLE = "---  c h e z m o i  m o u s s e  ---"
 
     def __init__(self) -> None:
 
@@ -122,7 +94,7 @@ class ChezmoiGui(App[str]):
         super()._handle_exception(error)
 
     def compose(self) -> ComposeResult:
-        yield CustomHeader()
+        yield Header(icon=Chars.burger)
         yield TabbedContent()
         yield Footer()
 
@@ -216,22 +188,6 @@ class ChezmoiGui(App[str]):
                 break
         self.refresh_bindings()
 
-    def action_toggle_dry_run(self) -> None:
-        if isinstance(self.screen, SplashScreen):
-            return
-        store.live_run = not store.live_run
-        new_description = (
-            BindingDescription.switch_to_dry_run
-            if store.live_run is True
-            else BindingDescription.enable_live_run
-        )
-        self._update_binding_description(
-            binding_action=BindingAction.toggle_dry_run,
-            new_description=new_description,
-        )
-        custom_header = self.screen.query_exactly_one(CustomHeader)
-        custom_header.live_run = store.live_run
-
     def action_toggle_maximized(self) -> None:
         if isinstance(self.screen, SplashScreen):
             return
@@ -240,7 +196,7 @@ class ChezmoiGui(App[str]):
         operation_buttons = None
         view_switcher_buttons = None
 
-        header = self.query_exactly_one(CustomHeader)
+        header = self.query_exactly_one(Header)
         header.display = not header.display
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display

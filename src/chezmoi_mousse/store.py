@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 init_data: InitData = InitData()
-live_run: bool = False
 
 op_ids = AppIds(BtnLabel.operate)
 logs_ids = AppIds(BtnLabel.logs)
