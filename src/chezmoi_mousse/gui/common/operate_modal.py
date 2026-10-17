@@ -87,7 +87,7 @@ class CmGitConfig(VerticalGroup):
 
 
 class ShowCmDiff(VerticalGroup):
-    def __init__(self, diff_txt: str | None = None) -> None:
+    def __init__(self, diff_txt: str = "") -> None:
         self.diff_txt = diff_txt
         super().__init__()
 
@@ -99,7 +99,7 @@ class ShowCmDiff(VerticalGroup):
         )
 
     def _collapsible_contents(self) -> list[Static]:
-        if self.diff_txt is None:
+        if not self.diff_txt:
             return [Static("No diff to show")]
         widgets = widget_factory.diff_statics(self.diff_txt)
         return widgets
@@ -125,7 +125,6 @@ class OperateModal(ModalScreen[None]):
 
     def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
-        self.path: Path = path
         self.path_str: str = "" if path == store.cfg.dest_dir else str(path)
         self.path_arg: Path | None = None if path == store.cfg.dest_dir else path
         self.affected_paths = affected_paths
