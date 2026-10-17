@@ -18,8 +18,6 @@ from chezmoi_mousse.data_types import StreamEvent
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from chezmoi_mousse.str_enums import WriteCmd
-
 
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
@@ -130,17 +128,11 @@ async def _managed_process(
 
 
 async def run_chezmoi_interactive_process(
-    cmd_enum: WriteCmd,
-    path: Path | None,
+    chezmoi_args: tuple[str, ...],
 ) -> AsyncGenerator[StreamEvent, str | None]:
     read_timeout: float = 0.05
     chezmoi_cmd = _get_chezmoi_cmd()
-    exec_args = (
-        (chezmoi_cmd, *cmd_enum.value, str(path))
-        if path is not None
-        else (chezmoi_cmd, *cmd_enum.value)
-    )
-
+    exec_args = (chezmoi_cmd, *chezmoi_args)
     async with _managed_process(*exec_args) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin

@@ -23,6 +23,7 @@ from chezmoi_mousse.str_enums import (
     LogStr,
     ReadCmd,
     StatusCode as Sc,
+    WriteCmd,
 )
 
 if TYPE_CHECKING:
@@ -32,9 +33,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import ExecResult
     from chezmoi_mousse.data_types import NodeData, StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.str_enums import (
-        WriteCmd,
-    )
 
 __all__ = ["OperatePaths"]
 
@@ -108,7 +106,7 @@ async def run_chezmoi_cmd(
     pretty_verb_arg: str | None = None,
 ) -> CommandResult:
     chezmoi_args: tuple[str, ...] | None = None
-    if cmd_enum is not ReadCmd.source_path and isinstance(verb_arg, (str, list)):
+    if cmd_enum is not ReadCmd.source_path and isinstance(verb_arg, list):
         raise ValueError(
             f"Passing verb args as strings is only allowed for "
             f"{ReadCmd.source_path.pretty_cmd}"
@@ -340,6 +338,24 @@ async def get_highlighted_chezmoi_cat_output(
 
 def run_chezmoi_interactive(
     cmd_enum: WriteCmd,
-    path_arg: Path | None,
+    verb_arg: Path | list[str] | None,
 ) -> AsyncGenerator[StreamEvent, str | None]:
-    return run_chezmoi_interactive_process(cmd_enum, path_arg)
+    chezmoi_args: tuple[str, ...] | None = None
+    if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
+        raise ValueError(
+            f"Passing verb args as strings is only allowed for "
+            f"{WriteCmd.add.pretty_cmd}"
+        )
+    elif cmd_enum in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget) and (
+        verb_arg is None or verb_arg == store.cfg.dest_dir
+    ):
+        raise ValueError(
+            f"{WriteCmd.add.pretty_cmd} cannot run on the dest dir.",
+        )
+    if isinstance(verb_arg, list):
+        chezmoi_args = (*cmd_enum.value, *verb_arg)
+    elif verb_arg is None or verb_arg == store.cfg.dest_dir:
+        chezmoi_args = (*cmd_enum.value,)
+    else:
+        chezmoi_args = (*cmd_enum.value, str(verb_arg))
+    return run_chezmoi_interactive_process(chezmoi_args)

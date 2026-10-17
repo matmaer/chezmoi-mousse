@@ -12,19 +12,18 @@ from chezmoi_mousse import asyncio_process_exec as proc
 
 if TYPE_CHECKING:
     from chezmoi_mousse.data_types import StreamEvent
-    from chezmoi_mousse.str_enums import WriteCmd
 
 
 def run_fake_chezmoi(
     script: str, replies: list[str | None], global_timeout: float = 15
 ) -> list[StreamEvent]:
     """Runs python code as stand-in for chezmoi, answering prompts with replies."""
-    fake_cmd = cast("WriteCmd", SimpleNamespace(value=("-c", script)))
+    fake_cmd = cast("tuple[str, ...]", SimpleNamespace(value=("-c", script)))
 
     async def drive() -> list[StreamEvent]:
         events: list[StreamEvent] = []
         pending = iter(replies)
-        gen = proc.run_chezmoi_interactive_process(fake_cmd, None)
+        gen = proc.run_chezmoi_interactive_process(fake_cmd)
         reply: str | None = None
         try:
             while True:
