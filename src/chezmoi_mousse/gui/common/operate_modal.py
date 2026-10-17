@@ -173,11 +173,12 @@ class OperateModal(ModalScreen[None]):
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.cancel.value
 
-    def _create_cm_git_diff(self, text: str) -> None:
+    def _create_cm_git_diff(self, text: str) -> ShowCmDiff:
         container = self.query_exactly_one(ScrollableContainer)
         show_cm_diff = ShowCmDiff(text)
         container.mount(show_cm_diff, before=self.general_info_label)
         container.scroll_end()
+        return show_cm_diff
 
     def _create_warning_label(self, text: str) -> None:
         container = self.query_exactly_one(ScrollableContainer)
@@ -241,8 +242,9 @@ class OperateModal(ModalScreen[None]):
 
         response: str | None = None
         question: str = ""
-        # Pressing diff again for the same prompt yields the same diff
+        # Pressing diff again for the same prompt toggles the existing diff
         last_diff_question: str | None = None
+        last_diff: ShowCmDiff | None = None
         try:
             while True:
                 event = await gen.asend(response)
@@ -254,6 +256,17 @@ class OperateModal(ModalScreen[None]):
 
                     # Pause worker on asyncio.Future until UI button is pressed
                     response = await self._await_user_choice(event.data)
+                    # The diff is already shown, toggle it without answering chezmoi
+                    while (
+                        response == ChezmoiPrompts.diff.reply
+                        and last_diff is not None
+                        and question == last_diff_question
+                    ):
+                        collapsible = last_diff.query_exactly_one(Collapsible)
+                        collapsible.collapsed = not collapsible.collapsed
+                        if not collapsible.collapsed:
+                            last_diff.scroll_visible()
+                        response = await self._await_user_choice(event.data)
                     if response == ChezmoiPrompts.no.reply:
                         self._create_warning_label(f"{event.prompt_question}: NO")
                     elif response == ChezmoiPrompts.yes.reply:
@@ -268,12 +281,9 @@ class OperateModal(ModalScreen[None]):
                         else f"Process failed (returncode {event.returncode})."
                     )
                 elif response == ChezmoiPrompts.diff.reply:
-                    if question != last_diff_question:
-                        self.paths_in_scope.query_exactly_one(
-                            Collapsible
-                        ).collapsed = True
-                        self._create_cm_git_diff("\n".join(event.data) + "\n")
-                        last_diff_question = question
+                    self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
+                    last_diff = self._create_cm_git_diff("\n".join(event.data) + "\n")
+                    last_diff_question = question
                     response = None
                 else:
                     response = None
