@@ -129,7 +129,7 @@ class _DiffViewBase(Vertical):
                     groups.extend((prefix, line) for line in group_list)
             self.cache[path] = groups
 
-        widgets = [
+        widgets: list[Static] = [
             Static(text, classes=self.tcss_map[prefix].value, markup=False)
             for prefix, text in self.cache[path]
         ]
