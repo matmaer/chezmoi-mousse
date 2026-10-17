@@ -26,7 +26,6 @@ from chezmoi_mousse.str_enums import (
 )
 
 if TYPE_CHECKING:
-    from rich.text import Text
     from textual import getters
     from textual.app import ComposeResult
     from textual.widgets import Label
@@ -45,7 +44,7 @@ PROMPT_TIMEOUT_SECONDS = 120
 
 
 class PathsInScope(VerticalGroup):
-    def __init__(self, read_cmd: ReadCmd, path_str: str, path_scope: Text) -> None:
+    def __init__(self, read_cmd: ReadCmd, path_str: str, path_scope: str) -> None:
         self.read_cmd = read_cmd
         self.path_str = path_str
         self.path_scope = path_scope
@@ -89,7 +88,7 @@ class OperateModal(ModalScreen[None]):
         BtnLabel.chezmoi_re_add: WriteCmd.re_add,
     }
 
-    def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: Text) -> None:
+    def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
         self.path: Path = path
         self.path_str: str = "" if path == store.cfg.dest_dir else str(Path)

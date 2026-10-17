@@ -148,33 +148,33 @@ async def run_in_task_group(
 
 @dataclass
 class OperatePaths:
-    _affected_paths: dict[Path, dict[str, Text]] = field(
-        default_factory=dict[Path, dict[str, Text]]
+    _affected_paths: dict[Path, dict[str, str]] = field(
+        default_factory=dict[Path, dict[str, str]]
     )
 
-    def affected_paths(self, path: Path, btn_label: str) -> Text:
+    def affected_paths(self, path: Path, btn_label: str) -> str:
         return self._affected_paths[path][btn_label]
 
     async def disable_button(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData
     ) -> bool:
         result = await self._get_affected_paths(app, btn_label, node_data)
-        return result == Text()
+        return result == ""
 
     async def _get_affected_paths(
         self, app: ChezmoiGui, btn_label: str, node_data: NodeData
-    ) -> Text:
+    ) -> str:
         if node_data.path in self._affected_paths:
             return self._affected_paths[node_data.path][btn_label]
         else:
-            result: dict[str, Text] = await _run_affected_paths(app, node_data)
+            result: dict[str, str] = await _run_affected_paths(app, node_data)
             self._affected_paths[node_data.path] = result
             return self._affected_paths[node_data.path][btn_label]
 
 
-async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, Text]:
+async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, str]:
 
-    result: dict[ReadCmd, Text | None] = {
+    result: dict[ReadCmd, str | None] = {
         ReadCmd.dry_add: None,
         ReadCmd.dry_apply: None,
         ReadCmd.dry_destroy: None,
@@ -184,39 +184,39 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, Te
 
     # basic affected paths for dest_dir
     if n_data.dest_dir:
-        result[ReadCmd.dry_add] = Text()
-        result[ReadCmd.dry_destroy] = Text()
-        result[ReadCmd.dry_forget] = Text()
+        result[ReadCmd.dry_add] = ""
+        result[ReadCmd.dry_destroy] = ""
+        result[ReadCmd.dry_forget] = ""
     # basic affected paths for dirs other than the dest dir
     elif n_data.un_managed_dir:
-        result[ReadCmd.dry_apply] = Text()
-        result[ReadCmd.dry_destroy] = Text()
-        result[ReadCmd.dry_forget] = Text()
-        result[ReadCmd.dry_re_add] = Text()
+        result[ReadCmd.dry_apply] = ""
+        result[ReadCmd.dry_destroy] = ""
+        result[ReadCmd.dry_forget] = ""
+        result[ReadCmd.dry_re_add] = ""
     # basic affected paths for managed dirs without nested conditions
     elif n_data.managed_dir:
         if not n_data.nested_un_managed:
-            result[ReadCmd.dry_add] = Text()
+            result[ReadCmd.dry_add] = ""
         if not (n_data.status_dir or n_data.nested_status):
-            result[ReadCmd.dry_apply] = Text()
-            result[ReadCmd.dry_re_add] = Text()
+            result[ReadCmd.dry_apply] = ""
+            result[ReadCmd.dry_re_add] = ""
     # basic affected paths for files
     elif n_data.managed_file:
-        result[ReadCmd.dry_add] = Text()
-        result[ReadCmd.dry_forget] = highlight_str(str(n_data.path))
-        result[ReadCmd.dry_destroy] = highlight_str(str(n_data.path))
+        result[ReadCmd.dry_add] = ""
+        result[ReadCmd.dry_forget] = str(n_data.path)
+        result[ReadCmd.dry_destroy] = str(n_data.path)
         if n_data.status_file:
-            result[ReadCmd.dry_apply] = highlight_str(str(n_data.path))
-            result[ReadCmd.dry_re_add] = highlight_str(str(n_data.path))
+            result[ReadCmd.dry_apply] = str(n_data.path)
+            result[ReadCmd.dry_re_add] = str(n_data.path)
         elif not n_data.status_file:
-            result[ReadCmd.dry_apply] = Text()
-            result[ReadCmd.dry_re_add] = Text()
+            result[ReadCmd.dry_apply] = ""
+            result[ReadCmd.dry_re_add] = ""
     elif n_data.un_managed_file:
-        result[ReadCmd.dry_add] = highlight_str(str(n_data.path))
-        result[ReadCmd.dry_apply] = Text()
-        result[ReadCmd.dry_destroy] = Text()
-        result[ReadCmd.dry_forget] = Text()
-        result[ReadCmd.dry_re_add] = Text()
+        result[ReadCmd.dry_add] = str(n_data.path)
+        result[ReadCmd.dry_apply] = ""
+        result[ReadCmd.dry_destroy] = ""
+        result[ReadCmd.dry_forget] = ""
+        result[ReadCmd.dry_re_add] = ""
 
     to_run: list[ReadCmd] = [cmd for cmd, value in result.items() if value is None]
     path_arg = None if n_data.dest_dir else n_data.path
@@ -234,13 +234,11 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, Te
                     f"{Chars.bullet} {Path(match.group(1)).resolve()}"
                 )
         paths_str = "\n".join(affected_paths)
-        result[cmd_enum] = highlight_str(paths_str)
+        result[cmd_enum] = paths_str
 
-    to_return: dict[str, Text] = {}
+    to_return: dict[str, str] = {}
     for cmd_enum, value in result.items():
-        to_return[cmd_enum.write_btn_label.value] = (
-            value if value is not None else Text()
-        )
+        to_return[cmd_enum.write_btn_label.value] = value if value is not None else ""
     return to_return
 
 
