@@ -35,16 +35,12 @@ if TYPE_CHECKING:
 
     from textual import getters
     from textual.app import ComposeResult
-    from textual.containers import (
-        HorizontalGroup,
-    )
+    from textual.containers import HorizontalGroup
     from textual.widgets import Label
 
     from chezmoi_mousse.data_types import StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.str_enums import (
-        ReadCmd,
-    )
+    from chezmoi_mousse.str_enums import ReadCmd
 
 
 __all__ = ["OperateModal"]
@@ -310,8 +306,6 @@ class OperateModal(ModalScreen[None]):
         button_label = str(event.button.label)
 
         if button_label in (BtnLabel.cancel, BtnLabel.close):
-            for worker in self.workers:
-                worker.cancel()
             self.dismiss()
         elif button_label == self.op_btn.run_label:
             for button in self.prompt_buttons:
