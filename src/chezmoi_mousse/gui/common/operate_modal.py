@@ -6,16 +6,20 @@ from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
 from textual import on, work
-from textual.containers import ScrollableContainer, Vertical, VerticalGroup
+from textual.containers import (
+    ScrollableContainer,
+    Vertical,
+    VerticalGroup,
+)
 from textual.screen import ModalScreen
 from textual.widgets import Button, Collapsible, Static
 
 from chezmoi_mousse import store, tchezmoi
+from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     MainSectionLabel,
-    SubSectionLabel,
 )
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -28,6 +32,9 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
+    from textual.containers import (
+        HorizontalGroup,
+    )
     from textual.widgets import Label
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -68,9 +75,20 @@ class PathsInScope(VerticalGroup):
         return contents
 
 
-class InterActiveOutputs(ScrollableContainer):
+class CmGitConfig(VerticalGroup):
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel("Paths in Scope")
+        yield Collapsible(
+            *self._collapsible_contents(),
+            title=f"[${ColorVar.text_success}]{'Chezmoi git config'}[/]",
+        )
+
+    def _collapsible_contents(self) -> list[HorizontalGroup]:
+        truth_dict: dict[str, bool] = {}
+        truth_dict["autoadd enabled"] = store.cfg.auto_add
+        truth_dict["autocommit enabled"] = store.cfg.auto_commit
+        truth_dict["autopush enabled"] = store.cfg.auto_push
+        widgets = widget_factory.truth_widgets(truth_dict)
+        return widgets
 
 
 class InteractiveOutputStatic(Static): ...
@@ -100,11 +118,8 @@ class OperateModal(ModalScreen[None]):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield MainSectionLabel(f"{self.op_btn.value} {self.path_str}".rstrip())
+            yield CmGitConfig()
             yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.affected_paths)
-            yield SubSectionLabel(
-                f"autoadd enabled: {store.cfg.auto_add}, autocommit enabled: "
-                f"{store.cfg.auto_commit}, autopush enabled: {store.cfg.auto_push}"
-            )
             yield ScrollableContainer()
             yield InteractiveOutputStatic(markup=False)
             yield PromptBtnGroup(
