@@ -230,7 +230,9 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, Te
         for line in cr.out_list:
             match = _PATH_PATTERN.match(line)
             if match:
-                affected_paths.append(f"{Chars.bullet} {match.group(1)}")
+                affected_paths.append(
+                    f"{Chars.bullet} {Path(match.group(1)).resolve()}"
+                )
         paths_str = "\n".join(affected_paths)
         result[cmd_enum] = highlight_str(paths_str)
 
