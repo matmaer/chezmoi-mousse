@@ -145,59 +145,52 @@ async def run_chezmoi_interactive_process(
         last_process_activity = time.monotonic()
 
         while not pipe_stdout.at_eof():
-            payload: list[str] | None = None
-            is_prompt = False
-
             try:
                 raw_chunk = await asyncio.wait_for(
                     pipe_stdout.read(1024),
                     timeout=read_timeout,
                 )
-
-                if not raw_chunk:
-                    # EOF: flush remaining output, it must be yielded before leaving
-                    if buffer:
-                        yield StreamEvent(data=buffer.splitlines(), is_prompt=False)
-                    break
-
-                last_process_activity = time.monotonic()
-                buffer += raw_chunk.decode("utf-8", errors="replace")
-
             except TimeoutError as read_time_out:
                 if time.monotonic() - last_process_activity > _GLOBAL_TIMEOUT:
                     raise TimeoutError(
                         f"Chezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
                     ) from read_time_out
 
-                if buffer.endswith("\n"):
-                    payload = buffer.splitlines()
-                    buffer = ""
-                elif prompt_match := _PROMPT_RE.search(buffer):
-                    # Silence for read_timeout plus a prompt-shaped ending.
-                    # NOTE: prompt is different than running commands with a tty!
-                    # Complete lines before the prompt line, e.g. the output of the
-                    # diff option, must not be lost.
-                    output_before_prompt, _, _prompt_line = buffer[
-                        : prompt_match.start()
-                    ].rpartition("\n")
-                    if output_before_prompt:
-                        yield StreamEvent(
-                            data=output_before_prompt.splitlines(), is_prompt=False
-                        )
-                    is_prompt = True
-                    payload = prompt_match.group(1).split("/")
-                    buffer = ""  # Only clear buffer when yielding prompt!
+                prompt_match = _PROMPT_RE.search(buffer)
+                if prompt_match is None:
+                    continue
 
-            if payload is not None:
+                # Silence for read_timeout plus a prompt-shaped ending.
+                # NOTE: prompt is different than running commands with a tty!
+                # Complete lines before the prompt line, e.g. the output of the
+                # diff option, must not be lost.
+                output_before_prompt, _, _prompt_line = buffer[
+                    : prompt_match.start()
+                ].rpartition("\n")
+                if output_before_prompt:
+                    yield StreamEvent(
+                        data=output_before_prompt.splitlines(), is_prompt=False
+                    )
+                prompt_options = prompt_match.group(1).split("/")
+                buffer = ""  # Only clear buffer when yielding prompt!
+
                 # Receive input directly back from asend()
-                user_choice = yield StreamEvent(data=payload, is_prompt=is_prompt)
-
-                if is_prompt:
-                    if user_choice is None:
-                        raise ValueError(
-                            "A prompt needs a reply; to cancel call aclose() instead"
-                        )
-                    pipe_stdin.write(f"{user_choice}\n".encode())
-                    await pipe_stdin.drain()
-
+                user_choice = yield StreamEvent(data=prompt_options, is_prompt=True)
+                if user_choice is None:
+                    raise ValueError(
+                        "A prompt needs a reply; to cancel call aclose() instead"
+                    ) from None
+                pipe_stdin.write(f"{user_choice}\n".encode())
+                await pipe_stdin.drain()
                 last_process_activity = time.monotonic()
+                continue
+
+            if not raw_chunk:
+                break
+
+            last_process_activity = time.monotonic()
+            buffer += raw_chunk.decode("utf-8", errors="replace")
+
+        # EOF: flush remaining output, it must be yielded before leaving
+        if buffer:
+            yield StreamEvent(data=buffer.splitlines(), is_prompt=False)
