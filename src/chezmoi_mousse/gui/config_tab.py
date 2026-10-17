@@ -79,22 +79,22 @@ class ConfigTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.cat_config_output),
-                    CatConfigStatic("Not Found", markup=False),
+                    CatConfigStatic(LabelStr.not_set, markup=False),
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.dump_config_output),
-                    ScrollableContainer(PrettyDumpConfig("Not set")),
+                    ScrollableContainer(PrettyDumpConfig(LabelStr.not_set)),
                     id=store.config_ids.container.dump_config,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.ignored_output),
-                    ScrollableContainer(PrettyIgnored("Not set")),
+                    ScrollableContainer(PrettyIgnored(LabelStr.not_set)),
                     id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.template_data_output),
-                    ScrollableContainer(PrettyTemplateData("Not set")),
+                    ScrollableContainer(PrettyTemplateData(LabelStr.not_set)),
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
