@@ -226,6 +226,7 @@ class OperateModal(ModalScreen[None]):
         }
         for button in self.prompt_buttons:
             button.display = str(button.label) in offered
+            button.disabled = False
 
         self._prompt_future = asyncio.get_running_loop().create_future()
         try:
@@ -238,6 +239,9 @@ class OperateModal(ModalScreen[None]):
             return ChezmoiPrompts.quit.reply
         finally:
             self._prompt_future = None
+            # chezmoi is busy again, nothing can be answered until the next prompt
+            for button in self.prompt_buttons:
+                button.disabled = True
 
     @work
     async def _run_interactive(self) -> None:
@@ -297,6 +301,7 @@ class OperateModal(ModalScreen[None]):
         except StopAsyncIteration:
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.close
+                button.disabled = False
         finally:
             # on cancel/dismiss the worker is cancelled, this terminates chezmoi
             await gen.aclose()
