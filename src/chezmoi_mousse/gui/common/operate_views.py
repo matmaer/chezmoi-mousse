@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from itertools import groupby
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
@@ -14,6 +13,7 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import tchezmoi
+from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     InfoLabel,
@@ -23,7 +23,6 @@ from chezmoi_mousse.str_enums import (
     ColorVar,
     LabelStr,
     ReadCmd,
-    Tcss,
 )
 
 if TYPE_CHECKING:
@@ -85,20 +84,9 @@ class _DiffViewBase(Vertical):
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    tcss_map: ClassVar[dict[str, Tcss]] = {
-        "diff --git a/": Tcss.flat_section_label,
-        " ": Tcss.context,
-        "-": Tcss.removed,
-        "deleted": Tcss.removed,
-        "old mode ": Tcss.removed,
-        "+": Tcss.added,
-        "new mode ": Tcss.added,
-        "new file mode ": Tcss.added,
-    }
-
     def __init__(self, diff_cmd: ReadCmd) -> None:
         self.diff_cmd = diff_cmd
-        self.cache: dict[Path, list[tuple[str, str]]] = {}
+        self.cache: dict[Path, list[Static]] = {}
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -109,32 +97,16 @@ class _DiffViewBase(Vertical):
 
     @work
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
-        def get_prefix(line: str) -> str:
-            for p in self.tcss_map:
-                if line.startswith(p):
-                    return p
-            return " "
-
         if path not in self.cache:
             diff_result = await tchezmoi.run_chezmoi_cmd(
                 self.app, diff_cmd, verb_arg=path
             )
 
-            groups: list[tuple[str, str]] = []
-            for prefix, group_lines in groupby(diff_result.out_list, key=get_prefix):
-                group_list = list(group_lines)
-                if prefix in ("+", "-", " "):
-                    groups.append((prefix, "\n".join(group_list)))
-                else:
-                    groups.extend((prefix, line) for line in group_list)
-            self.cache[path] = groups
+            diff_statics = widget_factory.diff_statics(diff_result.std_out)
+            self.cache[path] = diff_statics
 
-        widgets: list[Static] = [
-            Static(text, classes=self.tcss_map[prefix].value, markup=False)
-            for prefix, text in self.cache[path]
-        ]
         self.diff_container.remove_children()
-        self.diff_container.mount_all(widgets)
+        self.diff_container.mount_all(self.cache[path])
 
     def watch_node_data(self, node_data: NodeData) -> None:
         self._create_diff_widgets(self.diff_cmd, node_data.path)
