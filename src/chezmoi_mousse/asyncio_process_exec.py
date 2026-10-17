@@ -98,6 +98,20 @@ async def create_subprocess_exec_result(
             Path(f"{temp_index_path}.lock").unlink(missing_ok=True)
 
 
+async def _stop_process(process: asyncio.subprocess.Process) -> None:
+    """SIGTERM first, SIGKILL if the process hasn't exited after 2 seconds."""
+    if process.returncode is not None:
+        return
+    with suppress(ProcessLookupError):
+        process.send_signal(signal.SIGTERM)
+    try:
+        await asyncio.wait_for(process.wait(), timeout=2.0)
+    except TimeoutError:
+        with suppress(ProcessLookupError):
+            process.kill()
+        await process.wait()
+
+
 @asynccontextmanager
 async def _managed_process(
     *cmd: str,
@@ -112,15 +126,7 @@ async def _managed_process(
     try:
         yield process
     finally:
-        if process.returncode is None:
-            with suppress(ProcessLookupError):
-                process.send_signal(signal.SIGTERM)
-            try:
-                await asyncio.wait_for(process.wait(), timeout=2.0)
-            except TimeoutError:
-                with suppress(ProcessLookupError):
-                    process.kill()
-                await process.wait()
+        await _stop_process(process)
 
 
 async def run_chezmoi_interactive_process(
@@ -148,6 +154,7 @@ async def run_chezmoi_interactive_process(
         buffer = ""
         full_std_out = ""
         last_process_activity = time.monotonic()
+        timed_out = False
 
         while not pipe_stdout.at_eof():
             try:
@@ -155,11 +162,10 @@ async def run_chezmoi_interactive_process(
                     pipe_stdout.read(1024),
                     timeout=read_timeout,
                 )
-            except TimeoutError as read_time_out:
+            except TimeoutError:
                 if time.monotonic() - last_process_activity > _GLOBAL_TIMEOUT:
-                    raise TimeoutError(
-                        f"Chezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-                    ) from read_time_out
+                    timed_out = True
+                    break
 
                 prompt_match = _PROMPT_RE.search(buffer)
                 if prompt_match is None:
@@ -206,8 +212,12 @@ async def run_chezmoi_interactive_process(
         if buffer:
             yield StreamEvent(data=buffer.splitlines(), is_prompt=False)
 
+        if timed_out:
+            await _stop_process(process)
         returncode = await process.wait()
         std_err = (await stderr_task).decode("utf-8", errors="replace")
+        if timed_out:
+            std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
         yield StreamEvent(
             data=[],
             is_prompt=False,
