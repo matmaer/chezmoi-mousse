@@ -113,7 +113,7 @@ class OperateTree(Tree[NodeData]):
 
         return color_var
 
-    def apply_changes(self, changes: CmPathChanges) -> None:
+    async def apply_changes(self, changes: CmPathChanges) -> None:
         for path in changes.remove_tree_dirs:
             node = self.node_map[path]
             node.remove()

@@ -169,7 +169,8 @@ class OperateModal(ModalScreen[None]):
                 yield PathsInScope(
                     self.op_btn.dry_cmd, self.path_str, self.affected_paths
                 )
-                yield SelectPaths(self.path)
+                if self.op_btn == BtnLabel.chezmoi_add and self.path.is_dir():
+                    yield SelectPaths(self.path)
                 yield _GeneralInfoLabel("Ready to run", markup=False)
             yield PromptBtnGroup(
                 labels=(
@@ -187,11 +188,6 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
-        self.select_paths = self.query_exactly_one(SelectPaths)
-        self.select_paths.display = False
-        if self.op_btn == BtnLabel.chezmoi_add and self.path.is_dir():
-            self.select_paths.display = True
-            self.notify("pressed add dir")
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)

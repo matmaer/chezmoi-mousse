@@ -8,6 +8,7 @@ from chezmoi_mousse.data_types import (
     InitData,
     ParsedDumpConfig,
 )
+from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
@@ -36,14 +37,19 @@ async def handle_new_tree_paths(
 
     global cm_paths
     global cm_changes
+    cm_paths = new_tree_paths
 
     cm_changes = CmPathChanges(
         _old_tree_paths=new_tree_paths if cm_changes is None else cm_paths,
         _new_tree_paths=new_tree_paths,
     )
-
-    cm_paths = new_tree_paths
     app.app_log.write_app_log_msg("Updated cm_paths and cm_changes in store.py")
+    if isinstance(app.screen, SplashScreen):
+        return
+    if not cm_changes.changes_available:
+        app.notify("No changes available, skipping refresh.", severity="warning")
+    else:
+        await app.left_side.refresh_trees_post_operate()
 
 
 async def decode_and_store_config(std_out: str) -> None:
