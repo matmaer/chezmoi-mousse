@@ -307,6 +307,10 @@ class OperateModal(ModalScreen[None]):
                         if event.returncode == 0
                         else f"Process exit, returncode {event.returncode})."
                     )
+                    self.app.run_worker(
+                        tchezmoi.run_managed_commands(self.app),
+                        name="refresh_trees_after_operation",
+                    )
                 elif response == ChezmoiPrompts.diff.reply:
                     self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
                     last_diff = self._create_cm_git_diff(
