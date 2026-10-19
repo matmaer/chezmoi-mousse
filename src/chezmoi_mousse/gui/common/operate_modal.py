@@ -274,6 +274,7 @@ class OperateModal(ModalScreen[None]):
         try:
             while True:
                 event = await gen.asend(response)
+                process_has_finished = event.returncode is not None
 
                 if event.is_prompt:
                     prompt_text = f"{event.prompt_question} ({'/'.join(event.data)})?"
@@ -299,12 +300,12 @@ class OperateModal(ModalScreen[None]):
                         self._create_green_label(f"{event.prompt_question}: YES")
                     elif response == ChezmoiPrompts.quit.reply:
                         self._create_green_label("Asked to quit the operation")
-                elif event.returncode is not None:
+                elif process_has_finished:
                     self._create_cmd_result(event)
                     self.general_info_label.update(
                         "Process completed."
                         if event.returncode == 0
-                        else f"Process failed (returncode {event.returncode})."
+                        else f"Process exit, returncode {event.returncode})."
                     )
                 elif response == ChezmoiPrompts.diff.reply:
                     self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
