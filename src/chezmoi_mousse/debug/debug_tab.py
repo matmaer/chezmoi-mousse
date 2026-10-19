@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import inspect
 import os
-import tracemalloc
 from typing import TYPE_CHECKING
 
+import psutil
 from rich._inspect import Inspect
 from rich.markup import escape
 from textual import on, work
@@ -57,10 +57,6 @@ class DebugLog(RichLoggers):
 
     def on_mount(self) -> None:
         self.write_ready(LogStr.debug_log_initialized)
-        if tracemalloc.is_tracing():
-            self.write_warning(LogStr.tracing)
-        else:
-            self.write_error(LogStr.not_tracing)
 
     def write_text_block(self, message: str) -> None:
         color = self.app.theme_variables[ColorVar.foreground_darken_2]
@@ -147,18 +143,22 @@ class DebugLog(RichLoggers):
             self.write_text_block(f"{e}")
 
 
+class TestPathsView(Static): ...
+
+
+class ColorVarStatic(Static): ...
+
+
 class DebugTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    class TestPathsView(Static): ...
-
-    class ColorVarStatic(Static): ...
-
     MiB = 1024 * 1024
-    INTERVAL = 2
 
-    _previous_rss: float = 0.0
+    process = psutil.Process(os.getpid())
+    previous_rss = process.memory_info().rss / MiB
+    peak_rss_mb = process.memory_info().rss / MiB
+    current_rss_mb = process.memory_info().rss / MiB
 
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -181,7 +181,7 @@ class DebugTab(TabPane):
             with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
                 yield Vertical(
                     MainSectionLabel(LabelStr.test_paths),
-                    ScrollableContainer(DebugTab.TestPathsView(classes=Tcss.info)),
+                    ScrollableContainer(TestPathsView(classes=Tcss.info)),
                     id=store.debug_ids.container.test_paths_view,
                 )
                 yield Vertical(
@@ -209,180 +209,179 @@ class DebugTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.colors),
-                    DebugTab.ColorVarStatic(LabelStr.not_set, markup=True),
+                    ColorVarStatic(LabelStr.not_set, markup=True),
                     id=store.debug_ids.container.color_vars,
                 )
         yield OperateBtnGroup(
             app_ids=store.debug_ids,
             labels=(
-                BtnLabel.log_memory,
-                BtnLabel.list_test_paths,
                 BtnLabel.create_diffs,
                 BtnLabel.create_paths,
+                BtnLabel.list_test_paths,
                 BtnLabel.remove_paths,
+                BtnLabel.log_memory,
+                BtnLabel.start_auto_log,
+                BtnLabel.stop_auto_log,
             ),
         )
 
     def on_mount(self) -> None:
 
         self.test_paths = TestPaths()
+        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
+        self.op_buttons = self.op_btn_group.query_children(Button)
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        self.test_paths_static = self.query_exactly_one(DebugTab.TestPathsView)
+        self.test_paths_static = self.query_exactly_one(TestPathsView)
+        result = self.test_paths.existing_test_paths()
+        self.test_paths_static.update(result)
         self.debug_log = self.query_exactly_one(DebugLog)
-        self.dom_node_logger = self.query_one(
-            store.debug_ids.richlog.dom_nodes_q, RichLog
-        )
-        self.env_var_logger = self.query_one(
-            store.debug_ids.richlog.env_vars_q, RichLog
-        )
-        self.mem_log_op_btn = self.query_one(
-            store.debug_ids.op_btn.log_memory_q, Button
-        )
-        self.mem_log_op_btn.disabled = True
-        self.list_test_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.list_test_paths_q, Button
-        )
-        self.create_diffs_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_diffs_q, Button
-        )
-        self.create_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.create_paths_q, Button
-        )
-        self.remove_paths_op_btn = self.query_one(
-            store.debug_ids.op_btn.remove_paths_q, Button
-        )
-        self.test_paths_op_btns = [
-            self.list_test_paths_op_btn,
-            self.create_diffs_op_btn,
-            self.create_paths_op_btn,
-            self.remove_paths_op_btn,
-        ]
-        self._list_existing_test_paths()
-        self._log_env_vars()
+        env_var_logger = self.query_one(store.debug_ids.richlog.env_vars_q, RichLog)
+        env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
         self.app.call_later(self._log_dom_nodes)
-        self.set_interval(self.INTERVAL, lambda: self._write_to_debug_log(auto=True))
+        self.auto_log_timer = self.set_interval(
+            name="auto_log",
+            interval=2,
+            callback=self._log_mem_usage,
+        )
+        self.auto_log = True
+        self.debug_log.write_app_log_msg(f"{LogStr.auto_log}")
+        self.debug_log.write_app_log_msg(
+            f"Pre-init memory peak: {self.peak_rss_mb:5.2f} MiB"
+        )
         self._log_colors()
 
     def _log_colors(self) -> None:
-        self.color_var_static = self.query_exactly_one(DebugTab.ColorVarStatic)
+        self.color_var_static = self.query_exactly_one(ColorVarStatic)
         to_write: list[str] = []
         for color_var in ColorVar:
             color = self.app.theme_variables[color_var.value]
             to_write.append(f"[{color}]{color_var.name}:{color_var.value}[/]")
         self.color_var_static.update("\n".join(to_write))
 
-    def _list_existing_test_paths(self) -> None:
-        path_lines = "\n".join(
-            str(p) for p in self.test_paths.get_existing_test_paths()
-        )
-        result = (
-            path_lines
-            if path_lines
-            else f"[${ColorVar.text_warning} bold]No test paths exist.[/]"
-        )
-        self.test_paths_static.update(result)
+    def _log_mem_usage(self, manual: bool = False) -> None:
+        self.current_rss_mb = self.process.memory_info().rss / self.MiB
+        # Check for >2% shift relative to previous reading
+        auto_increase = self.current_rss_mb > self.previous_rss * 1.02
+        auto_decrease = self.current_rss_mb < self.previous_rss * 0.98
+        auto_new_peak = self.current_rss_mb > self.peak_rss_mb * 1.02
+        # Update peak RAM usage
+        if self.current_rss_mb > self.peak_rss_mb:
+            self.peak_rss_mb = self.current_rss_mb
 
-    def _write_to_debug_log(self, auto: bool = False) -> None:
-        current_bytes, peak_bytes = tracemalloc.get_traced_memory()
+        self.previous_rss = self.current_rss_mb
 
-        rss = current_bytes / self.MiB  # Active Python heap allocations
-        vms = peak_bytes / self.MiB  # Peak heap size recorded during tracing
+        rss_str = f"{self.current_rss_mb:5.2f} MiB"
+        peak_str = f"{self.peak_rss_mb:5.2f} MiB"
 
-        pc2_increase = rss > self._previous_rss * 1.02
-        pc2_decrease = rss < self._previous_rss * 0.98
-        pc2_change = pc2_increase or pc2_decrease
-        self._previous_rss = rss
-        if pc2_increase:
-            color = "cyan bold"
-        elif pc2_decrease:
-            color = "green bold"
-        elif not pc2_change:
-            color = ColorVar.secondary
-        else:
-            color = ColorVar.text_error
+        prefix = "Current memory usage:" if manual else "Auto log 2% delta:"
 
-        rss_str = f"{rss:5.2f} MiB current heap"
-        vms_str = f"{vms:5.2f} MiB peak"
-
-        now_prefix = "Current memory usage log:"
-        auto_prefix = "Auto log 2 percent delta:"
-        prefix = auto_prefix if auto else now_prefix
-
-        if (pc2_change and auto) or not auto:
-            self.debug_log.write(f"[{color}]{prefix} {rss_str} | {vms_str}[/]")
+        if self.auto_log and auto_decrease:
+            self.debug_log.write_success(f"{prefix} {rss_str}")
+        elif self.auto_log and auto_increase:
+            self.debug_log.write_warning(f"{prefix} {rss_str}")
+        elif manual:
+            self.debug_log.write_info(f"{prefix} {rss_str}")
+            if self.current_rss_mb > self.peak_rss_mb:
+                self.debug_log.write_info(f"New peak: {peak_str}")
+        elif not manual and self.auto_log and auto_new_peak:
+            self.debug_log.write_error(f"New peak: {peak_str}")
 
     @work
     async def _log_dom_nodes(self) -> None:
         # App dom nodes
+        dom_node_logger = self.query_one(store.debug_ids.richlog.dom_nodes_q, RichLog)
         app_nodes = list(self.app.walk_children())
-        self.dom_node_logger.write(f"self.app DOMNode count: {len(app_nodes)}\n")
+        dom_node_logger.write(f"self.app DOMNode count: {len(app_nodes)}\n")
         app_nodes_with_id = [item for item in app_nodes if item.id is not None]
         app_nodes_without_id = [item for item in app_nodes if item.id is None]
-        self.dom_node_logger.write(f"DOMNodes with id: {len(app_nodes_with_id)}")
+        dom_node_logger.write(f"DOMNodes with id: {len(app_nodes_with_id)}")
         for item in sorted(app_nodes_with_id, key=str):
-            self.dom_node_logger.write(f"{item}")
-        self.dom_node_logger.write(
-            f"\nDOMNodes without id: {len(app_nodes_without_id)}"
-        )
+            dom_node_logger.write(f"{item}")
+        dom_node_logger.write(f"\nDOMNodes without id: {len(app_nodes_without_id)}")
         for item in sorted(app_nodes_without_id, key=str):
-            self.dom_node_logger.write(f"{item}")
+            dom_node_logger.write(f"{item}")
         # Screen dom nodes
         screen_nodes = list(self.screen.walk_children())
-        self.dom_node_logger.write(
-            f"\nself.screen DOMNode count: {len(screen_nodes)}\n"
-        )
+        dom_node_logger.write(f"\nself.screen DOMNode count: {len(screen_nodes)}\n")
         screen_nodes_with_id = [item for item in screen_nodes if item.id is not None]
         screen_nodes_without_id = [item for item in screen_nodes if item.id is None]
-        self.dom_node_logger.write(f"DOMNodes with id: {len(screen_nodes_with_id)}")
+        dom_node_logger.write(f"DOMNodes with id: {len(screen_nodes_with_id)}")
         for item in sorted(screen_nodes_with_id, key=str):
-            self.dom_node_logger.write(f"{item}")
-        self.dom_node_logger.write(
-            f"\nDOMNodes without id: {len(screen_nodes_without_id)}"
-        )
+            dom_node_logger.write(f"{item}")
+        dom_node_logger.write(f"\nDOMNodes without id: {len(screen_nodes_without_id)}")
         for item in sorted(screen_nodes_without_id, key=str):
-            self.dom_node_logger.write(f"{item}")
+            dom_node_logger.write(f"{item}")
 
-    @work
-    async def _log_env_vars(self) -> None:
-        self.env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
+    def start_auto_log(self) -> None:
+        for btn in self.op_buttons:
+            btn.disabled = btn.label == BtnLabel.start_auto_log
+        self.debug_log.write_success(LogStr.auto_log_started)
+        self.auto_log_timer.resume()
+        self.auto_log = True
+
+    def stop_auto_log(self) -> None:
+        for btn in self.op_buttons:
+            btn.disabled = btn.label in (BtnLabel.log_memory, BtnLabel.stop_auto_log)
+        self.auto_log_timer.pause()
+        self.auto_log = False
+        self.debug_log.write_error(LogStr.auto_log_stopped)
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        if event.button.label == BtnLabel.debug_log:
-            self.mem_log_op_btn.disabled = False
-            self.switcher.current = store.debug_ids.container.debug_log
-        else:
-            self.mem_log_op_btn.disabled = True
-            for btn in self.test_paths_op_btns:
-                btn.display = True
+        if event.button.label not in (
+            BtnLabel.colors,
+            BtnLabel.debug_log,
+            BtnLabel.dom_nodes,
+            BtnLabel.env_vars,
+            BtnLabel.test_paths,
+            BtnLabel.start_auto_log,
+            BtnLabel.stop_auto_log,
+        ):
+            return
         if event.button.label == BtnLabel.test_paths:
+            for btn in self.op_buttons:
+                btn.display = btn.label not in (
+                    BtnLabel.log_memory,
+                    BtnLabel.start_auto_log,
+                    BtnLabel.stop_auto_log,
+                )
+            self.op_btn_group.display = True
             self.switcher.current = store.debug_ids.container.test_paths_view
-        elif event.button.label == BtnLabel.debug_log:
-            self.switcher.current = store.debug_ids.container.debug_log
         elif event.button.label == BtnLabel.dom_nodes:
+            self.op_btn_group.display = False
             self.switcher.current = store.debug_ids.container.dom_nodes
         elif event.button.label == BtnLabel.env_vars:
+            self.op_btn_group.display = False
             self.switcher.current = store.debug_ids.container.env_vars
         elif event.button.label == BtnLabel.colors:
+            self.op_btn_group.display = False
             self.switcher.current = store.debug_ids.container.color_vars
+        elif event.button.label == BtnLabel.debug_log:
+            for btn in self.op_buttons:
+                btn.display = btn.label in (
+                    BtnLabel.log_memory,
+                    BtnLabel.start_auto_log,
+                    BtnLabel.stop_auto_log,
+                )
+            self.op_btn_group.display = True
+            self.switcher.current = store.debug_ids.container.debug_log
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
         event.stop()
+        result: str = "Nothing to show"
         if event.button.label == BtnLabel.log_memory:
-            self._write_to_debug_log(auto=False)
-            return
-        result: str | list[str] = ""
-        if event.button.label == BtnLabel.list_test_paths:
-            self._list_existing_test_paths()
-        if event.button.label == BtnLabel.create_diffs:
+            self._log_mem_usage(manual=True)
+        elif event.button.label == BtnLabel.start_auto_log:
+            self.start_auto_log()
+        elif event.button.label == BtnLabel.stop_auto_log:
+            self.stop_auto_log()
+        elif event.button.label == BtnLabel.list_test_paths:
+            result = self.test_paths.existing_test_paths()
+        elif event.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
         elif event.button.label == BtnLabel.create_paths:
             result = self.test_paths.create_paths_on_disk()
         elif event.button.label == BtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
-        if isinstance(result, str):
-            self.test_paths_static.update(result)
-        else:
-            self.test_paths_static.update("\n".join(result))
+        self.test_paths_static.update(result)

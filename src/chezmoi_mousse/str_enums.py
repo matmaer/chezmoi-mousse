@@ -52,23 +52,25 @@ class BtnLabel(StrEnum):
 
     # Flat button labels
     cat_config = "Cat Config"
-    debug_log = "Debug Log"
     diagram = "Diagram"
     dump_config = "Config Dump"
     doctor = "Doctor"
-    dom_nodes = "DOM Nodes"
-    env_vars = "Env Vars"
     ignored = "Ignored"
     template_data = "Template Data"
-    test_paths = "Test Paths"
 
     # Debug tab buttons
     colors = "Colors"
     create_diffs = "Create Diffs"
     create_paths = "Create Test Paths"
+    debug_log = "Debug Log"
+    dom_nodes = "DOM Nodes"
+    env_vars = "Env Vars"
     list_test_paths = "List Test Paths"
     log_memory = "Log Memory Usage"
     remove_paths = "Remove Test Paths"
+    start_auto_log = "Start Auto Log"
+    stop_auto_log = "Stop Auto Log"
+    test_paths = "Test Paths"
 
     # Run chezmoi command buttons
     chezmoi_add = "chezmoi add"
@@ -263,9 +265,10 @@ class LogStr(StrEnum):
     doctor_warnings_found = "See the Config tab for warnings"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
-    not_tracing = "tracemalloc is not tracing but the Debug tab is active"
-    # removed_managed = "New managed paths" # noqa: ERA001
-    tracing = "tracemalloc is tracing"
+    auto_log = "psutil is auto logging"
+    auto_log_started = "auto log started"
+    auto_log_stopped = "auto log stopped"
+    no_auto_log = "psutil not auto logging"
 
     @property
     def end(self) -> str:

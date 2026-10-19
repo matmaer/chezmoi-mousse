@@ -72,6 +72,13 @@ class OperateBtnGroup(HorizontalGroup):
                 BtnLabel.chezmoi_forget,
             ):
                 btn.disabled = True
+            elif btn.label in (
+                BtnLabel.start_auto_log,
+                BtnLabel.stop_auto_log,
+                BtnLabel.log_memory,
+            ):
+                btn.disabled = btn.label == BtnLabel.start_auto_log
+                btn.display = False
 
 
 class PromptBtnGroup(HorizontalGroup):
