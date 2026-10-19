@@ -16,7 +16,10 @@ def _extract_dataclass_fields(node_db: NodeDb) -> DcFieldDict:
 
     class_nodes = node_db.by_type.get(ast.ClassDef.__name__, set())
     for class_node in class_nodes:
-        if "dataclass" not in class_node.decorator_names:
+        if (
+            "dataclass" not in class_node.decorator_names
+            or class_node.str_rep == "_FullPaths"  # TODO temporarily disable
+        ):
             continue
 
         fields = {

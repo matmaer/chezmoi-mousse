@@ -17,6 +17,8 @@ __all__ = [
     "RichLogName",
     "StatusCode",
     "Tcss",
+    "TestDir",
+    "TestFile",
     "TreeName",
     "WriteCmd",
 ]
@@ -290,6 +292,7 @@ class PathFilters(Enum):
     # exception handling, useless work, and keeping things as lean as possible
 
     UNWANTED_DIRS = (
+        "_test_un_wanted_dir",
         ".build",
         ".bundle",
         ".dart_tool",
@@ -323,6 +326,7 @@ class PathFilters(Enum):
     )
 
     KEY_FILE_NAMES = (
+        "_test_un_wanted_file.txt"
         # As we don't support adding encrypted files yet, we are excluding them.
         # Common private key file names across platforms
         "id_rsa",
@@ -407,7 +411,6 @@ class ProblemChars(StrEnum):
     BIDI_RLO = "\u202e"
     COMBINING = "\u0301"
     VARSEL = "\ufe0f"
-    ZWJ = "\u200d"
     ZWS = "\u200b"
 
 
@@ -479,6 +482,28 @@ class Tcss(StrEnum):
     tab_button = auto()
     tree_header = auto()
     true_label = auto()
+
+
+class TestDir(StrEnum):
+    managed_dir = "_test_managed_dir"
+    special_dir = "_test_special_dir"
+    un_wanted_dir = "_test_un_wanted_dir"
+    wanted_dir = "_test_wanted_dir"
+    empty_dir = f"{managed_dir}_empty"
+
+    @property
+    def nested_l1(self) -> str:
+        return f"{self}_n1"
+
+
+class TestFile(StrEnum):
+    huge_file = "_test_file_huge.txt"
+    large_file = "_test_file_large.txt"
+    medium_file = "_test_file_medium.txt"
+    small_file = "_test_file_small.txt"
+    tricky_utf8_file = "_test_file_tricky_utf8.txt"
+    un_wanted_file = "_test_un_wanted_file.txt"
+    wanted_file = "_test_wanted_file.txt"
 
 
 class TreeName(StrEnum):
