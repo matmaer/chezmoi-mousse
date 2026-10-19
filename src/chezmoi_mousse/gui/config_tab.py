@@ -4,30 +4,15 @@ import json
 from typing import TYPE_CHECKING
 
 from textual import on, work
-from textual.containers import (
-    Horizontal,
-    ScrollableContainer,
-    Vertical,
-)
+from textual.containers import Horizontal, ScrollableContainer, Vertical
 from textual.reactive import reactive
-from textual.widgets import (
-    Button,
-    ContentSwitcher,
-    Pretty,
-    Static,
-    TabPane,
-)
+from textual.widgets import Button, ContentSwitcher, Pretty, Static, TabPane
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.ascii_constants import FLOW_DIAGRAM
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    LabelStr,
-    ReadCmd,
-    Tcss,
-)
+from chezmoi_mousse.str_enums import BtnLabel, LabelStr, ReadCmd, Tcss
 
 from .common.actionables import FlatButtonsVertical
 

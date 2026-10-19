@@ -8,34 +8,15 @@ import psutil
 from rich._inspect import Inspect
 from rich.markup import escape
 from textual import on, work
-from textual.containers import (
-    Horizontal,
-    ScrollableContainer,
-    Vertical,
-)
-from textual.widgets import (
-    Button,
-    ContentSwitcher,
-    RichLog,
-    Static,
-    TabPane,
-)
+from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.widgets import Button, ContentSwitcher, RichLog, Static, TabPane
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
-from chezmoi_mousse.gui.common.actionables import (
-    FlatButtonsVertical,
-    OperateBtnGroup,
-)
+from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.logs_tab import RichLoggers
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    ColorVar,
-    LabelStr,
-    LogStr,
-    Tcss,
-)
+from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -239,9 +220,7 @@ class DebugTab(TabPane):
         env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
         self.app.call_later(self._log_dom_nodes)
         self.auto_log_timer = self.set_interval(
-            name="auto_log",
-            interval=2,
-            callback=self._log_mem_usage,
+            name="auto_log", interval=2, callback=self._log_mem_usage
         )
         self.auto_log = True
         self.debug_log.write_app_log_msg(f"{LogStr.auto_log}")

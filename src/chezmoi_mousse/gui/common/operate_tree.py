@@ -9,11 +9,7 @@ from textual.widgets import Tree
 
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.data_types import NodeData
-from chezmoi_mousse.str_enums import (
-    ColorVar,
-    StatusCode as Sc,
-    TreeName,
-)
+from chezmoi_mousse.str_enums import ColorVar, StatusCode as Sc, TreeName
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -35,11 +31,7 @@ class OperateTree(Tree[NodeData]):
         app = getters.app(ChezmoiGui)
 
     def __init__(self, tree_name: TreeName, tree_id: str) -> None:
-        super().__init__(
-            id=tree_id,
-            label="root",
-            name=tree_name.value,
-        )
+        super().__init__(id=tree_id, label="root", name=tree_name.value)
 
     def on_mount(self) -> None:
         self.iterated_dirs: set[Path] = set()

@@ -18,13 +18,7 @@ from chezmoi_mousse.asyncio_process_exec import (
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
 from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.str_enums import (
-    Chars,
-    LogStr,
-    ReadCmd,
-    StatusCode as Sc,
-    WriteCmd,
-)
+from chezmoi_mousse.str_enums import Chars, LogStr, ReadCmd, StatusCode as Sc, WriteCmd
 
 if TYPE_CHECKING:
     from asyncio import Task
@@ -128,9 +122,7 @@ async def run_chezmoi_cmd(
 
 
 async def run_in_task_group(
-    app: ChezmoiGui,
-    commands: Iterable[ReadCmd],
-    path: Path | None = None,
+    app: ChezmoiGui, commands: Iterable[ReadCmd], path: Path | None = None
 ) -> dict[ReadCmd, CommandResult]:
     tasks_by_cmd: dict[ReadCmd, Task[CommandResult]] = {}
     async with asyncio.TaskGroup() as tg:
@@ -320,9 +312,7 @@ def get_highlighted_file_contents(file_path: Path) -> Text:
 
 
 async def get_highlighted_chezmoi_cat_output(
-    app: ChezmoiGui,
-    *,
-    file_path: Path,
+    app: ChezmoiGui, *, file_path: Path
 ) -> Text:
     cmd_result = await _exec_chezmoi(
         app,
@@ -337,8 +327,7 @@ async def get_highlighted_chezmoi_cat_output(
 
 
 def run_chezmoi_interactive(
-    cmd_enum: WriteCmd,
-    verb_arg: Path | list[str] | None,
+    cmd_enum: WriteCmd, verb_arg: Path | list[str] | None
 ) -> AsyncGenerator[StreamEvent, str | None]:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
@@ -349,9 +338,7 @@ def run_chezmoi_interactive(
     elif cmd_enum in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget) and (
         verb_arg is None or verb_arg == store.cfg.dest_dir
     ):
-        raise ValueError(
-            f"{WriteCmd.add.pretty_cmd} cannot run on the dest dir.",
-        )
+        raise ValueError(f"{WriteCmd.add.pretty_cmd} cannot run on the dest dir.")
     if isinstance(verb_arg, list):
         chezmoi_args = (*cmd_enum.value, *verb_arg)
     elif verb_arg is None or verb_arg == store.cfg.dest_dir:

@@ -5,13 +5,7 @@ from typing import TYPE_CHECKING
 from rich.markup import escape
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.str_enums import (
-    Chars,
-    ColorVar,
-    LabelStr,
-    LogStr,
-    Tcss,
-)
+from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.data_types import CommandResult

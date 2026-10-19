@@ -22,13 +22,7 @@ from chezmoi_mousse.gui.common.components import (
     WarningLabel,
 )
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    ChezmoiPrompts,
-    ColorVar,
-    Tcss,
-    WriteCmd,
-)
+from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, ColorVar, Tcss, WriteCmd
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -184,7 +178,7 @@ class OperateModal(ModalScreen[None]):
                     self.op_btn.run_label,
                     BtnLabel.cancel,
                     BtnLabel.close,
-                ),
+                )
             )
 
     def on_mount(self) -> None:

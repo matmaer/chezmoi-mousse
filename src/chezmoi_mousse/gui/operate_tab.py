@@ -3,23 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual import on, work
-from textual.containers import (
-    Horizontal,
-    Vertical,
-)
-from textual.widgets import (
-    Button,
-    RadioButton,
-    RadioSet,
-    TabPane,
-    Tree,
-)
+from textual.containers import Horizontal, Vertical
+from textual.widgets import Button, RadioButton, RadioSet, TabPane, Tree
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.gui.common.actionables import (
-    OperateBtnGroup,
-    SwitchGroup,
-)
+from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, SwitchGroup
 from chezmoi_mousse.gui.common.components import (
     MainSectionLabel,
     NoShowLabel,
@@ -35,14 +23,7 @@ from chezmoi_mousse.gui.common.operate_views import (
     GitLogView,
     PathView,
 )
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    Chars,
-    LabelStr,
-    ReadCmd,
-    Tcss,
-    TreeName,
-)
+from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, ReadCmd, Tcss, TreeName
 from chezmoi_mousse.tchezmoi import OperatePaths
 
 if TYPE_CHECKING:
@@ -68,55 +49,31 @@ class LeftSideVertical(Vertical):
             Button(label=Chars.refresh, classes=Tcss.refresh_button),
             classes=Tcss.tree_header,
         )
-        yield OperateTree(
-            TreeName.managed_sp,
-            store.op_ids.tree.managed_sp,
-        )
-        yield OperateTree(
-            TreeName.managed_sp_xpd,
-            store.op_ids.tree.managed_sp_xpd,
-        )
-        yield OperateTree(
-            TreeName.managed_amp,
-            store.op_ids.tree.managed_amp,
-        )
-        yield OperateTree(
-            TreeName.managed_amp_xpd,
-            store.op_ids.tree.managed_amp_xpd,
-        )
+        yield OperateTree(TreeName.managed_sp, store.op_ids.tree.managed_sp)
+        yield OperateTree(TreeName.managed_sp_xpd, store.op_ids.tree.managed_sp_xpd)
+        yield OperateTree(TreeName.managed_amp, store.op_ids.tree.managed_amp)
+        yield OperateTree(TreeName.managed_amp_xpd, store.op_ids.tree.managed_amp_xpd)
         # UNMANAGED TREE VARIANTS
+        yield OperateTree(TreeName.wanted_plus_sp, store.op_ids.tree.wanted_plus_sp)
         yield OperateTree(
-            TreeName.wanted_plus_sp,
-            store.op_ids.tree.wanted_plus_sp,
+            TreeName.wanted_plus_sp_xpd, store.op_ids.tree.wanted_plus_sp_xpd
         )
+        yield OperateTree(TreeName.wanted_plus_amp, store.op_ids.tree.wanted_plus_amp)
         yield OperateTree(
-            TreeName.wanted_plus_sp_xpd,
-            store.op_ids.tree.wanted_plus_sp_xpd,
-        )
-        yield OperateTree(
-            TreeName.wanted_plus_amp,
-            store.op_ids.tree.wanted_plus_amp,
-        )
-        yield OperateTree(
-            TreeName.wanted_plus_amp_xpd,
-            store.op_ids.tree.wanted_plus_amp_xpd,
+            TreeName.wanted_plus_amp_xpd, store.op_ids.tree.wanted_plus_amp_xpd
         )
         # UNWANTED TREE VARIANTS
         yield OperateTree(
-            TreeName.un_wanted_plus_sp,
-            store.op_ids.tree.un_wanted_plus_sp,
+            TreeName.un_wanted_plus_sp, store.op_ids.tree.un_wanted_plus_sp
         )
         yield OperateTree(
-            TreeName.un_wanted_plus_sp_xpd,
-            store.op_ids.tree.un_wanted_plus_sp_xpd,
+            TreeName.un_wanted_plus_sp_xpd, store.op_ids.tree.un_wanted_plus_sp_xpd
         )
         yield OperateTree(
-            TreeName.un_wanted_plus_amp,
-            store.op_ids.tree.un_wanted_plus_amp,
+            TreeName.un_wanted_plus_amp, store.op_ids.tree.un_wanted_plus_amp
         )
         yield OperateTree(
-            TreeName.un_wanted_plus_amp_xpd,
-            store.op_ids.tree.un_wanted_plus_amp_xpd,
+            TreeName.un_wanted_plus_amp_xpd, store.op_ids.tree.un_wanted_plus_amp_xpd
         )
 
     @on(Button.Pressed)
@@ -191,7 +148,7 @@ class OperateTab(TabPane):
                     LabelStr.radio_diff,
                     LabelStr.radio_diff_reverse,
                     LabelStr.radio_path_view,
-                ),
+                )
             )
             yield OperateBtnGroup(
                 store.op_ids,

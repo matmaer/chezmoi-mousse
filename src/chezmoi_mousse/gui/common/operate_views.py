@@ -4,23 +4,14 @@ from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
 from textual import work
-from textual.containers import (
-    ScrollableContainer,
-    Vertical,
-)
+from textual.containers import ScrollableContainer, Vertical
 from textual.reactive import reactive
 from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.gui.common import widget_factory
-from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
-)
-from chezmoi_mousse.str_enums import (
-    ColorVar,
-    LabelStr,
-    ReadCmd,
-)
+from chezmoi_mousse.gui.common.components import FlatSectionLabel
+from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd
 
 if TYPE_CHECKING:
     from pathlib import Path
