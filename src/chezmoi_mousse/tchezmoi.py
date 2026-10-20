@@ -216,14 +216,15 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, st
 
     for cmd_enum, cr in group_results.items():
         # Matches standard git diff paths (capturing the target path in group 1)
-        affected_paths: list[str] = []
+        affected_paths: set[str] = set()
         for line in cr.out_list:
             match = _PATH_PATTERN.match(line)
             if match:
                 relative_path = Path(match.group(1))
                 abs_path = store.cfg.dest_dir / relative_path
-                affected_paths.append(f"{Chars.bullet} {abs_path}")
-        paths_str = "\n".join(affected_paths)
+                affected_paths.add(f"{Chars.bullet} {abs_path}")
+        sorted_paths: list[str] = sorted(affected_paths)
+        paths_str = "\n".join(sorted_paths)
         result[cmd_enum] = paths_str
 
     to_return: dict[str, str] = {}
