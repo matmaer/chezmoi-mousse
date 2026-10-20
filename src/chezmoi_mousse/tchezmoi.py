@@ -232,7 +232,7 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, st
     return to_return
 
 
-async def run_managed_commands(app: ChezmoiGui) -> None:
+async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
 
     def parse_paths(path_strings: list[str]) -> list[Path]:
         return [Path(line) for line in path_strings]
@@ -280,7 +280,7 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
     source_dirs = parse_paths(source_dirs_task.result().out_list)
     source_files = parse_paths(source_files_task.result().out_list)
 
-    tree_paths = ChezmoiTreePaths(
+    return ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
         _man_dirs=dict(zip(target_dirs, source_dirs, strict=True)),
         _man_files=dict(zip(target_files, source_files, strict=True)),
@@ -289,7 +289,6 @@ async def run_managed_commands(app: ChezmoiGui) -> None:
         _un_man_dirs=parse_paths_to_set(cm_path_cr[ReadCmd.unmanaged_dirs]),
         _un_man_files=parse_paths_to_set(cm_path_cr[ReadCmd.unmanaged_files]),
     )
-    await store.handle_new_tree_paths(app, tree_paths)
 
 
 def get_highlighted_file_contents(file_path: Path) -> Text:

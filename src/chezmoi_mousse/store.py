@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from chezmoi_mousse.app_ids import AppIds
 from chezmoi_mousse.chezmoi_paths import CmPathChanges
 from chezmoi_mousse.data_types import InitData, ParsedDumpConfig
-from chezmoi_mousse.gui.splash_screen import SplashScreen
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
@@ -32,7 +31,6 @@ _first_change_calculation: bool = True
 async def handle_new_tree_paths(
     app: ChezmoiGui, new_tree_paths: ChezmoiTreePaths
 ) -> None:
-
     global cm_paths
     global cm_changes
     global _first_change_calculation
@@ -45,12 +43,6 @@ async def handle_new_tree_paths(
     cm_paths = new_tree_paths
     _first_change_calculation = False
     app.app_log.write_app_log_msg("Updated cm_paths and cm_changes in store.py")
-    if isinstance(app.screen, SplashScreen):
-        return
-    if not cm_changes.changes_available:
-        app.notify("No changes available, skipping refresh.", severity="warning")
-    else:
-        await app.left_side.apply_changes()
 
 
 async def decode_and_store_config(std_out: str) -> None:

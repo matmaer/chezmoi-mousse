@@ -308,7 +308,7 @@ class OperateModal(ModalScreen[None]):
                         else f"Process exit, returncode {event.returncode})."
                     )
                     self.app.run_worker(
-                        tchezmoi.run_managed_commands(self.app),
+                        self.app.left_side.refresh_trees(),
                         name="refresh_trees_after_operation",
                     )
                 elif response == ChezmoiPrompts.diff.reply:

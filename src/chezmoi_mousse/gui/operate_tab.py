@@ -84,12 +84,21 @@ class LeftSideVertical(Vertical):
 
     @work
     async def _refresh_trees(self) -> None:
-        await tchezmoi.run_managed_commands(self.app)
+        await self.refresh_trees()
+
+    async def refresh_trees(self) -> None:
+        new_tree_paths = await tchezmoi.run_managed_commands(self.app)
+        await store.handle_new_tree_paths(self.app, new_tree_paths)
+        await self.apply_changes()
 
     async def apply_changes(self) -> None:
         if store.cm_changes.changes_available:
             for tree in self.query_children(OperateTree).results():
                 await tree.apply_changes(store.cm_changes)
+        else:
+            self.app.notify(
+                "No changes available, skipping refresh.", severity="warning"
+            )
 
 
 class RightSideVertical(Vertical):
