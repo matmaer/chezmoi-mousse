@@ -117,19 +117,25 @@ class OperateTree(Tree[NodeData]):
             if tree_node is not None:
                 del self.node_map[path]
 
+        tree_name = TreeName(self.name)
+
         for path, node_data in changes.add_tree_dirs.items():
-            self._add_node_with_color(path, node_data, allow_expand=True)
+            if node_data.include_in_tree(tree_name):
+                self._add_node_with_color(path, node_data, allow_expand=True)
 
         for path, node_data in changes.add_tree_files.items():
-            self._add_node_with_color(path, node_data, allow_expand=False)
+            if node_data.include_in_tree(tree_name):
+                self._add_node_with_color(path, node_data, allow_expand=False)
 
         for path, node_data in changes.change_tree_dirs.items():
             self.node_map[path].remove()
             self._add_node_with_color(path, node_data, allow_expand=True)
 
         for path, node_data in changes.change_tree_files.items():
-            self.node_map[path].remove()
-            self._add_node_with_color(path, node_data, allow_expand=False)
+            if path in self.node_map:
+                self.node_map[path].remove()
+            if node_data.include_in_tree(tree_name):
+                self._add_node_with_color(path, node_data, allow_expand=False)
 
         self._expand_xpd_nodes()
         self.refresh(layout=True)
