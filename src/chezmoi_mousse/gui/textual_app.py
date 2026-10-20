@@ -143,7 +143,8 @@ class ChezmoiGui(App[str]):
             self.app_log.cmd_result = cr
         self._run_splash_commands()
 
-        await tchezmoi.run_managed_commands(self)
+        new_tree_paths = await tchezmoi.run_managed_commands(self)
+        await store.handle_new_tree_paths(self, new_tree_paths)
         await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
         tabbed_content.active = BtnLabel.operate.pane_id
         self.left_side = self.query_exactly_one(LeftSideVertical)
@@ -261,8 +262,7 @@ class ChezmoiGui(App[str]):
             else BindingDescription.show_context
         )
         self._update_binding_description(
-            binding_action=BindingAction.toggle_context,
-            new_description=new_description,
+            binding_action=BindingAction.toggle_context, new_description=new_description
         )
 
     def action_toggle_tree(self) -> None:
@@ -280,19 +280,14 @@ class ChezmoiGui(App[str]):
             else BindingDescription.show_tree
         )
         self._update_binding_description(
-            binding_action=BindingAction.toggle_tree,
-            new_description=new_description,
+            binding_action=BindingAction.toggle_tree, new_description=new_description
         )
 
     @on(TabbedContent.TabActivated)
     def handle_tab_activated(self) -> None:
         self.refresh_bindings()
 
-    def check_action(
-        self,
-        action: str,
-        parameters: tuple[object, ...],
-    ) -> bool:
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool:
         _ = parameters
         if isinstance(self.screen, (SplashScreen, OperateModal)):
             return False
