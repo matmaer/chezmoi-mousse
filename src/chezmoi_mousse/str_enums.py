@@ -60,17 +60,18 @@ class BtnLabel(StrEnum):
 
     # Debug tab buttons
     colors = "Colors"
-    create_diffs = "Create Diffs"
-    create_paths = "Create Test Paths"
     debug_log = "Debug Log"
     dom_nodes = "DOM Nodes"
     env_vars = "Env Vars"
-    list_test_paths = "List Test Paths"
     log_memory = "Log Memory Usage"
-    remove_paths = "Remove Test Paths"
     start_auto_log = "Start Auto Log"
     stop_auto_log = "Stop Auto Log"
     test_paths = "Test Paths"
+    # debug tab operate buttons
+    create_diffs = "Create Diffs"
+    list_paths = "List Test Paths"
+    remove_paths = "Remove Test Paths"
+    reset_paths = "Reset Test Paths"
 
     # Run chezmoi command buttons
     chezmoi_add = "chezmoi add"
@@ -585,17 +586,9 @@ class _GlobalArgs(Enum):
     _force_false = "--force=false"
     _interactive_false = "--interactive=false"
     _interactive_true = "--interactive=true"
-    non_interactive = (
-        *_global_defaults,
-        _interactive_false,
-        _force_true,
-    )
+    non_interactive = (*_global_defaults, _interactive_false, _force_true)
     # --no-tty=true makes chezmoi prompt over stdin/stdout instead of /dev/tty
-    interactive = (
-        *_global_defaults,
-        _interactive_true,
-        _force_false,
-    )
+    interactive = (*_global_defaults, _interactive_true, _force_false)
     dry_run_arg = "--dry-run=true"
     verbose_arg = "--verbose"
 
@@ -620,27 +613,11 @@ class _WriteVerb(StrEnum):
 
 
 class ReadCmd(Enum):
-    cat = (
-        *_GlobalArgs.non_interactive.value,
-        "cat",
-    )
-    cat_config = (
-        *_GlobalArgs.non_interactive.value,
-        "cat-config",
-    )
-    diff = (
-        *_GlobalArgs.non_interactive.value,
-        "diff",
-    )
-    diff_reverse = (
-        *_GlobalArgs.non_interactive.value,
-        "diff",
-        _VerbArgs.reverse.value,
-    )
-    doctor = (
-        *_GlobalArgs.non_interactive.value,
-        "doctor",
-    )
+    cat = (*_GlobalArgs.non_interactive.value, "cat")
+    cat_config = (*_GlobalArgs.non_interactive.value, "cat-config")
+    diff = (*_GlobalArgs.non_interactive.value, "diff")
+    diff_reverse = (*_GlobalArgs.non_interactive.value, "diff", _VerbArgs.reverse.value)
+    doctor = (*_GlobalArgs.non_interactive.value, "doctor")
     dump_config = (
         *_GlobalArgs.non_interactive.value,
         "dump-config",
@@ -661,10 +638,7 @@ class ReadCmd(Enum):
         "git",
         *_ChezmoiGitArgs.git_remote.value,
     )
-    ignored = (
-        *_GlobalArgs.non_interactive.value,
-        "ignored",
-    )
+    ignored = (*_GlobalArgs.non_interactive.value, "ignored")
     managed_dirs = (
         *_GlobalArgs.non_interactive.value,
         "managed",
@@ -677,10 +651,7 @@ class ReadCmd(Enum):
         _VerbArgs.path_style_absolute.value,
         _VerbArgs.include_files.value,
     )
-    source_path = (
-        *_GlobalArgs.non_interactive.value,
-        "source-path",
-    )
+    source_path = (*_GlobalArgs.non_interactive.value, "source-path")
     status_dirs = (
         *_GlobalArgs.non_interactive.value,
         "status",
@@ -750,10 +721,7 @@ class ReadCmd(Enum):
             *_ChezmoiGitArgs.global_args.value,
             *_ChezmoiGitArgs.git_log_args.value,
             _ChezmoiGitArgs.verbose.value,
-            *(
-                _VerbArgs.format_json.value,
-                _VerbArgs.path_style_absolute.value,
-            ),
+            *(_VerbArgs.format_json.value, _VerbArgs.path_style_absolute.value),
         )
         verb_str = " ".join(a for a in self.value if a not in ugly_args)
         if "git" in verb_str and verb_str.count("--") == 1:
@@ -789,32 +757,17 @@ class ReadCmd(Enum):
 
 
 class WriteCmd(Enum):
-    init = (
-        *_GlobalArgs.non_interactive.value,
-        _WriteVerb.init.value,
-    )
+    init = (*_GlobalArgs.non_interactive.value, _WriteVerb.init.value)
     add = (
         *_GlobalArgs.interactive.value,
         _WriteVerb.add.value,
         _VerbArgs.prompt.value,
         _VerbArgs.recursive_false.value,
     )
-    apply = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.apply.value,
-    )
-    destroy = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.destroy.value,
-    )
-    forget = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.forget.value,
-    )
-    re_add = (
-        *_GlobalArgs.interactive.value,
-        _WriteVerb.re_add.value,
-    )
+    apply = (*_GlobalArgs.interactive.value, _WriteVerb.apply.value)
+    destroy = (*_GlobalArgs.interactive.value, _WriteVerb.destroy.value)
+    forget = (*_GlobalArgs.interactive.value, _WriteVerb.forget.value)
+    re_add = (*_GlobalArgs.interactive.value, _WriteVerb.re_add.value)
 
     @cached_property
     def pretty_cmd(self) -> str:

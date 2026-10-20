@@ -197,10 +197,10 @@ class DebugTab(TabPane):
             app_ids=store.debug_ids,
             labels=(
                 BtnLabel.create_diffs,
-                BtnLabel.create_paths,
-                BtnLabel.list_test_paths,
-                BtnLabel.remove_paths,
+                BtnLabel.list_paths,
                 BtnLabel.log_memory,
+                BtnLabel.remove_paths,
+                BtnLabel.reset_paths,
                 BtnLabel.start_auto_log,
                 BtnLabel.stop_auto_log,
             ),
@@ -213,8 +213,7 @@ class DebugTab(TabPane):
         self.op_buttons = self.op_btn_group.query_children(Button)
         self.switcher = self.query_exactly_one(ContentSwitcher)
         self.test_paths_static = self.query_exactly_one(TestPathsView)
-        result = self.test_paths.existing_test_paths()
-        self.test_paths_static.update(result)
+        self.test_paths_static.update(self.test_paths.report_test_paths())
         self.debug_log = self.query_exactly_one(DebugLog)
         env_var_logger = self.query_one(store.debug_ids.richlog.env_vars_q, RichLog)
         env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
@@ -347,20 +346,24 @@ class DebugTab(TabPane):
 
     @on(Button.Pressed)
     def handle_operate_buttons(self, event: Button.Pressed) -> None:
-        event.stop()
-        result: str = "Nothing to show"
         if event.button.label == BtnLabel.log_memory:
             self._log_mem_usage(manual=True)
+            return
         elif event.button.label == BtnLabel.start_auto_log:
             self.start_auto_log()
+            return
         elif event.button.label == BtnLabel.stop_auto_log:
             self.stop_auto_log()
-        elif event.button.label == BtnLabel.list_test_paths:
-            result = self.test_paths.existing_test_paths()
+            return
+        elif event.button.label == BtnLabel.list_paths:
+            result = self.test_paths.report_test_paths()
         elif event.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
-        elif event.button.label == BtnLabel.create_paths:
-            result = self.test_paths.create_paths_on_disk()
+        elif event.button.label == BtnLabel.reset_paths:
+            result = self.test_paths.reset_paths()
         elif event.button.label == BtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
+        else:
+            return
+        event.stop()
         self.test_paths_static.update(result)

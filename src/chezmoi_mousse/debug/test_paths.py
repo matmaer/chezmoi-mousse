@@ -1,9 +1,11 @@
-import os
 import random
-import shutil
+import stat
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from rich.markup import escape
+
+from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import ColorVar, ProblemChars, TestDir, TestFile
 
 __all__ = ["TestPaths"]
@@ -23,10 +25,12 @@ class _TestFileContents:
     _diff_large: str = ""
 
     _tricky_utf8: str = ""
-    _binary_file_data_map: dict[str, bytes] = field(default_factory=dict[str, bytes])
+    binary_file_data_map: dict[str, bytes] = field(default_factory=dict[str, bytes])
 
-    _words: frozenset[str] = frozenset(
-        [
+    _words: list[str] = field(default_factory=list[str])
+
+    def __post_init__(self) -> None:
+        self._words = [
             "lorem",
             "ipsum",
             "dolor",
@@ -36,16 +40,12 @@ class _TestFileContents:
             "adipiscing",
             "elit",
         ]
-    )
-
-    def __post_init__(self) -> None:
-
         self._initial_small = self._generate_initial_text(TestFile.small_file)
         self._initial_medium = self._generate_initial_text(TestFile.medium_file)
         self._initial_large = self._generate_initial_text(TestFile.large_file)
         self._initial_huge = self._generate_initial_text(TestFile.huge_file)
         self._tricky_utf8 = self._generate_tricky_utf8_text()
-        self._binary_file_data_map = self._generate_binary_data_map()
+        self.binary_file_data_map = self._generate_binary_data_map()
 
         self._diff_small = self._initial_small.replace("lorem", "LOREM")
         self._diff_medium = self._initial_medium.replace("lorem", "LOREM")
@@ -59,8 +59,10 @@ class _TestFileContents:
             TestFile.large_file.value: self._initial_large,
             TestFile.huge_file.value: self._initial_huge,
             TestFile.tricky_utf8_file.value: self._tricky_utf8,
+            TestFile.wanted_file.value: self._initial_small,
+            TestFile.un_wanted_file.value: self._initial_small,
         }
-        return file_name_map | self._binary_file_data_map
+        return file_name_map | self.binary_file_data_map
 
     @property
     def old_diff_map(self) -> dict[str, str]:
@@ -86,28 +88,29 @@ class _TestFileContents:
             TestFile.huge_file.value: 3000,
         }
         target_bytes: int = str_to_kb_map[file_name] * 1024
-        random.seed(target_bytes)
+        rng = random.Random(target_bytes)
 
         paragraphs: list[str] = []
         current_bytes: int = 0
 
         while current_bytes < target_bytes:
-            word_count: int = random.randint(20, 60)
+            word_count: int = rng.randint(20, 60)
             paragraphs.append(
-                " ".join(random.choices(list(self._words), k=word_count)) + ".\n\n"
+                " ".join(rng.choices(self._words, k=word_count)) + ".\n\n"
             )
             current_bytes += len(paragraphs[-1])
 
         return "".join(paragraphs)
 
     def _generate_tricky_utf8_text(self) -> str:
+        rng = random.Random(42)
         parts: list[str] = []
-        parts.append(" ".join(list(self._words)))
+        parts.append(" ".join(self._words))
         parts.append(
-            "".join(random.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60))
+            "".join(rng.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60))
         )
-        parts.append("".join(chr(random.randint(0x0600, 0x06FF)) for _ in range(30)))
-        parts.append("".join(chr(random.randint(0x4E00, 0x9FFF)) for _ in range(30)))
+        parts.append("".join(chr(rng.randint(0x0600, 0x06FF)) for _ in range(30)))
+        parts.append("".join(chr(rng.randint(0x4E00, 0x9FFF)) for _ in range(30)))
         # emoji sequences and variation selectors
         parts.append("🙂🚀🔥" * 10 + ProblemChars.VARSEL)
         # combining sequences
@@ -121,10 +124,10 @@ class _TestFileContents:
         )
         parts.append(
             ProblemChars.BIDI_RLO
-            + list(self._words)[2]
+            + self._words[2]
             + ProblemChars.BIDI_PDF
             + ProblemChars.ZWS
-            + list(self._words)[3]
+            + self._words[3]
         )
         return "".join(parts)
 
@@ -154,8 +157,7 @@ class _TestFileContents:
 
 @dataclass
 class _FullPaths:
-    file_contents: _TestFileContents
-    _initial_diff_state: bool = True
+    file_contents: _TestFileContents = field(default_factory=_TestFileContents)
 
     l1_man_dir: Path = HOME_DIR / TestDir.managed_dir
     l1_special_dir: Path = HOME_DIR / TestDir.special_dir
@@ -164,170 +166,154 @@ class _FullPaths:
 
     l2_empty_dir: Path = HOME_DIR / TestDir.managed_dir / TestDir.empty_dir
     l2_man_dir: Path = HOME_DIR / TestDir.managed_dir / TestDir.managed_dir.nested_l1
-    l2_wanted_dir: Path = HOME_DIR / TestDir.managed_dir / TestDir.wanted_dir.nested_l1
     l2_un_wanted_dir: Path = l1_man_dir / TestDir.un_wanted_dir
     l2_wanted_dir: Path = l1_man_dir / TestDir.wanted_dir
-    l3e_man_dir: Path = l2_empty_dir / TestDir.managed_dir
-    l3e_wanted_dir: Path = l2_empty_dir / TestDir.wanted_dir
-    l3e_un_wanted_dir: Path = l2_empty_dir / TestDir.un_wanted_dir
+    l3e_man_dir: Path = l2_man_dir / TestDir.managed_dir
+    l3e_wanted_dir: Path = l2_man_dir / TestDir.wanted_dir
+    l3e_un_wanted_dir: Path = l2_man_dir / TestDir.un_wanted_dir
 
     l0_medium_file: Path = HOME_DIR / TestFile.medium_file
     l0_small_file: Path = HOME_DIR / TestFile.small_file
     l1_huge_file: Path = l1_special_dir / TestFile.huge_file
     l1_tricky_utf8_file: Path = l1_special_dir / TestFile.tricky_utf8_file
 
-    l1_medium_file: Path = l1_man_dir / TestFile.medium_file
     l1_un_wanted_file: Path = l1_man_dir / TestFile.un_wanted_file
     l1_medium_file: Path = l1_man_dir / TestFile.medium_file
     l1_small_file: Path = l1_man_dir / TestFile.small_file
     l1_large_file: Path = l1_man_dir / TestFile.large_file
-    l2_medium_file: Path = l2_man_dir / TestFile.medium_file
     l2_medium_file: Path = l2_man_dir / TestFile.medium_file
     l2_wanted_file: Path = l2_man_dir / TestFile.wanted_file
     l3e_medium_file: Path = l3e_man_dir / TestFile.medium_file
     l3e_small_file: Path = l3e_man_dir / TestFile.small_file
     l3e_un_wanted_file: Path = l3e_man_dir / TestFile.un_wanted_file
 
-    def __post_init__(self) -> None:
-        self.file_contents = _TestFileContents()
+    def dir_paths(self, exists: bool | None = None) -> list[Path]:
+        paths = [getattr(self, attr) for attr in dir(self) if attr.endswith("_dir")]
+        sorted_paths = path_funcs.sort_paths(paths)
+        if exists is True:
+            return [path for path in sorted_paths if path.exists()]
+        elif exists is False:
+            return [path for path in sorted_paths if not path.exists()]
+        return sorted_paths
 
-    @property
-    def dir_paths(self) -> list[Path]:
-        return [getattr(self, attr) for attr in dir(self) if attr.endswith("_dir")]
-
-    @property
-    def file_paths(self) -> list[Path]:
-        return [getattr(self, attr) for attr in dir(self) if attr.endswith("_file")]
+    def file_paths(self, exists: bool | None = None) -> list[Path]:
+        text_paths = [
+            getattr(self, attr) for attr in dir(self) if attr.endswith("_file")
+        ]
+        binary_paths = [
+            self.l1_special_dir / f_name
+            for f_name in self.file_contents.binary_file_data_map
+        ]
+        sorted_paths = path_funcs.sort_paths(text_paths + binary_paths)
+        if exists is True:
+            return [path for path in sorted_paths if path.exists()]
+        elif exists is False:
+            return [path for path in sorted_paths if not path.exists()]
+        return sorted_paths
 
     @property
     def files_for_diff(self) -> list[Path]:
         return [
             path
-            for path in self.file_paths
+            for path in self.file_paths(exists=True)
             if path.name
             in (TestFile.small_file, TestFile.medium_file, TestFile.large_file)
         ]
 
-    @property
-    def all_paths(self) -> list[Path]:
-        return self.dir_paths + self.file_paths
-
-    def get_for_diff_contents(self, paths: list[Path]) -> dict[Path, str]:
-        result: dict[Path, str] = {}
-        self._initial_diff_state = not self._initial_diff_state
-        for path in paths:
-            if path not in self.files_for_diff:
-                continue
-            elif self._initial_diff_state:
-                result[path] = self.file_contents.old_diff_map[path.name]
-            else:
-                result[path] = self.file_contents.new_diff_map[path.name]
-        return result
+    def all_paths(self, exists: bool | None = None) -> list[Path]:
+        return self.dir_paths(exists) + self.file_paths(exists)
 
 
 class TestPaths:
     def __init__(self) -> None:
-        self.full_paths = _FullPaths(file_contents=_TestFileContents())
+        self.full_paths = _FullPaths()
+        self.modified_diff_state: bool = False
 
-    def _get_existing_home_test_files(self) -> list[Path]:
-        return [
-            p for p in HOME_DIR.iterdir() if p.name.startswith("_test_") and p.is_file()
-        ]
+    def report_test_paths(self) -> str:
+        lines: list[str] = []
+        existing = self.full_paths.all_paths(exists=True)
+        if existing:
+            lines.append(f"[${ColorVar.text_success}]Existing:[/]")
+            lines.extend(escape(str(path)) for path in existing)
 
-    def _get_existing_home_test_dirs(self) -> list[Path]:
-        return [
-            p for p in HOME_DIR.iterdir() if p.name.startswith("_test_") and p.is_dir()
-        ]
+        missing = self.full_paths.all_paths(exists=False)
+        if missing:
+            lines.append(f"[${ColorVar.text_warning}]Missing:[/]")
+            lines.extend(escape(str(path)) for path in missing)
+        return "\n".join(line for line in lines)
 
-    def _reset_paths(self) -> None:
-        for dir_path in self.full_paths.dir_paths:
+    def reset_paths(self) -> str:
+        existing_before = set(self.full_paths.all_paths(exists=True))
+        for dir_path in self.full_paths.dir_paths():
             dir_path.mkdir(parents=True, exist_ok=True)
-        for file_path in self.full_paths.file_paths:
+            dir_path.chmod(0o755)
+        for file_path in self.full_paths.file_paths():
             file_contents = self.full_paths.file_contents.initial_map[file_path.name]
             if isinstance(file_contents, bytes):
                 file_path.write_bytes(file_contents)
             else:
                 file_path.write_text(file_contents, encoding="utf-8")
 
-    def _get_existing_test_paths(self) -> list[Path]:
-        matches: list[Path] = []
-        matches.extend(self._get_existing_home_test_files())
-        dir_paths = self._get_existing_home_test_dirs()
-        for dir_path in dir_paths:
-            for root, dirs, files in os.walk(dir_path):
-                if len(Path(root).parts) > 7:
-                    continue
-                matches.extend(
-                    Path(root) / name
-                    for name in [*dirs, *files]
-                    if name.startswith("_test_")
-                )
-        return matches
-
-    def create_paths_on_disk(self) -> str:
-        # record existing expected paths before creating anything
-        existing_before = set(self._get_existing_test_paths())
-        self._reset_paths()
-        existing_after = set(self._get_existing_test_paths())
-
-        # compute which expected paths now exist but didn't before
-        created = {str(p) for p in (existing_after - existing_before)}
-        nothing_created_msg = "No test paths created because they already exist."
-        if not created:
-            return f"[${ColorVar.text_warning}]{nothing_created_msg}"
-
-        return "\n".join(
-            f"[${ColorVar.text_success} bold]Created paths:[/]", *sorted(created)
-        )
+        existing_after = set(self.full_paths.all_paths(exists=True))
+        created = path_funcs.sort_paths(existing_after - existing_before)
+        updated = path_funcs.sort_paths(existing_before & existing_after)
+        lines: list[str] = []
+        if created:
+            lines.append(f"[${ColorVar.text_success}]Created missing paths:[/]")
+            lines.extend(escape(str(path)) for path in created)
+        if updated:
+            lines.append(f"[${ColorVar.text_warning}]Updated existing paths:[/]")
+            lines.extend(escape(str(path)) for path in updated)
+        self.modified_diff_state = False
+        return "\n".join(lines)
 
     def remove_test_paths(self) -> str:
-        existing_paths = self._get_existing_test_paths()
-        if not existing_paths:
-            return f"[${ColorVar.text_warning} bold]No test paths to remove[/]"
+        removed: list[str] = []
 
-        removed_entries = [
-            f"[${ColorVar.text_error}]{p}[/]" for p in sorted(existing_paths)
-        ]
-
-        # Remove the test directory tree
-        for path in self._get_existing_home_test_dirs():
-            shutil.rmtree(path, ignore_errors=True)
-        for path in self._get_existing_home_test_files():
+        for path in self.full_paths.file_paths(exists=True):
             path.unlink()
+            removed.append(escape(str(path)))
+
+        for path in reversed(self.full_paths.dir_paths(exists=True)):
+            path.rmdir()
+            removed.append(escape(str(path)))
+
+        if not removed:
+            return f"[${ColorVar.text_warning}]No test paths exist.[/]"
+        removed_str = "\n".join(line for line in removed)
 
         return "\n".join(
-            f"[${ColorVar.foreground_darken_2} bold]Removed paths:[/]", *removed_entries
+            [f"[${ColorVar.text_success}]Removed paths:[/]\n{removed_str}"]
         )
 
-    def existing_test_paths(self) -> str:
-        paths: list[str] = [str(line) for line in self._get_existing_test_paths()]
-        if not paths:
-            return f"[${ColorVar.text_warning} bold]No test paths exist.[/]"
-        return "\n".join(paths)
-
     def create_diffs(self) -> str:
-        if not self._get_existing_test_paths():
-            return f"[${ColorVar.text_warning} bold]No test paths exist to modify.[/]"
-
-        modified: list[str] = []
-
-        def toggle_dir_permissions(dir_path: Path) -> None:
-            current_permissions = dir_path.stat().st_mode
+        lines: list[str] = []
+        dir_path = self.full_paths.l2_man_dir
+        if dir_path.is_dir():
+            lines.append(f"[${ColorVar.text_warning}]Modified status dir:[/]")
+            current_permissions = stat.S_IMODE(dir_path.stat().st_mode)
             if current_permissions == 0o750:
                 dir_path.chmod(0o755)
             else:
                 dir_path.chmod(0o750)
-            modified.append(f"[${ColorVar.text_warning}]{dir_path}[/]")
-
-        def toggle_file_diffs() -> None:
-            new_contents = self.full_paths.get_for_diff_contents(
-                self.full_paths.file_paths
+            lines.append(f"{escape(str(dir_path))}")
+        else:
+            lines.append(
+                f"[${ColorVar.text_warning}]Dir to modify does not exist: {dir_path}[/]"
             )
-            for path, content in new_contents.items():
-                if path.is_file() and self.full_paths.files_for_diff:
-                    path.write_text(content)
-                modified.append(f"[${ColorVar.text_warning}]{path}[/]")
 
-        toggle_dir_permissions(self.full_paths.l1_man_dir)
-        toggle_file_diffs()
-        return "\n".join(modified)
+        result: dict[Path, str] = {}
+        for path in self.full_paths.files_for_diff:
+            initial = self.full_paths.file_contents.old_diff_map[path.name]
+            modified = self.full_paths.file_contents.new_diff_map[path.name]
+            result[path] = initial if self.modified_diff_state is True else modified
+
+        if not result and not lines:
+            return f"[${ColorVar.text_warning}]No test paths exist to modify.[/]"
+
+        lines.append(f"[${ColorVar.text_warning}]Modified files:[/]")
+        for path, content in result.items():
+            path.write_text(content, encoding="utf-8")
+            lines.append(f"{escape(str(path))}")
+        self.modified_diff_state = not self.modified_diff_state
+        return "\n".join(lines)
