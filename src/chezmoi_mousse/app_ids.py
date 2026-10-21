@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from chezmoi_mousse.str_enums import (
-    BtnLabel,
-    ContainerName,
-    LabelStr,
-    RichLogName,
-    TreeName,
-)
+from typing import TYPE_CHECKING
+
+from chezmoi_mousse.str_enums import ContainerName, LabelStr, RichLogName, TreeName
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.str_enums import BtnLabel
 
 __all__ = ["AppIds"]
 
@@ -15,7 +14,6 @@ class AppIds:
     def __init__(self, tab_label: BtnLabel) -> None:
         self.tab_label = tab_label
         self.container = _ContainerIds(self)
-        self.op_btn = _OperateButtonIds(self)
         self.richlog = _RichLogIds(self)
         self.switch = _SwitchIds(self)
         self.tree = _TreeIds(self)
@@ -91,39 +89,6 @@ class _RichLogIds:
         self.env_vars_q: str = f"#{self.env_vars}"
         self.memory: str = ids.richlog_id(richlog=RichLogName.memory_usage_logger)
         self.memory_q: str = f"#{self.memory}"
-
-
-class _OperateButtonIds:
-    def __init__(self, ids: AppIds) -> None:
-        self.chezmoi_add: str = ids.btn_id(btn_label=BtnLabel.chezmoi_add)
-        self.chezmoi_add_q: str = f"#{self.chezmoi_add}"
-
-        self.chezmoi_apply: str = ids.btn_id(btn_label=BtnLabel.chezmoi_apply)
-        self.chezmoi_apply_q: str = f"#{self.chezmoi_apply}"
-
-        self.chezmoi_destroy: str = ids.btn_id(btn_label=BtnLabel.chezmoi_destroy)
-        self.chezmoi_destroy_q: str = f"#{self.chezmoi_destroy}"
-
-        self.chezmoi_forget: str = ids.btn_id(btn_label=BtnLabel.chezmoi_forget)
-        self.chezmoi_forget_q: str = f"#{self.chezmoi_forget}"
-
-        self.chezmoi_re_add: str = ids.btn_id(btn_label=BtnLabel.chezmoi_re_add)
-        self.chezmoi_re_add_q: str = f"#{self.chezmoi_re_add}"
-
-        self.exit_op_modal: str = ids.btn_id(btn_label=BtnLabel.cancel)
-        self.exit_op_modal_q: str = f"#{self.exit_op_modal}"
-
-        # for test_paths only
-        self.create_paths: str = ids.btn_id(btn_label=BtnLabel.create_paths)
-        self.create_paths_q: str = f"#{self.create_paths}"
-        self.remove_paths: str = ids.btn_id(btn_label=BtnLabel.remove_paths)
-        self.remove_paths_q: str = f"#{self.remove_paths}"
-        self.list_test_paths: str = ids.btn_id(btn_label=BtnLabel.list_test_paths)
-        self.list_test_paths_q: str = f"#{self.list_test_paths}"
-        self.create_diffs: str = ids.btn_id(btn_label=BtnLabel.create_diffs)
-        self.create_diffs_q: str = f"#{self.create_diffs}"
-        self.log_memory: str = ids.btn_id(btn_label=BtnLabel.log_memory)
-        self.log_memory_q: str = f"#{self.log_memory}"
 
 
 class _SwitchIds:
