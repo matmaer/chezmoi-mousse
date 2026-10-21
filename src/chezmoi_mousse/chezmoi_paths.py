@@ -129,8 +129,7 @@ class ChezmoiTreePaths:
                     dir_path=path, check_paths=status_paths
                 )
                 has_nested_managed = path_funcs.any_nested_in(
-                    dir_path=path,
-                    check_paths=managed_paths,
+                    dir_path=path, check_paths=managed_paths
                 )
             has_nested_wanted = path_funcs.any_nested_in(
                 dir_path=path, check_paths=wanted_paths
@@ -214,22 +213,17 @@ class CmPathChanges:
             return {
                 k: node2
                 for k, node2 in dict2.items()
-                if k in dict1 and dict1[k].status != node2.status
+                if k in dict1
+                and (
+                    dict1[k].status != node2.status
+                    or dict1[k].nested_status != node2.nested_status
+                )
             }
 
         all_changed_dirs = get_changes_dict(
             self._old_tree_paths.dir_node_data, self._new_tree_paths.dir_node_data
         )
-        change_dir_top_level: set[Path] = path_funcs.get_common_top_level(
-            all_changed_dirs
-        )
-        change_tree_dirs = {
-            path: node_data
-            for path, node_data in self._new_tree_paths.dir_node_data.items()
-            if path in change_dir_top_level
-            or not change_dir_top_level.isdisjoint(path.parents)
-        }
-        self.change_tree_dirs = path_funcs.sort_path_dict(change_tree_dirs)
+        self.change_tree_dirs = path_funcs.sort_path_dict(all_changed_dirs)
         change_tree_files = get_changes_dict(
             self._old_tree_paths.file_node_data, self._new_tree_paths.file_node_data
         )
