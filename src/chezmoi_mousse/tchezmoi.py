@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -27,8 +26,9 @@ if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import ExecResult
     from chezmoi_mousse.data_types import NodeData, StreamEvent
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
+    from chezmoi_mousse.str_enums import BtnLabel
 
-__all__ = ["OperatePaths"]
+__all__ = ["run_affected_paths"]
 
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
 
@@ -136,33 +136,9 @@ async def run_in_task_group(
     return cmd_to_cr_map
 
 
-@dataclass
-class OperatePaths:
-    _affected_paths: dict[Path, dict[str, str]] = field(
-        default_factory=dict[Path, dict[str, str]]
-    )
-
-    def affected_paths(self, path: Path, btn_label: str) -> str:
-        return self._affected_paths[path][btn_label]
-
-    async def disable_button(
-        self, app: ChezmoiGui, btn_label: str, node_data: NodeData
-    ) -> bool:
-        result = await self._get_affected_paths(app, btn_label, node_data)
-        return result == ""
-
-    async def _get_affected_paths(
-        self, app: ChezmoiGui, btn_label: str, node_data: NodeData
-    ) -> str:
-        if node_data.path in self._affected_paths:
-            return self._affected_paths[node_data.path][btn_label]
-        else:
-            result: dict[str, str] = await _run_affected_paths(app, node_data)
-            self._affected_paths[node_data.path] = result
-            return self._affected_paths[node_data.path][btn_label]
-
-
-async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, str]:
+async def run_affected_paths(
+    app: ChezmoiGui, n_data: NodeData, btn_labels: Iterable[BtnLabel]
+) -> dict[BtnLabel, str]:
 
     result: dict[ReadCmd, str | None] = {
         ReadCmd.dry_add: None,
@@ -208,7 +184,10 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, st
         result[ReadCmd.dry_forget] = ""
         result[ReadCmd.dry_re_add] = ""
 
-    to_run: list[ReadCmd] = [cmd for cmd, value in result.items() if value is None]
+    requested_cmds = {btn_label.dry_cmd for btn_label in btn_labels}
+    to_run: list[ReadCmd] = [
+        cmd for cmd, value in result.items() if value is None and cmd in requested_cmds
+    ]
     path_arg = None if n_data.dest_dir else n_data.path
     group_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
         app, to_run, path_arg
@@ -227,10 +206,11 @@ async def _run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> dict[str, st
         paths_str = "\n".join(sorted_paths)
         result[cmd_enum] = paths_str
 
-    to_return: dict[str, str] = {}
-    for cmd_enum, value in result.items():
-        to_return[cmd_enum.write_btn_label.value] = value if value is not None else ""
-    return to_return
+    return {
+        cmd_enum.write_btn_label: value if value is not None else ""
+        for cmd_enum, value in result.items()
+        if cmd_enum in requested_cmds
+    }
 
 
 async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:

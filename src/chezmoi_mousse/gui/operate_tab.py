@@ -24,7 +24,6 @@ from chezmoi_mousse.gui.common.operate_views import (
     PathView,
 )
 from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, ReadCmd, Tcss, TreeName
-from chezmoi_mousse.tchezmoi import OperatePaths
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -32,6 +31,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
+    from chezmoi_mousse.chezmoi_paths import CmPathChanges
     from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -95,6 +95,7 @@ class LeftSideVertical(Vertical):
         if store.cm_changes.changes_available:
             for tree in self.query_children(OperateTree).results():
                 await tree.apply_changes(store.cm_changes)
+            self.query_ancestor(OperateTab).handle_tree_changes(store.cm_changes)
         else:
             self.app.notify(
                 "No changes available, skipping refresh.", severity="warning"
@@ -154,19 +155,12 @@ class OperateTab(TabPane):
                     LabelStr.radio_path_view,
                 )
             )
-            yield OperateBtnGroup(
-                store.op_ids,
-                labels=(
-                    BtnLabel.chezmoi_add,
-                    BtnLabel.chezmoi_apply,
-                    BtnLabel.chezmoi_re_add,
-                    BtnLabel.chezmoi_forget,
-                    BtnLabel.chezmoi_destroy,
-                ),
-            )
+            yield OperateBtnGroup(store.op_ids, labels=BtnLabel.op_btn_labels())
 
     def on_mount(self) -> None:
-        self.operate_paths = OperatePaths()
+        self.affected_paths_cache: dict[BtnLabel, dict[Path, str]] = {
+            btn_label: {} for btn_label in BtnLabel.op_btn_labels()
+        }
         self.source_path_label = self.query_exactly_one(SubSectionLabel)
         self.no_show_label = self.query_exactly_one(NoShowLabel)
 
@@ -231,10 +225,20 @@ class OperateTab(TabPane):
 
     @work
     async def _update_op_buttons(self, node_data: NodeData) -> None:
-        for btn in self.op_btn_group.query(Button).results():
-            btn.disabled = await self.operate_paths.disable_button(
-                self.app, str(btn.label), node_data
+        missing_btn_labels = [
+            btn_label
+            for btn_label, cache in self.affected_paths_cache.items()
+            if node_data.path not in cache
+        ]
+        if missing_btn_labels:
+            results = await tchezmoi.run_affected_paths(
+                self.app, node_data, missing_btn_labels
             )
+            for btn_label, affected_paths in results.items():
+                self.affected_paths_cache[btn_label][node_data.path] = affected_paths
+        for btn in self.op_btn_group.query(Button).results():
+            btn_label = BtnLabel(str(btn.label))
+            btn.disabled = self.affected_paths_cache[btn_label][node_data.path] == ""
 
     @work
     async def _update_view_widgets(self, node_data: NodeData) -> None:
@@ -318,28 +322,53 @@ class OperateTab(TabPane):
         if event.button.label != str(store.cfg.dest_dir):
             return
         event.stop()
+        self._show_dest_dir()
+
+    def _show_dest_dir(self) -> None:
         self._update_all_widgets(store.cm_paths.dest_dir_node_data)
         for tree in self.left_side_vertical.query_children(OperateTree).results():
             tree.unselect()
             tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
 
+    def handle_tree_changes(self, changes: CmPathChanges) -> None:
+        touched_paths = (
+            changes.remove_tree_dirs
+            | changes.remove_tree_files
+            | changes.add_tree_dirs.keys()
+            | changes.add_tree_files.keys()
+            | changes.change_tree_dirs.keys()
+            | changes.change_tree_files.keys()
+        )
+        touched_with_parents = touched_paths.union(*(p.parents for p in touched_paths))
+        for btn_label, cache in self.affected_paths_cache.items():
+            if btn_label in (BtnLabel.chezmoi_apply, BtnLabel.chezmoi_re_add):
+                stale_paths = touched_with_parents
+            else:
+                stale_paths = touched_paths
+            for path in list(cache):
+                if path in stale_paths or not changes.remove_tree_dirs.isdisjoint(
+                    path.parents
+                ):
+                    del cache[path]
+
+        tree_node = self._current_displayed_tree.node_map.get(self.current_node.path)
+        if tree_node is None or tree_node.data is None:
+            self._show_dest_dir()
+            return
+        self.current_node = tree_node.data
+        self._update_op_buttons(tree_node.data)
+        self._sync_non_displayed_trees(tree_node.data)
+
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
-        if event.button.label not in (
-            BtnLabel.chezmoi_add,
-            BtnLabel.chezmoi_apply,
-            BtnLabel.chezmoi_re_add,
-            BtnLabel.chezmoi_forget,
-            BtnLabel.chezmoi_destroy,
-        ):
+        if event.button.label not in BtnLabel.op_btn_labels():
             return
         event.stop()
+        btn_label = BtnLabel(str(event.button.label))
         modal = OperateModal(
-            BtnLabel(str(event.button.label)),
+            btn_label,
             self.current_node.path,
-            self.operate_paths.affected_paths(
-                self.current_node.path, str(event.button.label)
-            ),
+            self.affected_paths_cache[btn_label][self.current_node.path],
         )
         self.app.push_screen(modal)
 

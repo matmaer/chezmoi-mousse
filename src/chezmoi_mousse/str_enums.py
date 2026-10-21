@@ -93,6 +93,10 @@ class BtnLabel(StrEnum):
             raise AttributeError(f"run_label not available for {self}")
         return f"Run interactive {self.value}"
 
+    @classmethod
+    def op_btn_labels(cls) -> tuple["BtnLabel", ...]:
+        return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
+
     @property
     def dry_cmd(self) -> "ReadCmd":  # Operate modal
         if not self.name.startswith("chezmoi_"):
