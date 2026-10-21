@@ -106,16 +106,9 @@ class OperateTree(Tree[NodeData]):
         return color_var
 
     async def apply_changes(self, changes: CmPathChanges) -> None:
-        for path in changes.remove_tree_dirs:
-            node = self.node_map[path]
-            node.remove()
-        for path in changes.remove_tree_files:
-            node = self.node_map[path]
-            node.remove()
-        for path in changes.remove_node_map_paths:
-            tree_node = self.node_map.get(path)
-            if tree_node is not None:
-                del self.node_map[path]
+        for path in changes.remove_tree_dirs | changes.remove_tree_files:
+            if path in self.node_map:
+                self._remove_node(path)
 
         tree_name = TreeName(self.name)
 
@@ -151,15 +144,16 @@ class OperateTree(Tree[NodeData]):
                 node.data = node_data
                 node.set_label(self._node_label(node_data))
             elif in_tree:
-                self.node_map[path].remove()
-                removed_paths = [
-                    p for p in self.node_map if p == path or path in p.parents
-                ]
-                for removed_path in removed_paths:
-                    del self.node_map[removed_path]
-                    self.iterated_dirs.discard(removed_path)
+                self._remove_node(path)
             elif include:
                 self._add_node_with_color(path, node_data, allow_expand=allow_expand)
+
+    def _remove_node(self, path: Path) -> None:
+        self.node_map[path].remove()
+        removed_paths = [p for p in self.node_map if p == path or path in p.parents]
+        for removed_path in removed_paths:
+            del self.node_map[removed_path]
+            self.iterated_dirs.discard(removed_path)
 
     def _get_before_node(
         self, parent_node: TreeNode[NodeData], node_data: NodeData

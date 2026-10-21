@@ -167,7 +167,6 @@ class CmPathChanges:
     add_tree_files: NodeDict = field(default_factory=dict[Path, NodeData])
     remove_tree_dirs: set[Path] = field(default_factory=set[Path])
     remove_tree_files: set[Path] = field(default_factory=set[Path])
-    remove_node_map_paths: set[Path] = field(default_factory=set[Path])
     change_tree_dirs: NodeDict = field(default_factory=dict[Path, NodeData])
     change_tree_files: NodeDict = field(default_factory=dict[Path, NodeData])
 
@@ -205,7 +204,6 @@ class CmPathChanges:
         self.remove_tree_files = {
             p for p in removed_files if self.remove_tree_dirs.isdisjoint(p.parents)
         }
-        self.remove_node_map_paths = removed_dirs | removed_files
 
     def _update_change_fields(self) -> None:
 
