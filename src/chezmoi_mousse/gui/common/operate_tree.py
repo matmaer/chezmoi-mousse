@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.widgets.tree import TreeNode
 
-    from chezmoi_mousse.chezmoi_paths import CmPathChanges
+    from chezmoi_mousse.chezmoi_paths import CmPathChanges, NodeDict
     from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -127,18 +127,39 @@ class OperateTree(Tree[NodeData]):
             if node_data.include_in_tree(tree_name):
                 self._add_node_with_color(path, node_data, allow_expand=False)
 
-        for path, node_data in changes.change_tree_dirs.items():
-            self.node_map[path].remove()
-            self._add_node_with_color(path, node_data, allow_expand=True)
-
-        for path, node_data in changes.change_tree_files.items():
-            if path in self.node_map:
-                self.node_map[path].remove()
-            if node_data.include_in_tree(tree_name):
-                self._add_node_with_color(path, node_data, allow_expand=False)
+        self._apply_changed_nodes(
+            changes.change_tree_dirs, tree_name, allow_expand=True
+        )
+        self._apply_changed_nodes(
+            changes.change_tree_files, tree_name, allow_expand=False
+        )
 
         self._expand_xpd_nodes()
         self.refresh(layout=True)
+
+    def _apply_changed_nodes(
+        self, changed: NodeDict, tree_name: TreeName, *, allow_expand: bool
+    ) -> None:
+        for path, node_data in changed.items():
+            if path == store.cfg.dest_dir:
+                self.root.data = node_data
+                continue
+            in_tree = path in self.node_map
+            include = node_data.include_in_tree(tree_name)
+            if in_tree and include:
+                node = self.node_map[path]
+                node.data = node_data
+                node.set_label(self._node_label(node_data))
+            elif in_tree:
+                self.node_map[path].remove()
+                removed_paths = [
+                    p for p in self.node_map if p == path or path in p.parents
+                ]
+                for removed_path in removed_paths:
+                    del self.node_map[removed_path]
+                    self.iterated_dirs.discard(removed_path)
+            elif include:
+                self._add_node_with_color(path, node_data, allow_expand=allow_expand)
 
     def _get_before_node(
         self, parent_node: TreeNode[NodeData], node_data: NodeData
@@ -163,18 +184,19 @@ class OperateTree(Tree[NodeData]):
                     return child
         return None
 
+    def _node_label(self, node_data: NodeData) -> str:
+        italic = " italic" if not node_data.exists else ""
+        color = self.app.theme_variables[self._label_color_var(node_data)]
+        return f"[{color}{italic}]{escape(node_data.path.name)}[/]"
+
     def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
         if path == store.cfg.dest_dir:
             return
         parent_node = self.node_map[node_data.path.parent]
-        italic = " italic" if not node_data.exists else ""
-        color = self.app.theme_variables[self._label_color_var(node_data)]
-        node_label = f"[{color}{italic}]{escape(path.name)}[/]"
-
         new_node = parent_node.add(
-            label=node_label,
+            label=self._node_label(node_data),
             data=node_data,
             before=self._get_before_node(parent_node, node_data),
             allow_expand=allow_expand,

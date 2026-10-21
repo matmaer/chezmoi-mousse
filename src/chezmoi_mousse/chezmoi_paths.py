@@ -213,11 +213,7 @@ class CmPathChanges:
             return {
                 k: node2
                 for k, node2 in dict2.items()
-                if k in dict1
-                and (
-                    dict1[k].status != node2.status
-                    or dict1[k].nested_status != node2.nested_status
-                )
+                if k in dict1 and dict1[k] != node2
             }
 
         all_changed_dirs = get_changes_dict(
