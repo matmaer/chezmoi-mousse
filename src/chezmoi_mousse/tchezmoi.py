@@ -28,8 +28,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import BtnLabel
 
-__all__ = ["run_affected_paths"]
-
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
 
 
