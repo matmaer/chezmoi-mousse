@@ -142,6 +142,14 @@ class ChezmoiPrompts(Enum):
     def reply(self) -> str:
         return self.value
 
+    @classmethod
+    def non_operation_replies(cls) -> tuple[str, ...]:
+        return tuple(
+            reply.value
+            for reply in cls
+            if reply in (cls.diff, cls.no, cls.no_to_all, cls.quit)
+        )
+
 
 class ColorVar(StrEnum):
     error_muted = "error-muted"

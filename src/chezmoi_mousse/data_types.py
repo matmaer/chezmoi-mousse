@@ -27,6 +27,7 @@ class CommandResult:
     std_out: str
     out_list: list[str]
     time_stamp: str
+    interactive_approved: bool | None = None
 
 
 @dataclass(frozen=True)

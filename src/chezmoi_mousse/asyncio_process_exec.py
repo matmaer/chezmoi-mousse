@@ -110,8 +110,9 @@ async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Proce
 async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
-) -> AsyncGenerator[list[str] | ExecResult]:
+) -> AsyncGenerator[list[str] | tuple[ExecResult, bool]]:
     read_timeout: float = 0.05
+    interactive_approved = False
     exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
     async with _managed_process(*exec_args) as process:
         pipe_stdout = process.stdout
@@ -145,7 +146,6 @@ async def run_chezmoi_interactive_process(
                         timed_out = True
                         break
 
-                    # Silence for read_timeout plus a prompt-shaped ending.
                     prompt_match = _PROMPT_RE.search(buffer)
                     if prompt_match is None:
                         continue
@@ -153,9 +153,6 @@ async def run_chezmoi_interactive_process(
                     if any(option not in _PROMPT_OPTIONS for option in prompt_options):
                         continue
 
-                    # NOTE: prompt is different than running commands with a tty!
-                    # Complete lines before the prompt line, e.g. the output of the
-                    # diff option, must not be lost.
                     output_before_prompt, _, prompt_question = buffer[
                         : prompt_match.start()
                     ].rpartition("\n")
@@ -163,10 +160,11 @@ async def run_chezmoi_interactive_process(
                         yield output_before_prompt.splitlines()
                     # Only post-prompt output belongs in the final result.
                     buffer = ""
-
                     user_choice = await prompt_handler(
                         prompt_question.strip(), prompt_options
                     )
+                    if user_choice not in ChezmoiPrompts.non_operation_replies():
+                        interactive_approved = True
                     pipe_stdin.write(f"{user_choice}\n".encode())
                     await pipe_stdin.drain()
                     last_activity = time.monotonic()
@@ -190,4 +188,4 @@ async def run_chezmoi_interactive_process(
         std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-        yield (buffer, std_err, returncode)
+        yield (buffer, std_err, returncode), interactive_approved

@@ -308,7 +308,7 @@ def run_chezmoi_interactive(
     cmd_enum: WriteCmd,
     verb_arg: Path | list[str] | None,
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
-) -> AsyncGenerator[list[str] | ExecResult]:
+) -> AsyncGenerator[list[str] | tuple[ExecResult, bool]]:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
         raise ValueError(

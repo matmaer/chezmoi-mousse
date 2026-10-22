@@ -213,10 +213,10 @@ class OperateModal(ModalScreen[None]):
         before = self.general_info_label
         container.mount(SubSectionLabel(escape(text)), before=before)
 
-    def _create_cmd_result(self, exec_result: ExecResult) -> None:
+    def _create_cmd_result(self, interactive_result: tuple[ExecResult, bool]) -> None:
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
         args = (*cmd_enum.value, *([str(self.path_arg)] if self.path_arg else []))
-        std_out, std_err, returncode = exec_result
+        std_out, std_err, returncode = interactive_result[0]
         result = CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=f"chezmoi {' '.join(args)}",
@@ -226,6 +226,7 @@ class OperateModal(ModalScreen[None]):
             std_out=std_out,
             out_list=std_out.splitlines(),
             time_stamp=datetime.now().strftime("%H:%M:%S"),
+            interactive_approved=interactive_result[1],
         )
         container = self.query_exactly_one(ScrollableContainer)
         container.mount(CmdResultCollapsible(cmd_result=result))
@@ -300,8 +301,8 @@ class OperateModal(ModalScreen[None]):
                     self._create_cmd_result(event)
                     self.general_info_label.update(
                         "Process completed."
-                        if event[2] == 0
-                        else f"Process exit, returncode {event[2]})."
+                        if event[0][2] == 0
+                        else f"Process exit, returncode {event[0][2]})."
                     )
                     self.app.run_worker(
                         self.app.left_side.refresh_trees(),
