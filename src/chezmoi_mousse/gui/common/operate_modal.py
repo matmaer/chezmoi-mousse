@@ -169,13 +169,13 @@ class OperateModal(ModalScreen[None]):
                 yield _GeneralInfoLabel("Ready to run", markup=False)
             yield PromptBtnGroup(
                 labels=(
-                    ChezmoiPrompts.all.prompt_item,
                     ChezmoiPrompts.diff.prompt_item,
-                    ChezmoiPrompts.edit.prompt_item,
+                    ChezmoiPrompts.yes.prompt_item,
                     ChezmoiPrompts.no.prompt_item,
                     ChezmoiPrompts.no_to_all.prompt_item,
+                    ChezmoiPrompts.edit.prompt_item,
+                    ChezmoiPrompts.all.prompt_item,
                     ChezmoiPrompts.quit.prompt_item,
-                    ChezmoiPrompts.yes.prompt_item,
                     self.op_btn.run_label,
                     BtnLabel.cancel,
                     BtnLabel.close,
