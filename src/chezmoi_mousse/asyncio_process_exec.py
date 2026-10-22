@@ -122,20 +122,18 @@ async def run_chezmoi_interactive_process(
         assert pipe_stderr is not None
 
         buffer = ""
-        full_std_out = ""
+        stderr_chunks: list[bytes] = []
         last_activity = time.monotonic()
         timed_out = False
 
-        async def read_stderr() -> bytes:
+        async def read_stderr() -> None:
             nonlocal last_activity
-            chunks: list[bytes] = []
             while stderr_chunk := await pipe_stderr.read(1024):
-                chunks.append(stderr_chunk)
+                stderr_chunks.append(stderr_chunk)
                 last_activity = time.monotonic()
-            return b"".join(chunks)
 
         async with asyncio.TaskGroup() as task_group:
-            stderr_task = task_group.create_task(read_stderr())
+            task_group.create_task(read_stderr())
 
             while not pipe_stdout.at_eof():
                 try:
@@ -163,6 +161,7 @@ async def run_chezmoi_interactive_process(
                     ].rpartition("\n")
                     if output_before_prompt:
                         yield output_before_prompt.splitlines()
+                    # Only post-prompt output belongs in the final result.
                     buffer = ""
 
                     user_choice = await prompt_handler(
@@ -179,7 +178,6 @@ async def run_chezmoi_interactive_process(
                 last_activity = time.monotonic()
                 decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
                 buffer += decoded_chunk
-                full_std_out += decoded_chunk
 
             # EOF: flush remaining output, it must be yielded before leaving
             if buffer:
@@ -189,7 +187,7 @@ async def run_chezmoi_interactive_process(
                 await _stop_process(process)
             returncode = await process.wait()
 
-        std_err = stderr_task.result().decode("utf-8", errors="replace")
+        std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-        yield (full_std_out, std_err, returncode)
+        yield (buffer, std_err, returncode)
