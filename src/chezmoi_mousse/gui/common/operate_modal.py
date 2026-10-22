@@ -207,13 +207,11 @@ class OperateModal(ModalScreen[None]):
         container = self.query_exactly_one(ScrollableContainer)
         before = self.general_info_label
         container.mount(WarningLabel(escape(text)), before=before)
-        container.scroll_end()
 
     def _create_green_label(self, text: str) -> None:
         container = self.query_exactly_one(ScrollableContainer)
         before = self.general_info_label
         container.mount(SubSectionLabel(escape(text)), before=before)
-        container.scroll_end()
 
     def _create_cmd_result(self, exec_result: ExecResult) -> None:
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
