@@ -231,6 +231,12 @@ class OperateTab(TabPane):
 
     @work
     async def _update_op_buttons(self, node_data: NodeData) -> None:
+        def p_to_str(paths: list[Path]) -> str:
+            if not paths:
+                return ""
+            strings: list[str] = [f"{Chars.bullet} {p}" for p in paths]
+            return "\n".join(path_str for path_str in strings)
+
         missing_btn_labels = [
             btn_label
             for btn_label, cache in self.affected_paths_cache.items()
@@ -240,8 +246,8 @@ class OperateTab(TabPane):
             results = await tchezmoi.run_affected_paths(
                 self.app, node_data, missing_btn_labels
             )
-            for btn_label, affected_paths in results.items():
-                self.affected_paths_cache[btn_label][node_data.path] = affected_paths
+            for btn_label, paths in results.items():
+                self.affected_paths_cache[btn_label][node_data.path] = p_to_str(paths)
         for btn in self.op_btn_group.query(Button).results():
             btn_label = BtnLabel(str(btn.label))
             btn.disabled = self.affected_paths_cache[btn_label][node_data.path] == ""
