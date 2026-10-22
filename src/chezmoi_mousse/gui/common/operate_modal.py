@@ -212,18 +212,7 @@ class OperateModal(ModalScreen[None]):
         before = self.general_info_label
         container.mount(SubSectionLabel(escape(text)), before=before)
 
-    def _create_cmd_result(self, exec_result: ExecResult) -> None:
-        cmd_enum = self.btn_label_to_cmd[self.op_btn]
-        result = CommandResult(
-            cmd_enum=cmd_enum,
-            full_cmd=exec_result.full_cmd,
-            pretty_cmd=tchezmoi.pretty_cmd(cmd_enum, self.path_arg),
-            returncode=exec_result.returncode,
-            std_err=exec_result.std_err,
-            std_out=exec_result.std_out,
-            time_stamp=exec_result.time_stamp,
-            interactive_approved=exec_result.interactive_approved,
-        )
+    def _handle_cmd_result(self, result: CommandResult) -> None:
         container = self.query_exactly_one(ScrollableContainer)
         container.mount(CmdResultCollapsible(cmd_result=result))
         container.scroll_end()
@@ -231,6 +220,14 @@ class OperateModal(ModalScreen[None]):
         self.app.app_log.cmd_result = result
         self.app.cmd_log.cmd_result = result
         self.app.post_message(CommandResultMsg(result))
+        self.general_info_label.update(
+            "Process completed."
+            if result.returncode == 0
+            else f"Process exit, returncode {result.returncode})."
+        )
+        self.app.run_worker(
+            self.app.left_side.refresh_trees(), name="refresh_trees_after_operation"
+        )
 
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
@@ -294,16 +291,18 @@ class OperateModal(ModalScreen[None]):
         try:
             async for event in events:
                 if isinstance(event, ExecResult):
-                    self._create_cmd_result(event)
-                    self.general_info_label.update(
-                        "Process completed."
-                        if event.returncode == 0
-                        else f"Process exit, returncode {event.returncode})."
+                    result = CommandResult(
+                        cmd_enum=event.cmd_enum,
+                        full_cmd=event.full_cmd,
+                        pretty_cmd=tchezmoi.pretty_cmd(event.cmd_enum, self.path_arg),
+                        returncode=event.returncode,
+                        std_err=event.std_err,
+                        std_out=event.std_out,
+                        time_stamp=event.time_stamp,
+                        interactive_approved=event.interactive_approved,
                     )
-                    self.app.run_worker(
-                        self.app.left_side.refresh_trees(),
-                        name="refresh_trees_after_operation",
-                    )
+                    self._handle_cmd_result(result)
+
                 elif pending_diff_question is not None:
                     self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
                     last_diff = self._create_cm_git_diff(
