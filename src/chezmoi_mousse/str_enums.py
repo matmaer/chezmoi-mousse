@@ -756,6 +756,10 @@ class ReadCmd(Enum):
         }
         return map[self]
 
+    @classmethod
+    def dry_commands(cls) -> tuple["ReadCmd", ...]:
+        return tuple(cmd for cmd in cls if cmd.name.startswith("dry_"))
+
     @property
     def write_cmd(self) -> "WriteCmd":
         map = {

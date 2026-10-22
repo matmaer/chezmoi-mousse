@@ -31,8 +31,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.chezmoi_paths import CmPathChanges
-    from chezmoi_mousse.data_types import NodeData
+    from chezmoi_mousse.data_types import DryRunData, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -75,31 +74,6 @@ class LeftSideVertical(Vertical):
         yield OperateTree(
             TreeName.un_wanted_plus_amp_xpd, store.op_ids.tree.un_wanted_plus_amp_xpd
         )
-
-    @on(Button.Pressed)
-    def handle_refresh_tree_btn_msg(self, event: Button.Pressed) -> None:
-        if event.button.label == Chars.refresh:
-            event.stop()
-            self._refresh_trees()
-
-    @work
-    async def _refresh_trees(self) -> None:
-        await self.refresh_trees()
-
-    async def refresh_trees(self) -> None:
-        new_tree_paths = await tchezmoi.run_managed_commands(self.app)
-        await store.handle_new_tree_paths(self.app, new_tree_paths)
-        await self.apply_changes()
-
-    async def apply_changes(self) -> None:
-        if store.cm_changes.changes_available:
-            for tree in self.query_children(OperateTree).results():
-                await tree.apply_changes(store.cm_changes)
-            self.query_ancestor(OperateTab).handle_tree_changes(store.cm_changes)
-        else:
-            self.app.notify(
-                "No changes available, skipping refresh.", severity="warning"
-            )
 
 
 class RightSideVertical(Vertical):
@@ -158,9 +132,7 @@ class OperateTab(TabPane):
             yield OperateBtnGroup(store.op_ids, labels=BtnLabel.op_btn_labels())
 
     def on_mount(self) -> None:
-        self.affected_paths_cache: dict[BtnLabel, dict[Path, str]] = {
-            btn_label: {} for btn_label in BtnLabel.op_btn_labels()
-        }
+        self.dry_run_cache: dict[Path, DryRunData] = {}
         self.source_path_label = self.query_exactly_one(SubSectionLabel)
         self.no_show_label = self.query_exactly_one(NoShowLabel)
 
@@ -229,28 +201,25 @@ class OperateTab(TabPane):
             tree.unselect()
             tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
 
+    async def apply_changes(self) -> None:
+        if store.cm_changes.changes_available:
+            for tree in self.query_children(OperateTree).results():
+                await tree.update_nodes(store.cm_changes)
+        else:
+            self.app.notify(
+                "No changes available, skipping refresh.", severity="warning"
+            )
+
     @work
     async def _update_op_buttons(self, node_data: NodeData) -> None:
-        def p_to_str(paths: list[Path]) -> str:
-            if not paths:
-                return ""
-            strings: list[str] = [f"{Chars.bullet} {p}" for p in paths]
-            return "\n".join(path_str for path_str in strings)
-
-        missing_btn_labels = [
-            btn_label
-            for btn_label, cache in self.affected_paths_cache.items()
-            if node_data.path not in cache
-        ]
-        if missing_btn_labels:
-            results = await tchezmoi.run_affected_paths(
-                self.app, node_data, missing_btn_labels
-            )
-            for btn_label, paths in results.items():
-                self.affected_paths_cache[btn_label][node_data.path] = p_to_str(paths)
+        self.dry_run_cache[node_data.path] = await tchezmoi.run_affected_paths(
+            self.app, node_data
+        )
         for btn in self.op_btn_group.query(Button).results():
             btn_label = BtnLabel(str(btn.label))
-            btn.disabled = self.affected_paths_cache[btn_label][node_data.path] == ""
+            btn.disabled = (
+                getattr(self.dry_run_cache[node_data.path], btn_label.name) == []
+            )
 
     @work
     async def _update_view_widgets(self, node_data: NodeData) -> None:
@@ -336,26 +305,20 @@ class OperateTab(TabPane):
         event.stop()
         self._show_dest_dir()
 
-    def handle_tree_changes(self, changes: CmPathChanges) -> None:
-        touched_paths = (
-            changes.remove_tree_dirs
-            | changes.remove_tree_files
-            | changes.add_tree_dirs.keys()
-            | changes.add_tree_files.keys()
-            | changes.change_tree_dirs.keys()
-            | changes.change_tree_files.keys()
-        )
-        touched_with_parents = touched_paths.union(*(p.parents for p in touched_paths))
-        for btn_label, cache in self.affected_paths_cache.items():
-            if btn_label in (BtnLabel.chezmoi_apply, BtnLabel.chezmoi_re_add):
-                stale_paths = touched_with_parents
-            else:
-                stale_paths = touched_paths
-            for path in list(cache):
-                if path in stale_paths or not changes.remove_tree_dirs.isdisjoint(
-                    path.parents
-                ):
-                    del cache[path]
+    @on(Button.Pressed)
+    def handle_refresh_tree_btn_msg(self, event: Button.Pressed) -> None:
+        if event.button.label == Chars.refresh:
+            event.stop()
+            self.refresh_trees()
+
+    @work
+    async def refresh_trees(self) -> None:
+        new_tree_paths = await tchezmoi.run_managed_commands(self.app)
+        await store.handle_new_tree_paths(self.app, new_tree_paths)
+        await self.apply_changes()
+
+    def handle_tree_changes(self) -> None:
+        self.dry_run_cache.clear()
 
         tree_node = self._current_displayed_tree.node_map.get(self.current_node.path)
         if tree_node is None or tree_node.data is None:
@@ -371,10 +334,9 @@ class OperateTab(TabPane):
             return
         event.stop()
         btn_label = BtnLabel(str(event.button.label))
+        paths = self.dry_run_cache[self.current_node.path].pretty_op_paths(btn_label)
         modal = OperateModal(
-            btn_label,
-            self.current_node.path,
-            self.affected_paths_cache[btn_label][self.current_node.path],
+            op_btn=btn_label, path=self.current_node.path, affected_paths=paths
         )
         self.app.push_screen(modal)
 

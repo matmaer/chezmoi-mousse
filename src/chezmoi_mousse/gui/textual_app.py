@@ -147,7 +147,7 @@ class ChezmoiGui(App[str]):
         await store.handle_new_tree_paths(self, new_tree_paths)
         await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
         tabbed_content.active = BtnLabel.operate.pane_id
-        self.left_side = self.query_exactly_one(LeftSideVertical)
+        self.operate_tab = self.query_exactly_one(OperateTab)
         await self.splash_screen.dismiss_after_fade_loop()
 
     @work

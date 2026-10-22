@@ -146,7 +146,7 @@ class OperateModal(ModalScreen[None]):
         BtnLabel.chezmoi_re_add: WriteCmd.re_add,
     }
 
-    def __init__(self, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
+    def __init__(self, *, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
         self.path = path
         self.path_str: str = "" if path == store.cfg.dest_dir else str(path)
@@ -225,9 +225,7 @@ class OperateModal(ModalScreen[None]):
             if result.returncode == 0
             else f"Process exit, returncode {result.returncode})."
         )
-        self.app.run_worker(
-            self.app.left_side.refresh_trees(), name="refresh_trees_after_operation"
-        )
+        self.app.operate_tab.refresh_trees()
 
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""

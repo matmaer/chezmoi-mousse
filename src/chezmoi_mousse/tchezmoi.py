@@ -14,9 +14,15 @@ from chezmoi_mousse.asyncio_process_exec import (
     run_chezmoi_interactive_process,
 )
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
-from chezmoi_mousse.data_types import CommandResult
+from chezmoi_mousse.data_types import CommandResult, DryRunData
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.str_enums import LogStr, ReadCmd, StatusCode as Sc, WriteCmd
+from chezmoi_mousse.str_enums import (
+    BtnLabel,
+    LogStr,
+    ReadCmd,
+    StatusCode as Sc,
+    WriteCmd,
+)
 
 if TYPE_CHECKING:
     from asyncio import Task
@@ -25,7 +31,6 @@ if TYPE_CHECKING:
     from chezmoi_mousse.asyncio_process_exec import ExecResult
     from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.str_enums import BtnLabel
 
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
 
@@ -133,78 +138,95 @@ async def run_in_task_group(
 
 
 async def run_affected_paths(
-    app: ChezmoiGui, n_data: NodeData, btn_labels: Iterable[BtnLabel]
-) -> dict[BtnLabel, list[Path]]:
+    app: ChezmoiGui, n_data: NodeData, path_arg: Path | None = None
+) -> DryRunData:
 
-    result: dict[ReadCmd, list[Path] | None] = {
-        ReadCmd.dry_add: None,
-        ReadCmd.dry_apply: None,
-        ReadCmd.dry_destroy: None,
-        ReadCmd.dry_forget: None,
-        ReadCmd.dry_re_add: None,
+    default_result: dict[BtnLabel, list[Path] | None] = {
+        BtnLabel.chezmoi_add: None,
+        BtnLabel.chezmoi_apply: None,
+        BtnLabel.chezmoi_destroy: None,
+        BtnLabel.chezmoi_forget: None,
+        BtnLabel.chezmoi_re_add: None,
     }
 
     # basic affected paths for dest_dir
     if n_data.dest_dir:
-        result[ReadCmd.dry_add] = []
-        result[ReadCmd.dry_destroy] = []
-        result[ReadCmd.dry_forget] = []
+        default_result[BtnLabel.chezmoi_add] = []
+        default_result[BtnLabel.chezmoi_destroy] = []
+        default_result[BtnLabel.chezmoi_forget] = []
+    if n_data.dest_dir and not n_data.nested_status:
+        default_result[BtnLabel.chezmoi_apply] = []
+        default_result[BtnLabel.chezmoi_re_add] = []
     # basic affected paths for dirs other than the dest dir
     elif n_data.un_managed_dir:
-        result[ReadCmd.dry_apply] = []
-        result[ReadCmd.dry_destroy] = []
-        result[ReadCmd.dry_forget] = []
-        result[ReadCmd.dry_re_add] = []
+        default_result[BtnLabel.chezmoi_apply] = []
+        default_result[BtnLabel.chezmoi_destroy] = []
+        default_result[BtnLabel.chezmoi_forget] = []
+        default_result[BtnLabel.chezmoi_re_add] = []
     # basic affected paths for managed dirs without nested conditions
     elif n_data.managed_dir:
-        if not n_data.nested_un_managed:
-            result[ReadCmd.dry_add] = []
-        if not (n_data.status_dir or n_data.nested_status):
-            result[ReadCmd.dry_apply] = []
-            result[ReadCmd.dry_re_add] = []
+        if not (n_data.nested_un_managed or n_data.nested_status or n_data.status_dir):
+            default_result[BtnLabel.chezmoi_add] = []
+        if not (n_data.nested_status or n_data.status_dir):
+            default_result[BtnLabel.chezmoi_apply] = []
+            default_result[BtnLabel.chezmoi_re_add] = []
+        elif not n_data.nested_managed and n_data.status_dir:
+            default_result[BtnLabel.chezmoi_apply] = [n_data.path]
+            default_result[BtnLabel.chezmoi_re_add] = [n_data.path]
+        if not n_data.exists:
+            default_result[BtnLabel.chezmoi_destroy] = []
+        elif n_data.exists and not (
+            n_data.nested_un_managed or n_data.nested_un_managed
+        ):
+            default_result[BtnLabel.chezmoi_destroy] = [n_data.path]
+        if not n_data.nested_managed:
+            default_result[BtnLabel.chezmoi_forget] = [n_data.path]
     # basic affected paths for files
     elif n_data.managed_file:
-        result[ReadCmd.dry_add] = []
-        result[ReadCmd.dry_forget] = [n_data.path]
-        result[ReadCmd.dry_destroy] = [n_data.path]
+        default_result[BtnLabel.chezmoi_add] = []
+        default_result[BtnLabel.chezmoi_forget] = [n_data.path]
+        if n_data.exists:
+            default_result[BtnLabel.chezmoi_destroy] = [n_data.path]
         if n_data.status_file:
-            result[ReadCmd.dry_apply] = [n_data.path]
-            result[ReadCmd.dry_re_add] = [n_data.path]
+            default_result[BtnLabel.chezmoi_apply] = [n_data.path]
+            default_result[BtnLabel.chezmoi_re_add] = [n_data.path]
         elif not n_data.status_file:
-            result[ReadCmd.dry_apply] = []
-            result[ReadCmd.dry_re_add] = []
+            default_result[BtnLabel.chezmoi_apply] = []
+            default_result[BtnLabel.chezmoi_re_add] = []
     elif n_data.un_managed_file:
-        result[ReadCmd.dry_add] = [n_data.path]
-        result[ReadCmd.dry_apply] = []
-        result[ReadCmd.dry_destroy] = []
-        result[ReadCmd.dry_forget] = []
-        result[ReadCmd.dry_re_add] = []
+        default_result[BtnLabel.chezmoi_add] = [n_data.path]
+        default_result[BtnLabel.chezmoi_apply] = []
+        default_result[BtnLabel.chezmoi_destroy] = []
+        default_result[BtnLabel.chezmoi_forget] = []
+        default_result[BtnLabel.chezmoi_re_add] = []
 
-    requested_cmds = {btn_label.dry_cmd for btn_label in btn_labels}
-    to_run: list[ReadCmd] = [
-        cmd for cmd, value in result.items() if value is None and cmd in requested_cmds
-    ]
-    path_arg = None if n_data.dest_dir else n_data.path
-    group_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
-        app, to_run, path_arg
-    )
+    dry_run_data = DryRunData()
 
-    for cmd_enum, cr in group_results.items():
+    for k, v in default_result.items():
+        if v is not None:
+            setattr(dry_run_data, k.name, default_result[k])
+
+    def parse_paths(cr: CommandResult) -> list[Path]:
         # Matches standard git diff paths (capturing the target path in group 1)
-        affected_paths: set[Path] = set()
+        paths: set[Path] = set()
         for line in cr.out_list:
             match = _PATH_PATTERN.match(line)
             if match:
                 relative_path = Path(match.group(1))
                 abs_path = store.cfg.dest_dir / relative_path
-                affected_paths.add(abs_path)
-        result[cmd_enum] = path_funcs.sort_paths(affected_paths)
+                paths.add(abs_path)
+        return path_funcs.sort_paths(paths)
 
-    return {
-        cmd_enum.write_btn_label: value if value is not None else []
-        for cmd_enum, value in result.items()
-        if cmd_enum in requested_cmds
+    commands_to_run: dict[ReadCmd, list[Path]] = {
+        k.dry_cmd: v for k, v in default_result.items() if v is not None
     }
+    path_arg = None if n_data.dest_dir else n_data.path
+    cr_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
+        app, commands_to_run, path_arg
+    )
+    for k, cr in cr_results.items():
+        setattr(dry_run_data, k.name, parse_paths(cr))
+    return dry_run_data
 
 
 async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:

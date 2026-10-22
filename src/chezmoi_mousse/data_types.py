@@ -2,20 +2,21 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.str_enums import LabelStr, TreeName
+from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, TreeName
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
+    from chezmoi_mousse.str_enums import BtnLabel, ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
     "CommandResult",
+    "DryRunData",
     "ExecResult",
     "InitData",
     "IterDirResult",
@@ -38,6 +39,20 @@ class CommandResult:
     @property
     def out_list(self) -> list[str]:
         return self.std_out.splitlines()
+
+
+@dataclass
+class DryRunData:
+    chezmoi_add: list[Path] = field(default_factory=list[Path])
+    chezmoi_apply: list[Path] = field(default_factory=list[Path])
+    chezmoi_destroy: list[Path] = field(default_factory=list[Path])
+    chezmoi_forget: list[Path] = field(default_factory=list[Path])
+    chezmoi_re_add: list[Path] = field(default_factory=list[Path])
+
+    def pretty_op_paths(self, btn_label: BtnLabel) -> str:
+        paths: list[Path] = getattr(self, btn_label, [])
+        strings: list[str] = [f"{Chars.bullet} {p}" for p in paths]
+        return "\n".join(path_str for path_str in strings)
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
