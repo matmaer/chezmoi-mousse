@@ -221,7 +221,6 @@ class OperateModal(ModalScreen[None]):
             returncode=exec_result.returncode,
             std_err=exec_result.std_err,
             std_out=exec_result.std_out,
-            out_list=exec_result.out_list,
             time_stamp=exec_result.time_stamp,
             interactive_approved=exec_result.interactive_approved,
         )

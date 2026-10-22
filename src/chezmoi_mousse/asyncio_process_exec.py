@@ -77,7 +77,6 @@ async def create_subprocess_exec_result(
             returncode=process.returncode,
             std_err=std_err,
             std_out=std_out,
-            out_list=std_out.splitlines(),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
 
@@ -205,6 +204,5 @@ async def run_chezmoi_interactive_process(
             returncode=returncode,
             std_err=std_err,
             std_out=buffer,
-            out_list=buffer.splitlines(),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
