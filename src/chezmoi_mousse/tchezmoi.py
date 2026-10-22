@@ -21,10 +21,10 @@ from chezmoi_mousse.str_enums import Chars, LogStr, ReadCmd, StatusCode as Sc, W
 
 if TYPE_CHECKING:
     from asyncio import Task
-    from collections.abc import AsyncGenerator, Iterable
+    from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 
     from chezmoi_mousse.asyncio_process_exec import ExecResult
-    from chezmoi_mousse.data_types import NodeData, StreamEvent
+    from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import BtnLabel
 
@@ -307,8 +307,10 @@ async def get_highlighted_chezmoi_cat_output(
 
 
 def run_chezmoi_interactive(
-    cmd_enum: WriteCmd, verb_arg: Path | list[str] | None
-) -> AsyncGenerator[StreamEvent, str | None]:
+    cmd_enum: WriteCmd,
+    verb_arg: Path | list[str] | None,
+    prompt_handler: Callable[[str, list[str]], Awaitable[str]],
+) -> AsyncGenerator[list[str] | ExecResult]:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
         raise ValueError(
@@ -325,4 +327,4 @@ def run_chezmoi_interactive(
         chezmoi_args = (*cmd_enum.value,)
     else:
         chezmoi_args = (*cmd_enum.value, str(verb_arg))
-    return run_chezmoi_interactive_process(chezmoi_args)
+    return run_chezmoi_interactive_process(chezmoi_args, prompt_handler)

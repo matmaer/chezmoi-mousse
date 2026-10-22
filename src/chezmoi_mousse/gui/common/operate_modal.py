@@ -32,7 +32,8 @@ if TYPE_CHECKING:
     from textual.containers import HorizontalGroup
     from textual.widgets import Label
 
-    from chezmoi_mousse.data_types import IterDirResult, StreamEvent
+    from chezmoi_mousse.asyncio_process_exec import ExecResult
+    from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import ReadCmd
 
@@ -214,17 +215,18 @@ class OperateModal(ModalScreen[None]):
         container.mount(SubSectionLabel(escape(text)), before=before)
         container.scroll_end()
 
-    def _create_cmd_result(self, event: StreamEvent) -> None:
+    def _create_cmd_result(self, exec_result: ExecResult) -> None:
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
         args = (*cmd_enum.value, *([str(self.path_arg)] if self.path_arg else []))
+        std_out, std_err, returncode = exec_result
         result = CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=f"chezmoi {' '.join(args)}",
             pretty_cmd=tchezmoi.pretty_cmd(cmd_enum, self.path_arg),
-            returncode=event.returncode,
-            std_err=event.std_err,
-            std_out=event.std_out,
-            out_list=event.std_out.splitlines(),
+            returncode=returncode,
+            std_err=std_err,
+            std_out=std_out,
+            out_list=std_out.splitlines(),
             time_stamp=datetime.now().strftime("%H:%M:%S"),
         )
         container = self.query_exactly_one(ScrollableContainer)
@@ -237,11 +239,7 @@ class OperateModal(ModalScreen[None]):
 
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
-        offered = {
-            prompt.prompt_item
-            for prompt in ChezmoiPrompts
-            if prompt.prompt_item in options
-        }
+        offered = set(options)
         for button in self.prompt_buttons:
             button.display = str(button.label) in offered
             button.disabled = False
@@ -263,71 +261,66 @@ class OperateModal(ModalScreen[None]):
 
     @work
     async def _run_interactive(self) -> None:
-        cmd_enum = self.btn_label_to_cmd[self.op_btn]
-        gen = tchezmoi.run_chezmoi_interactive(cmd_enum, self.path_arg)
-
-        response: str | None = None
-        question: str = ""
         # Pressing diff again for the same prompt toggles the existing diff
-        last_diff_question: str | None = None
         last_diff: ShowCmDiff | None = None
+        pending_diff_question: str | None = None
+
+        async def handle_prompt(prompt_question: str, options: list[str]) -> str:
+            nonlocal last_diff, pending_diff_question
+
+            self.general_info_label.update(f"{prompt_question} ({'/'.join(options)})?")
+            response = await self._await_user_choice(options)
+            while (
+                response == ChezmoiPrompts.diff.reply
+                and last_diff is not None
+                and prompt_question == last_diff.diff_title
+            ):
+                collapsible = last_diff.query_exactly_one(Collapsible)
+                collapsible.collapsed = not collapsible.collapsed
+                if not collapsible.collapsed:
+                    last_diff.scroll_visible()
+                response = await self._await_user_choice(options)
+
+            if response == ChezmoiPrompts.no.reply:
+                self._create_warning_label(f"{prompt_question}: NO")
+            elif response == ChezmoiPrompts.yes.reply:
+                self._create_green_label(f"{prompt_question}: YES")
+            elif response == ChezmoiPrompts.quit.reply:
+                self._create_green_label("Asked to quit the operation")
+
+            pending_diff_question = (
+                prompt_question if response == ChezmoiPrompts.diff.reply else None
+            )
+            return response
+
+        events = tchezmoi.run_chezmoi_interactive(
+            self.btn_label_to_cmd[self.op_btn], self.path_arg, handle_prompt
+        )
         try:
-            while True:
-                event = await gen.asend(response)
-                process_has_finished = event.returncode is not None
-
-                if event.is_prompt:
-                    prompt_text = f"{event.prompt_question} ({'/'.join(event.data)})?"
-                    self.general_info_label.update(prompt_text)
-                    question = event.prompt_question
-
-                    # Pause worker on asyncio.Future until UI button is pressed
-                    response = await self._await_user_choice(event.data)
-                    # The diff is already shown, toggle it without answering chezmoi
-                    while (
-                        response == ChezmoiPrompts.diff.reply
-                        and last_diff is not None
-                        and question == last_diff_question
-                    ):
-                        collapsible = last_diff.query_exactly_one(Collapsible)
-                        collapsible.collapsed = not collapsible.collapsed
-                        if not collapsible.collapsed:
-                            last_diff.scroll_visible()
-                        response = await self._await_user_choice(event.data)
-                    if response == ChezmoiPrompts.no.reply:
-                        self._create_warning_label(f"{event.prompt_question}: NO")
-                    elif response == ChezmoiPrompts.yes.reply:
-                        self._create_green_label(f"{event.prompt_question}: YES")
-                    elif response == ChezmoiPrompts.quit.reply:
-                        self._create_green_label("Asked to quit the operation")
-                elif process_has_finished:
+            async for event in events:
+                if isinstance(event, tuple):
                     self._create_cmd_result(event)
                     self.general_info_label.update(
                         "Process completed."
-                        if event.returncode == 0
-                        else f"Process exit, returncode {event.returncode})."
+                        if event[2] == 0
+                        else f"Process exit, returncode {event[2]})."
                     )
                     self.app.run_worker(
                         self.app.left_side.refresh_trees(),
                         name="refresh_trees_after_operation",
                     )
-                elif response == ChezmoiPrompts.diff.reply:
+                elif pending_diff_question is not None:
                     self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
                     last_diff = self._create_cm_git_diff(
-                        "\n".join(event.data) + "\n", question
+                        "\n".join(event) + "\n", pending_diff_question
                     )
-                    last_diff_question = question
-                    response = None
-                else:
-                    response = None
-
-        except StopAsyncIteration:
+                    pending_diff_question = None
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.close
                 button.disabled = False
         finally:
             # on cancel/dismiss the worker is cancelled, this terminates chezmoi
-            await gen.aclose()
+            await events.aclose()
 
     @on(Button.Pressed)
     def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:

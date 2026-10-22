@@ -14,14 +14,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
-__all__ = [
-    "CommandResult",
-    "InitData",
-    "IterDirResult",
-    "NodeData",
-    "ParsedDumpConfig",
-    "StreamEvent",
-]
+__all__ = ["CommandResult", "InitData", "IterDirResult", "NodeData", "ParsedDumpConfig"]
 
 
 @dataclass(slots=True, frozen=True)
@@ -202,15 +195,3 @@ class NodeData:
             return include_sp or self.nested_un_managed or self.un_managed
         else:
             return True
-
-
-@dataclass(slots=True, frozen=True)
-class StreamEvent:
-    data: list[str]
-    is_prompt: bool
-    # for prompts: the question preceding the options, e.g. "Apply .foo"
-    prompt_question: str = ""
-    # only set on the final event of a process
-    returncode: int | None = None
-    std_out: str = ""
-    std_err: str = ""

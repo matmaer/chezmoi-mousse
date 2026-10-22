@@ -13,16 +13,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.data_types import StreamEvent
+from chezmoi_mousse.str_enums import ChezmoiPrompts
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
+    from collections.abc import AsyncGenerator, Awaitable, Callable
 
 
 type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
 # e.g. "Apply .foo (diff/yes/no/all/quit)? "
 _PROMPT_RE = re.compile(r"\(([^()]*)\)\? \Z")
+_PROMPT_OPTIONS = frozenset(prompt.prompt_item for prompt in ChezmoiPrompts)
 _GLOBAL_TIMEOUT = 15
 
 __all__ = [
@@ -67,8 +68,8 @@ async def create_subprocess_exec_result(
                 cmd=exec_args, timeout=_GLOBAL_TIMEOUT
             ) from time_out_error
 
-        std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
-        std_err = (stderr_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
+        std_out = (stdout_bytes or b"").decode("utf-8", errors="replace")
+        std_err = (stderr_bytes or b"").decode("utf-8", errors="replace")
         assert process.returncode is not None, "process did not return a code"
         return std_out, std_err, process.returncode
 
@@ -94,7 +95,6 @@ async def _stop_process(process: asyncio.subprocess.Process) -> None:
 
 @asynccontextmanager
 async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Process]:
-    """Manages process lifecycle, ensuring clean SIGTERM shutdown on exit."""
     process = await asyncio.create_subprocess_exec(
         *cmd,
         stdin=asyncio.subprocess.PIPE,
@@ -109,88 +109,87 @@ async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Proce
 
 async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
-) -> AsyncGenerator[StreamEvent, str | None]:
+    prompt_handler: Callable[[str, list[str]], Awaitable[str]],
+) -> AsyncGenerator[list[str] | ExecResult]:
     read_timeout: float = 0.05
     exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
     async with _managed_process(*exec_args) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin
+        pipe_stderr = process.stderr
         assert pipe_stdout is not None
         assert pipe_stdin is not None
-        assert process.stderr is not None
+        assert pipe_stderr is not None
 
         buffer = ""
         full_std_out = ""
-        last_process_activity = time.monotonic()
+        last_activity = time.monotonic()
         timed_out = False
 
-        while not pipe_stdout.at_eof():
-            try:
-                raw_chunk = await asyncio.wait_for(
-                    pipe_stdout.read(1024), timeout=read_timeout
-                )
-            except TimeoutError:
-                if time.monotonic() - last_process_activity > _GLOBAL_TIMEOUT:
-                    timed_out = True
-                    break
+        async def read_stderr() -> bytes:
+            nonlocal last_activity
+            chunks: list[bytes] = []
+            while stderr_chunk := await pipe_stderr.read(1024):
+                chunks.append(stderr_chunk)
+                last_activity = time.monotonic()
+            return b"".join(chunks)
 
-                prompt_match = _PROMPT_RE.search(buffer)
-                if prompt_match is None:
+        async with asyncio.TaskGroup() as task_group:
+            stderr_task = task_group.create_task(read_stderr())
+
+            while not pipe_stdout.at_eof():
+                try:
+                    raw_chunk = await asyncio.wait_for(
+                        pipe_stdout.read(1024), timeout=read_timeout
+                    )
+                except TimeoutError:
+                    if time.monotonic() - last_activity > _GLOBAL_TIMEOUT:
+                        timed_out = True
+                        break
+
+                    # Silence for read_timeout plus a prompt-shaped ending.
+                    prompt_match = _PROMPT_RE.search(buffer)
+                    if prompt_match is None:
+                        continue
+                    prompt_options = prompt_match.group(1).split("/")
+                    if any(option not in _PROMPT_OPTIONS for option in prompt_options):
+                        continue
+
+                    # NOTE: prompt is different than running commands with a tty!
+                    # Complete lines before the prompt line, e.g. the output of the
+                    # diff option, must not be lost.
+                    output_before_prompt, _, prompt_question = buffer[
+                        : prompt_match.start()
+                    ].rpartition("\n")
+                    if output_before_prompt:
+                        yield output_before_prompt.splitlines()
+                    buffer = ""
+
+                    user_choice = await prompt_handler(
+                        prompt_question.strip(), prompt_options
+                    )
+                    pipe_stdin.write(f"{user_choice}\n".encode())
+                    await pipe_stdin.drain()
+                    last_activity = time.monotonic()
                     continue
 
-                # Silence for read_timeout plus a prompt-shaped ending.
-                # NOTE: prompt is different than running commands with a tty!
-                # Complete lines before the prompt line, e.g. the output of the
-                # diff option, must not be lost.
-                output_before_prompt, _, prompt_question = buffer[
-                    : prompt_match.start()
-                ].rpartition("\n")
-                if output_before_prompt:
-                    yield StreamEvent(
-                        data=output_before_prompt.splitlines(), is_prompt=False
-                    )
-                prompt_options = prompt_match.group(1).split("/")
-                buffer = ""  # Only clear buffer when yielding prompt!
+                if not raw_chunk:
+                    break
 
-                # Receive input directly back from asend()
-                user_choice = yield StreamEvent(
-                    data=prompt_options,
-                    is_prompt=True,
-                    prompt_question=prompt_question.strip(),
-                )
-                if user_choice is None:
-                    raise ValueError(
-                        "A prompt needs a reply; to cancel call aclose() instead"
-                    ) from None
-                pipe_stdin.write(f"{user_choice}\n".encode())
-                await pipe_stdin.drain()
-                last_process_activity = time.monotonic()
-                continue
+                last_activity = time.monotonic()
+                decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
+                buffer += decoded_chunk
+                full_std_out += decoded_chunk
 
-            if not raw_chunk:
-                break
+            # EOF: flush remaining output, it must be yielded before leaving
+            if buffer:
+                yield buffer.splitlines()
 
-            last_process_activity = time.monotonic()
-            decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
-            buffer += decoded_chunk
-            full_std_out += decoded_chunk
+            if timed_out:
+                await _stop_process(process)
+            returncode = await process.wait()
 
-        # EOF: flush remaining output, it must be yielded before leaving
-        if buffer:
-            yield StreamEvent(data=buffer.splitlines(), is_prompt=False)
-
-        if timed_out:
-            await _stop_process(process)
-        returncode = await process.wait()
-        # Drained concurrently, a full stderr pipe would block chezmoi
-        stderr_task = asyncio.create_task(process.stderr.read())
-        std_err = (await stderr_task).decode("utf-8", errors="replace")
+        std_err = stderr_task.result().decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-        yield StreamEvent(
-            data=[],
-            is_prompt=False,
-            returncode=returncode,
-            std_out=full_std_out.strip("\r\n"),
-            std_err=std_err.strip("\r\n"),
-        )
+        yield (full_std_out, std_err, returncode)
