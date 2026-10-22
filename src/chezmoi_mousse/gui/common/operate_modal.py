@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.markup import escape
@@ -215,16 +214,15 @@ class OperateModal(ModalScreen[None]):
 
     def _create_cmd_result(self, exec_result: ExecResult) -> None:
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
-        args = (*cmd_enum.value, *([str(self.path_arg)] if self.path_arg else []))
         result = CommandResult(
             cmd_enum=cmd_enum,
-            full_cmd=f"chezmoi {' '.join(args)}",
+            full_cmd=exec_result.full_cmd,
             pretty_cmd=tchezmoi.pretty_cmd(cmd_enum, self.path_arg),
             returncode=exec_result.returncode,
             std_err=exec_result.std_err,
             std_out=exec_result.std_out,
-            out_list=exec_result.std_out.splitlines(),
-            time_stamp=datetime.now().strftime("%H:%M:%S"),
+            out_list=exec_result.out_list,
+            time_stamp=exec_result.time_stamp,
             interactive_approved=exec_result.interactive_approved,
         )
         container = self.query_exactly_one(ScrollableContainer)

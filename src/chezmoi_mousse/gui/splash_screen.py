@@ -14,7 +14,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
-from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, Tcss, WriteCmd
+from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from textual import getters
@@ -52,9 +52,7 @@ class AnimatedFade(Static):
         self.styles.height = len(SPLASH_ASCII)
         self.styles.width = SPLASH_WIDTH
         self.fade_timer = self.set_interval(
-            name="refresh_self",
-            interval=0.05,
-            callback=self._rotate_and_refresh,
+            name="refresh_self", interval=0.05, callback=self._rotate_and_refresh
         )
 
     def _rotate_and_refresh(self) -> None:
@@ -125,7 +123,7 @@ class SplashScreen(Screen[None]):
             suffix = LogStr.success if cmd_result.returncode == 0 else LogStr.checked
             if isinstance(cmd_result.cmd_enum, ReadCmd):
                 prefix = cmd_result.cmd_enum.pretty_splash_cmd
-            elif isinstance(cmd_result.cmd_enum, WriteCmd):
+            else:
                 prefix = cmd_result.cmd_enum.pretty_cmd
 
         dots_count = LOG_MSG_WIDTH - len(prefix) - len(suffix) - 4

@@ -26,23 +26,27 @@ __all__ = [
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
-    cmd_enum: WriteCmd | ReadCmd | None
+    cmd_enum: WriteCmd | ReadCmd
     full_cmd: str
+    interactive_approved: bool | None = None
+    out_list: list[str]
     pretty_cmd: str
     returncode: int | None
     std_err: str
     std_out: str
-    out_list: list[str]
     time_stamp: str
-    interactive_approved: bool | None = None
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class ExecResult:
+    cmd_enum: WriteCmd | ReadCmd
+    full_cmd: str
+    interactive_approved: bool | None = None
+    out_list: list[str]
+    returncode: int | None
     std_err: str
     std_out: str
-    returncode: int | None
-    interactive_approved: bool | None = None
+    time_stamp: str
 
 
 @dataclass(frozen=True)

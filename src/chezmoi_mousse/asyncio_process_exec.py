@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import time
 from contextlib import asynccontextmanager, suppress
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -19,6 +20,8 @@ from chezmoi_mousse.str_enums import ChezmoiPrompts
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable
 
+    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+
 # e.g. "Apply .foo (diff/yes/no/all/quit)? "
 _PROMPT_RE = re.compile(r"\(([^()]*)\)\? \Z")
 _PROMPT_OPTIONS = frozenset(prompt.prompt_item for prompt in ChezmoiPrompts)
@@ -28,7 +31,10 @@ __all__ = ["create_subprocess_exec_result", "run_chezmoi_interactive_process"]
 
 
 async def create_subprocess_exec_result(
-    chezmoi_args: tuple[str, ...], *, use_isolated_index: bool
+    chezmoi_args: tuple[str, ...],
+    *,
+    use_isolated_index: bool,
+    cmd_enum: ReadCmd | WriteCmd,
 ) -> ExecResult:
     exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
 
@@ -66,7 +72,13 @@ async def create_subprocess_exec_result(
         std_err = (stderr_bytes or b"").decode("utf-8", errors="replace")
         assert process.returncode is not None, "process did not return a code"
         return ExecResult(
-            returncode=process.returncode, std_err=std_err, std_out=std_out
+            cmd_enum=cmd_enum,
+            full_cmd=" ".join(exec_args),
+            returncode=process.returncode,
+            std_err=std_err,
+            std_out=std_out,
+            out_list=std_out.splitlines(),
+            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )
 
     finally:
@@ -106,6 +118,8 @@ async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Proce
 async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
+    *,
+    cmd_enum: ReadCmd | WriteCmd,
 ) -> AsyncGenerator[list[str] | ExecResult]:
     read_timeout: float = 0.05
     interactive_approved = False
@@ -185,8 +199,12 @@ async def run_chezmoi_interactive_process(
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
         yield ExecResult(
+            cmd_enum=cmd_enum,
+            full_cmd=" ".join(exec_args),
             interactive_approved=interactive_approved,
             returncode=returncode,
             std_err=std_err,
             std_out=buffer,
+            out_list=buffer.splitlines(),
+            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )

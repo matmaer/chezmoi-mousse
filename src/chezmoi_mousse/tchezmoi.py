@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -65,17 +64,17 @@ async def _exec_chezmoi(
         isolated_index = False
 
     exec_result: ExecResult = await create_subprocess_exec_result(
-        chezmoi_args, use_isolated_index=isolated_index
+        chezmoi_args, use_isolated_index=isolated_index, cmd_enum=cmd_enum
     )
     command_result = CommandResult(
         cmd_enum=cmd_enum,
-        full_cmd=f"chezmoi {' '.join(chezmoi_args)}",
+        full_cmd=exec_result.full_cmd,
         pretty_cmd=f"{pretty_cmd(cmd_enum, pretty_verb_arg)}",
         returncode=exec_result.returncode,
         std_err=exec_result.std_err,
         std_out=exec_result.std_out,
-        out_list=exec_result.std_out.splitlines(),
-        time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
+        out_list=exec_result.out_list,
+        time_stamp=exec_result.time_stamp,
     )
     if app.screen.name == "splash_screen":
         if cmd_enum is ReadCmd.source_path:
@@ -325,4 +324,6 @@ def run_chezmoi_interactive(
         chezmoi_args = (*cmd_enum.value,)
     else:
         chezmoi_args = (*cmd_enum.value, str(verb_arg))
-    return run_chezmoi_interactive_process(chezmoi_args, prompt_handler)
+    return run_chezmoi_interactive_process(
+        chezmoi_args, prompt_handler, cmd_enum=cmd_enum
+    )
