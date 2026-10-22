@@ -223,6 +223,12 @@ class OperateTab(TabPane):
         self._sync_non_displayed_trees(node_data)
         self._update_view_widgets(node_data)
 
+    def _show_dest_dir(self) -> None:
+        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
+        for tree in self.left_side_vertical.query_children(OperateTree).results():
+            tree.unselect()
+            tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
+
     @work
     async def _update_op_buttons(self, node_data: NodeData) -> None:
         missing_btn_labels = [
@@ -323,12 +329,6 @@ class OperateTab(TabPane):
             return
         event.stop()
         self._show_dest_dir()
-
-    def _show_dest_dir(self) -> None:
-        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
-        for tree in self.left_side_vertical.query_children(OperateTree).results():
-            tree.unselect()
-            tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
 
     def handle_tree_changes(self, changes: CmPathChanges) -> None:
         touched_paths = (
