@@ -13,24 +13,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
+from chezmoi_mousse.data_types import ExecResult
 from chezmoi_mousse.str_enums import ChezmoiPrompts
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable
-
-
-type ExecResult = tuple[str, str, int]  # std_out, std_err, returncode
 
 # e.g. "Apply .foo (diff/yes/no/all/quit)? "
 _PROMPT_RE = re.compile(r"\(([^()]*)\)\? \Z")
 _PROMPT_OPTIONS = frozenset(prompt.prompt_item for prompt in ChezmoiPrompts)
 _GLOBAL_TIMEOUT = 15
 
-__all__ = [
-    "ExecResult",
-    "create_subprocess_exec_result",
-    "run_chezmoi_interactive_process",
-]
+__all__ = ["create_subprocess_exec_result", "run_chezmoi_interactive_process"]
 
 
 async def create_subprocess_exec_result(
@@ -71,7 +65,9 @@ async def create_subprocess_exec_result(
         std_out = (stdout_bytes or b"").decode("utf-8", errors="replace")
         std_err = (stderr_bytes or b"").decode("utf-8", errors="replace")
         assert process.returncode is not None, "process did not return a code"
-        return std_out, std_err, process.returncode
+        return ExecResult(
+            returncode=process.returncode, std_err=std_err, std_out=std_out
+        )
 
     finally:
         if temp_index_path and temp_index_path.exists():
@@ -110,7 +106,7 @@ async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Proce
 async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
-) -> AsyncGenerator[list[str] | tuple[ExecResult, bool]]:
+) -> AsyncGenerator[list[str] | ExecResult]:
     read_timeout: float = 0.05
     interactive_approved = False
     exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
@@ -188,4 +184,9 @@ async def run_chezmoi_interactive_process(
         std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-        yield (buffer, std_err, returncode), interactive_approved
+        yield ExecResult(
+            interactive_approved=interactive_approved,
+            returncode=returncode,
+            std_err=std_err,
+            std_out=buffer,
+        )

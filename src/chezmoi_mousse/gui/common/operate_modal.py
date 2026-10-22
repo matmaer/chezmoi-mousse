@@ -11,6 +11,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Collapsible, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
+from chezmoi_mousse.asyncio_process_exec import ExecResult
 from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
@@ -32,7 +33,6 @@ if TYPE_CHECKING:
     from textual.containers import HorizontalGroup
     from textual.widgets import Label
 
-    from chezmoi_mousse.asyncio_process_exec import ExecResult
     from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import ReadCmd
@@ -213,20 +213,19 @@ class OperateModal(ModalScreen[None]):
         before = self.general_info_label
         container.mount(SubSectionLabel(escape(text)), before=before)
 
-    def _create_cmd_result(self, interactive_result: tuple[ExecResult, bool]) -> None:
+    def _create_cmd_result(self, exec_result: ExecResult) -> None:
         cmd_enum = self.btn_label_to_cmd[self.op_btn]
         args = (*cmd_enum.value, *([str(self.path_arg)] if self.path_arg else []))
-        std_out, std_err, returncode = interactive_result[0]
         result = CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=f"chezmoi {' '.join(args)}",
             pretty_cmd=tchezmoi.pretty_cmd(cmd_enum, self.path_arg),
-            returncode=returncode,
-            std_err=std_err,
-            std_out=std_out,
-            out_list=std_out.splitlines(),
+            returncode=exec_result.returncode,
+            std_err=exec_result.std_err,
+            std_out=exec_result.std_out,
+            out_list=exec_result.std_out.splitlines(),
             time_stamp=datetime.now().strftime("%H:%M:%S"),
-            interactive_approved=interactive_result[1],
+            interactive_approved=exec_result.interactive_approved,
         )
         container = self.query_exactly_one(ScrollableContainer)
         container.mount(CmdResultCollapsible(cmd_result=result))
@@ -297,12 +296,12 @@ class OperateModal(ModalScreen[None]):
         )
         try:
             async for event in events:
-                if isinstance(event, tuple):
+                if isinstance(event, ExecResult):
                     self._create_cmd_result(event)
                     self.general_info_label.update(
                         "Process completed."
-                        if event[0][2] == 0
-                        else f"Process exit, returncode {event[0][2]})."
+                        if event.returncode == 0
+                        else f"Process exit, returncode {event.returncode})."
                     )
                     self.app.run_worker(
                         self.app.left_side.refresh_trees(),

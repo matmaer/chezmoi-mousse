@@ -14,10 +14,17 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 
-__all__ = ["CommandResult", "InitData", "IterDirResult", "NodeData", "ParsedDumpConfig"]
+__all__ = [
+    "CommandResult",
+    "ExecResult",
+    "InitData",
+    "IterDirResult",
+    "NodeData",
+    "ParsedDumpConfig",
+]
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, kw_only=True)
 class CommandResult:
     cmd_enum: WriteCmd | ReadCmd | None
     full_cmd: str
@@ -27,6 +34,14 @@ class CommandResult:
     std_out: str
     out_list: list[str]
     time_stamp: str
+    interactive_approved: bool | None = None
+
+
+@dataclass(slots=True, frozen=True, kw_only=True)
+class ExecResult:
+    std_err: str
+    std_out: str
+    returncode: int | None
     interactive_approved: bool | None = None
 
 

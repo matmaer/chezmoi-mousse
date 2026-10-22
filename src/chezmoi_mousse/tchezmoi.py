@@ -71,10 +71,10 @@ async def _exec_chezmoi(
         cmd_enum=cmd_enum,
         full_cmd=f"chezmoi {' '.join(chezmoi_args)}",
         pretty_cmd=f"{pretty_cmd(cmd_enum, pretty_verb_arg)}",
-        returncode=exec_result[2],
-        std_err=exec_result[1],
-        std_out=exec_result[0],
-        out_list=exec_result[0].splitlines(),
+        returncode=exec_result.returncode,
+        std_err=exec_result.std_err,
+        std_out=exec_result.std_out,
+        out_list=exec_result.std_out.splitlines(),
         time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
     )
     if app.screen.name == "splash_screen":
@@ -308,7 +308,7 @@ def run_chezmoi_interactive(
     cmd_enum: WriteCmd,
     verb_arg: Path | list[str] | None,
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
-) -> AsyncGenerator[list[str] | tuple[ExecResult, bool]]:
+) -> AsyncGenerator[list[str] | ExecResult]:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
         raise ValueError(
