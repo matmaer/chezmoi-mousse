@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.widgets.tree import TreeNode
 
-    from chezmoi_mousse.chezmoi_paths import CmPathChanges, NodeDict
+    from chezmoi_mousse.chezmoi_paths import CmPathChanges
     from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -131,7 +131,7 @@ class OperateTree(Tree[NodeData]):
         self.refresh(layout=True)
 
     def _apply_changed_nodes(
-        self, changed: NodeDict, tree_name: TreeName, *, allow_expand: bool
+        self, changed: dict[Path, NodeData], tree_name: TreeName, *, allow_expand: bool
     ) -> None:
         for path, node_data in changed.items():
             if path == store.cfg.dest_dir:
