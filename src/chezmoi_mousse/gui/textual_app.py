@@ -86,8 +86,8 @@ class ChezmoiGui(App[str]):
     def __init__(self) -> None:
 
         store.init_data = InitData(
-            which_chezmoi=shutil.which("chezmoi"),
-            which_git=shutil.which("git"),
+            _which_chezmoi=shutil.which("chezmoi"),
+            _which_git=shutil.which("git"),
             pilot_mode=(
                 os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
                 or "--pilot-mode" in sys.argv

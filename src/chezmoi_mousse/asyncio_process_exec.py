@@ -32,27 +32,10 @@ __all__ = [
 ]
 
 
-def _get_chezmoi_cmd() -> str:
-    if store.init_data.which_chezmoi is None:
-        raise RuntimeError(
-            "Trying to run a chezmoi command when it's not available or before it's "
-            "set in store.init_data.which_chezmoi"
-        )
-    elif store.init_data.which_git is None:
-        raise RuntimeError(
-            "Trying to run a chezmoi command when git is not available or before it's "
-            "set in store.init_data.which_git"
-        )
-    return store.init_data.which_chezmoi
-
-
 async def create_subprocess_exec_result(
-    chezmoi_args: tuple[str, ...],
-    *,
-    use_isolated_index: bool,
+    chezmoi_args: tuple[str, ...], *, use_isolated_index: bool
 ) -> ExecResult:
-    chezmoi_cmd = _get_chezmoi_cmd()
-    exec_args = (chezmoi_cmd, *chezmoi_args)
+    exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
 
     env_vars: dict[str, str] | None = None
     temp_index_path: Path | None = None
@@ -81,8 +64,7 @@ async def create_subprocess_exec_result(
             process.kill()
             await process.wait()
             raise subprocess.TimeoutExpired(
-                cmd=exec_args,
-                timeout=_GLOBAL_TIMEOUT,
+                cmd=exec_args, timeout=_GLOBAL_TIMEOUT
             ) from time_out_error
 
         std_out = (stdout_bytes or b"").decode("utf-8", errors="replace").strip("\r\n")
@@ -111,9 +93,7 @@ async def _stop_process(process: asyncio.subprocess.Process) -> None:
 
 
 @asynccontextmanager
-async def _managed_process(
-    *cmd: str,
-) -> AsyncGenerator[asyncio.subprocess.Process]:
+async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Process]:
     """Manages process lifecycle, ensuring clean SIGTERM shutdown on exit."""
     process = await asyncio.create_subprocess_exec(
         *cmd,
@@ -131,17 +111,13 @@ async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
 ) -> AsyncGenerator[StreamEvent, str | None]:
     read_timeout: float = 0.05
-    chezmoi_cmd = _get_chezmoi_cmd()
-    exec_args = (chezmoi_cmd, *chezmoi_args)
+    exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
     async with _managed_process(*exec_args) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin
         assert pipe_stdout is not None
         assert pipe_stdin is not None
         assert process.stderr is not None
-
-        # Drained concurrently, a full stderr pipe would block chezmoi
-        stderr_task = asyncio.create_task(process.stderr.read())
 
         buffer = ""
         full_std_out = ""
@@ -151,8 +127,7 @@ async def run_chezmoi_interactive_process(
         while not pipe_stdout.at_eof():
             try:
                 raw_chunk = await asyncio.wait_for(
-                    pipe_stdout.read(1024),
-                    timeout=read_timeout,
+                    pipe_stdout.read(1024), timeout=read_timeout
                 )
             except TimeoutError:
                 if time.monotonic() - last_process_activity > _GLOBAL_TIMEOUT:
@@ -207,6 +182,8 @@ async def run_chezmoi_interactive_process(
         if timed_out:
             await _stop_process(process)
         returncode = await process.wait()
+        # Drained concurrently, a full stderr pipe would block chezmoi
+        stderr_task = asyncio.create_task(process.stderr.read())
         std_err = (await stderr_task).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."

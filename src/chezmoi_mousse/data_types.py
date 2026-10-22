@@ -68,8 +68,23 @@ class ParsedDumpConfig:
 @dataclass(slots=True, frozen=True)
 class InitData:
     pilot_mode: bool = False
-    which_chezmoi: str | None = None
-    which_git: str | None = None
+    _which_chezmoi: str | None = None
+    _which_git: str | None = None
+
+    @property
+    def which_chezmoi(self) -> str:
+        if self._which_chezmoi is None:
+            raise RuntimeError(
+                "Trying to run a chezmoi command when it's not available or before ",
+                "it's set in InitData",
+            )
+
+        elif self._which_git is None:
+            raise RuntimeError(
+                "Trying to run a chezmoi command when git is not available or before "
+                "it's set in InitData"
+            )
+        return self._which_chezmoi
 
 
 @dataclass(slots=True, frozen=True)
