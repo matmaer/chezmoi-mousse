@@ -203,8 +203,19 @@ class OperateTab(TabPane):
 
     async def apply_changes(self) -> None:
         if store.cm_changes.changes_available:
-            for tree in self.query_children(OperateTree).results():
+            for tree in self.left_side_vertical.query_children(OperateTree).results():
                 await tree.update_nodes(store.cm_changes)
+            self.dry_run_cache.clear()
+            for btn in self.op_btn_group.query(Button).results():
+                btn.disabled = True
+            tree_node = self._current_displayed_tree.node_map.get(
+                self.current_node.path
+            )
+            if tree_node is None or tree_node.data is None:
+                self._show_dest_dir()
+                return
+            self._update_all_widgets(tree_node.data)
+
         else:
             self.app.notify(
                 "No changes available, skipping refresh.", severity="warning"
@@ -317,24 +328,19 @@ class OperateTab(TabPane):
         await store.handle_new_tree_paths(self.app, new_tree_paths)
         await self.apply_changes()
 
-    def handle_tree_changes(self) -> None:
-        self.dry_run_cache.clear()
-
-        tree_node = self._current_displayed_tree.node_map.get(self.current_node.path)
-        if tree_node is None or tree_node.data is None:
-            self._show_dest_dir()
-            return
-        self.current_node = tree_node.data
-        self._update_op_buttons(tree_node.data)
-        self._sync_non_displayed_trees(tree_node.data)
-
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
         if event.button.label not in BtnLabel.op_btn_labels():
             return
         event.stop()
         btn_label = BtnLabel(str(event.button.label))
-        paths = self.dry_run_cache[self.current_node.path].pretty_op_paths(btn_label)
+        dry_run_data = self.dry_run_cache.get(self.current_node.path)
+        if dry_run_data is None:
+            self.app.notify(
+                "Affected paths are still being calculated.", severity="warning"
+            )
+            return
+        paths = dry_run_data.pretty_op_paths(btn_label)
         modal = OperateModal(
             op_btn=btn_label, path=self.current_node.path, affected_paths=paths
         )
