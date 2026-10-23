@@ -41,7 +41,7 @@ class CommandResult:
         return self.std_out.splitlines()
 
 
-@dataclass
+@dataclass(slots=True)
 class DryRunData:
     chezmoi_add: list[Path] = field(default_factory=list[Path])
     chezmoi_apply: list[Path] = field(default_factory=list[Path])
@@ -50,7 +50,7 @@ class DryRunData:
     chezmoi_re_add: list[Path] = field(default_factory=list[Path])
 
     def pretty_op_paths(self, btn_label: BtnLabel) -> str:
-        paths: list[Path] = getattr(self, btn_label, [])
+        paths: list[Path] = getattr(self, btn_label.name)
         strings: list[str] = [f"{Chars.bullet} {p}" for p in paths]
         return "\n".join(path_str for path_str in strings)
 
