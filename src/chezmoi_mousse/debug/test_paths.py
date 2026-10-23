@@ -1,4 +1,5 @@
 import random
+import shutil
 import stat
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -83,9 +84,9 @@ class _TestFileContents:
     def _generate_initial_text(self, file_name: str) -> str:
         str_to_kb_map: dict[str, int] = {
             TestFile.small_file.value: 10,
-            TestFile.medium_file.value: 100,
-            TestFile.large_file.value: 1000,
-            TestFile.huge_file.value: 3000,
+            TestFile.medium_file.value: 50,
+            TestFile.large_file.value: 500,
+            TestFile.huge_file.value: 2000,
         }
         target_bytes: int = str_to_kb_map[file_name] * 1024
         rng = random.Random(target_bytes)
@@ -170,21 +171,21 @@ class _FullPaths:
     l2_wanted_dir: Path = l1_man_dir / TestDir.wanted_dir
     l3e_man_dir: Path = l2_man_dir / TestDir.managed_dir
     l3e_wanted_dir: Path = l2_man_dir / TestDir.wanted_dir
-    l3e_un_wanted_dir: Path = l2_man_dir / TestDir.un_wanted_dir
 
     l0_medium_file: Path = HOME_DIR / TestFile.medium_file
     l0_small_file: Path = HOME_DIR / TestFile.small_file
+    l1_large_file: Path = l1_special_dir / TestFile.large_file
     l1_huge_file: Path = l1_special_dir / TestFile.huge_file
     l1_tricky_utf8_file: Path = l1_special_dir / TestFile.tricky_utf8_file
 
     l1_un_wanted_file: Path = l1_man_dir / TestFile.un_wanted_file
-    l1_medium_file: Path = l1_man_dir / TestFile.medium_file
     l1_small_file: Path = l1_man_dir / TestFile.small_file
-    l1_large_file: Path = l1_man_dir / TestFile.large_file
+    l1_medium_file: Path = l1_man_dir / TestFile.medium_file
+    l2_small_file: Path = l2_man_dir / TestFile.small_file
     l2_medium_file: Path = l2_man_dir / TestFile.medium_file
     l2_wanted_file: Path = l2_man_dir / TestFile.wanted_file
-    l3e_medium_file: Path = l3e_man_dir / TestFile.medium_file
     l3e_small_file: Path = l3e_man_dir / TestFile.small_file
+    l3e_medium_file: Path = l3e_man_dir / TestFile.medium_file
     l3e_un_wanted_file: Path = l3e_man_dir / TestFile.un_wanted_file
 
     def dir_paths(self, exists: bool | None = None) -> list[Path]:
@@ -227,7 +228,6 @@ class _FullPaths:
 class TestPaths:
     def __init__(self) -> None:
         self.full_paths = _FullPaths()
-        self.modified_diff_state: bool = False
 
     def report_test_paths(self) -> str:
         lines: list[str] = []
@@ -264,56 +264,49 @@ class TestPaths:
         if updated:
             lines.append(f"[${ColorVar.text_warning}]Updated existing paths:[/]")
             lines.extend(escape(str(path)) for path in updated)
-        self.modified_diff_state = False
         return "\n".join(lines)
 
     def remove_test_paths(self) -> str:
-        removed: list[str] = []
-
-        for path in self.full_paths.file_paths(exists=True):
-            path.unlink()
-            removed.append(escape(str(path)))
-
-        for path in reversed(self.full_paths.dir_paths(exists=True)):
-            path.rmdir()
-            removed.append(escape(str(path)))
-
-        if not removed:
+        existing = self.full_paths.all_paths(exists=True)
+        if not existing:
             return f"[${ColorVar.text_warning}]No test paths exist.[/]"
-        removed_str = "\n".join(line for line in removed)
 
-        return "\n".join(
-            [f"[${ColorVar.text_success}]Removed paths:[/]\n{removed_str}"]
-        )
+        for path in path_funcs.get_common_top_level(existing):
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+
+        removed = [escape(str(path)) for path in path_funcs.sort_paths(existing)]
+        return "\n".join([f"[${ColorVar.text_success}]Removed paths:[/]", *removed])
 
     def create_diffs(self) -> str:
         lines: list[str] = []
         dir_path = self.full_paths.l2_man_dir
-        if dir_path.is_dir():
+        dir_exists = dir_path.is_dir()
+        files = self.full_paths.files_for_diff
+        if not dir_exists and not files:
+            return f"[${ColorVar.text_warning}]No test paths exist to modify.[/]"
+
+        initial = self.full_paths.file_contents.old_diff_map
+        modified = self.full_paths.file_contents.new_diff_map
+        restore_initial = any(
+            path.read_text(encoding="utf-8") != initial[path.name] for path in files
+        ) or (dir_exists and stat.S_IMODE(dir_path.stat().st_mode) != 0o755)
+
+        if dir_exists:
             lines.append(f"[${ColorVar.text_warning}]Modified status dir:[/]")
-            current_permissions = stat.S_IMODE(dir_path.stat().st_mode)
-            if current_permissions == 0o750:
-                dir_path.chmod(0o755)
-            else:
-                dir_path.chmod(0o750)
+            dir_path.chmod(0o755 if restore_initial else 0o750)
             lines.append(f"{escape(str(dir_path))}")
         else:
             lines.append(
                 f"[${ColorVar.text_warning}]Dir to modify does not exist: {dir_path}[/]"
             )
 
-        result: dict[Path, str] = {}
-        for path in self.full_paths.files_for_diff:
-            initial = self.full_paths.file_contents.old_diff_map[path.name]
-            modified = self.full_paths.file_contents.new_diff_map[path.name]
-            result[path] = initial if self.modified_diff_state is True else modified
-
-        if not result and not lines:
-            return f"[${ColorVar.text_warning}]No test paths exist to modify.[/]"
-
-        lines.append(f"[${ColorVar.text_warning}]Modified files:[/]")
-        for path, content in result.items():
-            path.write_text(content, encoding="utf-8")
+        contents = initial if restore_initial else modified
+        if files:
+            lines.append(f"[${ColorVar.text_warning}]Modified files:[/]")
+        for path in files:
+            path.write_text(contents[path.name], encoding="utf-8")
             lines.append(f"{escape(str(path))}")
-        self.modified_diff_state = not self.modified_diff_state
         return "\n".join(lines)
