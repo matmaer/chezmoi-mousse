@@ -222,8 +222,8 @@ async def run_affected_paths(
     cr_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
         app, commands_to_run, path_arg
     )
-    for k, cr in cr_results.items():
-        setattr(dry_run_data, k.name, parse_paths(cr))
+    for cmd_enum, cr in cr_results.items():
+        setattr(dry_run_data, cmd_enum.write_btn_label.name, parse_paths(cr))
     return dry_run_data
 
 
