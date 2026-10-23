@@ -206,6 +206,11 @@ class OperateTab(TabPane):
             for tree in self.left_side_vertical.query_children(OperateTree).results():
                 await tree.update_nodes(store.cm_changes)
             self.dry_run_cache.clear()
+            self.content_view.cache.clear()
+            self.diff_view.cache.clear()
+            self.diff_reverse_view.cache.clear()
+            self.git_log_view.cache.clear()
+            self.paths_without_git_log.clear()
             for btn in self.op_btn_group.query(Button).results():
                 btn.disabled = True
             tree_node = self._current_displayed_tree.node_map.get(
