@@ -154,9 +154,9 @@ async def run_affected_paths(
         default_result[BtnLabel.chezmoi_add] = []
         default_result[BtnLabel.chezmoi_destroy] = []
         default_result[BtnLabel.chezmoi_forget] = []
-    if n_data.dest_dir and not n_data.nested_status:
-        default_result[BtnLabel.chezmoi_apply] = []
-        default_result[BtnLabel.chezmoi_re_add] = []
+        if not n_data.nested_status:
+            default_result[BtnLabel.chezmoi_apply] = []
+            default_result[BtnLabel.chezmoi_re_add] = []
     # basic affected paths for dirs other than the dest dir
     elif n_data.un_managed_dir:
         default_result[BtnLabel.chezmoi_apply] = []
@@ -175,9 +175,7 @@ async def run_affected_paths(
             default_result[BtnLabel.chezmoi_re_add] = [n_data.path]
         if not n_data.exists:
             default_result[BtnLabel.chezmoi_destroy] = []
-        elif n_data.exists and not (
-            n_data.nested_un_managed or n_data.nested_un_managed
-        ):
+        elif n_data.exists and not (n_data.nested_managed or n_data.nested_un_managed):
             default_result[BtnLabel.chezmoi_destroy] = [n_data.path]
         if not n_data.nested_managed:
             default_result[BtnLabel.chezmoi_forget] = [n_data.path]
@@ -187,6 +185,8 @@ async def run_affected_paths(
         default_result[BtnLabel.chezmoi_forget] = [n_data.path]
         if n_data.exists:
             default_result[BtnLabel.chezmoi_destroy] = [n_data.path]
+        else:
+            default_result[BtnLabel.chezmoi_destroy] = []
         if n_data.status_file:
             default_result[BtnLabel.chezmoi_apply] = [n_data.path]
             default_result[BtnLabel.chezmoi_re_add] = [n_data.path]
@@ -217,9 +217,7 @@ async def run_affected_paths(
                 paths.add(abs_path)
         return path_funcs.sort_paths(paths)
 
-    commands_to_run: dict[ReadCmd, list[Path]] = {
-        k.dry_cmd: v for k, v in default_result.items() if v is not None
-    }
+    commands_to_run = [k.dry_cmd for k, v in default_result.items() if v is None]
     path_arg = None if n_data.dest_dir else n_data.path
     cr_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
         app, commands_to_run, path_arg
