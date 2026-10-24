@@ -74,13 +74,9 @@ class ParsedDumpConfig:
     def parsed_cfg(self) -> dict[str, Any]:
         return json.loads(self._dump_config_std_out)
 
-    @cached_property
-    def dest_dir(self) -> Path:
-        return Path(self.parsed_cfg["destDir"])
-
     @property
-    def git_index(self) -> Path:
-        return Path(self.parsed_cfg["sourceDir"]) / ".git" / "index"
+    def dest_dir_str(self) -> str:
+        return self.parsed_cfg["destDir"]
 
     @property
     def auto_add(self) -> bool:
@@ -93,6 +89,14 @@ class ParsedDumpConfig:
     @property
     def auto_push(self) -> bool:
         return self.parsed_cfg["git"]["autopush"]
+
+    @cached_property
+    def dest_dir(self) -> Path:
+        return Path(self.parsed_cfg["destDir"])
+
+    @cached_property
+    def git_index(self) -> Path:
+        return Path(self.parsed_cfg["sourceDir"]) / ".git" / "index"
 
 
 @dataclass(slots=True, frozen=True)

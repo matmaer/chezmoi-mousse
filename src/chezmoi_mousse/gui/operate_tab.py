@@ -201,31 +201,6 @@ class OperateTab(TabPane):
             tree.unselect()
             tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
 
-    async def apply_changes(self) -> None:
-        if store.cm_changes.changes_available:
-            for tree in self.left_side_vertical.query_children(OperateTree).results():
-                await tree.update_nodes(store.cm_changes)
-            self.dry_run_cache.clear()
-            self.content_view.cache.clear()
-            self.diff_view.cache.clear()
-            self.diff_reverse_view.cache.clear()
-            self.git_log_view.cache.clear()
-            self.paths_without_git_log.clear()
-            for btn in self.op_btn_group.query(Button).results():
-                btn.disabled = True
-            tree_node = self._current_displayed_tree.node_map.get(
-                self.current_node.path
-            )
-            if tree_node is None or tree_node.data is None:
-                self._show_dest_dir()
-                return
-            self._update_all_widgets(tree_node.data)
-
-        else:
-            self.app.notify(
-                "No changes available, skipping refresh.", severity="warning"
-            )
-
     @work
     async def _update_op_buttons(self, node_data: NodeData) -> None:
         self.dry_run_cache[node_data.path] = await tchezmoi.run_affected_paths(
@@ -299,6 +274,30 @@ class OperateTab(TabPane):
             self.path_view.node_data = node_data
             self.path_view.display = True
 
+    @work
+    async def refresh_trees(self) -> None:
+        new_tree_paths = await tchezmoi.run_managed_commands(self.app)
+        await store.handle_new_tree_paths(self.app, new_tree_paths)
+        if not store.cm_changes.changes_available:
+            self.app.notify("No changes available, skipping refresh.")
+            return
+        self.app.notify("Clear cache and refresh trees.", severity="warning")
+        for tree in self.left_side_vertical.query_children(OperateTree).results():
+            await tree.update_nodes(store.cm_changes)
+        self.dry_run_cache.clear()
+        self.content_view.cache.clear()
+        self.diff_view.cache.clear()
+        self.diff_reverse_view.cache.clear()
+        self.git_log_view.cache.clear()
+        self.paths_without_git_log.clear()
+        for btn in self.op_btn_group.query(Button).results():
+            btn.disabled = True
+        tree_node = self._current_displayed_tree.node_map.get(self.current_node.path)
+        if tree_node is None or tree_node.data is None:
+            self._show_dest_dir()
+            return
+        self._update_all_widgets(tree_node.data)
+
     #################################
     # Watchers and message handling #
     #################################
@@ -315,23 +314,16 @@ class OperateTab(TabPane):
         self._update_all_widgets(event.node.data)
 
     @on(Button.Pressed)
-    def handle_dest_dir_btn_msg(self, event: Button.Pressed) -> None:
-        if event.button.label != str(store.cfg.dest_dir):
-            return
-        event.stop()
-        self._show_dest_dir()
+    def handle_dest_dir_btn(self, event: Button.Pressed) -> None:
+        if str(event.button.label) == store.cfg.dest_dir_str:
+            event.stop()
+            self._show_dest_dir()
 
     @on(Button.Pressed)
-    def handle_refresh_tree_btn_msg(self, event: Button.Pressed) -> None:
+    def handle_refresh_tree_btn(self, event: Button.Pressed) -> None:
         if event.button.label == Chars.refresh:
             event.stop()
             self.refresh_trees()
-
-    @work
-    async def refresh_trees(self) -> None:
-        new_tree_paths = await tchezmoi.run_managed_commands(self.app)
-        await store.handle_new_tree_paths(self.app, new_tree_paths)
-        await self.apply_changes()
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:

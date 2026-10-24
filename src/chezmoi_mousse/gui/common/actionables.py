@@ -101,7 +101,7 @@ class PromptBtnGroup(HorizontalGroup):
 
 class TreeButtons(Horizontal):
     def compose(self) -> ComposeResult:
-        yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
+        yield Button(label=store.cfg.dest_dir_str, classes=Tcss.dest_dir_button)
         yield Button(label=Chars.refresh, classes=Tcss.refresh_button)
 
 
