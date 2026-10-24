@@ -14,7 +14,7 @@ from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
-from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, Tcss
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
@@ -28,6 +28,7 @@ __all__ = [
     "PromptBtnGroup",
     "SwitchGroup",
     "TabButtons",
+    "TreeButtons",
 ]
 
 
@@ -96,6 +97,12 @@ class PromptBtnGroup(HorizontalGroup):
         buttons = self.query_children(Button)
         for btn in buttons:
             btn.display = False
+
+
+class TreeButtons(Horizontal):
+    def compose(self) -> ComposeResult:
+        yield Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button)
+        yield Button(label=Chars.refresh, classes=Tcss.refresh_button)
 
 
 class SwitchGroup(VerticalGroup):

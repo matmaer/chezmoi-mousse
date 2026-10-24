@@ -9,7 +9,7 @@
     max-width: 30%;
     width: auto;
 
-    &>.tree_header {
+    &>TreeButtons {
       height: 3;
       width: 100%;
       min-width: 21;
@@ -25,7 +25,11 @@
         width: 1fr;
 
         &:hover {
-          color: $text-accent;
+          background-tint: $surface-lighten-2;
+          background: $surface-lighten-2;
+          border-bottom: inner $surface-lighten-2;
+          border-right: inner $surface-lighten-2;
+          border-top: inner $surface-lighten-2;
           text-style: bold;
         }
 
@@ -40,17 +44,19 @@
         border-bottom: inner $surface-lighten-1;
         border-top: inner $surface-lighten-1;
         color: $accent;
-        min-width: 3;
         text-style: bold;
         width: 3;
+        min-width: 3;
 
         &:hover {
+          background-tint: $surface-lighten-2;
+          background: $surface-lighten-2;
+          border-bottom: inner $surface-lighten-2;
+          border-top: inner $surface-lighten-2;
           text-style: bold;
-          color: $accent-lighten-3;
         }
 
         &:focus {
-          color: $accent-lighten-3;
           text-style: bold;
         }
       }

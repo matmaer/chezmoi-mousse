@@ -7,7 +7,11 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, RadioButton, RadioSet, TabPane, Tree
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.gui.common.actionables import OperateBtnGroup, SwitchGroup
+from chezmoi_mousse.gui.common.actionables import (
+    OperateBtnGroup,
+    SwitchGroup,
+    TreeButtons,
+)
 from chezmoi_mousse.gui.common.components import (
     MainSectionLabel,
     NoShowLabel,
@@ -43,11 +47,7 @@ class LeftSideVertical(Vertical):
         app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
-        yield Horizontal(
-            Button(label=f"{store.cfg.dest_dir}", classes=Tcss.dest_dir_button),
-            Button(label=Chars.refresh, classes=Tcss.refresh_button),
-            classes=Tcss.tree_header,
-        )
+        yield TreeButtons(classes=Tcss.tree_header)
         yield OperateTree(TreeName.managed_sp, store.op_ids.tree.managed_sp)
         yield OperateTree(TreeName.managed_sp_xpd, store.op_ids.tree.managed_sp_xpd)
         yield OperateTree(TreeName.managed_amp, store.op_ids.tree.managed_amp)
