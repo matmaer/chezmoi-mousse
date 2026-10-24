@@ -22,9 +22,6 @@ class AppIds:
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.tab_label.name}_{name.name}_id"
 
-    def btn_id(self, qid: str = "", *, btn_label: BtnLabel) -> str:
-        return f"{qid}{self.tab_label.name}_{btn_label.name}_btn_id"
-
     def switch_id(self, qid: str = "", *, switch_label: LabelStr) -> str:
         return f"{qid}{self.tab_label.name}_{switch_label.name}_switch_id"
 
@@ -38,41 +35,22 @@ class AppIds:
 class _ContainerIds:
     def __init__(self, ids: AppIds) -> None:
         self.cat_config: str = ids.container_id(name=ContainerName.cat_config)
-        self.cat_config_q: str = f"#{self.cat_config}"
         self.cmd_log: str = ids.container_id(name=ContainerName.cmd_log)
-        self.cmd_log_q: str = f"#{self.cmd_log}"
         self.color_vars: str = ids.container_id(name=ContainerName.color_vars)
-        self.color_vars_q: str = f"#{self.color_vars}"
-        self.contents: str = ids.container_id(name=ContainerName.contents)
-        self.contents_q: str = f"#{self.contents}"
         self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
-        self.debug_log_q: str = f"#{self.debug_log}"
         self.diagram: str = ids.container_id(name=ContainerName.diagram)
-        self.diagram_q: str = f"#{self.diagram}"
-        self.diff: str = ids.container_id(name=ContainerName.diff)
-        self.diff_q: str = f"#{self.diff}"
-        self.diff_reverse: str = ids.container_id(name=ContainerName.diff_reverse)
-        self.diff_reverse_q: str = f"#{self.diff_reverse}"
         self.doctor: str = ids.container_id(name=ContainerName.doctor)
-        self.doctor_q: str = f"#{self.doctor}"
         self.dom_nodes: str = ids.container_id(name=ContainerName.dom_nodes)
-        self.dom_nodes_q: str = f"#{self.dom_nodes}"
         self.dump_config: str = ids.container_id(name=ContainerName.dump_config)
-        self.dump_config_q: str = f"#{self.dump_config}"
         self.flat_buttons: str = ids.container_id(name=ContainerName.flat_buttons)
         self.flat_buttons_q: str = f"#{self.flat_buttons}"
-        self.git_log: str = ids.container_id(name=ContainerName.git_log)
-        self.git_log_q: str = f"#{self.git_log}"
         self.ignored: str = ids.container_id(name=ContainerName.git_ignored)
-        self.ignored_q: str = f"#{self.ignored}"
         self.env_vars: str = ids.container_id(name=ContainerName.env_vars)
-        self.env_vars_q: str = f"#{self.env_vars}"
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
         self.prompt_buttons: str = ids.container_id(name=ContainerName.prompt_buttons)
         self.prompt_buttons_q: str = f"#{self.prompt_buttons}"
         self.template_data: str = ids.container_id(name=ContainerName.template_data)
-        self.template_data_q: str = f"#{self.template_data}"
         self.test_paths_view: str = ids.container_id(name=ContainerName.test_paths_view)
         self.test_paths_view_q: str = f"#{self.test_paths_view}"
 
@@ -80,15 +58,12 @@ class _ContainerIds:
 class _RichLogIds:
     def __init__(self, ids: AppIds) -> None:
         self.app: str = ids.richlog_id(richlog=RichLogName.app_logger)
-        self.app_q: str = f"#{self.app}"
         self.debug: str = ids.richlog_id(richlog=RichLogName.debug_logger)
-        self.debug_q: str = f"#{self.debug}"
         self.dom_nodes: str = ids.richlog_id(richlog=RichLogName.dom_node_logger)
         self.dom_nodes_q: str = f"#{self.dom_nodes}"
         self.env_vars: str = ids.richlog_id(richlog=RichLogName.env_var_logger)
         self.env_vars_q: str = f"#{self.env_vars}"
         self.memory: str = ids.richlog_id(richlog=RichLogName.memory_usage_logger)
-        self.memory_q: str = f"#{self.memory}"
 
 
 class _SwitchIds:

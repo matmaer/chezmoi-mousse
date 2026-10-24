@@ -40,9 +40,7 @@ class FlatButtonsVertical(Container):
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
-            yield Button(
-                id=self.app_ids.btn_id(btn_label=label), label=label, flat=True
-            )
+            yield Button(label=label, flat=True)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
@@ -62,7 +60,7 @@ class OperateBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield Button(id=self.app_ids.btn_id(btn_label=btn_label), label=btn_label)
+            yield Button(label=btn_label)
 
     def on_mount(self) -> None:
         buttons = self.query_children(Button).results()
@@ -181,11 +179,7 @@ class TabButtons(Horizontal):
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
             with Vertical(classes=Tcss.single_button_vertical):
-                yield Button(
-                    id=self.app_ids.btn_id(btn_label=btn_label),
-                    label=btn_label,
-                    classes=Tcss.tab_button,
-                )
+                yield Button(label=btn_label, classes=Tcss.tab_button)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)

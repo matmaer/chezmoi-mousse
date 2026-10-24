@@ -134,9 +134,9 @@ class ChezmoiGui(App[str]):
         await tabbed_content.add_pane(ConfigTab())
         await tabbed_content.add_pane(DebugTab())
 
-        self.app_log = self.query_one(store.logs_ids.richlog.app_q, AppLog)
-        self.cmd_log = self.query_one(store.logs_ids.container.cmd_log_q, CmdLog)
-        self.debug_log = self.query_one(store.debug_ids.richlog.debug_q, DebugLog)
+        self.app_log = self.query_exactly_one(AppLog)
+        self.cmd_log = self.query_exactly_one(CmdLog)
+        self.debug_log = self.query_exactly_one(DebugLog)
         self.init_phase = False
         for cr in pre_mount_results:
             self.cmd_log.cmd_result = cr
