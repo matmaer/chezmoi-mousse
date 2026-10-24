@@ -10,8 +10,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Collapsible, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.asyncio_process_exec import ExecResult
-from chezmoi_mousse.data_types import CommandResult
+from chezmoi_mousse.data_types import CommandResult, ExecResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.components import (

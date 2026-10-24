@@ -28,8 +28,7 @@ if TYPE_CHECKING:
     from asyncio import Task
     from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 
-    from chezmoi_mousse.asyncio_process_exec import ExecResult
-    from chezmoi_mousse.data_types import NodeData
+    from chezmoi_mousse.data_types import ExecResult, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
@@ -57,17 +56,7 @@ async def _exec_chezmoi(
     chezmoi_args: tuple[str, ...],
     pretty_verb_arg: str | None,
 ) -> CommandResult:
-    if cmd_enum in (
-        ReadCmd.dry_add,
-        ReadCmd.dry_apply,
-        ReadCmd.dry_destroy,
-        ReadCmd.dry_forget,
-        ReadCmd.dry_re_add,
-    ):
-        isolated_index = True
-    else:
-        isolated_index = False
-
+    isolated_index = cmd_enum in ReadCmd.dry_commands()
     exec_result: ExecResult = await create_subprocess_exec_result(
         chezmoi_args, use_isolated_index=isolated_index, cmd_enum=cmd_enum
     )
