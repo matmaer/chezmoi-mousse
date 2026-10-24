@@ -14,28 +14,34 @@ from textual.widgets import (
     Switch,
     Tab,
     TabbedContent,
-    TabPane,
 )
 from textual.widgets.collapsible import CollapsibleTitle
 
+from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, TabButtons
+from chezmoi_mousse.gui.common.actionables import (
+    FlatButtonsVertical,
+    TabButtons,
+    TreeButtons,
+)
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.operate_tree import OperateTree
 from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, Tcss
+from chezmoi_mousse.str_enums import BtnLabel, Chars, ChezmoiPrompts
 
 __all__ = ["run_with_pilot"]
 
 type HoverClickTypes = Button | RadioButton | Switch | CollapsibleTitle | Tab
+
 CHILL_TIME = 0.1
 
 if TYPE_CHECKING:
     from textual.pilot import Pilot
     from textual.widget import Widget
+    from textual.widgets import TabPane
 
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -66,24 +72,21 @@ async def _toggle_bindings(pilot: Pilot[object], tab_pane: TabPane) -> None:
 
 
 async def _scroll_widget(pilot: Pilot[object], widget: Widget) -> None:
-    await pilot.pause(CHILL_TIME)
-    if widget.is_scrollable and widget.scrollbars_enabled and widget.display:
-        if widget.show_horizontal_scrollbar:
-            if widget.is_horizontal_scroll_end:
-                widget.scroll_left()
-            else:
-                widget.scroll_right()
-        if widget.show_vertical_scrollbar:
-            if widget.is_vertical_scroll_end:
-                widget.scroll_up()
-            else:
-                widget.scroll_down()
-        await pilot.wait_for_animation()
+    while not widget.is_horizontal_scroll_end:
+        widget.scroll_right()
+        await asyncio.sleep(CHILL_TIME / 100)
+    await pilot.wait_for_scheduled_animations()
+    if not widget.is_vertical_scroll_end:
+        widget.scroll_end()
+        await pilot.wait_for_scheduled_animations()
+    widget.scroll_home()
+    await pilot.wait_for_scheduled_animations()
 
 
 async def _toggle_random_collapsible(pilot: Pilot[object], root: Widget) -> None:
     collapsibles = [c for c in root.query(Collapsible) if c.collapsed]
     if collapsibles:
+        await pilot.pause(CHILL_TIME)
         to_toggle = random.choice(collapsibles)
         c_title = to_toggle.query_exactly_one(CollapsibleTitle)
         await _hover_and_click(pilot, c_title)
@@ -95,48 +98,61 @@ async def _scroll_random_widget(pilot: Pilot[object], root: Widget) -> None:
     scrollables = [
         w
         for w in root.query()
-        if w.is_scrollable and w.scrollbars_enabled and w.display
+        if w.is_scrollable
+        and w.display
+        and w.is_on_screen
+        and (w.show_vertical_scrollbar or w.show_horizontal_scrollbar)
     ]
     if scrollables:
         await _scroll_widget(pilot, random.choice(scrollables))
 
 
-async def _click_content_switchers(pilot: Pilot[object], tab_pane: TabPane) -> None:
-    content_switchers = [
+async def _explore_all_tabs_basic(pilot: Pilot[object], tab_pane: TabPane) -> None:
+    await _toggle_bindings(pilot, tab_pane)
+    button_groups = [
         w
         for w in tab_pane.query()
         if isinstance(w, (FlatButtonsVertical, TabButtons, RadioSet))
     ]
-    for cs in content_switchers:
-        for button in cs.query_children(Button):
-            await _hover_and_click(pilot, button)
+    for btn_group in button_groups:
+        if isinstance(btn_group, RadioSet):
+            buttons = btn_group.query_children(RadioButton)
+        else:
+            buttons = btn_group.query(Button)
+        for index, button in enumerate(buttons):
+            if index != 0:
+                await _hover_and_click(pilot, button)
             await _toggle_random_collapsible(pilot, tab_pane)
             await _scroll_random_widget(pilot, tab_pane)
+        await _hover_and_click(pilot, buttons[0])
 
 
-async def _explore_operate_tab(pilot: Pilot[object], op_tab: OperateTab) -> None:
-    cm_theme = pilot.app.theme
-    textual_dark = "textual-dark"
-    themes = pilot.app.available_themes.items()
-    dark_themes = {name for name, theme in themes if theme.dark}
-    random_dark = random.choice(list(dark_themes - {cm_theme, textual_dark}))
+async def _test_path_operations(pilot: Pilot[object], debug_tab: DebugTab) -> None:
+    buttons = {button.label: button for button in debug_tab.query(Button)}
+    await _hover_and_click(pilot, buttons[BtnLabel.test_paths])
+    action = random.choice(
+        (BtnLabel.create_diffs, BtnLabel.remove_paths, BtnLabel.reset_paths)
+    )
+    await _hover_and_click(pilot, buttons[action])
+    await _hover_and_click(pilot, buttons[BtnLabel.list_paths])
+    if action == BtnLabel.remove_paths:
+        await _hover_and_click(pilot, buttons[BtnLabel.reset_paths])
+    await _hover_and_click(pilot, buttons[BtnLabel.create_diffs])
+    await _hover_and_click(pilot, buttons[BtnLabel.list_paths])
 
-    for theme_name in [cm_theme, textual_dark, random_dark, cm_theme]:
-        pilot.app.theme = theme_name
-        await pilot.wait_for_scheduled_animations()
-        await _run_operate_round(pilot, op_tab)
 
-
-async def _run_operate_round(pilot: Pilot[object], tab_pane: OperateTab) -> None:
+async def _set_random_operate_tab_state(
+    pilot: Pilot[object], op_tab: OperateTab
+) -> None:
     switches = [
         switch
-        for switch in tab_pane.query(Switch)
+        for switch in op_tab.query(Switch)
         if switch.is_on_screen and not switch.disabled
     ]
     if switches:
         await _hover_and_click(pilot, random.choice(switches))
 
-    for tree in tab_pane.query(OperateTree):
+    for tree in op_tab.query(OperateTree):
         if not tree.is_on_screen:
             continue
         tree.focus()
@@ -151,33 +167,35 @@ async def _run_operate_round(pilot: Pilot[object], tab_pane: OperateTab) -> None
             await _press_key(pilot, "enter")
         break
 
-    radio_buttons = list(tab_pane.query(RadioButton).results())
+    radio_buttons = list(op_tab.query(RadioButton).results())
     if radio_buttons:
         await _hover_and_click(pilot, random.choice(radio_buttons))
-    if random.random() < 0.3:
-        header_buttons = [
-            button
-            for button in tab_pane.query(f".{Tcss.tree_header} Button").results(Button)
-            if button.is_on_screen and not button.disabled
-        ]
-        if header_buttons:
-            await _hover_and_click(pilot, random.choice(header_buttons))
-    await _scroll_random_widget(pilot, tab_pane)
-    if random.random() < 0.3:
-        await _explore_operate_modal(pilot, tab_pane)
 
 
-async def _explore_operate_modal(pilot: Pilot[object], tab_pane: OperateTab) -> None:
-    buttons = [
-        button
-        for button in tab_pane.query(Button)
-        if button.label in BtnLabel.op_btn_labels()
-        and button.is_on_screen
-        and not button.disabled
+async def _run_op_round(pilot: Pilot[object], tabbed_content: TabbedContent) -> None:
+    operate_tab = tabbed_content.query_exactly_one(OperateTab)
+    op_tab_btn = tabbed_content.get_tab(operate_tab)
+
+    debug_tab = tabbed_content.query_exactly_one(DebugTab)
+    debug_tab_btn = tabbed_content.get_tab(debug_tab)
+
+    await _hover_and_click(pilot, op_tab_btn)
+    await _set_random_operate_tab_state(pilot, operate_tab)
+
+    await _hover_and_click(pilot, debug_tab_btn)
+    await _test_path_operations(pilot, debug_tab)
+
+    await _hover_and_click(pilot, op_tab_btn)
+    await _run_operation(pilot, operate_tab)
+
+
+async def _run_operation(pilot: Pilot[object], op_tab: OperateTab) -> None:
+    op_buttons = [
+        button for button in op_tab.op_btn_group.query(Button) if not button.disabled
     ]
-    if not buttons:
+    if not op_buttons:
         return
-    await _hover_and_click(pilot, random.choice(buttons))
+    await _hover_and_click(pilot, random.choice(op_buttons))
     modal = pilot.app.screen
     if not isinstance(modal, OperateModal):
         raise RuntimeError("Operation button did not open the operate modal")
@@ -188,72 +206,70 @@ async def _explore_operate_modal(pilot: Pilot[object], tab_pane: OperateTab) -> 
         for prompt in ChezmoiPrompts
         if prompt.reply in ChezmoiPrompts.non_operation_replies()
     }
-    async with asyncio.timeout(20):
-        while pilot.app.screen is modal:
-            await _toggle_random_collapsible(pilot, modal)
-            await _scroll_random_widget(pilot, modal)
-            available = {
-                str(button.label): button
-                for button in modal.query(Button)
-                if button.is_on_screen and not button.disabled
-            }
-            safe_buttons = [
-                button for label, button in available.items() if label in safe_labels
-            ]
-            if BtnLabel.close in available:
-                await _hover_and_click(pilot, available[BtnLabel.close])
-            elif safe_buttons:
-                await _hover_and_click(pilot, random.choice(safe_buttons))
-            elif run_command and modal.op_btn.run_label in available:
-                await _hover_and_click(pilot, available[modal.op_btn.run_label])
-            elif BtnLabel.cancel in available:
-                await _hover_and_click(pilot, available[BtnLabel.cancel])
-            else:
-                await asyncio.sleep(CHILL_TIME)
-
-
-async def _test_path_operations(pilot: Pilot[object], tab_pane: DebugTab) -> None:
-    buttons = {button.label: button for button in tab_pane.query(Button)}
-    await _hover_and_click(pilot, buttons[BtnLabel.test_paths])
-    action = random.choice(
-        (BtnLabel.create_diffs, BtnLabel.remove_paths, BtnLabel.reset_paths)
-    )
-    await _hover_and_click(pilot, buttons[action])
-    await _hover_and_click(pilot, buttons[BtnLabel.list_paths])
-    if action == BtnLabel.remove_paths:
-        await _hover_and_click(pilot, buttons[BtnLabel.reset_paths])
-    await _hover_and_click(pilot, buttons[BtnLabel.create_diffs])
-    await _hover_and_click(pilot, buttons[BtnLabel.list_paths])
+    while pilot.app.screen is modal:
+        await _toggle_random_collapsible(pilot, modal)
+        available = {
+            str(button.label): button
+            for button in modal.query(Button)
+            if button.is_on_screen and not button.disabled
+        }
+        safe_buttons = [
+            button for label, button in available.items() if label in safe_labels
+        ]
+        if BtnLabel.close in available:
+            await _hover_and_click(pilot, available[BtnLabel.close])
+        elif safe_buttons:
+            await _hover_and_click(pilot, random.choice(safe_buttons))
+        elif run_command and modal.op_btn.run_label in available:
+            await _hover_and_click(pilot, available[modal.op_btn.run_label])
+        elif BtnLabel.cancel in available:
+            await _hover_and_click(pilot, available[BtnLabel.cancel])
+        else:
+            await asyncio.sleep(CHILL_TIME)
 
 
 def run_with_pilot(app: ChezmoiGui) -> None:
-    app.run(auto_pilot=_start_pilot_mode)
+    app.run(auto_pilot=_run_pilot_mode)
 
 
-async def _start_pilot_mode(pilot: Pilot[object]) -> None:
+async def _run_pilot_mode(pilot: Pilot[object]) -> None:
     await asyncio.sleep(0.5)
     while isinstance(pilot.app.screen, SplashScreen):
         await asyncio.sleep(CHILL_TIME)
-
     await pilot.wait_for_scheduled_animations()
-    tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
 
-    for tab_pane in tabbed_content.query(TabPane):
-        tab = tabbed_content.get_tab(tab_pane)
-        await _hover_and_click(pilot, tab)
-        if isinstance(tab_pane, OperateTab):
-            await _explore_operate_tab(pilot, tab_pane)
-        elif isinstance(tab_pane, (LogsTab, ConfigTab)):
-            await _click_content_switchers(pilot, tab_pane)
-        elif isinstance(tab_pane, DebugTab):
-            await _click_content_switchers(pilot, tab_pane)
-            await _test_path_operations(pilot, tab_pane)
-        await _toggle_bindings(pilot, tab_pane)
-        await _toggle_random_collapsible(pilot, tab_pane)
-        await _scroll_random_widget(pilot, tab_pane)
+    tabbed_content = pilot.app.screen.query_exactly_one(TabbedContent)
+    await tabbed_content.wait_for_refresh()
 
     operate_tab = tabbed_content.query_exactly_one(OperateTab)
-    await _hover_and_click(pilot, tabbed_content.get_tab(operate_tab))
-    refresh_button = operate_tab.query_exactly_one(f".{Tcss.refresh_button}", Button)
-    await _hover_and_click(pilot, refresh_button)
+    logs_tab = tabbed_content.query_exactly_one(LogsTab)
+    config_tab = tabbed_content.query_exactly_one(ConfigTab)
+    debug_tab = tabbed_content.query_exactly_one(DebugTab)
+
+    # NOTE: operate tab is mounted last, .query(TabPane) returns in mounted order
+    for tab_pane in (operate_tab, logs_tab, config_tab, debug_tab):
+        tab = tabbed_content.get_tab(tab_pane)
+        if not isinstance(tab_pane, OperateTab):
+            await _hover_and_click(pilot, tab)
+        await _explore_all_tabs_basic(pilot, tab_pane)
+
+    tree_btn_group = operate_tab.left_side_vertical.query_exactly_one(TreeButtons)
+    tree_buttons = {button.label: button for button in tree_btn_group.query(Button)}
+    refresh_btn = tree_buttons[Chars.refresh]
+    home_btn = tree_buttons[store.cfg.dest_dir_str]
+    await _set_random_operate_tab_state(pilot, operate_tab)
+    await _hover_and_click(pilot, home_btn)
+    await _set_random_operate_tab_state(pilot, operate_tab)
+    await _hover_and_click(pilot, refresh_btn)
+
+    cm_theme = pilot.app.theme
+    themes = pilot.app.available_themes.items()
+    dark_themes = {name for name, theme in themes if theme.dark}
+    random_dark = random.choice(list(dark_themes - {cm_theme}))
+
+    for theme_name in [cm_theme, random_dark, cm_theme]:
+        pilot.app.theme = theme_name
+        await pilot.wait_for_scheduled_animations()
+        await _run_op_round(pilot, tabbed_content)
+
     pilot.app.notify("Pilot mode completed.")
