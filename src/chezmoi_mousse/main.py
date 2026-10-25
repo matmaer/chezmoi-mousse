@@ -38,15 +38,8 @@ def _check_if_we_can_run() -> None:
     git_not_found = "'git' command not found, see https://git-scm.com/install/"
     in_subshell = "You are in a 'chezmoi subshell', exit the subshell to run the app."
     pretend_fail = "Pretending the app cannot run."
-    started_elevated = "App was started with root/elevated permissions, not supported."
 
     error_info: list[str] = []
-
-    is_root = os.getuid() == 0 or os.geteuid() == 0
-    was_sudo = "SUDO_UID" in os.environ
-
-    if is_root or was_sudo:
-        sys.exit(f"{started_elevated}")
 
     if shutil.which("chezmoi") is None:
         error_info.append(cm_not_found)
@@ -59,7 +52,7 @@ def _check_if_we_can_run() -> None:
         or "--pretend-fail" in sys.argv
     ):
         error_info.append(pretend_fail)
-    if error_info or os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1":
+    if error_info:
         error_info.append(feedback)
         sys.exit("\n".join(list(error_info)))
 
