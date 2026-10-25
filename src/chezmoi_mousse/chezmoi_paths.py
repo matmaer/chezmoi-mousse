@@ -87,11 +87,15 @@ class ChezmoiTreePaths:
         for path in {self._dest_dir} | self._man_dirs.keys() | self._un_man_dirs:
             has_nested_status = False
             has_nested_managed = False
+            has_nested_wanted = False
+            has_nested_un_managed = False
             managed = path in self._man_dirs
             is_dest_dir = path == self._dest_dir
             if is_dest_dir:
                 has_nested_status = bool(status_paths)
                 has_nested_managed = bool(managed_paths)
+                has_nested_un_managed = bool(un_managed_paths)
+                has_nested_wanted = bool(wanted_paths)
             elif managed:
                 has_nested_status = path_funcs.any_nested_in(
                     dir_path=path, check_paths=status_paths
@@ -99,12 +103,13 @@ class ChezmoiTreePaths:
                 has_nested_managed = path_funcs.any_nested_in(
                     dir_path=path, check_paths=managed_paths
                 )
-            has_nested_wanted = path_funcs.any_nested_in(
-                dir_path=path, check_paths=wanted_paths
-            )
-            has_nested_un_managed = path_funcs.any_nested_in(
-                dir_path=path, check_paths=un_managed_paths
-            )
+                has_nested_wanted = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=wanted_paths
+                )
+                has_nested_un_managed = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=un_managed_paths
+                )
+
             has_child_paths = False
             if has_nested_managed or has_nested_un_managed:
                 has_child_paths = True
