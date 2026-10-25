@@ -299,8 +299,22 @@ class TestPaths:
         special_paths = {special_dir} | {
             path for path in files if path.parent == special_dir
         }
+        binary_paths = {
+            path
+            for path in files - special_paths
+            if path.name in self.full_paths.binary_file_names
+        }
+        # about 10% of binary paths eligible each run
+        selected_binary_paths = set(
+            random.sample(
+                path_funcs.sort_paths(binary_paths), k=int(len(binary_paths) * 0.10)
+            )
+        )
+        available_files = files - binary_paths | selected_binary_paths
         home_files = {self.full_paths.l0_small_file, self.full_paths.l0_medium_file}
         home_toggle = random.choice(sorted(home_files))
+        # bias ordinary directories 15% toward empty, then eligible ones 15% toward
+        # containing just one subdirectory.
         empty_dirs = {
             directory
             for directory in path_funcs.sort_paths(directories - {special_dir})
@@ -311,12 +325,12 @@ class TestPaths:
             path
             for path in existing - special_paths - {home_toggle}
             if empty_dirs.isdisjoint(path.parents)
+            and (path in directories or path in available_files)
         )
         if self.full_paths.l1_large_file in existing:
             candidates.append(self.full_paths.l1_large_file)
-        preserved_count = random.randint(
-            (len(candidates) + 2) // 3, (2 * len(candidates) + 2) // 3
-        )
+        # keep about half of the paths
+        preserved_count = len(candidates) // 2
         preserved = set(random.sample(candidates, k=preserved_count))
         required_dirs = (preserved & directories) | {
             parent
@@ -340,7 +354,7 @@ class TestPaths:
             if directory in empty_dirs:
                 continue
             children = path_funcs.sort_paths(
-                [path for path in files if path.parent == directory]
+                [path for path in available_files if path.parent == directory]
             )
             target.update(random.sample(children, k=random.randint(0, len(children))))
 

@@ -512,7 +512,6 @@ class TestFile(StrEnum):
     small_file_2 = "_test_file_small_2.txt"
     small_file_3 = "_test_file_small_3.txt"
     tricky_utf8_file = "_test_file_tricky_utf8.txt"
-    un_wanted_file = "_test_un_wanted_file.txt"
     wanted_file = "_test_wanted_file.txt"
 
 
