@@ -125,10 +125,6 @@ def _path_seems_cache(path: Path) -> bool:
     return any(p.startswith("cache") or p.endswith("cache") for p in path_parts_lower)
 
 
-def is_empty_dir(dir_path: Path) -> bool:
-    return not any(dir_path.iterdir())
-
-
 def is_unwanted_file(file_path: Path) -> bool:
     return (
         _path_seems_cache(file_path)
