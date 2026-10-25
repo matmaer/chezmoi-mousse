@@ -179,7 +179,7 @@ async def run_affected_paths(
         if n_data.status_file:
             default_result[BtnLabel.chezmoi_apply] = [n_data.path]
             default_result[BtnLabel.chezmoi_re_add] = [n_data.path]
-        elif not n_data.status_file:
+        else:
             default_result[BtnLabel.chezmoi_apply] = []
             default_result[BtnLabel.chezmoi_re_add] = []
     elif n_data.un_managed_file:

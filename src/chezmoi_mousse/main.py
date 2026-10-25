@@ -54,7 +54,7 @@ def _check_if_we_can_run() -> None:
         error_info.append(pretend_fail)
     if error_info:
         error_info.append(feedback)
-        sys.exit("\n".join(list(error_info)))
+        sys.exit("\n".join(error_info))
 
 
 def run_app() -> None:
