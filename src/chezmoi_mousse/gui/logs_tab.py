@@ -63,9 +63,6 @@ class AppLog(RichLoggers):
 
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
-    def __init__(self) -> None:
-        super().__init__(id=store.logs_ids.richlog.app, markup=True, max_lines=10000)
-
     def on_mount(self) -> None:
         self.write_dimmed(LogStr.app_log_initialized)
         if "debug" in self.app.features:
@@ -110,9 +107,6 @@ class AppLog(RichLoggers):
 
 
 class CmdLog(ScrollableContainer):
-    def __init__(self) -> None:
-        super().__init__(id=store.logs_ids.container.cmd_log)
-
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
     @work
@@ -126,17 +120,14 @@ class CmdLog(ScrollableContainer):
 
 
 class LogsTab(TabPane):
-    def __init__(self) -> None:
-        super().__init__(id=BtnLabel.logs.pane_id, title=BtnLabel.logs)
-
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield TabButtons(
-                app_ids=store.logs_ids, labels=(BtnLabel.cmd_log, BtnLabel.app_log)
-            )
+            yield TabButtons(labels=(BtnLabel.cmd_log, BtnLabel.app_log))
             with ContentSwitcher(initial=store.logs_ids.container.cmd_log):
-                yield CmdLog()
-                yield AppLog()
+                yield CmdLog(id=store.logs_ids.container.cmd_log)
+                yield AppLog(
+                    id=store.logs_ids.richlog.app, markup=True, max_lines=10000
+                )
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:

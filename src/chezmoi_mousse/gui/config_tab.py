@@ -40,9 +40,6 @@ class PrettyTemplateData(Pretty): ...
 class ConfigTab(TabPane):
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
-    def __init__(self) -> None:
-        super().__init__(id=BtnLabel.config.pane_id, title=BtnLabel.config)
-
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(

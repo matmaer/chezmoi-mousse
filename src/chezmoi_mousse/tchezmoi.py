@@ -126,9 +126,7 @@ async def run_in_task_group(
     return cmd_to_cr_map
 
 
-async def run_affected_paths(
-    app: ChezmoiGui, n_data: NodeData, path_arg: Path | None = None
-) -> DryRunData:
+async def run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> DryRunData:
 
     default_result: dict[BtnLabel, list[Path] | None] = {
         BtnLabel.chezmoi_add: None,

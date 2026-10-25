@@ -141,9 +141,6 @@ class DebugTab(TabPane):
     peak_rss_mb = process.memory_info().rss / MiB
     current_rss_mb = process.memory_info().rss / MiB
 
-    def __init__(self) -> None:
-        super().__init__(id=BtnLabel.debug.pane_id, title=BtnLabel.debug)
-
     def compose(self) -> ComposeResult:
         with Horizontal():
             yield FlatButtonsVertical(

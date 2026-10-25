@@ -130,9 +130,15 @@ class ChezmoiGui(App[str]):
 
         tabbed_content = self.query_exactly_one(TabbedContent)
 
-        await tabbed_content.add_pane(LogsTab())
-        await tabbed_content.add_pane(ConfigTab())
-        await tabbed_content.add_pane(DebugTab())
+        await tabbed_content.add_pane(
+            LogsTab(id=BtnLabel.logs.pane_id, title=BtnLabel.logs)
+        )
+        await tabbed_content.add_pane(
+            ConfigTab(id=BtnLabel.config.pane_id, title=BtnLabel.config)
+        )
+        await tabbed_content.add_pane(
+            DebugTab(id=BtnLabel.debug.pane_id, title=BtnLabel.debug)
+        )
 
         self.app_log = self.query_exactly_one(AppLog)
         self.cmd_log = self.query_exactly_one(CmdLog)
@@ -145,7 +151,10 @@ class ChezmoiGui(App[str]):
 
         new_tree_paths = await tchezmoi.run_managed_commands(self)
         await store.handle_new_tree_paths(self, new_tree_paths)
-        await tabbed_content.add_pane(OperateTab(), before=BtnLabel.logs.pane_id)
+        await tabbed_content.add_pane(
+            OperateTab(id=BtnLabel.operate.pane_id, title=BtnLabel.operate),
+            before=BtnLabel.logs.pane_id,
+        )
         tabbed_content.active = BtnLabel.operate.pane_id
         self.operate_tab = self.query_exactly_one(OperateTab)
         await self.splash_screen.dismiss_after_fade_loop()

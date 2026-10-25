@@ -34,7 +34,6 @@ __all__ = [
 
 class FlatButtonsVertical(Container):
     def __init__(self, *, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
-        self.app_ids = app_ids
         self.labels: tuple[BtnLabel, ...] = labels
         super().__init__(id=app_ids.container.flat_buttons)
 
@@ -54,7 +53,6 @@ class FlatButtonsVertical(Container):
 
 class OperateBtnGroup(HorizontalGroup):
     def __init__(self, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
-        self.app_ids = app_ids
         self.labels = labels
         super().__init__(id=app_ids.container.operate_buttons)
 
@@ -171,9 +169,8 @@ class SwitchGroup(VerticalGroup):
 
 
 class TabButtons(Horizontal):
-    def __init__(self, *, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
+    def __init__(self, *, labels: tuple[BtnLabel, ...]) -> None:
         self.labels = labels
-        self.app_ids = app_ids
         super().__init__()
 
     def compose(self) -> ComposeResult:

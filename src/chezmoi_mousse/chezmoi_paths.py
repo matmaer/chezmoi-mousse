@@ -122,8 +122,6 @@ class ChezmoiTreePaths:
             managed = path in self._man_dirs
             has_nested_status = False
             has_nested_managed = False
-            has_nested_wanted = False
-            has_nested_un_managed = False
             if managed:
                 has_nested_status = path_funcs.any_nested_in(
                     dir_path=path, check_paths=status_paths

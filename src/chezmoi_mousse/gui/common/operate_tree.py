@@ -212,7 +212,7 @@ class OperateTree(Tree[NodeData]):
             for path, node_data in node_dict.items():
                 if node_data.include_in_tree(TreeName(self.name)):
                     result[path] = node_data
-            return path_funcs.sort_path_dict(result)
+            return result
 
         dir_nodes = get_tree_nodes(store.cm_paths.dir_node_data)
         file_nodes = get_tree_nodes(store.cm_paths.file_node_data)

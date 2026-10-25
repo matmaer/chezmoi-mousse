@@ -17,7 +17,6 @@ class AppIds:
         self.richlog = _RichLogIds(self)
         self.switch = _SwitchIds(self)
         self.tree = _TreeIds(self)
-        self.switch_slider = f"{self.tab_label.name}_switch_slider"
 
     def container_id(self, qid: str = "", *, name: ContainerName) -> str:
         return f"{qid}{self.tab_label.name}_{name.name}_id"
@@ -49,7 +48,6 @@ class _ContainerIds:
         self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
         self.operate_buttons_q: str = f"#{self.operate_buttons}"
         self.prompt_buttons: str = ids.container_id(name=ContainerName.prompt_buttons)
-        self.prompt_buttons_q: str = f"#{self.prompt_buttons}"
         self.template_data: str = ids.container_id(name=ContainerName.template_data)
         self.test_paths_view: str = ids.container_id(name=ContainerName.test_paths_view)
         self.test_paths_view_q: str = f"#{self.test_paths_view}"

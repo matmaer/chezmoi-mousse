@@ -112,10 +112,6 @@ class OperateTab(TabPane):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self) -> None:
-        self.ids = store.op_ids
-        super().__init__(id=BtnLabel.operate.pane_id, title=BtnLabel.operate)
-
     def compose(self) -> ComposeResult:
         with Horizontal(classes=Tcss.operate_pane):
             yield LeftSideVertical()
