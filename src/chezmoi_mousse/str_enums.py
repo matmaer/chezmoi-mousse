@@ -1,5 +1,6 @@
 from enum import Enum, StrEnum, auto
 from functools import cached_property
+from pathlib import Path
 
 __all__ = [
     "BindingAction",
@@ -507,15 +508,35 @@ class TestDir(StrEnum):
 
 
 class TestFile(StrEnum):
-    huge_file = "_test_file_huge.txt"
     large_file = "_test_file_large.txt"
     medium_file = "_test_file_medium.txt"
+    small_1_file = "_test_file_small_1.txt"
+    small_2_file = "_test_file_small_2.txt"
+    small_3_file = "_test_file_small_3.txt"
     small_file = "_test_file_small.txt"
-    small_file_1 = "_test_file_small_1.txt"
-    small_file_2 = "_test_file_small_2.txt"
-    small_file_3 = "_test_file_small_3.txt"
+    wanted_file = "_test_file_wanted.txt"
+    # special files
+    huge_file = "_test_file_huge.txt"
     tricky_utf8_file = "_test_file_tricky_utf8.txt"
-    wanted_file = "_test_wanted_file.txt"
+    # bin files
+    control_chars_file = "_test_file_control_chars.bin"
+    high_entropy_file = "_test_file_high_entropy.bin"
+    invalid_utf8_file = "_test_file_invalid_utf8.bin"
+    null_bytes_file = "_test_file_null_bytes.bin"
+    printable_ascii_file = "_test_file_printable_ascii.bin"
+    utf16_interleaved_file = "_test_file_utf16_interleaved.bin"
+
+    @classmethod
+    def diff_files(cls) -> set[Path]:
+        return {
+            Path(f_name)
+            for f_name in cls
+            if f_name.name.startswith(("small_", "medium_", "large_"))
+        }
+
+    @classmethod
+    def bin_files(cls) -> set[Path]:
+        return {Path(f_name) for f_name in cls if f_name.endswith(".bin")}
 
 
 class TreeName(StrEnum):

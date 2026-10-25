@@ -1,7 +1,8 @@
 import random
 import shutil
 import stat
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 from rich.markup import escape
@@ -14,23 +15,10 @@ __all__ = ["TestPaths"]
 HOME_DIR = Path.home()
 
 
-@dataclass
 class _TestFileContents:
-    _initial_small: str = ""
-    _initial_medium: str = ""
-    _initial_large: str = ""
-    _initial_huge: str = ""
-
-    _diff_small: str = ""
-    _diff_medium: str = ""
-    _diff_large: str = ""
-
-    _tricky_utf8: str = ""
-    binary_file_data_map: dict[str, bytes] = field(default_factory=dict[str, bytes])
-
-    _words: list[str] = field(default_factory=list[str])
-
-    def __post_init__(self) -> None:
+    def __init__(self) -> None:
+        self.bin_file_size: int = 10000
+        self.rng = random.Random(42)
         self._words = [
             "lorem",
             "ipsum",
@@ -46,34 +34,46 @@ class _TestFileContents:
         self._initial_large = self._generate_initial_text(TestFile.large_file)
         self._initial_huge = self._generate_initial_text(TestFile.huge_file)
         self._tricky_utf8 = self._generate_tricky_utf8_text()
-        self.binary_file_data_map = self._generate_binary_data_map()
 
         self._diff_small = self._initial_small.replace("lorem", "LOREM")
         self._diff_medium = self._initial_medium.replace("lorem", "LOREM")
         self._diff_large = self._initial_large.replace("lorem", "LOREM")
 
+        self._control_chars_file = self.get_control_chars_bytes()
+        self._high_entropy_file = self.get_high_entropy_bytes()
+        self._invalid_utf8_file = self.get_invalid_utf8_bytes()
+        self._null_bytes_file = self.get_null_bytes()
+        self._printable_ascii_file = self.get_printable_ascii_bytes()
+        self._utf16_interleaved_file = self.get_utf16_interleaved_bytes()
+
     @property
     def initial_map(self) -> dict[str, str | bytes]:
-        file_name_map = {
+        file_name_map: dict[str, str | bytes] = {
             TestFile.small_file: self._initial_small,
-            TestFile.small_file_1: self._initial_small,
-            TestFile.small_file_2: self._initial_small,
-            TestFile.small_file_3: self._initial_small,
+            TestFile.small_1_file: self._initial_small,
+            TestFile.small_2_file: self._initial_small,
+            TestFile.small_3_file: self._initial_small,
             TestFile.medium_file: self._initial_medium,
             TestFile.large_file: self._initial_large,
             TestFile.huge_file: self._initial_huge,
             TestFile.tricky_utf8_file: self._tricky_utf8,
             TestFile.wanted_file: self._initial_small,
+            TestFile.control_chars_file: self._control_chars_file,
+            TestFile.high_entropy_file: self._high_entropy_file,
+            TestFile.invalid_utf8_file: self._invalid_utf8_file,
+            TestFile.null_bytes_file: self._null_bytes_file,
+            TestFile.printable_ascii_file: self._printable_ascii_file,
+            TestFile.utf16_interleaved_file: self._utf16_interleaved_file,
         }
-        return file_name_map | self.binary_file_data_map
+        return file_name_map
 
     @property
     def old_diff_map(self) -> dict[str, str]:
         return {
             TestFile.small_file: self._initial_small,
-            TestFile.small_file_1: self._initial_small,
-            TestFile.small_file_2: self._initial_small,
-            TestFile.small_file_3: self._initial_small,
+            TestFile.small_1_file: self._initial_small,
+            TestFile.small_2_file: self._initial_small,
+            TestFile.small_3_file: self._initial_small,
             TestFile.medium_file: self._initial_medium,
             TestFile.large_file: self._initial_large,
         }
@@ -82,9 +82,9 @@ class _TestFileContents:
     def new_diff_map(self) -> dict[str, str]:
         return {
             TestFile.small_file: self._diff_small,
-            TestFile.small_file_1: self._diff_small,
-            TestFile.small_file_2: self._diff_small,
-            TestFile.small_file_3: self._diff_small,
+            TestFile.small_1_file: self._diff_small,
+            TestFile.small_2_file: self._diff_small,
+            TestFile.small_3_file: self._diff_small,
             TestFile.medium_file: self._diff_medium,
             TestFile.large_file: self._diff_large,
         }
@@ -140,34 +140,33 @@ class _TestFileContents:
         )
         return "".join(parts)
 
-    def _generate_binary_data_map(self) -> dict[str, bytes]:
-        size = 10000
+    def get_control_chars_bytes(self) -> bytes:
+        return bytes(self.rng.randrange(1, 32) for _ in range(self.bin_file_size))
 
-        rng = random.Random(42)
+    def get_high_entropy_bytes(self) -> bytes:
+        return self.rng.randbytes(self.bin_file_size)
+
+    def get_invalid_utf8_bytes(self) -> bytes:
+        return bytes(self.rng.randrange(128, 256) for _ in range(self.bin_file_size))
+
+    def get_null_bytes(self) -> bytes:
+        null_data = bytearray(self.bin_file_size)
+        null_data[self.rng.randrange(self.bin_file_size)] = self.rng.randrange(1, 256)
+        return bytes(null_data)
+
+    def get_printable_ascii_bytes(self) -> bytes:
         printable = bytes(range(32, 127)) + b"\n\r\t"
+        return bytes(self.rng.choice(printable) for _ in range(self.bin_file_size))
 
-        null_data = bytearray(size)
-        null_data[rng.randrange(size)] = rng.randrange(1, 256)
-
-        utf16_interleaved = bytearray(size)
-        for offset in range(0, size, 2):
-            utf16_interleaved[offset] = rng.randrange(65, 91)
-
-        bin_kinds = {
-            "null_bytes": bytes(null_data),
-            "high_entropy": rng.randbytes(size),
-            "control_chars": bytes(rng.randrange(1, 32) for _ in range(size)),
-            "invalid_utf8": bytes(rng.randrange(128, 256) for _ in range(size)),
-            "printable_ascii": bytes(rng.choice(printable) for _ in range(size)),
-            "utf16_interleaved": bytes(utf16_interleaved),
-        }
-        return {f"_test_file_{key}.bin": value for key, value in bin_kinds.items()}
+    def get_utf16_interleaved_bytes(self) -> bytes:
+        utf16_interleaved = bytearray(self.bin_file_size)
+        for offset in range(0, self.bin_file_size, 2):
+            utf16_interleaved[offset] = self.rng.randrange(65, 91)
+        return bytes(utf16_interleaved)
 
 
 @dataclass
 class _FullPaths:
-    binary_file_names: tuple[str, ...]
-
     l1_special_dir: Path = HOME_DIR / TestDir.special_dir
     l1_dir: Path = HOME_DIR / "_test_dir"
     l2_dir: Path = l1_dir / "_test_dir_level_1"
@@ -184,103 +183,100 @@ class _FullPaths:
     l1_huge_file: Path = l1_special_dir / TestFile.huge_file
     l1_tricky_utf8_file: Path = l1_special_dir / TestFile.tricky_utf8_file
 
-    def dir_paths(self, exists: bool | None = None) -> list[Path]:
-        paths = [getattr(self, attr) for attr in dir(self) if attr.endswith("_dir")]
-        sorted_paths = path_funcs.sort_paths(paths)
-        if exists is True:
-            return [path for path in sorted_paths if path.exists()]
-        elif exists is False:
-            return [path for path in sorted_paths if not path.exists()]
-        return sorted_paths
+    @cached_property
+    def all_dir_paths(self) -> set[Path]:
+        return {getattr(self, attr) for attr in dir(self) if attr.endswith("_dir")}
 
-    def file_paths(self, exists: bool | None = None) -> list[Path]:
-        fixed_paths = [
-            getattr(self, attr) for attr in dir(self) if attr.endswith("_file")
-        ]
-        fixed_paths.extend(
-            self.l1_special_dir / name for name in self.binary_file_names
-        )
+    @property
+    def existing_dirs(self) -> set[Path]:
+        return {path for path in self.all_dir_paths if path.exists()}
+
+    @property
+    def missing_dirs(self) -> set[Path]:
+        return {path for path in self.all_dir_paths if not path.exists()}
+
+    @cached_property
+    def all_file_paths(self) -> set[Path]:
+        paths = [getattr(self, attr) for attr in dir(self) if attr.endswith("_file")]
+        paths.extend(self.l1_special_dir / name for name in TestFile.bin_files())
         file_names = (
-            TestFile.small_file,
-            TestFile.small_file_1,
-            TestFile.small_file_2,
-            TestFile.small_file_3,
-            TestFile.medium_file,
-            TestFile.wanted_file,
-            *self.binary_file_names,
+            (TestFile.diff_files() - {Path(TestFile.large_file)})
+            | {Path(TestFile.wanted_file)}
+            | TestFile.bin_files()
         )
         variable_paths = [
             directory / name
-            for directory in self.dir_paths()
+            for directory in self.all_dir_paths
             if directory != self.l1_special_dir
             for name in file_names
         ]
-        sorted_paths = path_funcs.sort_paths(fixed_paths + variable_paths)
-        if exists is True:
-            return [path for path in sorted_paths if path.exists()]
-        elif exists is False:
-            return [path for path in sorted_paths if not path.exists()]
-        return sorted_paths
+        return set(paths + variable_paths)
 
     @property
-    def files_for_diff(self) -> list[Path]:
-        return [
-            path
-            for path in self.file_paths(exists=True)
-            if path.name
-            in (
-                TestFile.small_file,
-                TestFile.small_file_1,
-                TestFile.small_file_2,
-                TestFile.small_file_3,
-                TestFile.medium_file,
-                TestFile.large_file,
-            )
-        ]
+    def existing_files(self) -> set[Path]:
+        return {path for path in self.all_file_paths if path.exists()}
 
-    def all_paths(self, exists: bool | None = None) -> list[Path]:
-        return self.dir_paths(exists) + self.file_paths(exists)
+    @property
+    def missing_files(self) -> set[Path]:
+        return {path for path in self.all_file_paths if not path.exists()}
+
+    @property
+    def existing_paths(self) -> set[Path]:
+        return self.existing_dirs | self.existing_files
+
+    @property
+    def missing_paths(self) -> set[Path]:
+        return self.missing_dirs | self.missing_files
+
+    @property
+    def files_for_diff(self) -> set[Path]:
+        return {
+            path
+            for path in self.existing_files
+            if Path(path.name) in TestFile.diff_files()
+        }
 
 
 class TestPaths:
     def __init__(self) -> None:
         self.file_contents = _TestFileContents()
-        self.full_paths = _FullPaths(
-            binary_file_names=tuple(self.file_contents.binary_file_data_map)
-        )
+        self.paths = _FullPaths()
 
     def report_test_paths(self) -> str:
         """Report existing test leaves and collapse missing directory trees to /**."""
         lines: list[str] = []
-        existing = self.full_paths.all_paths(exists=True)
+        existing = path_funcs.sort_paths(self.paths.existing_paths)
         parents = {parent for path in existing for parent in path.parents}
         existing = [path for path in existing if path not in parents]
         if existing:
             lines.append(f"[${ColorVar.text_success}]Existing:[/]")
             lines.extend(escape(str(path)) for path in existing)
 
-        missing = self.full_paths.all_paths(exists=False)
+        missing = self.paths.missing_paths
         if missing:
-            top_level = path_funcs.get_common_top_level(missing)
-            directories = set(self.full_paths.dir_paths())
+            directories = self.paths.all_dir_paths
+            top_level = path_funcs.get_common_top_level(dir_paths=missing & directories)
             lines.append(f"[${ColorVar.text_warning}]All Other Possible Test Paths:[/]")
             lines.extend(
                 escape(str(path / "**" if path in directories else path))
-                for path in missing
+                for path in path_funcs.sort_paths(missing)
                 if path in top_level
+                or (path not in directories and top_level.isdisjoint(path.parents))
             )
         return "\n".join(lines)
 
     def remove_test_paths(self) -> str:
-        existing = self.full_paths.all_paths(exists=True)
+        existing = self.paths.existing_paths
         if not existing:
             return f"[${ColorVar.text_warning}]No test paths exist.[/]"
 
-        for path in path_funcs.get_common_top_level(existing):
-            if path.is_dir():
-                shutil.rmtree(path)
-            else:
-                path.unlink()
+        top_level = path_funcs.get_common_top_level(
+            dir_paths=existing & self.paths.all_dir_paths
+        )
+        for path in existing & self.paths.all_file_paths:
+            path.unlink()
+        for path in top_level:
+            shutil.rmtree(path)
 
         removed = [escape(str(path)) for path in path_funcs.sort_paths(existing)]
         return "\n".join([f"[${ColorVar.text_success}]Removed paths:[/]", *removed])
@@ -290,21 +286,22 @@ class TestPaths:
 
         Ordinary directories have a 5% empty bias, then eligible ones have a
         5% single-child bias. Preservation only considers compatible paths.
+        Compatible directories have an 80% inclusion chance, plus required parents.
         Compatible existing files have a 90% survival chance, missing files a
         12% creation chance, and surviving diff-capable files a 70% toggle chance.
         One directory also toggles permissions between 0755 and 0750 each run.
         """
-        directories = set(self.full_paths.dir_paths())
-        files = set(self.full_paths.file_paths())
-        existing = set(self.full_paths.all_paths(exists=True))
-        special_dir = self.full_paths.l1_special_dir
+        directories = self.paths.all_dir_paths
+        files = self.paths.all_file_paths
+        existing = self.paths.existing_paths
+        special_dir = self.paths.l1_special_dir
         special_paths = {special_dir} | {
             path for path in files if path.parent == special_dir
         }
         binary_paths = {
             path
             for path in files - special_paths
-            if path.name in self.full_paths.binary_file_names
+            if Path(path.name) in TestFile.bin_files()
         }
         # about 10% of binary paths eligible each run
         selected_binary_paths = set(
@@ -313,7 +310,7 @@ class TestPaths:
             )
         )
         available_files = files - binary_paths | selected_binary_paths
-        home_files = {self.full_paths.l0_small_file, self.full_paths.l0_medium_file}
+        home_files = {self.paths.l0_small_file, self.paths.l0_medium_file}
         home_toggle = random.choice(sorted(home_files))
         ordered_dirs = sorted(
             directories - {special_dir}, key=lambda path: (len(path.parts), path)
@@ -355,13 +352,16 @@ class TestPaths:
             for path in existing - special_paths - {home_toggle}
             if path in allowed_dirs or path in available_files
         )
-        candidate_dirs = [path for path in candidates if path in directories]
         candidate_files = [path for path in candidates if path in files]
-        preserved_dirs = {path for path in candidate_dirs if random.random() < 0.80}
+        selected_dirs = {
+            path
+            for path in ordered_dirs
+            if path in allowed_dirs and random.random() < 0.80
+        }
         preserved_files = {path for path in candidate_files if random.random() < 0.90}
-        required_dirs = preserved_dirs | {
+        required_dirs = selected_dirs | {
             parent
-            for path in preserved_dirs | preserved_files
+            for path in selected_dirs | preserved_files
             for parent in path.parents
             if parent in directories
         }
@@ -375,7 +375,6 @@ class TestPaths:
             if (
                 directory not in required_dirs
                 and single_children.get(directory.parent) != directory
-                and not random.choice((True, False))
             ):
                 continue
             target.add(directory)
@@ -399,11 +398,11 @@ class TestPaths:
             target.add(home_toggle)
 
         removed = existing - target
-        for path in path_funcs.get_common_top_level(removed):
-            if path.is_dir():
-                shutil.rmtree(path)
-            else:
-                path.unlink()
+        top_level = path_funcs.get_common_top_level(dir_paths=removed & directories)
+        for path in removed & files:
+            path.unlink()
+        for path in top_level:
+            shutil.rmtree(path)
 
         created = target - existing
         for directory in sorted(
@@ -424,7 +423,7 @@ class TestPaths:
                 path.write_text(contents, encoding="utf-8")
 
         eligible = path_funcs.sort_paths(
-            (set(self.full_paths.files_for_diff) & existing) - {home_toggle}
+            (self.paths.files_for_diff & existing) - {home_toggle}
         )
         modified = [path for path in eligible if random.random() < 0.70]
         for path in modified:
