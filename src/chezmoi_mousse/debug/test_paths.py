@@ -206,7 +206,6 @@ class _FullPaths:
             TestFile.small_file_3,
             TestFile.medium_file,
             TestFile.wanted_file,
-            TestFile.huge_file,
             *self.binary_file_names,
         )
         variable_paths = [
