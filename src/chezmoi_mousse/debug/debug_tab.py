@@ -239,8 +239,9 @@ class DebugTab(TabPane):
         auto_increase = self.current_rss_mb > self.previous_rss * 1.02
         auto_decrease = self.current_rss_mb < self.previous_rss * 0.98
         auto_new_peak = self.current_rss_mb > self.peak_rss_mb * 1.02
+        new_peak = self.current_rss_mb > self.peak_rss_mb
         # Update peak RAM usage
-        if self.current_rss_mb > self.peak_rss_mb:
+        if new_peak:
             self.peak_rss_mb = self.current_rss_mb
 
         self.previous_rss = self.current_rss_mb
@@ -250,16 +251,16 @@ class DebugTab(TabPane):
 
         prefix = "Current memory usage:" if manual else "Auto log 2% delta:"
 
-        if self.auto_log and auto_decrease:
+        if manual:
+            self.debug_log.write_info(f"{prefix} {rss_str}")
+            if new_peak:
+                self.debug_log.write_info(f"New peak: {peak_str}")
+        elif self.auto_log and auto_new_peak:
+            self.debug_log.write_warning(f"New peak: {peak_str}")
+        elif self.auto_log and auto_decrease:
             self.debug_log.write_success(f"{prefix} {rss_str}")
         elif self.auto_log and auto_increase:
             self.debug_log.write_warning(f"{prefix} {rss_str}")
-        elif manual:
-            self.debug_log.write_info(f"{prefix} {rss_str}")
-            if self.current_rss_mb > self.peak_rss_mb:
-                self.debug_log.write_info(f"New peak: {peak_str}")
-        elif not manual and self.auto_log and auto_new_peak:
-            self.debug_log.write_error(f"New peak: {peak_str}")
 
     @work
     async def _log_dom_nodes(self) -> None:
