@@ -1,5 +1,6 @@
 import random
 import shutil
+import stat
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -291,6 +292,7 @@ class TestPaths:
         5% single-child bias. Preservation only considers compatible paths.
         Compatible existing files have a 90% survival chance, missing files a
         12% creation chance, and surviving diff-capable files a 70% toggle chance.
+        One directory also toggles permissions between 0755 and 0750 each run.
         """
         directories = set(self.full_paths.dir_paths())
         files = set(self.full_paths.file_paths())
@@ -433,11 +435,19 @@ class TestPaths:
             )
             path.write_text(contents, encoding="utf-8")
 
+        surviving_dirs = target & directories & existing
+        directory = random.choice(
+            path_funcs.sort_paths(surviving_dirs or (target & directories))
+        )
+        mode = stat.S_IMODE(directory.stat().st_mode)
+        directory.chmod(0o750 if mode == 0o755 else 0o755)
+
         lines: list[str] = []
         for label, paths in (
             ("Created paths", created),
             ("Removed paths", removed),
             ("Modified files", modified),
+            ("Modified directories", [directory]),
         ):
             if paths:
                 lines.append(f"[${ColorVar.text_warning}]{label}:[/]")
