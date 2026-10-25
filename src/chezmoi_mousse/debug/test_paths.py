@@ -329,16 +329,17 @@ class TestPaths:
         )
         if self.full_paths.l1_large_file in existing:
             candidates.append(self.full_paths.l1_large_file)
-        # keep about half of the paths
-        preserved_count = len(candidates) // 2
-        preserved = set(random.sample(candidates, k=preserved_count))
-        required_dirs = (preserved & directories) | {
+        candidate_dirs = [path for path in candidates if path in directories]
+        candidate_files = [path for path in candidates if path in files]
+        preserved_dirs = {path for path in candidate_dirs if random.random() < 0.80}
+        preserved_files = {path for path in candidate_files if random.random() < 0.60}
+        required_dirs = preserved_dirs | {
             parent
-            for path in preserved
+            for path in preserved_dirs | preserved_files
             for parent in path.parents
             if parent in directories
         }
-        target: set[Path] = special_paths | preserved | required_dirs
+        target: set[Path] = special_paths | preserved_files | required_dirs
 
         ordered_dirs = sorted(
             directories - {special_dir}, key=lambda path: (len(path.parts), path)
@@ -412,7 +413,9 @@ class TestPaths:
                 path.write_text(contents, encoding="utf-8")
 
         eligible = path_funcs.sort_paths(
-            (set(self.full_paths.files_for_diff) & existing) - preserved - {home_toggle}
+            (set(self.full_paths.files_for_diff) & existing)
+            - preserved_files
+            - {home_toggle}
         )
         modified = (
             random.sample(eligible, k=random.randint(1, len(eligible)))
