@@ -270,10 +270,6 @@ class TestPaths:
             )
         return "\n".join(lines)
 
-    def reset_paths(self) -> str:
-        # TODO: phase out button
-        return self.create_diffs()
-
     def remove_test_paths(self) -> str:
         existing = self.full_paths.all_paths(exists=True)
         if not existing:

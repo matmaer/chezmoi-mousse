@@ -194,7 +194,6 @@ class DebugTab(TabPane):
                 BtnLabel.list_paths,
                 BtnLabel.log_memory,
                 BtnLabel.remove_paths,
-                BtnLabel.reset_paths,
                 BtnLabel.start_auto_log,
                 BtnLabel.stop_auto_log,
             ),
@@ -354,8 +353,6 @@ class DebugTab(TabPane):
             result = self.test_paths.report_test_paths()
         elif event.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
-        elif event.button.label == BtnLabel.reset_paths:
-            result = self.test_paths.reset_paths()
         elif event.button.label == BtnLabel.remove_paths:
             result = self.test_paths.remove_test_paths()
         else:

@@ -71,7 +71,6 @@ class BtnLabel(StrEnum):
     create_diffs = "Create Diffs"
     list_paths = "List Test Paths"
     remove_paths = "Remove Test Paths"
-    reset_paths = "Reset Test Paths"
 
     # Run chezmoi command buttons
     chezmoi_add = "chezmoi add"
@@ -96,6 +95,10 @@ class BtnLabel(StrEnum):
     @classmethod
     def op_btn_labels(cls) -> tuple["BtnLabel", ...]:
         return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
+
+    @classmethod
+    def test_path_labels(cls) -> tuple["BtnLabel", ...]:
+        return tuple(btn for btn in cls if btn.name.startswith("test_"))
 
     @property
     def dry_cmd(self) -> "ReadCmd":  # Operate modal
