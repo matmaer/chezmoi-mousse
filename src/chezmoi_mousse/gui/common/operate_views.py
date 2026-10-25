@@ -186,7 +186,7 @@ class PathView(ScrollableContainer):
     @work
     async def _set_path_info(self, node_data: NodeData) -> None:
         truth_dict: dict[str, bool] = {}
-        truth_dict[LabelStr.path_has_status] = node_data.has_status
+        truth_dict[LabelStr.path_has_status] = node_data.status_path
         truth_dict[LabelStr.path_exists] = node_data.exists
         truth_dict[LabelStr.path_un_wanted] = (
             node_data.wanted is False and not node_data.managed

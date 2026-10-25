@@ -74,7 +74,7 @@ class OperateTree(Tree[NodeData]):
         color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
         is_man_tree = TreeName(self.name).is_managed_tree
 
-        if node_data.has_status:
+        if node_data.status_path:
             return color_var
         elif (
             node_data.status is None

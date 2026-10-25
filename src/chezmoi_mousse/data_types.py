@@ -148,7 +148,7 @@ class NodeData:
         return not self.dir_path
 
     @property
-    def has_status(self) -> bool:
+    def status_path(self) -> bool:
         return self.status is not None
 
     @property
@@ -161,11 +161,11 @@ class NodeData:
 
     @property
     def status_dir(self) -> bool:
-        return self.managed_dir and self.has_status
+        return self.managed_dir and self.status_path
 
     @property
     def status_file(self) -> bool:
-        return self.managed_file and self.has_status
+        return self.managed_file and self.status_path
 
     @property
     def un_managed(self) -> bool:

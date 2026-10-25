@@ -241,10 +241,10 @@ class OperateTab(TabPane):
         ):
             self.content_view.node_data = node_data
             self.content_view.display = True
-        elif radio_label == LabelStr.radio_diff and node_data.has_status:
+        elif radio_label == LabelStr.radio_diff and node_data.status_path:
             self.diff_view.node_data = node_data
             self.diff_view.display = True
-        elif radio_label == LabelStr.radio_diff_reverse and node_data.has_status:
+        elif radio_label == LabelStr.radio_diff_reverse and node_data.status_path:
             self.diff_reverse_view.node_data = node_data
             self.diff_reverse_view.display = True
         elif radio_label == LabelStr.radio_path_view:
