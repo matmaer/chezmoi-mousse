@@ -262,7 +262,7 @@ class TestPaths:
         if missing:
             top_level = path_funcs.get_common_top_level(missing)
             directories = set(self.full_paths.dir_paths())
-            lines.append(f"[${ColorVar.text_warning}]Missing:[/]")
+            lines.append(f"[${ColorVar.text_warning}]All Other Possible Test Paths:[/]")
             lines.extend(
                 escape(str(path / "**" if path in directories else path))
                 for path in missing
