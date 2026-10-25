@@ -54,38 +54,47 @@ class _TestFileContents:
     @property
     def initial_map(self) -> dict[str, str | bytes]:
         file_name_map = {
-            TestFile.small_file.value: self._initial_small,
-            TestFile.medium_file.value: self._initial_medium,
-            TestFile.large_file.value: self._initial_large,
-            TestFile.huge_file.value: self._initial_huge,
-            TestFile.tricky_utf8_file.value: self._tricky_utf8,
-            TestFile.wanted_file.value: self._initial_small,
-            TestFile.un_wanted_file.value: self._initial_small,
+            TestFile.small_file: self._initial_small,
+            TestFile.small_file_1: self._initial_small,
+            TestFile.small_file_2: self._initial_small,
+            TestFile.small_file_3: self._initial_small,
+            TestFile.medium_file: self._initial_medium,
+            TestFile.large_file: self._initial_large,
+            TestFile.huge_file: self._initial_huge,
+            TestFile.tricky_utf8_file: self._tricky_utf8,
+            TestFile.wanted_file: self._initial_small,
+            TestFile.un_wanted_file: self._initial_small,
         }
         return file_name_map | self.binary_file_data_map
 
     @property
     def old_diff_map(self) -> dict[str, str]:
         return {
-            TestFile.small_file.value: self._initial_small,
-            TestFile.medium_file.value: self._initial_medium,
-            TestFile.large_file.value: self._initial_large,
+            TestFile.small_file: self._initial_small,
+            TestFile.small_file_1: self._initial_small,
+            TestFile.small_file_2: self._initial_small,
+            TestFile.small_file_3: self._initial_small,
+            TestFile.medium_file: self._initial_medium,
+            TestFile.large_file: self._initial_large,
         }
 
     @property
     def new_diff_map(self) -> dict[str, str]:
         return {
-            TestFile.small_file.value: self._diff_small,
-            TestFile.medium_file.value: self._diff_medium,
-            TestFile.large_file.value: self._diff_large,
+            TestFile.small_file: self._diff_small,
+            TestFile.small_file_1: self._diff_small,
+            TestFile.small_file_2: self._diff_small,
+            TestFile.small_file_3: self._diff_small,
+            TestFile.medium_file: self._diff_medium,
+            TestFile.large_file: self._diff_large,
         }
 
     def _generate_initial_text(self, file_name: str) -> str:
         str_to_kb_map: dict[str, int] = {
-            TestFile.small_file.value: 10,
-            TestFile.medium_file.value: 50,
-            TestFile.large_file.value: 500,
-            TestFile.huge_file.value: 2000,
+            TestFile.small_file: 10,
+            TestFile.medium_file: 50,
+            TestFile.large_file: 500,
+            TestFile.huge_file: 2000,
         }
         target_bytes: int = str_to_kb_map[file_name] * 1024
         rng = random.Random(target_bytes)
@@ -192,10 +201,13 @@ class _FullPaths:
             self.l1_special_dir / name for name in self.binary_file_names
         )
         file_names = (
-            TestFile.small_file.value,
-            TestFile.medium_file.value,
-            TestFile.wanted_file.value,
-            TestFile.huge_file.value,
+            TestFile.small_file,
+            TestFile.small_file_1,
+            TestFile.small_file_2,
+            TestFile.small_file_3,
+            TestFile.medium_file,
+            TestFile.wanted_file,
+            TestFile.huge_file,
             *self.binary_file_names,
         )
         variable_paths = [
@@ -217,7 +229,14 @@ class _FullPaths:
             path
             for path in self.file_paths(exists=True)
             if path.name
-            in (TestFile.small_file, TestFile.medium_file, TestFile.large_file)
+            in (
+                TestFile.small_file,
+                TestFile.small_file_1,
+                TestFile.small_file_2,
+                TestFile.small_file_3,
+                TestFile.medium_file,
+                TestFile.large_file,
+            )
         ]
 
     def all_paths(self, exists: bool | None = None) -> list[Path]:
@@ -232,17 +251,26 @@ class TestPaths:
         )
 
     def report_test_paths(self) -> str:
+        """Report existing test leaves and collapse missing directory trees to /**."""
         lines: list[str] = []
         existing = self.full_paths.all_paths(exists=True)
+        parents = {parent for path in existing for parent in path.parents}
+        existing = [path for path in existing if path not in parents]
         if existing:
             lines.append(f"[${ColorVar.text_success}]Existing:[/]")
             lines.extend(escape(str(path)) for path in existing)
 
         missing = self.full_paths.all_paths(exists=False)
         if missing:
+            top_level = path_funcs.get_common_top_level(missing)
+            directories = set(self.full_paths.dir_paths())
             lines.append(f"[${ColorVar.text_warning}]Missing:[/]")
-            lines.extend(escape(str(path)) for path in missing)
-        return "\n".join(line for line in lines)
+            lines.extend(
+                escape(str(path / "**" if path in directories else path))
+                for path in missing
+                if path in top_level
+            )
+        return "\n".join(lines)
 
     def reset_paths(self) -> str:
         # TODO: phase out button
@@ -263,7 +291,9 @@ class TestPaths:
         return "\n".join([f"[${ColorVar.text_success}]Removed paths:[/]", *removed])
 
     def create_diffs(self) -> str:
-        # generate a random tree while preserving a random portion of it
+        """Bias ordinary directories 15% toward empty, then eligible ones 15%
+        toward containing just one subdirectory.
+        """
         directories = set(self.full_paths.dir_paths())
         files = set(self.full_paths.file_paths())
         existing = set(self.full_paths.all_paths(exists=True))
@@ -273,8 +303,17 @@ class TestPaths:
         }
         home_files = {self.full_paths.l0_small_file, self.full_paths.l0_medium_file}
         home_toggle = random.choice(sorted(home_files))
+        empty_dirs = {
+            directory
+            for directory in path_funcs.sort_paths(directories - {special_dir})
+            if random.random() < 0.15
+        }
 
-        candidates = path_funcs.sort_paths(existing - special_paths - {home_toggle})
+        candidates = path_funcs.sort_paths(
+            path
+            for path in existing - special_paths - {home_toggle}
+            if empty_dirs.isdisjoint(path.parents)
+        )
         if self.full_paths.l1_large_file in existing:
             candidates.append(self.full_paths.l1_large_file)
         preserved_count = random.randint(
@@ -287,17 +326,21 @@ class TestPaths:
             for parent in path.parents
             if parent in directories
         }
-        target = special_paths | preserved | required_dirs
+        target: set[Path] = special_paths | preserved | required_dirs
 
         ordered_dirs = sorted(
             directories - {special_dir}, key=lambda path: (len(path.parts), path)
         )
         for directory in ordered_dirs:
+            if not empty_dirs.isdisjoint(directory.parents):
+                continue
             if directory.parent != HOME_DIR and directory.parent not in target:
                 continue
             if directory not in required_dirs and not random.choice((True, False)):
                 continue
             target.add(directory)
+            if directory in empty_dirs:
+                continue
             children = path_funcs.sort_paths(
                 [path for path in files if path.parent == directory]
             )
@@ -311,8 +354,28 @@ class TestPaths:
         else:
             target.add(home_toggle)
 
+        for directory in ordered_dirs:
+            if directory not in target or directory in empty_dirs:
+                continue
+            subdirs = path_funcs.sort_paths(
+                path for path in directories if path.parent == directory
+            )
+            if not subdirs:
+                continue
+            if random.random() >= 0.15:
+                continue
+            child = random.choice(subdirs)
+            target = {
+                path
+                for path in target
+                if not path.is_relative_to(directory)
+                or path == directory
+                or path.is_relative_to(child)
+            }
+            target.add(child)
+
         removed = existing - target
-        for path in path_funcs.get_common_top_level(path_funcs.sort_paths(removed)):
+        for path in path_funcs.get_common_top_level(removed):
             if path.is_dir():
                 shutil.rmtree(path)
             else:
