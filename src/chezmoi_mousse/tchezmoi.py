@@ -137,11 +137,11 @@ async def run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> DryRunData:
     }
 
     # basic affected paths for dest_dir
-    if n_data.dest_dir:
+    if n_data.dir_data.dest_dir:
         default_result[BtnLabel.chezmoi_add] = []
         default_result[BtnLabel.chezmoi_destroy] = []
         default_result[BtnLabel.chezmoi_forget] = []
-        if not n_data.nested_status:
+        if not n_data.dir_data.nested_status:
             default_result[BtnLabel.chezmoi_apply] = []
             default_result[BtnLabel.chezmoi_re_add] = []
     # basic affected paths for dirs other than the dest dir
@@ -152,19 +152,25 @@ async def run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> DryRunData:
         default_result[BtnLabel.chezmoi_re_add] = []
     # basic affected paths for managed dirs without nested conditions
     elif n_data.managed_dir:
-        if not (n_data.nested_un_managed or n_data.nested_status or n_data.status_dir):
+        if not (
+            n_data.dir_data.nested_un_managed
+            or n_data.dir_data.nested_status
+            or n_data.status_dir
+        ):
             default_result[BtnLabel.chezmoi_add] = []
-        if not (n_data.nested_status or n_data.status_dir):
+        if not (n_data.dir_data.nested_status or n_data.status_dir):
             default_result[BtnLabel.chezmoi_apply] = []
             default_result[BtnLabel.chezmoi_re_add] = []
-        elif not n_data.nested_managed and n_data.status_dir:
+        elif not n_data.dir_data.nested_managed and n_data.status_dir:
             default_result[BtnLabel.chezmoi_apply] = [n_data.path]
             default_result[BtnLabel.chezmoi_re_add] = [n_data.path]
         if not n_data.exists:
             default_result[BtnLabel.chezmoi_destroy] = []
-        elif n_data.exists and not (n_data.nested_managed or n_data.nested_un_managed):
+        elif n_data.exists and not (
+            n_data.dir_data.nested_managed or n_data.dir_data.nested_un_managed
+        ):
             default_result[BtnLabel.chezmoi_destroy] = [n_data.path]
-        if not n_data.nested_managed:
+        if not n_data.dir_data.nested_managed:
             default_result[BtnLabel.chezmoi_forget] = [n_data.path]
     # basic affected paths for files
     elif n_data.managed_file:
@@ -205,7 +211,7 @@ async def run_affected_paths(app: ChezmoiGui, n_data: NodeData) -> DryRunData:
         return path_funcs.sort_paths(paths)
 
     commands_to_run = [k.dry_cmd for k, v in default_result.items() if v is None]
-    path_arg = None if n_data.dest_dir else n_data.path
+    path_arg = None if n_data.dir_data.dest_dir else n_data.path
     cr_results: dict[ReadCmd, CommandResult] = await run_in_task_group(
         app, commands_to_run, path_arg
     )

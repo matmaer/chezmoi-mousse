@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import path_funcs
-from chezmoi_mousse.data_types import NodeData
+from chezmoi_mousse.data_types import DirData, NodeData
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import StatusCode as Sc
@@ -77,15 +77,20 @@ class ChezmoiTreePaths:
         un_managed_paths: set[Path],
         wanted_paths: set[Path],
     ) -> None:
+        nested_managed = len(managed_paths) > 0
+        empty_dir = False if nested_managed else path_funcs.is_empty_dir(self._dest_dir)
         self.dir_node_data[self._dest_dir] = NodeData(
-            dest_dir=True,
+            dir_data=DirData(
+                dest_dir=True,
+                empty=empty_dir,
+                nested_managed=nested_managed,
+                nested_status=len(status_paths) > 0,
+                nested_un_managed=len(un_managed_paths) > 0,
+                nested_wanted=len(wanted_paths) > 0,
+            ),
             dir_path=True,
             exists=True,
             managed=False,
-            nested_managed=len(managed_paths) > 0,
-            nested_status=len(status_paths) > 0,
-            nested_un_managed=len(un_managed_paths) > 0,
-            nested_wanted=len(wanted_paths) > 0,
             path=self._dest_dir,
             source_path=None,
             status=None,
@@ -99,10 +104,6 @@ class ChezmoiTreePaths:
                 dir_path=False,
                 exists=True if not managed else path.exists(),
                 managed=managed,
-                nested_managed=False,
-                nested_status=False,
-                nested_un_managed=False,
-                nested_wanted=False,
                 path=path,
                 source_path=self._man_files.get(path, None),
                 status=self._status_files.get(path, None),
@@ -135,15 +136,20 @@ class ChezmoiTreePaths:
             has_nested_un_managed = path_funcs.any_nested_in(
                 dir_path=path, check_paths=un_managed_paths
             )
+            empty_dir = False if has_nested_managed else path_funcs.is_empty_dir(path)
 
             self.dir_node_data[path] = NodeData(
+                dir_data=DirData(
+                    dest_dir=False,
+                    empty=empty_dir,
+                    nested_managed=has_nested_managed,
+                    nested_status=has_nested_status,
+                    nested_un_managed=has_nested_un_managed,
+                    nested_wanted=has_nested_wanted,
+                ),
                 dir_path=True,
                 exists=path.exists() if managed else True,
                 managed=managed,
-                nested_managed=has_nested_managed,
-                nested_status=has_nested_status,
-                nested_un_managed=has_nested_un_managed,
-                nested_wanted=has_nested_wanted,
                 path=path,
                 source_path=self._man_dirs.get(path),
                 status=self._status_dirs.get(path, None),

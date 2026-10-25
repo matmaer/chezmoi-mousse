@@ -79,15 +79,15 @@ class OperateTree(Tree[NodeData]):
         elif (
             node_data.status is None
             and node_data.managed
-            and not node_data.nested_status
+            and not node_data.dir_data.nested_status
         ):
             return ColorVar.foreground_darken_3
         elif node_data.dir_path:
-            if node_data.nested_status and node_data.nested_wanted:
+            if node_data.dir_data.nested_status and node_data.dir_data.nested_wanted:
                 return (
                     ColorVar.text_primary if is_man_tree else ColorVar.primary_darken_1
                 )
-            elif node_data.nested_status:
+            elif node_data.dir_data.nested_status:
                 return ColorVar.text_primary
             if node_data.managed:
                 return ColorVar.foreground_darken_3 if is_man_tree else ColorVar.text
@@ -231,7 +231,7 @@ class OperateTree(Tree[NodeData]):
         node_data = event.node.data
         if (
             node_data is None
-            or node_data.dest_dir
+            or node_data.dir_data.dest_dir
             or node_data.managed
             or node_data.file_path
             or node_data.path in self.iterated_dirs

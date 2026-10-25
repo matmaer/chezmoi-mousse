@@ -164,14 +164,14 @@ class GitLogView(Vertical):
     async def update_git_log_view(
         self, node_data: NodeData, std_out: str | None = None
     ) -> None:
-        assert node_data.managed or node_data.dest_dir
+        assert node_data.managed or node_data.dir_data.dest_dir
         if node_data.path in self.cache or std_out is None:
             pretty_cells = self.cache[node_data.path]
         else:
             pretty_cells = self._get_styled_cells(std_out)
             self.cache[node_data.path] = pretty_cells
 
-        label_path = node_data.path if not node_data.dest_dir else None
+        label_path = node_data.path if not node_data.dir_data.dest_dir else None
         flat_label = tchezmoi.pretty_cmd(ReadCmd.git_log, label_path)
         self.flat_label.update(escape(flat_label))
 
@@ -184,17 +184,17 @@ class PathView(ScrollableContainer):
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
     @work
-    async def _set_path_info(self, node_data: NodeData) -> None:
+    async def _set_path_info(self, n_data: NodeData) -> None:
         truth_dict: dict[str, bool] = {}
-        truth_dict[LabelStr.path_has_status] = node_data.status_path
-        truth_dict[LabelStr.path_exists] = node_data.exists
+        truth_dict[LabelStr.path_has_status] = n_data.status_path
+        truth_dict[LabelStr.path_exists] = n_data.exists
         truth_dict[LabelStr.path_un_wanted] = (
-            node_data.wanted is False and not node_data.managed
+            n_data.wanted is False and not n_data.managed
         )
-        if node_data.dir_path or node_data.path.is_dir():
-            truth_dict[LabelStr.has_nested_status] = node_data.nested_status
-            truth_dict[LabelStr.has_nested_managed] = node_data.nested_managed
-            truth_dict[LabelStr.has_nested_un_man] = node_data.nested_un_managed
+        if n_data.dir_path or n_data.path.is_dir():
+            truth_dict[LabelStr.has_nested_status] = n_data.dir_data.nested_status
+            truth_dict[LabelStr.has_nested_managed] = n_data.dir_data.nested_managed
+            truth_dict[LabelStr.has_nested_un_man] = n_data.dir_data.nested_un_managed
         self.remove_children()
         self.mount_all(widget_factory.truth_widgets(truth_dict))
 

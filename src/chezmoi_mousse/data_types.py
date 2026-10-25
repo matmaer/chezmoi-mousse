@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CommandResult",
+    "DirData",
     "DryRunData",
     "ExecResult",
     "InitData",
@@ -129,19 +130,36 @@ class IterDirResult:
 
 
 @dataclass(slots=True, frozen=True)
-class NodeData:
-    dir_path: bool
-    exists: bool
-    managed: bool
+class DirData:
+    empty: bool
     nested_managed: bool
     nested_status: bool
     nested_un_managed: bool
     nested_wanted: bool
+    dest_dir: bool
+
+    @classmethod
+    def for_file(cls) -> DirData:
+        return cls(
+            empty=False,
+            nested_managed=False,
+            nested_status=False,
+            nested_un_managed=False,
+            nested_wanted=False,
+            dest_dir=False,
+        )
+
+
+@dataclass(slots=True, frozen=True)
+class NodeData:
+    dir_path: bool
+    exists: bool
+    managed: bool
     path: Path
     source_path: Path | None
     status: StatusCode | None
     wanted: bool | None
-    dest_dir: bool = False
+    dir_data: DirData = field(default_factory=DirData.for_file)
 
     @property
     def file_path(self) -> bool:
@@ -192,7 +210,7 @@ class NodeData:
         return self._wanted_dir or self._wanted_file
 
     def get_main_label(self, label_size: int) -> str:
-        if self.dest_dir:
+        if self.dir_data.dest_dir:
             label_str = LabelStr.dest_dir
         elif self.dir_path:
             label_str = LabelStr.managed_dir if self.managed else LabelStr.un_man_dir
@@ -200,7 +218,7 @@ class NodeData:
             label_str = LabelStr.managed_file if self.managed else LabelStr.un_man_file
 
         full_label = f"{label_str} {self.path}"
-        if len(full_label) <= label_size or self.dest_dir:
+        if len(full_label) <= label_size or self.dir_data.dest_dir:
             return full_label
 
         max_path_length = label_size - len(label_str) - 5  # space, 3 dots plus os sep
@@ -221,7 +239,7 @@ class NodeData:
         return f"{label_str} ...{os.sep}{Path(*self.path.parts[-count:])}"
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        include_dir_for_sp_tree = self.status_dir or self.nested_status
+        include_dir_for_sp_tree = self.status_dir or self.dir_data.nested_status
         include_sp = self.status_file or include_dir_for_sp_tree
 
         if tree_name in (TreeName.managed_sp, TreeName.managed_sp_xpd):
@@ -229,10 +247,10 @@ class NodeData:
         elif tree_name in (TreeName.managed_amp, TreeName.managed_amp_xpd):
             return self.managed
         elif tree_name in (TreeName.wanted_plus_sp, TreeName.wanted_plus_sp_xpd):
-            return include_sp or self.nested_wanted or self._wanted_path
+            return include_sp or self.dir_data.nested_wanted or self._wanted_path
         elif tree_name in (TreeName.wanted_plus_amp, TreeName.wanted_plus_amp_xpd):
-            return self.managed or self.nested_wanted or self._wanted_path
+            return self.managed or self.dir_data.nested_wanted or self._wanted_path
         elif tree_name in (TreeName.un_wanted_plus_sp, TreeName.un_wanted_plus_sp_xpd):
-            return include_sp or self.nested_un_managed or self.un_managed
+            return include_sp or self.dir_data.nested_un_managed or self.un_managed
         else:
             return True

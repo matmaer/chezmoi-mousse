@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.data_types import IterDirResult, NodeData
+from chezmoi_mousse.data_types import DirData, IterDirResult, NodeData
 from chezmoi_mousse.str_enums import PathFilters
 
 if TYPE_CHECKING:
@@ -125,6 +125,10 @@ def _path_seems_cache(path: Path) -> bool:
     return any(p.startswith("cache") or p.endswith("cache") for p in path_parts_lower)
 
 
+def is_empty_dir(dir_path: Path) -> bool:
+    return not any(dir_path.iterdir())
+
+
 def is_unwanted_file(file_path: Path) -> bool:
     return (
         _path_seems_cache(file_path)
@@ -147,23 +151,42 @@ def is_unwanted_dir(dir_path: Path) -> bool:
 
 
 def get_un_man_children(dir_path: Path) -> IterDirResult:
+    assert dir_path.is_absolute()
     error = ""
     dirs: dict[Path, NodeData] = {}
     files: dict[Path, NodeData] = {}
-
     for path in dir_path.iterdir():
+        if path.is_symlink():
+            continue
         try:
-            if path.is_symlink():
-                continue
-            elif path.is_dir():
+            if path.is_dir():
+                children = path.iterdir()
+                empty_dir = not any(children)
+                nested_wanted = False
+                if empty_dir:
+                    nested_unmanaged = False
+                else:
+                    nested_unmanaged = True
+                    for p in children:
+                        if p.is_symlink():
+                            continue
+                        elif (p.is_dir() and not is_unwanted_dir(p)) or (
+                            p.is_file() and not is_unwanted_file(p)
+                        ):
+                            nested_wanted = True
+                            break
                 dirs[path] = NodeData(
+                    dir_data=DirData(
+                        dest_dir=False,
+                        empty=empty_dir,
+                        nested_managed=False,
+                        nested_status=False,
+                        nested_un_managed=nested_unmanaged,
+                        nested_wanted=nested_wanted,
+                    ),
                     dir_path=True,
                     exists=True,
                     managed=False,
-                    nested_managed=False,
-                    nested_status=False,
-                    nested_un_managed=False,
-                    nested_wanted=False,
                     path=path,
                     source_path=None,
                     status=None,
@@ -174,10 +197,6 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     dir_path=False,
                     exists=True,
                     managed=False,
-                    nested_managed=False,
-                    nested_status=False,
-                    nested_un_managed=False,
-                    nested_wanted=False,
                     path=path,
                     source_path=None,
                     status=None,
