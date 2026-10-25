@@ -503,10 +503,6 @@ class TestDir(StrEnum):
     wanted_dir = "_test_wanted_dir"
     empty_dir = f"{managed_dir}_empty"
 
-    @property
-    def nested_l1(self) -> str:
-        return f"{self}_n1"
-
 
 class TestFile(StrEnum):
     huge_file = "_test_file_huge.txt"

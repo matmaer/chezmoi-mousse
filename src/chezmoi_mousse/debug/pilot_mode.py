@@ -129,14 +129,7 @@ async def _explore_all_tabs_basic(pilot: Pilot[object], tab_pane: TabPane) -> No
 
 async def _test_path_operations(pilot: Pilot[object], debug_tab: DebugTab) -> None:
     buttons = {button.label: button for button in debug_tab.query(Button)}
-    await _hover_and_click(pilot, buttons[BtnLabel.test_paths])
-    action = random.choice(
-        (BtnLabel.create_diffs, BtnLabel.remove_paths, BtnLabel.reset_paths)
-    )
-    await _hover_and_click(pilot, buttons[action])
     await _hover_and_click(pilot, buttons[BtnLabel.list_paths])
-    if action == BtnLabel.remove_paths:
-        await _hover_and_click(pilot, buttons[BtnLabel.reset_paths])
     await _hover_and_click(pilot, buttons[BtnLabel.create_diffs])
     await _hover_and_click(pilot, buttons[BtnLabel.list_paths])
 
