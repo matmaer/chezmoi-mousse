@@ -123,7 +123,8 @@ async def _explore_all_tabs_basic(pilot: Pilot[object], tab_pane: TabPane) -> No
             if index != 0:
                 await _hover_and_click(pilot, button)
             await _toggle_random_collapsible(pilot, tab_pane)
-            await _scroll_random_widget(pilot, tab_pane)
+            if random.random() < 0.33:
+                await _scroll_random_widget(pilot, tab_pane)
         await _hover_and_click(pilot, buttons[0])
 
 
