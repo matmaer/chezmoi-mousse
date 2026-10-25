@@ -195,6 +195,7 @@ class PathView(ScrollableContainer):
             truth_dict[LabelStr.has_nested_status] = n_data.dir_data.nested_status
             truth_dict[LabelStr.has_nested_managed] = n_data.dir_data.nested_managed
             truth_dict[LabelStr.has_nested_un_man] = n_data.dir_data.nested_un_managed
+            truth_dict[LabelStr.has_child_paths] = n_data.dir_data.has_child_paths
         self.remove_children()
         self.mount_all(widget_factory.truth_widgets(truth_dict))
 

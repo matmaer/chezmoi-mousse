@@ -157,9 +157,9 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
         try:
             if path.is_dir():
                 children = path.iterdir()
-                empty_dir = not any(children)
+                has_child_paths = any(children)
                 nested_wanted = False
-                if empty_dir:
+                if not has_child_paths:
                     nested_unmanaged = False
                 else:
                     nested_unmanaged = True
@@ -174,7 +174,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                 dirs[path] = NodeData(
                     dir_data=DirData(
                         dest_dir=False,
-                        empty=empty_dir,
+                        has_child_paths=has_child_paths,
                         nested_managed=False,
                         nested_status=False,
                         nested_un_managed=nested_unmanaged,

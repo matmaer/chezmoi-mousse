@@ -221,6 +221,7 @@ class LabelStr(StrEnum):
     has_nested_status = "Has nested status paths"
     has_nested_managed = "Has nested managed paths"
     has_nested_un_man = "Has nested un-managed paths"
+    has_child_paths = "Has any child paths"
     path_exists = "Exists on disk"
     path_has_status = "Has a status"
     path_un_wanted = "Matches un-wanted filter"
@@ -497,11 +498,9 @@ class Tcss(StrEnum):
 
 
 class TestDir(StrEnum):
-    managed_dir = "_test_managed_dir"
     special_dir = "_test_special_dir"
     un_wanted_dir = "_test_un_wanted_dir"
     wanted_dir = "_test_wanted_dir"
-    empty_dir = f"{managed_dir}_empty"
 
 
 class TestFile(StrEnum):

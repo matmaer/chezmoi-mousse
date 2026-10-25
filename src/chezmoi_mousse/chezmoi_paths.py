@@ -105,15 +105,15 @@ class ChezmoiTreePaths:
             has_nested_un_managed = path_funcs.any_nested_in(
                 dir_path=path, check_paths=un_managed_paths
             )
-            empty_dir = True
+            has_child_paths = False
             if has_nested_managed or has_nested_un_managed:
-                empty_dir = False
+                has_child_paths = True
             elif not managed and not has_nested_un_managed:
-                empty_dir = any(path.iterdir())
+                has_child_paths = any(path.iterdir())
             self.dir_node_data[path] = NodeData(
                 dir_data=DirData(
                     dest_dir=is_dest_dir,
-                    empty=empty_dir,
+                    has_child_paths=has_child_paths,
                     nested_managed=has_nested_managed,
                     nested_status=has_nested_status,
                     nested_un_managed=has_nested_un_managed,

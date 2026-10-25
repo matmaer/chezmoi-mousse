@@ -131,7 +131,7 @@ class IterDirResult:
 
 @dataclass(slots=True, frozen=True)
 class DirData:
-    empty: bool
+    has_child_paths: bool
     nested_managed: bool
     nested_status: bool
     nested_un_managed: bool
@@ -141,7 +141,7 @@ class DirData:
     @classmethod
     def for_file(cls) -> DirData:
         return cls(
-            empty=False,
+            has_child_paths=False,
             nested_managed=False,
             nested_status=False,
             nested_un_managed=False,
