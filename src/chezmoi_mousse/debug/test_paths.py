@@ -289,8 +289,12 @@ class TestPaths:
         return "\n".join([f"[${ColorVar.text_success}]Removed paths:[/]", *removed])
 
     def create_diffs(self) -> str:
-        """Bias ordinary directories 15% toward empty, then eligible ones 15%
-        toward containing just one subdirectory.
+        """Choose directory shapes before preserving paths and filling the tree.
+
+        Ordinary directories have a 5% empty bias, then eligible ones have a
+        5% single-child bias. Preservation only considers compatible paths.
+        Compatible existing files have a 90% survival chance, missing files a
+        12% creation chance, and surviving diff-capable files a 70% toggle chance.
         """
         directories = set(self.full_paths.dir_paths())
         files = set(self.full_paths.file_paths())
@@ -313,26 +317,50 @@ class TestPaths:
         available_files = files - binary_paths | selected_binary_paths
         home_files = {self.full_paths.l0_small_file, self.full_paths.l0_medium_file}
         home_toggle = random.choice(sorted(home_files))
-        # bias ordinary directories 15% toward empty, then eligible ones 15% toward
-        # containing just one subdirectory.
-        empty_dirs = {
-            directory
-            for directory in path_funcs.sort_paths(directories - {special_dir})
-            if random.random() < 0.15
+        ordered_dirs = sorted(
+            directories - {special_dir}, key=lambda path: (len(path.parts), path)
+        )
+        allowed_dirs: set[Path] = {special_dir}
+        empty_dirs: set[Path] = set()
+        single_children: dict[Path, Path] = {}
+        for directory in ordered_dirs:
+            parent = directory.parent
+            if parent != HOME_DIR and parent not in allowed_dirs:
+                continue
+            if parent in empty_dirs:
+                continue
+            if parent in single_children and single_children[parent] != directory:
+                continue
+            allowed_dirs.add(directory)
+            if random.random() < 0.05:
+                empty_dirs.add(directory)
+                continue
+            subdirs = path_funcs.sort_paths(
+                path for path in directories if path.parent == directory
+            )
+            if subdirs and random.random() < 0.05:
+                single_children[directory] = random.choice(subdirs)
+
+        available_files = {
+            path
+            for path in available_files
+            if path.parent == HOME_DIR
+            or (
+                path.parent in allowed_dirs
+                and path.parent not in empty_dirs
+                and path.parent not in single_children
+            )
         }
 
         candidates = path_funcs.sort_paths(
             path
             for path in existing - special_paths - {home_toggle}
-            if empty_dirs.isdisjoint(path.parents)
-            and (path in directories or path in available_files)
+            if path in allowed_dirs or path in available_files
         )
-        if self.full_paths.l1_large_file in existing:
-            candidates.append(self.full_paths.l1_large_file)
         candidate_dirs = [path for path in candidates if path in directories]
         candidate_files = [path for path in candidates if path in files]
         preserved_dirs = {path for path in candidate_dirs if random.random() < 0.80}
-        preserved_files = {path for path in candidate_files if random.random() < 0.60}
+        preserved_files = {path for path in candidate_files if random.random() < 0.90}
         required_dirs = preserved_dirs | {
             parent
             for path in preserved_dirs | preserved_files
@@ -341,23 +369,28 @@ class TestPaths:
         }
         target: set[Path] = special_paths | preserved_files | required_dirs
 
-        ordered_dirs = sorted(
-            directories - {special_dir}, key=lambda path: (len(path.parts), path)
-        )
         for directory in ordered_dirs:
-            if not empty_dirs.isdisjoint(directory.parents):
+            if directory not in allowed_dirs:
                 continue
             if directory.parent != HOME_DIR and directory.parent not in target:
                 continue
-            if directory not in required_dirs and not random.choice((True, False)):
+            if (
+                directory not in required_dirs
+                and single_children.get(directory.parent) != directory
+                and not random.choice((True, False))
+            ):
                 continue
             target.add(directory)
             if directory in empty_dirs:
                 continue
             children = path_funcs.sort_paths(
-                [path for path in available_files if path.parent == directory]
+                [
+                    path
+                    for path in available_files - existing
+                    if path.parent == directory
+                ]
             )
-            target.update(random.sample(children, k=random.randint(0, len(children))))
+            target.update(path for path in children if random.random() < 0.12)
 
         target.update(home_files & existing)
         if not existing:
@@ -366,26 +399,6 @@ class TestPaths:
             target.discard(home_toggle)
         else:
             target.add(home_toggle)
-
-        for directory in ordered_dirs:
-            if directory not in target or directory in empty_dirs:
-                continue
-            subdirs = path_funcs.sort_paths(
-                path for path in directories if path.parent == directory
-            )
-            if not subdirs:
-                continue
-            if random.random() >= 0.15:
-                continue
-            child = random.choice(subdirs)
-            target = {
-                path
-                for path in target
-                if not path.is_relative_to(directory)
-                or path == directory
-                or path.is_relative_to(child)
-            }
-            target.add(child)
 
         removed = existing - target
         for path in path_funcs.get_common_top_level(removed):
@@ -413,15 +426,9 @@ class TestPaths:
                 path.write_text(contents, encoding="utf-8")
 
         eligible = path_funcs.sort_paths(
-            (set(self.full_paths.files_for_diff) & existing)
-            - preserved_files
-            - {home_toggle}
+            (set(self.full_paths.files_for_diff) & existing) - {home_toggle}
         )
-        modified = (
-            random.sample(eligible, k=random.randint(1, len(eligible)))
-            if eligible
-            else []
-        )
+        modified = [path for path in eligible if random.random() < 0.70]
         for path in modified:
             contents = (
                 new_diff[path.name]
