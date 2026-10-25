@@ -176,7 +176,7 @@ class CmPathChanges:
             self._old_tree_paths.file_node_data.keys()
             - self._new_tree_paths.file_node_data.keys()
         )
-        self.remove_tree_dirs = path_funcs.get_common_top_level(removed_dirs)
+        self.remove_tree_dirs = path_funcs.get_common_top_level(dir_paths=removed_dirs)
         self.remove_tree_files = {
             p for p in removed_files if self.remove_tree_dirs.isdisjoint(p.parents)
         }

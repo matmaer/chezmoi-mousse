@@ -36,9 +36,9 @@ def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
     )
 
 
-def get_common_top_level(paths: Iterable[Path]) -> set[Path]:
-    """Return the unique top-level parent paths from the provided paths."""
-    path_set = paths if isinstance(paths, set) else set(paths)
+def get_common_top_level(*, dir_paths: Iterable[Path]) -> set[Path]:
+    """Return the unique top-level parent paths from the provided directory paths."""
+    path_set = dir_paths if isinstance(dir_paths, set) else set(dir_paths)
     return {p for p in path_set if path_set.isdisjoint(p.parents)}
 
 
