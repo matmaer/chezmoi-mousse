@@ -63,7 +63,6 @@ class _TestFileContents:
             TestFile.huge_file: self._initial_huge,
             TestFile.tricky_utf8_file: self._tricky_utf8,
             TestFile.wanted_file: self._initial_small,
-            TestFile.un_wanted_file: self._initial_small,
         }
         return file_name_map | self.binary_file_data_map
 
