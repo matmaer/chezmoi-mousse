@@ -40,7 +40,7 @@ class OperateTree(Tree[NodeData]):
         self.show_root = False
         self.root.data = store.cm_paths.dest_dir_node_data
         self.node_map: dict[Path, TreeNode[NodeData]] = {store.cfg.dest_dir: self.root}
-        self._initial_tree_population()
+        self.app.call_later(self._initial_tree_population)
 
     def render_label(
         self, node: TreeNode[NodeData], base_style: Style, style: Style

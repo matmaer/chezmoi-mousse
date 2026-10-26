@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.containers import Horizontal, Vertical
+from textual.lazy import Lazy
 from textual.widgets import Button, RadioButton, RadioSet, TabPane, Tree
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
@@ -49,30 +50,49 @@ class LeftSideVertical(Vertical):
     def compose(self) -> ComposeResult:
         yield TreeButtons(classes=Tcss.tree_header)
         yield OperateTree(TreeName.managed_sp, store.op_ids.tree.managed_sp)
-        yield OperateTree(TreeName.managed_sp_xpd, store.op_ids.tree.managed_sp_xpd)
-        yield OperateTree(TreeName.managed_amp, store.op_ids.tree.managed_amp)
-        yield OperateTree(TreeName.managed_amp_xpd, store.op_ids.tree.managed_amp_xpd)
-        # UNMANAGED TREE VARIANTS
-        yield OperateTree(TreeName.wanted_plus_sp, store.op_ids.tree.wanted_plus_sp)
-        yield OperateTree(
-            TreeName.wanted_plus_sp_xpd, store.op_ids.tree.wanted_plus_sp_xpd
+        yield Lazy(
+            OperateTree(TreeName.managed_sp_xpd, store.op_ids.tree.managed_sp_xpd)
         )
-        yield OperateTree(TreeName.wanted_plus_amp, store.op_ids.tree.wanted_plus_amp)
-        yield OperateTree(
-            TreeName.wanted_plus_amp_xpd, store.op_ids.tree.wanted_plus_amp_xpd
+        yield Lazy(OperateTree(TreeName.managed_amp, store.op_ids.tree.managed_amp))
+        yield Lazy(
+            OperateTree(TreeName.managed_amp_xpd, store.op_ids.tree.managed_amp_xpd)
+        )
+        # UNMANAGED TREE VARIANTS
+        yield Lazy(
+            OperateTree(TreeName.wanted_plus_sp, store.op_ids.tree.wanted_plus_sp)
+        )
+        yield Lazy(
+            OperateTree(
+                TreeName.wanted_plus_sp_xpd, store.op_ids.tree.wanted_plus_sp_xpd
+            )
+        )
+        yield Lazy(
+            OperateTree(TreeName.wanted_plus_amp, store.op_ids.tree.wanted_plus_amp)
+        )
+        yield Lazy(
+            OperateTree(
+                TreeName.wanted_plus_amp_xpd, store.op_ids.tree.wanted_plus_amp_xpd
+            )
         )
         # UNWANTED TREE VARIANTS
-        yield OperateTree(
-            TreeName.un_wanted_plus_sp, store.op_ids.tree.un_wanted_plus_sp
+        yield Lazy(
+            OperateTree(TreeName.un_wanted_plus_sp, store.op_ids.tree.un_wanted_plus_sp)
         )
-        yield OperateTree(
-            TreeName.un_wanted_plus_sp_xpd, store.op_ids.tree.un_wanted_plus_sp_xpd
+        yield Lazy(
+            OperateTree(
+                TreeName.un_wanted_plus_sp_xpd, store.op_ids.tree.un_wanted_plus_sp_xpd
+            )
         )
-        yield OperateTree(
-            TreeName.un_wanted_plus_amp, store.op_ids.tree.un_wanted_plus_amp
+        yield Lazy(
+            OperateTree(
+                TreeName.un_wanted_plus_amp, store.op_ids.tree.un_wanted_plus_amp
+            )
         )
-        yield OperateTree(
-            TreeName.un_wanted_plus_amp_xpd, store.op_ids.tree.un_wanted_plus_amp_xpd
+        yield Lazy(
+            OperateTree(
+                TreeName.un_wanted_plus_amp_xpd,
+                store.op_ids.tree.un_wanted_plus_amp_xpd,
+            )
         )
 
 
