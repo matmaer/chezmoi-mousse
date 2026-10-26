@@ -39,12 +39,12 @@ class _TestFileContents:
         self._diff_medium = self._initial_medium.replace("lorem", "LOREM")
         self._diff_large = self._initial_large.replace("lorem", "LOREM")
 
-        self._control_chars_file = self.get_control_chars_bytes()
-        self._high_entropy_file = self.get_high_entropy_bytes()
-        self._invalid_utf8_file = self.get_invalid_utf8_bytes()
-        self._null_bytes_file = self.get_null_bytes()
-        self._printable_ascii_file = self.get_printable_ascii_bytes()
-        self._utf16_interleaved_file = self.get_utf16_interleaved_bytes()
+        self._control_chars_file = self._get_control_chars_bytes()
+        self._high_entropy_file = self._get_high_entropy_bytes()
+        self._invalid_utf8_file = self._get_invalid_utf8_bytes()
+        self._null_bytes_file = self._get_null_bytes()
+        self._printable_ascii_file = self._get_printable_ascii_bytes()
+        self._utf16_interleaved_file = self._get_utf16_interleaved_bytes()
 
     @property
     def initial_map(self) -> dict[str, str | bytes]:
@@ -140,25 +140,25 @@ class _TestFileContents:
         )
         return "".join(parts)
 
-    def get_control_chars_bytes(self) -> bytes:
+    def _get_control_chars_bytes(self) -> bytes:
         return bytes(self.rng.randrange(1, 32) for _ in range(self.bin_file_size))
 
-    def get_high_entropy_bytes(self) -> bytes:
+    def _get_high_entropy_bytes(self) -> bytes:
         return self.rng.randbytes(self.bin_file_size)
 
-    def get_invalid_utf8_bytes(self) -> bytes:
+    def _get_invalid_utf8_bytes(self) -> bytes:
         return bytes(self.rng.randrange(128, 256) for _ in range(self.bin_file_size))
 
-    def get_null_bytes(self) -> bytes:
+    def _get_null_bytes(self) -> bytes:
         null_data = bytearray(self.bin_file_size)
         null_data[self.rng.randrange(self.bin_file_size)] = self.rng.randrange(1, 256)
         return bytes(null_data)
 
-    def get_printable_ascii_bytes(self) -> bytes:
+    def _get_printable_ascii_bytes(self) -> bytes:
         printable = bytes(range(32, 127)) + b"\n\r\t"
         return bytes(self.rng.choice(printable) for _ in range(self.bin_file_size))
 
-    def get_utf16_interleaved_bytes(self) -> bytes:
+    def _get_utf16_interleaved_bytes(self) -> bytes:
         utf16_interleaved = bytearray(self.bin_file_size)
         for offset in range(0, self.bin_file_size, 2):
             utf16_interleaved[offset] = self.rng.randrange(65, 91)
@@ -188,11 +188,11 @@ class _FullPaths:
         return {getattr(self, attr) for attr in dir(self) if attr.endswith("_dir")}
 
     @property
-    def existing_dirs(self) -> set[Path]:
+    def _existing_dirs(self) -> set[Path]:
         return {path for path in self.all_dir_paths if path.exists()}
 
     @property
-    def missing_dirs(self) -> set[Path]:
+    def _missing_dirs(self) -> set[Path]:
         return {path for path in self.all_dir_paths if not path.exists()}
 
     @cached_property
@@ -213,26 +213,26 @@ class _FullPaths:
         return set(paths + variable_paths)
 
     @property
-    def existing_files(self) -> set[Path]:
+    def _existing_files(self) -> set[Path]:
         return {path for path in self.all_file_paths if path.exists()}
 
     @property
-    def missing_files(self) -> set[Path]:
+    def _missing_files(self) -> set[Path]:
         return {path for path in self.all_file_paths if not path.exists()}
 
     @property
     def existing_paths(self) -> set[Path]:
-        return self.existing_dirs | self.existing_files
+        return self._existing_dirs | self._existing_files
 
     @property
     def missing_paths(self) -> set[Path]:
-        return self.missing_dirs | self.missing_files
+        return self._missing_dirs | self._missing_files
 
     @property
     def files_for_diff(self) -> set[Path]:
         return {
             path
-            for path in self.existing_files
+            for path in self._existing_files
             if Path(path.name) in TestFile.diff_files()
         }
 

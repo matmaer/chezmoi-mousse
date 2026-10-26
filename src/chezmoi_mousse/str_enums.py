@@ -97,10 +97,6 @@ class BtnLabel(StrEnum):
     def op_btn_labels(cls) -> tuple["BtnLabel", ...]:
         return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
 
-    @classmethod
-    def test_path_labels(cls) -> tuple["BtnLabel", ...]:
-        return tuple(btn for btn in cls if btn.name.startswith("test_"))
-
     @property
     def dry_cmd(self) -> "ReadCmd":  # Operate modal
         if not self.name.startswith("chezmoi_"):
