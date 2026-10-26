@@ -7,11 +7,12 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, TreeName
+from chezmoi_mousse.str_enums import Chars, LabelStr, TreeName
 
 if TYPE_CHECKING:
     from typing import Any
 
+    from chezmoi_mousse.debug.utils import DebugUtils
     from chezmoi_mousse.str_enums import BtnLabel, ReadCmd, StatusCode, WriteCmd
 
 __all__ = [
@@ -102,24 +103,10 @@ class ParsedDumpConfig:
 
 @dataclass(slots=True, frozen=True)
 class InitData:
-    pilot_mode: bool = False
-    _which_chezmoi: str | None = None
-    _which_git: str | None = None
-
-    @property
-    def which_chezmoi(self) -> str:
-        if self._which_chezmoi is None:
-            raise RuntimeError(
-                "Trying to run a chezmoi command when it's not available or before ",
-                "it's set in InitData",
-            )
-
-        elif self._which_git is None:
-            raise RuntimeError(
-                "Trying to run a chezmoi command when git is not available or before "
-                "it's set in InitData"
-            )
-        return self._which_chezmoi
+    debug_utils: DebugUtils
+    pilot_mode: bool
+    which_chezmoi: str
+    which_git: str
 
 
 @dataclass(slots=True, frozen=True)

@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import os
-import shutil
-import sys
 from typing import TYPE_CHECKING, ClassVar
 
 from rich.color import Color
@@ -17,7 +14,6 @@ from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
-from chezmoi_mousse.data_types import InitData
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
 from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
@@ -84,22 +80,11 @@ class ChezmoiGui(App[str]):
     TITLE = "---  c h e z m o i  m o u s s e  ---"
 
     def __init__(self) -> None:
-
-        store.init_data = InitData(
-            _which_chezmoi=shutil.which("chezmoi"),
-            _which_git=shutil.which("git"),
-            pilot_mode=(
-                os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
-                or "--pilot-mode" in sys.argv
-            ),
-        )
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        from chezmoi_mousse.debug.utils import DebugUtils
-
-        DebugUtils.save_stacktrace()
+        store.init_data.debug_utils.save_stacktrace()
         super()._handle_exception(error)
 
     def compose(self) -> ComposeResult:
