@@ -31,8 +31,11 @@ def parse_paths(path_strings: list[str]) -> list[Path]:
 
 
 def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
+    dir_parts = dir_path.parts
+    depth = len(dir_parts)
     return any(
-        path != dir_path and path.is_relative_to(dir_path) for path in check_paths
+        len(path.parts) > depth and path.parts[:depth] == dir_parts
+        for path in check_paths
     )
 
 
