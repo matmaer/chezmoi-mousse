@@ -106,6 +106,7 @@ class OperateTree(Tree[NodeData]):
         return color_var
 
     async def update_nodes(self, changes: CmPathChanges) -> None:
+        self.app.notify("update nodes")
         for path in changes.remove_tree_dirs | changes.remove_tree_files:
             if path in self.node_map:
                 self._remove_node(path)
@@ -127,7 +128,7 @@ class OperateTree(Tree[NodeData]):
             changes.change_tree_files, tree_name, allow_expand=False
         )
 
-        self._expand_xpd_nodes()
+        await self._expand_xpd_nodes()
         self.refresh(layout=True)
 
     def _apply_changed_nodes(
@@ -197,31 +198,63 @@ class OperateTree(Tree[NodeData]):
         )
         self.node_map[path] = new_node
 
-    def _expand_xpd_nodes(self) -> None:
+    async def _expand_xpd_nodes(self) -> None:
         if TreeName(self.name).is_xpd_tree:
             with self.prevent(Tree.NodeExpanded):
                 for node in self.node_map.values():
                     if node.data is not None and node.data.managed:
                         node.expand()
 
+    def expand_top_level(self) -> None:
+        collapsed = {
+            path: node
+            for path, node in self.node_map.items()
+            if node.allow_expand
+            and node.is_collapsed
+            and node.data is not None
+            and not node.data.dir_data.dest_dir
+        }
+        top_level = path_funcs.get_common_top_level(dir_paths=collapsed.keys())
+        for path in top_level:
+            self.node_map[path].expand()
+
+    def collapse_bottom_level(self) -> None:
+        expanded = {
+            path: node
+            for path, node in self.node_map.items()
+            if node.allow_expand
+            and node.is_expanded
+            and node.data is not None
+            and not node.data.dir_data.dest_dir
+        }
+        ancestors = {parent for path in expanded for parent in path.parents}
+        bottom_level = expanded.keys() - ancestors
+        for path in bottom_level:
+            self.node_map[path].collapse()
+
+    async def _get_tree_nodes(
+        self, node_dict: dict[Path, NodeData]
+    ) -> dict[Path, NodeData]:
+        result: dict[Path, NodeData] = {}
+        for path, node_data in node_dict.items():
+            if node_data.include_in_tree(TreeName(self.name)):
+                result[path] = node_data
+        return result
+
     @work
     async def _initial_tree_population(self) -> None:
-
-        def get_tree_nodes(node_dict: dict[Path, NodeData]) -> dict[Path, NodeData]:
-            result: dict[Path, NodeData] = {}
-            for path, node_data in node_dict.items():
-                if node_data.include_in_tree(TreeName(self.name)):
-                    result[path] = node_data
-            return result
-
-        dir_nodes = get_tree_nodes(store.cm_paths.dir_node_data)
-        file_nodes = get_tree_nodes(store.cm_paths.file_node_data)
+        dir_nodes: dict[Path, NodeData] = await self._get_tree_nodes(
+            store.cm_paths.dir_node_data
+        )
+        file_nodes: dict[Path, NodeData] = await self._get_tree_nodes(
+            store.cm_paths.file_node_data
+        )
 
         for path, node_data in dir_nodes.items():
             self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():
             self._add_node_with_color(path, node_data, allow_expand=False)
-        self._expand_xpd_nodes()
+        await self._expand_xpd_nodes()
         if self.name == TreeName.managed_sp:
             self.display = True
 

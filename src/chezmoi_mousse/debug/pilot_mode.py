@@ -17,7 +17,6 @@ from textual.widgets import (
 )
 from textual.widgets.collapsible import CollapsibleTitle
 
-from chezmoi_mousse import store
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
@@ -30,7 +29,7 @@ from chezmoi_mousse.gui.config_tab import ConfigTab
 from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tab import OperateTab
 from chezmoi_mousse.gui.splash_screen import SplashScreen
-from chezmoi_mousse.str_enums import BtnLabel, Chars, ChezmoiPrompts
+from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts
 
 __all__ = ["run_with_pilot"]
 
@@ -249,12 +248,13 @@ async def _run_pilot_mode(pilot: Pilot[object]) -> None:
 
     tree_btn_group = operate_tab.left_side_vertical.query_exactly_one(TreeButtons)
     tree_buttons = {button.label: button for button in tree_btn_group.query(Button)}
-    refresh_btn = tree_buttons[Chars.refresh]
-    home_btn = tree_buttons[store.cfg.dest_dir_str]
+
     await _set_random_operate_tab_state(pilot, operate_tab)
-    await _hover_and_click(pilot, home_btn)
+    await _hover_and_click(pilot, tree_buttons[BtnLabel.dest_dir])
     await _set_random_operate_tab_state(pilot, operate_tab)
-    await _hover_and_click(pilot, refresh_btn)
+    await _hover_and_click(pilot, tree_buttons[BtnLabel.refresh])
+    await _hover_and_click(pilot, tree_buttons[BtnLabel.expand])
+    await _hover_and_click(pilot, tree_buttons[BtnLabel.collapse])
 
     cm_theme = pilot.app.theme
     themes = pilot.app.available_themes.items()

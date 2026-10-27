@@ -25,6 +25,18 @@ __all__ = [
 ]
 
 
+class Chars(StrEnum):
+    bullet = "\u2022"  # BULLET
+    burger = "\u2261"  # IDENTICAL TO
+    down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
+    lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
+    radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
+    refresh = "\u21bb"  # CLOCKWISE OPEN CIRCLE ARROW
+    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
+    expand = "\u21d5"
+    collapse = "\u2194"
+
+
 class BindingAction(StrEnum):
     toggle_context = auto()
     toggle_maximized = auto()
@@ -79,9 +91,16 @@ class BtnLabel(StrEnum):
     chezmoi_re_add = "chezmoi re-add"
     chezmoi_forget = "chezmoi forget"
     chezmoi_destroy = "chezmoi destroy"
+
     # Operate modal
     cancel = "Cancel"
     close = "Close"
+
+    # Tree header buttons
+    dest_dir = "destDir"
+    refresh = Chars.refresh
+    collapse = Chars.collapse
+    expand = Chars.expand
 
     @property
     def pane_id(self) -> str:
@@ -109,16 +128,6 @@ class BtnLabel(StrEnum):
             BtnLabel.chezmoi_destroy: ReadCmd.dry_destroy,
         }
         return map[self]
-
-
-class Chars(StrEnum):
-    bullet = "\u2022"  # BULLET
-    burger = "\u2261"  # IDENTICAL TO
-    down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
-    lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
-    radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
-    refresh = "\u21bb"  # CLOCKWISE OPEN CIRCLE ARROW
-    right_triangle = "\u25b8"  # BLACK RIGHT-POINTING SMALL TRIANGLE
 
 
 class ChezmoiPrompts(Enum):
@@ -487,7 +496,7 @@ class Tcss(StrEnum):
     last_clicked_flat_btn = auto()
     last_clicked_tab_btn = auto()
     prompt_btn_group = auto()
-    refresh_button = auto()
+    tree_op_button = auto()
     removed = auto()
     select_all = auto()
     single_button_vertical = auto()

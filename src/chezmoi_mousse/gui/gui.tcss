@@ -9,26 +9,26 @@
     max-width: 30%;
     width: auto;
 
+
     &>TreeButtons {
+
       height: 3;
       width: 100%;
-      min-width: 21;
+      min-width: 28;
 
       &>.dest_dir_button {
         background-tint: $surface-lighten-1;
         background: $surface-lighten-1;
         border-bottom: inner $surface-lighten-1;
-        border-right: inner $surface-lighten-1;
         border-top: inner $surface-lighten-1;
         color: $text-primary;
-        text-style: bold;
+        text-style: none;
         width: 1fr;
 
         &:hover {
           background-tint: $surface-lighten-2;
           background: $surface-lighten-2;
           border-bottom: inner $surface-lighten-2;
-          border-right: inner $surface-lighten-2;
           border-top: inner $surface-lighten-2;
           text-style: bold;
         }
@@ -38,7 +38,7 @@
         }
       }
 
-      &>.refresh_button {
+      &>.tree_op_button {
         background-tint: $surface-lighten-1;
         background: $surface-lighten-1;
         border-bottom: inner $surface-lighten-1;

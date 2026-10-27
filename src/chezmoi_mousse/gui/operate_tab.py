@@ -28,7 +28,7 @@ from chezmoi_mousse.gui.common.operate_views import (
     GitLogView,
     PathView,
 )
-from chezmoi_mousse.str_enums import BtnLabel, Chars, LabelStr, ReadCmd, Tcss, TreeName
+from chezmoi_mousse.str_enums import BtnLabel, LabelStr, ReadCmd, Tcss, TreeName
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -318,9 +318,25 @@ class OperateTab(TabPane):
 
     @on(Button.Pressed)
     def handle_refresh_tree_btn(self, event: Button.Pressed) -> None:
-        if event.button.label == Chars.refresh:
+        if event.button.label == BtnLabel.refresh:
             event.stop()
             self.refresh_trees()
+
+    @on(Button.Pressed)
+    def handle_expand_btn(self, event: Button.Pressed) -> None:
+        if event.button.label == BtnLabel.expand:
+            event.stop()
+            tree = self._current_displayed_tree
+            tree.expand_top_level()
+            self.notify("expand")
+
+    @on(Button.Pressed)
+    def handle_collapse_btn(self, event: Button.Pressed) -> None:
+        if event.button.label == BtnLabel.collapse:
+            event.stop()
+            tree = self._current_displayed_tree
+            tree.collapse_bottom_level()
+            self.notify("collapse")
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
