@@ -219,7 +219,7 @@ class DebugTab(TabPane):
         self.debug_log.write_app_log_msg(
             f"Pre-init memory peak: {self.peak_rss_mb:5.2f} MiB"
         )
-        self._log_colors()
+        self.app.call_later(self._log_colors)
 
     def _log_colors(self) -> None:
         self.color_var_static = self.query_exactly_one(ColorVarStatic)
