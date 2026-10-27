@@ -13,7 +13,7 @@ __all__ = ["run_app"]
 
 
 def run_app() -> None:
-    which_chezmoi, which_git = PreRunChecks.sys_exit_if_cannot_run()
+    which_chezmoi, which_git = _PreRunChecks.sys_exit_if_cannot_run()
     store.init_data = InitData(
         which_chezmoi=which_chezmoi,
         which_git=which_git,
@@ -36,7 +36,7 @@ def run_app() -> None:
         store.init_data.debug_utils.save_stacktrace()
 
 
-class PreRunChecks:
+class _PreRunChecks:
     @staticmethod
     def _is_elevated() -> bool:
         # Windows platform check
@@ -95,7 +95,7 @@ class PreRunChecks:
             or "--pretend-fail" in sys.argv
         ):
             error_info.append(pretend_fail)
-        if PreRunChecks._is_elevated():
+        if _PreRunChecks._is_elevated():
             error_info.append(elevated)
         else:
             success_info.append(elevated_ok)
