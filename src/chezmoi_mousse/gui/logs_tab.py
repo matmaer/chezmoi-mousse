@@ -69,7 +69,8 @@ class AppLog(RichLoggers):
         if "debug" in self.app.features:
             self.write_warning(f"Running textual --dev: {LogStr.debug_tab_enabled}")
 
-    @work
+    # NOTE: description to avoid the whole dataclass repr ending up in the description
+    @work(description="Log the command in the app log")
     async def log_cmd_result(self, cmd_result: CommandResult) -> None:
 
         if cmd_result.returncode is not None:
@@ -110,7 +111,8 @@ class AppLog(RichLoggers):
 class CmdLog(ScrollableContainer):
     cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
 
-    @work
+    # NOTE: description to avoid the whole dataclass repr ending up in the description
+    @work(description="Log stdout and stderr in a collapsible")
     async def log_cmd_result(self, cmd_result: CommandResult) -> None:
         self.mount(CmdResultCollapsible(cmd_result=cmd_result))
 
