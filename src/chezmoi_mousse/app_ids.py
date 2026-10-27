@@ -67,9 +67,6 @@ class _RichLogIds:
 class _SwitchIds:
     def __init__(self, ids: AppIds) -> None:
 
-        self.expand_managed: str = ids.switch_id(switch_label=LabelStr.expand_managed)
-        self.expand_managed_q: str = f"#{self.expand_managed}"
-
         self.show_unchanged: str = ids.switch_id(switch_label=LabelStr.show_unchanged)
         self.show_unchanged_q: str = f"#{self.show_unchanged}"
 
@@ -86,65 +83,29 @@ class _TreeIds:
         # status trees never include managed without status
         self.managed_sp: str = ids.tree_id(tree_name=TreeName.managed_sp)
         self.managed_sp_q: str = f"#{self.managed_sp}"
-        self.managed_sp_xpd: str = ids.tree_id(tree_name=TreeName.managed_sp_xpd)
-        self.managed_sp_xpd_q: str = f"#{self.managed_sp_xpd}"
 
         # managed trees always with unchanged
         self.managed_amp: str = ids.tree_id(tree_name=TreeName.managed_amp)
         self.managed_amp_q: str = f"#{self.managed_amp}"
-        self.managed_amp_xpd: str = ids.tree_id(tree_name=TreeName.managed_amp_xpd)
-        self.managed_amp_xpd_q: str = f"#{self.managed_amp_xpd}"
 
         # 1 --- UN_MANAGED TREE ---
 
         # 1.1 WANTED UN MANAGED TREE PLUS TREE STATUS PATHS
-
-        # 1.1.1 NON XPD
         self.wanted_plus_sp: str = ids.tree_id(tree_name=TreeName.wanted_plus_sp)
         self.wanted_plus_sp_q: str = f"#{self.wanted_plus_sp}"
 
-        # 1.1.2 XPD
-        self.wanted_plus_sp_xpd: str = ids.tree_id(
-            tree_name=TreeName.wanted_plus_sp_xpd
-        )
-        self.wanted_plus_sp_xpd_q: str = f"#{self.wanted_plus_sp_xpd}"
-
         # 1.2 UN_MANAGED TREE PLUS ALL MANAGED PATHS
-
-        # 1.2.1 NON XPD
         self.wanted_plus_amp: str = ids.tree_id(tree_name=TreeName.wanted_plus_amp)
         self.wanted_plus_amp_q: str = f"#{self.wanted_plus_amp}"
-
-        # 1.2.2 XPD
-        self.wanted_plus_amp_xpd: str = ids.tree_id(
-            tree_name=TreeName.wanted_plus_amp_xpd
-        )
-        self.wanted_plus_amp_xpd_q: str = f"#{self.wanted_plus_amp_xpd}"
 
         # 2 --- UN_WANTED TREE ---
 
         # 2.1 UN_WANTED TREE PLUS TREE STATUS PATHS
-
-        # 2.1.1 NON XPD
         self.un_wanted_plus_sp: str = ids.tree_id(tree_name=TreeName.un_wanted_plus_sp)
         self.un_wanted_plus_sp_q: str = f"#{self.un_wanted_plus_sp}"
 
-        # 2.1.2 XPD
-        self.un_wanted_plus_sp_xpd: str = ids.tree_id(
-            tree_name=TreeName.un_wanted_plus_sp_xpd
-        )
-        self.un_wanted_plus_sp_xpd_q: str = f"#{self.un_wanted_plus_sp_xpd}"
-
         # 2.2 UN_WANTED TREE PLUS ALL MANAGED PATHS
-
-        # 2.2.1 NON XPD
         self.un_wanted_plus_amp: str = ids.tree_id(
             tree_name=TreeName.un_wanted_plus_amp
         )
         self.un_wanted_plus_amp_q: str = f"#{self.un_wanted_plus_amp}"
-
-        # 2.2.2 XPD
-        self.un_wanted_plus_amp_xpd: str = ids.tree_id(
-            tree_name=TreeName.un_wanted_plus_amp_xpd
-        )
-        self.un_wanted_plus_amp_xpd_q: str = f"#{self.un_wanted_plus_amp_xpd}"

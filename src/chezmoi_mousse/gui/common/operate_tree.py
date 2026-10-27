@@ -127,8 +127,6 @@ class OperateTree(Tree[NodeData]):
         self._apply_changed_nodes(
             changes.change_tree_files, tree_name, allow_expand=False
         )
-
-        await self._expand_xpd_nodes()
         self.refresh(layout=True)
 
     def _apply_changed_nodes(
@@ -198,13 +196,6 @@ class OperateTree(Tree[NodeData]):
         )
         self.node_map[path] = new_node
 
-    async def _expand_xpd_nodes(self) -> None:
-        if TreeName(self.name).is_xpd_tree:
-            with self.prevent(Tree.NodeExpanded):
-                for node in self.node_map.values():
-                    if node.data is not None and node.data.managed:
-                        node.expand()
-
     def expand_top_level(self) -> None:
         collapsed = {
             path: node
@@ -254,7 +245,6 @@ class OperateTree(Tree[NodeData]):
             self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in file_nodes.items():
             self._add_node_with_color(path, node_data, allow_expand=False)
-        await self._expand_xpd_nodes()
         if self.name == TreeName.managed_sp:
             self.display = True
 

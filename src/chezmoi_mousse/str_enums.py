@@ -249,7 +249,6 @@ class LabelStr(StrEnum):
     radio_path_view = "Path Info"
 
     # Operate tab Switch labels
-    expand_managed = "Expand Managed"
     show_unchanged = "Show Unchanged"
     show_unmanaged = "Show Unmanaged"
     show_unwanted = "Show Unwanted"
@@ -554,25 +553,15 @@ class TreeName(StrEnum):
     """
 
     # the status trees include managed paths with a status or meta status
-    managed_sp = auto()  # base dict data
-    managed_sp_xpd = auto()
+    managed_sp = auto()
     # the man trees includes all managed paths, with or without a status or meta status
-    managed_amp = auto()  # base dict data
-    managed_amp_xpd = auto()
+    managed_amp = auto()
     # trees including unmanaged paths without unwanted paths
-    wanted_plus_amp = auto()  # base dict data
-    wanted_plus_amp_xpd = auto()
-    wanted_plus_sp = auto()  # base dict data
-    wanted_plus_sp_xpd = auto()
+    wanted_plus_amp = auto()
+    wanted_plus_sp = auto()
     # trees including any unmanaged path, including unwanted paths
-    un_wanted_plus_amp = auto()  # base dict data
-    un_wanted_plus_amp_xpd = auto()
-    un_wanted_plus_sp = auto()  # base dict data
-    un_wanted_plus_sp_xpd = auto()
-
-    @property
-    def is_xpd_tree(self) -> bool:
-        return self.name.endswith("_xpd")
+    un_wanted_plus_amp = auto()
+    un_wanted_plus_sp = auto()
 
     @property
     def is_managed_tree(self) -> bool:
