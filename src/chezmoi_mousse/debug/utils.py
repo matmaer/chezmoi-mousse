@@ -4,6 +4,7 @@ import sys
 import tempfile
 import traceback
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -14,20 +15,46 @@ __all__ = ["DebugUtils"]
 
 
 class DebugUtils:
-    @staticmethod
-    def clear_stacktrace() -> None:
-        path = Path(tempfile.gettempdir()) / "chezmoi_gui_stacktrace.log"
-        path.unlink(missing_ok=True)
-        with path.open("w") as f:
-            f.write("")
+    def _new_log_path(self, out_dir: Path) -> Path:
+        return out_dir / f"{datetime.now().strftime('%Y%m%d_%Hh_%Mm_%Ss')}.log"
 
-    @staticmethod
-    def save_stacktrace() -> None:
-        path = Path(tempfile.gettempdir()) / "chezmoi_gui_stacktrace.log"
-        if not path.exists():
-            path.touch()
-        with path.open("a") as f:
-            traceback.print_exc(file=f)
+    def _handle_existing_log_file(self, out_dir: Path, to_write: str) -> bool:
+        all_log_files = [p for p in out_dir.glob("*.log") if p.is_file()]
+        log_files = [p for p in all_log_files if not p.name.startswith("backup_")]
+        log_files = sorted(log_files, key=lambda p: p.name, reverse=True)
+        if not log_files:
+            return False
+
+        log_file = log_files[0]
+        with log_file.open("r") as f:
+            old_contents = f.read().strip()
+        if old_contents == to_write:
+            log_file.rename(self._new_log_path(out_dir))
+            return True  # Renamed existing log in-place: signal no new write is needed
+
+        log_file.rename(log_file.with_name(f"backup_{log_file.name}"))
+        # clean up old backups, keeping only the five most recent ones
+        backups = sorted(out_dir.glob("backup_*"), key=lambda p: p.name, reverse=True)
+        for old_backup in backups[5:]:
+            old_backup.unlink(missing_ok=True)
+        return False
+
+    def save_stacktrace(self) -> None:
+        try:
+            out_dir = Path(tempfile.gettempdir()) / "chezmoi_mousse_stacktraces"
+            out_dir.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            return
+
+        to_write = traceback.format_exc().strip()
+
+        if self._handle_existing_log_file(out_dir, to_write):
+            # True if we did a rename because the exception is identical
+            return
+
+        new_log_path = self._new_log_path(out_dir)
+        with new_log_path.open("w") as f:
+            f.write(to_write)
 
     @staticmethod
     def is_immutable_object(any_object: object) -> bool:
