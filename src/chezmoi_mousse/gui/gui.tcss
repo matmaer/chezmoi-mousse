@@ -398,24 +398,24 @@ Label {
     color: $foreground-darken-1;
   }
 
-  &TruthLabel {
+  &.true_label {
     height: 100%;
     width: 7;
-
-    &.true_label {
-      background-tint: $success-muted;
-      background: $success-muted;
-      border-bottom: wide $success-muted;
-      color: $text-success;
-    }
-
-    &.false_label {
-      background-tint: $error-muted;
-      background: $error-muted;
-      border-bottom: wide $error-muted;
-      color: $text-error;
-    }
+    background-tint: $success-muted;
+    background: $success-muted;
+    border-bottom: wide $success-muted;
+    color: $text-success;
   }
+
+  &.false_label {
+    height: 100%;
+    width: 7;
+    background-tint: $error-muted;
+    background: $error-muted;
+    border-bottom: wide $error-muted;
+    color: $text-error;
+  }
+
 
   &WarningLabel {
     background-tint: $panel;

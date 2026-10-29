@@ -11,8 +11,8 @@ from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, RichLog, TabPane
 
 from chezmoi_mousse import store
+from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import TabButtons
-from chezmoi_mousse.gui.common.components import CmdResultCollapsible
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LogStr
 
 if TYPE_CHECKING:
@@ -114,7 +114,7 @@ class CmdLog(ScrollableContainer):
     # NOTE: description to avoid the whole dataclass repr ending up in the description
     @work(description="Log stdout and stderr in a collapsible")
     async def log_cmd_result(self, cmd_result: CommandResult) -> None:
-        self.mount(CmdResultCollapsible(cmd_result=cmd_result))
+        self.mount(widget_factory.cmd_result_collapsible(cmd_result=cmd_result))
 
     def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
         if cmd_result is None:

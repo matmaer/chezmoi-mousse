@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 from itertools import groupby
+from typing import TYPE_CHECKING
 
+from rich.markup import escape
 from textual.containers import HorizontalGroup
-from textual.widgets import Static
+from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.gui.common.components import InfoLabel, TruthLabel
-from chezmoi_mousse.str_enums import Tcss
+from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
+    InfoLabel,
+    SubSectionLabel,
+)
+from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
+
+if TYPE_CHECKING:
+    from chezmoi_mousse.data_types import CommandResult
 
 _DIFF_TCSS_MAP: dict[str, Tcss] = {
     "diff --git a/": Tcss.command,
@@ -18,6 +27,28 @@ _DIFF_TCSS_MAP: dict[str, Tcss] = {
     "new mode ": Tcss.added,
     "new file mode ": Tcss.added,
 }
+
+
+def cmd_result_collapsible(cmd_result: CommandResult) -> Collapsible:
+    rc = cmd_result.returncode
+    appr = cmd_result.interactive_approved
+    color = f"${ColorVar.text_success}" if rc == 0 else f"${ColorVar.text_warning}"
+    suffix = "(no operations approved)" if appr is False else f"(returncode {rc})"
+    ts = cmd_result.time_stamp
+    title = f"[{ts}] [{color}]{escape(cmd_result.pretty_cmd)}[/]{suffix}"
+    curated_stdout = cmd_result.std_out or f"{LogStr.no_stdout}"
+    curated_stderr = cmd_result.std_err or f"{LogStr.no_stderr}"
+    contents: list[Label | Static] = [FlatSectionLabel(escape(cmd_result.full_cmd))]
+    contents.append(SubSectionLabel(LabelStr.stdout_output))
+    contents.append(Static(f"{curated_stdout}", markup=False, classes=Tcss.cmd_output))
+    contents.append(SubSectionLabel(LabelStr.stderr_output))
+    contents.append(Static(f"{curated_stderr}", markup=False, classes=Tcss.cmd_output))
+    return Collapsible(
+        *contents,
+        title=title,
+        collapsed_symbol=Chars.right_triangle,
+        expanded_symbol=Chars.down_triangle,
+    )
 
 
 def diff_statics(diff_str: str) -> list[Static]:
@@ -46,5 +77,9 @@ def diff_statics(diff_str: str) -> list[Static]:
 def truth_widgets(truth_dict: dict[str, bool]) -> list[HorizontalGroup]:
     widgets: list[HorizontalGroup] = []
     for info_label, truth in truth_dict.items():
-        widgets.append(HorizontalGroup(InfoLabel(info_label), TruthLabel(truth)))
+        label_text = "yes" if truth else "no"
+        classes = Tcss.true_label if truth else Tcss.false_label
+        widgets.append(
+            HorizontalGroup(InfoLabel(info_label), Label(label_text, classes=classes))
+        )
     return widgets

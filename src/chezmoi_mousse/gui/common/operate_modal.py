@@ -14,7 +14,6 @@ from chezmoi_mousse.data_types import CommandResult, ExecResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.components import (
-    CmdResultCollapsible,
     FlatSectionLabel,
     MainSectionLabel,
     SubSectionLabel,
@@ -213,7 +212,7 @@ class OperateModal(ModalScreen[None]):
 
     def _handle_cmd_result(self, result: CommandResult) -> None:
         container = self.query_exactly_one(ScrollableContainer)
-        container.mount(CmdResultCollapsible(cmd_result=result))
+        container.mount(widget_factory.cmd_result_collapsible(cmd_result=result))
         container.scroll_end()
         # same routing as tchezmoi._exec_chezmoi so the Logs tab shows the result
         self.app.app_log.cmd_result = result
