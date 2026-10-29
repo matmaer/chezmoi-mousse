@@ -11,55 +11,9 @@
 
 
     &>TreeButtons {
-
       height: 3;
       width: 100%;
       min-width: 28;
-
-      &>.dest_dir_button {
-        background-tint: $surface-lighten-1;
-        background: $surface-lighten-1;
-        border-bottom: inner $surface-lighten-1;
-        border-top: inner $surface-lighten-1;
-        color: $text-primary;
-        text-style: none;
-        width: 1fr;
-
-        &:hover {
-          background-tint: $surface-lighten-2;
-          background: $surface-lighten-2;
-          border-bottom: inner $surface-lighten-2;
-          border-top: inner $surface-lighten-2;
-          text-style: bold;
-        }
-
-        &:focus {
-          text-style: bold;
-        }
-      }
-
-      &>.tree_op_button {
-        background-tint: $surface-lighten-1;
-        background: $surface-lighten-1;
-        border-bottom: inner $surface-lighten-1;
-        border-top: inner $surface-lighten-1;
-        color: $accent;
-        text-style: bold;
-        width: 3;
-        min-width: 3;
-
-        &:hover {
-          background-tint: $surface-lighten-2;
-          background: $surface-lighten-2;
-          border-bottom: inner $surface-lighten-2;
-          border-top: inner $surface-lighten-2;
-          text-style: bold;
-        }
-
-        &:focus {
-          text-style: bold;
-        }
-      }
     }
 
     &>OperateTree {
@@ -277,8 +231,68 @@ TabButtons {
   &>.single_button_vertical {
     align: center middle;
   }
+}
 
-  .tab_button {
+/***********************************/
+/* textual default tcss overrides  */
+/***********************************/
+
+* {
+  background-tint: $background;
+  scrollbar-size-vertical: 1;
+  scrollbar-background: $background;
+  scrollbar-background-active: $background;
+  scrollbar-background-hover: $background;
+  scrollbar-corner-color: $background;
+}
+
+Button {
+  &.dest_dir_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
+    color: $text-primary;
+    text-style: none;
+    width: 1fr;
+
+    &:hover {
+      background-tint: $surface-lighten-2;
+      background: $surface-lighten-2;
+      border-bottom: inner $surface-lighten-2;
+      border-top: inner $surface-lighten-2;
+      text-style: bold;
+    }
+
+    &:focus {
+      text-style: bold;
+    }
+  }
+
+  &.tree_op_button {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
+    color: $accent;
+    text-style: bold;
+    width: 3;
+    min-width: 3;
+
+    &:hover {
+      background-tint: $surface-lighten-2;
+      background: $surface-lighten-2;
+      border-bottom: inner $surface-lighten-2;
+      border-top: inner $surface-lighten-2;
+      text-style: bold;
+    }
+
+    &:focus {
+      text-style: bold;
+    }
+  }
+
+  &.tab_button {
     border: none;
     min-width: 3;
     text-style: bold;
@@ -307,19 +321,6 @@ TabButtons {
       }
     }
   }
-}
-
-/***********************************/
-/* textual default tcss overrides  */
-/***********************************/
-
-* {
-  background-tint: $background;
-  scrollbar-size-vertical: 1;
-  scrollbar-background: $background;
-  scrollbar-background-active: $background;
-  scrollbar-background-hover: $background;
-  scrollbar-corner-color: $background;
 }
 
 Collapsible {
@@ -532,12 +533,6 @@ Static {
     color: $text-error;
   }
 
-  &.unhandled {
-    /* only used for debugging by visualizing unhandled formatting conditions */
-    background-tint: $error-darken-3;
-    background: $error-darken-3;
-    color: $foreground;
-  }
 }
 
 Switch {
