@@ -221,7 +221,7 @@ OperateModal {
   }
 }
 
-TabButtons {
+LogTabs {
   height: 2;
   border-bottom: solid $primary;
 }

@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
 __all__ = [
     "FlatButtonsVertical",
+    "LogTabs",
     "OperateBtnGroup",
     "PromptBtnGroup",
     "SwitchGroup",
-    "TabButtons",
     "TreeButtons",
 ]
 
@@ -157,7 +157,7 @@ class SwitchGroup(VerticalGroup):
         self.post_message(ShowTreeQidMsg(self.state_to_tree_map[switch_state]))
 
 
-class TabButtons(Horizontal):
+class LogTabs(Horizontal):
     def __init__(self, *, labels: tuple[BtnLabel, ...]) -> None:
         self.labels = labels
         super().__init__()

@@ -20,7 +20,7 @@ from textual.widgets.collapsible import CollapsibleTitle
 from chezmoi_mousse.debug.debug_tab import DebugTab
 from chezmoi_mousse.gui.common.actionables import (
     FlatButtonsVertical,
-    TabButtons,
+    LogTabs,
     TreeButtons,
 )
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
@@ -111,7 +111,7 @@ async def _explore_all_tabs_basic(pilot: Pilot[object], tab_pane: TabPane) -> No
     button_groups = [
         w
         for w in tab_pane.query()
-        if isinstance(w, (FlatButtonsVertical, TabButtons, RadioSet))
+        if isinstance(w, (FlatButtonsVertical, LogTabs, RadioSet))
     ]
     for btn_group in button_groups:
         if isinstance(btn_group, RadioSet):

@@ -12,7 +12,7 @@ from textual.widgets import Button, ContentSwitcher, RichLog, TabPane
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common import widget_factory
-from chezmoi_mousse.gui.common.actionables import TabButtons
+from chezmoi_mousse.gui.common.actionables import LogTabs
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LogStr
 
 if TYPE_CHECKING:
@@ -125,7 +125,7 @@ class CmdLog(ScrollableContainer):
 class LogsTab(TabPane):
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield TabButtons(labels=(BtnLabel.cmd_log, BtnLabel.app_log))
+            yield LogTabs(labels=(BtnLabel.cmd_log, BtnLabel.app_log))
             with ContentSwitcher(initial=store.logs_ids.container.cmd_log):
                 yield CmdLog(id=store.logs_ids.container.cmd_log)
                 yield Lazy(

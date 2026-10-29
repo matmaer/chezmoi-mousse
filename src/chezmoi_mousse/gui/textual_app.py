@@ -14,7 +14,11 @@ from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
-from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
+from chezmoi_mousse.gui.common.actionables import (
+    FlatButtonsVertical,
+    LogTabs,
+    OperateBtnGroup,
+)
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -59,6 +63,11 @@ class ChezmoiGui(App[str]):
             priority=True,
         ),
         Binding(
+            key="M,m",
+            action=BindingAction.toggle_maximized,
+            description=BindingDescription.maximize,
+        ),
+        Binding(
             key="C,c",
             action=BindingAction.toggle_context,
             description=BindingDescription.hide_context,
@@ -67,11 +76,6 @@ class ChezmoiGui(App[str]):
             key="T,t",
             action=BindingAction.toggle_tree,
             description=BindingDescription.hide_tree,
-        ),
-        Binding(
-            key="M,m",
-            action=BindingAction.toggle_maximized,
-            description=BindingDescription.maximize,
         ),
     ]
 
@@ -92,6 +96,7 @@ class ChezmoiGui(App[str]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.maximize_toggle = False
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
         self.splash_screen = SplashScreen(name="splash_screen")
@@ -200,6 +205,7 @@ class ChezmoiGui(App[str]):
             return
         left_side: FlatButtonsVertical | Vertical | None = None
         right_side: RightSideVertical | None = None
+        log_tabs: LogTabs | None = None
         operation_buttons = None
 
         header = self.query_exactly_one(Header)
@@ -211,6 +217,8 @@ class ChezmoiGui(App[str]):
             left_side = self.query_exactly_one(LeftSideVertical)
             right_side = self.query_exactly_one(RightSideVertical)
             operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
+        elif isinstance(active_pane, LogsTab):
+            log_tabs = active_pane.query_exactly_one(LogTabs)
         elif isinstance(active_pane, ConfigTab):
             left_side = self.query_one(
                 store.config_ids.container.flat_buttons_q, FlatButtonsVertical
@@ -222,12 +230,21 @@ class ChezmoiGui(App[str]):
             operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
 
         if left_side is not None:
-            left_side.display = not left_side.display
+            if self.maximize_toggle is False:
+                left_side.display = False
+            elif self.maximize_toggle is True:
+                left_side.display = True
         if right_side is not None:
-            right_side.display = not right_side.display
+            if self.maximize_toggle is False:
+                right_side.display = False
+            elif self.maximize_toggle is True:
+                right_side.display = True
         if operation_buttons is not None:
             operation_buttons.display = not operation_buttons.display
+        if log_tabs is not None:
+            log_tabs.display = not log_tabs.display
 
+        self.maximize_toggle = not self.maximize_toggle
         new_description = (
             BindingDescription.maximize
             if header.display is True
@@ -246,7 +263,6 @@ class ChezmoiGui(App[str]):
             return
         right_side = self.query_exactly_one(RightSideVertical)
         right_side.display = not right_side.display
-
         new_description = (
             BindingDescription.hide_context
             if right_side.display is True
@@ -283,8 +299,11 @@ class ChezmoiGui(App[str]):
         if isinstance(self.screen, (SplashScreen, OperateModal)):
             return False
         if action in (BindingAction.toggle_tree, BindingAction.toggle_context):
-            return isinstance(
-                self.query_exactly_one(TabbedContent).active_pane, OperateTab
+            return (
+                isinstance(
+                    self.query_exactly_one(TabbedContent).active_pane, OperateTab
+                )
+                and self.maximize_toggle is False
             )
         return True
 
