@@ -188,7 +188,6 @@ class DebugTab(TabPane):
                     id=store.debug_ids.container.color_vars,
                 )
         yield OperateBtnGroup(
-            app_ids=store.debug_ids,
             labels=(
                 BtnLabel.create_diffs,
                 BtnLabel.list_paths,
@@ -196,7 +195,7 @@ class DebugTab(TabPane):
                 BtnLabel.remove_paths,
                 BtnLabel.start_auto_log,
                 BtnLabel.stop_auto_log,
-            ),
+            )
         )
 
     def on_mount(self) -> None:

@@ -45,9 +45,6 @@ class _ContainerIds:
         self.flat_buttons_q: str = f"#{self.flat_buttons}"
         self.ignored: str = ids.container_id(name=ContainerName.git_ignored)
         self.env_vars: str = ids.container_id(name=ContainerName.env_vars)
-        self.operate_buttons: str = ids.container_id(name=ContainerName.operate_buttons)
-        self.operate_buttons_q: str = f"#{self.operate_buttons}"
-        self.prompt_buttons: str = ids.container_id(name=ContainerName.prompt_buttons)
         self.template_data: str = ids.container_id(name=ContainerName.template_data)
         self.test_paths_view: str = ids.container_id(name=ContainerName.test_paths_view)
         self.test_paths_view_q: str = f"#{self.test_paths_view}"

@@ -210,8 +210,6 @@ class ContainerName(StrEnum):
     env_vars = auto()
     flat_buttons = auto()
     git_ignored = auto()
-    prompt_buttons = auto()
-    operate_buttons = auto()
     template_data = auto()
     test_paths_view = auto()
 

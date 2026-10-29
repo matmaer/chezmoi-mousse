@@ -46,9 +46,9 @@ class FlatButtonsVertical(Container):
 
 
 class OperateBtnGroup(HorizontalGroup):
-    def __init__(self, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
+    def __init__(self, labels: tuple[BtnLabel, ...]) -> None:
         self.labels = labels
-        super().__init__(id=app_ids.container.operate_buttons)
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
@@ -75,9 +75,7 @@ class OperateBtnGroup(HorizontalGroup):
 class PromptBtnGroup(HorizontalGroup):
     def __init__(self, labels: tuple[str, ...]) -> None:
         self.labels = labels
-        super().__init__(
-            id=store.op_ids.container.prompt_buttons, classes=Tcss.prompt_btn_group
-        )
+        super().__init__(classes=Tcss.prompt_btn_group)
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:

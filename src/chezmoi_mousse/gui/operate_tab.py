@@ -111,7 +111,7 @@ class OperateTab(TabPane):
                     LabelStr.radio_path_view,
                 )
             )
-            yield OperateBtnGroup(store.op_ids, labels=BtnLabel.op_btn_labels())
+            yield OperateBtnGroup(labels=BtnLabel.op_btn_labels())
 
     def on_mount(self) -> None:
         self.dry_run_cache: dict[Path, DryRunData] = {}

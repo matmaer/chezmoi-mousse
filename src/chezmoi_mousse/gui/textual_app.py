@@ -9,13 +9,12 @@ from rich.style import Style
 from textual import on, work
 from textual.app import App
 from textual.binding import Binding
-from textual.containers import HorizontalGroup
 from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
-from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical
+from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -196,7 +195,9 @@ class ChezmoiGui(App[str]):
     def action_toggle_maximized(self) -> None:
         if isinstance(self.screen, (SplashScreen, OperateModal)):
             return
-        active_tab_id = self.query_exactly_one(TabbedContent).active
+        active_pane = self.query_exactly_one(TabbedContent).active_pane
+        if active_pane is None:
+            return
         left_side: FlatButtonsVertical | Vertical | None = None
         right_side: RightSideVertical | None = None
         operation_buttons = None
@@ -206,23 +207,19 @@ class ChezmoiGui(App[str]):
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
-        if active_tab_id == BtnLabel.operate.pane_id:
+        if isinstance(active_pane, OperateTab):
             left_side = self.query_exactly_one(LeftSideVertical)
             right_side = self.query_exactly_one(RightSideVertical)
-            operation_buttons = self.query_one(
-                store.op_ids.container.operate_buttons_q, HorizontalGroup
-            )
-        elif active_tab_id == BtnLabel.config.pane_id:
+            operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
+        elif isinstance(active_pane, ConfigTab):
             left_side = self.query_one(
                 store.config_ids.container.flat_buttons_q, FlatButtonsVertical
             )
-        elif active_tab_id == BtnLabel.debug.pane_id:
+        elif isinstance(active_pane, DebugTab):
             left_side = self.query_one(
                 store.debug_ids.container.flat_buttons_q, FlatButtonsVertical
             )
-            operation_buttons = self.query_one(
-                store.debug_ids.container.operate_buttons_q, HorizontalGroup
-            )
+            operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
 
         if left_side is not None:
             left_side.display = not left_side.display
