@@ -223,14 +223,7 @@ OperateModal {
 
 TabButtons {
   height: 2;
-  width: 100%;
   border-bottom: solid $primary;
-  border-subtitle-align: center;
-  border-subtitle-style: bold;
-
-  &>.single_button_vertical {
-    align: center middle;
-  }
 }
 
 /***********************************/
@@ -293,6 +286,7 @@ Button {
   }
 
   &.tab_button {
+    width: 1fr;
     border: none;
     min-width: 3;
     text-style: bold;

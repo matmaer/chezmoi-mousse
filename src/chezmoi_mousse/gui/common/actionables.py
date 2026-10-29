@@ -3,13 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from textual import on
-from textual.containers import (
-    Container,
-    Horizontal,
-    HorizontalGroup,
-    Vertical,
-    VerticalGroup,
-)
+from textual.containers import Container, Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse import store
@@ -172,8 +166,7 @@ class TabButtons(Horizontal):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            with Vertical(classes=Tcss.single_button_vertical):
-                yield Button(label=btn_label, classes=Tcss.tab_button)
+            yield Button(label=btn_label, classes=Tcss.tab_button)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)

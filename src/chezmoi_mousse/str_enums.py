@@ -498,7 +498,6 @@ class Tcss(StrEnum):
     tree_op_button = auto()
     removed = auto()
     select_all = auto()
-    single_button_vertical = auto()
     splash_log = auto()
     tab_button = auto()
     tree_header = auto()
