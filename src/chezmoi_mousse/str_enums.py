@@ -129,6 +129,19 @@ class BtnLabel(StrEnum):
         }
         return map[self]
 
+    @property
+    def write_cmd(self) -> "WriteCmd":  # Operate modal
+        if not self.name.startswith("chezmoi_"):
+            raise AttributeError(f"run_label not available for {self}")
+        map = {
+            BtnLabel.chezmoi_add: WriteCmd.add,
+            BtnLabel.chezmoi_apply: WriteCmd.apply,
+            BtnLabel.chezmoi_destroy: WriteCmd.destroy,
+            BtnLabel.chezmoi_forget: WriteCmd.forget,
+            BtnLabel.chezmoi_re_add: WriteCmd.re_add,
+        }
+        return map[self]
+
 
 class ChezmoiPrompts(Enum):
     # each member its name corresponds to a chezmoi prompt item and the member its value
