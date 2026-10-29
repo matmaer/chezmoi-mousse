@@ -18,9 +18,6 @@ class DoctorTable(DataTable[Text]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self) -> None:
-        super().__init__(show_cursor=False)
-
     def on_mount(self) -> None:
         self.row_color = {
             "ok": self.app.theme_variables[ColorVar.text_success],

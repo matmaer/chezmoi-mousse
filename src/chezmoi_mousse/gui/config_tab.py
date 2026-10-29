@@ -56,7 +56,7 @@ class ConfigTab(TabPane):
             with ContentSwitcher(initial=store.config_ids.container.doctor):
                 yield Vertical(
                     MainSectionLabel(LabelStr.doctor_output),
-                    DoctorTable(),
+                    DoctorTable(show_cursor=False),
                     id=store.config_ids.container.doctor,
                 )
                 yield Vertical(
