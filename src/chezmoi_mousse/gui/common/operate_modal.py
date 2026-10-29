@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from rich.markup import escape
 from textual import on, work
@@ -20,7 +20,7 @@ from chezmoi_mousse.gui.common.components import (
     WarningLabel,
 )
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
-from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, ColorVar, Tcss, WriteCmd
+from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, ColorVar, LabelStr, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 __all__ = ["OperateModal"]
 
 
-PROMPT_TIMEOUT_SECONDS = 120  # timeout to revert to quit if a modal is forgotten
+PROMPT_TIMEOUT = 120  # timeout to revert to quit if a modal is forgotten
 
 
 class PathsInScope(VerticalGroup):
@@ -136,14 +136,6 @@ class OperateModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    btn_label_to_cmd: ClassVar[dict[str, WriteCmd]] = {
-        BtnLabel.chezmoi_add: WriteCmd.add,
-        BtnLabel.chezmoi_apply: WriteCmd.apply,
-        BtnLabel.chezmoi_destroy: WriteCmd.destroy,
-        BtnLabel.chezmoi_forget: WriteCmd.forget,
-        BtnLabel.chezmoi_re_add: WriteCmd.re_add,
-    }
-
     def __init__(self, *, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
         self.path = path
@@ -161,9 +153,7 @@ class OperateModal(ModalScreen[None]):
                 yield PathsInScope(
                     self.op_btn.dry_cmd, self.path_str, self.affected_paths
                 )
-                if self.op_btn == BtnLabel.chezmoi_add and self.path.is_dir():
-                    yield SelectPaths(self.path)
-                yield _GeneralInfoLabel("Ready to run", markup=False)
+            yield _GeneralInfoLabel(LabelStr.ready_to_run, markup=False)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.diff.prompt_item,
@@ -180,6 +170,9 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
+        self.answers = self.query_exactly_one(ScrollableContainer)
+        if self.op_btn == BtnLabel.chezmoi_add and self.path.is_dir():
+            self.answers.mount(SelectPaths(self.path))
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
@@ -189,7 +182,7 @@ class OperateModal(ModalScreen[None]):
                 if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                     button.display = True
         else:
-            self.general_info_label.update("Sorry this is a no-op, nothing to do.")
+            self.general_info_label.update(LabelStr.no_op)
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.cancel.value
 
@@ -200,15 +193,9 @@ class OperateModal(ModalScreen[None]):
         container.scroll_end()
         return show_cm_diff
 
-    def _create_warning_label(self, text: str) -> None:
-        container = self.query_exactly_one(ScrollableContainer)
-        before = self.general_info_label
-        container.mount(WarningLabel(escape(text)), before=before)
-
-    def _create_green_label(self, text: str) -> None:
-        container = self.query_exactly_one(ScrollableContainer)
-        before = self.general_info_label
-        container.mount(SubSectionLabel(escape(text)), before=before)
+    def _mount_label(self, label_widget: Label) -> None:
+        self.answers.mount(label_widget, before=self.general_info_label)
+        self.answers.scroll_end()
 
     def _handle_cmd_result(self, result: CommandResult) -> None:
         container = self.query_exactly_one(ScrollableContainer)
@@ -234,11 +221,11 @@ class OperateModal(ModalScreen[None]):
 
         self._prompt_future = asyncio.get_running_loop().create_future()
         try:
-            async with asyncio.timeout(PROMPT_TIMEOUT_SECONDS):
+            async with asyncio.timeout(PROMPT_TIMEOUT):
                 return await self._prompt_future
         except TimeoutError:
-            self._create_warning_label(
-                f"No reply within {PROMPT_TIMEOUT_SECONDS} seconds, quitting."
+            self.answers.mount(
+                WarningLabel(f"No reply within {PROMPT_TIMEOUT} seconds, quitting.")
             )
             return ChezmoiPrompts.quit.reply
         finally:
@@ -270,11 +257,15 @@ class OperateModal(ModalScreen[None]):
                 response = await self._await_user_choice(options)
 
             if response == ChezmoiPrompts.no.reply:
-                self._create_warning_label(f"{prompt_question}: NO")
+                self._mount_label(
+                    WarningLabel(f"{prompt_question}: {ChezmoiPrompts.no.name}")
+                )
             elif response == ChezmoiPrompts.yes.reply:
-                self._create_green_label(f"{prompt_question}: YES")
+                self._mount_label(
+                    SubSectionLabel(f"{prompt_question}: {ChezmoiPrompts.yes.name}")
+                )
             elif response == ChezmoiPrompts.quit.reply:
-                self._create_green_label("Asked to quit the operation")
+                self._mount_label(SubSectionLabel(LabelStr.quit_op))
 
             pending_diff_question = (
                 prompt_question if response == ChezmoiPrompts.diff.reply else None
@@ -282,7 +273,7 @@ class OperateModal(ModalScreen[None]):
             return response
 
         events = tchezmoi.run_chezmoi_interactive(
-            self.btn_label_to_cmd[self.op_btn], self.path_arg, handle_prompt
+            self.op_btn.write_cmd, self.path_arg, handle_prompt
         )
         try:
             async for event in events:

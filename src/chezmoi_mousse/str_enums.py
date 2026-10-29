@@ -232,6 +232,11 @@ class LabelStr(StrEnum):
     env_vars = "Environment Variables"
     colors = "Colors from ColorVar StrEnum class"
 
+    # Operate Modal
+    ready_to_run = "Ready to run"
+    no_op = "Sorry this is a no-op, nothing to do."
+    quit_op = "Asked to quit the operation"
+
     # Operate tab MainSectionLabel text
     dest_dir = "Destination Directory"
     managed_dir = "Managed Directory"
