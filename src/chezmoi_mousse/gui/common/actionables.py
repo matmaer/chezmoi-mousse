@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from textual import on
-from textual.containers import Container, Horizontal, HorizontalGroup, VerticalGroup
+from textual.containers import Horizontal, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, Label, Switch
 
 from chezmoi_mousse import store
@@ -13,22 +13,20 @@ from chezmoi_mousse.str_enums import BtnLabel, LabelStr, Tcss
 if TYPE_CHECKING:
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.app_ids import AppIds
-
 
 __all__ = [
-    "FlatButtonsVertical",
+    "FlatBtnGroup",
     "OperateBtnGroup",
     "PromptBtnGroup",
     "SwitchGroup",
-    "TreeButtons",
+    "TreeBtnGroup",
 ]
 
 
-class FlatButtonsVertical(Container):
-    def __init__(self, *, app_ids: AppIds, labels: tuple[BtnLabel, ...]) -> None:
+class FlatBtnGroup(VerticalGroup):
+    def __init__(self, *, labels: tuple[BtnLabel, ...]) -> None:
         self.labels: tuple[BtnLabel, ...] = labels
-        super().__init__(id=app_ids.container.flat_buttons)
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
@@ -86,7 +84,7 @@ class PromptBtnGroup(HorizontalGroup):
             btn.display = False
 
 
-class TreeButtons(Horizontal):
+class TreeBtnGroup(Horizontal):
     def compose(self) -> ComposeResult:
         yield Button(label=BtnLabel.dest_dir, classes=Tcss.dest_dir_button)
         yield Button(

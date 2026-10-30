@@ -14,7 +14,7 @@ from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
-from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
+from chezmoi_mousse.gui.common.actionables import FlatBtnGroup, OperateBtnGroup
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -197,7 +197,7 @@ class ChezmoiGui(App[str]):
         active_pane = self.query_exactly_one(TabbedContent).active_pane
         if active_pane is None:
             return
-        left_side: FlatButtonsVertical | Vertical | None = None
+        left_side: FlatBtnGroup | Vertical | None = None
         right_side: RightSideVertical | None = None
         operation_buttons = None
 
@@ -211,13 +211,9 @@ class ChezmoiGui(App[str]):
             right_side = self.query_exactly_one(RightSideVertical)
             operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
         elif isinstance(active_pane, ConfigTab):
-            left_side = self.query_one(
-                store.config_ids.container.flat_buttons_q, FlatButtonsVertical
-            )
+            left_side = active_pane.query_exactly_one(FlatBtnGroup)
         elif isinstance(active_pane, DebugTab):
-            left_side = self.query_one(
-                store.debug_ids.container.flat_buttons_q, FlatButtonsVertical
-            )
+            left_side = active_pane.query_exactly_one(FlatBtnGroup)
             operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
 
         if left_side is not None:

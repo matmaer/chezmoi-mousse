@@ -10,7 +10,7 @@ from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     SwitchGroup,
-    TreeButtons,
+    TreeBtnGroup,
 )
 from chezmoi_mousse.gui.common.components import (
     MainSectionLabel,
@@ -47,7 +47,7 @@ class LeftSideVertical(Vertical):
         app = getters.app(ChezmoiGui)
 
     def compose(self) -> ComposeResult:
-        yield TreeButtons(classes=Tcss.tree_header)
+        yield TreeBtnGroup(classes=Tcss.tree_header)
         yield OperateTree(TreeName.managed_sp, store.op_ids.tree.managed_sp)
         yield OperateTree(TreeName.managed_amp, store.op_ids.tree.managed_amp)
         # UNMANAGED TREE VARIANTS

@@ -14,7 +14,7 @@ from textual.widgets import Button, ContentSwitcher, RichLog, Static, TabPane
 
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
-from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
+from chezmoi_mousse.gui.common.actionables import FlatBtnGroup, OperateBtnGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LabelStr, LogStr, Tcss
 
@@ -170,15 +170,14 @@ class DebugTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield FlatButtonsVertical(
-                app_ids=store.debug_ids,
+            yield FlatBtnGroup(
                 labels=(
                     BtnLabel.test_paths,
                     BtnLabel.debug_log,
                     BtnLabel.dom_nodes,
                     BtnLabel.env_vars,
                     BtnLabel.colors,
-                ),
+                )
             )
             with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
                 yield Vertical(

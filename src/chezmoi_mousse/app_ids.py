@@ -40,8 +40,6 @@ class _ContainerIds:
         self.doctor: str = ids.container_id(name=ContainerName.doctor)
         self.dom_nodes: str = ids.container_id(name=ContainerName.dom_nodes)
         self.dump_config: str = ids.container_id(name=ContainerName.dump_config)
-        self.flat_buttons: str = ids.container_id(name=ContainerName.flat_buttons)
-        self.flat_buttons_q: str = f"#{self.flat_buttons}"
         self.ignored: str = ids.container_id(name=ContainerName.git_ignored)
         self.env_vars: str = ids.container_id(name=ContainerName.env_vars)
         self.template_data: str = ids.container_id(name=ContainerName.template_data)

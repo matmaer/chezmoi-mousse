@@ -18,7 +18,7 @@ from textual.widgets import (
 from textual.widgets.collapsible import CollapsibleTitle
 
 from chezmoi_mousse.debug.debug_tab import DebugTab
-from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, TreeButtons
+from chezmoi_mousse.gui.common.actionables import FlatBtnGroup, TreeBtnGroup
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.common.operate_tree import OperateTree
 from chezmoi_mousse.gui.config_tab import ConfigTab
@@ -105,7 +105,7 @@ async def _scroll_random_widget(pilot: Pilot[object], root: Widget) -> None:
 async def _explore_all_tabs_basic(pilot: Pilot[object], tab_pane: TabPane) -> None:
     await _toggle_bindings(pilot, tab_pane)
     button_groups = [
-        w for w in tab_pane.query() if isinstance(w, (FlatButtonsVertical, RadioSet))
+        w for w in tab_pane.query() if isinstance(w, (FlatBtnGroup, RadioSet))
     ]
     for btn_group in button_groups:
         if isinstance(btn_group, RadioSet):
@@ -240,7 +240,7 @@ async def _run_pilot_mode(pilot: Pilot[object]) -> None:
             await _hover_and_click(pilot, tab)
         await _explore_all_tabs_basic(pilot, tab_pane)
 
-    tree_btn_group = operate_tab.left_side_vertical.query_exactly_one(TreeButtons)
+    tree_btn_group = operate_tab.left_side_vertical.query_exactly_one(TreeBtnGroup)
     tree_buttons = {button.label: button for button in tree_btn_group.query(Button)}
 
     await _set_random_operate_tab_state(pilot, operate_tab)

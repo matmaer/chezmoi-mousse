@@ -14,7 +14,7 @@ from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.str_enums import BtnLabel, LabelStr, ReadCmd, Tcss
 
-from .common.actionables import FlatButtonsVertical
+from .common.actionables import FlatBtnGroup
 
 if TYPE_CHECKING:
     from textual.app import ComposeResult
@@ -42,8 +42,7 @@ class ConfigTab(TabPane):
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield FlatButtonsVertical(
-                app_ids=store.config_ids,
+            yield FlatBtnGroup(
                 labels=(
                     BtnLabel.doctor,
                     BtnLabel.cat_config,
@@ -51,7 +50,7 @@ class ConfigTab(TabPane):
                     BtnLabel.ignored,
                     BtnLabel.template_data,
                     BtnLabel.diagram,
-                ),
+                )
             )
             with ContentSwitcher(initial=store.config_ids.container.doctor):
                 yield Vertical(
