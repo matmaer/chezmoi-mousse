@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import os
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import psutil
@@ -15,7 +16,6 @@ from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
 from chezmoi_mousse.gui.common.components import MainSectionLabel
-from chezmoi_mousse.gui.logs_tab import RichLoggers
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
@@ -30,11 +30,38 @@ if TYPE_CHECKING:
 __all__ = ["DebugLog", "DebugTab"]
 
 
-class DebugLog(RichLoggers):
+class _RichLogger(RichLog):
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
+
+    def _get_log_line(self, msg: str, color: ColorVar) -> str:
+        log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
+        msg_color = self.app.theme_variables[color.value]
+        return f"{log_time} [{msg_color}]{escape(msg)}[/]"
+
+    def write_app_log_msg(self, message: str) -> None:
+        self.write(self._get_log_line(message, ColorVar.secondary))
+
+    def write_cmd(self, pretty_cmd: str, returncode: int) -> None:
+        color = ColorVar.text_success if returncode == 0 else ColorVar.text_warning
+        self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode})", color))
+
+    def write_error(self, message: str) -> None:
+        self.write(self._get_log_line(message, ColorVar.text_error))
+
+    def write_ready(self, message: str) -> None:
+        self.write(self._get_log_line(f"{message}", ColorVar.accent_darken_3))
+
+    def write_success(self, message: str) -> None:
+        self.write(self._get_log_line(message, ColorVar.text_success))
+
+    def write_warning(self, message: str) -> None:
+        self.write(self._get_log_line(message, ColorVar.text_warning))
+
+
+class DebugLog(_RichLogger):
     def __init__(self) -> None:
-        super().__init__(
-            id=store.debug_ids.richlog.debug, markup=True, max_lines=10000, wrap=True
-        )
+        super().__init__(markup=True, max_lines=10000, wrap=True)
 
     def on_mount(self) -> None:
         self.write_ready(LogStr.debug_log_initialized)

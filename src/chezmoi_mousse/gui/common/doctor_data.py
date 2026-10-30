@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from rich.text import Text
 from textual.widgets import DataTable
 
+from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.str_enums import ColorVar
 
 if TYPE_CHECKING:
@@ -38,7 +39,9 @@ class DoctorTable(DataTable[Text]):
         for line in doctor_lines[1:]:
             row = tuple(line.split(maxsplit=2))
             if len(row) < 3:
-                self.app.app_log.write_warning(f"Unable to parse row in git log: {row}")
+                widget_factory.log_static(
+                    f"Unable to parse row in git log: {row}", ColorVar.text_error
+                )
                 continue
             if row[0] == "info" and "not found in $PATH" in row[2]:
                 new_row = [

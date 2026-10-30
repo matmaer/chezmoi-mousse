@@ -14,15 +14,11 @@ from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
-from chezmoi_mousse.gui.common.actionables import (
-    FlatButtonsVertical,
-    LogTabs,
-    OperateBtnGroup,
-)
+from chezmoi_mousse.gui.common.actionables import FlatButtonsVertical, OperateBtnGroup
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
 from chezmoi_mousse.gui.config_tab import ConfigTab
-from chezmoi_mousse.gui.logs_tab import AppLog, CmdLog, LogsTab
+from chezmoi_mousse.gui.logs_tab import LogsTab
 from chezmoi_mousse.gui.operate_tab import (
     LeftSideVertical,
     OperateTab,
@@ -129,13 +125,11 @@ class ChezmoiGui(App[str]):
             DebugTab(id=BtnLabel.debug.pane_id, title=BtnLabel.debug)
         )
 
-        self.app_log = self.query_exactly_one(AppLog)
-        self.cmd_log = self.query_exactly_one(CmdLog)
+        self.logs_tab = self.query_exactly_one(LogsTab)
         self.debug_log = self.query_exactly_one(DebugLog)
         self.init_phase = False
         for cr in pre_mount_results:
-            self.cmd_log.cmd_result = cr
-            self.app_log.cmd_result = cr
+            self.logs_tab.cmd_result = cr
         self._run_splash_commands()
 
         new_tree_paths = await tchezmoi.run_managed_commands(self)
@@ -205,7 +199,6 @@ class ChezmoiGui(App[str]):
             return
         left_side: FlatButtonsVertical | Vertical | None = None
         right_side: RightSideVertical | None = None
-        log_tabs: LogTabs | None = None
         operation_buttons = None
 
         header = self.query_exactly_one(Header)
@@ -217,8 +210,6 @@ class ChezmoiGui(App[str]):
             left_side = self.query_exactly_one(LeftSideVertical)
             right_side = self.query_exactly_one(RightSideVertical)
             operation_buttons = active_pane.query_exactly_one(OperateBtnGroup)
-        elif isinstance(active_pane, LogsTab):
-            log_tabs = active_pane.query_exactly_one(LogTabs)
         elif isinstance(active_pane, ConfigTab):
             left_side = self.query_one(
                 store.config_ids.container.flat_buttons_q, FlatButtonsVertical
@@ -241,8 +232,6 @@ class ChezmoiGui(App[str]):
                 right_side.display = True
         if operation_buttons is not None:
             operation_buttons.display = not operation_buttons.display
-        if log_tabs is not None:
-            log_tabs.display = not log_tabs.display
 
         self.maximize_toggle = not self.maximize_toggle
         new_description = (

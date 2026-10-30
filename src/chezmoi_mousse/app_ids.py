@@ -34,7 +34,6 @@ class AppIds:
 class _ContainerIds:
     def __init__(self, ids: AppIds) -> None:
         self.cat_config: str = ids.container_id(name=ContainerName.cat_config)
-        self.cmd_log: str = ids.container_id(name=ContainerName.cmd_log)
         self.color_vars: str = ids.container_id(name=ContainerName.color_vars)
         self.debug_log: str = ids.container_id(name=ContainerName.debug_log)
         self.diagram: str = ids.container_id(name=ContainerName.diagram)
@@ -52,7 +51,6 @@ class _ContainerIds:
 
 class _RichLogIds:
     def __init__(self, ids: AppIds) -> None:
-        self.app: str = ids.richlog_id(richlog=RichLogName.app_logger)
         self.debug: str = ids.richlog_id(richlog=RichLogName.debug_logger)
         self.dom_nodes: str = ids.richlog_id(richlog=RichLogName.dom_node_logger)
         self.dom_nodes_q: str = f"#{self.dom_nodes}"

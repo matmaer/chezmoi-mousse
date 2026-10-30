@@ -8,10 +8,7 @@ if TYPE_CHECKING:
     from chezmoi_mousse.data_types import CommandResult
 
 
-__all__ = [
-    "CommandResultMsg",
-    "ShowTreeQidMsg",
-]
+__all__ = ["CommandResultMsg", "ShowTreeQidMsg"]
 
 
 class CommandResultMsg(Message):

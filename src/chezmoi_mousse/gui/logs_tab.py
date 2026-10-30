@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 
-from rich.markup import escape
-from textual import on, work
-from textual.containers import ScrollableContainer, Vertical
-from textual.lazy import Lazy
+from textual import work
+from textual.containers import ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import Button, ContentSwitcher, RichLog, TabPane
+from textual.widgets import TabPane
 
-from chezmoi_mousse import store
 from chezmoi_mousse.gui.common import widget_factory
-from chezmoi_mousse.gui.common.actionables import LogTabs
-from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LogStr
+from chezmoi_mousse.str_enums import ColorVar, LogStr
 
 if TYPE_CHECKING:
     from textual import getters
@@ -23,120 +18,37 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-__all__ = ["AppLog", "CmdLog", "LogsTab", "RichLoggers"]
-
-
-class RichLoggers(RichLog):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    def _get_log_line(self, msg: str, color: ColorVar) -> str:
-        log_time = f"[[green]{datetime.now().strftime('%H:%M:%S')}[/]]"
-        msg_color = self.app.theme_variables[color.value]
-        return f"{log_time} [{msg_color}]{escape(msg)}[/]"
-
-    def write_app_log_msg(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.secondary))
-
-    def write_cmd(self, pretty_cmd: str, returncode: int) -> None:
-        color = ColorVar.text_success if returncode == 0 else ColorVar.text_warning
-        self.write(self._get_log_line(f"{pretty_cmd} (returncode {returncode})", color))
-
-    def write_dimmed(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.foreground_darken_3))
-
-    def write_error(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.text_error))
-
-    def write_ready(self, message: str) -> None:
-        self.write(self._get_log_line(f"--- {message} ---", ColorVar.accent_darken_3))
-
-    def write_success(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.text_success))
-
-    def write_warning(self, message: str) -> None:
-        self.write(self._get_log_line(message, ColorVar.text_warning))
-
-
-class AppLog(RichLoggers):
-    if TYPE_CHECKING:
-        app = getters.app(ChezmoiGui)
-
-    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
-
-    def on_mount(self) -> None:
-        self.write_dimmed(LogStr.app_log_initialized)
-        if "debug" in self.app.features:
-            self.write_warning(f"Running textual --dev: {LogStr.debug_tab_enabled}")
-
-    # NOTE: description to avoid the whole dataclass repr ending up in the description
-    @work(description="Log the command in the app log")
-    async def log_cmd_result(self, cmd_result: CommandResult) -> None:
-
-        if cmd_result.returncode is not None:
-            self.write_cmd(cmd_result.pretty_cmd, cmd_result.returncode)
-        else:
-            self.write_error(f"Received cmd result without returncode: {cmd_result}")
-
-        if "doctor" in cmd_result.full_cmd:
-            first_col: list[str] = [
-                line.split()[0]
-                for line in cmd_result.std_out.splitlines()
-                if line.strip() != ""
-            ]
-            self.write_ready(LogStr.doctor_section)
-            nothing_serious = True
-            if "error" in first_col:
-                self.write_error(LogStr.doctor_errors_found)
-                nothing_serious = False
-            if "failed" in first_col:
-                self.write_error(LogStr.doctor_failed_found)
-                nothing_serious = False
-            if "warning" in first_col:
-                self.write_warning(LogStr.doctor_warnings_found)
-            if "not set" in cmd_result.std_out:
-                self.write_warning(LogStr.doctor_not_set_found)
-            if nothing_serious:
-                self.write_success(LogStr.doctor_no_issue_found)
-            else:
-                self.write_warning(LogStr.doctor_minor_issues_found)
-            self.write_ready(LogStr.doctor_section.end)
-
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is None:
-            return
-        self.log_cmd_result(cmd_result)
-
-
-class CmdLog(ScrollableContainer):
-    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
-
-    # NOTE: description to avoid the whole dataclass repr ending up in the description
-    @work(description="Log stdout and stderr in a collapsible")
-    async def log_cmd_result(self, cmd_result: CommandResult) -> None:
-        self.mount(widget_factory.cmd_result_collapsible(cmd_result=cmd_result))
-
-    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
-        if cmd_result is None:
-            return
-        self.log_cmd_result(cmd_result)
+__all__ = ["LogsTab"]
 
 
 class LogsTab(TabPane):
-    def compose(self) -> ComposeResult:
-        with Vertical():
-            yield LogTabs(labels=(BtnLabel.cmd_log, BtnLabel.app_log))
-            with ContentSwitcher(initial=store.logs_ids.container.cmd_log):
-                yield CmdLog(id=store.logs_ids.container.cmd_log)
-                yield Lazy(
-                    AppLog(id=store.logs_ids.richlog.app, markup=True, max_lines=10000)
-                )
+    if TYPE_CHECKING:
+        app = getters.app(ChezmoiGui)
 
-    @on(Button.Pressed)
-    def switch_content(self, event: Button.Pressed) -> None:
-        event.stop()
-        switcher = self.query_exactly_one(ContentSwitcher)
-        if event.button.label == BtnLabel.app_log:
-            switcher.current = store.logs_ids.richlog.app
-        elif event.button.label == BtnLabel.cmd_log:
-            switcher.current = store.logs_ids.container.cmd_log
+    cmd_result: reactive[CommandResult | None] = reactive(None, init=False)
+
+    def compose(self) -> ComposeResult:
+        yield ScrollableContainer()
+
+    def on_mount(self) -> None:
+        self.scroll = self.query_exactly_one(ScrollableContainer)
+        self.mount_line(LogStr.app_log_initialized, ColorVar.foreground_darken_3)
+
+        if "debug" in self.app.features:
+            msg = f"Running textual --dev: {LogStr.debug_tab_enabled}"
+            self.mount_line(f"{msg}", ColorVar.text_warning)
+
+    def mount_line(self, msg: str, color: ColorVar) -> None:
+        self.scroll.mount(widget_factory.log_static(msg, color))
+
+    # NOTE: description to avoid the whole dataclass repr ending up in the description
+    @work(description="Log stdout and stderr in a collapsible")
+    async def _log_cmd_result(self, cmd_result: CommandResult) -> None:
+        self.scroll.mount(widget_factory.cmd_result_collapsible(cmd_result=cmd_result))
+        if "doctor" in cmd_result.full_cmd:
+            self.scroll.mount_all(widget_factory.doctor_log_lines(cmd_result))
+
+    def watch_cmd_result(self, cmd_result: CommandResult | None) -> None:
+        if cmd_result is None:
+            return
+        self._log_cmd_result(cmd_result)

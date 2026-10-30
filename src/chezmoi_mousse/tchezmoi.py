@@ -76,8 +76,7 @@ async def _exec_chezmoi(
         else:
             await app.splash_screen.write_log_msg(cmd_result=command_result)
     if app.init_phase is False:
-        app.app_log.cmd_result = command_result
-        app.cmd_log.cmd_result = command_result
+        app.logs_tab.cmd_result = command_result
     app.post_message(CommandResultMsg(command_result))
     return command_result
 

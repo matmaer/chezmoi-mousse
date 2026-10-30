@@ -125,7 +125,7 @@ class ShowCmDiff(VerticalGroup):
     def _collapsible_contents(self) -> list[Static]:
         if not self.diff_txt:
             return [Static("No diff to show")]
-        widgets = widget_factory.diff_statics(self.diff_txt)
+        widgets = widget_factory.diff_lines(self.diff_txt)
         return widgets
 
 
@@ -202,8 +202,7 @@ class OperateModal(ModalScreen[None]):
         container.mount(widget_factory.cmd_result_collapsible(cmd_result=result))
         container.scroll_end()
         # same routing as tchezmoi._exec_chezmoi so the Logs tab shows the result
-        self.app.app_log.cmd_result = result
-        self.app.cmd_log.cmd_result = result
+        self.app.logs_tab.cmd_result = result
         self.app.post_message(CommandResultMsg(result))
         self.general_info_label.update(
             "Process completed."

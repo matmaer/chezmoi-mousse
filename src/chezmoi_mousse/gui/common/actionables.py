@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 __all__ = [
     "FlatButtonsVertical",
-    "LogTabs",
     "OperateBtnGroup",
     "PromptBtnGroup",
     "SwitchGroup",
@@ -155,22 +154,3 @@ class SwitchGroup(VerticalGroup):
         else:
             show_unmanaged_switch.disabled = False
         self.post_message(ShowTreeQidMsg(self.state_to_tree_map[switch_state]))
-
-
-class LogTabs(Horizontal):
-    def __init__(self, *, labels: tuple[BtnLabel, ...]) -> None:
-        self.labels = labels
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        for btn_label in self.labels:
-            yield Button(label=btn_label, classes=Tcss.tab_button)
-
-    def on_mount(self) -> None:
-        self.query(Button).first().add_class(Tcss.last_clicked_tab_btn)
-
-    @on(Button.Pressed)
-    def update_tcss_classes(self, event: Button.Pressed) -> None:
-        for btn in self.query(Button).results():
-            btn.remove_class(Tcss.last_clicked_tab_btn)
-        event.button.add_class(Tcss.last_clicked_tab_btn)

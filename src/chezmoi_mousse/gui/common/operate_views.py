@@ -89,9 +89,7 @@ class _DiffViewBase(Vertical):
             diff_result = await tchezmoi.run_chezmoi_cmd(
                 self.app, diff_cmd, verb_arg=path
             )
-
-            diff_statics = widget_factory.diff_statics(diff_result.std_out)
-            self.cache[path] = diff_statics
+            self.cache[path] = widget_factory.diff_lines(diff_result.std_out)
 
         self.diff_container.remove_children()
         self.diff_container.mount_all(self.cache[path])

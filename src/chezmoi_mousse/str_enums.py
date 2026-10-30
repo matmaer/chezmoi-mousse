@@ -59,10 +59,6 @@ class BtnLabel(StrEnum):
     logs = "Logs"
     debug = "Debug"
 
-    # Tab buttons for content switcher within a main tab
-    app_log = "Application"
-    cmd_log = "Chezmoi-Commands"
-
     # Flat button labels
     cat_config = "Cat Config"
     diagram = "Diagram"
@@ -201,7 +197,6 @@ class ColorVar(StrEnum):
 class ContainerName(StrEnum):
     cat_config = auto()
     color_vars = auto()
-    cmd_log = auto()
     debug_log = auto()
     diagram = auto()
     dump_config = auto()
@@ -305,8 +300,12 @@ class LogStr(StrEnum):
     no_auto_log = "psutil not auto logging"
 
     @property
+    def start(self) -> str:
+        return "--- " + self + " ---"
+
+    @property
     def end(self) -> str:
-        return "-" * len(self)
+        return "--- " + "-" * len(self) + " ---"
 
     # Splash log strings, suffixes
     checked = auto()
@@ -452,7 +451,6 @@ class ProblemChars(StrEnum):
 
 
 class RichLogName(StrEnum):
-    app_logger = auto()
     debug_logger = auto()
     dom_node_logger = auto()
     env_var_logger = auto()
@@ -559,14 +557,6 @@ class TestFile(StrEnum):
 
 
 class TreeName(StrEnum):
-    """
-    iu: include unchanged
-    xpd: expanded
-
-    status trees: never include unchanged
-    managed trees: always include unchanged
-    """
-
     # the status trees include managed paths with a status or meta status
     managed_sp = auto()
     # the man trees includes all managed paths, with or without a status or meta status

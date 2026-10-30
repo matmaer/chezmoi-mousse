@@ -54,10 +54,12 @@
 /**********************/
 
 AnimatedFade,
-AppLog,
-CmdLog,
 DiffView {
   margin-bottom: 2;
+}
+
+LogsTab>ScrollableContainer {
+  margin-bottom: 1;
 }
 
 SelectPaths>Collapsible {
