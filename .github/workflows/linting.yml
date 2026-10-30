@@ -14,12 +14,12 @@ jobs:
         python-version: ["3.13"]
     steps:
     - uses: actions/checkout@v6
-    - name: Install uv
+    - name: Install uv and Python
       uses: astral-sh/setup-uv@v6
       with:
+        version: "latest"
+        python-version: ${{ matrix.python-version }}
         enable-cache: true
-    - name: Set up Python ${{ matrix.python-version }}
-      run: uv python install ${{ matrix.python-version }}
     - name: Run ruff check
       run: uv run ruff check .
     - name: Run ruff format

@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Triggers when you tag a release like v1.0.0
+      - 'v*'
 
 jobs:
   release:
@@ -16,60 +16,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install uv
+      - name: Install uv and Python
         uses: astral-sh/setup-uv@v6
         with:
           version: "latest"
+          python-version: "3.13"
           enable-cache: true
 
-      - name: Set up Python "3.13"
-        run: uv python install 3.13
-
-      - name: Install system dependencies for Nuitka
+      - name: Install system dependencies for Nuitka 
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache patchelf gcc
+          sudo apt-get install -y patchelf gcc
 
       - name: Install Python dependencies
         run: uv sync --no-dev
-
       - name: Compile Executable with Nuitka
-        run: uv run --no-dev --with nuitka nuitka --remove-output --output-filename=chezmoi-mousse-${{ github.ref_name }} src/chezmoi_mousse
-
+        run: |
+          uv run --no-dev --with "nuitka[onefile]" nuitka \
+            --mode=onefile \
+            --remove-output \
+            --output-filename=chezmoi-mousse-${{ github.ref_name }} \
+            --include-package-data=chezmoi_mousse \
+            --include-package-data=textual \
+            src/chezmoi_mousse
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: chezmoi-mousse-${{ github.ref_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete older releases(keep latest 3)
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const releases = await github.paginate(
-              github.rest.repos.listReleases,
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                per_page: 100,
-              },
-            );
-
-            if (releases.length <= 3) {
-              core.info(`Found ${releases.length} release(s); nothing to delete.`);
-              return;
-            }
-
-            const releasesToDelete = releases.slice(3);
-
-            for (const release of releasesToDelete) {
-              core.info(`Deleting release ${release.name ?? release.tag_name} (${release.id})`);
-              await github.rest.repos.deleteRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: release.id,
-              });
-            }
-
-            core.info(`Deleted ${releasesToDelete.length} older release(s).`);
