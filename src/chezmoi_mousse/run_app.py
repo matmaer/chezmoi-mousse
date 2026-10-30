@@ -13,10 +13,9 @@ __all__ = ["run_app"]
 
 
 def run_app() -> None:
-    which_chezmoi, which_git = _PreRunChecks.sys_exit_if_cannot_run()
+    which_chezmoi = _PreRunChecks.sys_exit_if_cannot_run()
     store.init_data = InitData(
         which_chezmoi=which_chezmoi,
-        which_git=which_git,
         pilot_mode=(
             os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
             or "--pilot-mode" in sys.argv
@@ -54,7 +53,7 @@ class _PreRunChecks:
         return bool(is_root or was_sudo)
 
     @staticmethod
-    def sys_exit_if_cannot_run() -> tuple[str, str]:
+    def sys_exit_if_cannot_run() -> str:
 
         cm_not_found = "'chezmoi' command not found, see https://chezmoi.io/install/"
         cm_found = "'chezmoi' command found."
@@ -105,4 +104,4 @@ class _PreRunChecks:
             all_info.append(feedback)
             sys.exit("\n".join(all_info))
 
-        return (which_chezmoi, which_git)
+        return which_chezmoi

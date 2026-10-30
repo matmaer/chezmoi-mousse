@@ -106,7 +106,6 @@ class InitData:
     debug_utils: DebugUtils
     pilot_mode: bool
     which_chezmoi: str
-    which_git: str
 
 
 @dataclass(slots=True, frozen=True)
