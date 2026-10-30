@@ -56,7 +56,7 @@ truncation_limit_lines = 100
 [tool.ruff]
 extend-exclude = ["*.ipynb"]
 line-length = 88
-src = ["src"]
+src = ["src", "static_tests", "unit_tests"]
 target-version = "py313"
 
 [tool.ruff.lint]
