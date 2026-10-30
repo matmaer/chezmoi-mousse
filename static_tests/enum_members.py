@@ -150,21 +150,11 @@ def get_unused(node_db: NodeDb) -> IssueList:
 
             if member_name in used_internally:
                 issue_list.append(
-                    (
-                        class_name,
-                        member_name,
-                        loc_str,
-                        "Member(s) can be private",
-                    )
+                    (class_name, member_name, loc_str, "Member(s) can be private")
                 )
             else:
                 issue_list.append(
-                    (
-                        class_name,
-                        member_name,
-                        loc_str,
-                        "Member(s) not accessed",
-                    )
+                    (class_name, member_name, loc_str, "Member(s) not accessed")
                 )
 
     return sorted(issue_list)

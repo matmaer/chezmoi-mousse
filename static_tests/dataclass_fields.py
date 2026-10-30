@@ -91,7 +91,7 @@ def get_unused(node_db: NodeDb) -> IssueList:
                         f"{field_name}",
                         f"{loc_str}",
                         "Member(s) can be private",
-                    ),
+                    )
                 )
             else:
                 issue_list.append(
@@ -100,7 +100,7 @@ def get_unused(node_db: NodeDb) -> IssueList:
                         f"{field_name}",
                         f"{loc_str}",
                         "Member(s) not in use",
-                    ),
+                    )
                 )
     return issue_list
 

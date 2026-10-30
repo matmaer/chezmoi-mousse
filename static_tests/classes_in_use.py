@@ -73,22 +73,12 @@ def get_class_issues(node_db: NodeDb) -> IssueList:
         loc_str = f"{class_node.rel_path}:{class_node.lineno}"
 
         if not file_usages:
-            issue_list.append(
-                (
-                    f"{class_name}",
-                    f"{loc_str}",
-                    "Unused class(es)",
-                )
-            )
+            issue_list.append((f"{class_name}", f"{loc_str}", "Unused class(es)"))
         elif class_name in node_db.textual_subclass_names:
             continue
         if file_usages == {class_node.rel_path} and not is_private:
             issue_list.append(
-                (
-                    f"{class_name}",
-                    f"{loc_str}",
-                    "Class(es) can be private",
-                )
+                (f"{class_name}", f"{loc_str}", "Class(es) can be private")
             )
 
     return issue_list

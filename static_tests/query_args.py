@@ -66,11 +66,7 @@ def get_issues(node_db: NodeDb) -> IssueList:
         if reason is None:
             continue
         issue_list.append(
-            (
-                f"{node_str}",
-                f"{data.rel_path}:{data.lineno}",
-                f"{reason}",
-            )
+            (f"{node_str}", f"{data.rel_path}:{data.lineno}", f"{reason}")
         )
     return issue_list
 

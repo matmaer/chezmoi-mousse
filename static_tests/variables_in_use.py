@@ -8,12 +8,7 @@ if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
 
 # Ignore common framework hooks, special dunders, and Pytest variables
-IGNORED_MODULE_VARS = {
-    "__all__",
-    "__doc__",
-    "total_issues_count",
-    "pytestmark",
-}
+IGNORED_MODULE_VARS = {"__all__", "__doc__", "total_issues_count", "pytestmark"}
 
 # Known descriptor factory functions (Textual reactives, etc.)
 DESCRIPTOR_FACTORIES = {"reactive", "var"}

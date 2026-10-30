@@ -6,12 +6,7 @@ def get_print_calls(node_db: NodeDb) -> IssueList:
     issues_set: set[tuple[str, ...]] = set()
     print_nodes = node_db.by_name.get("print", set())
     for data in print_nodes:
-        issues_set.add(
-            (
-                f"{data.rel_path}:{data.lineno}",
-                "Call(s) to print",
-            )
-        )
+        issues_set.add((f"{data.rel_path}:{data.lineno}", "Call(s) to print"))
     return list(issues_set)
 
 
