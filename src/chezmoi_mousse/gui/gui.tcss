@@ -123,7 +123,7 @@ DoctorTable {
 }
 
 FlatBtnGroup {
-  padding-right: 2;
+  padding-right: 1;
   width: auto;
 
   &>Button {
@@ -223,11 +223,6 @@ OperateModal {
   }
 }
 
-LogTabs {
-  height: 2;
-  border-bottom: solid $primary;
-}
-
 /***********************************/
 /* textual default tcss overrides  */
 /***********************************/
@@ -284,37 +279,6 @@ Button {
 
     &:focus {
       text-style: bold;
-    }
-  }
-
-  &.tab_button {
-    width: 1fr;
-    border: none;
-    min-width: 3;
-    text-style: bold;
-    color: $foreground 60%;
-
-    &:hover {
-      color: $foreground;
-    }
-
-    &:focus {
-      text-style: bold;
-      color: $text-accent 80%;
-    }
-
-    &.last_clicked_tab_btn {
-      color: $text-accent 80%;
-      text-style: bold;
-
-      &:hover {
-        color: $text-accent 80%;
-      }
-
-      &:focus {
-        text-style: bold;
-        color: $text-accent 80%;
-      }
     }
   }
 }
