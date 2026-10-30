@@ -106,7 +106,6 @@ class OperateTree(Tree[NodeData]):
         return color_var
 
     async def update_nodes(self, changes: CmPathChanges) -> None:
-        self.app.notify("update nodes")
         for path in changes.remove_tree_dirs | changes.remove_tree_files:
             if path in self.node_map:
                 self._remove_node(path)
