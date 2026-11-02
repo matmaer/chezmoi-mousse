@@ -191,7 +191,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     status=None,
                     wanted=not is_unwanted_dir(path),
                 )
-            elif path.is_file():
+            elif path.is_file() and not _file_is_sensitive(path):
                 files[path] = NodeData(
                     dir_path=False,
                     exists=True,
