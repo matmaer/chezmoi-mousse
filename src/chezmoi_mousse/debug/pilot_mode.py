@@ -143,7 +143,7 @@ async def _set_random_operate_tab_state(
         if not tree.is_on_screen:
             continue
         tree.focus()
-        for _ in range(random.randint(1, 4)):
+        for _ in range(random.randint(1, 8)):
             await _press_key(pilot, random.choice(("up", "down", "right", "left")))
         node = tree.cursor_node
         if (
