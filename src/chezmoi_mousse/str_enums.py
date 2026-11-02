@@ -1,6 +1,5 @@
 from enum import Enum, StrEnum, auto
 from functools import cached_property
-from pathlib import Path
 
 __all__ = [
     "BindingAction",
@@ -18,8 +17,6 @@ __all__ = [
     "RichLogName",
     "StatusCode",
     "Tcss",
-    "TestDir",
-    "TestFile",
     "TreeName",
     "WriteCmd",
 ]
@@ -80,6 +77,7 @@ class BtnLabel(StrEnum):
     create_diffs = "Create Diffs"
     list_paths = "List Test Paths"
     remove_paths = "Remove Test Paths"
+    create_paths = "Create Test Paths"
 
     # Run chezmoi command buttons
     chezmoi_add = "chezmoi add"
@@ -326,8 +324,11 @@ class PathFilters(Enum):
     # os.walk, os.scandir, pathlib.iterdir and watchdog features to avoid elaborate
     # exception handling, useless work, and keeping things as lean as possible
 
+    UNWANTED_TEST_DIR = "_test_dir_un_wanted"
+    UN_WANTED_TEST_FILE = "_test_file_un_wanted.txt"
+
     UNWANTED_DIRS = (
-        "_test_un_wanted_dir",
+        "_test_dir_un_wanted",
         ".build",
         ".bundle",
         ".dart_tool",
@@ -335,6 +336,8 @@ class PathFilters(Enum):
         ".env",
         ".ipynb_checkpoints",
         ".mozilla",
+        "session-state",
+        "state",
         ".Trash",
         ".venv",
         "bin",
@@ -360,8 +363,9 @@ class PathFilters(Enum):
         "Videos",
     )
 
+    KEY_DIR_NAMES = (".pki",)
+
     KEY_FILE_NAMES = (
-        "_test_un_wanted_file.txt"
         # As we don't support adding encrypted files yet, we are excluding them.
         # Common private key file names across platforms
         "id_rsa",
@@ -426,7 +430,6 @@ class PathFilters(Enum):
         ".pdf",
         ".pid",
         ".png",
-        ".ppk",
         ".ppt",
         ".pptx",
         ".rar",
@@ -513,44 +516,6 @@ class Tcss(StrEnum):
     splash_log = auto()
     tree_header = auto()
     true_label = auto()
-
-
-class TestDir(StrEnum):
-    special_dir = "_test_special_dir"
-    un_wanted_dir = "_test_un_wanted_dir"
-    wanted_dir = "_test_wanted_dir"
-
-
-class TestFile(StrEnum):
-    large_file = "_test_file_large.txt"
-    medium_file = "_test_file_medium.txt"
-    small_1_file = "_test_file_small_1.txt"
-    small_2_file = "_test_file_small_2.txt"
-    small_3_file = "_test_file_small_3.txt"
-    small_file = "_test_file_small.txt"
-    wanted_file = "_test_file_wanted.txt"
-    # special files
-    huge_file = "_test_file_huge.txt"
-    tricky_utf8_file = "_test_file_tricky_utf8.txt"
-    # bin files
-    control_chars_file = "_test_file_control_chars.bin"
-    high_entropy_file = "_test_file_high_entropy.bin"
-    invalid_utf8_file = "_test_file_invalid_utf8.bin"
-    null_bytes_file = "_test_file_null_bytes.bin"
-    printable_ascii_file = "_test_file_printable_ascii.bin"
-    utf16_interleaved_file = "_test_file_utf16_interleaved.bin"
-
-    @classmethod
-    def diff_files(cls) -> set[Path]:
-        return {
-            Path(f_name)
-            for f_name in cls
-            if f_name.name.startswith(("small_", "medium_", "large_"))
-        }
-
-    @classmethod
-    def bin_files(cls) -> set[Path]:
-        return {Path(f_name) for f_name in cls if f_name.endswith(".bin")}
 
 
 class TreeName(StrEnum):

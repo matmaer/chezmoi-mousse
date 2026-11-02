@@ -215,10 +215,11 @@ class DebugTab(TabPane):
                 )
         yield OperateBtnGroup(
             labels=(
-                BtnLabel.create_diffs,
                 BtnLabel.list_paths,
-                BtnLabel.log_memory,
+                BtnLabel.create_paths,
+                BtnLabel.create_diffs,
                 BtnLabel.remove_paths,
+                BtnLabel.log_memory,
                 BtnLabel.start_auto_log,
                 BtnLabel.stop_auto_log,
             )
@@ -261,29 +262,34 @@ class DebugTab(TabPane):
         auto_decrease = self.current_rss_mb < self.previous_rss * 0.98
         auto_new_peak = self.current_rss_mb > self.peak_rss_mb * 1.02
         new_peak = self.current_rss_mb > self.peak_rss_mb
+
+        current_rss_str = f"{self.current_rss_mb:5.2f} MiB"
+
         # Update peak RAM usage
         if new_peak:
             self.peak_rss_mb = self.current_rss_mb
-
-        self.previous_rss = self.current_rss_mb
-
-        rss_str = f"{self.current_rss_mb:5.2f} MiB"
-        peak_str = f"{self.peak_rss_mb:5.2f} MiB"
-
-        prefix = "Current memory usage:" if manual else "Auto log 2% delta:"
+            msg = f"New peak: {self.peak_rss_mb:5.2f} MiB"
+        elif auto_increase:
+            msg = f"Memory increased: {current_rss_str}"
+        elif auto_decrease:
+            msg = f"Memory decreased: {current_rss_str}"
+        else:
+            msg = f"Current memory usage: {current_rss_str}"
 
         if manual:
-            self.debug_log.write_info(f"{prefix} {rss_str}")
             if new_peak:
-                self.debug_log.write_info(f"New peak: {peak_str}")
+                self.debug_log.write_warning(f"{msg}")
+            self.debug_log.write_info(f"{f'Current memory usage: {current_rss_str}'}")
         elif self.auto_log and auto_new_peak:
-            self.debug_log.write_warning(f"New peak: {peak_str}")
+            self.debug_log.write_warning(f"{msg}")
         elif self.auto_log and auto_decrease:
-            self.debug_log.write_success(f"{prefix} {rss_str}")
+            self.previous_rss = self.current_rss_mb
+            self.debug_log.write_success(f"{msg}")
         elif self.auto_log and auto_increase:
-            self.debug_log.write_warning(f"{prefix} {rss_str}")
+            self.previous_rss = self.current_rss_mb
+            self.debug_log.write_warning(f"{msg}")
 
-    @work
+    @work(description="Log DOM nodes")
     async def _log_dom_nodes(self) -> None:
         # App dom nodes
         dom_node_logger = self.query_one(store.debug_ids.richlog.dom_nodes_q, RichLog)
@@ -308,20 +314,6 @@ class DebugTab(TabPane):
         dom_node_logger.write(f"\nDOMNodes without id: {len(screen_nodes_without_id)}")
         for item in sorted(screen_nodes_without_id, key=str):
             dom_node_logger.write(f"{item}")
-
-    def start_auto_log(self) -> None:
-        for btn in self.op_buttons:
-            btn.disabled = btn.label == BtnLabel.start_auto_log
-        self.debug_log.write_success(LogStr.auto_log_started)
-        self.auto_log_timer.resume()
-        self.auto_log = True
-
-    def stop_auto_log(self) -> None:
-        for btn in self.op_buttons:
-            btn.disabled = btn.label in (BtnLabel.log_memory, BtnLabel.stop_auto_log)
-        self.auto_log_timer.pause()
-        self.auto_log = False
-        self.debug_log.write_error(LogStr.auto_log_stopped)
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -369,17 +361,31 @@ class DebugTab(TabPane):
             self._log_mem_usage(manual=True)
             return
         elif event.button.label == BtnLabel.start_auto_log:
-            self.start_auto_log()
+            event.button.disabled = True
+            for btn in self.op_buttons:
+                if btn.label == BtnLabel.stop_auto_log:
+                    btn.disabled = False
+            self.debug_log.write_success(LogStr.auto_log_started)
+            self.auto_log_timer.resume()
+            self.auto_log = True
             return
         elif event.button.label == BtnLabel.stop_auto_log:
-            self.stop_auto_log()
+            event.button.disabled = True
+            for btn in self.op_buttons:
+                if btn.label == BtnLabel.start_auto_log:
+                    btn.disabled = False
+            self.auto_log_timer.pause()
+            self.auto_log = False
+            self.debug_log.write_error(LogStr.auto_log_stopped)
             return
         elif event.button.label == BtnLabel.list_paths:
             result = self.test_paths.report_test_paths()
         elif event.button.label == BtnLabel.create_diffs:
             result = self.test_paths.create_diffs()
         elif event.button.label == BtnLabel.remove_paths:
-            result = self.test_paths.remove_test_paths()
+            result = self.test_paths.remove_existing_test_paths()
+        elif event.button.label == BtnLabel.create_paths:
+            result = self.test_paths.create_missing_test_paths()
         else:
             return
         event.stop()

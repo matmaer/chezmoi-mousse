@@ -46,7 +46,12 @@ def get_common_top_level(*, dir_paths: Iterable[Path]) -> set[Path]:
 
 
 def _dir_name_is_unwanted(dir_path: Path) -> bool:
-    return dir_path.parts[-1] in PathFilters.UNWANTED_DIRS.value
+    dir_name = dir_path.parts[-1]
+    return (
+        dir_name in PathFilters.UNWANTED_DIRS.value
+        or dir_name in PathFilters.KEY_DIR_NAMES.value
+        or PathFilters.UNWANTED_TEST_DIR.value in dir_name
+    )
 
 
 def _dir_is_git_objects(dir_path: Path) -> bool:
@@ -135,6 +140,7 @@ def is_unwanted_file(file_path: Path) -> bool:
         or _file_unwanted_suffix(file_path)
         or _file_is_large(file_path)
         or _file_is_binary(file_path)
+        or file_path.name == PathFilters.UN_WANTED_TEST_FILE.value
     )
 
 
@@ -150,6 +156,8 @@ def is_unwanted_dir(dir_path: Path) -> bool:
 
 
 def get_un_man_children(dir_path: Path) -> IterDirResult:
+    if not dir_path.exists():
+        return IterDirResult(error="Path does not exist", dirs={}, files={})
     assert dir_path.is_absolute()
     error = ""
     dirs: dict[Path, NodeData] = {}

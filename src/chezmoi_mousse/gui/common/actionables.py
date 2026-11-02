@@ -67,6 +67,10 @@ class OperateBtnGroup(HorizontalGroup):
             ):
                 btn.disabled = btn.label == BtnLabel.start_auto_log
                 btn.display = False
+            elif btn.label == BtnLabel.create_paths:
+                btn.tooltip = "Create all missing test paths"
+            elif btn.label == BtnLabel.remove_paths:
+                btn.tooltip = "Remove all existing test paths"
 
 
 class PromptBtnGroup(HorizontalGroup):

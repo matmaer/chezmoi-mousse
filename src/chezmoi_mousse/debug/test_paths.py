@@ -1,454 +1,538 @@
+import math
 import random
 import shutil
 import stat
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 
 from rich.markup import escape
 
 from chezmoi_mousse import path_funcs
-from chezmoi_mousse.str_enums import ColorVar, ProblemChars, TestDir, TestFile
+from chezmoi_mousse.debug import test_path_funcs as gen_path
+from chezmoi_mousse.str_enums import ColorVar, PathFilters
 
 __all__ = ["TestPaths"]
 
 HOME_DIR = Path.home()
-
-
-class _TestFileContents:
-    def __init__(self) -> None:
-        self.bin_file_size: int = 10000
-        self.rng = random.Random(42)
-        self._words = [
-            "lorem",
-            "ipsum",
-            "dolor",
-            "sit",
-            "amet",
-            "consectetur",
-            "adipiscing",
-            "elit",
-        ]
-        self._initial_small = self._generate_initial_text(TestFile.small_file)
-        self._initial_medium = self._generate_initial_text(TestFile.medium_file)
-        self._initial_large = self._generate_initial_text(TestFile.large_file)
-        self._initial_huge = self._generate_initial_text(TestFile.huge_file)
-        self._tricky_utf8 = self._generate_tricky_utf8_text()
-
-        self._diff_small = self._initial_small.replace("lorem", "LOREM")
-        self._diff_medium = self._initial_medium.replace("lorem", "LOREM")
-        self._diff_large = self._initial_large.replace("lorem", "LOREM")
-
-        self._control_chars_file = self._get_control_chars_bytes()
-        self._high_entropy_file = self._get_high_entropy_bytes()
-        self._invalid_utf8_file = self._get_invalid_utf8_bytes()
-        self._null_bytes_file = self._get_null_bytes()
-        self._printable_ascii_file = self._get_printable_ascii_bytes()
-        self._utf16_interleaved_file = self._get_utf16_interleaved_bytes()
-
-    @property
-    def initial_map(self) -> dict[str, str | bytes]:
-        file_name_map: dict[str, str | bytes] = {
-            TestFile.small_file: self._initial_small,
-            TestFile.small_1_file: self._initial_small,
-            TestFile.small_2_file: self._initial_small,
-            TestFile.small_3_file: self._initial_small,
-            TestFile.medium_file: self._initial_medium,
-            TestFile.large_file: self._initial_large,
-            TestFile.huge_file: self._initial_huge,
-            TestFile.tricky_utf8_file: self._tricky_utf8,
-            TestFile.wanted_file: self._initial_small,
-            TestFile.control_chars_file: self._control_chars_file,
-            TestFile.high_entropy_file: self._high_entropy_file,
-            TestFile.invalid_utf8_file: self._invalid_utf8_file,
-            TestFile.null_bytes_file: self._null_bytes_file,
-            TestFile.printable_ascii_file: self._printable_ascii_file,
-            TestFile.utf16_interleaved_file: self._utf16_interleaved_file,
-        }
-        return file_name_map
-
-    @property
-    def old_diff_map(self) -> dict[str, str]:
-        return {
-            TestFile.small_file: self._initial_small,
-            TestFile.small_1_file: self._initial_small,
-            TestFile.small_2_file: self._initial_small,
-            TestFile.small_3_file: self._initial_small,
-            TestFile.medium_file: self._initial_medium,
-            TestFile.large_file: self._initial_large,
-        }
-
-    @property
-    def new_diff_map(self) -> dict[str, str]:
-        return {
-            TestFile.small_file: self._diff_small,
-            TestFile.small_1_file: self._diff_small,
-            TestFile.small_2_file: self._diff_small,
-            TestFile.small_3_file: self._diff_small,
-            TestFile.medium_file: self._diff_medium,
-            TestFile.large_file: self._diff_large,
-        }
-
-    def _generate_initial_text(self, file_name: str) -> str:
-        str_to_kb_map: dict[str, int] = {
-            TestFile.small_file: 10,
-            TestFile.medium_file: 50,
-            TestFile.large_file: 500,
-            TestFile.huge_file: 2000,
-        }
-        target_bytes: int = str_to_kb_map[file_name] * 1024
-        rng = random.Random(target_bytes)
-
-        paragraphs: list[str] = []
-        current_bytes: int = 0
-
-        while current_bytes < target_bytes:
-            word_count: int = rng.randint(20, 60)
-            paragraphs.append(
-                " ".join(rng.choices(self._words, k=word_count)) + ".\n\n"
-            )
-            current_bytes += len(paragraphs[-1])
-
-        return "".join(paragraphs)
-
-    def _generate_tricky_utf8_text(self) -> str:
-        rng = random.Random(42)
-        parts: list[str] = []
-        parts.append(" ".join(self._words))
-        parts.append(
-            "".join(rng.choice("!@#$%^&*()[]{};:,.<>/?\\\"'") for _ in range(60))
-        )
-        parts.append("".join(chr(rng.randint(0x0600, 0x06FF)) for _ in range(30)))
-        parts.append("".join(chr(rng.randint(0x4E00, 0x9FFF)) for _ in range(30)))
-        # emoji sequences and variation selectors
-        parts.append("🙂🚀🔥" * 10 + ProblemChars.VARSEL)
-        # combining sequences
-        parts.append(
-            "e"
-            + ProblemChars.COMBINING
-            + "a"
-            + ProblemChars.COMBINING
-            + "o"
-            + ProblemChars.COMBINING
-        )
-        parts.append(
-            ProblemChars.BIDI_RLO
-            + self._words[2]
-            + ProblemChars.BIDI_PDF
-            + ProblemChars.ZWS
-            + self._words[3]
-        )
-        return "".join(parts)
-
-    def _get_control_chars_bytes(self) -> bytes:
-        return bytes(self.rng.randrange(1, 32) for _ in range(self.bin_file_size))
-
-    def _get_high_entropy_bytes(self) -> bytes:
-        return self.rng.randbytes(self.bin_file_size)
-
-    def _get_invalid_utf8_bytes(self) -> bytes:
-        return bytes(self.rng.randrange(128, 256) for _ in range(self.bin_file_size))
-
-    def _get_null_bytes(self) -> bytes:
-        null_data = bytearray(self.bin_file_size)
-        null_data[self.rng.randrange(self.bin_file_size)] = self.rng.randrange(1, 256)
-        return bytes(null_data)
-
-    def _get_printable_ascii_bytes(self) -> bytes:
-        printable = bytes(range(32, 127)) + b"\n\r\t"
-        return bytes(self.rng.choice(printable) for _ in range(self.bin_file_size))
-
-    def _get_utf16_interleaved_bytes(self) -> bytes:
-        utf16_interleaved = bytearray(self.bin_file_size)
-        for offset in range(0, self.bin_file_size, 2):
-            utf16_interleaved[offset] = self.rng.randrange(65, 91)
-        return bytes(utf16_interleaved)
+TXT: str = ".txt"
+BIN: str = ".bin"
+SMALL = 10 * 1024
+MEDIUM = 50 * 1024
+LARGE = 500 * 1024
+HUGE = 2500 * 1024
 
 
 @dataclass
-class _FullPaths:
-    l1_special_dir: Path = HOME_DIR / TestDir.special_dir
-    l1_dir: Path = HOME_DIR / "_test_dir"
-    l2_dir: Path = l1_dir / "_test_dir_level_1"
-    l2_sibling_dir: Path = l1_dir / "_test_dir_level_1_sibling"
-    l2_un_wanted_dir: Path = l1_dir / TestDir.un_wanted_dir
-    l2_wanted_dir: Path = l1_dir / TestDir.wanted_dir
-    l3_dir: Path = l2_dir / "_test_dir_level_2"
-    l4_dir: Path = l3_dir / "_test_dir_level_3"
-    l4_sibling_dir: Path = l3_dir / "_test_dir_level_3_sibling"
+class _TestDirPaths:
+    _base_test: Path = field(default=gen_path.dir_path(HOME_DIR, None, depth=0))
+    _base_depth: int = field(default_factory=int)
+    _single_child_depth: int = field(default_factory=int)
+    un_wanted_name: str = PathFilters.UNWANTED_DIRS.value[0].replace("_test_dir_", "")
+    home_un_wanted_dir: Path = field(
+        default=gen_path.dir_path(HOME_DIR, un_wanted_name, depth=0)
+    )
+    large_diff: Path = field(
+        default=gen_path.dir_path(HOME_DIR, "large_diffs", depth=0)
+    )
+    paths: list[Path] = field(default_factory=list[Path])
 
-    l0_medium_file: Path = HOME_DIR / TestFile.medium_file
-    l0_small_file: Path = HOME_DIR / TestFile.small_file
-    l1_large_file: Path = l1_special_dir / TestFile.large_file
-    l1_huge_file: Path = l1_special_dir / TestFile.huge_file
-    l1_tricky_utf8_file: Path = l1_special_dir / TestFile.tricky_utf8_file
+    def __post_init__(self) -> None:
+        self._base_depth = len(self._base_test.parts)
+        self._single_child_depth = self._base_depth + 3
+        self.paths.append(self.large_diff)
+        self.paths.append(self._base_test)
+        self.paths.append(self.home_un_wanted_dir)
+        self.paths.extend(self._generate_dynamic_dir_names())
+        self.paths = path_funcs.sort_paths(self.paths)
+
+    def _generate_dynamic_dir_names(self) -> list[Path]:
+        generated_paths: list[Path] = []
+        current_base: Path = self._base_test
+        start_depth = self._base_depth - len(HOME_DIR.parts)
+        for depth_idx in range(start_depth, start_depth + 6):
+            nested_path = gen_path.dir_path(current_base, None, depth=depth_idx)
+            unwanted_path = gen_path.dir_path(
+                current_base, self.un_wanted_name, depth=depth_idx
+            )
+            # The single child dir has no siblings and only one nested dir.
+            if self._single_child_depth in (
+                len(nested_path.parts),
+                len(current_base.parts),
+            ):
+                generated_paths.append(nested_path)
+                current_base = nested_path
+                continue
+            if depth_idx % 2 != 0:
+                generated_paths.extend([unwanted_path, nested_path])
+                current_base = nested_path
+                continue
+            sibling = gen_path.dir_path(
+                current_base, None, depth=depth_idx, sibling=True
+            )
+            generated_paths.extend([nested_path, sibling])
+            current_base = nested_path
+        return generated_paths
 
     @cached_property
-    def all_dir_paths(self) -> set[Path]:
-        return {getattr(self, attr) for attr in dir(self) if attr.endswith("_dir")}
-
-    @property
-    def _existing_dirs(self) -> set[Path]:
-        return {path for path in self.all_dir_paths if path.exists()}
-
-    @property
-    def _missing_dirs(self) -> set[Path]:
-        return {path for path in self.all_dir_paths if not path.exists()}
-
-    @cached_property
-    def all_file_paths(self) -> set[Path]:
-        paths = [getattr(self, attr) for attr in dir(self) if attr.endswith("_file")]
-        paths.extend(self.l1_special_dir / name for name in TestFile.bin_files())
-        file_names = (
-            (TestFile.diff_files() - {Path(TestFile.large_file)})
-            | {Path(TestFile.wanted_file)}
-            | TestFile.bin_files()
-        )
-        variable_paths = [
-            directory / name
-            for directory in self.all_dir_paths
-            if directory != self.l1_special_dir
-            for name in file_names
+    def test_dirs(self) -> list[Path]:
+        return [
+            p
+            for p in self.paths
+            if p != self.home_un_wanted_dir and p != self.large_diff
         ]
-        return set(paths + variable_paths)
+
+    @cached_property
+    def dirs_for_normal_diff_files(self) -> list[Path]:
+        return [
+            p
+            for p in self.paths
+            if p != self.large_diff
+            and not self.un_wanted_name in str(p)
+            and len(p.parts) != self._single_child_depth
+        ]
+
+    @cached_property
+    def dirs_for_normal_bin_files(self) -> list[Path]:
+        return [
+            p
+            for p in self.paths
+            if not self.un_wanted_name in str(p)
+            and len(p.parts) != self._single_child_depth
+            and p.is_relative_to(self._base_test)
+            and "sibling" in p.name
+        ]
+
+    @cached_property
+    def nested_un_wanted_dirs(self) -> list[Path]:
+        return [
+            p
+            for p in self.paths
+            if self.un_wanted_name in str(p) and p.is_relative_to(self._base_test)
+        ]
+
+
+@dataclass
+class _TestFileData:
+    small_name: str = gen_path.file_name("small", TXT)
+    small: str = gen_path.initial_text(SMALL)
+    _medium_name: str = gen_path.file_name("medium", TXT)
+    _medium: str = gen_path.initial_text(MEDIUM)
+    large_name: str = gen_path.file_name("large", TXT)
+    large: str = gen_path.initial_text(LARGE)
+
+    _huge_name: str = gen_path.file_name("huge", TXT)
+    _huge: str = gen_path.initial_text(HUGE)
+    _tricky_utf8_name: str = gen_path.file_name("tricky_utf8", TXT)
+    _tricky_utf8: str = gen_path.tricky_utf8_text()
+    un_wanted_name: str = PathFilters.UN_WANTED_TEST_FILE.value
+    un_wanted: str = gen_path.initial_text(SMALL)
+
+    _control_chars_name: str = gen_path.file_name("control_chars", BIN)
+    _control_chars: bytes = gen_path.control_chars_bytes(SMALL)
+    _high_entropy_name: str = gen_path.file_name("high_entropy", BIN)
+    _high_entropy: bytes = gen_path.high_entropy_bytes(SMALL)
+    _invalid_utf8_name: str = gen_path.file_name("invalid_utf8", BIN)
+    _invalid_utf8: bytes = gen_path.invalid_utf8_bytes(SMALL)
+    _null_bytes_name: str = gen_path.file_name("null_bytes", BIN)
+    _null_bytes: bytes = gen_path.null_bytes(SMALL)
+    printable_ascii_name: str = gen_path.file_name("printable_ascii", BIN)
+    printable_ascii: bytes = gen_path.printable_ascii_bytes(SMALL)
+    _utf16_interleaved_name: str = gen_path.file_name("utf16_interleaved", BIN)
+    _utf16_interleaved: bytes = gen_path.utf16_interleaved_bytes(SMALL)
+
+    _file_name_map: dict[str, str | bytes] = field(
+        default_factory=dict[str, str | bytes]
+    )
+
+    def __post_init__(self) -> None:
+        self._file_name_map[self._tricky_utf8_name] = self._tricky_utf8
+        self._file_name_map[self.un_wanted_name] = self.un_wanted
+        self._file_name_map[self._invalid_utf8_name] = self._invalid_utf8
+        self._file_name_map[self._control_chars_name] = self._control_chars
+        self._file_name_map[self._high_entropy_name] = self._high_entropy
+        self._file_name_map[self._null_bytes_name] = self._null_bytes
+        self._file_name_map[self.printable_ascii_name] = self.printable_ascii
+        self._file_name_map[self._utf16_interleaved_name] = self._utf16_interleaved
+        self._file_name_map[self.small_name] = self.small
+        self._file_name_map[self._medium_name] = self._medium
+        self._file_name_map[self.large_name] = self.large
+        self._file_name_map[self._huge_name] = self._huge
+
+    @cached_property
+    def un_wanted_files(self) -> dict[str, str | bytes]:
+        un_wanted_names = [
+            self._huge_name,
+            self.un_wanted_name,
+            self._invalid_utf8_name,
+        ]
+        return {k: v for k, v in self._file_name_map.items() if k in un_wanted_names}
+
+    @cached_property
+    def normal_diff_files(self) -> dict[str, str]:
+        diff_names = [self._medium_name, self.small_name]
+        return {
+            k: v
+            for k, v in self._file_name_map.items()
+            if k in diff_names and isinstance(v, str)
+        }
+
+    @cached_property
+    def normal_bin_files(self) -> dict[str, bytes]:
+        bin_names = [
+            fn
+            for fn in self._file_name_map
+            if fn.endswith(BIN) and fn != self._invalid_utf8_name
+        ]
+        return {
+            k: v
+            for k, v in self._file_name_map.items()
+            if k in bin_names and isinstance(v, bytes)
+        }
+
+    def random_bin_file(self) -> dict[str, str | bytes]:
+        name = random.choice(list(self.normal_bin_files))
+        return {name: self.normal_bin_files[name]}
+
+
+@dataclass
+class _AllTestPaths:
+    files = _TestFileData()
+    dirs = _TestDirPaths()
+    file_paths: dict[Path, str | bytes] = field(default_factory=dict[Path, str | bytes])
+
+    def __post_init__(self) -> None:
+        self.file_paths[HOME_DIR / self.files.small_name] = self.files.small
+        self.file_paths[HOME_DIR / self.files.un_wanted_name] = self.files.un_wanted
+        dirs_for_normal_diff_files = self.dirs.dirs_for_normal_diff_files
+        for path in self.dirs.paths:
+            if path == self.dirs.home_un_wanted_dir:
+                self.file_paths.update(self._get_normal_bin_paths(path))
+            if (
+                path == self.dirs.home_un_wanted_dir
+                or path in self.dirs.nested_un_wanted_dirs
+            ):
+                self.file_paths.update(self._get_un_wanted_paths(path))
+            if path in dirs_for_normal_diff_files:
+                self.file_paths.update(self._get_normal_diff_paths(path))
+            if path in self.dirs.dirs_for_normal_bin_files:
+                self.file_paths.update(
+                    {path / self.files.printable_ascii_name: self.files.printable_ascii}
+                )
+            if path == self.dirs.large_diff:
+                self.file_paths.update({path / self.files.large_name: self.files.large})
+        self.file_paths = path_funcs.sort_path_dict(self.file_paths)
+
+    def _get_normal_bin_paths(self, base_dir: Path) -> dict[Path, str | bytes]:
+        return {
+            base_dir / file_name: file_content
+            for file_name, file_content in self.files.normal_bin_files.items()
+        }
+
+    def _get_un_wanted_paths(self, base_dir: Path) -> dict[Path, str | bytes]:
+        return {
+            base_dir / file_name: file_content
+            for file_name, file_content in self.files.un_wanted_files.items()
+        }
+
+    def _get_normal_diff_paths(self, base_dir: Path) -> dict[Path, str | bytes]:
+        return {
+            base_dir / file_name: file_content
+            for file_name, file_content in self.files.normal_diff_files.items()
+        }
 
     @property
-    def _existing_files(self) -> set[Path]:
-        return {path for path in self.all_file_paths if path.exists()}
+    def existing_dirs(self) -> set[Path]:
+        return {path for path in self.dirs.paths if path.exists()}
 
     @property
-    def _missing_files(self) -> set[Path]:
-        return {path for path in self.all_file_paths if not path.exists()}
+    def missing_dirs(self) -> set[Path]:
+        return {path for path in self.dirs.paths if not path.exists()}
 
     @property
-    def existing_paths(self) -> set[Path]:
-        return self._existing_dirs | self._existing_files
+    def existing_files(self) -> set[Path]:
+        return {path for path in self.file_paths if path.exists()}
 
     @property
-    def missing_paths(self) -> set[Path]:
-        return self._missing_dirs | self._missing_files
+    def missing_files(self) -> set[Path]:
+        return {path for path in self.file_paths if not path.exists()}
 
     @property
     def files_for_diff(self) -> set[Path]:
         return {
-            path
-            for path in self._existing_files
-            if Path(path.name) in TestFile.diff_files()
+            p
+            for p in self.file_paths
+            if p.suffix == TXT and p.name not in self.files.un_wanted_files
         }
+
+    def get_random_dir_to_delete(self) -> Path | None:
+        existing_dirs = list(self.existing_dirs)
+        eligible = [d for d in existing_dirs if d in self.dirs.test_dirs]
+        if not eligible:
+            return None
+        return random.choice(eligible)
+
+    def get_random_dir_to_create(self) -> Path | None:
+        missing_dirs = self.missing_dirs
+        eligible = [d for d in missing_dirs if d in self.dirs.test_dirs]
+        if not eligible:
+            return None
+        return random.choice(eligible)
+
+    def get_random_files_to_delete(self, target: float) -> list[Path] | None:
+        existing_files = list(self.existing_files)
+        existing_dirs = self.existing_dirs
+        eligible = [
+            f
+            for f in existing_files
+            if f.parent in existing_dirs
+            or f.parent == HOME_DIR
+            or f.parent in self.dirs.test_dirs
+        ]
+        if not eligible:
+            return None
+        k = self._random_file_count(target)
+        return random.sample(eligible, k=min(k, len(eligible)))
+
+    def get_random_files_to_create(self, target: float) -> list[Path]:
+        missing_files = self.missing_files
+        existing_dirs = self.existing_dirs
+        eligible = [
+            f
+            for f in missing_files
+            if f.parent in existing_dirs or f.parent == HOME_DIR
+        ]
+        k = self._random_file_count(target)
+        return random.sample(eligible, k=min(k, len(eligible)))
+
+    def _random_file_count(self, target: float) -> int:
+        # Change a random 15-30% (for target 0.7) of all files per call, so the
+        # share of existing files swings around the target.
+        max_count = math.floor(len(self.file_paths) * (1 - target))
+        return random.randint(max(1, math.ceil(max_count / 2)), max(1, max_count))
 
 
 class TestPaths:
     def __init__(self) -> None:
-        self.file_contents = _TestFileContents()
-        self.paths = _FullPaths()
+        self.paths = _AllTestPaths()
+        self.no_existing_msg = f"[${ColorVar.text_warning}]No test paths exist[/]"
+        self.no_missing_msg = f"[${ColorVar.text_warning}]All test paths exist[/]"
+
+    def _get_file_lines(self, dir_path: Path, files: set[Path]) -> list[str]:
+        children = {path for path in files if path.parent == dir_path}
+        return [escape(str(path)) for path in path_funcs.sort_paths(children)]
+
+    def _report_existing_paths(self, dirs: set[Path], files: set[Path]) -> list[str]:
+        lines: list[str] = []
+        lines.extend(self._get_file_lines(HOME_DIR, files))
+        if not dirs:
+            return lines
+        for path in path_funcs.sort_paths(dirs):
+            lines.append(f"[${ColorVar.text_primary}]{escape(str(path))}[/]")
+            lines.extend(self._get_file_lines(path, files))
+        return lines
+
+    def _report_missing_paths(self, dirs: set[Path], files: set[Path]) -> list[str]:
+        lines: list[str] = []
+        parent_dirs = {path.parent for path in files}
+        for path in path_funcs.sort_paths(dirs | parent_dirs):
+            if path in dirs:
+                lines.append(f"[${ColorVar.text_primary}]{escape(str(path))}[/]")
+            lines.extend(self._get_file_lines(path, files))
+        return lines
 
     def report_test_paths(self) -> str:
-        """Report existing test leaves and collapse missing directory trees to /**."""
         lines: list[str] = []
-        existing = path_funcs.sort_paths(self.paths.existing_paths)
-        parents = {parent for path in existing for parent in path.parents}
-        existing = [path for path in existing if path not in parents]
-        if existing:
-            lines.append(f"[${ColorVar.text_success}]Existing:[/]")
-            lines.extend(escape(str(path)) for path in existing)
-
-        missing = self.paths.missing_paths
-        if missing:
-            directories = self.paths.all_dir_paths
-            top_level = path_funcs.get_common_top_level(dir_paths=missing & directories)
-            lines.append(f"[${ColorVar.text_warning}]All Other Possible Test Paths:[/]")
-            lines.extend(
-                escape(str(path / "**" if path in directories else path))
-                for path in path_funcs.sort_paths(missing)
-                if path in top_level
-                or (path not in directories and top_level.isdisjoint(path.parents))
-            )
+        existing_dirs = self.paths.existing_dirs
+        existing_files = self.paths.existing_files
+        if not (existing_dirs | existing_files):
+            lines.append(self.no_existing_msg)
+        else:
+            lines.append(f"[${ColorVar.text_success}]Existing test paths:[/]")
+            lines.extend(self._report_existing_paths(existing_dirs, existing_files))
+        missing_dirs = self.paths.missing_dirs
+        missing_files = self.paths.missing_files
+        if not (missing_dirs | missing_files):
+            lines.append(self.no_missing_msg)
+        else:
+            lines.append(f"[${ColorVar.text_success}]Missing test paths:[/]")
+            lines.extend(self._report_missing_paths(missing_dirs, missing_files))
         return "\n".join(lines)
 
-    def remove_test_paths(self) -> str:
-        existing = self.paths.existing_paths
-        if not existing:
-            return f"[${ColorVar.text_warning}]No test paths exist.[/]"
+    def create_missing_test_paths(self) -> str:
+        lines: list[str] = []
+        missing_dirs_before = self.paths.missing_dirs
+        missing_files_before = self.paths.missing_files
+        if not (missing_dirs_before | missing_files_before):
+            return f"[${ColorVar.text_warning}]All test paths already exist[/]"
+        all_test_dirs = self.paths.dirs.paths
+        for path in all_test_dirs:
+            path.mkdir(parents=True, exist_ok=True)
+        for path in missing_files_before:
+            self._write_file(path, self.paths.file_paths[path])
+        missing_dirs_after = self.paths.missing_dirs
+        missing_files_after = self.paths.missing_files
+        created_dirs = missing_dirs_before - missing_dirs_after
+        created_files = missing_files_before - missing_files_after
+        if not (created_dirs | created_files):
+            return f"[${ColorVar.text_warning}]No test paths were created[/]"
+        lines.append(f"[${ColorVar.text_success}]Created test paths:[/]")
+        # we call _report_missing_paths here because created_files with a missing
+        # a formally existing parent directory were not being reported as created
+        lines.extend(self._report_missing_paths(created_dirs, created_files))
+        return "\n".join(lines)
 
-        top_level = path_funcs.get_common_top_level(
-            dir_paths=existing & self.paths.all_dir_paths
-        )
-        for path in existing & self.paths.all_file_paths:
-            path.unlink()
+    def remove_existing_test_paths(self) -> str:
+        lines: list[str] = []
+        existing_dirs_before = self.paths.existing_dirs
+        existing_files_before = self.paths.existing_files
+        if not (existing_dirs_before | existing_files_before):
+            return self.no_existing_msg
+        top_level = path_funcs.get_common_top_level(dir_paths=existing_dirs_before)
         for path in top_level:
+            assert path != HOME_DIR
             shutil.rmtree(path)
-
-        removed = [escape(str(path)) for path in path_funcs.sort_paths(existing)]
-        return "\n".join([f"[${ColorVar.text_success}]Removed paths:[/]", *removed])
-
-    def create_diffs(self) -> str:
-        """Choose directory shapes before preserving paths and filling the tree.
-
-        Ordinary directories have a 5% empty bias, then eligible ones have a
-        5% single-child bias. Preservation only considers compatible paths.
-        Compatible directories have an 80% inclusion chance, plus required parents.
-        Compatible existing files have a 90% survival chance, missing files a
-        12% creation chance, and surviving diff-capable files a 70% toggle chance.
-        One directory also toggles permissions between 0755 and 0750 each run.
-        """
-        directories = self.paths.all_dir_paths
-        files = self.paths.all_file_paths
-        existing = self.paths.existing_paths
-        special_dir = self.paths.l1_special_dir
-        special_paths = {special_dir} | {
-            path for path in files if path.parent == special_dir
-        }
-        binary_paths = {
-            path
-            for path in files - special_paths
-            if Path(path.name) in TestFile.bin_files()
-        }
-        # about 10% of binary paths eligible each run
-        selected_binary_paths = set(
-            random.sample(
-                path_funcs.sort_paths(binary_paths), k=int(len(binary_paths) * 0.10)
-            )
-        )
-        available_files = files - binary_paths | selected_binary_paths
-        home_files = {self.paths.l0_small_file, self.paths.l0_medium_file}
-        home_toggle = random.choice(sorted(home_files))
-        ordered_dirs = sorted(
-            directories - {special_dir}, key=lambda path: (len(path.parts), path)
-        )
-        allowed_dirs: set[Path] = {special_dir}
-        empty_dirs: set[Path] = set()
-        single_children: dict[Path, Path] = {}
-        for directory in ordered_dirs:
-            parent = directory.parent
-            if parent != HOME_DIR and parent not in allowed_dirs:
-                continue
-            if parent in empty_dirs:
-                continue
-            if parent in single_children and single_children[parent] != directory:
-                continue
-            allowed_dirs.add(directory)
-            if random.random() < 0.05:
-                empty_dirs.add(directory)
-                continue
-            subdirs = path_funcs.sort_paths(
-                path for path in directories if path.parent == directory
-            )
-            if subdirs and random.random() < 0.05:
-                single_children[directory] = random.choice(subdirs)
-
-        available_files = {
-            path
-            for path in available_files
-            if path.parent == HOME_DIR
-            or (
-                path.parent in allowed_dirs
-                and path.parent not in empty_dirs
-                and path.parent not in single_children
-            )
-        }
-
-        candidates = path_funcs.sort_paths(
-            path
-            for path in existing - special_paths - {home_toggle}
-            if path in allowed_dirs or path in available_files
-        )
-        candidate_files = [path for path in candidates if path in files]
-        selected_dirs = {
-            path
-            for path in ordered_dirs
-            if path in allowed_dirs and random.random() < 0.80
-        }
-        preserved_files = {path for path in candidate_files if random.random() < 0.90}
-        required_dirs = selected_dirs | {
-            parent
-            for path in selected_dirs | preserved_files
-            for parent in path.parents
-            if parent in directories
-        }
-        target: set[Path] = special_paths | preserved_files | required_dirs
-
-        for directory in ordered_dirs:
-            if directory not in allowed_dirs:
-                continue
-            if directory.parent != HOME_DIR and directory.parent not in target:
-                continue
-            if (
-                directory not in required_dirs
-                and single_children.get(directory.parent) != directory
-            ):
-                continue
-            target.add(directory)
-            if directory in empty_dirs:
-                continue
-            children = path_funcs.sort_paths(
-                [
-                    path
-                    for path in available_files - existing
-                    if path.parent == directory
-                ]
-            )
-            target.update(path for path in children if random.random() < 0.12)
-
-        target.update(home_files & existing)
-        if not existing:
-            target.update(home_files)
-        if home_toggle in existing:
-            target.discard(home_toggle)
+        for path in self.paths.existing_files:
+            path.unlink()
+        existing_dirs = self.paths.existing_dirs
+        existing_files = self.paths.existing_files
+        if existing_dirs | existing_files:
+            lines.append(f"[${ColorVar.text_warning}]Some paths were not removed![/]")
+            lines.extend(self._report_existing_paths(existing_dirs, existing_files))
+        removed_dirs = existing_dirs_before - existing_dirs
+        removed_files = existing_files_before - existing_files
+        if not (removed_dirs | removed_files):
+            lines.append(f"[${ColorVar.text_error}]No paths were removed[/]")
         else:
-            target.add(home_toggle)
+            lines.append(f"[${ColorVar.text_success}]Removed paths:[/]")
+            lines.extend(self._report_missing_paths(removed_dirs, removed_files))
+        return "\n".join(lines)
 
-        removed = existing - target
-        top_level = path_funcs.get_common_top_level(dir_paths=removed & directories)
-        for path in removed & files:
-            path.unlink()
-        for path in top_level:
-            shutil.rmtree(path)
-
-        created = target - existing
-        for directory in sorted(
-            target & directories, key=lambda path: (len(path.parts), path)
-        ):
-            directory.mkdir(parents=True, exist_ok=True)
-
-        initial = self.file_contents.initial_map
-        old_diff = self.file_contents.old_diff_map
-        new_diff = self.file_contents.new_diff_map
-        for path in path_funcs.sort_paths(created & files):
-            contents = initial[path.name]
-            if path.name in new_diff:
-                contents = random.choice((contents, new_diff[path.name]))
-            if isinstance(contents, bytes):
-                path.write_bytes(contents)
-            else:
-                path.write_text(contents, encoding="utf-8")
-
-        eligible = path_funcs.sort_paths(
-            (self.paths.files_for_diff & existing) - {home_toggle}
-        )
-        modified = [path for path in eligible if random.random() < 0.70]
-        for path in modified:
-            contents = (
-                new_diff[path.name]
-                if path.read_text(encoding="utf-8") == old_diff[path.name]
-                else old_diff[path.name]
-            )
+    def _write_file(self, path: Path, contents: str | bytes) -> None:
+        if isinstance(contents, bytes):
+            path.write_bytes(contents)
+        else:
             path.write_text(contents, encoding="utf-8")
 
-        surviving_dirs = target & directories & existing
-        directory = random.choice(
-            path_funcs.sort_paths(surviving_dirs or (target & directories))
-        )
+    def _add_remove_random_dir(
+        self, existing: set[Path], missing: set[Path]
+    ) -> list[str]:
+        lines: list[str] = []
+        reduce: bool = False
+        removed: set[Path] = set()
+        added: set[Path] = set()
+        if len(missing) == 0:
+            reduce = True
+        elif len(existing) == 0:
+            reduce = False
+        else:
+            ratio = len(existing) / (len(existing) + len(missing))
+            reduce = ratio > 0.7
+        if reduce:
+            dir_to_delete = self.paths.get_random_dir_to_delete()
+            if dir_to_delete:
+                shutil.rmtree(dir_to_delete)
+                removed = existing - self.paths.existing_dirs
+        else:
+            dir_to_create = self.paths.get_random_dir_to_create()
+            if dir_to_create:
+                dir_to_create.mkdir(parents=True)
+            added = missing - self.paths.missing_dirs
+        if not added and not removed:
+            lines.append(
+                f"[${ColorVar.text_warning}]No directories were added or removed[/]"
+            )
+            return lines
+        if added:
+            lines.append(f"[${ColorVar.text_success}]Added directories:[/]")
+            lines.extend(escape(str(p)) for p in path_funcs.sort_paths(added))
+        elif removed:
+            lines.append(f"[${ColorVar.text_success}]Removed directories:[/]")
+            lines.extend(escape(str(p)) for p in path_funcs.sort_paths(removed))
+        return lines
+
+    def _add_remove_random_files(
+        self, existing: set[Path], missing: set[Path]
+    ) -> list[str]:
+        lines: list[str] = []
+        reduce: bool = False
+        removed: set[Path] = set()
+        added: set[Path] = set()
+        should_exist_ratio = 0.7
+        if len(missing) == 0:
+            reduce = True
+        elif len(existing) == 0:
+            reduce = False
+        else:
+            ratio = len(existing) / (len(existing) + len(missing))
+            reduce = ratio > should_exist_ratio
+        if reduce:
+            files_to_delete = self.paths.get_random_files_to_delete(should_exist_ratio)
+            if files_to_delete:
+                for f in files_to_delete:
+                    f.unlink(missing_ok=True)
+                removed = set(files_to_delete)
+        else:
+            file_to_create = self.paths.get_random_files_to_create(should_exist_ratio)
+            if file_to_create:
+                for f in file_to_create:
+                    self._write_file(f, self.paths.file_paths[f])
+                added = set(file_to_create)
+        if not added and not removed:
+            lines.append(f"[${ColorVar.text_warning}]No files were added or removed[/]")
+            return lines
+        if added:
+            lines.append(f"[${ColorVar.text_success}]Added files:[/]")
+            lines.extend(escape(str(p)) for p in path_funcs.sort_paths(added))
+        if removed:
+            lines.append(f"[${ColorVar.text_success}]Removed files:[/]")
+            lines.extend(escape(str(p)) for p in path_funcs.sort_paths(removed))
+        return lines
+
+    def _toggle_file_diffs(self) -> list[str]:
+        lines: list[str] = []
+        all_files_for_diff = self.paths.files_for_diff
+        eligible_files = [p for p in all_files_for_diff if p.exists()]
+        if not eligible_files:
+            return [f"[${ColorVar.text_warning}]No existing files without a status[/]"]
+        desired_k = int(len(eligible_files) / 2)
+        if desired_k <= 0:
+            return [f"[${ColorVar.text_warning}]Not enough eligible files to toggle[/]"]
+        paths_to_toggle = random.sample(eligible_files, k=desired_k)
+        toggled_paths: set[Path] = set()
+        for path in paths_to_toggle:
+            current_content = path.read_text(encoding="utf-8")
+            if "LOREM" in current_content:
+                current_content = current_content.replace("LOREM", "lorem")
+            elif "lorem" in current_content:
+                current_content = current_content.replace("lorem", "LOREM")
+            path.write_text(current_content, encoding="utf-8")
+            toggled_paths.add(path)
+        if toggled_paths:
+            lines.append(f"[${ColorVar.text_success}]Toggled files:[/]")
+            lines.extend(escape(str(p)) for p in path_funcs.sort_paths(toggled_paths))
+        else:
+            lines.append(f"[${ColorVar.text_warning}]No files changed for a diff[/]")
+        return lines
+
+    def _change_random_dir_permission(self, existing_dirs: set[Path]) -> str:
+        eligible = [d for d in self.paths.dirs.test_dirs if d in existing_dirs]
+        if not eligible:
+            return f"[${ColorVar.text_warning}]No eligible dirs to create a diff for[/]"
+        directory = random.choice(eligible)
         mode = stat.S_IMODE(directory.stat().st_mode)
         directory.chmod(0o750 if mode == 0o755 else 0o755)
+        dir_str = escape(str(directory))
+        return f"[${ColorVar.text_success}]Changed permission for {dir_str}[/]"
 
+    def create_diffs(self) -> str:
         lines: list[str] = []
-        for label, paths in (
-            ("Created paths", created),
-            ("Removed paths", removed),
-            ("Modified files", modified),
-            ("Modified directories", [directory]),
-        ):
-            if paths:
-                lines.append(f"[${ColorVar.text_warning}]{label}:[/]")
-                lines.extend(escape(str(path)) for path in path_funcs.sort_paths(paths))
+        existing_dirs = self.paths.existing_dirs
+        missing_dirs = self.paths.missing_dirs
+        lines.extend(self._add_remove_random_dir(existing_dirs, missing_dirs))
+        existing_files = self.paths.existing_files
+        missing_files = self.paths.missing_files
+        lines.extend(self._add_remove_random_files(existing_files, missing_files))
+        lines.extend(self._toggle_file_diffs())
+        lines.append(self._change_random_dir_permission(self.paths.existing_dirs))
         return "\n".join(lines)
