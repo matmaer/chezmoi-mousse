@@ -23,6 +23,7 @@ from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, ColorVar, LabelStr, Tcss
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
     from textual import getters
@@ -82,7 +83,15 @@ class CmGitConfig(VerticalGroup):
 class SelectPaths(VerticalGroup):
     def __init__(self, dir_path: Path) -> None:
         self.dir_path = dir_path
+        self._checkbox_paths: dict[Checkbox, Path] = {}
+        self._select_all_sections: dict[Checkbox, list[Checkbox]] = {}
         super().__init__()
+
+    @property
+    def selected_paths(self) -> list[Path]:
+        return path_funcs.sort_paths(
+            path for checkbox, path in self._checkbox_paths.items() if checkbox.value
+        )
 
     def compose(self) -> ComposeResult:
         yield Collapsible(
@@ -91,19 +100,33 @@ class SelectPaths(VerticalGroup):
             collapsed=False,
         )
 
+    def _path_checkbox(self, path: Path) -> Checkbox:
+        checkbox = Checkbox(str(path))
+        self._checkbox_paths[checkbox] = path
+        return checkbox
+
+    def _section(self, select_all_label: str, paths: Iterable[Path]) -> list[Checkbox]:
+        select_all = Checkbox(select_all_label, classes=Tcss.select_all)
+        path_checkboxes = [self._path_checkbox(path) for path in paths]
+        self._select_all_sections[select_all] = path_checkboxes
+        return [select_all, *path_checkboxes]
+
     def _collapsible_contents(self) -> list[Checkbox]:
-        widgets: list[Checkbox] = [
-            Checkbox("Select all directories", classes=Tcss.select_all)
-        ]
         dir_children: IterDirResult = path_funcs.get_un_man_children(self.dir_path)
         if dir_children.error:
             self.notify(f"dir children has error {dir_children.error}")
-        for path in dir_children.dirs:
-            widgets.append(Checkbox(str(path)))
-        widgets.append(Checkbox("Select all files", classes=Tcss.select_all))
-        for path in dir_children.files:
-            widgets.append(Checkbox(str(path)))
-        return widgets
+        return [
+            *self._section("Select all directories", dir_children.dirs),
+            *self._section("Select all files", dir_children.files),
+        ]
+
+    @on(Checkbox.Changed)
+    def _apply_select_all(self, event: Checkbox.Changed) -> None:
+        section = self._select_all_sections.get(event.checkbox)
+        if section is None:
+            return
+        for checkbox in section:
+            checkbox.value = event.value
 
 
 class ShowCmDiff(VerticalGroup):
@@ -271,8 +294,19 @@ class OperateModal(ModalScreen[None]):
             )
             return response
 
+        verb_arg: Path | list[str] | None = self.path_arg
+        pretty_verb_arg: Path | str | None = self.path_arg
+        for select_paths in self.query(SelectPaths):
+            select_paths.disabled = True
+            if selected := select_paths.selected_paths:
+                all_paths = [self.path, *selected]
+                verb_arg = [str(path) for path in all_paths]
+                pretty_verb_arg = " ".join(
+                    path_funcs.get_rel_path_str(path) for path in all_paths
+                )
+
         events = tchezmoi.run_chezmoi_interactive(
-            self.op_btn.write_cmd, self.path_arg, handle_prompt
+            self.op_btn.write_cmd, verb_arg, handle_prompt
         )
         try:
             async for event in events:
@@ -280,7 +314,7 @@ class OperateModal(ModalScreen[None]):
                     result = CommandResult(
                         cmd_enum=event.cmd_enum,
                         full_cmd=event.full_cmd,
-                        pretty_cmd=tchezmoi.pretty_cmd(event.cmd_enum, self.path_arg),
+                        pretty_cmd=tchezmoi.pretty_cmd(event.cmd_enum, pretty_verb_arg),
                         returncode=event.returncode,
                         std_err=event.std_err,
                         std_out=event.std_out,

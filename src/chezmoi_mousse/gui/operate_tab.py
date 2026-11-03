@@ -140,25 +140,6 @@ class OperateTab(TabPane):
                 return tree
         raise RuntimeError("Expected a tree to be displayed.")
 
-    def _sync_non_displayed_trees(self, node_data: NodeData) -> None:
-        # update other trees in the background
-        trees = self.left_side_vertical.query_children(OperateTree).results()
-        for tree in trees:
-            if tree.display:
-                continue
-            tree_node = tree.node_map.get(node_data.path)
-            if tree_node:
-                with tree.prevent(
-                    Tree.NodeSelected,
-                    Tree.NodeExpanded,
-                    Tree.NodeHighlighted,
-                    Tree.NodeCollapsed,
-                ):
-                    tree.select_node(tree_node)
-                tree.scroll_to_node(tree_node, animate=False)
-            else:
-                tree.unselect()
-
     def _update_all_widgets(self, node_data: NodeData) -> None:
         self.current_node: NodeData = node_data
 
@@ -174,7 +155,6 @@ class OperateTab(TabPane):
             self.source_path_label.display = True
 
         self._update_op_buttons(node_data)
-        self._sync_non_displayed_trees(node_data)
         self._update_view_widgets(node_data)
 
     def _show_dest_dir(self) -> None:
@@ -296,7 +276,7 @@ class OperateTab(TabPane):
 
     @on(Button.Pressed)
     def handle_dest_dir_btn(self, event: Button.Pressed) -> None:
-        if str(event.button.label) == store.cfg.dest_dir_str:
+        if event.button.label == BtnLabel.dest_dir:
             event.stop()
             self._show_dest_dir()
 
@@ -341,9 +321,47 @@ class OperateTab(TabPane):
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
         msg.stop()
-        self._current_displayed_tree.display = False
+        previous_tree = self._current_displayed_tree
         show_tree = self.query_one(msg.tree_id_q, OperateTree)
+        previous_tree.display = False
         show_tree.display = True
+        self._copy_expand_state(previous_tree, show_tree)
+        self._select_current_node(show_tree)
+
+    def _select_current_node(self, tree: OperateTree) -> None:
+        node = tree.node_map.get(self.current_node.path)
+        if node is None or node is tree.root or node.data is None:
+            return
+        parent = node.parent
+        while parent is not None and parent is not tree.root:
+            if not parent.is_expanded:
+                parent.expand()
+            parent = parent.parent
+
+        def move_cursor() -> None:
+            # After a refresh, so the node line numbers include the expanded parents.
+            tree.move_cursor(node)
+            tree.scroll_to_node(node, animate=False)
+
+        tree.call_after_refresh(move_cursor)
+        self._update_all_widgets(node.data)
+
+    def _copy_expand_state(self, from_tree: OperateTree, to_tree: OperateTree) -> None:
+        # Textual keeps is_expanded per node, also for nodes under a collapsed
+        # parent, so this copies the complete expand state.
+        for path, from_node in from_tree.node_map.items():
+            to_node = to_tree.node_map.get(path)
+            if (
+                to_node is None
+                or to_node is to_tree.root
+                or not to_node.allow_expand
+                or to_node.is_expanded == from_node.is_expanded
+            ):
+                continue
+            if from_node.is_expanded:
+                to_node.expand()
+            else:
+                to_node.collapse()
 
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:
