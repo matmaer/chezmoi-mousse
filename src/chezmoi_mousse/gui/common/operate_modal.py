@@ -255,7 +255,6 @@ class OperateModal(ModalScreen[None]):
 
     @work
     async def _run_interactive(self) -> None:
-        # Pressing diff again for the same prompt toggles the existing diff
         last_diff: ShowCmDiff | None = None
         pending_diff_question: str | None = None
 
@@ -264,6 +263,7 @@ class OperateModal(ModalScreen[None]):
 
             self.general_info_label.update(f"{prompt_question} ({'/'.join(options)})?")
             response = await self._await_user_choice(options)
+            # Pressing diff again for the same prompt toggles the existing diff
             while (
                 response == ChezmoiPrompts.diff.reply
                 and last_diff is not None
