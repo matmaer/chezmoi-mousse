@@ -5,8 +5,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from rich.highlighter import ReprHighlighter
-from rich.text import Text
+from textual.content import Content
+from textual.highlight import HighlightTheme, highlight
 
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.asyncio_process_exec import (
@@ -34,10 +34,20 @@ if TYPE_CHECKING:
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
 
 
-def _highlight_str(to_highlight: str) -> Text:
-    text = Text(to_highlight)
-    ReprHighlighter().highlight(text)
-    return text
+class _NoErrorHighlightTheme(HighlightTheme): ...
+
+
+# Content based language guesses can be wrong, don't flag the mismatches as errors in
+# the highlighting.
+_NoErrorHighlightTheme.STYLES = {
+    token: style
+    for token, style in HighlightTheme.STYLES.items()
+    if "error-muted" not in style
+}
+
+
+def _highlight_str(to_highlight: str, file_path: Path) -> Content:
+    return highlight(to_highlight, path=str(file_path), theme=_NoErrorHighlightTheme)
 
 
 def pretty_cmd(cmd: ReadCmd | WriteCmd, verb_arg: Path | str | None) -> str:
@@ -278,7 +288,7 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
     )
 
 
-def get_highlighted_file_contents(file_path: Path) -> Text:
+def get_highlighted_file_contents(file_path: Path) -> Content:
     if file_path.is_dir():
         raise ValueError(f"Trying to get file contents for a directory: {file_path}")
     try:
@@ -293,13 +303,13 @@ def get_highlighted_file_contents(file_path: Path) -> Text:
         elif truncated:
             f_contents += f"\n--- Read file limited to {max_chars} characters ---"
     except (PermissionError, OSError, UnicodeDecodeError) as e:
-        f_contents = str(e)
-    return _highlight_str(f_contents)
+        return Content(str(e))
+    return _highlight_str(f_contents, file_path)
 
 
 async def get_highlighted_chezmoi_cat_output(
     app: ChezmoiGui, *, file_path: Path
-) -> Text:
+) -> Content:
     cmd_result = await _exec_chezmoi(
         app,
         ReadCmd.cat,
@@ -308,8 +318,8 @@ async def get_highlighted_chezmoi_cat_output(
     )
     f_contents = cmd_result.std_out
     if not f_contents.strip():
-        f_contents = "File is empty or contains only whitespace"
-    return _highlight_str(f_contents)
+        return Content("File is empty or contains only whitespace")
+    return _highlight_str(f_contents, file_path)
 
 
 def run_chezmoi_interactive(

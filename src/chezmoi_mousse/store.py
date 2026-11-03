@@ -49,4 +49,4 @@ async def handle_new_tree_paths(
 
 async def decode_and_store_config(std_out: str) -> None:
     global cfg
-    cfg = ParsedDumpConfig(_dump_config_std_out=std_out)
+    cfg = ParsedDumpConfig(dump_config_std_out=std_out)

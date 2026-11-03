@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.containers import Horizontal, ScrollableContainer, Vertical
+from textual.highlight import highlight
 from textual.reactive import reactive
 from textual.widgets import Button, ContentSwitcher, Pretty, Static, TabPane
 
@@ -28,13 +28,13 @@ __all__ = ["ConfigTab"]
 class CatConfigStatic(Static): ...
 
 
-class PrettyDumpConfig(Pretty): ...
+class DumpConfigStatic(Static): ...
 
 
 class PrettyIgnored(Pretty): ...
 
 
-class PrettyTemplateData(Pretty): ...
+class TemplateDataStatic(Static): ...
 
 
 class ConfigTab(TabPane):
@@ -65,7 +65,9 @@ class ConfigTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.dump_config_output),
-                    ScrollableContainer(PrettyDumpConfig(LabelStr.not_set)),
+                    ScrollableContainer(
+                        DumpConfigStatic(LabelStr.not_set, markup=False)
+                    ),
                     id=store.config_ids.container.dump_config,
                 )
                 yield Vertical(
@@ -75,7 +77,9 @@ class ConfigTab(TabPane):
                 )
                 yield Vertical(
                     MainSectionLabel(LabelStr.template_data_output),
-                    ScrollableContainer(PrettyTemplateData(LabelStr.not_set)),
+                    ScrollableContainer(
+                        TemplateDataStatic(LabelStr.not_set, markup=False)
+                    ),
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
@@ -86,8 +90,8 @@ class ConfigTab(TabPane):
 
     def on_mount(self) -> None:
         self.switcher = self.query_exactly_one(ContentSwitcher)
-        dump_config = self.switcher.query_exactly_one(PrettyDumpConfig)
-        dump_config.update(store.cfg.parsed_cfg)
+        dump_config = self.switcher.query_exactly_one(DumpConfigStatic)
+        dump_config.update(highlight(store.cfg.dump_config_std_out, language="json"))
 
     @on(Button.Pressed)
     def switch_content(self, event: Button.Pressed) -> None:
@@ -117,9 +121,8 @@ class ConfigTab(TabPane):
             widget = self.query_exactly_one(PrettyIgnored)
             widget.update(cmd_result.std_out)
         elif cmd_result.cmd_enum == ReadCmd.template_data:
-            parsed_data = json.loads(cmd_result.std_out)
-            widget = self.query_exactly_one(PrettyTemplateData)
-            widget.update(parsed_data)
+            widget = self.query_exactly_one(TemplateDataStatic)
+            widget.update(highlight(cmd_result.std_out, language="json"))
         else:
             self.notify(f"Unhandled cmd result for {cmd_result.cmd_enum}")
 

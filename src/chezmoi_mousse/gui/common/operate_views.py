@@ -16,9 +16,9 @@ from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from rich.text import Text
     from textual import getters
     from textual.app import ComposeResult
+    from textual.content import Content
 
     from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -33,7 +33,7 @@ class ContentView(Vertical):
 
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    cache: ClassVar[dict[Path, Text]] = {}
+    cache: ClassVar[dict[Path, Content]] = {}
 
     def compose(self) -> ComposeResult:
         yield FlatSectionLabel(LabelStr.not_set)

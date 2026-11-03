@@ -70,11 +70,11 @@ class ExecResult:
 
 @dataclass(frozen=True)
 class ParsedDumpConfig:
-    _dump_config_std_out: str
+    dump_config_std_out: str
 
     @cached_property
     def parsed_cfg(self) -> dict[str, Any]:
-        return json.loads(self._dump_config_std_out)
+        return json.loads(self.dump_config_std_out)
 
     @property
     def dest_dir_str(self) -> str:
