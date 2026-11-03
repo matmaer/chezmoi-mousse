@@ -8,11 +8,7 @@ from rich.markup import escape
 from textual.containers import HorizontalGroup
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
-    InfoLabel,
-    SubSectionLabel,
-)
+from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
 from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
@@ -107,12 +103,9 @@ def doctor_log_lines(cr: CommandResult) -> list[Static]:
     return lines
 
 
-def truth_widgets(truth_dict: dict[str, bool]) -> list[HorizontalGroup]:
-    widgets: list[HorizontalGroup] = []
-    for info_label, truth in truth_dict.items():
-        label_text = "yes" if truth else "no"
-        classes = Tcss.true_label if truth else Tcss.false_label
-        widgets.append(
-            HorizontalGroup(InfoLabel(info_label), Label(label_text, classes=classes))
-        )
-    return widgets
+def truth_widget(label: str, truth: bool) -> HorizontalGroup:
+    label_text = "yes" if truth else "no"
+    classes = Tcss.true_label if truth else Tcss.false_label
+    return HorizontalGroup(
+        Label(label, classes=Tcss.truth_label), Label(label_text, classes=classes)
+    )

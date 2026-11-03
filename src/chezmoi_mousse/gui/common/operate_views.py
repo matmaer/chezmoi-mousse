@@ -186,16 +186,15 @@ class PathView(ScrollableContainer):
         truth_dict: dict[str, bool] = {}
         truth_dict[LabelStr.path_has_status] = n_data.status_path
         truth_dict[LabelStr.path_exists] = n_data.exists
-        truth_dict[LabelStr.path_un_wanted] = (
-            n_data.wanted is False and not n_data.managed
-        )
+        truth_dict[LabelStr.path_un_wanted] = not n_data.wanted and not n_data.managed
         if n_data.dir_path or n_data.path.is_dir():
             truth_dict[LabelStr.has_nested_status] = n_data.dir_data.nested_status
             truth_dict[LabelStr.has_nested_managed] = n_data.dir_data.nested_managed
             truth_dict[LabelStr.has_nested_un_man] = n_data.dir_data.nested_un_managed
             truth_dict[LabelStr.has_child_paths] = n_data.dir_data.has_child_paths
-        self.remove_children()
-        self.mount_all(widget_factory.truth_widgets(truth_dict))
+        twf = widget_factory.truth_widget
+        self.mount_all([twf(label, value) for label, value in truth_dict.items()])
 
     def watch_node_data(self, node_data: NodeData) -> None:
+        self.remove_children()
         self._set_path_info(node_data)

@@ -518,6 +518,7 @@ class Tcss(StrEnum):
     splash_log = auto()
     tree_header = auto()
     true_label = auto()
+    truth_label = auto()
 
 
 class TreeName(StrEnum):

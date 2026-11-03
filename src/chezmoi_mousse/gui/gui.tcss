@@ -341,7 +341,8 @@ Label {
     color: $primary-lighten-3;
   }
 
-  &InfoLabel {
+  &.truth_label {
+    width: 4fr;
     background-tint: $panel;
     background: $panel;
     border-bottom: wide $panel;
@@ -350,7 +351,7 @@ Label {
 
   &.true_label {
     height: 100%;
-    width: 7;
+    width: 1fr;
     background-tint: $success-muted;
     background: $success-muted;
     border-bottom: wide $success-muted;
@@ -359,7 +360,7 @@ Label {
 
   &.false_label {
     height: 100%;
-    width: 7;
+    width: 1fr;
     background-tint: $error-muted;
     background: $error-muted;
     border-bottom: wide $error-muted;

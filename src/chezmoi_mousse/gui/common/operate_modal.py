@@ -72,12 +72,14 @@ class CmGitConfig(VerticalGroup):
         )
 
     def _collapsible_contents(self) -> list[HorizontalGroup]:
-        truth_dict: dict[str, bool] = {}
-        truth_dict["autoadd enabled"] = store.cfg.auto_add
-        truth_dict["autocommit enabled"] = store.cfg.auto_commit
-        truth_dict["autopush enabled"] = store.cfg.auto_push
-        widgets = widget_factory.truth_widgets(truth_dict)
-        return widgets
+        return [
+            widget_factory.truth_widget(label, truth)
+            for label, truth in zip(
+                ["autoadd", "autocommit", "autopush"],
+                [store.cfg.auto_add, store.cfg.auto_commit, store.cfg.auto_push],
+                strict=True,
+            )
+        ]
 
 
 class SelectPaths(VerticalGroup):
@@ -215,7 +217,7 @@ class OperateModal(ModalScreen[None]):
         container.scroll_end()
         return show_cm_diff
 
-    def _mount_label(self, label_widget: Label) -> None:
+    def _mount_and_scroll(self, label_widget: Label) -> None:
         self.answers.mount(label_widget)
         self.answers.scroll_end()
 
@@ -278,15 +280,11 @@ class OperateModal(ModalScreen[None]):
                 response = await self._await_user_choice(options)
 
             if response == ChezmoiPrompts.no.reply:
-                self._mount_label(
-                    WarningLabel(f"{prompt_question}: {ChezmoiPrompts.no.name}")
-                )
+                self.answers.mount(widget_factory.truth_widget(prompt_question, False))
             elif response == ChezmoiPrompts.yes.reply:
-                self._mount_label(
-                    SubSectionLabel(f"{prompt_question}: {ChezmoiPrompts.yes.name}")
-                )
+                self.answers.mount(widget_factory.truth_widget(prompt_question, True))
             elif response == ChezmoiPrompts.quit.reply:
-                self._mount_label(SubSectionLabel(LabelStr.quit_op))
+                self._mount_and_scroll(SubSectionLabel(LabelStr.quit_op))
 
             pending_diff_question = (
                 prompt_question if response == ChezmoiPrompts.diff.reply else None
