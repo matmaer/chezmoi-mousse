@@ -13,8 +13,8 @@ from chezmoi_mousse.gui.common.actionables import (
     TreeBtnGroup,
 )
 from chezmoi_mousse.gui.common.components import (
+    FlatSectionLabel,
     MainSectionLabel,
-    NoShowLabel,
     SubSectionLabel,
 )
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
@@ -85,7 +85,7 @@ class RightSideVertical(Vertical):
 class MiddleVertical(Vertical):
     def compose(self) -> ComposeResult:
         yield MainSectionLabel()
-        yield NoShowLabel()
+        yield FlatSectionLabel()
         yield SubSectionLabel()
         yield GitLogView()
         yield ContentView()
@@ -116,10 +116,11 @@ class OperateTab(TabPane):
     def on_mount(self) -> None:
         self.dry_run_cache: dict[Path, DryRunData] = {}
         self.source_path_label = self.query_exactly_one(SubSectionLabel)
-        self.no_show_label = self.query_exactly_one(NoShowLabel)
 
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
-        self.middle_vertical = self.query_exactly_one(MiddleVertical)
+        self.middle_vert = self.query_exactly_one(MiddleVertical)
+        self.middle_label = self.middle_vert.query_exactly_one(MainSectionLabel)
+        self.no_show_label = self.middle_vert.query_children(FlatSectionLabel).first()
         self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.radio_set = self.query_exactly_one(RadioSet)
 
@@ -143,9 +144,8 @@ class OperateTab(TabPane):
     def _update_all_widgets(self, node_data: NodeData) -> None:
         self.current_node: NodeData = node_data
 
-        middle_label = self.middle_vertical.query_exactly_one(MainSectionLabel)
-        size = middle_label.container_size.width
-        middle_label.update(node_data.get_main_label(size))
+        size = self.middle_label.container_size.width
+        self.middle_label.update(node_data.get_main_label(size))
 
         if node_data.source_path is None:
             self.source_path_label.display = False

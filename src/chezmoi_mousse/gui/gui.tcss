@@ -366,12 +366,6 @@ Label {
     border-bottom: wide $error-muted;
     color: $text-error;
   }
-
-  &WarningLabel {
-    background-tint: $panel;
-    background: $panel;
-    color: $text-warning;
-  }
 }
 
 RadioSet {

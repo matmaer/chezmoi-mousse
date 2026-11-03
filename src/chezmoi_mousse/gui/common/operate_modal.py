@@ -17,7 +17,6 @@ from chezmoi_mousse.gui.common.components import (
     FlatSectionLabel,
     MainSectionLabel,
     SubSectionLabel,
-    WarningLabel,
 )
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, ColorVar, LabelStr, Tcss
@@ -158,9 +157,6 @@ class ShowCmDiff(VerticalGroup):
         return widgets
 
 
-class _GeneralInfoLabel(MainSectionLabel): ...
-
-
 class OperateModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -182,7 +178,7 @@ class OperateModal(ModalScreen[None]):
                 yield PathsInScope(
                     self.op_btn.dry_cmd, self.path_str, self.affected_paths
                 )
-            yield _GeneralInfoLabel(LabelStr.ready_to_run, markup=False)
+            yield MainSectionLabel(LabelStr.ready_to_run, markup=False)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.diff.prompt_item,
@@ -205,7 +201,7 @@ class OperateModal(ModalScreen[None]):
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
-        self.general_info_label = self.query_exactly_one(_GeneralInfoLabel)
+        self.general_info_label = self.query(MainSectionLabel).last()
         for button in self.prompt_buttons:
             if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                 button.display = True
@@ -247,8 +243,8 @@ class OperateModal(ModalScreen[None]):
             async with asyncio.timeout(PROMPT_TIMEOUT):
                 return await self._prompt_future
         except TimeoutError:
-            self.answers.mount(
-                WarningLabel(f"No reply within {PROMPT_TIMEOUT} seconds, quitting.")
+            self._mount_and_scroll(
+                SubSectionLabel(f"No reply within {PROMPT_TIMEOUT} seconds, quitting.")
             )
             return ChezmoiPrompts.quit.reply
         finally:
