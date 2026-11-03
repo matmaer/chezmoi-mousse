@@ -263,7 +263,6 @@ class OperateTab(TabPane):
         if not store.cm_changes.changes_available:
             self.app.notify("No changes available, skipping refresh.")
             return
-        self.app.notify("Clear cache and refresh trees.", severity="warning")
         for tree in self.left_side_vertical.query_children(OperateTree).results():
             await tree.update_nodes(store.cm_changes)
         self.dry_run_cache.clear()
