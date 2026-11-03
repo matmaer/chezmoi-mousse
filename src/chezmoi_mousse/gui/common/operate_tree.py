@@ -111,21 +111,14 @@ class OperateTree(Tree[NodeData]):
                 self._remove_node(path)
 
         tree_name = TreeName(self.name)
-
-        for path, node_data in changes.add_tree_dirs.items():
-            if node_data.include_in_tree(tree_name):
-                self._add_node_with_color(path, node_data, allow_expand=True)
-
-        for path, node_data in changes.add_tree_files.items():
-            if node_data.include_in_tree(tree_name):
-                self._add_node_with_color(path, node_data, allow_expand=False)
-
-        self._apply_changed_nodes(
-            changes.change_tree_dirs, tree_name, allow_expand=True
+        dirs = path_funcs.sort_path_dict(
+            changes.add_tree_dirs | changes.change_tree_dirs
         )
-        self._apply_changed_nodes(
-            changes.change_tree_files, tree_name, allow_expand=False
+        files = path_funcs.sort_path_dict(
+            changes.add_tree_files | changes.change_tree_files
         )
+        self._apply_changed_nodes(dirs, tree_name, allow_expand=True)
+        self._apply_changed_nodes(files, tree_name, allow_expand=False)
         self.refresh(layout=True)
 
     def _apply_changed_nodes(
