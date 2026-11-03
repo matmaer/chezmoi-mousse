@@ -204,24 +204,19 @@ class OperateModal(ModalScreen[None]):
         prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = prompt_btn_group.query(Button)
         self.general_info_label = self.query_exactly_one(_GeneralInfoLabel)
-        if self.affected_paths:
-            for button in self.prompt_buttons:
-                if button.label in (BtnLabel.cancel, self.op_btn.run_label):
-                    button.display = True
-        else:
-            self.general_info_label.update(LabelStr.no_op)
-            for button in self.prompt_buttons:
-                button.display = button.label == BtnLabel.cancel.value
+        for button in self.prompt_buttons:
+            if button.label in (BtnLabel.cancel, self.op_btn.run_label):
+                button.display = True
 
     def _create_cm_git_diff(self, text: str, title: str) -> ShowCmDiff:
         container = self.query_exactly_one(ScrollableContainer)
         show_cm_diff = ShowCmDiff(text, title)
-        container.mount(show_cm_diff, before=self.general_info_label)
+        container.mount(show_cm_diff)
         container.scroll_end()
         return show_cm_diff
 
     def _mount_label(self, label_widget: Label) -> None:
-        self.answers.mount(label_widget, before=self.general_info_label)
+        self.answers.mount(label_widget)
         self.answers.scroll_end()
 
     def _handle_cmd_result(self, result: CommandResult) -> None:
