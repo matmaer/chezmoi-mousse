@@ -115,10 +115,14 @@ class SelectPaths(VerticalGroup):
         dir_children: IterDirResult = path_funcs.get_un_man_children(self.dir_path)
         if dir_children.error:
             self.notify(f"dir children has error {dir_children.error}")
-        return [
-            *self._section("Select all directories", dir_children.dirs),
-            *self._section("Select all files", dir_children.files),
-        ]
+        check_box_list: list[Checkbox] = []
+        if dir_children.dirs:
+            check_box_list.extend(
+                self._section("Select all directories", dir_children.dirs)
+            )
+        if dir_children.files:
+            check_box_list.extend(self._section("Select all files", dir_children.files))
+        return check_box_list
 
     @on(Checkbox.Changed)
     def _apply_select_all(self, event: Checkbox.Changed) -> None:
