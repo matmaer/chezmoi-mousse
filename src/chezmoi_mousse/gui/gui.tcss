@@ -9,7 +9,6 @@
     max-width: 30%;
     width: auto;
 
-
     &>TreeBtnGroup {
       height: 3;
       width: 100%;
@@ -53,9 +52,17 @@
 /* Type Selector tcss */
 /**********************/
 
-AnimatedFade,
-DiffView {
+AnimatedFade {
   margin-bottom: 2;
+}
+
+DoctorTable {
+  height: 1fr;
+  margin-bottom: 1;
+
+  &.datatable--header {
+    text-style: none;
+  }
 }
 
 LogsTab>ScrollableContainer {
@@ -118,52 +125,13 @@ SelectPaths>Collapsible {
   }
 }
 
-DoctorTable {
-  margin-bottom: 1;
-}
-
 FlatBtnGroup {
   padding-right: 1;
   width: auto;
-
-  &>Button {
-    background: $primary-muted;
-    background-tint: $primary-muted;
-    border: none;
-    border-bottom: inner $primary-muted;
-    border-top: inner $primary-muted;
-    color: $text-muted;
-    width: 100%;
-
-    &:hover {
-      color: $foreground;
-    }
-
-    &:focus {
-      text-style: bold;
-      color: $text-accent;
-    }
-
-    &.last_clicked_flat_btn {
-      color: $text-accent;
-      text-style: bold;
-
-      &:hover {
-        color: $text-accent;
-      }
-
-      &:focus {
-        text-style: bold;
-        color: $text-accent;
-      }
-    }
-  }
 }
 
 OperateBtnGroup {
   dock: bottom;
-
-
 }
 
 OperateModal {
@@ -175,11 +143,6 @@ OperateModal {
     max-width: 1fr;
     margin: 1 2 0 2;
     width: auto;
-
-    &>.prompt_btn_group {
-      width: 1fr;
-      dock: bottom;
-    }
   }
 }
 
@@ -216,6 +179,38 @@ Button {
 
     &:focus {
       text-style: bold;
+    }
+  }
+
+  &.flat_btn {
+    background: $primary-muted;
+    background-tint: $primary-muted;
+    border: none;
+    border-bottom: inner $primary-muted;
+    border-top: inner $primary-muted;
+    color: $text-muted;
+
+    &:hover {
+      color: $foreground;
+    }
+
+    &:focus {
+      text-style: bold;
+      color: $text-accent;
+    }
+
+    &.last_clicked_flat_btn {
+      color: $text-accent;
+      text-style: bold;
+
+      &:hover {
+        color: $text-accent;
+      }
+
+      &:focus {
+        text-style: bold;
+        color: $text-accent;
+      }
     }
   }
 
@@ -305,14 +300,6 @@ CollapsibleTitle {
   }
 }
 
-DataTable {
-  height: 1fr;
-
-  &.datatable--header {
-    text-style: none;
-  }
-}
-
 Footer {
   background-tint: $panel;
   background: $panel;
@@ -379,11 +366,9 @@ Label {
     color: $text-error;
   }
 
-
   &WarningLabel {
     background-tint: $panel;
     background: $panel;
-    border-bottom: wide $panel;
     color: $text-warning;
   }
 }

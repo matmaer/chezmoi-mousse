@@ -30,7 +30,7 @@ class FlatBtnGroup(VerticalGroup):
 
     def compose(self) -> ComposeResult:
         for label in self.labels:
-            yield Button(label=label, flat=True)
+            yield Button(label=label, flat=True, classes=Tcss.flat_btn)
 
     def on_mount(self) -> None:
         self.query(Button).first().add_class(Tcss.last_clicked_flat_btn)
@@ -76,7 +76,7 @@ class OperateBtnGroup(HorizontalGroup):
 class PromptBtnGroup(HorizontalGroup):
     def __init__(self, labels: tuple[str, ...]) -> None:
         self.labels = labels
-        super().__init__(classes=Tcss.prompt_btn_group)
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
