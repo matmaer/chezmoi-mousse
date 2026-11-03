@@ -10,7 +10,7 @@ from textual import on, work
 from textual.app import App
 from textual.binding import Binding
 from textual.scrollbar import ScrollBar, ScrollBarRender
-from textual.widgets import Footer, Header, RadioButton, TabbedContent, Tabs
+from textual.widgets import Footer, RadioButton, TabbedContent, Tabs
 
 from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.debug.debug_tab import DebugLog, DebugTab
@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 
 __all__ = ["ChezmoiGui"]
 
+TITLE = " c h e z m o i  m o u s s e "
 
 RadioButton.BUTTON_INNER = Chars.radio_button
 
@@ -76,7 +77,6 @@ class ChezmoiGui(App[str]):
     ]
 
     CSS_PATH = "gui.tcss"
-    TITLE = "---  c h e z m o i  m o u s s e  ---"
 
     def __init__(self) -> None:
         ScrollBar.renderer = CustomScrollBarRender  # monkey patch
@@ -87,11 +87,11 @@ class ChezmoiGui(App[str]):
         super()._handle_exception(error)
 
     def compose(self) -> ComposeResult:
-        yield Header(icon=Chars.burger)
         yield TabbedContent()
         yield Footer()
 
     def on_mount(self) -> None:
+        self.query_exactly_one(TabbedContent).border_title = TITLE
         self.maximize_toggle = False
         self.register_theme(chezmoi_mousse_dark)
         self.theme = "chezmoi-mousse-dark"
@@ -201,8 +201,6 @@ class ChezmoiGui(App[str]):
         right_side: RightSideVertical | None = None
         operation_buttons = None
 
-        header = self.query_exactly_one(Header)
-        header.display = not header.display
         main_tabs = self.query_exactly_one(Tabs)
         main_tabs.display = not main_tabs.display
 
@@ -232,7 +230,7 @@ class ChezmoiGui(App[str]):
         self.maximize_toggle = not self.maximize_toggle
         new_description = (
             BindingDescription.maximize
-            if header.display is True
+            if self.maximize_toggle is True
             else BindingDescription.minimize
         )
         self._update_binding_description(

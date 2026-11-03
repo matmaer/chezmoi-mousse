@@ -305,12 +305,6 @@ Footer {
   background: $panel;
 }
 
-Header {
-  border-bottom: dashed $panel;
-  color: $primary;
-  height: 2;
-  text-style: bold;
-}
 
 Label {
   padding: 0 1;
@@ -519,6 +513,7 @@ Switch {
 }
 
 TabbedContent {
+  border-top: dashed $panel;
 
   /* center the tab buttons on top */
   & #tabs-list {
