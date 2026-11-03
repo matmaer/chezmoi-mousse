@@ -510,6 +510,8 @@ class Tcss(StrEnum):
     info = auto()
     last_clicked_flat_btn = auto()
     prompt_btn_group = auto()
+    operate_btn = auto()
+    prompt_btn = auto()
     tree_op_button = auto()
     removed = auto()
     select_all = auto()

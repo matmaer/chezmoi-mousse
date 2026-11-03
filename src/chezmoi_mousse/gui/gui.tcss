@@ -163,26 +163,7 @@ FlatBtnGroup {
 OperateBtnGroup {
   dock: bottom;
 
-  &>Button {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-top: wide $primary-darken-3;
-    border-bottom: inner $surface-lighten-1;
-    color: $primary-lighten-3;
-    margin: 0 1;
-    text-style: none;
-    width: 1fr;
 
-    &:hover {
-      text-style: none;
-      color: $accent;
-      border-top: wide $accent-darken-3;
-    }
-
-    &:focus {
-      text-style: none;
-    }
-  }
 }
 
 OperateModal {
@@ -198,27 +179,6 @@ OperateModal {
     &>.prompt_btn_group {
       width: 1fr;
       dock: bottom;
-
-      &>Button {
-        background-tint: $panel;
-        background: $panel;
-        border-bottom: inner $panel;
-        border-top: wide $panel-lighten-3;
-        color: $foreground-darken-1;
-        margin: 0 1;
-        text-style: none;
-        width: 1fr;
-
-        &:hover {
-          text-style: none;
-          border-top: wide $foreground-darken-3;
-          color: $accent;
-        }
-
-        &:focus {
-          text-style: none;
-        }
-      }
     }
   }
 }
@@ -256,6 +216,48 @@ Button {
 
     &:focus {
       text-style: bold;
+    }
+  }
+
+  &.operate_btn {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-top: wide $primary-darken-3;
+    border-bottom: inner $surface-lighten-1;
+    color: $primary-lighten-3;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+
+    &:hover {
+      text-style: none;
+      color: $accent;
+      border-top: wide $accent-darken-3;
+    }
+
+    &:focus {
+      text-style: none;
+    }
+  }
+
+  &.prompt_btn {
+    background-tint: $panel;
+    background: $panel;
+    border-bottom: inner $panel;
+    border-top: wide $panel-lighten-3;
+    color: $foreground-darken-1;
+    margin: 0 1;
+    text-style: none;
+    width: 1fr;
+
+    &:hover {
+      text-style: none;
+      border-top: wide $foreground-darken-3;
+      color: $accent;
+    }
+
+    &:focus {
+      text-style: none;
     }
   }
 

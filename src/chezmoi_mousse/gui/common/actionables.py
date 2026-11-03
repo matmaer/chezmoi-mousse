@@ -49,7 +49,7 @@ class OperateBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield Button(label=btn_label)
+            yield Button(label=btn_label, classes=Tcss.operate_btn)
 
     def on_mount(self) -> None:
         buttons = self.query_children(Button).results()
@@ -80,7 +80,7 @@ class PromptBtnGroup(HorizontalGroup):
 
     def compose(self) -> ComposeResult:
         for btn_label in self.labels:
-            yield Button(label=btn_label)
+            yield Button(label=btn_label, classes=Tcss.prompt_btn)
 
     def on_mount(self) -> None:
         buttons = self.query_children(Button)
