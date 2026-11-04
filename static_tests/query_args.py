@@ -45,8 +45,8 @@ def check_query_call(call_node: ast.Call, func_name: str) -> str | None:
             selector_arg, select_type = call_node.args[0], call_node.args[1]
             if not isinstance(
                 selector_arg, ast.Attribute
-            ) or not selector_arg.attr.endswith("_q"):
-                reason = "id is not a dotted lookup ending in '_q'"
+            ) or not selector_arg.attr.endswith("q"):
+                reason = "id is not a dotted lookup ending in 'q'"
             else:
                 reason = check_valid_select_type(select_type)
     return reason

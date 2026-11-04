@@ -13,11 +13,6 @@ from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.data_types import CommandResult, ExecResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
-from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
-    MainSectionLabel,
-    SubSectionLabel,
-)
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import BtnLabel, ChezmoiPrompts, ColorVar, LabelStr, Tcss
 
@@ -28,7 +23,6 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
     from textual.containers import HorizontalGroup
-    from textual.widgets import Label
 
     from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -48,21 +42,18 @@ class PathsInScope(VerticalGroup):
         self.read_cmd = read_cmd
         self.path_str = path_str
         self.path_scope = path_scope
+        self.pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str} (paths)"
         super().__init__()
 
     def compose(self) -> ComposeResult:
         yield Collapsible(
-            *self._collapsible_contents(),
+            *(
+                Static(f"{self.pretty_cmd}", markup=False, classes=Tcss.blue_label),
+                Static(self.path_scope, markup=False, classes=Tcss.cmd_output),
+            ),
             title=f"[${ColorVar.text_success}]{'Paths in Scope'}[/]",
             collapsed=False,
         )
-
-    def _collapsible_contents(self) -> list[Label | Static]:
-        contents: list[Label | Static] = []
-        pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str}".rstrip()
-        contents.append(FlatSectionLabel(f"{escape(pretty_cmd)} (paths)"))
-        contents.append(Static(self.path_scope, markup=False, classes=Tcss.cmd_output))
-        return contents
 
 
 class CmGitConfig(VerticalGroup):
@@ -174,13 +165,17 @@ class OperateModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield MainSectionLabel(f"{self.op_btn.value} {self.path_str}".rstrip())
+            yield Static(
+                f"{self.op_btn.value} {self.path_str}".rstrip(),
+                markup=False,
+                classes=Tcss.main_label,
+            )
             with ScrollableContainer():
                 yield CmGitConfig()
                 yield PathsInScope(
                     self.op_btn.dry_cmd, self.path_str, self.affected_paths
                 )
-            yield MainSectionLabel(LabelStr.ready_to_run, markup=False)
+            yield Static(LabelStr.ready_to_run, classes=Tcss.main_label)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.diff.prompt_item,
@@ -204,7 +199,7 @@ class OperateModal(ModalScreen[None]):
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         self.prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = self.prompt_btn_group.query(Button)
-        self.general_info_label = self.query(MainSectionLabel).last()
+        self.general_info_label = self.query_one(Tcss.main_label.q, Static)
         for button in self.prompt_buttons:
             if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                 button.display = True
@@ -224,10 +219,6 @@ class OperateModal(ModalScreen[None]):
         show_cm_diff = ShowCmDiff(text, title)
         container.mount(show_cm_diff)
         return show_cm_diff
-
-    def _mount_and_scroll(self, label_widget: Label) -> None:
-        self.answers.mount(label_widget)
-        self.answers.scroll_end()
 
     def _handle_cmd_result(self, result: CommandResult) -> None:
         container = self.query_exactly_one(ScrollableContainer)
@@ -255,8 +246,11 @@ class OperateModal(ModalScreen[None]):
             async with asyncio.timeout(PROMPT_TIMEOUT):
                 return await self.prompt_future
         except TimeoutError:
-            self._mount_and_scroll(
-                SubSectionLabel(f"No reply within {PROMPT_TIMEOUT} seconds, quitting.")
+            self.answers.mount(
+                Static(
+                    f"No reply within {PROMPT_TIMEOUT} seconds, quitting.",
+                    classes=Tcss.green_label,
+                )
             )
             return ChezmoiPrompts.quit.reply
         finally:
@@ -293,7 +287,7 @@ class OperateModal(ModalScreen[None]):
             elif response == ChezmoiPrompts.yes.reply:
                 self.answers.mount(widget_factory.truth_widget(prompt_question, True))
             elif response == ChezmoiPrompts.quit.reply:
-                self._mount_and_scroll(SubSectionLabel(LabelStr.quit_op))
+                self.answers.mount(Static(LabelStr.quit_op, classes=Tcss.green_label))
 
             pending_diff_question = (
                 prompt_question if response == ChezmoiPrompts.diff.reply else None

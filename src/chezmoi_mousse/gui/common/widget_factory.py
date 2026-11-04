@@ -8,14 +8,13 @@ from rich.markup import escape
 from textual.containers import HorizontalGroup
 from textual.widgets import Collapsible, Label, Static
 
-from chezmoi_mousse.gui.common.components import FlatSectionLabel, SubSectionLabel
 from chezmoi_mousse.str_enums import Chars, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
     from chezmoi_mousse.data_types import CommandResult
 
 _DIFF_TCSS_MAP: dict[str, Tcss] = {
-    "diff --git a/": Tcss.command,
+    "diff --git a/": Tcss.blue_label,
     " ": Tcss.context,
     "-": Tcss.removed,
     "deleted": Tcss.removed,
@@ -35,10 +34,12 @@ def cmd_result_collapsible(cmd_result: CommandResult) -> Collapsible:
     title = f"[{color}][{ts}] {escape(cmd_result.pretty_cmd)}[/] {suffix}"
     curated_stdout = cmd_result.std_out or f"{LogStr.no_stdout}"
     curated_stderr = cmd_result.std_err or f"{LogStr.no_stderr}"
-    contents: list[Label | Static] = [FlatSectionLabel(escape(cmd_result.full_cmd))]
-    contents.append(SubSectionLabel(LabelStr.stdout_output))
+    contents: list[Label | Static] = [
+        Static(cmd_result.full_cmd, markup=False, classes=Tcss.blue_label)
+    ]
+    contents.append(Static(LabelStr.stdout_output, classes=Tcss.green_label))
     contents.append(Static(f"{curated_stdout}", markup=False, classes=Tcss.cmd_output))
-    contents.append(SubSectionLabel(LabelStr.stderr_output))
+    contents.append(Static(LabelStr.stderr_output, classes=Tcss.green_label))
     contents.append(Static(f"{curated_stderr}", markup=False, classes=Tcss.cmd_output))
     return Collapsible(
         *contents,

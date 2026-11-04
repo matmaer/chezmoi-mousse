@@ -10,8 +10,7 @@ from textual.widgets import DataTable, Static
 
 from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.gui.common import widget_factory
-from chezmoi_mousse.gui.common.components import FlatSectionLabel
-from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd
+from chezmoi_mousse.str_enums import ColorVar, LabelStr, ReadCmd, Tcss
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,11 +35,11 @@ class ContentView(Vertical):
     cache: ClassVar[dict[Path, Content]] = {}
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel(LabelStr.not_set)
+        yield Static(markup=False, classes=Tcss.blue_label)
         yield ScrollableContainer(Static(markup=False))
 
     def on_mount(self) -> None:
-        self.flat_label = self.query_exactly_one(FlatSectionLabel)
+        self.cmd_label = self.query_one(Tcss.blue_label.q, Static)
         scrollable_container = self.query_exactly_one(ScrollableContainer)
         self.content_static = scrollable_container.query_exactly_one(Static)
 
@@ -54,9 +53,9 @@ class ContentView(Vertical):
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, file_path=path
                 )
-                self.flat_label.update(escape(tchezmoi.pretty_cmd(ReadCmd.cat, path)))
+                self.cmd_label.update(escape(tchezmoi.pretty_cmd(ReadCmd.cat, path)))
             else:
-                self.flat_label.update(LabelStr.read_file_output)
+                self.cmd_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
             self.cache[path] = f_content
         self.content_static.update(f_content)
@@ -115,11 +114,11 @@ class GitLogView(Vertical):
     cache: ClassVar[dict[Path, list[list[str]]]] = {}
 
     def compose(self) -> ComposeResult:
-        yield FlatSectionLabel()
+        yield Static(markup=False, classes=Tcss.blue_label)
         yield DataTable[str](show_cursor=False)
 
     def on_mount(self) -> None:
-        self.flat_label = self.query_exactly_one(FlatSectionLabel)
+        self.cmd_label = self.query_one(Tcss.blue_label.q, Static)
         self.data_table: DataTable[str] = self.query_exactly_one(DataTable)
         self.data_table.add_columns("COMMIT", "MESSAGE")
 
@@ -170,8 +169,7 @@ class GitLogView(Vertical):
             self.cache[node_data.path] = pretty_cells
 
         label_path = node_data.path if not node_data.dir_data.dest_dir else None
-        flat_label = tchezmoi.pretty_cmd(ReadCmd.git_log, label_path)
-        self.flat_label.update(escape(flat_label))
+        self.cmd_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, label_path))
 
         self.data_table.clear()
         for row in pretty_cells:

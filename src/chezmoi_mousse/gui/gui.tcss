@@ -313,28 +313,6 @@ Label {
   border-right: none;
   width: 1fr;
 
-  &MainSectionLabel {
-    background-tint: $surface-lighten-1;
-    background: $surface-lighten-1;
-    border-bottom: inner $surface-lighten-1;
-    border-top: inner $surface-lighten-1;
-    color: $text-accent;
-  }
-
-  &SubSectionLabel {
-    background-tint: $panel;
-    background: $panel;
-    border-bottom: wide $panel;
-    color: $text-success;
-  }
-
-  &FlatSectionLabel {
-    background-tint: $primary-muted;
-    background: $primary-muted;
-    border-bottom: wide $primary-muted;
-    color: $primary-lighten-3;
-  }
-
   &.truth_label {
     width: 4fr;
     background-tint: $panel;
@@ -445,12 +423,31 @@ Static {
     padding: 0 1;
   }
 
-  &.command {
-    text-align: center;
+  &.blue_label {
     background-tint: $primary-muted;
     background: $primary-muted;
     border-bottom: wide $primary-muted;
     color: $primary-lighten-3;
+    text-align: center;
+    width: 1fr;
+  }
+
+  &.green_label {
+    background-tint: $panel;
+    background: $panel;
+    border-bottom: wide $panel;
+    color: $text-success;
+    text-align: center;
+    width: 1fr;
+  }
+
+  &.main_label {
+    background-tint: $surface-lighten-1;
+    background: $surface-lighten-1;
+    border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1;
+    color: $text-accent;
+    text-align: center;
     width: 1fr;
   }
 
@@ -459,7 +456,6 @@ Static {
     border-bottom: inner $surface;
     background-tint: $surface;
     background: $surface;
-    color: $text;
     padding: 0 1;
   }
 

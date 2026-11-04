@@ -4,18 +4,13 @@ from typing import TYPE_CHECKING
 
 from textual import on, work
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Button, RadioButton, RadioSet, TabPane, Tree
+from textual.widgets import Button, RadioButton, RadioSet, Static, TabPane, Tree
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
 from chezmoi_mousse.gui.common.actionables import (
     OperateBtnGroup,
     SwitchGroup,
     TreeBtnGroup,
-)
-from chezmoi_mousse.gui.common.components import (
-    FlatSectionLabel,
-    MainSectionLabel,
-    SubSectionLabel,
 )
 from chezmoi_mousse.gui.common.messages import ShowTreeQidMsg
 from chezmoi_mousse.gui.common.operate_modal import OperateModal
@@ -68,7 +63,7 @@ class RightSideVertical(Vertical):
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel(LabelStr.context)
+        yield Static(LabelStr.context, classes=Tcss.main_label)
         with RadioSet():
             for radio_label in self.radio_labels:
                 yield RadioButton(radio_label, compact=True)
@@ -84,9 +79,9 @@ class RightSideVertical(Vertical):
 
 class MiddleVertical(Vertical):
     def compose(self) -> ComposeResult:
-        yield MainSectionLabel()
-        yield FlatSectionLabel()
-        yield SubSectionLabel()
+        yield Static(LabelStr.context, classes=Tcss.main_label)
+        yield Static(markup=False, classes=Tcss.blue_label)
+        yield Static(markup=False, classes=Tcss.green_label)
         yield GitLogView()
         yield ContentView()
         yield DiffView()
@@ -115,12 +110,12 @@ class OperateTab(TabPane):
 
     def on_mount(self) -> None:
         self.dry_run_cache: dict[Path, DryRunData] = {}
-        self.source_path_label = self.query_exactly_one(SubSectionLabel)
+        self.source_path_label = self.query_one(Tcss.green_label.q, Static)
 
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.middle_vert = self.query_exactly_one(MiddleVertical)
-        self.middle_label = self.middle_vert.query_exactly_one(MainSectionLabel)
-        self.no_show_label = self.middle_vert.query_children(FlatSectionLabel).first()
+        self.middle_label = self.middle_vert.query_one(Tcss.main_label.q, Static)
+        self.no_show_label = self.middle_vert.query_one(Tcss.blue_label.q, Static)
         self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.radio_set = self.query_exactly_one(RadioSet)
 

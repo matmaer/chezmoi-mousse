@@ -15,7 +15,6 @@ from textual.widgets import Button, ContentSwitcher, RichLog, Static, TabPane
 from chezmoi_mousse import store
 from chezmoi_mousse.debug.test_paths import TestPaths
 from chezmoi_mousse.gui.common.actionables import FlatBtnGroup, OperateBtnGroup
-from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar, LabelStr, LogStr, Tcss
 
 if TYPE_CHECKING:
@@ -181,17 +180,17 @@ class DebugTab(TabPane):
             )
             with ContentSwitcher(initial=store.debug_ids.container.test_paths_view):
                 yield Vertical(
-                    MainSectionLabel(LabelStr.test_paths),
+                    Static(LabelStr.test_paths, classes=Tcss.main_label),
                     ScrollableContainer(TestPathsView(classes=Tcss.info)),
                     id=store.debug_ids.container.test_paths_view,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.debug_log),
+                    Static(LabelStr.debug_log, classes=Tcss.main_label),
                     DebugLog(),
                     id=store.debug_ids.container.debug_log,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.dom_nodes),
+                    Static(LabelStr.dom_nodes, classes=Tcss.main_label),
                     RichLog(
                         id=store.debug_ids.richlog.dom_nodes,
                         highlight=True,
@@ -200,7 +199,7 @@ class DebugTab(TabPane):
                     id=store.debug_ids.container.dom_nodes,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.env_vars),
+                    Static(LabelStr.env_vars, classes=Tcss.main_label),
                     RichLog(
                         id=store.debug_ids.richlog.env_vars,
                         highlight=True,
@@ -209,7 +208,7 @@ class DebugTab(TabPane):
                     id=store.debug_ids.container.env_vars,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.colors),
+                    Static(LabelStr.colors, classes=Tcss.main_label),
                     ColorVarStatic(LabelStr.not_set, markup=True),
                     id=store.debug_ids.container.color_vars,
                 )

@@ -10,7 +10,6 @@ from textual.widgets import Button, ContentSwitcher, Pretty, Static, TabPane
 
 from chezmoi_mousse import store
 from chezmoi_mousse.gui.common.ascii_constants import FLOW_DIAGRAM
-from chezmoi_mousse.gui.common.components import MainSectionLabel
 from chezmoi_mousse.gui.common.doctor_data import DoctorTable
 from chezmoi_mousse.str_enums import BtnLabel, LabelStr, ReadCmd, Tcss
 
@@ -54,36 +53,34 @@ class ConfigTab(TabPane):
             )
             with ContentSwitcher(initial=store.config_ids.container.doctor):
                 yield Vertical(
-                    MainSectionLabel(LabelStr.doctor_output),
+                    Static(LabelStr.doctor_output, classes=Tcss.main_label),
                     DoctorTable(show_cursor=False),
                     id=store.config_ids.container.doctor,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.cat_config_output),
-                    CatConfigStatic(LabelStr.not_set, markup=False),
+                    Static(LabelStr.cat_config_output, classes=Tcss.main_label),
+                    CatConfigStatic(LabelStr.not_set),
                     id=store.config_ids.container.cat_config,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.dump_config_output),
-                    ScrollableContainer(
-                        DumpConfigStatic(LabelStr.not_set, markup=False)
-                    ),
+                    Static(LabelStr.dump_config_output, classes=Tcss.main_label),
+                    ScrollableContainer(DumpConfigStatic(LabelStr.not_set)),
                     id=store.config_ids.container.dump_config,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.ignored_output),
+                    Static(LabelStr.ignored_output, classes=Tcss.main_label),
                     ScrollableContainer(PrettyIgnored(LabelStr.not_set)),
                     id=store.config_ids.container.ignored,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.template_data_output),
+                    Static(LabelStr.template_data_output, classes=Tcss.main_label),
                     ScrollableContainer(
                         TemplateDataStatic(LabelStr.not_set, markup=False)
                     ),
                     id=store.config_ids.container.template_data,
                 )
                 yield Vertical(
-                    MainSectionLabel(LabelStr.diagram),
+                    Static(LabelStr.diagram, classes=Tcss.main_label),
                     Static(FLOW_DIAGRAM, classes=Tcss.flow_diagram),
                     id=store.config_ids.container.diagram,
                 )

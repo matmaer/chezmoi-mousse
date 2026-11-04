@@ -73,32 +73,28 @@ class ParsedDumpConfig:
     dump_config_std_out: str
 
     @cached_property
-    def parsed_cfg(self) -> dict[str, Any]:
+    def _parsed_cfg(self) -> dict[str, Any]:
         return json.loads(self.dump_config_std_out)
 
     @property
-    def dest_dir_str(self) -> str:
-        return self.parsed_cfg["destDir"]
-
-    @property
     def auto_add(self) -> bool:
-        return self.parsed_cfg["git"]["autoadd"]
+        return self._parsed_cfg["git"]["autoadd"]
 
     @property
     def auto_commit(self) -> bool:
-        return self.parsed_cfg["git"]["autocommit"]
+        return self._parsed_cfg["git"]["autocommit"]
 
     @property
     def auto_push(self) -> bool:
-        return self.parsed_cfg["git"]["autopush"]
+        return self._parsed_cfg["git"]["autopush"]
 
     @cached_property
     def dest_dir(self) -> Path:
-        return Path(self.parsed_cfg["destDir"])
+        return Path(self._parsed_cfg["destDir"])
 
     @cached_property
     def git_index(self) -> Path:
-        return Path(self.parsed_cfg["sourceDir"]) / ".git" / "index"
+        return Path(self._parsed_cfg["sourceDir"]) / ".git" / "index"
 
 
 @dataclass(slots=True, frozen=True)

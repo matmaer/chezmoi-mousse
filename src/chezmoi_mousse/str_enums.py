@@ -24,7 +24,6 @@ __all__ = [
 
 class Chars(StrEnum):
     bullet = "\u2022"  # BULLET
-    burger = "\u2261"  # IDENTICAL TO
     down_triangle = "\u25be"  # BLACK DOWN-POINTING SMALL TRIANGLE
     lower_3_8ths_block = "\u2583"  # LOWER THREE EIGHTHS BLOCK
     radio_button = "\u2b24"  # MEDIUM BLACK CIRCLE
@@ -224,10 +223,9 @@ class LabelStr(StrEnum):
 
     # Operate Modal
     ready_to_run = "Ready to run"
-    no_op = "Sorry this is a no-op, nothing to do."
     quit_op = "Asked to quit the operation"
 
-    # Operate tab MainSectionLabel text
+    # Operate tab main Static label text
     dest_dir = "Destination Directory"
     managed_dir = "Managed Directory"
     managed_file = "Managed File"
@@ -243,7 +241,7 @@ class LabelStr(StrEnum):
     path_has_status = "Has a status"
     path_un_wanted = "Matches un-wanted filter"
 
-    # Operate tab FlatSectionLabel
+    # Operate tab blue label
     read_file_output = "Read file from disk output"
     select_file_path = "<- Select a file path to view its contents."
     select_status_path = "<- Select a path with a status to view its diff."
@@ -500,12 +498,18 @@ class Tcss(StrEnum):
     dest_dir_button = auto()
     switch_with_label = auto()
 
+    # Static labels
+    blue_label = auto()
+    false_label = auto()
+    green_label = auto()
+    main_label = auto()
+    true_label = auto()
+    truth_label = auto()
+
     # Other
     added = auto()
     cmd_output = auto()
-    command = auto()
     context = auto()
-    false_label = auto()
     flat_btn = auto()
     flow_diagram = auto()
     info = auto()
@@ -517,8 +521,10 @@ class Tcss(StrEnum):
     select_all = auto()
     splash_log = auto()
     tree_header = auto()
-    true_label = auto()
-    truth_label = auto()
+
+    @property
+    def q(self) -> str:
+        return f".{self.value}"
 
 
 class TreeName(StrEnum):
