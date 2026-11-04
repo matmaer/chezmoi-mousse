@@ -36,25 +36,6 @@ LOADING_START_DELAY = 0.15  # delay when the loading indicator should start show
 LOADING_STOP_DELAY = 0.3  # delay when the loading indicator should stop showing
 
 
-class PathsInScope(VerticalGroup):
-    def __init__(self, read_cmd: ReadCmd, path_str: str, path_scope: str) -> None:
-        self.read_cmd = read_cmd
-        self.path_str = path_str
-        self.path_scope = path_scope
-        self.pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str} (paths)"
-        super().__init__()
-
-    def compose(self) -> ComposeResult:
-        yield Collapsible(
-            *(
-                Static(f"{self.pretty_cmd}", markup=False, classes=Tcss.blue_label),
-                Static(self.path_scope, markup=False, classes=Tcss.cmd_output),
-            ),
-            title=f"[${ColorVar.text_success}]{'Paths in Scope'}[/]",
-            collapsed=False,
-        )
-
-
 class CmGitConfig(VerticalGroup):
     def compose(self) -> ComposeResult:
         yield Collapsible(
@@ -71,6 +52,23 @@ class CmGitConfig(VerticalGroup):
                 strict=True,
             )
         ]
+
+
+class PathsInScope(VerticalGroup):
+    def __init__(self, read_cmd: ReadCmd, path_str: str, path_scope: str) -> None:
+        self.read_cmd = read_cmd
+        self.path_str = path_str
+        self.path_scope = path_scope
+        self.pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str} (paths)"
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield Collapsible(
+            Static(self.path_scope, markup=False, classes=Tcss.cmd_output),
+            title=f"[${ColorVar.text_success}]{f'{self.pretty_cmd}'}[/]",
+            collapsed=False,
+            classes=Tcss.op_modal_collapsible,
+        )
 
 
 class SelectPaths(VerticalGroup):
@@ -137,6 +135,7 @@ class ShowCmDiff(VerticalGroup):
             *widget_factory.diff_lines(self.diff_txt),
             title=f"[${ColorVar.text_success}]Chezmoi diff: {self.diff_title}[/]",
             collapsed=False,
+            classes=Tcss.op_modal_collapsible,
         )
 
 
@@ -150,11 +149,12 @@ class OperateModal(ModalScreen[None]):
         self.path_str: str = "" if op_path == store.cfg.dest_dir else str(op_path)
         self.path_arg: Path | None = None if op_path == store.cfg.dest_dir else op_path
         self.affected_paths = affected_paths
-        self.busy: bool = False
+        self.process_busy: bool = False
         super().__init__()
 
     def compose(self) -> ComposeResult:
         with Vertical():
+            yield Static("", classes=Tcss.blue_label)
             yield Static(
                 f"{self.op_btn.value} {self.path_str}".rstrip(),
                 markup=False,
@@ -183,13 +183,13 @@ class OperateModal(ModalScreen[None]):
 
     def on_mount(self) -> None:
         self.prompt_future: asyncio.Future[str] | None = None
-        self.answers = self.query_exactly_one(ScrollableContainer)
+        self.interaction = self.query_exactly_one(ScrollableContainer)
         if self.op_btn == BtnLabel.chezmoi_add and self.op_path.is_dir():
-            self.answers.mount(SelectPaths(self.op_path))
+            self.interaction.mount(SelectPaths(self.op_path))
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         self.prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = self.prompt_btn_group.query(Button)
-        self.general_info_label = self.query_one(Tcss.main_label.q, Static)
+        self.info_label = self.query_one(Tcss.main_label.q, Static)
         for button in self.prompt_buttons:
             if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                 button.display = True
@@ -198,11 +198,15 @@ class OperateModal(ModalScreen[None]):
         )
 
     async def _check_busy(self) -> None:
-        if not self.busy and self.prompt_btn_group.loading:
+        if not self.process_busy and self.prompt_btn_group.loading:
             await asyncio.sleep(LOADING_STOP_DELAY)
-        elif self.busy and not self.prompt_btn_group.loading:
+        elif self.process_busy and not self.prompt_btn_group.loading:
             await asyncio.sleep(LOADING_START_DELAY)
-        self.prompt_btn_group.loading = self.busy
+        self.prompt_btn_group.loading = self.process_busy
+
+    def collapse_all_collapsibles(self) -> None:
+        for collapsible in self.query(Collapsible):
+            collapsible.collapsed = True
 
     def _create_cm_git_diff(self, text: str, title: str) -> ShowCmDiff:
         container = self.query_exactly_one(ScrollableContainer)
@@ -216,7 +220,7 @@ class OperateModal(ModalScreen[None]):
         # same routing as tchezmoi._exec_chezmoi so the Logs tab shows the result
         self.app.logs_tab.cmd_result = result
         self.app.post_message(CommandResultMsg(result))
-        self.general_info_label.update(
+        self.info_label.update(
             "Process completed."
             if result.returncode == 0
             else f"Process exit, returncode {result.returncode})."
@@ -224,8 +228,7 @@ class OperateModal(ModalScreen[None]):
         self.app.operate_tab.refresh_trees()
 
     async def _await_user_choice(self, options: list[str]) -> str:
-        """Shows the offered prompt options and pauses until a button is clicked."""
-        self.busy = False
+        self.process_busy = False
         offered = set(options)
         for button in self.prompt_buttons:
             button.display = str(button.label) in offered
@@ -236,7 +239,7 @@ class OperateModal(ModalScreen[None]):
             async with asyncio.timeout(PROMPT_TIMEOUT):
                 return await self.prompt_future
         except TimeoutError:
-            self.answers.mount(
+            self.interaction.mount(
                 Static(
                     f"No reply within {PROMPT_TIMEOUT} seconds, quitting.",
                     classes=Tcss.green_label,
@@ -245,20 +248,21 @@ class OperateModal(ModalScreen[None]):
             return ChezmoiPrompts.quit.reply
         finally:
             self.prompt_future = None
+            self.process_busy = True
             # chezmoi is busy again, nothing can be answered until the next prompt
             for button in self.prompt_buttons:
                 button.disabled = True
-            self.busy = True
 
     @work
     async def _run_interactive(self) -> None:
+        self.collapse_all_collapsibles()
         last_diff: ShowCmDiff | None = None
         pending_diff_question: str | None = None
 
         async def handle_prompt(prompt_question: str, options: list[str]) -> str:
             nonlocal last_diff, pending_diff_question
 
-            self.general_info_label.update(f"{prompt_question} ({'/'.join(options)})?")
+            self.info_label.update(f"{prompt_question} ({'/'.join(options)})?")
             response = await self._await_user_choice(options)
             # Pressing diff again for the same prompt toggles the existing diff
             while (
@@ -273,11 +277,17 @@ class OperateModal(ModalScreen[None]):
                 response = await self._await_user_choice(options)
 
             if response == ChezmoiPrompts.no.reply:
-                self.answers.mount(widget_factory.truth_widget(prompt_question, False))
+                self.interaction.mount(
+                    widget_factory.truth_widget(prompt_question, False)
+                )
             elif response == ChezmoiPrompts.yes.reply:
-                self.answers.mount(widget_factory.truth_widget(prompt_question, True))
+                self.interaction.mount(
+                    widget_factory.truth_widget(prompt_question, True)
+                )
             elif response == ChezmoiPrompts.quit.reply:
-                self.answers.mount(Static(LabelStr.quit_op, classes=Tcss.green_label))
+                self.interaction.mount(
+                    Static(LabelStr.quit_op, classes=Tcss.green_label)
+                )
 
             pending_diff_question = (
                 prompt_question if response == ChezmoiPrompts.diff.reply else None
@@ -298,7 +308,7 @@ class OperateModal(ModalScreen[None]):
         events = tchezmoi.run_chezmoi_interactive(
             self.op_btn.write_cmd, verb_arg, handle_prompt
         )
-        self.busy = True
+        self.process_busy = True
         try:
             async for event in events:
                 if isinstance(event, ExecResult):
@@ -324,7 +334,7 @@ class OperateModal(ModalScreen[None]):
                 button.display = button.label == BtnLabel.close
                 button.disabled = False
         finally:
-            self.busy = False
+            self.process_busy = False
             # if the loop exits early (e.g. an exception), stop chezmoi gracefully
             await events.aclose()
 

@@ -143,6 +143,10 @@ OperateModal {
     max-width: 1fr;
     margin: 1 2 0 2;
     width: auto;
+
+    .op_modal_collapsible {
+      margin-bottom: 1;
+    }
   }
 }
 

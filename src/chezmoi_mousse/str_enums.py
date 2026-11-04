@@ -514,13 +514,14 @@ class Tcss(StrEnum):
     flow_diagram = auto()
     info = auto()
     last_clicked_flat_btn = auto()
+    op_modal_collapsible = auto()
     operate_btn = auto()
     prompt_btn = auto()
-    tree_op_button = auto()
     removed = auto()
     select_all = auto()
     splash_log = auto()
     tree_header = auto()
+    tree_op_button = auto()
 
     @property
     def q(self) -> str:
