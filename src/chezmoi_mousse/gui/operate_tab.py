@@ -314,7 +314,7 @@ class OperateTab(TabPane):
             return
         paths = dry_run_data.pretty_op_paths(btn_label)
         modal = OperateModal(
-            op_btn=btn_label, path=self.current_node.path, affected_paths=paths
+            op_btn=btn_label, op_path=self.current_node.path, affected_paths=paths
         )
         self.app.push_screen(modal)
 

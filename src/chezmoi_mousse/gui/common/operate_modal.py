@@ -37,8 +37,10 @@ if TYPE_CHECKING:
 
 __all__ = ["OperateModal"]
 
-
 PROMPT_TIMEOUT = 120  # timeout to revert to quit if a modal is forgotten
+BUSY_POLL_INTERVAL = 0.05  # quick interval to check for toggling the loading reactive
+LOADING_START_DELAY = 0.15  # delay when the loading indicator should start showing
+LOADING_STOP_DELAY = 0.3  # delay when the loading indicator should stop showing
 
 
 class PathsInScope(VerticalGroup):
@@ -161,13 +163,13 @@ class OperateModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, *, op_btn: BtnLabel, path: Path, affected_paths: str) -> None:
+    def __init__(self, *, op_btn: BtnLabel, op_path: Path, affected_paths: str) -> None:
         self.op_btn: BtnLabel = op_btn
-        self.path = path
-        self.path_str: str = "" if path == store.cfg.dest_dir else str(path)
-        self.path_arg: Path | None = None if path == store.cfg.dest_dir else path
+        self.op_path = op_path
+        self.path_str: str = "" if op_path == store.cfg.dest_dir else str(op_path)
+        self.path_arg: Path | None = None if op_path == store.cfg.dest_dir else op_path
         self.affected_paths = affected_paths
-        self._prompt_future: asyncio.Future[str] | None = None
+        self.busy: bool = False
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -195,22 +197,32 @@ class OperateModal(ModalScreen[None]):
             )
 
     def on_mount(self) -> None:
+        self.prompt_future: asyncio.Future[str] | None = None
         self.answers = self.query_exactly_one(ScrollableContainer)
-        if self.op_btn == BtnLabel.chezmoi_add and self.path.is_dir():
-            self.answers.mount(SelectPaths(self.path))
+        if self.op_btn == BtnLabel.chezmoi_add and self.op_path.is_dir():
+            self.answers.mount(SelectPaths(self.op_path))
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
-        prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
-        self.prompt_buttons = prompt_btn_group.query(Button)
+        self.prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
+        self.prompt_buttons = self.prompt_btn_group.query(Button)
         self.general_info_label = self.query(MainSectionLabel).last()
         for button in self.prompt_buttons:
             if button.label in (BtnLabel.cancel, self.op_btn.run_label):
                 button.display = True
+        self.loading_timer = self.set_interval(
+            interval=BUSY_POLL_INTERVAL, callback=self._check_busy
+        )
+
+    async def _check_busy(self) -> None:
+        if not self.busy and self.prompt_btn_group.loading:
+            await asyncio.sleep(LOADING_STOP_DELAY)
+        elif self.busy and not self.prompt_btn_group.loading:
+            await asyncio.sleep(LOADING_START_DELAY)
+        self.prompt_btn_group.loading = self.busy
 
     def _create_cm_git_diff(self, text: str, title: str) -> ShowCmDiff:
         container = self.query_exactly_one(ScrollableContainer)
         show_cm_diff = ShowCmDiff(text, title)
         container.mount(show_cm_diff)
-        container.scroll_end()
         return show_cm_diff
 
     def _mount_and_scroll(self, label_widget: Label) -> None:
@@ -220,7 +232,6 @@ class OperateModal(ModalScreen[None]):
     def _handle_cmd_result(self, result: CommandResult) -> None:
         container = self.query_exactly_one(ScrollableContainer)
         container.mount(widget_factory.cmd_result_collapsible(cmd_result=result))
-        container.scroll_end()
         # same routing as tchezmoi._exec_chezmoi so the Logs tab shows the result
         self.app.logs_tab.cmd_result = result
         self.app.post_message(CommandResultMsg(result))
@@ -233,25 +244,27 @@ class OperateModal(ModalScreen[None]):
 
     async def _await_user_choice(self, options: list[str]) -> str:
         """Shows the offered prompt options and pauses until a button is clicked."""
+        self.busy = False
         offered = set(options)
         for button in self.prompt_buttons:
             button.display = str(button.label) in offered
             button.disabled = False
 
-        self._prompt_future = asyncio.get_running_loop().create_future()
+        self.prompt_future = asyncio.get_running_loop().create_future()
         try:
             async with asyncio.timeout(PROMPT_TIMEOUT):
-                return await self._prompt_future
+                return await self.prompt_future
         except TimeoutError:
             self._mount_and_scroll(
                 SubSectionLabel(f"No reply within {PROMPT_TIMEOUT} seconds, quitting.")
             )
             return ChezmoiPrompts.quit.reply
         finally:
-            self._prompt_future = None
+            self.prompt_future = None
             # chezmoi is busy again, nothing can be answered until the next prompt
             for button in self.prompt_buttons:
                 button.disabled = True
+            self.busy = True
 
     @work
     async def _run_interactive(self) -> None:
@@ -292,7 +305,7 @@ class OperateModal(ModalScreen[None]):
         for select_paths in self.query(SelectPaths):
             select_paths.disabled = True
             if selected := select_paths.selected_paths:
-                all_paths = [self.path, *selected]
+                all_paths = [self.op_path, *selected]
                 verb_arg = [str(path) for path in all_paths]
                 pretty_verb_arg = " ".join(
                     path_funcs.get_rel_path_str(path) for path in all_paths
@@ -301,6 +314,7 @@ class OperateModal(ModalScreen[None]):
         events = tchezmoi.run_chezmoi_interactive(
             self.op_btn.write_cmd, verb_arg, handle_prompt
         )
+        self.busy = True
         try:
             async for event in events:
                 if isinstance(event, ExecResult):
@@ -326,7 +340,8 @@ class OperateModal(ModalScreen[None]):
                 button.display = button.label == BtnLabel.close
                 button.disabled = False
         finally:
-            # on cancel/dismiss the worker is cancelled, this terminates chezmoi
+            self.busy = False
+            # if the loop exits early (e.g. an exception), stop chezmoi gracefully
             await events.aclose()
 
     @on(Button.Pressed)
@@ -340,8 +355,8 @@ class OperateModal(ModalScreen[None]):
             for button in self.prompt_buttons:
                 button.display = False
             self._run_interactive()
-        elif self._prompt_future is not None and not self._prompt_future.done():
+        elif self.prompt_future is not None and not self.prompt_future.done():
             for prompt in ChezmoiPrompts:
                 if prompt.prompt_item == button_label:
-                    self._prompt_future.set_result(prompt.reply)
+                    self.prompt_future.set_result(prompt.reply)
                     break
