@@ -138,4 +138,5 @@ class SplashScreen(Screen[None]):
             or self.animated_fade.step_count % 20 != 0
         ):
             await asyncio.sleep(0.08)
+        await asyncio.sleep(0.1)
         self.dismiss()

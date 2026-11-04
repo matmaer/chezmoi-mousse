@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
     from textual.containers import HorizontalGroup
 
-    from chezmoi_mousse.data_types import IterDirResult
+    from chezmoi_mousse.data_types import IterDirResult, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import ReadCmd
 
@@ -143,13 +143,19 @@ class OperateModal(ModalScreen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def __init__(self, *, op_btn: BtnLabel, op_path: Path, affected_paths: str) -> None:
+    def __init__(
+        self, *, op_btn: BtnLabel, node_data: NodeData, paths_in_scope: str
+    ) -> None:
         self.op_btn: BtnLabel = op_btn
-        self.op_path = op_path
-        self.path_str: str = "" if op_path == store.cfg.dest_dir else str(op_path)
-        self.path_arg: Path | None = None if op_path == store.cfg.dest_dir else op_path
-        self.affected_paths = affected_paths
+        self.op_path = node_data.path
+        self.path_str: str = (
+            "" if self.op_path == store.cfg.dest_dir else str(self.op_path)
+        )
+        self.path_arg: Path | None = (
+            None if self.op_path == store.cfg.dest_dir else self.op_path
+        )
         self.process_busy: bool = False
+        self.path_scope = paths_in_scope
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -162,9 +168,7 @@ class OperateModal(ModalScreen[None]):
             )
             with ScrollableContainer():
                 yield CmGitConfig()
-                yield PathsInScope(
-                    self.op_btn.dry_cmd, self.path_str, self.affected_paths
-                )
+                yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.path_scope)
             yield Static(LabelStr.ready_to_run, classes=Tcss.main_label)
             yield PromptBtnGroup(
                 labels=(

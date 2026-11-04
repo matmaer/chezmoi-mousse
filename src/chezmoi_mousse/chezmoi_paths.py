@@ -8,7 +8,7 @@ from chezmoi_mousse import path_funcs
 from chezmoi_mousse.data_types import DirData, NodeData
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.str_enums import StatusCode as Sc
+    from chezmoi_mousse.str_enums import BtnLabel, StatusCode as Sc
 
 __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 
@@ -27,6 +27,8 @@ class ChezmoiTreePaths:
     _status_files: dict[Path, Sc]
     _un_man_dirs: set[Path]
     _un_man_files: set[Path]
+    _dry_apply: dict[BtnLabel, list[Path]]
+    _dry_re_add: dict[BtnLabel, list[Path]]
 
     file_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
     dir_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
@@ -38,7 +40,6 @@ class ChezmoiTreePaths:
         wanted_files = {
             p for p in self._un_man_files if not path_funcs.is_unwanted_file(p)
         }
-
         wanted_dirs = {
             p for p in self._un_man_dirs if not path_funcs.is_unwanted_dir(p)
         }
@@ -63,15 +64,18 @@ class ChezmoiTreePaths:
         )
 
     def _populate_file_node_data(self, *, wanted_files: set[Path]) -> None:
+
         for path in self._man_files.keys() | self._un_man_files:
             managed = path in self._man_files
+            exists = True if not managed else path.exists()
+            status: Sc | None = self._status_files.get(path, None)
             self.file_node_data[path] = NodeData(
                 dir_path=False,
-                exists=True if not managed else path.exists(),
+                exists=exists,
                 managed=managed,
                 path=path,
                 source_path=self._man_files.get(path, None),
-                status=self._status_files.get(path, None),
+                status=status,
                 wanted=path in wanted_files,
             )
 
@@ -83,53 +87,56 @@ class ChezmoiTreePaths:
         un_managed_paths: set[Path],
         wanted_paths: set[Path],
     ) -> None:
-
         for path in {self._dest_dir} | self._man_dirs.keys() | self._un_man_dirs:
-            has_nested_status = False
-            has_nested_managed = False
-            has_nested_wanted = False
-            has_nested_un_managed = False
+            child_paths = False
+            nested_status = False
+            nested_managed = False
+            nested_wanted = False
+            nested_un_managed = False
+
             managed = path in self._man_dirs
             is_dest_dir = path == self._dest_dir
+            status = self._status_dirs.get(path, None)
+            exists = True if not managed else path.exists()
+
             if is_dest_dir:
-                has_nested_status = bool(status_paths)
-                has_nested_managed = bool(managed_paths)
-                has_nested_un_managed = bool(un_managed_paths)
-                has_nested_wanted = bool(wanted_paths)
-            elif managed:
-                has_nested_status = path_funcs.any_nested_in(
-                    dir_path=path, check_paths=status_paths
-                )
-                has_nested_managed = path_funcs.any_nested_in(
-                    dir_path=path, check_paths=managed_paths
-                )
-                has_nested_wanted = path_funcs.any_nested_in(
+                nested_status = bool(status_paths)
+                nested_managed = bool(managed_paths)
+                nested_wanted = bool(wanted_paths)
+                nested_un_managed = bool(un_managed_paths)
+            else:
+                nested_wanted = path_funcs.any_nested_in(
                     dir_path=path, check_paths=wanted_paths
                 )
-                has_nested_un_managed = path_funcs.any_nested_in(
+                nested_un_managed = path_funcs.any_nested_in(
                     dir_path=path, check_paths=un_managed_paths
                 )
 
-            has_child_paths = False
-            if has_nested_managed or has_nested_un_managed:
-                has_child_paths = True
-            elif not managed and not has_nested_un_managed:
-                has_child_paths = any(path.iterdir())
+            if managed:
+                nested_status = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=status_paths
+                )
+                nested_managed = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=managed_paths
+                )
+                if nested_managed or nested_un_managed:
+                    child_paths = True
+
             self.dir_node_data[path] = NodeData(
                 dir_data=DirData(
                     dest_dir=is_dest_dir,
-                    has_child_paths=has_child_paths,
-                    nested_managed=has_nested_managed,
-                    nested_status=has_nested_status,
-                    nested_un_managed=has_nested_un_managed,
-                    nested_wanted=has_nested_wanted,
+                    has_child_paths=child_paths,
+                    nested_managed=nested_managed,
+                    nested_status=nested_status,
+                    nested_un_managed=nested_un_managed,
+                    nested_wanted=nested_wanted,
                 ),
                 dir_path=True,
-                exists=path.exists() if managed else True,
+                exists=exists,
                 managed=managed,
                 path=path,
                 source_path=self._man_dirs.get(path),
-                status=self._status_dirs.get(path, None),
+                status=status,
                 wanted=path in wanted_paths,
             )
 

@@ -7,18 +7,17 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.str_enums import Chars, LabelStr, TreeName
+from chezmoi_mousse.str_enums import LabelStr, TreeName
 
 if TYPE_CHECKING:
     from typing import Any
 
     from chezmoi_mousse.debug.utils import DebugUtils
-    from chezmoi_mousse.str_enums import BtnLabel, ReadCmd, StatusCode, WriteCmd
-
+    from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 __all__ = [
+    "BtnDryData",
     "CommandResult",
     "DirData",
-    "DryRunData",
     "ExecResult",
     "InitData",
     "IterDirResult",
@@ -41,20 +40,6 @@ class CommandResult:
     @property
     def out_list(self) -> list[str]:
         return self.std_out.splitlines()
-
-
-@dataclass(slots=True)
-class DryRunData:
-    chezmoi_add: list[Path] = field(default_factory=list[Path])
-    chezmoi_apply: list[Path] = field(default_factory=list[Path])
-    chezmoi_destroy: list[Path] = field(default_factory=list[Path])
-    chezmoi_forget: list[Path] = field(default_factory=list[Path])
-    chezmoi_re_add: list[Path] = field(default_factory=list[Path])
-
-    def pretty_op_paths(self, btn_label: BtnLabel) -> str:
-        paths: list[Path] = getattr(self, btn_label.name)
-        strings: list[str] = [f"{Chars.bullet} {p}" for p in paths]
-        return "\n".join(path_str for path_str in strings)
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -132,7 +117,14 @@ class DirData:
         )
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, kw_only=True)
+class BtnDryData:
+    op_path: Path
+    no_op: bool
+    pretty_str: str = ""
+
+
+@dataclass(slots=True)
 class NodeData:
     dir_path: bool
     exists: bool
@@ -152,32 +144,8 @@ class NodeData:
         return self.status is not None
 
     @property
-    def managed_dir(self) -> bool:
-        return self.dir_path and self.managed
-
-    @property
-    def managed_file(self) -> bool:
-        return self.file_path and self.managed
-
-    @property
-    def status_dir(self) -> bool:
-        return self.managed_dir and self.status_path
-
-    @property
-    def status_file(self) -> bool:
-        return self.managed_file and self.status_path
-
-    @property
     def un_managed(self) -> bool:
         return not self.managed
-
-    @property
-    def un_managed_dir(self) -> bool:
-        return self.dir_path and self.un_managed
-
-    @property
-    def un_managed_file(self) -> bool:
-        return self.file_path and self.un_managed
 
     @property
     def _wanted_dir(self) -> bool:
@@ -221,8 +189,13 @@ class NodeData:
         return f"{label_str} ...{os.sep}{Path(*self.path.parts[-count:])}"
 
     def include_in_tree(self, tree_name: TreeName) -> bool:
-        include_dir_for_sp_tree = self.status_dir or self.dir_data.nested_status
-        include_sp = self.status_file or include_dir_for_sp_tree
+        managed_dir = self.dir_path and self.managed
+        status_dir = managed_dir and self.status_path
+        include_dir_for_sp_tree = status_dir or self.dir_data.nested_status
+
+        managed_file = self.file_path and self.managed
+        status_file = managed_file and self.status_path
+        include_sp = status_file or include_dir_for_sp_tree
 
         if tree_name in (TreeName.managed_sp):
             return include_sp

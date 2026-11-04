@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
     from textual.containers import Vertical
 
-    from chezmoi_mousse.data_types import CommandResult
+    from chezmoi_mousse.data_types import CommandResult, NodeData
 
 
 __all__ = ["ChezmoiGui"]
@@ -91,6 +91,7 @@ class ChezmoiGui(App[str]):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.current_node: NodeData
         self.query_exactly_one(TabbedContent).border_title = TITLE
         self.maximize_toggle = False
         self.register_theme(chezmoi_mousse_dark)
@@ -128,18 +129,22 @@ class ChezmoiGui(App[str]):
         self.logs_tab = self.query_exactly_one(LogsTab)
         self.debug_log = self.query_exactly_one(DebugLog)
         self.init_phase = False
-        for cr in pre_mount_results:
-            self.logs_tab.cmd_result = cr
         self._run_splash_commands()
 
+        for cr in pre_mount_results:
+            self.logs_tab.cmd_result = cr
+
         new_tree_paths = await tchezmoi.run_managed_commands(self)
-        await store.handle_new_tree_paths(self, new_tree_paths)
+        await store.store_new_tree_paths(self, new_tree_paths)
+
         await tabbed_content.add_pane(
             OperateTab(id=BtnLabel.operate.pane_id, title=BtnLabel.operate),
             before=BtnLabel.logs.pane_id,
         )
-        tabbed_content.active = BtnLabel.operate.pane_id
+        self.current_node = store.cm_paths.dest_dir_node_data
         self.operate_tab = self.query_exactly_one(OperateTab)
+        tabbed_content.active = BtnLabel.operate.pane_id
+        self.operate_tab.show_dest_dir()
         await self.splash_screen.dismiss_after_fade_loop()
 
     @work
@@ -275,6 +280,8 @@ class ChezmoiGui(App[str]):
 
     @on(TabbedContent.TabActivated)
     def handle_tab_activated(self) -> None:
+        if isinstance(self.screen, (SplashScreen, OperateModal)):
+            return
         self.refresh_bindings()
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool:

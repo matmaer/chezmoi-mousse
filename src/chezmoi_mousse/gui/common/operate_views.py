@@ -158,7 +158,7 @@ class GitLogView(Vertical):
         return pretty_cells
 
     @work
-    async def update_git_log_view(
+    async def update_widgets(
         self, node_data: NodeData, std_out: str | None = None
     ) -> None:
         assert node_data.managed or node_data.dir_data.dest_dir

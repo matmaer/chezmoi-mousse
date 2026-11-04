@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.data_types import DryRunData, NodeData
+    from chezmoi_mousse.data_types import BtnDryData, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -106,17 +106,18 @@ class OperateTab(TabPane):
                     LabelStr.radio_path_view,
                 )
             )
-            yield OperateBtnGroup(labels=BtnLabel.op_btn_labels())
+        yield OperateBtnGroup(labels=BtnLabel.op_btn_labels())
 
     def on_mount(self) -> None:
-        self.dry_run_cache: dict[Path, DryRunData] = {}
+        self.dry_run_cache: dict[Path, dict[BtnLabel, BtnDryData]] = {}
         self.source_path_label = self.query_one(Tcss.green_label.q, Static)
+        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
+        self.op_buttons = self.op_btn_group.query_children(Button).results()
 
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.middle_vert = self.query_exactly_one(MiddleVertical)
         self.middle_label = self.middle_vert.query_one(Tcss.main_label.q, Static)
         self.no_show_label = self.middle_vert.query_one(Tcss.blue_label.q, Static)
-        self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.radio_set = self.query_exactly_one(RadioSet)
 
         self.paths_without_git_log: set[Path] = set()
@@ -126,8 +127,6 @@ class OperateTab(TabPane):
         self.diff_reverse_view = self.query_exactly_one(DiffReverseView)
         self.path_view = self.query_exactly_one(PathView)
 
-        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
-
     @property
     def _current_displayed_tree(self) -> OperateTree:
         trees = self.left_side_vertical.query_children(OperateTree).results()
@@ -136,41 +135,41 @@ class OperateTab(TabPane):
                 return tree
         raise RuntimeError("Expected a tree to be displayed.")
 
-    def _update_all_widgets(self, node_data: NodeData) -> None:
-        self.current_node: NodeData = node_data
+    def show_dest_dir(self) -> None:
+        self._update_widgets(store.cm_paths.dest_dir_node_data)
+        for tree in self.left_side_vertical.query_children(OperateTree).results():
+            tree.unselect()
+            tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
 
+    def _update_widgets(self, node_data: NodeData) -> None:
+        self.app.current_node = node_data
         size = self.middle_label.container_size.width
         self.middle_label.update(node_data.get_main_label(size))
+        self._update_op_buttons(node_data)
+        self._update_view_widgets(node_data)
 
+    @work
+    async def _update_op_buttons(self, node_data: NodeData) -> None:
+        cached: dict[BtnLabel, BtnDryData] = {}
+        try:
+            cached = self.dry_run_cache[node_data.path]
+        except:
+            self.dry_run_cache[node_data.path] = await tchezmoi.get_dry_run_data(
+                self.app, node_data.path
+            )
+            cached = self.dry_run_cache[node_data.path]
+        for btn in self.op_btn_group.query(Button).results():
+            btn_label = BtnLabel(str(btn.label))
+            btn.disabled = cached[btn_label].no_op
+
+    @work
+    async def _update_view_widgets(self, node_data: NodeData) -> None:
         if node_data.source_path is None:
             self.source_path_label.display = False
         else:
             rel_source_path = path_funcs.get_rel_path_str(node_data.source_path)
             self.source_path_label.update(f"source path: {rel_source_path}")
             self.source_path_label.display = True
-
-        self._update_op_buttons(node_data)
-        self._update_view_widgets(node_data)
-
-    def _show_dest_dir(self) -> None:
-        self._update_all_widgets(store.cm_paths.dest_dir_node_data)
-        for tree in self.left_side_vertical.query_children(OperateTree).results():
-            tree.unselect()
-            tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
-
-    @work
-    async def _update_op_buttons(self, node_data: NodeData) -> None:
-        self.dry_run_cache[node_data.path] = await tchezmoi.run_affected_paths(
-            self.app, node_data
-        )
-        for btn in self.op_btn_group.query(Button).results():
-            btn_label = BtnLabel(str(btn.label))
-            btn.disabled = (
-                getattr(self.dry_run_cache[node_data.path], btn_label.name) == []
-            )
-
-    @work
-    async def _update_view_widgets(self, node_data: NodeData) -> None:
         self.no_show_label.display = False
         for view in (
             self.git_log_view,
@@ -184,7 +183,7 @@ class OperateTab(TabPane):
         radio_label = str(self.radio_set.pressed_button.label)
         if radio_label == LabelStr.radio_git_log:
             if node_data.path in self.git_log_view.cache:
-                self.git_log_view.update_git_log_view(node_data, None)
+                self.git_log_view.update_widgets(node_data, None)
                 self.git_log_view.display = True
             elif node_data.path not in self.paths_without_git_log and (
                 node_data.managed or node_data.dir_data.dest_dir
@@ -195,7 +194,7 @@ class OperateTab(TabPane):
                 if cr.returncode != 0:
                     self.paths_without_git_log.add(node_data.path)
                 else:
-                    self.git_log_view.update_git_log_view(node_data, cr.std_out)
+                    self.git_log_view.update_widgets(node_data, cr.std_out)
                     self.git_log_view.display = True
         elif radio_label == LabelStr.radio_contents and (
             node_data.file_path or node_data.path.is_file()
@@ -232,12 +231,11 @@ class OperateTab(TabPane):
             self.path_view.display = True
 
     @work
-    async def refresh_trees(self) -> None:
+    async def refresh_trees(self) -> bool:
         new_tree_paths = await tchezmoi.run_managed_commands(self.app)
-        await store.handle_new_tree_paths(self.app, new_tree_paths)
+        await store.store_new_tree_paths(self.app, new_tree_paths)
         if not store.cm_changes.changes_available:
-            self.app.notify("No changes available, skipping refresh.")
-            return
+            return False
         for tree in self.left_side_vertical.query_children(OperateTree).results():
             await tree.update_nodes(store.cm_changes)
         self.dry_run_cache.clear()
@@ -246,13 +244,14 @@ class OperateTab(TabPane):
         self.diff_reverse_view.cache.clear()
         self.git_log_view.cache.clear()
         self.paths_without_git_log.clear()
-        for btn in self.op_btn_group.query(Button).results():
-            btn.disabled = True
-        tree_node = self._current_displayed_tree.node_map.get(self.current_node.path)
+        tree_node = self._current_displayed_tree.node_map.get(
+            self.app.current_node.path
+        )
         if tree_node is None or tree_node.data is None:
-            self._show_dest_dir()
-            return
-        self._update_all_widgets(tree_node.data)
+            self.show_dest_dir()
+        else:
+            self._update_widgets(tree_node.data)
+        return True
 
     #################################
     # Watchers and message handling #
@@ -264,36 +263,39 @@ class OperateTab(TabPane):
         if (
             event.node.data is None
             or event.control.id != self._current_displayed_tree.id
-            or event.node.data.path == self.current_node.path
+            or event.node.data.path == self.app.current_node.path
         ):
             return
-        self._update_all_widgets(event.node.data)
+        self._update_widgets(event.node.data)
 
     @on(Button.Pressed)
     def handle_dest_dir_btn(self, event: Button.Pressed) -> None:
-        if event.button.label == BtnLabel.dest_dir:
+        if (
+            event.button.label == BtnLabel.dest_dir
+            and self.app.current_node.path != store.cfg.dest_dir
+        ):
             event.stop()
-            self._show_dest_dir()
+            self.show_dest_dir()
 
     @on(Button.Pressed)
     def handle_refresh_tree_btn(self, event: Button.Pressed) -> None:
         if event.button.label == BtnLabel.refresh:
             event.stop()
-            self.refresh_trees()
+            refreshed = self.refresh_trees()
+            if not refreshed:
+                self.app.notify("No changes available, skipping refresh.")
 
     @on(Button.Pressed)
     def handle_expand_btn(self, event: Button.Pressed) -> None:
         if event.button.label == BtnLabel.expand:
             event.stop()
-            tree = self._current_displayed_tree
-            tree.expand_top_level()
+            self._current_displayed_tree.expand_top_level()
 
     @on(Button.Pressed)
     def handle_collapse_btn(self, event: Button.Pressed) -> None:
         if event.button.label == BtnLabel.collapse:
             event.stop()
-            tree = self._current_displayed_tree
-            tree.collapse_bottom_level()
+            self._current_displayed_tree.collapse_bottom_level()
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
@@ -301,15 +303,17 @@ class OperateTab(TabPane):
             return
         event.stop()
         btn_label = BtnLabel(str(event.button.label))
-        dry_run_data = self.dry_run_cache.get(self.current_node.path)
+        dry_run_data = self.dry_run_cache.get(self.app.current_node.path)
         if dry_run_data is None:
             self.app.notify(
                 "Affected paths are still being calculated.", severity="warning"
             )
             return
-        paths = dry_run_data.pretty_op_paths(btn_label)
+        paths = dry_run_data[btn_label]
         modal = OperateModal(
-            op_btn=btn_label, op_path=self.current_node.path, affected_paths=paths
+            op_btn=btn_label,
+            node_data=self.app.current_node,
+            paths_in_scope=paths.pretty_str,
         )
         self.app.push_screen(modal)
 
@@ -323,27 +327,7 @@ class OperateTab(TabPane):
         self._copy_expand_state(previous_tree, show_tree)
         self._select_current_node(show_tree)
 
-    def _select_current_node(self, tree: OperateTree) -> None:
-        node = tree.node_map.get(self.current_node.path)
-        if node is None or node is tree.root or node.data is None:
-            return
-        parent = node.parent
-        while parent is not None and parent is not tree.root:
-            if not parent.is_expanded:
-                parent.expand()
-            parent = parent.parent
-
-        def move_cursor() -> None:
-            # After a refresh, so the node line numbers include the expanded parents.
-            tree.move_cursor(node)
-            tree.scroll_to_node(node, animate=False)
-
-        tree.call_after_refresh(move_cursor)
-        self._update_all_widgets(node.data)
-
     def _copy_expand_state(self, from_tree: OperateTree, to_tree: OperateTree) -> None:
-        # Textual keeps is_expanded per node, also for nodes under a collapsed
-        # parent, so this copies the complete expand state.
         for path, from_node in from_tree.node_map.items():
             to_node = to_tree.node_map.get(path)
             if (
@@ -358,7 +342,25 @@ class OperateTab(TabPane):
             else:
                 to_node.collapse()
 
+    def _select_current_node(self, tree: OperateTree) -> None:
+        node = tree.node_map.get(self.app.current_node.path)
+        if node is None or node is tree.root or node.data is None:
+            return
+        parent = node.parent
+        while parent is not None and parent is not tree.root:
+            if not parent.is_expanded:
+                parent.expand()
+            parent = parent.parent
+
+        def move_cursor() -> None:
+            # After a refresh, so the node line numbers include the expanded parents.
+            tree.move_cursor(node)
+            tree.scroll_to_node(node)
+
+        tree.call_after_refresh(move_cursor)
+        self._update_view_widgets(node.data)
+
     @on(RadioSet.Changed)
     def switch_radio_view(self, event: RadioSet.Changed) -> None:
         event.stop()
-        self._update_view_widgets(self.current_node)
+        self._update_view_widgets(self.app.current_node)

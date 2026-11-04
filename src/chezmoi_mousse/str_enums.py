@@ -72,6 +72,7 @@ class BtnLabel(StrEnum):
     start_auto_log = "Start Auto Log"
     stop_auto_log = "Stop Auto Log"
     test_paths = "Test Paths"
+
     # debug tab operate buttons
     create_diffs = "Create Diffs"
     list_paths = "List Test Paths"
@@ -100,7 +101,7 @@ class BtnLabel(StrEnum):
         return f"{self.name}_pane_id"
 
     @property
-    def run_label(self) -> str:  # Operate modal
+    def run_label(self) -> str:
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         return f"Run interactive {self.value}"
@@ -110,7 +111,7 @@ class BtnLabel(StrEnum):
         return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
 
     @property
-    def dry_cmd(self) -> "ReadCmd":  # Operate modal
+    def dry_cmd(self) -> "ReadCmd":
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         map = {
@@ -123,7 +124,7 @@ class BtnLabel(StrEnum):
         return map[self]
 
     @property
-    def write_cmd(self) -> "WriteCmd":  # Operate modal
+    def write_cmd(self) -> "WriteCmd":
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         map = {
@@ -267,12 +268,6 @@ class LabelStr(StrEnum):
     stderr_output = "Output from stderr"
     stdout_output = "Output from stdout"
 
-    # Changed paths
-    # added_managed_paths = "Added managed paths" # noqa: ERA001
-    # changed_paths = "Changed Paths" # noqa: ERA001
-    # changed_status_paths = "Changed status paths" # noqa: ERA001
-    # removed_managed_paths = "Removed managed paths" # noqa: ERA001
-
 
 class LogStr(StrEnum):
     # added_managed = "New managed paths" # noqa: ERA001
@@ -293,6 +288,7 @@ class LogStr(StrEnum):
     auto_log_started = "auto log started"
     auto_log_stopped = "auto log stopped"
     no_auto_log = "psutil not auto logging"
+    no_op = "The dry-run did not return any paths in scope, button disabled."
 
     @property
     def start(self) -> str:
@@ -733,17 +729,6 @@ class ReadCmd(Enum):
     def pretty_splash_cmd(self) -> str:
         return self.pretty_cmd.replace("--include=", "")
 
-    @property
-    def write_btn_label(self) -> BtnLabel:
-        map = {
-            ReadCmd.dry_add: BtnLabel.chezmoi_add,
-            ReadCmd.dry_apply: BtnLabel.chezmoi_apply,
-            ReadCmd.dry_destroy: BtnLabel.chezmoi_destroy,
-            ReadCmd.dry_forget: BtnLabel.chezmoi_forget,
-            ReadCmd.dry_re_add: BtnLabel.chezmoi_re_add,
-        }
-        return map[self]
-
     @classmethod
     def dry_commands(cls) -> tuple["ReadCmd", ...]:
         return tuple(cmd for cmd in cls if cmd.name.startswith("dry_"))
@@ -790,16 +775,5 @@ class WriteCmd(Enum):
             WriteCmd.destroy: ReadCmd.dry_destroy,
             WriteCmd.forget: ReadCmd.dry_forget,
             WriteCmd.re_add: ReadCmd.dry_re_add,
-        }
-        return map[self]
-
-    @property
-    def write_btn_label(self) -> BtnLabel:
-        map = {
-            WriteCmd.add: BtnLabel.chezmoi_add,
-            WriteCmd.apply: BtnLabel.chezmoi_apply,
-            WriteCmd.destroy: BtnLabel.chezmoi_destroy,
-            WriteCmd.forget: BtnLabel.chezmoi_forget,
-            WriteCmd.re_add: BtnLabel.chezmoi_re_add,
         }
         return map[self]

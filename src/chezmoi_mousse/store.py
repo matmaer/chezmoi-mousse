@@ -28,7 +28,7 @@ cm_changes: CmPathChanges
 _first_change_calculation: bool = True
 
 
-async def handle_new_tree_paths(
+async def store_new_tree_paths(
     app: ChezmoiGui, new_tree_paths: ChezmoiTreePaths
 ) -> None:
     global cm_paths
@@ -36,12 +36,12 @@ async def handle_new_tree_paths(
     global _first_change_calculation
 
     old_tree_paths = new_tree_paths if _first_change_calculation else cm_paths
-
     cm_changes = CmPathChanges(
         _old_tree_paths=old_tree_paths, _new_tree_paths=new_tree_paths
     )
-    cm_paths = new_tree_paths
     _first_change_calculation = False
+    cm_paths = new_tree_paths
+
     app.logs_tab.mount_line(
         "Updated cm_paths and cm_changes in store.py", ColorVar.secondary
     )
