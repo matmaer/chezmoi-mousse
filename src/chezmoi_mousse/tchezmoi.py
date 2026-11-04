@@ -254,28 +254,29 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
     man_dirs_cr = cm_path_cr[ReadCmd.managed_dirs]
     man_files_cr = cm_path_cr[ReadCmd.managed_files]
 
+    async def get_source_paths(
+        targets: list[str], pretty_verb_arg: LogStr
+    ) -> list[str]:
+        # Without arguments, "chezmoi source-path" returns the source dir itself.
+        if not targets:
+            return []
+        cmd_result = await run_chezmoi_cmd(
+            app, ReadCmd.source_path, verb_arg=targets, pretty_verb_arg=pretty_verb_arg
+        )
+        return cmd_result.out_list
+
     async with asyncio.TaskGroup() as tg:
         source_dirs_task = tg.create_task(
-            run_chezmoi_cmd(
-                app,
-                ReadCmd.source_path,
-                verb_arg=man_dirs_cr.out_list,
-                pretty_verb_arg=LogStr.on_managed_dirs,
-            )
+            get_source_paths(man_dirs_cr.out_list, LogStr.on_managed_dirs)
         )
         source_files_task = tg.create_task(
-            run_chezmoi_cmd(
-                app,
-                ReadCmd.source_path,
-                verb_arg=man_files_cr.out_list,
-                pretty_verb_arg=LogStr.on_managed_files,
-            )
+            get_source_paths(man_files_cr.out_list, LogStr.on_managed_files)
         )
 
     target_dirs = parse_paths(man_dirs_cr.out_list)
     target_files = parse_paths(man_files_cr.out_list)
-    source_dirs = parse_paths(source_dirs_task.result().out_list)
-    source_files = parse_paths(source_files_task.result().out_list)
+    source_dirs = parse_paths(source_dirs_task.result())
+    source_files = parse_paths(source_files_task.result())
 
     return ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
