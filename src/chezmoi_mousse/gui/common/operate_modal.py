@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from rich.markup import escape
 from textual import on, work
 from textual.containers import ScrollableContainer, Vertical, VerticalGroup
 from textual.screen import ModalScreen
@@ -128,26 +127,17 @@ class SelectPaths(VerticalGroup):
 
 
 class ShowCmDiff(VerticalGroup):
-    def __init__(self, diff_txt: str = "", diff_title: str = "") -> None:
+    def __init__(self, diff_txt: str, diff_title: str) -> None:
         self.diff_txt = diff_txt
         self.diff_title = diff_title
         super().__init__()
 
     def compose(self) -> ComposeResult:
-        title = (
-            f"Chezmoi diff: {self.diff_title}" if self.diff_title else "Chezmoi diff"
-        )
         yield Collapsible(
-            *self._collapsible_contents(),
-            title=f"[${ColorVar.text_success}]{escape(title)}[/]",
+            *widget_factory.diff_lines(self.diff_txt),
+            title=f"[${ColorVar.text_success}]Chezmoi diff: {self.diff_title}[/]",
             collapsed=False,
         )
-
-    def _collapsible_contents(self) -> list[Static]:
-        if not self.diff_txt:
-            return [Static("No diff to show")]
-        widgets = widget_factory.diff_lines(self.diff_txt)
-        return widgets
 
 
 class OperateModal(ModalScreen[None]):
