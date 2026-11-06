@@ -48,6 +48,21 @@ FADE_LINE_STYLES: deque[Style] = _create_fade_line_styles()
 
 class AnimatedFade(Static):
     def on_mount(self) -> None:
+        self.disable_messages(
+            *(
+                events.AppBlur,
+                events.AppFocus,
+                events.CursorPosition,
+                events.Enter,
+                events.InputEvent,
+                events.Leave,
+                events.MouseEvent,
+                events.Paste,
+                events.Resize,
+                events.TextSelected,
+            )
+        )  # allows for smooth fade
+
         self.step_count = 0
         self.styles.height = len(SPLASH_ASCII)
         self.styles.width = SPLASH_WIDTH
@@ -68,25 +83,6 @@ class SplashScreen(Screen[None]):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
 
-    def _forward_event(self, event: events.Event) -> None:
-        if isinstance(
-            event,
-            (
-                events.AppBlur,
-                events.AppFocus,
-                events.CursorPosition,
-                events.Enter,
-                events.InputEvent,
-                events.Leave,
-                events.MouseEvent,
-                events.Paste,
-                events.Resize,
-                events.TextSelected,
-            ),
-        ):
-            return
-        super()._forward_event(event)
-
     def compose(self) -> ComposeResult:
         with Middle():
             yield Center(AnimatedFade())
@@ -96,6 +92,7 @@ class SplashScreen(Screen[None]):
         self.color_map: dict[str | int, str] = {
             LogStr.checked: self.app.theme_variables[ColorVar.warning],
             LogStr.decoded: self.app.theme_variables[ColorVar.success],
+            LogStr.dry_run: self.app.theme_variables[ColorVar.success],
             LogStr.missing: self.app.theme_variables[ColorVar.error],
             LogStr.present: self.app.theme_variables[ColorVar.foreground_darken_2],
             LogStr.reports: self.app.theme_variables[ColorVar.accent_darken_3],
@@ -120,7 +117,17 @@ class SplashScreen(Screen[None]):
             prefix = prefix_suffix[0]
             suffix = prefix_suffix[1]
         elif cmd_result:
-            suffix = LogStr.success if cmd_result.returncode == 0 else LogStr.checked
+            if cmd_result.returncode != 0:
+                suffix = LogStr.checked
+            elif (
+                cmd_result.returncode == 0
+                and cmd_result.cmd_enum in ReadCmd.dry_commands()
+            ):
+                suffix = LogStr.dry_run
+            else:
+                suffix = (
+                    LogStr.success if cmd_result.returncode == 0 else LogStr.checked
+                )
             if isinstance(cmd_result.cmd_enum, ReadCmd):
                 prefix = cmd_result.cmd_enum.pretty_splash_cmd
             else:

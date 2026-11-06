@@ -304,6 +304,7 @@ class LogStr(StrEnum):
     missing = auto()
     present = auto()
     reports = auto()
+    dry_run = auto()
     # skipped = auto() # noqa: ERA001
     success = auto()
     trigger = auto()
