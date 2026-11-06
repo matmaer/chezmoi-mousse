@@ -44,8 +44,8 @@
 }
 
 .splash_log {
-  min-height: 20;
-  height: auto;
+  height: 8;
+  scrollbar-visibility: hidden;
 }
 
 /**********************/
