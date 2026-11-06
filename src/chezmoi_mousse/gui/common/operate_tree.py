@@ -48,7 +48,7 @@ class OperateTree(Tree[NodeData]):
         """Override render_label for a cursor node so the label keeps its own color and
         just underlines the cursor node.
         """
-        if self.cursor_node is node:
+        if self.cursor_line != -1 and self.cursor_node is node:
             style = Style(underline=True)
         return super().render_label(node, base_style, style)
 
