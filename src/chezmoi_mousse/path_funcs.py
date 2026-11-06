@@ -58,7 +58,7 @@ def _dir_is_git_objects(dir_path: Path) -> bool:
     return dir_path.parts[-1] == "objects" and dir_path.parts[-2] == ".git"
 
 
-def _dir_has_many_children(dir_path: Path, max_entries: int = 200) -> bool:
+def _dir_has_many_children(dir_path: Path, max_entries: int = 69) -> bool:
     # TODO: make this configurable but 200 entries seems like a reasonable limit
     # for a directory to consider interesting in the context of dotfiles.
     max_entries = max_entries - 1
@@ -185,10 +185,10 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                 dirs[path] = NodeData(
                     dir_data=DirData(
                         dest_dir=False,
-                        has_child_paths=has_child_paths,
                         nested_managed=False,
                         nested_status=False,
                         nested_un_managed=nested_unmanaged,
+                        nested_un_wanted=False,
                         nested_wanted=nested_wanted,
                     ),
                     dir_path=True,

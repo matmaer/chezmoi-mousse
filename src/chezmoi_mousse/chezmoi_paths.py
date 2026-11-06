@@ -37,12 +37,12 @@ class ChezmoiTreePaths:
         managed_paths = self._man_dirs.keys() | self._man_files.keys()
         un_managed_paths = self._un_man_dirs | self._un_man_files
         status_paths = self._status_dirs.keys() | self._status_files.keys()
-        wanted_files = {
-            p for p in self._un_man_files if not path_funcs.is_unwanted_file(p)
+        un_wanted_files = {
+            p for p in self._un_man_files if path_funcs.is_unwanted_file(p)
         }
-        wanted_dirs = {
-            p for p in self._un_man_dirs if not path_funcs.is_unwanted_dir(p)
-        }
+        wanted_files = self._un_man_files - un_wanted_files
+        un_wanted_dirs = {p for p in self._un_man_dirs if path_funcs.is_unwanted_dir(p)}
+        wanted_dirs = {p for p in self._un_man_dirs if p not in un_wanted_dirs}
         wanted_paths = wanted_dirs | wanted_files
 
         self._populate_file_node_data(wanted_files=wanted_files)
@@ -51,6 +51,7 @@ class ChezmoiTreePaths:
             status_paths=status_paths,
             un_managed_paths=un_managed_paths,
             wanted_paths=wanted_paths,
+            un_wanted_paths=un_wanted_files,
         )
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
@@ -86,9 +87,9 @@ class ChezmoiTreePaths:
         status_paths: set[Path],
         un_managed_paths: set[Path],
         wanted_paths: set[Path],
+        un_wanted_paths: set[Path],
     ) -> None:
         for path in {self._dest_dir} | self._man_dirs.keys() | self._un_man_dirs:
-            child_paths = False
             nested_status = False
             nested_managed = False
             nested_wanted = False
@@ -104,6 +105,8 @@ class ChezmoiTreePaths:
                 nested_managed = bool(managed_paths)
                 nested_wanted = bool(wanted_paths)
                 nested_un_managed = bool(un_managed_paths)
+                nested_un_wanted = bool(un_wanted_paths)
+
             else:
                 nested_wanted = path_funcs.any_nested_in(
                     dir_path=path, check_paths=wanted_paths
@@ -111,7 +114,9 @@ class ChezmoiTreePaths:
                 nested_un_managed = path_funcs.any_nested_in(
                     dir_path=path, check_paths=un_managed_paths
                 )
-
+                nested_un_wanted = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=un_managed_paths
+                )
             if managed:
                 nested_status = path_funcs.any_nested_in(
                     dir_path=path, check_paths=status_paths
@@ -119,17 +124,15 @@ class ChezmoiTreePaths:
                 nested_managed = path_funcs.any_nested_in(
                     dir_path=path, check_paths=managed_paths
                 )
-                if nested_managed or nested_un_managed:
-                    child_paths = True
 
             self.dir_node_data[path] = NodeData(
                 dir_data=DirData(
                     dest_dir=is_dest_dir,
-                    has_child_paths=child_paths,
                     nested_managed=nested_managed,
                     nested_status=nested_status,
                     nested_un_managed=nested_un_managed,
                     nested_wanted=nested_wanted,
+                    nested_un_wanted=nested_un_wanted,
                 ),
                 dir_path=True,
                 exists=exists,

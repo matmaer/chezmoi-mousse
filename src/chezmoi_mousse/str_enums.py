@@ -237,7 +237,6 @@ class LabelStr(StrEnum):
     has_nested_status = "Has nested status paths"
     has_nested_managed = "Has nested managed paths"
     has_nested_un_man = "Has nested un-managed paths"
-    has_child_paths = "Has any child paths"
     path_exists = "Exists on disk"
     path_has_status = "Has a status"
     path_un_wanted = "Matches un-wanted filter"
@@ -536,10 +535,6 @@ class TreeName(StrEnum):
     # trees including any unmanaged path, including unwanted paths
     un_wanted_plus_amp = auto()
     un_wanted_plus_sp = auto()
-
-    @property
-    def is_managed_tree(self) -> bool:
-        return self.name.startswith("managed_")
 
     @property
     def is_wanted_tree(self) -> bool:
