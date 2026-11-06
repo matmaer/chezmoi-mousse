@@ -43,7 +43,7 @@ class ContentView(Vertical):
         scrollable_container = self.query_exactly_one(ScrollableContainer)
         self.content_static = scrollable_container.query_exactly_one(Static)
 
-    @work
+    @work(description="update file contents in content view")
     async def _update_file_content(self, node_data: NodeData) -> None:
         path = node_data.path
         if path in self.cache:
@@ -82,7 +82,7 @@ class _DiffViewBase(Vertical):
     def on_mount(self) -> None:
         self.diff_container = self.query_exactly_one(ScrollableContainer)
 
-    @work
+    @work(description="remove/mount diff widgets")
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
         if path not in self.cache:
             diff_result = await tchezmoi.run_chezmoi_cmd(
@@ -157,7 +157,7 @@ class GitLogView(Vertical):
 
         return pretty_cells
 
-    @work
+    @work(description="update git log widgets")
     async def update_widgets(
         self, node_data: NodeData, std_out: str | None = None
     ) -> None:
@@ -179,7 +179,7 @@ class GitLogView(Vertical):
 class PathView(ScrollableContainer):
     node_data: reactive[NodeData | None] = reactive(None, init=False)
 
-    @work
+    @work(description="remove/mount path info widgets")
     async def _set_path_info(self, n_data: NodeData) -> None:
         truth_dict: dict[str, bool] = {}
         truth_dict[LabelStr.path_has_status] = n_data.status_path

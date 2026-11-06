@@ -148,7 +148,7 @@ class OperateTab(TabPane):
         self._update_op_buttons(node_data)
         self._update_view_widgets(node_data)
 
-    @work
+    @work(description="update operate buttons enabled/disabled state")
     async def _update_op_buttons(self, node_data: NodeData) -> None:
         cached: dict[BtnLabel, BtnDryData] = {}
         try:
@@ -162,7 +162,7 @@ class OperateTab(TabPane):
             btn_label = BtnLabel(str(btn.label))
             btn.disabled = cached[btn_label].no_op
 
-    @work
+    @work(description="update view widgets")
     async def _update_view_widgets(self, node_data: NodeData) -> None:
         if node_data.source_path is None:
             self.source_path_label.display = False
@@ -230,7 +230,7 @@ class OperateTab(TabPane):
             self.path_view.node_data = node_data
             self.path_view.display = True
 
-    @work
+    @work(description="refresh trees")
     async def refresh_trees(self) -> bool:
         new_tree_paths = await tchezmoi.run_managed_commands(self.app)
         await store.store_new_tree_paths(self.app, new_tree_paths)

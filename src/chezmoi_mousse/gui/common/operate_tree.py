@@ -224,7 +224,7 @@ class OperateTree(Tree[NodeData]):
                 result[path] = node_data
         return result
 
-    @work
+    @work(description="perform initial tree population")
     async def _initial_tree_population(self) -> None:
         dir_nodes: dict[Path, NodeData] = await self._get_tree_nodes(
             store.cm_paths.dir_node_data

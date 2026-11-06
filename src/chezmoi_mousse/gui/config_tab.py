@@ -106,7 +106,7 @@ class ConfigTab(TabPane):
         elif event.button.label == BtnLabel.diagram:
             self.switcher.current = store.config_ids.container.diagram
 
-    @work
+    @work(description="update config tab sections")
     async def _update_widget(self, cmd_result: CommandResult) -> None:
         if cmd_result.cmd_enum == ReadCmd.doctor:
             widget = self.query_exactly_one(DoctorTable)

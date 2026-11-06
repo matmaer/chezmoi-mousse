@@ -100,7 +100,7 @@ class ChezmoiGui(App[str]):
         self.register_theme(chezmoi_mousse_light)
         self._run_startup_worker()
 
-    @work
+    @work(description="app startup worker")
     async def _run_startup_worker(self) -> None:
         await self.push_screen(self.splash_screen)
 
@@ -147,7 +147,7 @@ class ChezmoiGui(App[str]):
         self.operate_tab.show_dest_dir()
         await self.splash_screen.dismiss_after_fade_loop()
 
-    @work
+    @work(description="run splash commands in task group")
     async def _run_splash_commands(self) -> None:
         await tchezmoi.run_in_task_group(
             self,

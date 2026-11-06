@@ -257,7 +257,7 @@ class OperateModal(ModalScreen[None]):
             for button in self.prompt_buttons:
                 button.disabled = True
 
-    @work
+    @work(description="run chezmoi interactive")
     async def _run_interactive(self) -> None:
         self.collapse_all_collapsibles()
         last_diff: ShowCmDiff | None = None
