@@ -43,6 +43,7 @@ class ChezmoiTreePaths:
         wanted_files = self._un_man_files - un_wanted_files
         un_wanted_dirs = {p for p in self._un_man_dirs if path_funcs.is_unwanted_dir(p)}
         wanted_dirs = {p for p in self._un_man_dirs if p not in un_wanted_dirs}
+        un_wanted_paths = un_wanted_files | un_wanted_dirs
         wanted_paths = wanted_dirs | wanted_files
 
         self._populate_file_node_data(wanted_files=wanted_files)
@@ -51,7 +52,7 @@ class ChezmoiTreePaths:
             status_paths=status_paths,
             un_managed_paths=un_managed_paths,
             wanted_paths=wanted_paths,
-            un_wanted_paths=un_wanted_files,
+            un_wanted_paths=un_wanted_paths,
         )
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)

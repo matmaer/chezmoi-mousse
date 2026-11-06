@@ -71,38 +71,39 @@ class OperateTree(Tree[NodeData]):
             Sc.SD: ColorVar.text_error,
             Sc.SM: ColorVar.text_warning,
         }
-        color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
-        is_man_tree = TreeName(self.name).is_managed_tree
 
         if node_data.status_path:
-            return color_var
-        elif (
-            node_data.status is None
-            and node_data.managed
-            and not node_data.dir_data.nested_status
-        ):
-            return ColorVar.foreground_darken_3
-        elif node_data.dir_path:
-            if node_data.dir_data.nested_status and node_data.dir_data.nested_wanted:
-                return (
-                    ColorVar.text_primary if is_man_tree else ColorVar.primary_darken_1
-                )
-            elif node_data.dir_data.nested_status:
-                return ColorVar.text_primary
-            if node_data.managed:
-                return ColorVar.foreground_darken_3 if is_man_tree else ColorVar.text
-            if node_data.un_managed and node_data.wanted:
-                return ColorVar.text_success
-            elif not node_data.wanted:
-                return ColorVar.text_accent
-        else:
-            if node_data.managed:
-                return ColorVar.foreground_darken_3
-            elif node_data.wanted:
-                return ColorVar.text_success
-            elif not node_data.wanted:
-                return ColorVar.text_accent
+            return mapping.get(status_code, ColorVar.error_muted)
 
+        # from here on we only have paths without a status for themselves
+        color_var: ColorVar = mapping.get(status_code, ColorVar.error_muted)
+        if node_data.file_path:
+            if node_data.managed:
+                color_var = ColorVar.foreground_darken_3
+            elif node_data.wanted:
+                color_var = ColorVar.text_success
+            else:
+                color_var = ColorVar.text_accent
+
+        elif node_data.dir_path:
+            if node_data.managed:
+                if node_data.dir_data.nested_status:
+                    color_var = ColorVar.text_primary
+                elif not node_data.dir_data.nested_un_wanted:
+                    color_var = ColorVar.foreground_darken_1
+                else:
+                    color_var = ColorVar.foreground_darken_3
+            else:
+                if node_data.wanted:
+                    if node_data.dir_data.nested_un_wanted:
+                        color_var = ColorVar.success_darken_3
+                    else:
+                        color_var = ColorVar.text_success
+                else:
+                    if node_data.dir_data.nested_un_wanted:
+                        color_var = ColorVar.accent_darken_3
+                    else:
+                        color_var = ColorVar.text_accent
         return color_var
 
     async def update_nodes(self, changes: CmPathChanges) -> None:

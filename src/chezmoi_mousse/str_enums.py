@@ -171,6 +171,7 @@ class ColorVar(StrEnum):
     error_muted = "error-muted"
 
     text = "text"
+    foreground_darken_1 = "foreground-darken-1"
     foreground_darken_2 = "foreground-darken-2"
     foreground_darken_3 = "foreground-darken-3"
     secondary = "secondary"
@@ -183,8 +184,11 @@ class ColorVar(StrEnum):
 
     text_primary = "text-primary"
     primary_darken_1 = "primary-darken-1"
+    primary_darken_2 = "primary-darken-2"
+    primary_darken_3 = "primary-darken-3"
 
     success = "success"
+    success_darken_3 = "success-darken-3"
     text_success = "text-success"
 
     warning = "warning"
