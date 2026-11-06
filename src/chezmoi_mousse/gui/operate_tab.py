@@ -136,10 +136,11 @@ class OperateTab(TabPane):
         raise RuntimeError("Expected a tree to be displayed.")
 
     def show_dest_dir(self) -> None:
-        self._update_widgets(store.cm_paths.dest_dir_node_data)
-        for tree in self.left_side_vertical.query_children(OperateTree).results():
-            tree.unselect()
-            tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
+        if self._current_displayed_tree.root.data is None:
+            return
+        self._update_widgets(self._current_displayed_tree.root.data)
+        self._current_displayed_tree.unselect()
+        self._current_displayed_tree.scroll_home()
 
     def _update_widgets(self, node_data: NodeData) -> None:
         self.app.current_node = node_data
@@ -263,7 +264,6 @@ class OperateTab(TabPane):
         if (
             event.node.data is None
             or event.control.id != self._current_displayed_tree.id
-            or event.node.data.path == self.app.current_node.path
         ):
             return
         self._update_widgets(event.node.data)
@@ -305,9 +305,7 @@ class OperateTab(TabPane):
         btn_label = BtnLabel(str(event.button.label))
         dry_run_data = self.dry_run_cache.get(self.app.current_node.path)
         if dry_run_data is None:
-            self.app.notify(
-                "Affected paths are still being calculated.", severity="warning"
-            )
+            self.app.notify("Affected paths are not available.", severity="warning")
             return
         paths = dry_run_data[btn_label]
         modal = OperateModal(
@@ -344,7 +342,12 @@ class OperateTab(TabPane):
 
     def _select_current_node(self, tree: OperateTree) -> None:
         node = tree.node_map.get(self.app.current_node.path)
-        if node is None or node is tree.root or node.data is None:
+        if node is None or node.data is None:
+            return
+        if node is tree.root:
+            for tree in self.left_side_vertical.query_children(OperateTree).results():
+                tree.unselect()
+                tree.scroll_home() if tree.display else tree.scroll_home(animate=False)
             return
         parent = node.parent
         while parent is not None and parent is not tree.root:
