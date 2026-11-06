@@ -92,6 +92,7 @@ def doctor_log_lines(cr: CommandResult) -> list[Static]:
         nothing_serious = False
     if "warning" in first_col:
         lines.append(log_static(LogStr.doctor_warnings_found, ColorVar.text_warning))
+        nothing_serious = False
     if "not set" in cr.std_out:
         lines.append(log_static(LogStr.doctor_not_set_found, ColorVar.text_warning))
     if nothing_serious:
