@@ -138,10 +138,9 @@ OperateModal {
   align: center middle;
 
   &>Vertical {
-    border: round $warning-darken-2;
+    border-top: $warning-darken-2;
     min-width: 70;
-    max-width: 1fr;
-    margin: 1 2 0 2;
+    margin: 1 0;
     width: auto;
 
     .op_modal_collapsible {

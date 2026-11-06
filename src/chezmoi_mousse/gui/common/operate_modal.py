@@ -160,16 +160,15 @@ class OperateModal(ModalScreen[None]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Static("", classes=Tcss.blue_label)
+            yield Static(LabelStr.ready_to_run, classes=Tcss.blue_label)
+            with ScrollableContainer():
+                yield CmGitConfig()
+                yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.path_scope)
             yield Static(
                 f"{self.op_btn.value} {self.path_str}".rstrip(),
                 markup=False,
                 classes=Tcss.main_label,
             )
-            with ScrollableContainer():
-                yield CmGitConfig()
-                yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.path_scope)
-            yield Static(LabelStr.ready_to_run, classes=Tcss.main_label)
             yield PromptBtnGroup(
                 labels=(
                     ChezmoiPrompts.diff.prompt_item,
@@ -193,6 +192,8 @@ class OperateModal(ModalScreen[None]):
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         self.prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = self.prompt_btn_group.query(Button)
+        self.cmd_label = self.query_one(Tcss.blue_label.q, Static)
+        self.cmd_label.update(f"{self.op_btn.run_label} {self.path_str}".rstrip())
         self.info_label = self.query_one(Tcss.main_label.q, Static)
         for button in self.prompt_buttons:
             if button.label in (BtnLabel.cancel, self.op_btn.run_label):
