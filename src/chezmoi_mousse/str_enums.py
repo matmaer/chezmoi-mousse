@@ -322,11 +322,7 @@ class PathFilters(Enum):
     # os.walk, os.scandir, pathlib.iterdir and watchdog features to avoid elaborate
     # exception handling, useless work, and keeping things as lean as possible
 
-    UNWANTED_TEST_DIR = "_test_dir_un_wanted"
-    UN_WANTED_TEST_FILE = "_test_file_un_wanted.txt"
-
     UNWANTED_DIRS = (
-        "_test_dir_un_wanted",
         ".build",
         ".bundle",
         ".dart_tool",

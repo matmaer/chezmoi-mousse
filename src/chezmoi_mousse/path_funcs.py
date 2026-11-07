@@ -50,7 +50,6 @@ def _dir_name_is_unwanted(dir_path: Path) -> bool:
     return (
         dir_name in PathFilters.UNWANTED_DIRS.value
         or dir_name in PathFilters.KEY_DIR_NAMES.value
-        or PathFilters.UNWANTED_TEST_DIR.value in dir_name
     )
 
 
@@ -140,7 +139,6 @@ def is_unwanted_file(file_path: Path) -> bool:
         or _file_unwanted_suffix(file_path)
         or _file_is_large(file_path)
         or _file_is_binary(file_path)
-        or file_path.name == PathFilters.UN_WANTED_TEST_FILE.value
     )
 
 

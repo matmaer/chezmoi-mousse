@@ -10,11 +10,13 @@ from rich.markup import escape
 
 from chezmoi_mousse import path_funcs
 from chezmoi_mousse.debug import test_path_funcs as gen_path
-from chezmoi_mousse.str_enums import ColorVar, PathFilters
+from chezmoi_mousse.str_enums import ColorVar
 
 __all__ = ["TestPaths"]
 
 HOME_DIR = Path.home()
+TF = "_test_file"
+TD = "_test_dir"
 TXT: str = ".txt"
 BIN: str = ".bin"
 SMALL = 10 * 1024
@@ -25,22 +27,18 @@ HUGE = 2500 * 1024
 
 @dataclass
 class _TestDirPaths:
-    _base_test: Path = field(default=gen_path.dir_path(HOME_DIR, None, depth=0))
+    _base_test: Path = Path(HOME_DIR, TD)
     _base_depth: int = field(default_factory=int)
     _single_child_depth: int = field(default_factory=int)
-    un_wanted_name: str = PathFilters.UNWANTED_DIRS.value[0].replace("_test_dir_", "")
-    home_un_wanted_dir: Path = field(
-        default=gen_path.dir_path(HOME_DIR, un_wanted_name, depth=0)
-    )
-    large_diff: Path = field(
-        default=gen_path.dir_path(HOME_DIR, "large_diffs", depth=0)
-    )
+    un_wanted_name: str = "_test_dir_un_wanted"
+    home_un_wanted_dir: Path = Path(HOME_DIR, un_wanted_name)
+    large_files: Path = Path(HOME_DIR, "_test_large")
     paths: list[Path] = field(default_factory=list[Path])
 
     def __post_init__(self) -> None:
         self._base_depth = len(self._base_test.parts)
         self._single_child_depth = self._base_depth + 3
-        self.paths.append(self.large_diff)
+        self.paths.append(self.large_files)
         self.paths.append(self._base_test)
         self.paths.append(self.home_un_wanted_dir)
         self.paths.extend(self._generate_dynamic_dir_names())
@@ -51,8 +49,8 @@ class _TestDirPaths:
         current_base: Path = self._base_test
         start_depth = self._base_depth - len(HOME_DIR.parts)
         for depth_idx in range(start_depth, start_depth + 6):
-            nested_path = gen_path.dir_path(current_base, None, depth=depth_idx)
-            unwanted_path = gen_path.dir_path(
+            nested_path = gen_path.dir_path(current_base, TD, depth=depth_idx)
+            un_wanted_path = gen_path.dir_path(
                 current_base, self.un_wanted_name, depth=depth_idx
             )
             # The single child dir has no siblings and only one nested dir.
@@ -64,12 +62,10 @@ class _TestDirPaths:
                 current_base = nested_path
                 continue
             if depth_idx % 2 != 0:
-                generated_paths.extend([unwanted_path, nested_path])
+                generated_paths.extend([un_wanted_path, nested_path])
                 current_base = nested_path
                 continue
-            sibling = gen_path.dir_path(
-                current_base, None, depth=depth_idx, sibling=True
-            )
+            sibling = gen_path.dir_path(current_base, TD, depth=depth_idx, sibling=True)
             generated_paths.extend([nested_path, sibling])
             current_base = nested_path
         return generated_paths
@@ -79,7 +75,7 @@ class _TestDirPaths:
         return [
             p
             for p in self.paths
-            if p != self.home_un_wanted_dir and p != self.large_diff
+            if p != self.home_un_wanted_dir and p != self.large_files
         ]
 
     @cached_property
@@ -87,7 +83,7 @@ class _TestDirPaths:
         return [
             p
             for p in self.paths
-            if p != self.large_diff
+            if p != self.large_files
             and not self.un_wanted_name in str(p)
             and len(p.parts) != self._single_child_depth
         ]
@@ -107,59 +103,53 @@ class _TestDirPaths:
 
 @dataclass
 class _TestFileData:
-    small_name: str = gen_path.file_name("small", TXT)
+    small_name: str = f"{TF}_small{TXT}"
     small: str = gen_path.initial_text(SMALL)
-    _medium_name: str = gen_path.file_name("medium", TXT)
+    _medium_name: str = f"{TF}_medium{TXT}"
     _medium: str = gen_path.initial_text(MEDIUM)
-    large_name: str = gen_path.file_name("large", TXT)
     large: str = gen_path.initial_text(LARGE)
-
-    _huge_name: str = gen_path.file_name("huge", TXT)
-    _huge: str = gen_path.initial_text(HUGE)
-    _tricky_utf8_name: str = gen_path.file_name("tricky_utf8", TXT)
+    huge: str = gen_path.initial_text(HUGE)
+    _tricky_utf8_name: str = f"{TF}_tricky_utf8{TXT}"
     _tricky_utf8: str = gen_path.tricky_utf8_text()
-    un_wanted_name: str = PathFilters.UN_WANTED_TEST_FILE.value
     un_wanted: str = gen_path.initial_text(SMALL)
 
-    _control_chars_name: str = gen_path.file_name("control_chars", BIN)
     _control_chars: bytes = gen_path.control_chars_bytes(SMALL)
-    _high_entropy_name: str = gen_path.file_name("high_entropy", BIN)
     _high_entropy: bytes = gen_path.high_entropy_bytes(SMALL)
-    _invalid_utf8_name: str = gen_path.file_name("invalid_utf8", BIN)
     _invalid_utf8: bytes = gen_path.invalid_utf8_bytes(SMALL)
-    _null_bytes_name: str = gen_path.file_name("null_bytes", BIN)
     _null_bytes: bytes = gen_path.null_bytes(SMALL)
-    _printable_ascii_name: str = gen_path.file_name("printable_ascii", BIN)
     _printable_ascii: bytes = gen_path.printable_ascii_bytes(SMALL)
-    _utf16_interleaved_name: str = gen_path.file_name("utf16_interleaved", BIN)
     _utf16_interleaved: bytes = gen_path.utf16_interleaved_bytes(SMALL)
 
     _file_name_map: dict[str, str | bytes] = field(
         default_factory=dict[str, str | bytes]
     )
 
+    large_huge_map: dict[str, str] = field(default_factory=dict[str, str])
+
+    _un_wanted_file_name_map: dict[str, str | bytes] = field(
+        default_factory=dict[str, str | bytes]
+    )
+
     def __post_init__(self) -> None:
         self._file_name_map[self._tricky_utf8_name] = self._tricky_utf8
-        self._file_name_map[self.un_wanted_name] = self.un_wanted
-        self._file_name_map[self._invalid_utf8_name] = self._invalid_utf8
-        self._file_name_map[self._control_chars_name] = self._control_chars
-        self._file_name_map[self._high_entropy_name] = self._high_entropy
-        self._file_name_map[self._null_bytes_name] = self._null_bytes
-        self._file_name_map[self._printable_ascii_name] = self._printable_ascii
-        self._file_name_map[self._utf16_interleaved_name] = self._utf16_interleaved
+        self._file_name_map[f"{TF}_control_chars{BIN}"] = self._control_chars
+        self._file_name_map[f"{TF}_high_entropy{BIN}"] = self._high_entropy
+        self._file_name_map[f"{TF}_null_bytes{BIN}"] = self._null_bytes
+        self._file_name_map[f"{TF}_printable_ascii{BIN}"] = self._printable_ascii
+        self._file_name_map[f"{TF}_utf16_interleaved{BIN}"] = self._utf16_interleaved
         self._file_name_map[self.small_name] = self.small
         self._file_name_map[self._medium_name] = self._medium
-        self._file_name_map[self.large_name] = self.large
-        self._file_name_map[self._huge_name] = self._huge
+        self._un_wanted_file_name_map[f"{TF}_invalid_utf8{BIN}"] = self._invalid_utf8
+        self.large_huge_map[f"{TF}_large{TXT}"] = self.large
+        self.large_huge_map[f"{TF}_huge{TXT}"] = self.huge
 
     @cached_property
     def un_wanted_files(self) -> dict[str, str | bytes]:
-        un_wanted_names = [
-            self._huge_name,
-            self.un_wanted_name,
-            self._invalid_utf8_name,
-        ]
-        return {k: v for k, v in self._file_name_map.items() if k in un_wanted_names}
+        return {
+            k: v
+            for k, v in self._file_name_map.items()
+            if k in self._un_wanted_file_name_map
+        }
 
     @cached_property
     def normal_diff_files(self) -> dict[str, str]:
@@ -172,11 +162,7 @@ class _TestFileData:
 
     @cached_property
     def normal_bin_files(self) -> dict[str, bytes]:
-        bin_names = [
-            fn
-            for fn in self._file_name_map
-            if fn.endswith(BIN) and fn != self._invalid_utf8_name
-        ]
+        bin_names = [fn for fn in self._file_name_map if fn.endswith(BIN)]
         return {
             k: v
             for k, v in self._file_name_map.items()
@@ -191,8 +177,6 @@ class _AllTestPaths:
     file_paths: dict[Path, str | bytes] = field(default_factory=dict[Path, str | bytes])
 
     def __post_init__(self) -> None:
-        self.file_paths[HOME_DIR / self.files.small_name] = self.files.small
-        self.file_paths[HOME_DIR / self.files.un_wanted_name] = self.files.un_wanted
         dirs_for_normal_diff_files = self.dirs.dirs_for_normal_diff_files
         for path in self.dirs.paths:
             if path == self.dirs.home_un_wanted_dir:
@@ -206,8 +190,9 @@ class _AllTestPaths:
                 self.file_paths.update(self._get_normal_diff_paths(path))
             if path in self.dirs.dirs_for_normal_bin_files:
                 self.file_paths.update(self._random_bin_path(path))
-            if path == self.dirs.large_diff:
-                self.file_paths.update({path / self.files.large_name: self.files.large})
+            if path == self.dirs.large_files:
+                for file_name, content in self.files.large_huge_map.items():
+                    self.file_paths[path / file_name] = content
         self.file_paths = path_funcs.sort_path_dict(self.file_paths)
 
     def _get_normal_bin_paths(self, base_dir: Path) -> dict[Path, str | bytes]:
@@ -286,11 +271,7 @@ class _AllTestPaths:
     def get_random_files_to_create(self, target: float) -> list[Path]:
         missing_files = self.missing_files
         existing_dirs = self.existing_dirs
-        eligible = [
-            f
-            for f in missing_files
-            if f.parent in existing_dirs or f.parent == HOME_DIR
-        ]
+        eligible = [f for f in missing_files if f.parent in existing_dirs]
         k = self._random_file_count(target)
         return random.sample(eligible, k=min(k, len(eligible)))
 

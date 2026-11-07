@@ -16,21 +16,15 @@ def file_path(base_path: Path, name: str, ext: str, *, sib_idx: int) -> Path:
     return base_path / f"{prefix}_{name}_{sib_str}{ext}"
 
 
-def file_name(name: str, ext: str) -> str:
-    prefix = file_prefix
-    return f"{prefix}_{name}{ext}"
-
-
-def dir_path(
-    base_path: Path, name: str | None, *, depth: int, sibling: bool = False
-) -> Path:
+def dir_path(base_path: Path, name: str, *, depth: int, sibling: bool = False) -> Path:
     depth_str = f"dep{depth}"
-    dir_name = f"_test_dir_{name}" if name is not None else "_test_dir"
+    if "_test_dir" not in name:
+        name = f"_test_dir_{name}"
     if depth == 0:
-        return base_path / dir_name
+        return base_path / name
     if not sibling:
-        return base_path / f"{dir_name}_{depth_str}"
-    return base_path / f"{dir_name}_{depth_str}_sibling"
+        return base_path / f"{name}_{depth_str}"
+    return base_path / f"{name}_{depth_str}_sibling"
 
 
 def initial_text(test_file_size: int) -> str:
