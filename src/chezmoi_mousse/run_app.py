@@ -6,21 +6,17 @@ import sys
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import InitData
 from chezmoi_mousse.debug.pilot_mode import run_with_pilot
-from chezmoi_mousse.debug.utils import DebugUtils
 from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 __all__ = ["run_app"]
 
 
 def run_app() -> None:
-    which_chezmoi = _PreRunChecks.sys_exit_if_cannot_run()
     store.init_data = InitData(
-        which_chezmoi=which_chezmoi,
         pilot_mode=(
             os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
             or "--pilot-mode" in sys.argv
-        ),
-        debug_utils=DebugUtils(),
+        )
     )
     try:
         app = ChezmoiGui()
@@ -28,11 +24,11 @@ def run_app() -> None:
             try:
                 run_with_pilot(app)
             except:
-                store.init_data.debug_utils.save_stacktrace()
+                store.save_stacktrace()
         else:
             app.run()
     except:
-        store.init_data.debug_utils.save_stacktrace()
+        store.save_stacktrace()
 
 
 class _PreRunChecks:
@@ -53,7 +49,7 @@ class _PreRunChecks:
         return bool(is_root or was_sudo)
 
     @staticmethod
-    def sys_exit_if_cannot_run() -> str:
+    def sys_exit_if_cannot_run() -> None:
 
         cm_not_found = "'chezmoi' command not found, see https://chezmoi.io/install/"
         cm_found = "'chezmoi' command found."
@@ -99,9 +95,7 @@ class _PreRunChecks:
         else:
             success_info.append(elevated_ok)
 
-        if which_chezmoi is None or which_git is None or error_info:
+        if error_info:
             all_info = success_info + error_info
             all_info.append(feedback)
             sys.exit("\n".join(all_info))
-
-        return which_chezmoi

@@ -36,7 +36,9 @@ async def create_subprocess_exec_result(
     use_isolated_index: bool,
     cmd_enum: ReadCmd | WriteCmd,
 ) -> ExecResult:
-    exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
+    chezmoi = shutil.which("chezmoi")
+    assert chezmoi is not None
+    exec_args = (chezmoi, *chezmoi_args)
 
     env_vars: dict[str, str] | None = None
     temp_index_path: Path | None = None
@@ -102,7 +104,10 @@ async def _stop_process(process: asyncio.subprocess.Process) -> None:
 
 @asynccontextmanager
 async def _managed_process(*cmd: str) -> AsyncGenerator[asyncio.subprocess.Process]:
+    which_chezmoi = shutil.which("chezmoi")
+    assert which_chezmoi is not None
     process = await asyncio.create_subprocess_exec(
+        which_chezmoi,
         *cmd,
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
@@ -122,7 +127,9 @@ async def run_chezmoi_interactive_process(
 ) -> AsyncGenerator[list[str] | ExecResult]:
     read_timeout: float = 0.05
     interactive_approved = False
-    exec_args = (store.init_data.which_chezmoi, *chezmoi_args)
+    which_chezmoi = shutil.which("chezmoi")
+    assert which_chezmoi is not None
+    exec_args = (which_chezmoi, *chezmoi_args)
     async with _managed_process(*exec_args) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin

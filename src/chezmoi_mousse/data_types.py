@@ -12,7 +12,6 @@ from chezmoi_mousse.str_enums import LabelStr, TreeName
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse.debug.utils import DebugUtils
     from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
 __all__ = [
     "BtnDryData",
@@ -84,9 +83,7 @@ class ParsedDumpConfig:
 
 @dataclass(slots=True, frozen=True)
 class InitData:
-    debug_utils: DebugUtils
     pilot_mode: bool
-    which_chezmoi: str
 
 
 @dataclass(slots=True, frozen=True)

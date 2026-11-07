@@ -83,7 +83,7 @@ class ChezmoiGui(App[str]):
         super().__init__()
 
     def _handle_exception(self, error: Exception) -> None:
-        store.init_data.debug_utils.save_stacktrace()
+        store.save_stacktrace()
         super()._handle_exception(error)
 
     def compose(self) -> ComposeResult:
