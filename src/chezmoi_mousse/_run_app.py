@@ -12,6 +12,7 @@ __all__ = ["run_app"]
 
 
 def run_app() -> None:
+    _PreRunChecks.sys_exit_if_cannot_run()
     store.init_data = InitData(
         pilot_mode=(
             os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
