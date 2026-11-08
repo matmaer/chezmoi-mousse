@@ -16,6 +16,14 @@ if TYPE_CHECKING:
     from chezmoi_mousse.data_types import InitData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
+st_dir: Path | None = None
+
+try:
+    st_dir = Path(tempfile.gettempdir()) / "chezmoi_mousse_stacktraces"
+    st_dir.mkdir(exist_ok=True)
+except OSError:
+    pass
+
 init_data: InitData
 
 op_ids = AppIds(BtnLabel.operate)
@@ -57,36 +65,44 @@ async def decode_and_store_config(std_out: str) -> None:
 
 
 def save_stacktrace() -> None:
-    def _new_log_path(out_dir: Path) -> Path:
-        return out_dir / f"{datetime.now().strftime('%Y%m%d_%Hh_%Mm_%Ss')}.log"
-
-    try:
-        out_dir = Path(tempfile.gettempdir()) / "chezmoi_mousse_stacktraces"
-        out_dir.mkdir(parents=True, exist_ok=True)
-    except OSError:
+    if st_dir is None:
         return
 
+    def _current_timestamp_name() -> str:
+        return f"{datetime.now().strftime('%Y%m%d_%Hh_%Mm_%Ss')}.log"
+
+    def _write_log_file(st_dir: Path) -> None:
+        to_write = traceback.format_exc().strip()
+        new_log_path = st_dir / _current_timestamp_name()
+        with new_log_path.open("w") as f:
+            f.write(to_write)
+
     to_write = traceback.format_exc().strip()
+    all_logs = [p for p in st_dir.glob("*.log") if p.is_file()]
+    current_logs = [p for p in all_logs if not p.name.startswith("backup_")]
 
-    all_log_files = [p for p in out_dir.glob("*.log") if p.is_file()]
-    log_files = [p for p in all_log_files if not p.name.startswith("backup_")]
-    log_files = sorted(log_files, key=lambda p: p.name, reverse=True)
+    if current_logs and len(current_logs) > 1:
+        sorted_logs = sorted(current_logs, key=lambda p: p.name, reverse=True)
+        to_delete = sorted_logs[1:]
+        for old_log in to_delete:
+            old_log.unlink(missing_ok=True)
+            current_logs.remove(old_log)
+    elif not current_logs:
+        _write_log_file(st_dir)
+        return
 
-    if not log_files:
-        log_file = _new_log_path(out_dir)
-    else:
-        log_file = log_files[0]
-        with log_file.open("r") as f:
-            old_contents = f.read().strip()
-        if old_contents == to_write:
-            log_file.rename(_new_log_path(out_dir))
-            return  # Renamed existing log in-place: no new write is needed
+    current_log = current_logs[0]
+    with current_log.open("r") as f:
+        if f.read().strip() == to_write:
+            current_log.rename(st_dir / _current_timestamp_name())
+        else:
+            current_log.rename(st_dir / f"backup_{current_log.name}")
+            _write_log_file(st_dir)
 
-    log_file.rename(log_file.with_name(f"backup_{log_file.name}"))
-    # clean up old backups, keeping only the five most recent ones
-    backups = sorted(out_dir.glob("backup_*"), key=lambda p: p.name, reverse=True)
-    for old_backup in backups[5:]:
-        old_backup.unlink(missing_ok=True)
-    new_log_path = _new_log_path(out_dir)
-    with new_log_path.open("w") as f:
-        f.write(to_write)
+    # clean up backups
+    backup_logs = [p for p in all_logs if p.name.startswith("backup_")]
+    if len(backup_logs) > 5:
+        backup_logs = sorted(backup_logs, key=lambda p: p.name, reverse=True)
+        to_delete = backup_logs[5:]
+        for bu_path in to_delete:
+            bu_path.unlink(missing_ok=True)
