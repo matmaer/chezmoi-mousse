@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from textual.widgets.tree import TreeNode
 
     from chezmoi_mousse.chezmoi_paths import CmPathChanges
-    from chezmoi_mousse.data_types import IterDirResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -180,6 +179,10 @@ class OperateTree(Tree[NodeData]):
     ) -> None:
         if path == store.cfg.dest_dir:
             return
+        # Lazily loaded children can arrive through a refresh, skip duplicates and
+        # paths of which this tree never loaded the parent.
+        if path in self.node_map or node_data.path.parent not in self.node_map:
+            return
         parent_node = self.node_map[node_data.path.parent]
         new_node = parent_node.add(
             label=self._node_label(node_data),
@@ -253,8 +256,12 @@ class OperateTree(Tree[NodeData]):
             or node_data.path in self.iterated_dirs
         ):
             return
-        iter_dir_result: IterDirResult = path_funcs.get_un_man_children(node_data.path)
+        iter_dir_result = store.cm_paths.load_un_man_children(node_data.path)
         self.iterated_dirs.add(node_data.path)
+        for tree in self.screen.query(OperateTree).results():
+            tree_node = tree.node_map.get(node_data.path)
+            if tree_node is not None:
+                tree_node.set_label(tree._node_label(node_data))
         for path, node_data in iter_dir_result.dirs.items():
             if TreeName(self.name).is_wanted_tree and not node_data.wanted:
                 continue

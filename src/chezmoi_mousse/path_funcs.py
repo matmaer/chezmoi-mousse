@@ -153,6 +153,40 @@ def is_unwanted_dir(dir_path: Path) -> bool:
     )
 
 
+def scan_un_man_dir(dir_path: Path) -> DirData:
+    """Look one level into an unmanaged dir, `chezmoi unmanaged` doesn't recurse."""
+    nested_un_managed = False
+    nested_wanted = False
+    nested_un_wanted = False
+    try:
+        for child in dir_path.iterdir():
+            nested_un_managed = True
+            if child.is_symlink():
+                continue
+            if child.is_dir():
+                un_wanted = is_unwanted_dir(child)
+            elif child.is_file():
+                un_wanted = is_unwanted_file(child)
+            else:
+                continue
+            if un_wanted:
+                nested_un_wanted = True
+            else:
+                nested_wanted = True
+            if nested_wanted and nested_un_wanted:
+                break
+    except OSError:
+        pass
+    return DirData(
+        dest_dir=False,
+        nested_managed=False,
+        nested_status=False,
+        nested_un_managed=nested_un_managed,
+        nested_un_wanted=nested_un_wanted,
+        nested_wanted=nested_wanted,
+    )
+
+
 def get_un_man_children(dir_path: Path) -> IterDirResult:
     if not dir_path.exists():
         return IterDirResult(error="Path does not exist", dirs={}, files={})
@@ -165,30 +199,8 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
             continue
         try:
             if path.is_dir():
-                children = path.iterdir()
-                has_child_paths = any(children)
-                nested_wanted = False
-                if not has_child_paths:
-                    nested_unmanaged = False
-                else:
-                    nested_unmanaged = True
-                    for p in children:
-                        if p.is_symlink():
-                            continue
-                        elif (p.is_dir() and not is_unwanted_dir(p)) or (
-                            p.is_file() and not is_unwanted_file(p)
-                        ):
-                            nested_wanted = True
-                            break
                 dirs[path] = NodeData(
-                    dir_data=DirData(
-                        dest_dir=False,
-                        nested_managed=False,
-                        nested_status=False,
-                        nested_un_managed=nested_unmanaged,
-                        nested_un_wanted=False,
-                        nested_wanted=nested_wanted,
-                    ),
+                    dir_data=scan_un_man_dir(path),
                     dir_path=True,
                     exists=True,
                     managed=False,

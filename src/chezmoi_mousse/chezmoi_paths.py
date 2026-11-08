@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import path_funcs
-from chezmoi_mousse.data_types import DirData, NodeData
+from chezmoi_mousse.data_types import DirData, IterDirResult, NodeData
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import BtnLabel, StatusCode as Sc
@@ -116,7 +116,7 @@ class ChezmoiTreePaths:
                     dir_path=path, check_paths=un_managed_paths
                 )
                 nested_un_wanted = path_funcs.any_nested_in(
-                    dir_path=path, check_paths=un_managed_paths
+                    dir_path=path, check_paths=un_wanted_paths
                 )
             if managed:
                 nested_status = path_funcs.any_nested_in(
@@ -147,6 +147,49 @@ class ChezmoiTreePaths:
     @property
     def dest_dir_node_data(self) -> NodeData:
         return self.dir_node_data[self._dest_dir]
+
+    def load_un_man_children(self, dir_path: Path) -> IterDirResult:
+        dirs = {p: n for p, n in self.dir_node_data.items() if p.parent == dir_path}
+        files = {p: n for p, n in self.file_node_data.items() if p.parent == dir_path}
+        if dirs or files:
+            return IterDirResult(error="", dirs=dirs, files=files)
+        result = path_funcs.get_un_man_children(dir_path)
+        self.dir_node_data.update(result.dirs)
+        self.file_node_data.update(result.files)
+        # The children tell us more about this dir than chezmoi unmanaged did.
+        children = [*result.dirs.values(), *result.files.values()]
+        dir_node = self.dir_node_data[dir_path]
+        dir_node.dir_data = replace(
+            dir_node.dir_data,
+            nested_un_managed=bool(children),
+            nested_wanted=any(child.wanted for child in children),
+            nested_un_wanted=any(not child.wanted for child in children),
+        )
+        return result
+
+    def reload_un_man_children(self, old_tree_paths: ChezmoiTreePaths) -> None:
+        """Reload the unmanaged dirs of which the children were loaded on demand."""
+        old_paths = old_tree_paths.dir_node_data.keys() | old_tree_paths.file_node_data
+        new_paths = self.dir_node_data.keys() | self.file_node_data.keys()
+        loaded_dirs = {p.parent for p in old_paths - new_paths}
+        # parents first, so nested loaded dirs exist when we get to them
+        for dir_path in sorted(loaded_dirs, key=lambda p: len(p.parts)):
+            dir_node = self.dir_node_data.get(dir_path)
+            if dir_node is None or dir_node.managed or dir_node.dir_data.dest_dir:
+                continue
+            self.load_un_man_children(dir_path)
+
+    def reuse_unchanged_node_data(self, old_tree_paths: ChezmoiTreePaths) -> None:
+        """Keep the old NodeData object for unchanged paths, so the trees and
+        store.cm_paths keep sharing the same objects."""
+        for new_dict, old_dict in (
+            (self.dir_node_data, old_tree_paths.dir_node_data),
+            (self.file_node_data, old_tree_paths.file_node_data),
+        ):
+            for path, node_data in new_dict.items():
+                old_node_data = old_dict.get(path)
+                if old_node_data is not None and old_node_data == node_data:
+                    new_dict[path] = old_node_data
 
 
 @dataclass(slots=True, kw_only=True)

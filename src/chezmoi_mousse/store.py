@@ -48,6 +48,8 @@ async def store_new_tree_paths(
     global _first_change_calculation
 
     old_tree_paths = new_tree_paths if _first_change_calculation else cm_paths
+    new_tree_paths.reload_un_man_children(old_tree_paths)
+    new_tree_paths.reuse_unchanged_node_data(old_tree_paths)
     cm_changes = CmPathChanges(
         _old_tree_paths=old_tree_paths, _new_tree_paths=new_tree_paths
     )
