@@ -29,6 +29,23 @@ if TYPE_CHECKING:
 __all__ = ["DebugLog", "DebugTab"]
 
 
+ENV_KEYS_TO_SHOW = {
+    "CHEZMOI_MOUSSE_PILOT_MODE",
+    "COLORTERM",
+    "DESKTOP_SESSION",
+    "DISPLAY",
+    "HOME",
+    "PATH",
+    "PYTHONPATH",
+    "SHELL",
+    "SHLVL",
+    "TERM",
+    "TERMINFO_DIRS",
+    "TERMINFO",
+    "USER",
+}
+
+
 class _RichLogger(RichLog):
     if TYPE_CHECKING:
         app = getters.app(ChezmoiGui)
@@ -234,7 +251,11 @@ class DebugTab(TabPane):
         self.test_paths_static.update(self.test_paths.report_test_paths())
         self.debug_log = self.query_exactly_one(DebugLog)
         env_var_logger = self.query_one(store.debug_ids.richlog.env_vars_q, RichLog)
-        env_var_logger.write("\n".join(f"{k}: {v}" for k, v in os.environ.items()))
+        env_var_logger.write(
+            "\n".join(
+                f"{k}: {v}" for k, v in os.environ.items() if k in ENV_KEYS_TO_SHOW
+            )
+        )
         self.app.call_later(self._log_dom_nodes)
         self.auto_log_timer = self.set_interval(
             name="auto_log", interval=2, callback=self._log_mem_usage
