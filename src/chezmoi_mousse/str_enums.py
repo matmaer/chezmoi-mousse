@@ -332,6 +332,7 @@ class PathFilters(Enum):
         ".mozilla",
         "session-state",
         "state",
+        ".pki",
         ".Trash",
         ".venv",
         "bin",
@@ -356,9 +357,6 @@ class PathFilters(Enum):
         "Trash",
         "Videos",
     )
-
-    KEY_DIR_NAMES = (".pki",)
-
     KEY_FILE_NAMES = (
         # As we don't support adding encrypted files yet, we are excluding them.
         # Common private key file names across platforms
@@ -436,6 +434,8 @@ class PathFilters(Enum):
         ".xlsx",
         ".zip",
     )
+
+    IGNORED_FILE_SUFFIXES = (KEY_FILE_EXTENSIONS, UNWANTED_FILE_SUFFIXES)
 
 
 class ProblemChars(StrEnum):
@@ -533,8 +533,7 @@ class TreeName(StrEnum):
     wanted_plus_amp = auto()
     wanted_plus_sp = auto()
     # trees including any unmanaged path, including unwanted paths
-    un_wanted_plus_amp = auto()
-    un_wanted_plus_sp = auto()
+    un_wanted = auto()
 
     @property
     def is_wanted_tree(self) -> bool:

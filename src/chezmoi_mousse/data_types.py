@@ -173,7 +173,6 @@ class NodeData:
         managed_dir = self.dir_path and self.managed
         status_dir = managed_dir and self.status_path
         include_dir_for_sp_tree = status_dir or self.dir_data.nested_status
-        un_managed = not self.managed
 
         managed_file = self.file_path and self.managed
         status_file = managed_file and self.status_path
@@ -187,7 +186,5 @@ class NodeData:
             return include_sp or self.dir_data.nested_wanted or self._wanted_path
         elif tree_name in (TreeName.wanted_plus_amp):
             return self.managed or self.dir_data.nested_wanted or self._wanted_path
-        elif tree_name in (TreeName.un_wanted_plus_sp):
-            return include_sp or self.dir_data.nested_un_managed or un_managed
         else:
             return True

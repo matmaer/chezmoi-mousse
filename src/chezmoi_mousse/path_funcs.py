@@ -47,10 +47,7 @@ def get_common_top_level(*, dir_paths: Iterable[Path]) -> set[Path]:
 
 def _dir_name_is_unwanted(dir_path: Path) -> bool:
     dir_name = dir_path.parts[-1]
-    return (
-        dir_name in PathFilters.UNWANTED_DIRS.value
-        or dir_name in PathFilters.KEY_DIR_NAMES.value
-    )
+    return dir_name in PathFilters.UNWANTED_DIRS.value
 
 
 def _dir_is_git_objects(dir_path: Path) -> bool:

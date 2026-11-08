@@ -92,13 +92,5 @@ class _TreeIds:
         self.wanted_plus_amp_q: str = f"#{self.wanted_plus_amp}"
 
         # 2 --- UN_WANTED TREE ---
-
-        # 2.1 UN_WANTED TREE PLUS TREE STATUS PATHS
-        self.un_wanted_plus_sp: str = ids.tree_id(tree_name=TreeName.un_wanted_plus_sp)
-        self.un_wanted_plus_sp_q: str = f"#{self.un_wanted_plus_sp}"
-
-        # 2.2 UN_WANTED TREE PLUS ALL MANAGED PATHS
-        self.un_wanted_plus_amp: str = ids.tree_id(
-            tree_name=TreeName.un_wanted_plus_amp
-        )
-        self.un_wanted_plus_amp_q: str = f"#{self.un_wanted_plus_amp}"
+        self.un_wanted: str = ids.tree_id(tree_name=TreeName.un_wanted)
+        self.un_wanted_q: str = f"#{self.un_wanted}"
