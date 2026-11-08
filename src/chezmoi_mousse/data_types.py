@@ -17,7 +17,6 @@ __all__ = [
     "BtnDryData",
     "CommandResult",
     "DirData",
-    "ExecResult",
     "InitData",
     "IterDirResult",
     "NodeData",
@@ -39,17 +38,6 @@ class CommandResult:
     @property
     def out_list(self) -> list[str]:
         return self.std_out.splitlines()
-
-
-@dataclass(slots=True, frozen=True, kw_only=True)
-class ExecResult:
-    cmd_enum: WriteCmd | ReadCmd
-    full_cmd: str
-    interactive_approved: bool | None = None
-    returncode: int | None
-    std_err: str
-    std_out: str
-    time_stamp: str
 
 
 @dataclass(frozen=True)

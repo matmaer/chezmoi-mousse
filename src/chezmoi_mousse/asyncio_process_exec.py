@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
-from chezmoi_mousse.data_types import ExecResult
+from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.str_enums import ChezmoiPrompts
 
 if TYPE_CHECKING:
@@ -38,7 +38,8 @@ async def create_subprocess_exec_result(
     *,
     use_isolated_index: bool,
     cmd_enum: ReadCmd | WriteCmd,
-) -> ExecResult:
+    pretty_cmd: str,
+) -> CommandResult:
     assert CHEZMOI is not None
     exec_args = (CHEZMOI, *chezmoi_args)
 
@@ -69,9 +70,10 @@ async def create_subprocess_exec_result(
         std_out = (stdout_bytes or b"").decode("utf-8", errors="replace")
         std_err = (stderr_bytes or b"").decode("utf-8", errors="replace")
         assert process.returncode is not None, "process did not return a code"
-        return ExecResult(
+        return CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=" ".join(exec_args),
+            pretty_cmd=pretty_cmd,
             returncode=process.returncode,
             std_err=std_err,
             std_out=std_out,
@@ -122,7 +124,8 @@ async def run_chezmoi_interactive_process(
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
     *,
     cmd_enum: ReadCmd | WriteCmd,
-) -> AsyncGenerator[list[str] | ExecResult]:
+    pretty_cmd: str,
+) -> AsyncGenerator[list[str] | CommandResult]:
     read_timeout: float = 0.05
     interactive_approved = False
     async with _managed_process(*chezmoi_args) as process:
@@ -199,10 +202,11 @@ async def run_chezmoi_interactive_process(
         std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-        yield ExecResult(
+        yield CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=" ".join(["chezmoi", *chezmoi_args]),
             interactive_approved=interactive_approved,
+            pretty_cmd=pretty_cmd,
             returncode=returncode,
             std_err=std_err,
             std_out=buffer,

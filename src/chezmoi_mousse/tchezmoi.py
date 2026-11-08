@@ -14,7 +14,7 @@ from chezmoi_mousse.asyncio_process_exec import (
     run_chezmoi_interactive_process,
 )
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
-from chezmoi_mousse.data_types import BtnDryData, CommandResult
+from chezmoi_mousse.data_types import BtnDryData
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from asyncio import Task
     from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 
-    from chezmoi_mousse.data_types import ExecResult
+    from chezmoi_mousse.data_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 _PATH_PATTERN = re.compile(r"^diff --git a/.* b/(.*)$")
@@ -68,17 +68,11 @@ async def _exec_chezmoi(
     pretty_verb_arg: str | None,
 ) -> CommandResult:
     isolated_index = cmd_enum in ReadCmd.dry_commands()
-    exec_result: ExecResult = await create_subprocess_exec_result(
-        chezmoi_args, use_isolated_index=isolated_index, cmd_enum=cmd_enum
-    )
-    command_result = CommandResult(
+    command_result = await create_subprocess_exec_result(
+        chezmoi_args,
+        use_isolated_index=isolated_index,
         cmd_enum=cmd_enum,
-        full_cmd=exec_result.full_cmd,
-        pretty_cmd=f"{pretty_cmd(cmd_enum, pretty_verb_arg)}",
-        returncode=exec_result.returncode,
-        std_err=exec_result.std_err,
-        std_out=exec_result.std_out,
-        time_stamp=exec_result.time_stamp,
+        pretty_cmd=pretty_cmd(cmd_enum, pretty_verb_arg),
     )
     if app.screen.name == "splash_screen":
         if cmd_enum is ReadCmd.source_path:
@@ -293,7 +287,9 @@ def run_chezmoi_interactive(
     cmd_enum: WriteCmd,
     verb_arg: Path | list[str] | None,
     prompt_handler: Callable[[str, list[str]], Awaitable[str]],
-) -> AsyncGenerator[list[str] | ExecResult]:
+    *,
+    pretty_verb_arg: Path | str | None,
+) -> AsyncGenerator[list[str] | CommandResult]:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
         raise ValueError(
@@ -311,5 +307,8 @@ def run_chezmoi_interactive(
     else:
         chezmoi_args = (*cmd_enum.value, str(verb_arg))
     return run_chezmoi_interactive_process(
-        chezmoi_args, prompt_handler, cmd_enum=cmd_enum
+        chezmoi_args,
+        prompt_handler,
+        cmd_enum=cmd_enum,
+        pretty_cmd=pretty_cmd(cmd_enum, pretty_verb_arg),
     )

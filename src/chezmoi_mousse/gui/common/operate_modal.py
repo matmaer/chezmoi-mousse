@@ -9,7 +9,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Collapsible, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.data_types import CommandResult, ExecResult
+from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
@@ -311,23 +311,16 @@ class OperateModal(ModalScreen[None]):
                 )
 
         events = tchezmoi.run_chezmoi_interactive(
-            self.op_btn.write_cmd, verb_arg, handle_prompt
+            self.op_btn.write_cmd,
+            verb_arg,
+            handle_prompt,
+            pretty_verb_arg=pretty_verb_arg,
         )
         self.process_busy = True
         try:
             async for event in events:
-                if isinstance(event, ExecResult):
-                    result = CommandResult(
-                        cmd_enum=event.cmd_enum,
-                        full_cmd=event.full_cmd,
-                        pretty_cmd=tchezmoi.pretty_cmd(event.cmd_enum, pretty_verb_arg),
-                        returncode=event.returncode,
-                        std_err=event.std_err,
-                        std_out=event.std_out,
-                        time_stamp=event.time_stamp,
-                        interactive_approved=event.interactive_approved,
-                    )
-                    self._handle_cmd_result(result)
+                if isinstance(event, CommandResult):
+                    self._handle_cmd_result(event)
 
                 elif pending_diff_question is not None:
                     self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
