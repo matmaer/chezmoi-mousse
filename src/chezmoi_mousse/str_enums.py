@@ -18,6 +18,7 @@ __all__ = [
     "StatusCode",
     "Tcss",
     "TreeName",
+    "UnmanagedMax",
     "WriteCmd",
 ]
 
@@ -322,7 +323,7 @@ class PathFilters(Enum):
     # os.walk, os.scandir, pathlib.iterdir and watchdog features to avoid elaborate
     # exception handling, useless work, and keeping things as lean as possible
 
-    UNWANTED_DIRS = (
+    EXTENDED_DIRS = (
         ".build",
         ".bundle",
         ".dart_tool",
@@ -409,11 +410,11 @@ class RichLogName(StrEnum):
     memory_usage_logger = auto()
 
 
-class UnmanagedMaximum(Enum):
-    SOFT_FILE_SIZE = 512 * 1024
-    HARD_FILE_SIZE = 1024 * 1024 * 2
-    SOFT_DIR_CHILDREN = 100
-    HARD_DIR_CHILDREN = 500
+class UnmanagedMax(Enum):
+    soft_file_size = 512 * 1024
+    hard_file_size = 1024 * 1024 * 2
+    soft_dir_children = 100
+    hard_dir_children = 500
 
 
 class StatusCode(StrEnum):

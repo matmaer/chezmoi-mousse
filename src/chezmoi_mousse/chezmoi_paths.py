@@ -36,10 +36,10 @@ class ChezmoiTreePaths:
         un_managed_paths = self._un_man_dirs | self._un_man_files
         status_paths = self._status_dirs.keys() | self._status_files.keys()
         un_wanted_files = {
-            p for p in self._un_man_files if path_funcs.is_unwanted_file(p)
+            p for p in self._un_man_files if path_funcs.is_extend_file(p)
         }
         wanted_files = self._un_man_files - un_wanted_files
-        un_wanted_dirs = {p for p in self._un_man_dirs if path_funcs.is_unwanted_dir(p)}
+        un_wanted_dirs = {p for p in self._un_man_dirs if path_funcs.is_extend_dir(p)}
         wanted_dirs = {p for p in self._un_man_dirs if p not in un_wanted_dirs}
         un_wanted_paths = un_wanted_files | un_wanted_dirs
         wanted_paths = wanted_dirs | wanted_files

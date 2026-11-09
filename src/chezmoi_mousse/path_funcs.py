@@ -22,7 +22,7 @@ from platformdirs import (
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import DirData, IterDirResult, NodeData
-from chezmoi_mousse.str_enums import PathFilters
+from chezmoi_mousse.str_enums import PathFilters, UnmanagedMax
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -59,26 +59,19 @@ def get_common_top_level(*, dir_paths: Iterable[Path]) -> set[Path]:
     return {p for p in path_set if path_set.isdisjoint(p.parents)}
 
 
-def _dir_name_is_unwanted(dir_path: Path) -> bool:
-    dir_name = dir_path.parts[-1]
-    return dir_name in PathFilters.UNWANTED_DIRS.value
-
-
-def _dir_is_git_objects(dir_path: Path) -> bool:
-    return dir_path.parts[-1] == "objects" and dir_path.parts[-2] == ".git"
-
-
-def _dir_has_many_children(dir_path: Path, max_entries: int = 69) -> bool:
-    # TODO: make this configurable but 200 entries seems like a reasonable limit
-    # for a directory to consider interesting in the context of dotfiles.
-    max_entries = max_entries - 1
+def get_rel_path_str(path: Path) -> str:
     try:
-        return (
-            next(islice(dir_path.iterdir(), max_entries, max_entries + 1), None)
-            is not None
-        )
-    except OSError:
-        return False
+        dest_dir = store.cfg.dest_dir
+    except AttributeError:
+        dest_dir = None
+    if dest_dir is None or path == dest_dir:
+        return str(path)
+    return str(path.relative_to(store.cfg.dest_dir))
+
+
+def _path_seems_cache(path: Path) -> bool:
+    path_parts_lower = [p.lower() for p in path.parts]
+    return any(p.startswith("cache") or p.endswith("cache") for p in path_parts_lower)
 
 
 # Control bytes that never show up in text files. Allowed: bell, backspace, tab, LF,
@@ -93,7 +86,7 @@ _TEXT_BOMS = (
 )
 
 
-def _file_is_binary(file_path: Path) -> bool:
+def _file_seems_binary(file_path: Path) -> bool:
     try:
         with file_path.open("rb") as f:
             data = f.read(8192)
@@ -110,16 +103,9 @@ def _file_is_binary(file_path: Path) -> bool:
     return _BINARY_BYTES_RE.search(data) is not None
 
 
-def _file_is_huge(file_path: Path) -> bool:
+def _file_is_large(file_path: Path, max_size: int) -> bool:
     try:
-        return file_path.stat().st_size > 1024 * 1024 * 2  # two megabytes
-    except OSError:
-        return True  # if we can't stat it, return True to treat it as unwanted
-
-
-def _file_is_large(file_path: Path) -> bool:
-    try:
-        return file_path.stat().st_size > 512 * 1024  # half a megabyte
+        return file_path.stat().st_size > max_size  # two megabytes
     except OSError:
         return True  # if we can't stat it, return True to treat it as unwanted
 
@@ -131,53 +117,24 @@ def _file_is_sensitive(file_path: Path) -> bool:
     )
 
 
-def _file_unwanted_suffix(file_path: Path) -> bool:
-    return file_path.suffix in PathFilters.UNWANTED_FILE_SUFFIXES.value
-
-
-def get_rel_path_str(path: Path) -> str:
-    try:
-        dest_dir = store.cfg.dest_dir
-    except AttributeError:
-        dest_dir = None
-    if dest_dir is None or path == dest_dir:
-        return str(path)
-    return str(path.relative_to(store.cfg.dest_dir))
-
-
-def _path_seems_cache(path: Path) -> bool:
-    path_parts_lower = [p.lower() for p in path.parts]
-    return any(p.startswith("cache") or p.endswith("cache") for p in path_parts_lower)
-
-
-def is_unwanted_file(file_path: Path) -> bool:
+def is_extend_file(file_path: Path) -> bool:
     return (
         _path_seems_cache(file_path)
         or _file_is_sensitive(file_path)
-        or _file_unwanted_suffix(file_path)
-        or _file_is_large(file_path)
-        or _file_is_binary(file_path)
+        or _file_is_large(file_path, UnmanagedMax.soft_file_size.value)
+        or _file_seems_binary(file_path)
     )
 
 
 def is_ignored_file(file_path: Path) -> bool:
-    return _file_is_sensitive(file_path) or _file_is_huge(file_path)
-
-
-def is_unwanted_dir(dir_path: Path) -> bool:
-    if dir_path == store.cfg.dest_dir:
-        return False
-    return (
-        _path_seems_cache(dir_path)
-        or _dir_name_is_unwanted(dir_path)
-        or _dir_is_git_objects(dir_path)
-        or _dir_has_many_children(dir_path)
+    return _file_is_sensitive(file_path) or _file_is_large(
+        file_path, UnmanagedMax.hard_file_size.value
     )
 
 
 IGNORED_DIRS: set[Path] = {
-    p
-    for p in (
+    dir_path
+    for dir_path in (
         user_cache_path(),
         user_state_path(),
         user_log_path(),
@@ -189,37 +146,66 @@ IGNORED_DIRS: set[Path] = {
         user_music_path(),
         user_desktop_path(),
     )
-    if p
+    if dir_path
 }
+
+
+def _dir_is_git_objects(dir_path: Path) -> bool:
+    return dir_path.parts[-1] == "objects" and dir_path.parts[-2] == ".git"
+
+
+def _dir_has_many_children(dir_path: Path, max_entries: int) -> bool:
+    max_entries = max_entries - 1
+    try:
+        return (
+            next(islice(dir_path.iterdir(), max_entries, max_entries + 1), None)
+            is not None
+        )
+    except OSError:
+        return False
 
 
 def is_ignored_dir(dir_path: Path) -> bool:
     temp_dir_path = Path(tempfile.gettempdir())
-    return dir_path in IGNORED_DIRS or dir_path == temp_dir_path
+    return (
+        dir_path in IGNORED_DIRS
+        or _dir_is_git_objects(dir_path)
+        or dir_path == temp_dir_path
+        or _dir_has_many_children(dir_path, UnmanagedMax.hard_dir_children.value)
+    )
 
 
-def scan_un_man_dir(dir_path: Path) -> DirData:
+def _dir_name_matches_extended_dirs(dir_path: Path) -> bool:
+    return dir_path.parts[-1] in PathFilters.EXTENDED_DIRS.value
+
+
+def is_extend_dir(dir_path: Path) -> bool:
+    if is_ignored_dir(dir_path):
+        return False
+    return (
+        _path_seems_cache(dir_path)
+        or _dir_name_matches_extended_dirs(dir_path)
+        or _dir_has_many_children(dir_path, UnmanagedMax.soft_dir_children.value)
+    )
+
+
+def scan_un_man_dir_children(dir_path: Path) -> DirData:
     """Look one level into an unmanaged dir, `chezmoi unmanaged` doesn't recurse."""
     nested_un_managed = False
     nested_wanted = False
     nested_un_wanted = False
     try:
         for child in dir_path.iterdir():
-            nested_un_managed = True
-            if child.is_symlink():
-                continue
-            if child.is_dir():
-                un_wanted = is_unwanted_dir(child)
-            elif child.is_file():
-                un_wanted = is_unwanted_file(child)
-            else:
-                continue
-            if un_wanted:
+            if (
+                child.is_symlink()
+                or (child.is_dir() and is_ignored_dir(child))
+                or (child.is_file() and is_ignored_file(child))
+            ):
                 nested_un_wanted = True
+                continue
             else:
+                nested_un_managed = True
                 nested_wanted = True
-            if nested_wanted and nested_un_wanted:
-                break
     except OSError:
         pass
     return DirData(
@@ -245,14 +231,14 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
         try:
             if path.is_dir():
                 dirs[path] = NodeData(
-                    dir_data=scan_un_man_dir(path),
+                    dir_data=scan_un_man_dir_children(path),
                     dir_path=True,
                     exists=True,
                     managed=False,
                     path=path,
                     source_path=None,
                     status=None,
-                    wanted=not is_unwanted_dir(path),
+                    wanted=not is_extend_dir(path),
                 )
             elif path.is_file() and not _file_is_sensitive(path):
                 files[path] = NodeData(
@@ -262,7 +248,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     path=path,
                     source_path=None,
                     status=None,
-                    wanted=not is_unwanted_file(path),
+                    wanted=not is_extend_file(path),
                 )
         except OSError as exception:
             error = str(exception)
