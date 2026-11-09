@@ -7,7 +7,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse.str_enums import LabelStr, TreeName
+from chezmoi_mousse.str_enums import LabelStr, StatusCode, TreeName
 
 if TYPE_CHECKING:
     from typing import Any

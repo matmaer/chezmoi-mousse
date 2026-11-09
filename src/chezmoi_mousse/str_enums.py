@@ -330,8 +330,6 @@ class PathFilters(Enum):
         ".env",
         ".ipynb_checkpoints",
         ".mozilla",
-        "session-state",
-        "state",
         ".pki",
         ".Trash",
         ".venv",
@@ -339,23 +337,19 @@ class PathFilters(Enum):
         "CMakeFiles",
         "Crash Reports",
         "DerivedData",
-        "Desktop",
-        "Documents",
-        "Downloads",
         "extensions",
         "go-build",
-        "Music",
         "node_modules",
-        "Pictures",
         "Public",
         "Recent",
+        "session-state",
+        "state",
         "temp",
         "Temp",
         "Templates",
         "tmp",
         "trash",
         "Trash",
-        "Videos",
     )
     KEY_FILE_NAMES = (
         # As we don't support adding encrypted files yet, we are excluding them.
@@ -383,7 +377,6 @@ class PathFilters(Enum):
         # Wireguard
         "wg0.conf",  # contains PrivateKey
     )
-
     KEY_FILE_EXTENSIONS = (
         # Common private key file extensions
         # PuTTY private key files
@@ -400,43 +393,6 @@ class PathFilters(Enum):
         ".pem",
     )
 
-    UNWANTED_FILE_SUFFIXES = (
-        ".7z",
-        ".AppImage",
-        ".bak",
-        ".bin",
-        ".coverage",
-        ".doc",
-        ".docx",
-        ".egg-info",
-        ".exe",
-        ".gif",
-        ".gz",
-        ".img",
-        ".iso",
-        ".jar",
-        ".jpeg",
-        ".jpg",
-        ".kdbx",
-        ".lock",
-        ".pdf",
-        ".pid",
-        ".png",
-        ".ppt",
-        ".pptx",
-        ".rar",
-        ".swp",
-        ".tar",
-        ".temp",
-        ".tgz",
-        ".tmp",
-        ".xls",
-        ".xlsx",
-        ".zip",
-    )
-
-    IGNORED_FILE_SUFFIXES = (KEY_FILE_EXTENSIONS, UNWANTED_FILE_SUFFIXES)
-
 
 class ProblemChars(StrEnum):
     BIDI_PDF = "\u202c"
@@ -451,6 +407,13 @@ class RichLogName(StrEnum):
     dom_node_logger = auto()
     env_var_logger = auto()
     memory_usage_logger = auto()
+
+
+class UnmanagedMaximum(Enum):
+    SOFT_FILE_SIZE = 512 * 1024
+    HARD_FILE_SIZE = 1024 * 1024 * 2
+    SOFT_DIR_CHILDREN = 100
+    HARD_DIR_CHILDREN = 500
 
 
 class StatusCode(StrEnum):

@@ -8,7 +8,7 @@ from chezmoi_mousse import path_funcs
 from chezmoi_mousse.data_types import DirData, IterDirResult, NodeData
 
 if TYPE_CHECKING:
-    from chezmoi_mousse.str_enums import BtnLabel, StatusCode as Sc
+    from chezmoi_mousse.str_enums import StatusCode as Sc
 
 __all__ = ["ChezmoiTreePaths", "CmPathChanges"]
 
@@ -27,8 +27,6 @@ class ChezmoiTreePaths:
     _status_files: dict[Path, Sc]
     _un_man_dirs: set[Path]
     _un_man_files: set[Path]
-    _dry_apply: dict[BtnLabel, list[Path]]
-    _dry_re_add: dict[BtnLabel, list[Path]]
 
     file_node_data: NodeDict = field(default_factory=dict[Path, NodeData])
     dir_node_data: NodeDict = field(default_factory=dict[Path, NodeData])

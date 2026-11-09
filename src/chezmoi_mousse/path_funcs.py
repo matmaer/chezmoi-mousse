@@ -2,9 +2,23 @@ from __future__ import annotations
 
 import codecs
 import re
+import tempfile
 from itertools import islice
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from platformdirs import (
+    user_cache_path,
+    user_desktop_path,
+    user_documents_path,
+    user_downloads_path,
+    user_log_path,
+    user_music_path,
+    user_pictures_path,
+    user_runtime_path,
+    user_state_path,
+    user_videos_path,
+)
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import DirData, IterDirResult, NodeData
@@ -96,6 +110,13 @@ def _file_is_binary(file_path: Path) -> bool:
     return _BINARY_BYTES_RE.search(data) is not None
 
 
+def _file_is_huge(file_path: Path) -> bool:
+    try:
+        return file_path.stat().st_size > 1024 * 1024 * 2  # two megabytes
+    except OSError:
+        return True  # if we can't stat it, return True to treat it as unwanted
+
+
 def _file_is_large(file_path: Path) -> bool:
     try:
         return file_path.stat().st_size > 512 * 1024  # half a megabyte
@@ -139,6 +160,10 @@ def is_unwanted_file(file_path: Path) -> bool:
     )
 
 
+def is_ignored_file(file_path: Path) -> bool:
+    return _file_is_sensitive(file_path) or _file_is_huge(file_path)
+
+
 def is_unwanted_dir(dir_path: Path) -> bool:
     if dir_path == store.cfg.dest_dir:
         return False
@@ -148,6 +173,29 @@ def is_unwanted_dir(dir_path: Path) -> bool:
         or _dir_is_git_objects(dir_path)
         or _dir_has_many_children(dir_path)
     )
+
+
+IGNORED_DIRS: set[Path] = {
+    p
+    for p in (
+        user_cache_path(),
+        user_state_path(),
+        user_log_path(),
+        user_runtime_path(),
+        user_documents_path(),
+        user_downloads_path(),
+        user_pictures_path(),
+        user_videos_path(),
+        user_music_path(),
+        user_desktop_path(),
+    )
+    if p
+}
+
+
+def is_ignored_dir(dir_path: Path) -> bool:
+    temp_dir_path = Path(tempfile.gettempdir())
+    return dir_path in IGNORED_DIRS or dir_path == temp_dir_path
 
 
 def scan_un_man_dir(dir_path: Path) -> DirData:

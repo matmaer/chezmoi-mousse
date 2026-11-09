@@ -19,6 +19,7 @@ from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import (
     BtnLabel,
     Chars,
+    ColorVar,
     LogStr,
     ReadCmd,
     StatusCode as Sc,
@@ -45,6 +46,11 @@ _NoErrorHighlightTheme.STYLES = {
     for token, style in HighlightTheme.STYLES.items()
     if "error-muted" not in style
 }
+
+
+async def log_in_app(app: ChezmoiGui, messages: list[str]) -> None:
+    for message in messages:
+        app.logs_tab.mount_line(message, ColorVar.secondary)
 
 
 def _highlight_str(to_highlight: str, file_path: Path) -> Content:
@@ -181,18 +187,61 @@ async def get_dry_run_data(app: ChezmoiGui, path: Path) -> dict[BtnLabel, BtnDry
     return dict(sorted(result_dict.items()))
 
 
+async def parse_paths(path_strings: list[str]) -> list[Path]:
+    return [Path(line) for line in path_strings]
+
+
+async def parse_managed_data_group(
+    app: ChezmoiGui, cmd_results: list[CommandResult]
+) -> dict[ReadCmd, list[Path] | dict[Path, Sc]]:
+
+    async def parse_and_filter_paths(path_strings: list[str]) -> list[Path]:
+        parsed_paths = await parse_paths(path_strings)
+        return [path for path in parsed_paths if not path_funcs.is_ignored_dir(path)]
+
+    async def parse_and_filter_files(path_strings: list[str]) -> list[Path]:
+        return [
+            Path(line)
+            for line in path_strings
+            if not path_funcs.is_ignored_dir(Path(line))
+        ]
+
+    async def parse_status_output(out_lines: list[str]) -> dict[Path, Sc]:
+        return {Path(line[3:]): Sc(line[:2]) for line in out_lines}
+
+    tasks_by_cmd: dict[ReadCmd, Task[list[Path] | dict[Path, Sc]]] = {}
+    async with asyncio.TaskGroup() as tg:
+        for result in cmd_results:
+            assert isinstance(result.cmd_enum, ReadCmd)
+            if result.cmd_enum == ReadCmd.unmanaged_dirs:
+                tasks_by_cmd[result.cmd_enum] = tg.create_task(
+                    parse_and_filter_paths(result.out_list)
+                )
+            elif result.cmd_enum == ReadCmd.unmanaged_files:
+                tasks_by_cmd[result.cmd_enum] = tg.create_task(
+                    parse_and_filter_files(result.out_list)
+                )
+            elif result.cmd_enum in (ReadCmd.status_dirs, ReadCmd.status_files):
+                tasks_by_cmd[result.cmd_enum] = tg.create_task(
+                    parse_status_output(result.out_list)
+                )
+            else:
+                tasks_by_cmd[result.cmd_enum] = tg.create_task(
+                    parse_paths(result.out_list)
+                )
+    parsed_data: dict[ReadCmd, list[Path] | dict[Path, Sc]] = {}
+    for cmd, task in tasks_by_cmd.items():
+        parsed_data[cmd] = task.result()
+    log_messages: list[str] = []
+    for cmd, paths in parsed_data.items():
+        log_messages.append(f"{cmd.pretty_cmd} (parsed {len(paths)})")
+    app.call_later(log_in_app, app, log_messages)
+    return parsed_data
+
+
 async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
 
-    def parse_paths(path_strings: list[str]) -> list[Path]:
-        return [Path(line) for line in path_strings]
-
-    def parse_paths_to_set(cmd_result: CommandResult) -> set[Path]:
-        return {Path(line) for line in cmd_result.out_list}
-
-    def parse_status_output(cmd_result: CommandResult) -> dict[Path, Sc]:
-        return {Path(line[3:]): Sc(line[:2]) for line in cmd_result.out_list}
-
-    cm_path_cr: dict[ReadCmd, CommandResult] = await run_in_task_group(
+    cmd_to_cr_map: dict[ReadCmd, CommandResult] = await run_in_task_group(
         app,
         [
             ReadCmd.managed_dirs,
@@ -201,14 +250,11 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
             ReadCmd.status_files,
             ReadCmd.unmanaged_dirs,
             ReadCmd.unmanaged_files,
-            ReadCmd.dry_apply,
-            ReadCmd.dry_re_add,
         ],
     )
-    man_dirs_cr = cm_path_cr[ReadCmd.managed_dirs]
-    man_files_cr = cm_path_cr[ReadCmd.managed_files]
-    dry_apply_cr = cm_path_cr[ReadCmd.dry_apply]
-    dry_re_add_cr = cm_path_cr[ReadCmd.dry_re_add]
+
+    man_dirs_cr = cmd_to_cr_map[ReadCmd.managed_dirs]
+    man_files_cr = cmd_to_cr_map[ReadCmd.managed_files]
 
     async def get_source_paths(
         targets: list[str], pretty_verb_arg: LogStr
@@ -228,24 +274,35 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
         source_files_task = tg.create_task(
             get_source_paths(man_files_cr.out_list, LogStr.on_managed_files)
         )
+    source_dirs = await parse_paths(source_dirs_task.result())
+    source_files = await parse_paths(source_files_task.result())
 
-    target_dirs = parse_paths(man_dirs_cr.out_list)
-    target_files = parse_paths(man_files_cr.out_list)
-    source_dirs = parse_paths(source_dirs_task.result())
-    source_files = parse_paths(source_files_task.result())
-    dry_apply = parse_paths(dry_apply_cr.out_list)
-    dry_re_add = parse_paths(dry_re_add_cr.out_list)
+    parsed_data = await parse_managed_data_group(
+        app,
+        [
+            cmd_to_cr_map[ReadCmd.managed_dirs],
+            cmd_to_cr_map[ReadCmd.managed_files],
+            cmd_to_cr_map[ReadCmd.status_dirs],
+            cmd_to_cr_map[ReadCmd.status_files],
+            cmd_to_cr_map[ReadCmd.unmanaged_dirs],
+            cmd_to_cr_map[ReadCmd.unmanaged_files],
+        ],
+    )
+    managed_dirs = parsed_data[ReadCmd.managed_dirs]
+    managed_files = parsed_data[ReadCmd.managed_files]
+    status_dirs = parsed_data[ReadCmd.status_dirs]
+    status_files = parsed_data[ReadCmd.status_files]
+    assert isinstance(status_dirs, dict)
+    assert isinstance(status_files, dict)
 
     return ChezmoiTreePaths(
         _dest_dir=store.cfg.dest_dir,
-        _man_dirs=dict(zip(target_dirs, source_dirs, strict=True)),
-        _man_files=dict(zip(target_files, source_files, strict=True)),
-        _status_dirs=parse_status_output(cm_path_cr[ReadCmd.status_dirs]),
-        _status_files=parse_status_output(cm_path_cr[ReadCmd.status_files]),
-        _un_man_dirs=parse_paths_to_set(cm_path_cr[ReadCmd.unmanaged_dirs]),
-        _un_man_files=parse_paths_to_set(cm_path_cr[ReadCmd.unmanaged_files]),
-        _dry_apply={BtnLabel.chezmoi_apply: dry_apply},
-        _dry_re_add={BtnLabel.chezmoi_re_add: dry_re_add},
+        _man_dirs=dict(zip(managed_dirs, source_dirs, strict=True)),
+        _man_files=dict(zip(managed_files, source_files, strict=True)),
+        _status_dirs=status_dirs,
+        _status_files=status_files,
+        _un_man_dirs=set(parsed_data[ReadCmd.unmanaged_dirs]),
+        _un_man_files=set(parsed_data[ReadCmd.unmanaged_files]),
     )
 
 
