@@ -5,6 +5,7 @@ description = "Visual interface in the terminal for the chezmoi dotfile manager,
 readme = "README.md"
 requires-python = ">=3.13,<3.15"
 dependencies = [
+    "platformdirs>=4.14.5",
     "textual>=8.2.8",
 ]
 
@@ -21,7 +22,6 @@ Repository = "https://github.com/matmaer/chezmoi-mousse"
 [dependency-groups]
 dev = [
     "codespell>=2.4.3",
-    "faker",
     "ipykernel>=7.3.0",
     "mypy>=2.3.1",
     "nuitka>=4.1.3",
