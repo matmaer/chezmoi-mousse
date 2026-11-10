@@ -209,7 +209,7 @@ class OperateModal(ModalScreen[None]):
             await asyncio.sleep(LOADING_START_DELAY)
         self.prompt_btn_group.loading = self.process_busy
 
-    def collapse_all_collapsibles(self) -> None:
+    def _collapse_all_collapsibles(self) -> None:
         for collapsible in self.query(Collapsible):
             collapsible.collapsed = True
 
@@ -260,7 +260,7 @@ class OperateModal(ModalScreen[None]):
 
     @work(description="run chezmoi interactive")
     async def _run_interactive(self) -> None:
-        self.collapse_all_collapsibles()
+        self._collapse_all_collapsibles()
         last_diff: ShowCmDiff | None = None
         pending_diff_question: str | None = None
 
