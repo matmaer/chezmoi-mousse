@@ -91,7 +91,7 @@ def _file_seems_binary(file_path: Path) -> bool:
         with file_path.open("rb") as f:
             data = f.read(8192)
     except OSError:
-        return True  # if we can't read it, return True to treat it as unwanted
+        return True  # if we can't read it, return True to treat it as extended
 
     # UTF-16/32 text is full of null bytes, a BOM identifies it as text
     if data.startswith(_TEXT_BOMS):
@@ -107,7 +107,7 @@ def _file_is_large(file_path: Path, max_size: int) -> bool:
     try:
         return file_path.stat().st_size > max_size  # two megabytes
     except OSError:
-        return True  # if we can't stat it, return True to treat it as unwanted
+        return True  # if we can't stat it, return True to treat it as extended
 
 
 def _file_is_sensitive(file_path: Path) -> bool:
@@ -193,7 +193,6 @@ def _scan_un_man_dir_children(dir_path: Path) -> DirData:
     """Look one level into an unmanaged dir, `chezmoi unmanaged` doesn't recurse."""
     nested_un_managed = False
     nested_wanted = False
-    nested_un_wanted = False
     try:
         for child in dir_path.iterdir():
             if (
@@ -201,7 +200,6 @@ def _scan_un_man_dir_children(dir_path: Path) -> DirData:
                 or (child.is_dir() and is_ignored_dir(child))
                 or (child.is_file() and _is_ignored_file(child))
             ):
-                nested_un_wanted = True
                 continue
             else:
                 nested_un_managed = True
@@ -213,7 +211,6 @@ def _scan_un_man_dir_children(dir_path: Path) -> DirData:
         nested_managed=False,
         nested_status=False,
         nested_un_managed=nested_un_managed,
-        nested_un_wanted=nested_un_wanted,
         nested_wanted=nested_wanted,
     )
 

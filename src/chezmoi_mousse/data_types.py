@@ -86,7 +86,6 @@ class DirData:
     nested_managed: bool
     nested_status: bool
     nested_un_managed: bool
-    nested_un_wanted: bool
     nested_wanted: bool
     dest_dir: bool
 
@@ -96,7 +95,6 @@ class DirData:
             nested_managed=False,
             nested_status=False,
             nested_un_managed=False,
-            nested_un_wanted=False,
             nested_wanted=False,
             dest_dir=False,
         )
@@ -182,9 +180,9 @@ class NodeData:
             return include_sp
         elif tree_name in (TreeName.managed_amp):
             return self.managed
-        elif tree_name in (TreeName.wanted_plus_sp):
+        elif tree_name in (TreeName.filtered_unman_sp):
             return include_sp or self.dir_data.nested_wanted or self._wanted_path
-        elif tree_name in (TreeName.wanted_plus_amp):
+        elif tree_name in (TreeName.filtered_unman_amp):
             return self.managed or self.dir_data.nested_wanted or self._wanted_path
         else:
             return True

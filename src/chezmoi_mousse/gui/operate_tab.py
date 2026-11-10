@@ -46,10 +46,14 @@ class LeftSideVertical(Vertical):
         yield OperateTree(TreeName.managed_sp, store.op_ids.tree.managed_sp)
         yield OperateTree(TreeName.managed_amp, store.op_ids.tree.managed_amp)
         # UNMANAGED TREE VARIANTS
-        yield OperateTree(TreeName.wanted_plus_sp, store.op_ids.tree.wanted_plus_sp)
-        yield OperateTree(TreeName.wanted_plus_amp, store.op_ids.tree.wanted_plus_amp)
-        # UNWANTED TREE
-        yield OperateTree(TreeName.un_wanted, store.op_ids.tree.un_wanted)
+        yield OperateTree(
+            TreeName.filtered_unman_sp, store.op_ids.tree.filtered_unman_sp
+        )
+        yield OperateTree(
+            TreeName.filtered_unman_amp, store.op_ids.tree.filtered_unman_amp
+        )
+        # EXTENDED TREE
+        yield OperateTree(TreeName.extended, store.op_ids.tree.extended)
 
 
 class RightSideVertical(Vertical):

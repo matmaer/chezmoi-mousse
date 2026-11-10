@@ -88,21 +88,13 @@ class OperateTree(Tree[NodeData]):
             if node_data.managed:
                 if node_data.dir_data.nested_status:
                     color_var = ColorVar.text_primary
-                elif not node_data.dir_data.nested_un_wanted:
-                    color_var = ColorVar.foreground_darken_1
                 else:
                     color_var = ColorVar.foreground_darken_3
             else:
                 if node_data.wanted:
-                    if node_data.dir_data.nested_un_wanted:
-                        color_var = ColorVar.success_darken_3
-                    else:
-                        color_var = ColorVar.text_success
+                    color_var = ColorVar.text_success
                 else:
-                    if node_data.dir_data.nested_un_wanted:
-                        color_var = ColorVar.accent_darken_3
-                    else:
-                        color_var = ColorVar.text_accent
+                    color_var = ColorVar.text_accent
         return color_var
 
     async def update_nodes(self, changes: CmPathChanges) -> None:
@@ -263,10 +255,10 @@ class OperateTree(Tree[NodeData]):
             if tree_node is not None:
                 tree_node.set_label(tree._node_label(node_data))
         for path, node_data in iter_dir_result.dirs.items():
-            if TreeName(self.name).is_wanted_tree and not node_data.wanted:
+            if self.name == TreeName.extended and not node_data.wanted:
                 continue
             self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in iter_dir_result.files.items():
-            if TreeName(self.name).is_wanted_tree and not node_data.wanted:
+            if self.name == TreeName.extended and not node_data.wanted:
                 continue
             self._add_node_with_color(path, node_data, allow_expand=False)

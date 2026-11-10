@@ -184,7 +184,6 @@ class PathView(ScrollableContainer):
         truth_dict: dict[str, bool] = {}
         truth_dict[LabelStr.path_has_status] = n_data.status_path
         truth_dict[LabelStr.path_exists] = n_data.exists
-        truth_dict[LabelStr.path_un_wanted] = not n_data.wanted and not n_data.managed
         if n_data.dir_path or n_data.path.is_dir():
             truth_dict[LabelStr.has_nested_status] = n_data.dir_data.nested_status
             truth_dict[LabelStr.has_nested_managed] = n_data.dir_data.nested_managed

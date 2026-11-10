@@ -111,21 +111,21 @@ class SwitchGroup(VerticalGroup):
         # Managed trees including all managed maths
         (True, False, False): store.op_ids.tree.managed_amp_q,
         # Un-managed trees (show_unchanged is False)
-        (False, True, False): store.op_ids.tree.wanted_plus_sp_q,
+        (False, True, False): store.op_ids.tree.filtered_unman_sp_q,
         # Un-managed trees (show_unchanged is True)
-        (True, True, False): store.op_ids.tree.wanted_plus_amp_q,
+        (True, True, False): store.op_ids.tree.filtered_unman_amp_q,
         # Un-wanted tree
-        (False, True, True): store.op_ids.tree.un_wanted_q,
-        (False, False, True): store.op_ids.tree.un_wanted_q,
-        (True, False, True): store.op_ids.tree.un_wanted_q,
-        (True, True, True): store.op_ids.tree.un_wanted_q,
+        (False, True, True): store.op_ids.tree.extended_q,
+        (False, False, True): store.op_ids.tree.extended_q,
+        (True, False, True): store.op_ids.tree.extended_q,
+        (True, True, True): store.op_ids.tree.extended_q,
     }
 
     def compose(self) -> ComposeResult:
         for switch_label in (
             LabelStr.show_unchanged,
             LabelStr.show_unmanaged,
-            LabelStr.show_unwanted,
+            LabelStr.extended_view,
         ):
             yield HorizontalGroup(
                 Switch(id=store.op_ids.switch_id(switch_label=switch_label)),
@@ -142,15 +142,15 @@ class SwitchGroup(VerticalGroup):
         show_un_managed_switch = self.query_one(
             store.op_ids.switch.show_unmanaged_q, Switch
         )
-        show_un_wanted_switch = self.query_one(
-            store.op_ids.switch.show_unwanted_q, Switch
+        extended_view_switch = self.query_one(
+            store.op_ids.switch.extended_view_q, Switch
         )
         switch_state = (
             show_un_changed_switch.value,
             show_un_managed_switch.value,
-            show_un_wanted_switch.value,
+            extended_view_switch.value,
         )
-        if show_un_wanted_switch.value is True:
+        if extended_view_switch.value is True:
             show_un_changed_switch.disabled = True
             show_un_managed_switch.disabled = True
         else:

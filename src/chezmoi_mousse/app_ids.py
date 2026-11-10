@@ -66,31 +66,31 @@ class _SwitchIds:
         self.show_unmanaged: str = ids.switch_id(switch_label=LabelStr.show_unmanaged)
         self.show_unmanaged_q: str = f"#{self.show_unmanaged}"
 
-        self.show_unwanted: str = ids.switch_id(switch_label=LabelStr.show_unwanted)
-        self.show_unwanted_q: str = f"#{self.show_unwanted}"
+        self.extended_view: str = ids.switch_id(switch_label=LabelStr.extended_view)
+        self.extended_view_q: str = f"#{self.extended_view}"
 
 
 class _TreeIds:
     def __init__(self, ids: AppIds) -> None:
 
+        # MANAGED TREES
         # status trees never include managed without status
         self.managed_sp: str = ids.tree_id(tree_name=TreeName.managed_sp)
         self.managed_sp_q: str = f"#{self.managed_sp}"
-
         # managed trees always with unchanged
         self.managed_amp: str = ids.tree_id(tree_name=TreeName.managed_amp)
         self.managed_amp_q: str = f"#{self.managed_amp}"
 
-        # 1 --- UN_MANAGED TREE ---
+        # UN_MANAGED TREES FILTERED (EXCLUDING EXTENDED)
+        # filtered unmanagedplus tree status paths
+        self.filtered_unman_sp: str = ids.tree_id(tree_name=TreeName.filtered_unman_sp)
+        self.filtered_unman_sp_q: str = f"#{self.filtered_unman_sp}"
+        # filtered unmanaged plus all managed paths
+        self.filtered_unman_amp: str = ids.tree_id(
+            tree_name=TreeName.filtered_unman_amp
+        )
+        self.filtered_unman_amp_q: str = f"#{self.filtered_unman_amp}"
 
-        # 1.1 WANTED UN MANAGED TREE PLUS TREE STATUS PATHS
-        self.wanted_plus_sp: str = ids.tree_id(tree_name=TreeName.wanted_plus_sp)
-        self.wanted_plus_sp_q: str = f"#{self.wanted_plus_sp}"
-
-        # 1.2 UN_MANAGED TREE PLUS ALL MANAGED PATHS
-        self.wanted_plus_amp: str = ids.tree_id(tree_name=TreeName.wanted_plus_amp)
-        self.wanted_plus_amp_q: str = f"#{self.wanted_plus_amp}"
-
-        # 2 --- UN_WANTED TREE ---
-        self.un_wanted: str = ids.tree_id(tree_name=TreeName.un_wanted)
-        self.un_wanted_q: str = f"#{self.un_wanted}"
+        # UN_MANAGED TREE INCLUDING EXTENDED
+        self.extended: str = ids.tree_id(tree_name=TreeName.extended)
+        self.extended_q: str = f"#{self.extended}"

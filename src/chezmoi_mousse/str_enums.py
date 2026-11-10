@@ -244,7 +244,6 @@ class LabelStr(StrEnum):
     has_nested_un_man = "Has nested un-managed paths"
     path_exists = "Exists on disk"
     path_has_status = "Has a status"
-    path_un_wanted = "Matches un-wanted filter"
 
     # Operate tab blue label
     read_file_output = "Read file from disk output"
@@ -262,7 +261,7 @@ class LabelStr(StrEnum):
     # Operate tab Switch labels
     show_unchanged = "Show Unchanged"
     show_unmanaged = "Show Unmanaged"
-    show_unwanted = "Show Unwanted"
+    extended_view = "Extended View"
 
     # other
     context = "Context"
@@ -493,15 +492,11 @@ class TreeName(StrEnum):
     managed_sp = auto()
     # the man trees includes all managed paths, with or without a status or meta status
     managed_amp = auto()
-    # trees including unmanaged paths without unwanted paths
-    wanted_plus_amp = auto()
-    wanted_plus_sp = auto()
-    # trees including any unmanaged path, including unwanted paths
-    un_wanted = auto()
-
-    @property
-    def is_wanted_tree(self) -> bool:
-        return self.name.startswith("wanted_")
+    # trees including unmanaged paths without extended paths
+    filtered_unman_amp = auto()
+    filtered_unman_sp = auto()
+    # trees including any unmanaged path, including extended paths
+    extended = auto()
 
 
 ##############################################
