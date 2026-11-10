@@ -103,6 +103,13 @@ class TreeBtnGroup(Horizontal):
             label=BtnLabel.refresh, classes=Tcss.tree_op_button, tooltip="refresh tree"
         )
 
+    def on_mount(self) -> None:
+        for btn in self.query_children(Button):
+            if btn.label == BtnLabel.expand:
+                self.expand_btn = btn
+            elif btn.label == BtnLabel.collapse:
+                self.collapse_btn = btn
+
 
 class SwitchGroup(VerticalGroup):
     state_to_tree_map: ClassVar[dict[tuple[bool, ...], str]] = {
@@ -122,38 +129,43 @@ class SwitchGroup(VerticalGroup):
     }
 
     def compose(self) -> ComposeResult:
-        for switch_label in (
-            LabelStr.show_unchanged,
-            LabelStr.show_unmanaged,
-            LabelStr.extended_view,
-        ):
-            yield HorizontalGroup(
-                Switch(id=store.op_ids.switch_id(switch_label=switch_label)),
-                Label(switch_label),
-                classes=Tcss.switch_with_label,
-            )
+        yield HorizontalGroup(
+            Switch(id=store.op_ids.switch.show_unchanged, name=LabelStr.show_unchanged),
+            Label(LabelStr.show_unchanged),
+            classes=Tcss.switch_with_label,
+        )
+        yield HorizontalGroup(
+            Switch(id=store.op_ids.switch.show_unmanaged, name=LabelStr.show_unmanaged),
+            Label(LabelStr.show_unmanaged),
+            classes=Tcss.switch_with_label,
+        )
+        yield HorizontalGroup(
+            Switch(id=store.op_ids.switch.extended_view, name=LabelStr.extended_view),
+            Label(LabelStr.extended_view),
+            classes=Tcss.switch_with_label,
+        )
+
+    def on_mount(self) -> None:
+        self.show_unchanged = self.query_one(
+            store.op_ids.switch.show_unchanged_q, Switch
+        )
+        self.show_unmanaged = self.query_one(
+            store.op_ids.switch.show_unmanaged_q, Switch
+        )
+        self.extended_view = self.query_one(store.op_ids.switch.extended_view_q, Switch)
 
     @on(Switch.Changed)
     def handle_tree_switches(self, event: Switch.Changed) -> None:
         event.stop()
-        show_un_changed_switch = self.query_one(
-            store.op_ids.switch.show_unchanged_q, Switch
-        )
-        show_un_managed_switch = self.query_one(
-            store.op_ids.switch.show_unmanaged_q, Switch
-        )
-        extended_view_switch = self.query_one(
-            store.op_ids.switch.extended_view_q, Switch
-        )
         switch_state = (
-            show_un_changed_switch.value,
-            show_un_managed_switch.value,
-            extended_view_switch.value,
+            self.show_unchanged.value,
+            self.show_unmanaged.value,
+            self.extended_view.value,
         )
-        if extended_view_switch.value is True:
-            show_un_changed_switch.disabled = True
-            show_un_managed_switch.disabled = True
+        if self.extended_view.value is True:
+            self.show_unchanged.disabled = True
+            self.show_unmanaged.disabled = True
         else:
-            show_un_changed_switch.disabled = False
-            show_un_managed_switch.disabled = False
+            self.show_unchanged.disabled = False
+            self.show_unmanaged.disabled = False
         self.post_message(ShowTreeQidMsg(self.state_to_tree_map[switch_state]))

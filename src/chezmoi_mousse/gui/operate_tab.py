@@ -127,7 +127,7 @@ class OperateTab(TabPane):
         self.path_view = self.query_exactly_one(PathView)
 
     @property
-    def _current_displayed_tree(self) -> OperateTree:
+    def current_displayed_tree(self) -> OperateTree:
         trees = self.left_side_vertical.query_children(OperateTree).results()
         for tree in trees:
             if tree and tree.display is True:
@@ -135,11 +135,11 @@ class OperateTab(TabPane):
         raise RuntimeError("Expected a tree to be displayed.")
 
     def show_dest_dir(self) -> None:
-        if self._current_displayed_tree.root.data is None:
+        if self.current_displayed_tree.root.data is None:
             return
-        self._update_widgets(self._current_displayed_tree.root.data)
-        self._current_displayed_tree.unselect()
-        self._current_displayed_tree.scroll_home()
+        self._update_widgets(self.current_displayed_tree.root.data)
+        self.current_displayed_tree.unselect()
+        self.current_displayed_tree.scroll_home()
 
     def _update_widgets(self, node_data: NodeData) -> None:
         self.app.current_node = node_data
@@ -244,9 +244,7 @@ class OperateTab(TabPane):
         self.diff_reverse_view.cache.clear()
         self.git_log_view.cache.clear()
         self.paths_without_git_log.clear()
-        tree_node = self._current_displayed_tree.node_map.get(
-            self.app.current_node.path
-        )
+        tree_node = self.current_displayed_tree.node_map.get(self.app.current_node.path)
         if tree_node is None or tree_node.data is None:
             self.show_dest_dir()
         else:
@@ -262,7 +260,7 @@ class OperateTab(TabPane):
         event.stop()
         if (
             event.node.data is None
-            or event.control.id != self._current_displayed_tree.id
+            or event.control.id != self.current_displayed_tree.id
         ):
             return
         self._update_widgets(event.node.data)
@@ -288,13 +286,13 @@ class OperateTab(TabPane):
     def handle_expand_btn(self, event: Button.Pressed) -> None:
         if event.button.label == BtnLabel.expand:
             event.stop()
-            self._current_displayed_tree.expand_top_level()
+            self.current_displayed_tree.expand_top_level()
 
     @on(Button.Pressed)
     def handle_collapse_btn(self, event: Button.Pressed) -> None:
         if event.button.label == BtnLabel.collapse:
             event.stop()
-            self._current_displayed_tree.collapse_bottom_level()
+            self.current_displayed_tree.collapse_bottom_level()
 
     @on(Button.Pressed)
     def handle_operate_button(self, event: Button.Pressed) -> None:
@@ -317,7 +315,7 @@ class OperateTab(TabPane):
     @on(ShowTreeQidMsg)
     def handle_show_tree(self, msg: ShowTreeQidMsg) -> None:
         msg.stop()
-        previous_tree = self._current_displayed_tree
+        previous_tree = self.current_displayed_tree
         show_tree = self.query_one(msg.tree_id_q, OperateTree)
         previous_tree.display = False
         show_tree.display = True
