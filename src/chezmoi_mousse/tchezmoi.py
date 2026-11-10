@@ -48,7 +48,7 @@ _NoErrorHighlightTheme.STYLES = {
 }
 
 
-async def log_in_app(app: ChezmoiGui, messages: list[str]) -> None:
+async def _log_in_app(app: ChezmoiGui, messages: list[str]) -> None:
     for message in messages:
         app.logs_tab.mount_line(message, ColorVar.secondary)
 
@@ -187,16 +187,16 @@ async def get_dry_run_data(app: ChezmoiGui, path: Path) -> dict[BtnLabel, BtnDry
     return dict(sorted(result_dict.items()))
 
 
-async def parse_paths(path_strings: list[str]) -> list[Path]:
+async def _parse_paths(path_strings: list[str]) -> list[Path]:
     return [Path(line) for line in path_strings]
 
 
-async def parse_managed_data_group(
+async def _parse_managed_data(
     app: ChezmoiGui, cmd_results: list[CommandResult]
 ) -> dict[ReadCmd, list[Path] | dict[Path, Sc]]:
 
     async def parse_and_filter_paths(path_strings: list[str]) -> list[Path]:
-        parsed_paths = await parse_paths(path_strings)
+        parsed_paths = await _parse_paths(path_strings)
         return [path for path in parsed_paths if not path_funcs.is_ignored_dir(path)]
 
     async def parse_and_filter_files(path_strings: list[str]) -> list[Path]:
@@ -227,7 +227,7 @@ async def parse_managed_data_group(
                 )
             else:
                 tasks_by_cmd[result.cmd_enum] = tg.create_task(
-                    parse_paths(result.out_list)
+                    _parse_paths(result.out_list)
                 )
     parsed_data: dict[ReadCmd, list[Path] | dict[Path, Sc]] = {}
     for cmd, task in tasks_by_cmd.items():
@@ -235,7 +235,7 @@ async def parse_managed_data_group(
     log_messages: list[str] = []
     for cmd, paths in parsed_data.items():
         log_messages.append(f"{cmd.pretty_cmd} (parsed {len(paths)})")
-    app.call_later(log_in_app, app, log_messages)
+    app.call_later(_log_in_app, app, log_messages)
     return parsed_data
 
 
@@ -274,10 +274,10 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
         source_files_task = tg.create_task(
             get_source_paths(man_files_cr.out_list, LogStr.on_managed_files)
         )
-    source_dirs = await parse_paths(source_dirs_task.result())
-    source_files = await parse_paths(source_files_task.result())
+    source_dirs = await _parse_paths(source_dirs_task.result())
+    source_files = await _parse_paths(source_files_task.result())
 
-    parsed_data = await parse_managed_data_group(
+    parsed_data = await _parse_managed_data(
         app,
         [
             cmd_to_cr_map[ReadCmd.managed_dirs],

@@ -126,7 +126,7 @@ def is_extend_file(file_path: Path) -> bool:
     )
 
 
-def is_ignored_file(file_path: Path) -> bool:
+def _is_ignored_file(file_path: Path) -> bool:
     return _file_is_sensitive(file_path) or _file_is_large(
         file_path, UnmanagedMax.hard_file_size.value
     )
@@ -189,7 +189,7 @@ def is_extend_dir(dir_path: Path) -> bool:
     )
 
 
-def scan_un_man_dir_children(dir_path: Path) -> DirData:
+def _scan_un_man_dir_children(dir_path: Path) -> DirData:
     """Look one level into an unmanaged dir, `chezmoi unmanaged` doesn't recurse."""
     nested_un_managed = False
     nested_wanted = False
@@ -199,7 +199,7 @@ def scan_un_man_dir_children(dir_path: Path) -> DirData:
             if (
                 child.is_symlink()
                 or (child.is_dir() and is_ignored_dir(child))
-                or (child.is_file() and is_ignored_file(child))
+                or (child.is_file() and _is_ignored_file(child))
             ):
                 nested_un_wanted = True
                 continue
@@ -231,7 +231,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
         try:
             if path.is_dir():
                 dirs[path] = NodeData(
-                    dir_data=scan_un_man_dir_children(path),
+                    dir_data=_scan_un_man_dir_children(path),
                     dir_path=True,
                     exists=True,
                     managed=False,
