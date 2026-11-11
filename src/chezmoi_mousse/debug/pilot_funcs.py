@@ -85,9 +85,12 @@ class NoChill:
             if not isinstance(tab_pane, OperateTab) and key in "CT":
                 continue
             await NoChill.press_key(pilot, key)
-            await pilot.wait_for_scheduled_animations()
             await NoChill.press_key(pilot, key)
-            await pilot.wait_for_scheduled_animations()
+
+    @staticmethod
+    async def click_tree_btn(pilot: Pilot[object], widget: HoverClickTypes) -> None:
+        await pilot.click(widget)
+        await pilot.wait_for_animation()
 
 
 class WithChill:
@@ -102,14 +105,8 @@ class WithChill:
             await pilot.wait_for_scheduled_animations()
 
     @staticmethod
-    async def click_tree_btn(pilot: Pilot[object], widget: HoverClickTypes) -> None:
-        await pilot.click(widget)
-        await pilot.wait_for_animation()
-        await _chill_sleep(pilot)
-
-    @staticmethod
     async def toggle_random_collapsible_and_scroll(
-        pilot: Pilot[object], root: Widget
+        pilot: Pilot[object], root: Widget, *, scroll_probability: float
     ) -> None:
         to_collapse = await NoChill.get_random_collapsible_title(root, collapsed=True)
         to_expand = await NoChill.get_random_collapsible_title(root, collapsed=False)
@@ -117,7 +114,8 @@ class WithChill:
             if title is None:
                 return
             await WithChill.hover_and_click(pilot, title)
-            await NoChill.scroll_relevant_widget(pilot, root)
+            if random.random() < scroll_probability:
+                await NoChill.scroll_relevant_widget(pilot, root)
             await WithChill.hover_and_click(pilot, title)
 
     @staticmethod

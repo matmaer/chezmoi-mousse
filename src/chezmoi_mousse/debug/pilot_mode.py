@@ -47,7 +47,9 @@ async def _explore_tabs(pilot: Pilot[object], tab_pane: TabPane) -> None:
         await _explore_operate_tab(pilot, tab_pane)
     elif isinstance(tab_pane, LogsTab):
         for _ in range(3):
-            await WithChill.toggle_random_collapsible_and_scroll(pilot, tab_pane)
+            await WithChill.toggle_random_collapsible_and_scroll(
+                pilot, tab_pane, scroll_probability=0.5
+            )
 
     elif isinstance(tab_pane, (ConfigTab, DebugTab)):
         flat_btn_group = tab_pane.query_exactly_one(FlatBtnGroup)
@@ -55,7 +57,8 @@ async def _explore_tabs(pilot: Pilot[object], tab_pane: TabPane) -> None:
         buttons.rotate(-1)
         for button in buttons:
             await WithChill.hover_and_click(pilot, button)
-            await NoChill.scroll_relevant_widget(pilot, tab_pane)
+            if random.random() < 0.33:
+                await NoChill.scroll_relevant_widget(pilot, tab_pane)
 
 
 async def _explore_operate_tab(pilot: Pilot[object], op_tab: OperateTab) -> None:
@@ -92,10 +95,10 @@ async def _explore_operate_tab(pilot: Pilot[object], op_tab: OperateTab) -> None
         )
 
     while any_collapsed(op_tab.current_displayed_tree.node_map):
-        await WithChill.click_tree_btn(pilot, tree_btn_group.expand_btn)
+        await NoChill.click_tree_btn(pilot, tree_btn_group.expand_btn)
 
     while any_expanded(op_tab.current_displayed_tree.node_map):
-        await WithChill.click_tree_btn(pilot, tree_btn_group.collapse_btn)
+        await NoChill.click_tree_btn(pilot, tree_btn_group.collapse_btn)
 
 
 async def _test_path_operations(pilot: Pilot[object], debug_tab: DebugTab) -> None:
@@ -173,7 +176,9 @@ async def _run_operation(pilot: Pilot[object], op_tab: OperateTab) -> None:
         if prompt.reply in ChezmoiPrompts.non_operation_replies()
     }
     while pilot.app.screen is modal:
-        await WithChill.toggle_random_collapsible_and_scroll(pilot, modal)
+        await WithChill.toggle_random_collapsible_and_scroll(
+            pilot, modal, scroll_probability=0.3
+        )
         available = {
             str(button.label): button
             for button in modal.query(Button)
