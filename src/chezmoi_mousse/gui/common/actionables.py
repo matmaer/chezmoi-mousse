@@ -121,7 +121,7 @@ class SwitchGroup(VerticalGroup):
         (False, True, False): store.op_ids.tree.filtered_unman_sp_q,
         # Un-managed trees (show_unchanged is True)
         (True, True, False): store.op_ids.tree.filtered_unman_amp_q,
-        # Un-wanted tree
+        # Extended tree
         (False, True, True): store.op_ids.tree.extended_q,
         (False, False, True): store.op_ids.tree.extended_q,
         (True, False, True): store.op_ids.tree.extended_q,

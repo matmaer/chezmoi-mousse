@@ -36,17 +36,17 @@ class ChezmoiTreePaths:
         un_managed_paths = self._un_man_dirs | self._un_man_files
         status_paths = self._status_dirs.keys() | self._status_files.keys()
         extended_files = {p for p in self._un_man_files if path_funcs.is_extend_file(p)}
-        wanted_files = self._un_man_files - extended_files
+        filtered_files = self._un_man_files - extended_files
         extended_dirs = {p for p in self._un_man_dirs if path_funcs.is_extend_dir(p)}
-        wanted_dirs = {p for p in self._un_man_dirs if p not in extended_dirs}
-        wanted_paths = wanted_dirs | wanted_files
+        filtered_dirs = {p for p in self._un_man_dirs if p not in extended_dirs}
+        filtered_paths = filtered_dirs | filtered_files
 
-        self._populate_file_node_data(wanted_files=wanted_files)
+        self._populate_file_node_data(filtered_files=filtered_files)
         self._populate_dir_node_data(
             managed_paths=managed_paths,
             status_paths=status_paths,
             un_managed_paths=un_managed_paths,
-            wanted_paths=wanted_paths,
+            filtered_paths=filtered_paths,
         )
 
         self.file_node_data = path_funcs.sort_path_dict(self.file_node_data)
@@ -59,7 +59,7 @@ class ChezmoiTreePaths:
             "Mismatch between all paths and node data paths"
         )
 
-    def _populate_file_node_data(self, *, wanted_files: set[Path]) -> None:
+    def _populate_file_node_data(self, *, filtered_files: set[Path]) -> None:
 
         for path in self._man_files.keys() | self._un_man_files:
             managed = path in self._man_files
@@ -72,7 +72,7 @@ class ChezmoiTreePaths:
                 path=path,
                 source_path=self._man_files.get(path, None),
                 status=status,
-                wanted=path in wanted_files,
+                filtered=path in filtered_files,
             )
 
     def _populate_dir_node_data(
@@ -81,12 +81,12 @@ class ChezmoiTreePaths:
         managed_paths: set[Path],
         status_paths: set[Path],
         un_managed_paths: set[Path],
-        wanted_paths: set[Path],
+        filtered_paths: set[Path],
     ) -> None:
         for path in {self._dest_dir} | self._man_dirs.keys() | self._un_man_dirs:
             nested_status = False
             nested_managed = False
-            nested_wanted = False
+            nested_filtered = False
             nested_un_managed = False
 
             managed = path in self._man_dirs
@@ -97,12 +97,12 @@ class ChezmoiTreePaths:
             if is_dest_dir:
                 nested_status = bool(status_paths)
                 nested_managed = bool(managed_paths)
-                nested_wanted = bool(wanted_paths)
+                nested_filtered = bool(filtered_paths)
                 nested_un_managed = bool(un_managed_paths)
 
             else:
-                nested_wanted = path_funcs.any_nested_in(
-                    dir_path=path, check_paths=wanted_paths
+                nested_filtered = path_funcs.any_nested_in(
+                    dir_path=path, check_paths=filtered_paths
                 )
                 nested_un_managed = path_funcs.any_nested_in(
                     dir_path=path, check_paths=un_managed_paths
@@ -121,7 +121,7 @@ class ChezmoiTreePaths:
                     nested_managed=nested_managed,
                     nested_status=nested_status,
                     nested_un_managed=nested_un_managed,
-                    nested_wanted=nested_wanted,
+                    nested_filtered=nested_filtered,
                 ),
                 dir_path=True,
                 exists=exists,
@@ -129,7 +129,7 @@ class ChezmoiTreePaths:
                 path=path,
                 source_path=self._man_dirs.get(path),
                 status=status,
-                wanted=path in wanted_paths,
+                filtered=path in filtered_paths,
             )
 
     @property
@@ -150,7 +150,7 @@ class ChezmoiTreePaths:
         dir_node.dir_data = replace(
             dir_node.dir_data,
             nested_un_managed=bool(children),
-            nested_wanted=any(child.wanted for child in children),
+            nested_filtered=any(child.filtered for child in children),
         )
         return result
 

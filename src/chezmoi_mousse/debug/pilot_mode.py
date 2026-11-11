@@ -128,7 +128,7 @@ async def _set_random_operate_tab_state(
         if (
             node is not None
             and node.data is not None
-            and (node.data.managed or node.data.wanted is not False)
+            and (node.data.managed or node.data.filtered is not False)
         ):
             await NoChill.press_key(pilot, "enter")
         break

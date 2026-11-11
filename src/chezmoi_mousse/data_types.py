@@ -86,7 +86,7 @@ class DirData:
     nested_managed: bool
     nested_status: bool
     nested_un_managed: bool
-    nested_wanted: bool
+    nested_filtered: bool
     dest_dir: bool
 
     @classmethod
@@ -95,7 +95,7 @@ class DirData:
             nested_managed=False,
             nested_status=False,
             nested_un_managed=False,
-            nested_wanted=False,
+            nested_filtered=False,
             dest_dir=False,
         )
 
@@ -115,7 +115,7 @@ class NodeData:
     path: Path
     source_path: Path | None
     status: StatusCode | None
-    wanted: bool | None
+    filtered: bool | None
     dir_data: DirData = field(default_factory=DirData.for_file)
 
     @property
@@ -127,16 +127,16 @@ class NodeData:
         return self.status is not None
 
     @property
-    def _wanted_dir(self) -> bool:
-        return self.dir_path and self.wanted is True
+    def _filtered_dir(self) -> bool:
+        return self.dir_path and self.filtered is True
 
     @property
-    def _wanted_file(self) -> bool:
-        return self.file_path and self.wanted is True
+    def _filtered_file(self) -> bool:
+        return self.file_path and self.filtered is True
 
     @property
-    def _wanted_path(self) -> bool:
-        return self._wanted_dir or self._wanted_file
+    def _filtered_path(self) -> bool:
+        return self._filtered_dir or self._filtered_file
 
     def get_main_label(self, label_size: int) -> str:
         if self.dir_data.dest_dir:
@@ -181,8 +181,8 @@ class NodeData:
         elif tree_name in (TreeName.managed_amp):
             return self.managed
         elif tree_name in (TreeName.filtered_unman_sp):
-            return include_sp or self.dir_data.nested_wanted or self._wanted_path
+            return include_sp or self.dir_data.nested_filtered or self._filtered_path
         elif tree_name in (TreeName.filtered_unman_amp):
-            return self.managed or self.dir_data.nested_wanted or self._wanted_path
+            return self.managed or self.dir_data.nested_filtered or self._filtered_path
         else:
             return True

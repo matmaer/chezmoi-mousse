@@ -74,6 +74,7 @@ class _TreeIds:
     def __init__(self, ids: AppIds) -> None:
 
         # MANAGED TREES
+
         # status trees never include managed without status
         self.managed_sp: str = ids.tree_id(tree_name=TreeName.managed_sp)
         self.managed_sp_q: str = f"#{self.managed_sp}"
@@ -81,16 +82,17 @@ class _TreeIds:
         self.managed_amp: str = ids.tree_id(tree_name=TreeName.managed_amp)
         self.managed_amp_q: str = f"#{self.managed_amp}"
 
-        # UN_MANAGED TREES FILTERED (EXCLUDING EXTENDED)
-        # filtered unmanagedplus tree status paths
+        # MANAGED PLUS UN_MANAGED TREES
+
+        # filtered plus tree status paths
         self.filtered_unman_sp: str = ids.tree_id(tree_name=TreeName.filtered_unman_sp)
         self.filtered_unman_sp_q: str = f"#{self.filtered_unman_sp}"
-        # filtered unmanaged plus all managed paths
+        # filtered plus all managed paths
         self.filtered_unman_amp: str = ids.tree_id(
             tree_name=TreeName.filtered_unman_amp
         )
         self.filtered_unman_amp_q: str = f"#{self.filtered_unman_amp}"
 
-        # UN_MANAGED TREE INCLUDING EXTENDED
+        # EXTENDED TREE
         self.extended: str = ids.tree_id(tree_name=TreeName.extended)
         self.extended_q: str = f"#{self.extended}"

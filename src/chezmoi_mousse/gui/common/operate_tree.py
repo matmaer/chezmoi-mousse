@@ -79,7 +79,7 @@ class OperateTree(Tree[NodeData]):
         if node_data.file_path:
             if node_data.managed:
                 color_var = ColorVar.foreground_darken_3
-            elif node_data.wanted:
+            elif node_data.filtered:
                 color_var = ColorVar.text_success
             else:
                 color_var = ColorVar.text_accent
@@ -91,7 +91,7 @@ class OperateTree(Tree[NodeData]):
                 else:
                     color_var = ColorVar.foreground_darken_3
             else:
-                if node_data.wanted:
+                if node_data.filtered:
                     color_var = ColorVar.text_success
                 else:
                     color_var = ColorVar.text_accent
@@ -255,10 +255,10 @@ class OperateTree(Tree[NodeData]):
             if tree_node is not None:
                 tree_node.set_label(tree._node_label(node_data))
         for path, node_data in iter_dir_result.dirs.items():
-            if self.name == TreeName.extended and not node_data.wanted:
+            if self.name == TreeName.extended and not node_data.filtered:
                 continue
             self._add_node_with_color(path, node_data, allow_expand=True)
         for path, node_data in iter_dir_result.files.items():
-            if self.name == TreeName.extended and not node_data.wanted:
+            if self.name == TreeName.extended and not node_data.filtered:
                 continue
             self._add_node_with_color(path, node_data, allow_expand=False)

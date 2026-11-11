@@ -192,7 +192,7 @@ def is_extend_dir(dir_path: Path) -> bool:
 def _scan_un_man_dir_children(dir_path: Path) -> DirData:
     """Look one level into an unmanaged dir, `chezmoi unmanaged` doesn't recurse."""
     nested_un_managed = False
-    nested_wanted = False
+    nested_filtered = False
     try:
         for child in dir_path.iterdir():
             if (
@@ -201,9 +201,12 @@ def _scan_un_man_dir_children(dir_path: Path) -> DirData:
                 or (child.is_file() and _is_ignored_file(child))
             ):
                 continue
+            elif (child.is_dir() and not is_extend_dir(child)) or (
+                child.is_file() and not is_extend_file(child)
+            ):
+                nested_filtered = True
             else:
                 nested_un_managed = True
-                nested_wanted = True
     except OSError:
         pass
     return DirData(
@@ -211,7 +214,7 @@ def _scan_un_man_dir_children(dir_path: Path) -> DirData:
         nested_managed=False,
         nested_status=False,
         nested_un_managed=nested_un_managed,
-        nested_wanted=nested_wanted,
+        nested_filtered=nested_filtered,
     )
 
 
@@ -235,7 +238,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     path=path,
                     source_path=None,
                     status=None,
-                    wanted=not is_extend_dir(path),
+                    filtered=not is_extend_dir(path),
                 )
             elif path.is_file() and not _file_is_sensitive(path):
                 files[path] = NodeData(
@@ -245,7 +248,7 @@ def get_un_man_children(dir_path: Path) -> IterDirResult:
                     path=path,
                     source_path=None,
                     status=None,
-                    wanted=not is_extend_file(path),
+                    filtered=not is_extend_file(path),
                 )
         except OSError as exception:
             error = str(exception)
