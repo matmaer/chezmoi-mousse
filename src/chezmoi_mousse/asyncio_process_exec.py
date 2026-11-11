@@ -15,12 +15,12 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse import store
 from chezmoi_mousse.data_types import CommandResult
-from chezmoi_mousse.str_enums import ChezmoiPrompts
+from chezmoi_mousse.str_enums import ChezmoiPrompts, WriteCmd
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Awaitable, Callable
 
-    from chezmoi_mousse.str_enums import ReadCmd, WriteCmd
+    from chezmoi_mousse.str_enums import ReadCmd
 
 CHEZMOI = shutil.which("chezmoi")
 
@@ -30,60 +30,38 @@ _PROMPT_RE = re.compile(r"\(([^()]*)\)\? \Z")
 _PROMPT_OPTIONS = frozenset(prompt.prompt_item for prompt in ChezmoiPrompts)
 _GLOBAL_TIMEOUT = 15
 
-__all__ = ["create_subprocess_exec_result", "run_chezmoi_interactive_process"]
+__all__ = ["create_interactive_managed_process", "get_process_cmd_result"]
 
 
-async def create_subprocess_exec_result(
-    chezmoi_args: tuple[str, ...],
-    *,
-    use_isolated_index: bool,
-    cmd_enum: ReadCmd | WriteCmd,
-    pretty_cmd: str,
+async def get_process_cmd_result(
+    chezmoi_args: tuple[str, ...], *, cmd_enum: ReadCmd | WriteCmd, pretty_cmd: str
 ) -> CommandResult:
+    if cmd_enum in WriteCmd.no_op_commands():
+        raise ValueError(f"Received wrong cmd_enum: {cmd_enum}")
     assert CHEZMOI is not None
     exec_args = (CHEZMOI, *chezmoi_args)
 
-    env_vars: dict[str, str] | None = None
-    temp_index_path: Path | None = None
+    async with _managed_process(*chezmoi_args, use_isolated_index=False) as process:
+        try:
+            async with asyncio.timeout(_GLOBAL_TIMEOUT):
+                stdout_bytes, stderr_bytes = await process.communicate()
+        except TimeoutError as time_out_error:
+            raise subprocess.TimeoutExpired(
+                cmd=exec_args, timeout=_GLOBAL_TIMEOUT
+            ) from time_out_error
 
-    try:
-        # Avoid locking the index when dry running a bunch of commands in parallel
-        if use_isolated_index and store.cfg.git_index.exists():
-            with tempfile.NamedTemporaryFile(
-                prefix="cm_git_idx", delete=False
-            ) as tmp_file:
-                temp_index_path = Path(tmp_file.name)
-
-            shutil.copyfile(store.cfg.git_index, temp_index_path)
-            env_vars = os.environ.copy()
-            env_vars["GIT_INDEX_FILE"] = str(temp_index_path)
-
-        async with _managed_process(*chezmoi_args, env=env_vars) as process:
-            try:
-                async with asyncio.timeout(_GLOBAL_TIMEOUT):
-                    stdout_bytes, stderr_bytes = await process.communicate()
-            except TimeoutError as time_out_error:
-                raise subprocess.TimeoutExpired(
-                    cmd=exec_args, timeout=_GLOBAL_TIMEOUT
-                ) from time_out_error
-
-        std_out = (stdout_bytes or b"").decode("utf-8", errors="replace")
-        std_err = (stderr_bytes or b"").decode("utf-8", errors="replace")
-        assert process.returncode is not None, "process did not return a code"
-        return CommandResult(
-            cmd_enum=cmd_enum,
-            full_cmd=" ".join(exec_args),
-            pretty_cmd=pretty_cmd,
-            returncode=process.returncode,
-            std_err=std_err,
-            std_out=std_out,
-            time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
-        )
-
-    finally:
-        if temp_index_path is not None:
-            temp_index_path.unlink(missing_ok=True)
-            Path(f"{temp_index_path}.lock").unlink(missing_ok=True)
+    std_out = (stdout_bytes or b"").decode("utf-8", errors="replace")
+    std_err = (stderr_bytes or b"").decode("utf-8", errors="replace")
+    assert process.returncode is not None, "process did not return a code"
+    return CommandResult(
+        cmd_enum=cmd_enum,
+        full_cmd=" ".join(exec_args),
+        pretty_cmd=pretty_cmd,
+        returncode=process.returncode,
+        std_err=std_err,
+        std_out=std_out,
+        time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
+    )
 
 
 async def _stop_process(process: asyncio.subprocess.Process) -> None:
@@ -102,24 +80,41 @@ async def _stop_process(process: asyncio.subprocess.Process) -> None:
 
 @asynccontextmanager
 async def _managed_process(
-    *cmd: str, env: dict[str, str] | None = None
+    *cmd: str, use_isolated_index: bool = False
 ) -> AsyncGenerator[asyncio.subprocess.Process]:
     assert CHEZMOI is not None
-    process = await asyncio.create_subprocess_exec(
-        CHEZMOI,
-        *cmd,
-        env=env,
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
+    env_vars: dict[str, str] | None = None
+    temp_index_path: Path | None = None
     try:
-        yield process
+        # Parallel scope checks must not compete for the real Git index.
+        if use_isolated_index and store.cfg.git_index.exists():
+            with tempfile.NamedTemporaryFile(
+                prefix="cm_git_idx", delete=False
+            ) as tmp_file:
+                temp_index_path = Path(tmp_file.name)
+            shutil.copyfile(store.cfg.git_index, temp_index_path)
+            env_vars = os.environ.copy()
+            env_vars["GIT_INDEX_FILE"] = str(temp_index_path)
+
+        process = await asyncio.create_subprocess_exec(
+            CHEZMOI,
+            *cmd,
+            env=env_vars,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            yield process
+        finally:
+            await _stop_process(process)
     finally:
-        await _stop_process(process)
+        if temp_index_path is not None:
+            temp_index_path.unlink(missing_ok=True)
+            Path(f"{temp_index_path}.lock").unlink(missing_ok=True)
 
 
-async def run_chezmoi_interactive_process(
+async def create_interactive_managed_process(
     chezmoi_args: tuple[str, ...],
     prompt_handler: Callable[[str, list[str], str], Awaitable[str]],
     output_handler: Callable[[str], Awaitable[None]],
@@ -129,7 +124,9 @@ async def run_chezmoi_interactive_process(
 ) -> CommandResult:
     read_timeout: float = 0.05
     interactive_approved = False
-    async with _managed_process(*chezmoi_args) as process:
+    async with _managed_process(
+        *chezmoi_args, use_isolated_index=cmd_enum in WriteCmd.no_op_commands()
+    ) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin
         pipe_stderr = process.stderr

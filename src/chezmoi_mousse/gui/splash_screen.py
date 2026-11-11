@@ -14,7 +14,7 @@ from textual.strip import Strip
 from textual.widgets import RichLog, Static
 
 from chezmoi_mousse.gui.common.ascii_constants import SPLASH_ASCII
-from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, Tcss
+from chezmoi_mousse.str_enums import ColorVar, LogStr, ReadCmd, Tcss, WriteCmd
 
 if TYPE_CHECKING:
     from textual import getters
@@ -119,10 +119,7 @@ class SplashScreen(Screen[None]):
         elif cmd_result:
             if cmd_result.returncode != 0:
                 suffix = LogStr.checked
-            elif (
-                cmd_result.returncode == 0
-                and cmd_result.cmd_enum in ReadCmd.dry_commands()
-            ):
+            elif cmd_result.cmd_enum in WriteCmd.no_op_commands():
                 suffix = LogStr.dry_run
             else:
                 suffix = (

@@ -112,15 +112,15 @@ class BtnLabel(StrEnum):
         return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
 
     @property
-    def dry_cmd(self) -> "ReadCmd":
+    def no_op_cmd(self) -> "WriteCmd":
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         map = {
-            BtnLabel.chezmoi_add: ReadCmd.dry_add,
-            BtnLabel.chezmoi_apply: ReadCmd.dry_apply,
-            BtnLabel.chezmoi_re_add: ReadCmd.dry_re_add,
-            BtnLabel.chezmoi_forget: ReadCmd.dry_forget,
-            BtnLabel.chezmoi_destroy: ReadCmd.dry_destroy,
+            BtnLabel.chezmoi_add: WriteCmd.no_op_add,
+            BtnLabel.chezmoi_apply: WriteCmd.no_op_apply,
+            BtnLabel.chezmoi_re_add: WriteCmd.no_op_re_add,
+            BtnLabel.chezmoi_forget: WriteCmd.no_op_forget,
+            BtnLabel.chezmoi_destroy: WriteCmd.no_op_destroy,
         }
         return map[self]
 
@@ -291,7 +291,7 @@ class LogStr(StrEnum):
     auto_log_started = "auto log started"
     auto_log_stopped = "auto log stopped"
     no_auto_log = "psutil not auto logging"
-    no_op = "The dry-run did not return any paths in scope, button disabled."
+    no_op = "dry-run command"
 
     @property
     def start(self) -> str:
@@ -536,11 +536,11 @@ class _GlobalArgs(Enum):
     _force_false = "--force=false"
     _interactive_false = "--interactive=false"
     _interactive_true = "--interactive=true"
+    _dry_run_arg = "--dry-run=true"
     non_interactive = (*_global_defaults, _interactive_false, _force_true)
     # --no-tty=true makes chezmoi prompt over stdin/stdout instead of /dev/tty
     interactive = (*_global_defaults, _interactive_true, _force_false)
-    dry_run_arg = "--dry-run=true"
-    verbose_arg = "--verbose"
+    dry_interactive = (*interactive, _dry_run_arg)
 
 
 class _VerbArgs(StrEnum):
@@ -632,38 +632,6 @@ class ReadCmd(Enum):
         _VerbArgs.format_json.value,
     )
 
-    dry_add = (
-        *_GlobalArgs.non_interactive.value,
-        _GlobalArgs.dry_run_arg.value,
-        _GlobalArgs.verbose_arg.value,
-        _WriteVerb.add.value,
-        _VerbArgs.recursive_false.value,
-    )
-    dry_apply = (
-        *_GlobalArgs.non_interactive.value,
-        _GlobalArgs.dry_run_arg.value,
-        _GlobalArgs.verbose_arg.value,
-        _WriteVerb.apply.value,
-    )
-    dry_destroy = (
-        *_GlobalArgs.non_interactive.value,
-        _GlobalArgs.dry_run_arg.value,
-        _GlobalArgs.verbose_arg.value,
-        _WriteVerb.destroy.value,
-    )
-    dry_forget = (
-        *_GlobalArgs.non_interactive.value,
-        _GlobalArgs.dry_run_arg.value,
-        _GlobalArgs.verbose_arg.value,
-        _WriteVerb.forget.value,
-    )
-    dry_re_add = (
-        *_GlobalArgs.non_interactive.value,
-        _GlobalArgs.dry_run_arg.value,
-        _GlobalArgs.verbose_arg.value,
-        _WriteVerb.re_add.value,
-    )
-
     @cached_property
     def pretty_cmd(self) -> str:
         ugly_args: tuple[str, ...] = (
@@ -683,21 +651,6 @@ class ReadCmd(Enum):
     def pretty_splash_cmd(self) -> str:
         return self.pretty_cmd.replace("--include=", "")
 
-    @classmethod
-    def dry_commands(cls) -> tuple["ReadCmd", ...]:
-        return tuple(cmd for cmd in cls if cmd.name.startswith("dry_"))
-
-    @property
-    def write_cmd(self) -> "WriteCmd":
-        map = {
-            ReadCmd.dry_add: WriteCmd.add,
-            ReadCmd.dry_apply: WriteCmd.apply,
-            ReadCmd.dry_destroy: WriteCmd.destroy,
-            ReadCmd.dry_forget: WriteCmd.forget,
-            ReadCmd.dry_re_add: WriteCmd.re_add,
-        }
-        return map[self]
-
 
 class WriteCmd(Enum):
     init = (*_GlobalArgs.non_interactive.value, _WriteVerb.init.value)
@@ -712,6 +665,17 @@ class WriteCmd(Enum):
     forget = (*_GlobalArgs.interactive.value, _WriteVerb.forget.value)
     re_add = (*_GlobalArgs.interactive.value, _WriteVerb.re_add.value)
 
+    no_op_add = (
+        *_GlobalArgs.dry_interactive.value,
+        _WriteVerb.add.value,
+        _VerbArgs.prompt.value,
+        _VerbArgs.recursive_false.value,
+    )
+    no_op_apply = (*_GlobalArgs.dry_interactive.value, _WriteVerb.apply.value)
+    no_op_destroy = (*_GlobalArgs.dry_interactive.value, _WriteVerb.destroy.value)
+    no_op_forget = (*_GlobalArgs.dry_interactive.value, _WriteVerb.forget.value)
+    no_op_re_add = (*_GlobalArgs.dry_interactive.value, _WriteVerb.re_add.value)
+
     @cached_property
     def pretty_cmd(self) -> str:
         ugly_args: tuple[str, ...] = (
@@ -722,12 +686,16 @@ class WriteCmd(Enum):
         return f"chezmoi {verb_str}"
 
     @property
-    def dry_cmd(self) -> ReadCmd:
+    def btn_label(self) -> "BtnLabel":
         map = {
-            WriteCmd.add: ReadCmd.dry_add,
-            WriteCmd.apply: ReadCmd.dry_apply,
-            WriteCmd.destroy: ReadCmd.dry_destroy,
-            WriteCmd.forget: ReadCmd.dry_forget,
-            WriteCmd.re_add: ReadCmd.dry_re_add,
+            WriteCmd.no_op_add: BtnLabel.chezmoi_add,
+            WriteCmd.no_op_apply: BtnLabel.chezmoi_apply,
+            WriteCmd.no_op_destroy: BtnLabel.chezmoi_destroy,
+            WriteCmd.no_op_forget: BtnLabel.chezmoi_forget,
+            WriteCmd.no_op_re_add: BtnLabel.chezmoi_re_add,
         }
         return map[self]
+
+    @classmethod
+    def no_op_commands(cls) -> tuple["WriteCmd", ...]:
+        return tuple(cmd for cmd in cls if cmd.name.startswith("no_op_"))

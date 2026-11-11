@@ -12,9 +12,13 @@ from chezmoi_mousse.str_enums import LabelStr, StatusCode, TreeName
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse.str_enums import ReadCmd, StatusCode, WriteCmd
+    from chezmoi_mousse.str_enums import BtnLabel, ReadCmd, StatusCode, WriteCmd
+
+type BtnLabelDryDict = dict[BtnLabel, BtnDryData]
+
 __all__ = [
     "BtnDryData",
+    "BtnLabelDryDict",
     "CommandResult",
     "DirData",
     "InitData",
@@ -63,6 +67,10 @@ class ParsedDumpConfig:
     @cached_property
     def dest_dir(self) -> Path:
         return Path(self._parsed_cfg["destDir"])
+
+    @property
+    def source_dir_str(self) -> str:
+        return self._parsed_cfg["sourceDir"]
 
     @cached_property
     def git_index(self) -> Path:

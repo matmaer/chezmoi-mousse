@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.data_types import BtnDryData, NodeData
+    from chezmoi_mousse.data_types import BtnLabelDryDict, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -108,7 +108,7 @@ class OperateTab(TabPane):
         yield OperateBtnGroup(labels=BtnLabel.op_btn_labels())
 
     def on_mount(self) -> None:
-        self.dry_run_cache: dict[Path, dict[BtnLabel, BtnDryData]] = {}
+        self.dry_run_cache: dict[Path, BtnLabelDryDict] = {}
         self.source_path_label = self.query_one(Tcss.green_label.q, Static)
         self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.op_buttons = self.op_btn_group.query_children(Button).results()
@@ -150,13 +150,13 @@ class OperateTab(TabPane):
 
     @work(description="update operate buttons enabled/disabled state")
     async def _update_op_buttons(self, node_data: NodeData) -> None:
-        cached: dict[BtnLabel, BtnDryData] = {}
+        cached: BtnLabelDryDict = {}
         try:
             cached = self.dry_run_cache[node_data.path]
         except:
-            self.dry_run_cache[node_data.path] = await tchezmoi.get_dry_run_data(
-                self.app, node_data.path
-            )
+            self.dry_run_cache[
+                node_data.path
+            ] = await tchezmoi.collect_chezmoi_paths_in_scope(self.app, node_data.path)
             cached = self.dry_run_cache[node_data.path]
         for btn in self.op_btn_group.query(Button).results():
             btn_label = BtnLabel(str(btn.label))
@@ -306,7 +306,7 @@ class OperateTab(TabPane):
             return
         paths = dry_run_data[btn_label]
         modal = OperateModal(
-            op_btn=btn_label,
+            op_btn_label=btn_label,
             node_data=self.app.current_node,
             paths_in_scope=paths.pretty_str,
         )

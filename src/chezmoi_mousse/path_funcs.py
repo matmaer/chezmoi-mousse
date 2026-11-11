@@ -39,11 +39,6 @@ def sort_path_dict[V](path_dict: dict[Path, V]) -> dict[Path, V]:
     return {path: path_dict[path] for path in sorted_keys}
 
 
-def parse_paths(path_strings: list[str]) -> list[Path]:
-    parsed = [Path(line) for line in path_strings]
-    return sort_paths(parsed)
-
-
 def any_nested_in(*, dir_path: Path, check_paths: Iterable[Path]) -> bool:
     dir_parts = dir_path.parts
     depth = len(dir_parts)

@@ -191,8 +191,10 @@ async def _run_operation(pilot: Pilot[object], op_tab: OperateTab) -> None:
             await WithChill.hover_and_click(pilot, available[BtnLabel.close])
         elif safe_buttons:
             await WithChill.hover_and_click(pilot, random.choice(safe_buttons))
-        elif run_command and modal.op_btn.run_label in available:
-            await WithChill.hover_and_click(pilot, available[modal.op_btn.run_label])
+        elif run_command and modal.op_btn_label.run_label in available:
+            await WithChill.hover_and_click(
+                pilot, available[modal.op_btn_label.run_label]
+            )
         elif BtnLabel.cancel in available:
             await WithChill.hover_and_click(pilot, available[BtnLabel.cancel])
 

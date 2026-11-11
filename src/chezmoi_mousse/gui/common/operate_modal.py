@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     from chezmoi_mousse.data_types import CommandResult, IterDirResult, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
-    from chezmoi_mousse.str_enums import ReadCmd
+    from chezmoi_mousse.str_enums import WriteCmd
 
 
 __all__ = ["OperateModal"]
@@ -54,11 +54,11 @@ class CmGitConfig(VerticalGroup):
 
 
 class PathsInScope(VerticalGroup):
-    def __init__(self, read_cmd: ReadCmd, path_str: str, path_scope: str) -> None:
-        self.read_cmd = read_cmd
+    def __init__(self, no_op_cmd: WriteCmd, path_str: str, path_scope: str) -> None:
+        self.no_op_cmd = no_op_cmd
         self.path_str = path_str
         self.path_scope = path_scope
-        self.pretty_cmd = f"{self.read_cmd.pretty_cmd} {self.path_str} (paths)"
+        self.pretty_cmd = f"{self.no_op_cmd.pretty_cmd} {self.path_str} (paths)"
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -143,9 +143,9 @@ class OperateModal(ModalScreen[None]):
         app = getters.app(ChezmoiGui)
 
     def __init__(
-        self, *, op_btn: BtnLabel, node_data: NodeData, paths_in_scope: str
+        self, *, op_btn_label: BtnLabel, node_data: NodeData, paths_in_scope: str
     ) -> None:
-        self.op_btn: BtnLabel = op_btn
+        self.op_btn_label: BtnLabel = op_btn_label
         self.op_path = node_data.path
         self.path_str: str = (
             "" if self.op_path == store.cfg.dest_dir else str(self.op_path)
@@ -162,9 +162,11 @@ class OperateModal(ModalScreen[None]):
             yield Static(LabelStr.ready_to_run, classes=Tcss.blue_label)
             with ScrollableContainer():
                 yield CmGitConfig()
-                yield PathsInScope(self.op_btn.dry_cmd, self.path_str, self.path_scope)
+                yield PathsInScope(
+                    self.op_btn_label.no_op_cmd, self.path_str, self.path_scope
+                )
             yield Static(
-                f"{self.op_btn.value} {self.path_str}".rstrip(),
+                f"{self.op_btn_label.run_label} {self.path_str}".rstrip(),
                 markup=False,
                 classes=Tcss.main_label,
             )
@@ -177,7 +179,7 @@ class OperateModal(ModalScreen[None]):
                     ChezmoiPrompts.edit.prompt_item,
                     ChezmoiPrompts.all.prompt_item,
                     ChezmoiPrompts.quit.prompt_item,
-                    self.op_btn.run_label,
+                    self.op_btn_label.run_label,
                     BtnLabel.cancel,
                     BtnLabel.close,
                 )
@@ -186,16 +188,15 @@ class OperateModal(ModalScreen[None]):
     def on_mount(self) -> None:
         self.prompt_future: asyncio.Future[str] | None = None
         self.interaction = self.query_exactly_one(ScrollableContainer)
-        if self.op_btn == BtnLabel.chezmoi_add and self.op_path.is_dir():
+        if self.op_btn_label == BtnLabel.chezmoi_add and self.op_path.is_dir():
             self.interaction.mount(SelectPaths(self.op_path))
         self.paths_in_scope = self.query_exactly_one(PathsInScope)
         self.prompt_btn_group = self.query_exactly_one(PromptBtnGroup)
         self.prompt_buttons = self.prompt_btn_group.query(Button)
         self.cmd_label = self.query_one(Tcss.blue_label.q, Static)
-        self.cmd_label.update(f"{self.op_btn.run_label} {self.path_str}".rstrip())
         self.info_label = self.query_one(Tcss.main_label.q, Static)
         for button in self.prompt_buttons:
-            if button.label in (BtnLabel.cancel, self.op_btn.run_label):
+            if button.label in (BtnLabel.cancel, self.op_btn_label.run_label):
                 button.display = True
         self.loading_timer = self.set_interval(
             interval=BUSY_POLL_INTERVAL, callback=self._check_busy
@@ -335,7 +336,7 @@ class OperateModal(ModalScreen[None]):
         self.process_busy = True
         try:
             result = await tchezmoi.run_chezmoi_interactive(
-                self.op_btn.write_cmd,
+                self.op_btn_label.write_cmd,
                 verb_arg,
                 handle_prompt,
                 handle_output,
@@ -355,7 +356,7 @@ class OperateModal(ModalScreen[None]):
 
         if button_label in (BtnLabel.cancel, BtnLabel.close):
             self.dismiss()
-        elif button_label == self.op_btn.run_label:
+        elif button_label == self.op_btn_label.run_label:
             for button in self.prompt_buttons:
                 button.display = False
             self._run_interactive()
