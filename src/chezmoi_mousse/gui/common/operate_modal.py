@@ -9,7 +9,6 @@ from textual.screen import ModalScreen
 from textual.widgets import Button, Checkbox, Collapsible, Static
 
 from chezmoi_mousse import path_funcs, store, tchezmoi
-from chezmoi_mousse.data_types import CommandResult
 from chezmoi_mousse.gui.common import widget_factory
 from chezmoi_mousse.gui.common.actionables import PromptBtnGroup
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
     from textual.app import ComposeResult
     from textual.containers import HorizontalGroup
 
-    from chezmoi_mousse.data_types import IterDirResult, NodeData
+    from chezmoi_mousse.data_types import CommandResult, IterDirResult, NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import ReadCmd
 
@@ -264,8 +263,17 @@ class OperateModal(ModalScreen[None]):
         last_diff: ShowCmDiff | None = None
         pending_diff_question: str | None = None
 
-        async def handle_prompt(prompt_question: str, options: list[str]) -> str:
+        async def handle_prompt(
+            prompt_question: str, options: list[str], output_before_prompt: list[str]
+        ) -> str:
             nonlocal last_diff, pending_diff_question
+
+            if pending_diff_question is not None and output_before_prompt:
+                self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
+                last_diff = self._create_cm_git_diff(
+                    "\n".join(output_before_prompt) + "\n", pending_diff_question
+                )
+                pending_diff_question = None
 
             self.info_label.update(f"{prompt_question} ({'/'.join(options)})?")
             response = await self._await_user_choice(options)
@@ -310,31 +318,20 @@ class OperateModal(ModalScreen[None]):
                     path_funcs.get_rel_path_str(path) for path in all_paths
                 )
 
-        events = tchezmoi.run_chezmoi_interactive(
-            self.op_btn.write_cmd,
-            verb_arg,
-            handle_prompt,
-            pretty_verb_arg=pretty_verb_arg,
-        )
         self.process_busy = True
         try:
-            async for event in events:
-                if isinstance(event, CommandResult):
-                    self._handle_cmd_result(event)
-
-                elif pending_diff_question is not None:
-                    self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
-                    last_diff = self._create_cm_git_diff(
-                        "\n".join(event) + "\n", pending_diff_question
-                    )
-                    pending_diff_question = None
+            result = await tchezmoi.run_chezmoi_interactive(
+                self.op_btn.write_cmd,
+                verb_arg,
+                handle_prompt,
+                pretty_verb_arg=pretty_verb_arg,
+            )
+            self._handle_cmd_result(result)
             for button in self.prompt_buttons:
                 button.display = button.label == BtnLabel.close
                 button.disabled = False
         finally:
             self.process_busy = False
-            # if the loop exits early (e.g. an exception), stop chezmoi gracefully
-            await events.aclose()
 
     @on(Button.Pressed)
     def handle_prompt_btn_pressed(self, event: Button.Pressed) -> None:

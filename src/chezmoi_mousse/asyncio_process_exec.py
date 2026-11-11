@@ -121,11 +121,11 @@ async def _managed_process(
 
 async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
-    prompt_handler: Callable[[str, list[str]], Awaitable[str]],
+    prompt_handler: Callable[[str, list[str], list[str]], Awaitable[str]],
     *,
     cmd_enum: ReadCmd | WriteCmd,
     pretty_cmd: str,
-) -> AsyncGenerator[list[str] | CommandResult]:
+) -> CommandResult:
     read_timeout: float = 0.05
     interactive_approved = False
     async with _managed_process(*chezmoi_args) as process:
@@ -170,12 +170,11 @@ async def run_chezmoi_interactive_process(
                     output_before_prompt, _, prompt_question = buffer[
                         : prompt_match.start()
                     ].rpartition("\n")
-                    if output_before_prompt:
-                        yield output_before_prompt.splitlines()
+                    output_lines = output_before_prompt.splitlines()
                     # Only post-prompt output belongs in the final result.
                     buffer = ""
                     user_choice = await prompt_handler(
-                        prompt_question.strip(), prompt_options
+                        prompt_question.strip(), prompt_options, output_lines
                     )
                     if user_choice not in ChezmoiPrompts.non_operation_replies():
                         interactive_approved = True
@@ -198,7 +197,7 @@ async def run_chezmoi_interactive_process(
         std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
-        yield CommandResult(
+        return CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=" ".join(["chezmoi", *chezmoi_args]),
             interactive_approved=interactive_approved,

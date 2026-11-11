@@ -28,7 +28,7 @@ from chezmoi_mousse.str_enums import (
 
 if TYPE_CHECKING:
     from asyncio import Task
-    from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
+    from collections.abc import Awaitable, Callable, Iterable
 
     from chezmoi_mousse.data_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
@@ -340,13 +340,13 @@ async def get_highlighted_chezmoi_cat_output(
     return _highlight_str(f_contents, file_path)
 
 
-def run_chezmoi_interactive(
+async def run_chezmoi_interactive(
     cmd_enum: WriteCmd,
     verb_arg: Path | list[str] | None,
-    prompt_handler: Callable[[str, list[str]], Awaitable[str]],
+    prompt_handler: Callable[[str, list[str], list[str]], Awaitable[str]],
     *,
     pretty_verb_arg: Path | str | None,
-) -> AsyncGenerator[list[str] | CommandResult]:
+) -> CommandResult:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not WriteCmd.add and isinstance(verb_arg, list):
         raise ValueError(
@@ -363,7 +363,7 @@ def run_chezmoi_interactive(
         chezmoi_args = (*cmd_enum.value,)
     else:
         chezmoi_args = (*cmd_enum.value, str(verb_arg))
-    return run_chezmoi_interactive_process(
+    return await run_chezmoi_interactive_process(
         chezmoi_args,
         prompt_handler,
         cmd_enum=cmd_enum,
