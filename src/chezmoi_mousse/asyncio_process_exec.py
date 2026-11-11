@@ -191,10 +191,6 @@ async def run_chezmoi_interactive_process(
                 decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
                 buffer += decoded_chunk
 
-            # EOF: flush remaining output, it must be yielded before leaving
-            if buffer:
-                yield buffer.splitlines()
-
             if timed_out:
                 await _stop_process(process)
             returncode = await process.wait()
