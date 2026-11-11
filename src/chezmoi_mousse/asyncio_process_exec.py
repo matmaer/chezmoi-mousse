@@ -121,7 +121,8 @@ async def _managed_process(
 
 async def run_chezmoi_interactive_process(
     chezmoi_args: tuple[str, ...],
-    prompt_handler: Callable[[str, list[str], list[str]], Awaitable[str]],
+    prompt_handler: Callable[[str, list[str], str], Awaitable[str]],
+    output_handler: Callable[[str], Awaitable[None]],
     *,
     cmd_enum: ReadCmd | WriteCmd,
     pretty_cmd: str,
@@ -136,8 +137,10 @@ async def run_chezmoi_interactive_process(
         assert pipe_stdin is not None
         assert pipe_stderr is not None
 
-        buffer = ""
+        buffer = b""
+        stdout_chunks: list[bytes] = []
         stderr_chunks: list[bytes] = []
+        displayed_stderr_chunks = 0
         last_activity = time.monotonic()
         timed_out = False
 
@@ -160,21 +163,28 @@ async def run_chezmoi_interactive_process(
                         timed_out = True
                         break
 
-                    prompt_match = _PROMPT_RE.search(buffer)
+                    decoded_buffer = buffer.decode("utf-8", errors="replace")
+                    prompt_match = _PROMPT_RE.search(decoded_buffer)
                     if prompt_match is None:
                         continue
                     prompt_options = prompt_match.group(1).split("/")
                     if any(option not in _PROMPT_OPTIONS for option in prompt_options):
                         continue
 
-                    output_before_prompt, _, prompt_question = buffer[
+                    output_before_prompt, separator, prompt_question = decoded_buffer[
                         : prompt_match.start()
                     ].rpartition("\n")
-                    output_lines = output_before_prompt.splitlines()
-                    # Only post-prompt output belongs in the final result.
-                    buffer = ""
+                    pending_stderr = b"".join(
+                        stderr_chunks[displayed_stderr_chunks:]
+                    ).decode("utf-8", errors="replace")
+                    displayed_stderr_chunks = len(stderr_chunks)
+                    if pending_stderr:
+                        await output_handler(pending_stderr)
+                    buffer = b""
                     user_choice = await prompt_handler(
-                        prompt_question.strip(), prompt_options, output_lines
+                        prompt_question.strip(),
+                        prompt_options,
+                        output_before_prompt + separator,
                     )
                     if user_choice not in ChezmoiPrompts.non_operation_replies():
                         interactive_approved = True
@@ -187,13 +197,18 @@ async def run_chezmoi_interactive_process(
                     break
 
                 last_activity = time.monotonic()
-                decoded_chunk = raw_chunk.decode("utf-8", errors="replace")
-                buffer += decoded_chunk
+                stdout_chunks.append(raw_chunk)
+                buffer += raw_chunk
 
             if timed_out:
                 await _stop_process(process)
             returncode = await process.wait()
 
+        remaining_output = buffer.decode("utf-8", errors="replace") + b"".join(
+            stderr_chunks[displayed_stderr_chunks:]
+        ).decode("utf-8", errors="replace")
+        if remaining_output:
+            await output_handler(remaining_output)
         std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
             std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
@@ -204,6 +219,6 @@ async def run_chezmoi_interactive_process(
             pretty_cmd=pretty_cmd,
             returncode=returncode,
             std_err=std_err,
-            std_out=buffer,
+            std_out=b"".join(stdout_chunks).decode("utf-8", errors="replace"),
             time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
         )

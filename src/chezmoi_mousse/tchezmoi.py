@@ -343,7 +343,8 @@ async def get_highlighted_chezmoi_cat_output(
 async def run_chezmoi_interactive(
     cmd_enum: WriteCmd,
     verb_arg: Path | list[str] | None,
-    prompt_handler: Callable[[str, list[str], list[str]], Awaitable[str]],
+    prompt_handler: Callable[[str, list[str], str], Awaitable[str]],
+    output_handler: Callable[[str], Awaitable[None]],
     *,
     pretty_verb_arg: Path | str | None,
 ) -> CommandResult:
@@ -366,6 +367,7 @@ async def run_chezmoi_interactive(
     return await run_chezmoi_interactive_process(
         chezmoi_args,
         prompt_handler,
+        output_handler,
         cmd_enum=cmd_enum,
         pretty_cmd=pretty_cmd(cmd_enum, pretty_verb_arg),
     )

@@ -263,19 +263,31 @@ class OperateModal(ModalScreen[None]):
         last_diff_collapsible: ShowCmDiff | None = None
         last_diff_question: str | None = None
 
+        async def handle_output(output_chunk: str) -> None:
+            if output_chunk:
+                self.interaction.mount(
+                    Collapsible(
+                        Static(output_chunk, markup=False, classes=Tcss.cmd_output),
+                        title="Chezmoi output",
+                        collapsed=False,
+                        classes=Tcss.op_modal_collapsible,
+                    )
+                )
+
         async def handle_prompt(
-            prompt_question: str, options: list[str], output_before_prompt: list[str]
+            prompt_question: str, options: list[str], output_before_prompt: str
         ) -> str:
             nonlocal last_diff_collapsible, last_diff_question
 
             if last_diff_question is not None:
                 diff_title = last_diff_question
                 last_diff_question = None
-                if output_before_prompt:
-                    self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
-                    last_diff_collapsible = self._create_cm_git_diff(
-                        "\n".join(output_before_prompt) + "\n", diff_title
-                    )
+                self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
+                last_diff_collapsible = self._create_cm_git_diff(
+                    output_before_prompt, diff_title
+                )
+            else:
+                await handle_output(output_before_prompt)
 
             self.info_label.update(f"{prompt_question} ({'/'.join(options)})?")
             response = await self._await_user_choice(options)
@@ -326,6 +338,7 @@ class OperateModal(ModalScreen[None]):
                 self.op_btn.write_cmd,
                 verb_arg,
                 handle_prompt,
+                handle_output,
                 pretty_verb_arg=pretty_verb_arg,
             )
             self._handle_cmd_result(result)
