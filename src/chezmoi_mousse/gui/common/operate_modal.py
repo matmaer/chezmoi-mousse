@@ -260,33 +260,35 @@ class OperateModal(ModalScreen[None]):
     @work(description="run chezmoi interactive")
     async def _run_interactive(self) -> None:
         self._collapse_all_collapsibles()
-        last_diff: ShowCmDiff | None = None
-        pending_diff_question: str | None = None
+        last_diff_collapsible: ShowCmDiff | None = None
+        last_diff_question: str | None = None
 
         async def handle_prompt(
             prompt_question: str, options: list[str], output_before_prompt: list[str]
         ) -> str:
-            nonlocal last_diff, pending_diff_question
+            nonlocal last_diff_collapsible, last_diff_question
 
-            if pending_diff_question is not None and output_before_prompt:
-                self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
-                last_diff = self._create_cm_git_diff(
-                    "\n".join(output_before_prompt) + "\n", pending_diff_question
-                )
-                pending_diff_question = None
+            if last_diff_question is not None:
+                diff_title = last_diff_question
+                last_diff_question = None
+                if output_before_prompt:
+                    self.paths_in_scope.query_exactly_one(Collapsible).collapsed = True
+                    last_diff_collapsible = self._create_cm_git_diff(
+                        "\n".join(output_before_prompt) + "\n", diff_title
+                    )
 
             self.info_label.update(f"{prompt_question} ({'/'.join(options)})?")
             response = await self._await_user_choice(options)
             # Pressing diff again for the same prompt toggles the existing diff
             while (
                 response == ChezmoiPrompts.diff.reply
-                and last_diff is not None
-                and prompt_question == last_diff.diff_title
+                and last_diff_collapsible is not None
+                and prompt_question == last_diff_collapsible.diff_title
             ):
-                collapsible = last_diff.query_exactly_one(Collapsible)
+                collapsible = last_diff_collapsible.query_exactly_one(Collapsible)
                 collapsible.collapsed = not collapsible.collapsed
                 if not collapsible.collapsed:
-                    last_diff.scroll_visible()
+                    last_diff_collapsible.scroll_visible()
                 response = await self._await_user_choice(options)
 
             if response == ChezmoiPrompts.no.reply:
@@ -302,7 +304,7 @@ class OperateModal(ModalScreen[None]):
                     Static(LabelStr.quit_op, classes=Tcss.green_label)
                 )
 
-            pending_diff_question = (
+            last_diff_question = (
                 prompt_question if response == ChezmoiPrompts.diff.reply else None
             )
             return response

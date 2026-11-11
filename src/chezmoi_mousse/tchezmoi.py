@@ -356,7 +356,7 @@ async def run_chezmoi_interactive(
     elif cmd_enum in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget) and (
         verb_arg is None or verb_arg == store.cfg.dest_dir
     ):
-        raise ValueError(f"{WriteCmd.add.pretty_cmd} cannot run on the dest dir.")
+        raise ValueError(f"{cmd_enum.pretty_cmd} cannot run on the dest dir.")
     if isinstance(verb_arg, list):
         chezmoi_args = (*cmd_enum.value, *verb_arg)
     elif verb_arg is None or verb_arg == store.cfg.dest_dir:
