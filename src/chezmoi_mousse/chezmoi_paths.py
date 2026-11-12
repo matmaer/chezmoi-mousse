@@ -155,7 +155,7 @@ class ChezmoiTreePaths:
         return result
 
     def reload_un_man_children(self, old_tree_paths: ChezmoiTreePaths) -> None:
-        """Reload the unmanaged dirs of which the children were loaded on demand."""
+        # Reload the unmanaged dirs of which the children were loaded on demand
         old_paths = old_tree_paths.dir_node_data.keys() | old_tree_paths.file_node_data
         new_paths = self.dir_node_data.keys() | self.file_node_data.keys()
         loaded_dirs = {p.parent for p in old_paths - new_paths}
