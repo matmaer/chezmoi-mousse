@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import Field, dataclass, field, fields
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -8,8 +8,6 @@ from chezmoi_mousse import tchezmoi
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
-    from dataclasses import Field
-
     from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
@@ -43,20 +41,35 @@ class _BtnDryResults:
             self._exists_defaults()
 
     @property
-    def _field_map(self) -> dict[str, Field[str | None]]:
-        return {f.name: f for f in fields(self)}
+    def _field_map(self) -> dict[str, str | None]:
+        return {
+            f.name: getattr(self, f.name)
+            for f in fields(self)
+            if not f.name.startswith("_")
+        }
 
     @property
     def has_none_fields(self) -> bool:
-        return any(getattr(self, f.name) is None for f in self._field_map.values())
+        return bool([f for f, v in self._field_map.items() if v is None])
 
     @property
     def btn_dict(self) -> BtnDryDataDict:
-        return {btn_label: getattr(self, btn_label.name) for btn_label in BtnLabel}
+        field_map = self._field_map
+        return {
+            btn_label: field_map[btn_label.name]
+            for btn_label in BtnLabel.op_btn_labels()
+        }
 
     @property
     def complete_btn_dict(self) -> BtnDryCompletedDict:
-        return {btn_label: getattr(self, btn_label.name) for btn_label in BtnLabel}
+        field_map = self._field_map
+        complete_dict: BtnDryCompletedDict = {}
+        for btn_label in BtnLabel.op_btn_labels():
+            result = field_map[btn_label.name]
+            if result is None:
+                raise RuntimeError(f"Missing dry result for {btn_label.name}")
+            complete_dict[btn_label] = result
+        return complete_dict
 
     def _dest_dir_defaults(self) -> None:
         self.chezmoi_add = ""
@@ -95,8 +108,16 @@ class CachedCommands:
         if not defaults.has_none_fields:
             return defaults.complete_btn_dict
 
+        btn_results = defaults.btn_dict
         new_result = await tchezmoi.collect_chezmoi_paths_in_scope(
-            self._app, node_data.path, defaults.btn_dict
+            self._app, node_data.path, btn_results
         )
-        self.path_dry_dict[node_data.path] = new_result
-        return new_result
+        complete_results: BtnDryCompletedDict = {}
+        for btn_label, result in btn_results.items():
+            if result is None:
+                complete_results[btn_label] = new_result[btn_label]
+            else:
+                complete_results[btn_label] = result
+
+        self.path_dry_dict[node_data.path] = complete_results
+        return complete_results

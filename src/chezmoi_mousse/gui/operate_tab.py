@@ -150,9 +150,9 @@ class OperateTab(TabPane):
     @work(description="update operate buttons enabled/disabled state")
     async def _update_op_buttons(self, node_data: NodeData) -> None:
         dry_results = await store.cached.get_dry_results(node_data)
-        for btn in self.op_btn_group.query(Button).results():
-            btn_label = BtnLabel(str(btn.label))
-            btn.disabled = bool(getattr(dry_results, btn_label.name))
+        for btn in self.op_buttons:
+            btn_label_enum = BtnLabel(str(btn.label))
+            btn.disabled = bool(dry_results[btn_label_enum])
 
     @work(description="update view widgets")
     async def _update_view_widgets(self, node_data: NodeData) -> None:
@@ -295,11 +295,11 @@ class OperateTab(TabPane):
         if dry_run_data is None:
             self.app.notify("Affected paths are not available.", severity="warning")
             return
-        paths = getattr(dry_run_data, btn_label.name)
+        paths = dry_run_data[btn_label]
         modal = OperateModal(
             op_btn_label=btn_label,
             node_data=self.app.current_node,
-            paths_in_scope=paths.pretty_str,
+            paths_in_scope=paths,
         )
         self.app.push_screen(modal)
 
