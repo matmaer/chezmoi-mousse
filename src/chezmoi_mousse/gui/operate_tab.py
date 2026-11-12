@@ -71,6 +71,20 @@ class RightSideVertical(Vertical):
     def on_mount(self) -> None:
         radio_set = self.query_exactly_one(RadioSet)
         first_radio = radio_set.query(RadioButton).first()
+        buttons = radio_set.query_children(RadioButton).results()
+        self.git_view_btn = next(
+            b for b in buttons if b.label == LabelStr.radio_git_log
+        )
+        self.contents_btn = next(
+            b for b in buttons if b.label == LabelStr.radio_contents
+        )
+        self.diff_btn = next(b for b in buttons if b.label == LabelStr.radio_diff)
+        self.diff_reverse_btn = next(
+            b for b in buttons if b.label == LabelStr.radio_diff_reverse
+        )
+        self.path_info_btn = next(
+            b for b in buttons if b.label == LabelStr.radio_path_view
+        )
         with radio_set.prevent(RadioSet.Changed):
             if first_radio:
                 first_radio.value = True
