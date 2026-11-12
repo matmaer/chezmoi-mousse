@@ -81,9 +81,9 @@ class _BtnDryResults:
         return
 
     def _unmanaged_defaults(self) -> None:
-        for cmd_field in fields(self):
-            if cmd_field.name != "chezmoi_add":
-                setattr(self, cmd_field.name, "")
+        for name in self._field_map:
+            if name != "chezmoi_add":
+                setattr(self, name, "")
 
     def _managed_defaults(self) -> None:
         if self._node_data.file_path and self._node_data.status is None:
