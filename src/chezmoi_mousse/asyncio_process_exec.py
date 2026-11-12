@@ -191,6 +191,7 @@ async def create_interactive_process(
                         interactive_approved = True
                     pipe_stdin.write(f"{user_choice}\n".encode())
                     await pipe_stdin.drain()
+                    stdout_chunks.append(b"\n")
                     last_activity = time.monotonic()
                     continue
 
