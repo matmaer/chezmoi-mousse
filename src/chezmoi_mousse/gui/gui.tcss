@@ -525,6 +525,8 @@ TabbedContent {
 }
 
 Tree {
+  scrollbar-gutter: stable;
+
   &>.tree--label {
     text-style: none;
   }
