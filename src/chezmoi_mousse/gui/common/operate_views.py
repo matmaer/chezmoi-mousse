@@ -53,7 +53,7 @@ class ContentView(Vertical):
                 f_content = await tchezmoi.get_highlighted_chezmoi_cat_output(
                     self.app, file_path=path
                 )
-                self.cmd_label.update(escape(tchezmoi.pretty_cmd(ReadCmd.cat, path)))
+                self.cmd_label.update(escape(f"{ReadCmd.cat.pretty_cmd} {path}"))
             else:
                 self.cmd_label.update(LabelStr.read_file_output)
                 f_content = tchezmoi.get_highlighted_file_contents(path)
@@ -86,7 +86,7 @@ class _DiffViewBase(Vertical):
     async def _create_diff_widgets(self, diff_cmd: ReadCmd, path: Path) -> None:
         if path not in self.cache:
             diff_result = await tchezmoi.run_chezmoi_cmd(
-                self.app, diff_cmd, verb_arg=path
+                self.app, diff_cmd, verb_arg=str(path)
             )
             self.cache[path] = widget_factory.diff_lines(diff_result.std_out)
 
@@ -168,8 +168,8 @@ class GitLogView(Vertical):
             pretty_cells = self._get_styled_cells(std_out)
             self.cache[node_data.path] = pretty_cells
 
-        label_path = node_data.path if not node_data.dir_data.dest_dir else None
-        self.cmd_label.update(tchezmoi.pretty_cmd(ReadCmd.git_log, label_path))
+        label_path = node_data.path if not node_data.dir_data.dest_dir else ""
+        self.cmd_label.update((f"{ReadCmd.git_log} {label_path}").rstrip())
 
         self.data_table.clear()
         for row in pretty_cells:

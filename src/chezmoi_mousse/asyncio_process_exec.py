@@ -35,7 +35,10 @@ __all__ = ["create_interactive_process", "get_process_cmd_result"]
 
 
 async def get_process_cmd_result(
-    chezmoi_args: tuple[str, ...], *, cmd_enum: ReadCmd | WriteCmd, pretty_cmd: str
+    chezmoi_args: tuple[str, ...],
+    *,
+    cmd_enum: ReadCmd | WriteCmd,
+    verb_arg: str | list[str] | None,
 ) -> CommandResult:
     if cmd_enum in WriteCmd.no_op_commands():
         raise ValueError(f"Received wrong cmd_enum: {cmd_enum}")
@@ -57,7 +60,7 @@ async def get_process_cmd_result(
     return CommandResult(
         cmd_enum=cmd_enum,
         full_cmd=" ".join(exec_args),
-        pretty_cmd=pretty_cmd,
+        verb_arg=verb_arg,
         returncode=process.returncode,
         std_err=std_err,
         std_out=std_out,
@@ -121,7 +124,7 @@ async def create_interactive_process(
     output_handler: Callable[[str], Awaitable[None]],
     *,
     cmd_enum: ReadCmd | WriteCmd,
-    pretty_cmd: str,
+    verb_arg: str | None,
 ) -> CommandResult:
     read_timeout: float = 0.05
     interactive_approved = False
@@ -214,7 +217,7 @@ async def create_interactive_process(
             cmd_enum=cmd_enum,
             full_cmd=" ".join(["chezmoi", *chezmoi_args]),
             interactive_approved=interactive_approved,
-            pretty_cmd=pretty_cmd,
+            verb_arg=verb_arg,
             returncode=returncode,
             std_err=std_err,
             std_out=b"".join(stdout_chunks).decode("utf-8", errors="replace"),

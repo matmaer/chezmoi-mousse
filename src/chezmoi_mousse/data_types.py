@@ -7,6 +7,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from chezmoi_mousse import path_funcs
 from chezmoi_mousse.str_enums import LabelStr, StatusCode, TreeName
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ class CommandResult:
     cmd_enum: WriteCmd | ReadCmd
     full_cmd: str
     interactive_approved: bool | None = None
-    pretty_cmd: str
+    verb_arg: str | list[str] | None
     returncode: int | None
     std_err: str
     std_out: str
@@ -42,6 +43,22 @@ class CommandResult:
     @property
     def out_list(self) -> list[str]:
         return self.std_out.splitlines()
+
+    @property
+    def pretty_verb_arg(self) -> str:
+        if self.verb_arg is None:
+            pretty_arg = ""
+        elif isinstance(self.verb_arg, list):
+            pretty_arg = "arg is list"
+        elif self.verb_arg != "":
+            pretty_arg = path_funcs.get_rel_path_str(self.verb_arg)
+        else:
+            pretty_arg = ""
+        return pretty_arg
+
+    @property
+    def pretty_cmd(self) -> str:
+        return (f"{self.cmd_enum.pretty_cmd} {self.pretty_verb_arg}").rstrip()
 
 
 @dataclass(frozen=True)
@@ -67,6 +84,10 @@ class ParsedDumpConfig:
     @cached_property
     def dest_dir(self) -> Path:
         return Path(self._parsed_cfg["destDir"])
+
+    @property
+    def dest_dir_str(self) -> str:
+        return self._parsed_cfg["destDir"]
 
     @property
     def source_dir_str(self) -> str:
@@ -125,6 +146,10 @@ class NodeData:
     status: StatusCode | None
     filtered: bool | None
     dir_data: DirData = field(default_factory=DirData.for_file)
+
+    @property
+    def source_path_str(self) -> str:
+        return str(self.source_path) if self.source_path is not None else ""
 
     @property
     def file_path(self) -> bool:

@@ -323,24 +323,16 @@ class OperateModal(ModalScreen[None]):
             return response
 
         verb_arg: Path | list[str] | None = self.path_arg
-        pretty_verb_arg: Path | str | None = self.path_arg
         for select_paths in self.query(SelectPaths):
             select_paths.disabled = True
             if selected := select_paths.selected_paths:
                 all_paths = [self.op_path, *selected]
                 verb_arg = [str(path) for path in all_paths]
-                pretty_verb_arg = " ".join(
-                    path_funcs.get_rel_path_str(path) for path in all_paths
-                )
 
         self.process_busy = True
         try:
-            result = await tchezmoi.run_chezmoi_interactive(
-                self.op_btn_label.write_cmd,
-                verb_arg,
-                handle_prompt,
-                handle_output,
-                pretty_verb_arg=pretty_verb_arg,
+            result: CommandResult = await tchezmoi.run_chezmoi_interactive(
+                self.op_btn_label.write_cmd, verb_arg, handle_prompt, handle_output
             )
             self._handle_cmd_result(result)
             for button in self.prompt_buttons:

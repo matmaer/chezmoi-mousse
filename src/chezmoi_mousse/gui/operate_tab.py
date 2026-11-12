@@ -167,7 +167,7 @@ class OperateTab(TabPane):
         if node_data.source_path is None:
             self.source_path_label.display = False
         else:
-            rel_source_path = path_funcs.get_rel_path_str(node_data.source_path)
+            rel_source_path = path_funcs.get_rel_path_str(node_data.source_path_str)
             self.source_path_label.update(f"source path: {rel_source_path}")
             self.source_path_label.display = True
         self.no_show_label.display = False
@@ -189,7 +189,7 @@ class OperateTab(TabPane):
                 node_data.managed or node_data.dir_data.dest_dir
             ):
                 cr = await tchezmoi.run_chezmoi_cmd(
-                    self.app, ReadCmd.git_log, verb_arg=node_data.source_path
+                    self.app, ReadCmd.git_log, verb_arg=node_data.source_path_str
                 )
                 if cr.returncode != 0:
                     self.paths_without_git_log.add(node_data.path)

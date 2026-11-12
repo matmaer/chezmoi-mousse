@@ -54,14 +54,15 @@ def get_common_top_level(*, dir_paths: Iterable[Path]) -> set[Path]:
     return {p for p in path_set if path_set.isdisjoint(p.parents)}
 
 
-def get_rel_path_str(path: Path) -> str:
+def get_rel_path_str(path_str: str) -> str:
+    dest_dir: Path | None = None
     try:
         dest_dir = store.cfg.dest_dir
     except AttributeError:
         dest_dir = None
-    if dest_dir is None or path == dest_dir:
-        return str(path)
-    return str(path.relative_to(store.cfg.dest_dir))
+    if dest_dir is None or path_str == str(dest_dir):
+        return path_str
+    return str(Path(path_str).relative_to(store.cfg.dest_dir))
 
 
 def _path_seems_cache(path: Path) -> bool:

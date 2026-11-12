@@ -58,22 +58,8 @@ def _highlight_str(to_highlight: str, file_path: Path) -> Content:
     return highlight(to_highlight, path=str(file_path), theme=_NoErrorHighlightTheme)
 
 
-def pretty_cmd(cmd: ReadCmd | WriteCmd, verb_arg: Path | str | None) -> str:
-    if verb_arg is None:
-        pretty_verb_arg = ""
-    elif isinstance(verb_arg, Path):
-        pretty_verb_arg = path_funcs.get_rel_path_str(verb_arg)
-    else:
-        pretty_verb_arg = verb_arg
-    return (f"{cmd.pretty_cmd} {pretty_verb_arg}").rstrip()
-
-
 async def run_chezmoi_cmd(
-    app: ChezmoiGui,
-    cmd_enum: ReadCmd | WriteCmd,
-    *,
-    verb_arg: Path | list[str] | None,
-    pretty_verb_arg: str | None = None,
+    app: ChezmoiGui, cmd_enum: ReadCmd | WriteCmd, *, verb_arg: str | list[str] | None
 ) -> CommandResult:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum is not ReadCmd.source_path and isinstance(verb_arg, list):
@@ -81,28 +67,25 @@ async def run_chezmoi_cmd(
             f"Passing verb args as strings is only allowed for "
             f"{ReadCmd.source_path.pretty_cmd}"
         )
-    elif cmd_enum is ReadCmd.source_path and pretty_verb_arg is None:
-        raise ValueError(
-            f"Passing a string to represent the pretty version of the verb arg is "
-            f"mandatory for {ReadCmd.source_path.pretty_cmd}"
-        )
 
     if isinstance(verb_arg, list):
         chezmoi_args = (*cmd_enum.value, *verb_arg)
-    elif isinstance(verb_arg, Path):
-        chezmoi_args = (*cmd_enum.value, str(verb_arg))
-        pretty_verb_arg = path_funcs.get_rel_path_str(verb_arg)
-    elif verb_arg is None:
+    elif isinstance(verb_arg, str) and verb_arg != "":
+        chezmoi_args = (*cmd_enum.value, verb_arg)
+    elif verb_arg is None or verb_arg == "":
         chezmoi_args = (*cmd_enum.value,)
 
     command_result = await get_process_cmd_result(
-        chezmoi_args,
-        cmd_enum=cmd_enum,
-        pretty_cmd=pretty_cmd(cmd_enum, pretty_verb_arg),
+        chezmoi_args, cmd_enum=cmd_enum, verb_arg=verb_arg
     )
     if app.screen.name == "splash_screen":
-        if cmd_enum is ReadCmd.source_path:
-            prefix_suffix = (ReadCmd.source_path.pretty_cmd, LogStr(pretty_verb_arg))
+        if cmd_enum is ReadCmd.source_path and isinstance(verb_arg, list):
+            suffix = (
+                LogStr.on_managed_dirs
+                if Path(verb_arg[0]).is_dir()
+                else LogStr.on_managed_files
+            )
+            prefix_suffix = (ReadCmd.source_path.pretty_cmd, suffix)
             await app.splash_screen.write_log_msg(prefix_suffix=prefix_suffix)
         else:
             await app.splash_screen.write_log_msg(cmd_result=command_result)
@@ -113,13 +96,13 @@ async def run_chezmoi_cmd(
 
 
 async def run_in_task_group(
-    app: ChezmoiGui, commands: Iterable[ReadCmd], path: Path | None = None
+    app: ChezmoiGui, commands: Iterable[ReadCmd]
 ) -> dict[ReadCmd, CommandResult]:
     tasks_by_cmd: dict[ReadCmd, Task[CommandResult]] = {}
     async with asyncio.TaskGroup() as tg:
         for cmd_enum in commands:
             tasks_by_cmd[cmd_enum] = tg.create_task(
-                run_chezmoi_cmd(app, cmd_enum, verb_arg=path, pretty_verb_arg=None)
+                run_chezmoi_cmd(app, cmd_enum, verb_arg=None)
             )
     cmd_to_cr_map: dict[ReadCmd, CommandResult] = {
         cmd: task.result() for cmd, task in tasks_by_cmd.items()
@@ -196,24 +179,16 @@ async def run_managed_commands(app: ChezmoiGui) -> ChezmoiTreePaths:
     man_dirs_cr = cmd_to_cr_map[ReadCmd.managed_dirs]
     man_files_cr = cmd_to_cr_map[ReadCmd.managed_files]
 
-    async def get_source_paths(
-        targets: list[str], pretty_verb_arg: LogStr
-    ) -> list[str]:
+    async def get_source_paths(targets: list[str]) -> list[str]:
         # Without arguments, "chezmoi source-path" returns the source dir itself.
         if not targets:
             return []
-        cmd_result = await run_chezmoi_cmd(
-            app, ReadCmd.source_path, verb_arg=targets, pretty_verb_arg=pretty_verb_arg
-        )
+        cmd_result = await run_chezmoi_cmd(app, ReadCmd.source_path, verb_arg=targets)
         return cmd_result.out_list
 
     async with asyncio.TaskGroup() as tg:
-        source_dirs_task = tg.create_task(
-            get_source_paths(man_dirs_cr.out_list, LogStr.on_managed_dirs)
-        )
-        source_files_task = tg.create_task(
-            get_source_paths(man_files_cr.out_list, LogStr.on_managed_files)
-        )
+        source_dirs_task = tg.create_task(get_source_paths(man_dirs_cr.out_list))
+        source_files_task = tg.create_task(get_source_paths(man_files_cr.out_list))
     source_dirs = await _parse_paths(source_dirs_task.result())
     source_files = await _parse_paths(source_files_task.result())
 
@@ -268,12 +243,7 @@ def get_highlighted_file_contents(file_path: Path) -> Content:
 async def get_highlighted_chezmoi_cat_output(
     app: ChezmoiGui, *, file_path: Path
 ) -> Content:
-    cmd_result = await run_chezmoi_cmd(
-        app,
-        ReadCmd.cat,
-        verb_arg=file_path,
-        pretty_verb_arg=str(file_path.relative_to(store.cfg.dest_dir)),
-    )
+    cmd_result = await run_chezmoi_cmd(app, ReadCmd.cat, verb_arg=str(file_path))
     f_contents = cmd_result.std_out
     if not f_contents.strip():
         return Content("File is empty or contains only whitespace")
@@ -304,7 +274,7 @@ async def collect_chezmoi_paths_in_scope(
             return ChezmoiPrompts.no.reply
 
         cr: CommandResult = await run_chezmoi_interactive(
-            cmd_enum, path, answer_no, ignore_output, pretty_verb_arg=None
+            cmd_enum, path, answer_no, ignore_output
         )
         app.logs_tab.cmd_result = cr
         if cr.std_err or cr.returncode != 0:
@@ -348,8 +318,6 @@ async def run_chezmoi_interactive(
     verb_arg: Path | list[str] | None,
     prompt_handler: Callable[[str, list[str], str], Awaitable[str]],
     output_handler: Callable[[str], Awaitable[None]],
-    *,
-    pretty_verb_arg: Path | str | None,
 ) -> CommandResult:
     chezmoi_args: tuple[str, ...] | None = None
     if cmd_enum in (WriteCmd.add, WriteCmd.destroy, WriteCmd.forget) and (
@@ -363,9 +331,5 @@ async def run_chezmoi_interactive(
     else:
         chezmoi_args = (*cmd_enum.value, str(verb_arg))
     return await create_interactive_process(
-        chezmoi_args,
-        prompt_handler,
-        output_handler,
-        cmd_enum=cmd_enum,
-        pretty_cmd=pretty_cmd(cmd_enum, pretty_verb_arg),
+        chezmoi_args, prompt_handler, output_handler, cmd_enum=cmd_enum, verb_arg=""
     )
