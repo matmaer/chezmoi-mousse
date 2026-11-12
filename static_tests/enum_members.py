@@ -1,8 +1,8 @@
 import ast
 from typing import TYPE_CHECKING
 
-from static_tests._ast_nodes import NodeData, NodeDb
-from static_tests.conftest import CheckRunner, IssueList
+import pytest
+from static_tests._ast_nodes import NodeData, NodeDb, format_issues
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -31,16 +31,6 @@ def _extract_enum_members(node_db: NodeDb) -> EnumMembersDict:
             enum_members[class_node] = members
 
     return enum_members
-
-
-def _is_inside_class(node: NodeData, class_node: NodeData) -> bool:
-    """Walks the parent chain to check if a node resides inside class_node."""
-    curr: NodeData | None = node.parent
-    while curr:
-        if curr == class_node:
-            return True
-        curr = curr.parent
-    return False
 
 
 def _get_class_aliases(node_db: NodeDb, class_name: str) -> set[str]:
@@ -92,11 +82,11 @@ def _check_alternative_usage(
     return used_members
 
 
-def get_unused(node_db: NodeDb) -> IssueList:
+def get_unused(node_db: NodeDb) -> list[tuple[str, str, str]]:
     enum_members = _extract_enum_members(node_db)
     attr_nodes: NDSet = node_db.by_type.get(ast.Attribute.__name__, set())
     name_nodes: NDSet = node_db.by_type.get(ast.Name.__name__, set())
-    issue_list: IssueList = []
+    issue_list: list[tuple[str, str, str]] = []
 
     for class_node, members in enum_members.items():
         assert isinstance(class_node.ast_node, ast.ClassDef)
@@ -123,7 +113,7 @@ def get_unused(node_db: NodeDb) -> IssueList:
                 isinstance(name.ast_node, ast.Name)
                 and name.str_rep in member_names
                 and isinstance(name.ast_node.ctx, ast.Load)
-                and _is_inside_class(name, class_node)
+                and name.is_inside(class_node)
             ):
                 used_internally.add(name.str_rep)
 
@@ -137,8 +127,7 @@ def get_unused(node_db: NodeDb) -> IssueList:
                 if member_name not in used_internally:
                     issue_list.append(
                         (
-                            class_name,
-                            member_name,
+                            f"{class_name}.{member_name}",
                             loc_str,
                             "Private member(s) internally not in use",
                         )
@@ -150,15 +139,17 @@ def get_unused(node_db: NodeDb) -> IssueList:
 
             if member_name in used_internally:
                 issue_list.append(
-                    (class_name, member_name, loc_str, "Member(s) can be private")
+                    (f"{class_name}.{member_name}", loc_str, "Member(s) can be private")
                 )
             else:
                 issue_list.append(
-                    (class_name, member_name, loc_str, "Member(s) not accessed")
+                    (f"{class_name}.{member_name}", loc_str, "Member(s) not accessed")
                 )
 
     return sorted(issue_list)
 
 
-def test_enum_members(run_check: CheckRunner) -> None:
-    run_check(get_unused)
+def test_enum_members(node_db: NodeDb) -> None:
+    issues = get_unused(node_db)
+    if issues:
+        pytest.fail(format_issues(issues))

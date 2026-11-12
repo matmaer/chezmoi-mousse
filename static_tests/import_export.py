@@ -1,8 +1,8 @@
 import ast
 from typing import TYPE_CHECKING
 
-from static_tests._ast_nodes import NodeData, NodeDb
-from static_tests.conftest import CheckRunner, IssueList
+import pytest
+from static_tests._ast_nodes import NodeData, NodeDb, format_issues
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -27,16 +27,15 @@ def _get_defined_exports(node_db: NodeDb) -> tuple[ExportDict, ExportNodeDict]:
             and targets[0].id == "__all__"
         ):
             names = assign_node.export_names
-            if names is not None:
-                mod_name = assign_node.module_qualname
-                defined_exports[mod_name] = names
-                export_nodes[mod_name] = assign_node
+            mod_name = assign_node.module_qualname
+            defined_exports[mod_name] = names
+            export_nodes[mod_name] = assign_node
 
     return defined_exports, export_nodes
 
 
-def get_issues(node_db: NodeDb) -> IssueList:
-    issue_list: IssueList = []
+def get_issues(node_db: NodeDb) -> list[tuple[str, str, str]]:
+    issue_list: list[tuple[str, str, str]] = []
     defined_exports, export_nodes = _get_defined_exports(node_db)
 
     # All known module qualnames, used to detect "from pkg import submodule"
@@ -81,7 +80,6 @@ def get_issues(node_db: NodeDb) -> IssueList:
                     (
                         f"{src_module}",
                         "not available",
-                        "not available",
                         (
                             "Module(s) without '__all__' var, but other modules import "
                             "from it"
@@ -98,8 +96,7 @@ def get_issues(node_db: NodeDb) -> IssueList:
         ):
             issue_list.append(
                 (
-                    f"{src_module}",
-                    f"{symbol}",
+                    f"{src_module}.{symbol}",
                     "not available",
                     ("Symbol(s) imported but not exported in __all__"),
                 )
@@ -114,8 +111,7 @@ def get_issues(node_db: NodeDb) -> IssueList:
             if not is_init and (src_module, symbol) in imported_symbols_by_module:
                 issue_list.append(
                     (
-                        f"{src_module}",
-                        f"{symbol}",
+                        f"{src_module}.{symbol}",
                         f"{node.rel_path}:{node.lineno}",
                         ("Symbol(s) imported and re-exported in __all__"),
                     )
@@ -126,8 +122,7 @@ def get_issues(node_db: NodeDb) -> IssueList:
             if not external_consumers:
                 issue_list.append(
                     (
-                        f"{src_module}",
-                        f"{symbol}",
+                        f"{src_module}.{symbol}",
                         f"{node.rel_path}:{node.lineno}",
                         ("Symbol(s) exported in __all__ but never imported"),
                     )
@@ -136,5 +131,7 @@ def get_issues(node_db: NodeDb) -> IssueList:
     return issue_list
 
 
-def test_import_export(run_check: CheckRunner) -> None:
-    run_check(get_issues)
+def test_import_export(node_db: NodeDb) -> None:
+    issues = get_issues(node_db)
+    if issues:
+        pytest.fail(format_issues(issues))

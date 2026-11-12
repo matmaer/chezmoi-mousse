@@ -1,8 +1,8 @@
 import ast
 import re
 
-from static_tests._ast_nodes import NodeDb
-from static_tests.conftest import CheckRunner, IssueList
+import pytest
+from static_tests._ast_nodes import NodeDb, format_issues
 
 QUERY_ONE = "query_one"
 QUERY_EXACTLY_ONE = "query_exactly_one"
@@ -52,10 +52,10 @@ def check_query_call(call_node: ast.Call, func_name: str) -> str | None:
     return reason
 
 
-def get_issues(node_db: NodeDb) -> IssueList:
+def get_issues(node_db: NodeDb) -> list[tuple[str, str, str]]:
     q_one_nodes = node_db.by_name.get(QUERY_ONE, set())
     q_exactly_one_nodes = node_db.by_name.get(QUERY_EXACTLY_ONE, set())
-    issue_list: IssueList = []
+    issue_list: list[tuple[str, str, str]] = []
 
     for data in q_one_nodes | q_exactly_one_nodes:
         if not isinstance(data.ast_node, ast.Call) or not isinstance(data.str_rep, str):
@@ -71,5 +71,7 @@ def get_issues(node_db: NodeDb) -> IssueList:
     return issue_list
 
 
-def test_query_args(run_check: CheckRunner) -> None:
-    run_check(get_issues)
+def test_query_args(node_db: NodeDb) -> None:
+    issues = get_issues(node_db)
+    if issues:
+        pytest.fail(format_issues(issues))

@@ -2,8 +2,8 @@ import ast
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from static_tests._ast_nodes import NodeData, NodeDb
-from static_tests.conftest import CheckRunner, IssueList
+import pytest
+from static_tests._ast_nodes import NodeData, NodeDb, format_issues
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -38,8 +38,8 @@ def _find_enclosing_class(node: NodeData) -> str:
     return "module"
 
 
-def get_function_issues(node_db: NodeDb) -> IssueList:
-    issue_list: IssueList = []
+def get_function_issues(node_db: NodeDb) -> list[tuple[str, str, str]]:
+    issue_list: list[tuple[str, str, str]] = []
 
     func_type_names = (ast.FunctionDef.__name__, ast.AsyncFunctionDef.__name__)
     func_nodes: NDSet = set()
@@ -112,22 +112,10 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
         loc_str = f"{node.rel_path}:{node.lineno}"
 
         if not file_usages:
-            issue_list.append(
-                (
-                    f"{node.rel_path}",
-                    f"{func_name}",
-                    f"{loc_str}",
-                    "Function(s) not in use",
-                )
-            )
+            issue_list.append((f"{func_name}", f"{loc_str}", "Function(s) not in use"))
         elif file_usages == {node.rel_path} and not is_private:
             issue_list.append(
-                (
-                    f"{node.rel_path}",
-                    f"{func_name}",
-                    f"{loc_str}",
-                    "Function(s) can be private",
-                )
+                (f"{func_name}", f"{loc_str}", "Function(s) can be private")
             )
 
     # 5. Evaluate Class Methods
@@ -138,18 +126,12 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
 
         if not class_usages:
             issue_list.append(
-                (
-                    f"{class_name}",
-                    f"{method_name}",
-                    f"{loc_str}",
-                    "Function(s) not in use",
-                )
+                (f"{class_name}.{method_name}", f"{loc_str}", "Function(s) not in use")
             )
         elif class_usages == {class_name} and not is_private:
             issue_list.append(
                 (
-                    f"{class_name}",
-                    f"{method_name}",
+                    f"{class_name}.{method_name}",
                     f"{loc_str}",
                     "Function(s) can be private",
                 )
@@ -158,5 +140,7 @@ def get_function_issues(node_db: NodeDb) -> IssueList:
     return issue_list
 
 
-def test_functions(run_check: CheckRunner) -> None:
-    run_check(get_function_issues)
+def test_functions(node_db: NodeDb) -> None:
+    issues = get_function_issues(node_db)
+    if issues:
+        pytest.fail(format_issues(issues))

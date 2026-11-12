@@ -5,46 +5,54 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
+
 from chezmoi_mousse.str_enums import Tcss
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NodeDb
-    from static_tests.conftest import CheckRunner, IssueList
 
-TCSS_PATH = Path("src", "chezmoi_mousse", "gui", "gui.tcss")
 
 EXCLUDE_TCSS_CLASSES = {"-visible"}
+ADDITIONAL_TYPE_SELECTORS = {"Contents", "Tab", "Toast"}
 
 
-def _load_tcss_content() -> tuple[list[str], str]:
-    """Reads TCSS file content excluding comment lines."""
-    if not TCSS_PATH.exists():
-        return [], ""
+class GuiTcss:
+    def __init__(self) -> None:
+        self.path = Path("src", "chezmoi_mousse", "gui", "gui.tcss")
+        self.lines: list[str] = self._get_relevant_tcss_lines(self.path)
+        self.class_selectors: set[str] = self._extract_tcss_classes(self.lines)
+        self.type_selectors: set[str] = self._extract_type_selectors(self.lines)
 
-    raw_lines = TCSS_PATH.read_text(encoding="utf-8").splitlines()
-    clean_lines = [
-        line for line in raw_lines if not line.strip().startswith(("/", "*", "#"))
-    ]
-    return clean_lines, "\n".join(clean_lines)
+    def _get_relevant_tcss_lines(self, tcss_path: Path) -> list[str]:
+        raw_lines = tcss_path.read_text(encoding="utf-8").splitlines()
+        return [
+            line
+            for line in raw_lines
+            if line.strip()
+            and not line.strip().startswith(("/", "*", "#"))
+            and ";" not in line
+            and "}" not in line
+            and "--" not in line
+        ]
+
+    def _extract_tcss_classes(self, lines: list[str]) -> set[str]:
+        text = " ".join(lines)
+        # Extracts all class selectors (e.g. `.flat_button`)
+        pattern = r"\.([a-zA-Z0-9_-]+)/b"
+        matches = re.findall(pattern, text)
+        return {m for m in matches if m not in EXCLUDE_TCSS_CLASSES}
+
+    def _extract_type_selectors(self, lines: list[str]) -> set[str]:
+        # Extracts PascalCase type selectors (e.g. `ManagedTree`)
+        pattern = r"\b([A-Z][A-Za-z]+)\b"
+        matches: set[str] = set()
+        for line in lines:
+            matches.update(re.findall(pattern, line))
+        return matches
 
 
-def _extract_tcss_classes(tcss_content: str) -> set[str]:
-    """Extracts all class selectors (e.g. `.flat_button`) from TCSS."""
-    pattern = r"\.([a-zA-Z0-9_-]+)/b"
-    matches = re.findall(pattern, tcss_content)
-    return {m for m in matches if m not in EXCLUDE_TCSS_CLASSES and "--" not in m}
-
-
-def _extract_type_selectors(tcss_lines: list[str]) -> set[str]:
-    """Extracts PascalCase type selectors (e.g. `ManagedTree`) from TCSS rules."""
-    pattern = r"\b([A-Z][A-Za-z]+)\b"
-    matches: set[str] = set()
-    for line in tcss_lines:
-        # Ignore comments or color variable definitions
-        if "$" in line or (":" in line and not line.strip().endswith("{")):
-            continue
-        matches.update(re.findall(pattern, line))
-    return matches
+gui_tcss = GuiTcss()
 
 
 def _valid_tcss_type_selectors(node_db: NodeDb) -> set[str]:
@@ -55,28 +63,19 @@ def _valid_tcss_type_selectors(node_db: NodeDb) -> set[str]:
         for data in node_db.by_type.get(ast.ClassDef.__name__, set())
         if isinstance(data.ast_node, ast.ClassDef)
     }
-    return (
-        valid_python_classes
-        | node_db.textual_imports
-        | {"CollapsibleTitle", "Contents", "Tab", "Toast", "ToggleButton"}
-    )
+    return valid_python_classes | node_db.textual_imports | ADDITIONAL_TYPE_SELECTORS
 
 
 # --- Static Check Functions ---
 
 
-def check_tcss_classes_in_enum(node_db: NodeDb) -> IssueList:
-    """Checks that all TCSS classes used in gui.tcss exist in the Tcss StrEnum."""
-    _ = node_db
-    _, tcss_content = _load_tcss_content()
-    if not tcss_content:
-        return []
+def check_tcss_classes_in_enum() -> list[tuple[str, str, str]]:
+    # check TCSS classes used in gui.tcss exist in the Tcss StrEnum
 
     tcss_enum_members = {member.value for member in Tcss}
-    used_classes = _extract_tcss_classes(tcss_content)
 
-    issues: IssueList = []
-    for cls_name in sorted(used_classes):
+    issues: list[tuple[str, str, str]] = []
+    for cls_name in gui_tcss.class_selectors:
         if cls_name not in tcss_enum_members:
             issues.append(
                 (f".{cls_name}", "gui.tcss", "TCSS class not defined in Tcss StrEnum")
@@ -85,15 +84,11 @@ def check_tcss_classes_in_enum(node_db: NodeDb) -> IssueList:
     return issues
 
 
-def check_tcss_type_selectors(node_db: NodeDb) -> IssueList:
-    tcss_lines, _ = _load_tcss_content()
-    if not tcss_lines:
-        return []
+def check_tcss_type_selectors(node_db: NodeDb) -> list[tuple[str, str, str]]:
 
-    used_selectors = _extract_type_selectors(tcss_lines)
-    issues: IssueList = []
+    issues: list[tuple[str, str, str]] = []
 
-    for selector in sorted(used_selectors):
+    for selector in sorted(gui_tcss.class_selectors):
         if selector not in _valid_tcss_type_selectors(node_db):
             issues.append(
                 (
@@ -106,8 +101,8 @@ def check_tcss_type_selectors(node_db: NodeDb) -> IssueList:
     return issues
 
 
-def check_hardcoded_tcss_strings(node_db: NodeDb) -> IssueList:
-    issues: IssueList = []
+def check_hardcoded_tcss_strings(node_db: NodeDb) -> list[tuple[str, str, str]]:
+    issues: list[tuple[str, str, str]] = []
     call_nodes = node_db.by_type.get(ast.Call.__name__, set())
     tcss_mappings = _tcss_mapping_names(node_db)
 
@@ -170,7 +165,7 @@ def _validate_tcss_expr(
     expr: ast.expr,
     rel_path: str,
     lineno: int | None,
-    issues: IssueList,
+    issues: list[tuple[str, str, str]],
     tcss_mappings: set[str],
 ) -> None:
     loc = f"{rel_path}:{lineno or 0}"
@@ -198,13 +193,38 @@ def _validate_tcss_expr(
         )
 
 
-def get_tcss_issues(node_db: NodeDb) -> IssueList:
-    issues: IssueList = []
-    issues.extend(check_tcss_classes_in_enum(node_db))
+def get_tcss_issues(node_db: NodeDb) -> list[tuple[str, str, str]]:
+    issues: list[tuple[str, str, str]] = []
+    issues.extend(check_tcss_classes_in_enum())
     issues.extend(check_tcss_type_selectors(node_db))
     issues.extend(check_hardcoded_tcss_strings(node_db))
     return issues
 
 
-def test_tcss(run_check: CheckRunner) -> None:
-    run_check(get_tcss_issues)
+def test_tcss() -> None:
+
+    # Gather data from the external gui.tcss file
+
+    # Create a Tcss enum member set
+    tcss_enum_members = {member.value for member in Tcss}
+
+    errors: list[str] = []
+
+    # Check orphaned TCSS classes (Not in Tcss StrEnum)
+    orphaned_classes: list[str] = []
+    for tcss_class in gui_tcss.class_selectors:
+        stripped = tcss_class.lstrip(".")
+        if stripped in EXCLUDE_TCSS_CLASSES:
+            continue
+        if stripped not in tcss_enum_members:
+            orphaned_classes.append(tcss_class)
+
+    if orphaned_classes:
+        errors.append(
+            "\nTCSS classes not defined in Tcss Enum:\n" + ", ".join(orphaned_classes)
+        )
+
+    # Check orphaned TCSS type selectors
+
+    if errors:
+        pytest.fail("\n".join(errors))

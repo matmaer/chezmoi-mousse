@@ -1,8 +1,7 @@
-"""This module is executed first by conftest.py"""
-
 import ast
 from collections import defaultdict
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 
 type NDSet = set[NodeData]
@@ -32,7 +31,7 @@ class NodeData:
     col_offset: int | None = None
 
     _dc_field_name: str | None = None
-    _decorator_names: list[str] = field(default_factory=list[str])
+    _decorator_names: list[str] | None = None
     _enum_member_name: str | None = None
     _export_names: set[str] | None = None
     _function_name: str | None = None
@@ -54,7 +53,7 @@ class NodeData:
         assert isinstance(
             self.ast_node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
         )
-        if self._decorator_names:
+        if self._decorator_names is not None:
             return self._decorator_names
 
         dec_names: list[str] = []
@@ -85,7 +84,7 @@ class NodeData:
         return self._enum_member_name
 
     @property
-    def export_names(self) -> set[str] | None:
+    def export_names(self) -> set[str]:
         assert isinstance(self.ast_node, ast.Assign)
         if self._export_names is not None:
             return self._export_names
@@ -184,6 +183,14 @@ class NodeData:
         """Returns True if the node is defined at the module root level."""
         return self.parent is not None and self.parent.node_type == ast.Module.__name__
 
+    def is_inside(self, ancestor: "NodeData") -> bool:
+        curr = self.parent
+        while curr is not None:
+            if curr is ancestor:
+                return True
+            curr = curr.parent
+        return False
+
     @property
     def module_qualname(self) -> str:
         if isinstance(self._module_qualname, str):
@@ -226,7 +233,7 @@ class NodeDb:
             self.by_path[data.rel_path].add(data)
             self.by_type[data.node_type].add(data)
 
-    @property
+    @cached_property
     def textual_imports(self) -> set[str]:
         """Dynamically extracts all imported symbols from textual or its subpackages."""
         imported_names: set[str] = set()
@@ -241,7 +248,7 @@ class NodeDb:
 
         return imported_names
 
-    @property
+    @cached_property
     def textual_subclass_names(self) -> set[str]:
         """Returns the names of all local classes that inherit from an imported
         Textual class."""
@@ -316,3 +323,19 @@ class IndexerVisitor(ast.NodeVisitor):
         self._parent_stack.append(node_data)
         super().generic_visit(node)
         self._parent_stack.pop()
+
+
+def format_issues(issues: list[tuple[str, str, str]]) -> str:
+    groups: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    for name, location, info in issues:
+        groups[info].append((name, location))
+
+    lines: list[str] = [f"{len(issues)} issue(s) found:", ""]
+    for info, rows in groups.items():
+        width = max(len(name) for name, _ in rows)
+        lines.extend([f"___ {info} ___", ""])
+        for name, location in sorted(rows):
+            lines.append(f"-  {name:<{width}}  {location}")
+        lines.append("")
+
+    return "\n".join(lines).rstrip()

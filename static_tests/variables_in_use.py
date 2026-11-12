@@ -1,8 +1,8 @@
 import ast
 from typing import TYPE_CHECKING
 
-from static_tests._ast_nodes import NodeData, NodeDb
-from static_tests.conftest import CheckRunner, IssueList
+import pytest
+from static_tests._ast_nodes import NodeData, NodeDb, format_issues
 
 if TYPE_CHECKING:
     from static_tests._ast_nodes import NDSet
@@ -41,9 +41,9 @@ def _is_reactive_or_descriptor(assign_node: NodeData) -> bool:
     return False
 
 
-def get_variable_issues(node_db: NodeDb) -> IssueList:
+def get_variable_issues(node_db: NodeDb) -> list[tuple[str, str, str]]:
     """Analyzes module variables, class variables, and instance attributes for usage."""
-    issue_list: IssueList = []
+    issue_list: list[tuple[str, str, str]] = []
     assign_nodes: NDSet = set()
     for type_name in (ast.Assign.__name__, ast.AnnAssign.__name__):
         assign_nodes.update(node_db.by_type.get(type_name, set()))
@@ -141,8 +141,7 @@ def get_variable_issues(node_db: NodeDb) -> IssueList:
         if var_name not in loaded_attributes and var_name not in loaded_module_vars:
             issue_list.append(
                 (
-                    f"{var_name}",
-                    f"{class_name}",
+                    f"{class_name}.{var_name}",
                     f"{node.rel_path}:{node.lineno}",
                     "Class variable(s) never loaded",
                 )
@@ -153,8 +152,7 @@ def get_variable_issues(node_db: NodeDb) -> IssueList:
         if var_name not in loaded_attributes:
             issue_list.append(
                 (
-                    f"{var_name}",
-                    f"{class_name}",
+                    f"{class_name}.{var_name}",
                     f"{node.rel_path}:{node.lineno}",
                     "Instance attribute(s) never loaded",
                 )
@@ -163,5 +161,7 @@ def get_variable_issues(node_db: NodeDb) -> IssueList:
     return issue_list
 
 
-def test_variables(run_check: CheckRunner) -> None:
-    run_check(get_variable_issues)
+def test_variables(node_db: NodeDb) -> None:
+    issues = get_variable_issues(node_db)
+    if issues:
+        pytest.fail(format_issues(issues))

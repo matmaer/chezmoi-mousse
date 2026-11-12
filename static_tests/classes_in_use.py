@@ -1,27 +1,17 @@
 import ast
 from typing import TYPE_CHECKING
 
-from static_tests._ast_nodes import NodeData, NodeDb
-from static_tests.conftest import CheckRunner, IssueList
+import pytest
+from static_tests._ast_nodes import NodeDb, format_issues
 
 if TYPE_CHECKING:
-    from static_tests._ast_nodes import NDSet
+    from static_tests._ast_nodes import NDSet, NodeData
 
 # Classes excluded from unused checks (e.g. monkey patches or debug utilities)
 EXCLUDE_CLASSES = {"ClassInstanceTracker", "DebugLog"}
 
 
-def _is_inside_class(node: NodeData, class_node: NodeData) -> bool:
-    """Walks the parent chain to check if a node resides inside class_node."""
-    curr: NodeData | None = node.parent
-    while curr:
-        if curr == class_node:
-            return True
-        curr = curr.parent
-    return False
-
-
-def get_class_issues(node_db: NodeDb) -> IssueList:
+def get_class_issues(node_db: NodeDb) -> list[tuple[str, str, str]]:
     """Analyzes top-level and nested classes for usage and privacy recommendations."""
     class_nodes: NDSet = node_db.by_type.get(ast.ClassDef.__name__, set())
 
@@ -31,14 +21,14 @@ def get_class_issues(node_db: NodeDb) -> IssueList:
     attr_nodes: NDSet = node_db.by_type.get(ast.Attribute.__name__, set())
     identifier_nodes = name_nodes | attr_nodes
 
-    issue_list: IssueList = []
+    issue_list: list[tuple[str, str, str]] = []
 
     # Map class_name -> ClassDef NodeData
     defined_classes: dict[str, NodeData] = {}
     for node in class_nodes:
         assert isinstance(node.ast_node, ast.ClassDef)
         class_name = node.ast_node.name
-        if node and class_name not in EXCLUDE_CLASSES:
+        if class_name not in EXCLUDE_CLASSES:
             defined_classes[class_name] = node
 
     # Track usage files per class name
@@ -52,17 +42,14 @@ def get_class_issues(node_db: NodeDb) -> IssueList:
             continue
 
         # Ignore class definition headers (Store context on targets/assignments)
-        if (
-            identifier_node.ast_node
-            and getattr(identifier_node.ast_node, "ctx", None) is ast.Store()
-        ):
+        if isinstance(getattr(identifier_node.ast_node, "ctx", None), ast.Store):
             continue
 
         class_name = identifier_str
         class_node = defined_classes[class_name]
 
         # Ignore self-references inside the class definition itself
-        if _is_inside_class(identifier_node, class_node):
+        if identifier_node.is_inside(class_node):
             continue
 
         class_file_usages.setdefault(class_name, set()).add(identifier_node.rel_path)
@@ -84,5 +71,7 @@ def get_class_issues(node_db: NodeDb) -> IssueList:
     return issue_list
 
 
-def test_classes_in_use(run_check: CheckRunner) -> None:
-    run_check(get_class_issues)
+def test_classes_in_use(node_db: NodeDb) -> None:
+    issues = get_class_issues(node_db)
+    if issues:
+        pytest.fail(format_issues(issues))
