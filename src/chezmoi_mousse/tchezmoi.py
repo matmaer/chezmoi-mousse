@@ -265,7 +265,7 @@ async def collect_chezmoi_paths_in_scope(
             _, separator, path_text = question.partition(" ")
             if not separator or not path_text:
                 raise ValueError(f"Unexpected chezmoi question: {question!r}")
-            if cmd_enum is WriteCmd.no_op_destroy:
+            if cmd_enum is WriteCmd.dry_destroy:
                 path_text = path_text.partition(f" and {store.cfg.source_dir_str}")[0]
             paths.append(path_text)
 
@@ -291,18 +291,18 @@ async def collect_chezmoi_paths_in_scope(
             pretty_str=(
                 "\n".join(f"{Chars.bullet} {item}" for item in paths)
                 if paths
-                else LogStr.no_op
+                else LogStr.dry
             ),
         )
 
     results: BtnLabelDryDict = {}
     tasks: dict[BtnLabel, Task[BtnDryData]] = {}
     async with asyncio.TaskGroup() as task_group:
-        for command in WriteCmd.no_op_commands():
+        for command in WriteCmd.dry_commands():
             if path == store.cfg.dest_dir and command in (
-                WriteCmd.no_op_add,
-                WriteCmd.no_op_destroy,
-                WriteCmd.no_op_forget,
+                WriteCmd.dry_add,
+                WriteCmd.dry_destroy,
+                WriteCmd.dry_forget,
             ):
                 results[command.btn_label] = BtnDryData(op_path=path, no_op=True)
             else:

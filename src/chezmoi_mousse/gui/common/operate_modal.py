@@ -54,11 +54,11 @@ class CmGitConfig(VerticalGroup):
 
 
 class PathsInScope(VerticalGroup):
-    def __init__(self, no_op_cmd: WriteCmd, path_str: str, path_scope: str) -> None:
-        self.no_op_cmd = no_op_cmd
+    def __init__(self, dry_cmd: WriteCmd, path_str: str, path_scope: str) -> None:
+        self.dry_cmd = dry_cmd
         self.path_str = path_str
         self.path_scope = path_scope
-        self.pretty_cmd = f"{self.no_op_cmd.pretty_cmd} {self.path_str} (paths)"
+        self.pretty_cmd = f"{self.dry_cmd.pretty_cmd} {self.path_str} (paths)"
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -163,7 +163,7 @@ class OperateModal(ModalScreen[None]):
             with ScrollableContainer():
                 yield CmGitConfig()
                 yield PathsInScope(
-                    self.op_btn_label.no_op_cmd, self.path_str, self.path_scope
+                    self.op_btn_label.dry_cmd, self.path_str, self.path_scope
                 )
             yield Static(
                 f"{self.op_btn_label.run_label} {self.path_str}".rstrip(),

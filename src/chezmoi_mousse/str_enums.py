@@ -112,15 +112,15 @@ class BtnLabel(StrEnum):
         return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
 
     @property
-    def no_op_cmd(self) -> "WriteCmd":
+    def dry_cmd(self) -> "WriteCmd":
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         map = {
-            BtnLabel.chezmoi_add: WriteCmd.no_op_add,
-            BtnLabel.chezmoi_apply: WriteCmd.no_op_apply,
-            BtnLabel.chezmoi_re_add: WriteCmd.no_op_re_add,
-            BtnLabel.chezmoi_forget: WriteCmd.no_op_forget,
-            BtnLabel.chezmoi_destroy: WriteCmd.no_op_destroy,
+            BtnLabel.chezmoi_add: WriteCmd.dry_add,
+            BtnLabel.chezmoi_apply: WriteCmd.dry_apply,
+            BtnLabel.chezmoi_re_add: WriteCmd.dry_re_add,
+            BtnLabel.chezmoi_forget: WriteCmd.dry_forget,
+            BtnLabel.chezmoi_destroy: WriteCmd.dry_destroy,
         }
         return map[self]
 
@@ -291,7 +291,7 @@ class LogStr(StrEnum):
     auto_log_started = "auto log started"
     auto_log_stopped = "auto log stopped"
     no_auto_log = "psutil not auto logging"
-    no_op = "dry-run command"
+    dry = "dry-run command"
 
     @property
     def start(self) -> str:
@@ -665,16 +665,16 @@ class WriteCmd(Enum):
     forget = (*_GlobalArgs.interactive.value, _WriteVerb.forget.value)
     re_add = (*_GlobalArgs.interactive.value, _WriteVerb.re_add.value)
 
-    no_op_add = (
+    dry_add = (
         *_GlobalArgs.dry_interactive.value,
         _WriteVerb.add.value,
         _VerbArgs.prompt.value,
         _VerbArgs.recursive_false.value,
     )
-    no_op_apply = (*_GlobalArgs.dry_interactive.value, _WriteVerb.apply.value)
-    no_op_destroy = (*_GlobalArgs.dry_interactive.value, _WriteVerb.destroy.value)
-    no_op_forget = (*_GlobalArgs.dry_interactive.value, _WriteVerb.forget.value)
-    no_op_re_add = (*_GlobalArgs.dry_interactive.value, _WriteVerb.re_add.value)
+    dry_apply = (*_GlobalArgs.dry_interactive.value, _WriteVerb.apply.value)
+    dry_destroy = (*_GlobalArgs.dry_interactive.value, _WriteVerb.destroy.value)
+    dry_forget = (*_GlobalArgs.dry_interactive.value, _WriteVerb.forget.value)
+    dry_re_add = (*_GlobalArgs.dry_interactive.value, _WriteVerb.re_add.value)
 
     @cached_property
     def pretty_cmd(self) -> str:
@@ -688,14 +688,14 @@ class WriteCmd(Enum):
     @property
     def btn_label(self) -> "BtnLabel":
         map = {
-            WriteCmd.no_op_add: BtnLabel.chezmoi_add,
-            WriteCmd.no_op_apply: BtnLabel.chezmoi_apply,
-            WriteCmd.no_op_destroy: BtnLabel.chezmoi_destroy,
-            WriteCmd.no_op_forget: BtnLabel.chezmoi_forget,
-            WriteCmd.no_op_re_add: BtnLabel.chezmoi_re_add,
+            WriteCmd.dry_add: BtnLabel.chezmoi_add,
+            WriteCmd.dry_apply: BtnLabel.chezmoi_apply,
+            WriteCmd.dry_destroy: BtnLabel.chezmoi_destroy,
+            WriteCmd.dry_forget: BtnLabel.chezmoi_forget,
+            WriteCmd.dry_re_add: BtnLabel.chezmoi_re_add,
         }
         return map[self]
 
     @classmethod
-    def no_op_commands(cls) -> tuple["WriteCmd", ...]:
-        return tuple(cmd for cmd in cls if cmd.name.startswith("no_op_"))
+    def dry_commands(cls) -> tuple["WriteCmd", ...]:
+        return tuple(cmd for cmd in cls if cmd.name.startswith("dry_"))

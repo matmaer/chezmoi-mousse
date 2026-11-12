@@ -119,7 +119,7 @@ class SplashScreen(Screen[None]):
         elif cmd_result:
             if cmd_result.returncode != 0:
                 suffix = LogStr.checked
-            elif cmd_result.cmd_enum in WriteCmd.no_op_commands():
+            elif cmd_result.cmd_enum in WriteCmd.dry_commands():
                 suffix = LogStr.dry_run
             else:
                 suffix = (

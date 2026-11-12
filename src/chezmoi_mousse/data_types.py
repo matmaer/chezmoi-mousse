@@ -8,12 +8,19 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse import path_funcs
-from chezmoi_mousse.str_enums import LabelStr, StatusCode, TreeName
+from chezmoi_mousse.str_enums import (
+    LabelStr,
+    LogStr,
+    ReadCmd,
+    StatusCode,
+    TreeName,
+    WriteCmd,
+)
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse.str_enums import BtnLabel, ReadCmd, StatusCode, WriteCmd
+    from chezmoi_mousse.str_enums import BtnLabel, StatusCode
 
 type BtnLabelDryDict = dict[BtnLabel, BtnDryData]
 
@@ -45,12 +52,23 @@ class CommandResult:
         return self.std_out.splitlines()
 
     @property
+    def dry_run(self) -> bool:
+        return self.cmd_enum in WriteCmd.dry_commands()
+
+    @property
     def pretty_verb_arg(self) -> str:
         if self.verb_arg is None:
             pretty_arg = ""
-        elif isinstance(self.verb_arg, list):
-            pretty_arg = "arg is list"
-        elif self.verb_arg != "":
+        elif isinstance(self.verb_arg, list) and self.cmd_enum is ReadCmd.source_path:
+            if len(self.verb_arg) > 0:
+                pretty_arg = (
+                    LogStr.on_managed_dirs
+                    if Path(self.verb_arg[0]).is_dir()
+                    else LogStr.on_managed_files
+                )
+            else:
+                pretty_arg = ""
+        elif self.verb_arg != "" and isinstance(self.verb_arg, str):
             pretty_arg = path_funcs.get_rel_path_str(self.verb_arg)
         else:
             pretty_arg = ""

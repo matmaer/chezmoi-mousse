@@ -40,7 +40,7 @@ async def get_process_cmd_result(
     cmd_enum: ReadCmd | WriteCmd,
     verb_arg: str | list[str] | None,
 ) -> CommandResult:
-    if cmd_enum in WriteCmd.no_op_commands():
+    if cmd_enum in WriteCmd.dry_commands():
         raise ValueError(f"Received wrong cmd_enum: {cmd_enum}")
     assert CHEZMOI is not None
     exec_args = (CHEZMOI, *chezmoi_args)
@@ -129,7 +129,7 @@ async def create_interactive_process(
     read_timeout: float = 0.05
     interactive_approved = False
     async with _managed_process(
-        *chezmoi_args, use_isolated_index=cmd_enum in WriteCmd.no_op_commands()
+        *chezmoi_args, use_isolated_index=cmd_enum in WriteCmd.dry_commands()
     ) as process:
         pipe_stdout = process.stdout
         pipe_stdin = process.stdin
