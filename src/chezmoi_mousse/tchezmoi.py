@@ -14,7 +14,6 @@ from chezmoi_mousse.asyncio_process_exec import (
     get_process_cmd_result,
 )
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
-from chezmoi_mousse.data_types import BtnDryData
 from chezmoi_mousse.gui.common.messages import CommandResultMsg
 from chezmoi_mousse.str_enums import (
     Chars,
@@ -30,7 +29,8 @@ if TYPE_CHECKING:
     from asyncio import Task
     from collections.abc import Awaitable, Callable, Iterable
 
-    from chezmoi_mousse.data_types import BtnLabelDryDict, CommandResult
+    from chezmoi_mousse.cached_cmd_results import BtnDryDataDict
+    from chezmoi_mousse.data_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import BtnLabel
 
@@ -251,12 +251,15 @@ async def get_highlighted_chezmoi_cat_output(
 
 
 async def collect_chezmoi_paths_in_scope(
-    app: ChezmoiGui, path: Path
-) -> BtnLabelDryDict:
+    app: ChezmoiGui, path: Path, dry_dict: BtnDryDataDict
+) -> dict[BtnLabel, str]:
+
+    needs_update: list[BtnLabel] = [btn for btn, _ in dry_dict.items() if _ is None]
+
     async def ignore_output(_output: str) -> None:
         pass
 
-    async def collect_command(cmd_enum: WriteCmd) -> BtnDryData:
+    async def collect_command(cmd_enum: WriteCmd) -> str:
         paths: list[str] = []
 
         async def answer_no(
@@ -277,40 +280,15 @@ async def collect_chezmoi_paths_in_scope(
             cmd_enum, path, answer_no, ignore_output
         )
         app.logs_tab.cmd_result = cr
-        if cr.std_err or cr.returncode != 0:
-            return BtnDryData(
-                op_path=path,
-                no_op=True,
-                pretty_str=(
-                    cr.std_err or f"{cr.pretty_cmd} exited with {cr.returncode}"
-                ),
-            )
-        return BtnDryData(
-            op_path=path,
-            no_op=not paths,
-            pretty_str=(
-                "\n".join(f"{Chars.bullet} {item}" for item in paths)
-                if paths
-                else LogStr.dry
-            ),
-        )
+        if cr.out_list:
+            return "\n".join(f"{Chars.bullet} {item}" for item in paths)
+        return ""
 
-    results: BtnLabelDryDict = {}
-    tasks: dict[BtnLabel, Task[BtnDryData]] = {}
+    tasks: dict[BtnLabel, Task[str]] = {}
     async with asyncio.TaskGroup() as task_group:
-        for command in WriteCmd.dry_commands():
-            if path == store.cfg.dest_dir and command in (
-                WriteCmd.dry_add,
-                WriteCmd.dry_destroy,
-                WriteCmd.dry_forget,
-            ):
-                results[command.btn_label] = BtnDryData(op_path=path, no_op=True)
-            else:
-                tasks[command.btn_label] = task_group.create_task(
-                    collect_command(command)
-                )
-    results.update({label: task.result() for label, task in tasks.items()})
-    return dict(sorted(results.items()))
+        for btn in needs_update:
+            tasks[btn] = task_group.create_task(collect_command(btn.dry_cmd))
+    return {btn: output.result() for btn, output in tasks.items()}
 
 
 async def run_chezmoi_interactive(

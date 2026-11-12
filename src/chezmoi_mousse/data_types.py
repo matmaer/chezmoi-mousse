@@ -20,13 +20,10 @@ from chezmoi_mousse.str_enums import (
 if TYPE_CHECKING:
     from typing import Any
 
-    from chezmoi_mousse.str_enums import BtnLabel, StatusCode
+    from chezmoi_mousse.str_enums import StatusCode
 
-type BtnLabelDryDict = dict[BtnLabel, BtnDryData]
 
 __all__ = [
-    "BtnDryData",
-    "BtnLabelDryDict",
     "CommandResult",
     "DirData",
     "InitData",
@@ -41,7 +38,7 @@ class CommandResult:
     cmd_enum: WriteCmd | ReadCmd
     full_cmd: str
     interactive_approved: bool | None = None
-    verb_arg: str | list[str] | None
+    _verb_arg: str | list[str] | None
     returncode: int | None
     std_err: str
     std_out: str
@@ -57,19 +54,19 @@ class CommandResult:
 
     @property
     def pretty_verb_arg(self) -> str:
-        if self.verb_arg is None:
+        if self._verb_arg is None:
             pretty_arg = ""
-        elif isinstance(self.verb_arg, list) and self.cmd_enum is ReadCmd.source_path:
-            if len(self.verb_arg) > 0:
+        elif isinstance(self._verb_arg, list) and self.cmd_enum is ReadCmd.source_path:
+            if len(self._verb_arg) > 0:
                 pretty_arg = (
                     LogStr.on_managed_dirs
-                    if Path(self.verb_arg[0]).is_dir()
+                    if Path(self._verb_arg[0]).is_dir()
                     else LogStr.on_managed_files
                 )
             else:
                 pretty_arg = ""
-        elif self.verb_arg != "" and isinstance(self.verb_arg, str):
-            pretty_arg = path_funcs.get_rel_path_str(self.verb_arg)
+        elif self._verb_arg != "" and isinstance(self._verb_arg, str):
+            pretty_arg = path_funcs.get_rel_path_str(self._verb_arg)
         else:
             pretty_arg = ""
         return pretty_arg
@@ -145,13 +142,6 @@ class DirData:
             nested_filtered=False,
             dest_dir=False,
         )
-
-
-@dataclass(slots=True, kw_only=True)
-class BtnDryData:
-    op_path: Path
-    no_op: bool
-    pretty_str: str = ""
 
 
 @dataclass(slots=True)

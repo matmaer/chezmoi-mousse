@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from textual import getters
     from textual.app import ComposeResult
 
-    from chezmoi_mousse.data_types import BtnLabelDryDict, NodeData
+    from chezmoi_mousse.data_types import NodeData
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
@@ -108,7 +108,6 @@ class OperateTab(TabPane):
         yield OperateBtnGroup(labels=BtnLabel.op_btn_labels())
 
     def on_mount(self) -> None:
-        self.dry_run_cache: dict[Path, BtnLabelDryDict] = {}
         self.source_path_label = self.query_one(Tcss.green_label.q, Static)
         self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
         self.op_buttons = self.op_btn_group.query_children(Button).results()
@@ -150,17 +149,10 @@ class OperateTab(TabPane):
 
     @work(description="update operate buttons enabled/disabled state")
     async def _update_op_buttons(self, node_data: NodeData) -> None:
-        cached: BtnLabelDryDict = {}
-        try:
-            cached = self.dry_run_cache[node_data.path]
-        except:
-            self.dry_run_cache[
-                node_data.path
-            ] = await tchezmoi.collect_chezmoi_paths_in_scope(self.app, node_data.path)
-            cached = self.dry_run_cache[node_data.path]
+        dry_results = await store.cached.get_dry_results(node_data)
         for btn in self.op_btn_group.query(Button).results():
             btn_label = BtnLabel(str(btn.label))
-            btn.disabled = cached[btn_label].no_op
+            btn.disabled = bool(getattr(dry_results, btn_label.name))
 
     @work(description="update view widgets")
     async def _update_view_widgets(self, node_data: NodeData) -> None:
@@ -238,7 +230,6 @@ class OperateTab(TabPane):
             return False
         for tree in self.left_side_vertical.query_children(OperateTree).results():
             await tree.update_nodes(store.cm_changes)
-        self.dry_run_cache.clear()
         self.content_view.cache.clear()
         self.diff_view.cache.clear()
         self.diff_reverse_view.cache.clear()
@@ -300,11 +291,11 @@ class OperateTab(TabPane):
             return
         event.stop()
         btn_label = BtnLabel(str(event.button.label))
-        dry_run_data = self.dry_run_cache.get(self.app.current_node.path)
+        dry_run_data = store.cached.path_dry_dict.get(self.app.current_node.path)
         if dry_run_data is None:
             self.app.notify("Affected paths are not available.", severity="warning")
             return
-        paths = dry_run_data[btn_label]
+        paths = getattr(dry_run_data, btn_label.name)
         modal = OperateModal(
             op_btn_label=btn_label,
             node_data=self.app.current_node,

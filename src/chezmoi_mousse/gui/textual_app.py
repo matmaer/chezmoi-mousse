@@ -136,6 +136,7 @@ class ChezmoiGui(App[str]):
 
         new_tree_paths = await tchezmoi.run_managed_commands(self)
         await store.store_new_tree_paths(self, new_tree_paths)
+        await store.init_cached_commands(self)
 
         await tabbed_content.add_pane(
             OperateTab(id=BtnLabel.operate.pane_id, title=BtnLabel.operate),

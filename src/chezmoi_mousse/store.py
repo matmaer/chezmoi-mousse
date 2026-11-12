@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from chezmoi_mousse.app_ids import AppIds
+from chezmoi_mousse.cached_cmd_results import CachedCommands
 from chezmoi_mousse.chezmoi_paths import CmPathChanges
 from chezmoi_mousse.data_types import ParsedDumpConfig
 from chezmoi_mousse.str_enums import BtnLabel, ColorVar
@@ -37,6 +38,8 @@ cm_paths: ChezmoiTreePaths
 
 cm_changes: CmPathChanges
 
+cached: CachedCommands
+
 _first_change_calculation: bool = True
 
 
@@ -59,6 +62,11 @@ async def store_new_tree_paths(
     app.logs_tab.mount_line(
         "Updated cm_paths and cm_changes in store.py", ColorVar.secondary
     )
+
+
+async def init_cached_commands(app: ChezmoiGui) -> None:
+    global cached
+    cached = CachedCommands(app)
 
 
 async def decode_and_store_config(std_out: str) -> None:

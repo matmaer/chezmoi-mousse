@@ -60,7 +60,7 @@ async def get_process_cmd_result(
     return CommandResult(
         cmd_enum=cmd_enum,
         full_cmd=" ".join(exec_args),
-        verb_arg=verb_arg,
+        _verb_arg=verb_arg,
         returncode=process.returncode,
         std_err=std_err,
         std_out=std_out,
@@ -217,7 +217,7 @@ async def create_interactive_process(
             cmd_enum=cmd_enum,
             full_cmd=" ".join(["chezmoi", *chezmoi_args]),
             interactive_approved=interactive_approved,
-            verb_arg=verb_arg,
+            _verb_arg=verb_arg,
             returncode=returncode,
             std_err=std_err,
             std_out=b"".join(stdout_chunks).decode("utf-8", errors="replace"),

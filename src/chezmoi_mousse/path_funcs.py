@@ -60,7 +60,7 @@ def get_rel_path_str(path_str: str) -> str:
         dest_dir = store.cfg.dest_dir
     except AttributeError:
         dest_dir = None
-    if dest_dir is None or path_str == str(dest_dir):
+    if dest_dir is None or path_str == store.cfg.dest_dir_str:
         return path_str
     return str(Path(path_str).relative_to(store.cfg.dest_dir))
 
