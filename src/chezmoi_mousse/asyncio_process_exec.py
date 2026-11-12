@@ -28,9 +28,10 @@ CHEZMOI = shutil.which("chezmoi")
 # e.g. "Apply .foo (diff/yes/no/all/quit)? "
 _PROMPT_RE = re.compile(r"\(([^()]*)\)\? \Z")
 _PROMPT_OPTIONS = frozenset(prompt.prompt_item for prompt in ChezmoiPrompts)
-_GLOBAL_TIMEOUT = 15
+_INACTIVE_TIMEOUT = 15
+_SIGTERM_TIMEOUT = 2.0
 
-__all__ = ["create_interactive_managed_process", "get_process_cmd_result"]
+__all__ = ["create_interactive_process", "get_process_cmd_result"]
 
 
 async def get_process_cmd_result(
@@ -43,11 +44,11 @@ async def get_process_cmd_result(
 
     async with _managed_process(*chezmoi_args, use_isolated_index=False) as process:
         try:
-            async with asyncio.timeout(_GLOBAL_TIMEOUT):
+            async with asyncio.timeout(_INACTIVE_TIMEOUT):
                 stdout_bytes, stderr_bytes = await process.communicate()
         except TimeoutError as time_out_error:
             raise subprocess.TimeoutExpired(
-                cmd=exec_args, timeout=_GLOBAL_TIMEOUT
+                cmd=exec_args, timeout=_INACTIVE_TIMEOUT
             ) from time_out_error
 
     std_out = (stdout_bytes or b"").decode("utf-8", errors="replace")
@@ -62,20 +63,6 @@ async def get_process_cmd_result(
         std_out=std_out,
         time_stamp=f"{datetime.now().strftime('%H:%M:%S')}",
     )
-
-
-async def _stop_process(process: asyncio.subprocess.Process) -> None:
-    """SIGTERM first, SIGKILL if the process hasn't exited after 2 seconds."""
-    if process.returncode is not None:
-        return
-    with suppress(ProcessLookupError):
-        process.send_signal(signal.SIGTERM)
-    try:
-        await asyncio.wait_for(process.wait(), timeout=2.0)
-    except TimeoutError:
-        with suppress(ProcessLookupError):
-            process.kill()
-        await process.wait()
 
 
 @asynccontextmanager
@@ -114,7 +101,21 @@ async def _managed_process(
             Path(f"{temp_index_path}.lock").unlink(missing_ok=True)
 
 
-async def create_interactive_managed_process(
+async def _stop_process(process: asyncio.subprocess.Process) -> None:
+    """SIGTERM first, SIGKILL if the process hasn't exited after 2 seconds."""
+    if process.returncode is not None:
+        return
+    with suppress(ProcessLookupError):
+        process.send_signal(signal.SIGTERM)
+    try:
+        await asyncio.wait_for(process.wait(), timeout=_SIGTERM_TIMEOUT)
+    except TimeoutError:
+        with suppress(ProcessLookupError):
+            process.kill()
+        await process.wait()
+
+
+async def create_interactive_process(
     chezmoi_args: tuple[str, ...],
     prompt_handler: Callable[[str, list[str], str], Awaitable[str]],
     output_handler: Callable[[str], Awaitable[None]],
@@ -156,7 +157,7 @@ async def create_interactive_managed_process(
                         pipe_stdout.read(1024), timeout=read_timeout
                     )
                 except TimeoutError:
-                    if time.monotonic() - last_activity > _GLOBAL_TIMEOUT:
+                    if time.monotonic() - last_activity > _INACTIVE_TIMEOUT:
                         timed_out = True
                         break
 
@@ -208,7 +209,7 @@ async def create_interactive_managed_process(
             await output_handler(remaining_output)
         std_err = b"".join(stderr_chunks).decode("utf-8", errors="replace")
         if timed_out:
-            std_err = f"{std_err}\nChezmoi inactive for {_GLOBAL_TIMEOUT} seconds."
+            std_err = f"{std_err}\nChezmoi inactive for {_INACTIVE_TIMEOUT} seconds."
         return CommandResult(
             cmd_enum=cmd_enum,
             full_cmd=" ".join(["chezmoi", *chezmoi_args]),

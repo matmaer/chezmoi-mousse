@@ -10,7 +10,7 @@ from textual.highlight import HighlightTheme, highlight
 
 from chezmoi_mousse import path_funcs, store
 from chezmoi_mousse.asyncio_process_exec import (
-    create_interactive_managed_process,
+    create_interactive_process,
     get_process_cmd_result,
 )
 from chezmoi_mousse.chezmoi_paths import ChezmoiTreePaths
@@ -362,7 +362,7 @@ async def run_chezmoi_interactive(
         chezmoi_args = (*cmd_enum.value,)
     else:
         chezmoi_args = (*cmd_enum.value, str(verb_arg))
-    return await create_interactive_managed_process(
+    return await create_interactive_process(
         chezmoi_args,
         prompt_handler,
         output_handler,
