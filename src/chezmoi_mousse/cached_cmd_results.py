@@ -106,7 +106,9 @@ class CachedCommands:
             return current
         defaults = _BtnDryResults(node_data)
         if not defaults.has_none_fields:
-            return defaults.complete_btn_dict
+            complete_results = defaults.complete_btn_dict
+            self.path_dry_dict[node_data.path] = complete_results
+            return complete_results
 
         btn_results = defaults.btn_dict
         new_result = await tchezmoi.collect_chezmoi_paths_in_scope(
