@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from chezmoi_mousse import tchezmoi
+from chezmoi_mousse import store, tchezmoi
 from chezmoi_mousse.str_enums import BtnLabel
 
 if TYPE_CHECKING:
@@ -92,9 +92,6 @@ class _DryDefaults:
             self.chezmoi_add = ""
             self.chezmoi_destroy = ""
             self.chezmoi_re_add = ""
-
-
-from chezmoi_mousse import store
 
 
 @dataclass(slots=True)
