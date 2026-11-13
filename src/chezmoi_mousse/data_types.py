@@ -217,13 +217,12 @@ class NodeData:
         status_file = managed_file and self.status_path
         include_sp = status_file or include_dir_for_sp_tree
 
-        if tree_name in (TreeName.managed_sp):
+        if tree_name is TreeName.managed_sp:
             return include_sp
-        elif tree_name in (TreeName.managed_amp):
+        if tree_name is TreeName.managed_amp:
             return self.managed
-        elif tree_name in (TreeName.filtered_unman_sp):
+        if tree_name is TreeName.filtered_unman_sp:
             return include_sp or self.dir_data.nested_filtered or self._filtered_path
-        elif tree_name in (TreeName.filtered_unman_amp):
+        if tree_name is TreeName.filtered_unman_amp:
             return self.managed or self.dir_data.nested_filtered or self._filtered_path
-        else:
-            return True
+        return True
