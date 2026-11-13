@@ -53,7 +53,7 @@ class CommandResult:
         return self.cmd_enum in WriteCmd.dry_commands()
 
     @property
-    def pretty_verb_arg(self) -> str:
+    def _pretty_verb_arg(self) -> str:
         if self._verb_arg is None:
             pretty_arg = ""
         elif isinstance(self._verb_arg, list) and self.cmd_enum is ReadCmd.source_path:
@@ -73,7 +73,7 @@ class CommandResult:
 
     @property
     def pretty_cmd(self) -> str:
-        return (f"{self.cmd_enum.pretty_cmd} {self.pretty_verb_arg}").rstrip()
+        return (f"{self.cmd_enum.pretty_cmd} {self._pretty_verb_arg}").rstrip()
 
 
 @dataclass(frozen=True)
