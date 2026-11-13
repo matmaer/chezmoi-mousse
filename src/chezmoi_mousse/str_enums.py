@@ -2,6 +2,7 @@ from enum import Enum, StrEnum, auto
 from functools import cached_property
 
 __all__ = [
+    "AssertStr",
     "BindingAction",
     "BindingDescription",
     "BtnLabel",
@@ -21,6 +22,10 @@ __all__ = [
     "UnmanagedMax",
     "WriteCmd",
 ]
+
+
+class AssertStr(StrEnum):
+    path_count_mismatch = "Mismatch between all paths and node data paths"
 
 
 class Chars(StrEnum):
@@ -273,9 +278,10 @@ class LabelStr(StrEnum):
 
 
 class LogStr(StrEnum):
-    # added_managed = "New managed paths" # noqa: ERA001
     app_log_initialized = "Application log initialized"
-    # changed_status = "New managed paths" # noqa: ERA001
+    auto_log = "psutil is auto logging"
+    auto_log_started = "auto log started"
+    auto_log_stopped = "auto log stopped"
     debug_log_initialized = "Debug log initialized"
     debug_tab_enabled = "Debug tab enabled"
     doctor_errors_found = "See the Config tab for errors"
@@ -287,11 +293,6 @@ class LogStr(StrEnum):
     doctor_warnings_found = "See the Config tab for warnings"
     no_stderr = "No output on stderr"
     no_stdout = "No output on stdout"
-    auto_log = "psutil is auto logging"
-    auto_log_started = "auto log started"
-    auto_log_stopped = "auto log stopped"
-    no_auto_log = "psutil not auto logging"
-    dry = "dry-run command"
 
     @property
     def start(self) -> str:
@@ -318,10 +319,6 @@ class LogStr(StrEnum):
 
 
 class PathFilters(Enum):
-    # TODO: create an ALWAYS_IGNORE category to realistically implement things like
-    # os.walk, os.scandir, pathlib.iterdir and watchdog features to avoid elaborate
-    # exception handling, useless work, and keeping things as lean as possible
-
     EXTENDED_DIRS = (
         ".build",
         ".bundle",
@@ -430,13 +427,10 @@ class StatusCode(StrEnum):
     R = auto()
     S = "\x20"  # single space
 
-    # --- Status Pairs ---
     # TODO: We currently completely skip any status R, so currently omitted here
     # NOTE: The first column can only contain M, D or a space, so not applicable
 
-    # Target deleted locally; apply will create/restore target file.
-    # Is a no-op when running chezmoi re-add
-    DA = "DA"
+    DA = "DA"  # Target deleted locally; apply will create/restore target file.
     DD = "DD"  # NOTE: probably impossible status pair
     DM = "DM"  # Target deleted locally; apply will create target from source.
     DS = "D\x20"  # Target deleted locally; no target apply action required.

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from chezmoi_mousse import path_funcs
 from chezmoi_mousse.data_types import DirData, IterDirResult, NodeData
+from chezmoi_mousse.str_enums import AssertStr
 
 if TYPE_CHECKING:
     from chezmoi_mousse.str_enums import StatusCode as Sc
@@ -54,10 +55,7 @@ class ChezmoiTreePaths:
         all_paths = managed_paths | un_managed_paths
         all_paths.add(self._dest_dir)
         node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
-        # assert all paths are accounted for
-        assert all_paths == node_data_paths, (
-            "Mismatch between all paths and node data paths"
-        )
+        assert all_paths == node_data_paths, AssertStr.path_count_mismatch
 
     def _populate_file_node_data(self, *, filtered_files: set[Path]) -> None:
 
