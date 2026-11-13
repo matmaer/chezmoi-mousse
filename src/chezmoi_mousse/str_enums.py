@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum, StrEnum, auto
 from functools import cached_property
 
@@ -113,11 +115,11 @@ class BtnLabel(StrEnum):
         return f"Run interactive {self.value}"
 
     @classmethod
-    def op_btn_labels(cls) -> tuple["BtnLabel", ...]:
+    def op_btn_labels(cls) -> tuple[BtnLabel, ...]:
         return tuple(btn for btn in cls if btn.name.startswith("chezmoi_"))
 
     @property
-    def dry_cmd(self) -> "WriteCmd":
+    def dry_cmd(self) -> WriteCmd:
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         map = {
@@ -130,7 +132,7 @@ class BtnLabel(StrEnum):
         return map[self]
 
     @property
-    def write_cmd(self) -> "WriteCmd":
+    def write_cmd(self) -> WriteCmd:
         if not self.name.startswith("chezmoi_"):
             raise AttributeError(f"run_label not available for {self}")
         map = {
@@ -680,7 +682,7 @@ class WriteCmd(Enum):
         return f"chezmoi {verb_str}"
 
     @property
-    def btn_label(self) -> "BtnLabel":
+    def btn_label(self) -> BtnLabel:
         map = {
             WriteCmd.dry_add: BtnLabel.chezmoi_add,
             WriteCmd.dry_apply: BtnLabel.chezmoi_apply,
@@ -691,5 +693,5 @@ class WriteCmd(Enum):
         return map[self]
 
     @classmethod
-    def dry_commands(cls) -> tuple["WriteCmd", ...]:
+    def dry_commands(cls) -> tuple[WriteCmd, ...]:
         return tuple(cmd for cmd in cls if cmd.name.startswith("dry_"))

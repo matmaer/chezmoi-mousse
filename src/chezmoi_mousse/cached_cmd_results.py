@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,16 +12,15 @@ if TYPE_CHECKING:
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
 
 
-type BtnDryDataDict = dict[BtnLabel, str | None]
-type BtnDryCompletedDict = dict[BtnLabel, str]
+type DryDefaultsDict = dict[BtnLabel, str | None]
 type PathDryDict = dict[Path, dict[BtnLabel, str]]
 
 
-__all__ = ["BtnDryDataDict", "CachedCommands"]
+__all__ = ["CachedCommands", "DryDefaultsDict"]
 
 
 @dataclass(slots=True)
-class _BtnDryResults:
+class _DryDefaults:
     _node_data: NodeData
     chezmoi_add: str | None = None
     chezmoi_apply: str | None = None
@@ -32,94 +31,98 @@ class _BtnDryResults:
     def __post_init__(self) -> None:
         if self._node_data.dir_data.dest_dir:
             self._dest_dir_defaults()
-            return
-        if self._node_data.managed:
-            self._managed_defaults()
-        elif not self._node_data.managed:
+        elif self._node_data.managed:
+            if self._node_data.file_path:
+                self._managed_file_defaults()
+            else:
+                self._managed_dir_defaults()
+        else:
             self._unmanaged_defaults()
-        if not self._node_data.exists:
-            self._exists_defaults()
 
     @property
-    def _field_map(self) -> dict[str, str | None]:
-        return {
-            f.name: getattr(self, f.name)
-            for f in fields(self)
-            if not f.name.startswith("_")
-        }
+    def btn_dict(self) -> DryDefaultsDict:
+        return {label: getattr(self, label.name) for label in BtnLabel.op_btn_labels()}
 
     @property
-    def has_none_fields(self) -> bool:
-        return bool([f for f, v in self._field_map.items() if v is None])
-
-    @property
-    def btn_dict(self) -> BtnDryDataDict:
-        field_map = self._field_map
-        return {
-            btn_label: field_map[btn_label.name]
-            for btn_label in BtnLabel.op_btn_labels()
-        }
-
-    @property
-    def complete_btn_dict(self) -> BtnDryCompletedDict:
-        field_map = self._field_map
-        complete_dict: BtnDryCompletedDict = {}
-        for btn_label in BtnLabel.op_btn_labels():
-            result = field_map[btn_label.name]
-            if result is None:
-                raise RuntimeError(f"Missing dry result for {btn_label.name}")
-            complete_dict[btn_label] = result
-        return complete_dict
+    def is_complete(self) -> bool:
+        return None not in (
+            self.chezmoi_add,
+            self.chezmoi_apply,
+            self.chezmoi_destroy,
+            self.chezmoi_forget,
+            self.chezmoi_re_add,
+        )
 
     def _dest_dir_defaults(self) -> None:
         self.chezmoi_add = ""
         self.chezmoi_forget = ""
         self.chezmoi_destroy = ""
-        if not self._node_data.dir_data.nested_status:
+        if self._node_data.dir_data.nested_status is False:
             self.chezmoi_apply = ""
             self.chezmoi_re_add = ""
         return
 
     def _unmanaged_defaults(self) -> None:
-        for name in self._field_map:
-            if name != "chezmoi_add":
-                setattr(self, name, "")
+        self.chezmoi_apply = ""
+        self.chezmoi_destroy = ""
+        self.chezmoi_forget = ""
+        self.chezmoi_re_add = ""
 
-    def _managed_defaults(self) -> None:
-        if self._node_data.file_path and self._node_data.status is None:
+    def _managed_file_defaults(self) -> None:
+        if self._node_data.status is None:
             self.chezmoi_apply = ""
             self.chezmoi_re_add = ""
+        self._exists_defaults()
+
+    def _managed_dir_defaults(self) -> None:
+        dir_data = self._node_data.dir_data
+        if self._node_data.status is None and not dir_data.nested_status:
+            self.chezmoi_apply = ""
+            self.chezmoi_re_add = ""
+        if (
+            self._node_data.status is None
+            and not dir_data.nested_status
+            and not dir_data.nested_un_managed
+        ):
+            self.chezmoi_add = ""
+        self._exists_defaults()
 
     def _exists_defaults(self) -> None:
-        self.chezmoi_destroy = ""
-        self.chezmoi_add = ""
+        if not self._node_data.exists:
+            self.chezmoi_add = ""
+            self.chezmoi_destroy = ""
+            self.chezmoi_re_add = ""
+
+
+from chezmoi_mousse import store
 
 
 @dataclass(slots=True)
 class CachedCommands:
     _app: ChezmoiGui
-    path_dry_dict: PathDryDict = field(default_factory=dict[Path, dict[BtnLabel, str]])
+    _complete_dicts: dict[Path, dict[BtnLabel, str]] = field(
+        default_factory=dict[Path, dict[BtnLabel, str]]
+    )
+    _dry_defaults: dict[Path, _DryDefaults] = field(
+        default_factory=dict[Path, _DryDefaults]
+    )
+
+    def __post_init__(self) -> None:
+        self._dry_defaults = {}
+        for path, node_data in store.cm_paths.all_node_data.items():
+            self._dry_defaults[path] = _DryDefaults(node_data)
 
     async def get_dry_results(self, node_data: NodeData) -> dict[BtnLabel, str]:
-        current = self.path_dry_dict.get(node_data.path, None)
-        if current is not None:
-            return current
-        defaults = _BtnDryResults(node_data)
-        if not defaults.has_none_fields:
-            complete_results = defaults.complete_btn_dict
-            self.path_dry_dict[node_data.path] = complete_results
-            return complete_results
+        if node_data.path in self._complete_dicts:
+            return self._complete_dicts[node_data.path]
 
-        btn_results = defaults.btn_dict
+        defaults = self._dry_defaults[node_data.path]
+        if defaults.is_complete:
+            complete = {k: v for k, v in defaults.btn_dict.items() if v is not None}
+            self._complete_dicts[node_data.path] = complete
+            return complete
         new_result = await tchezmoi.collect_chezmoi_paths_in_scope(
-            self._app, node_data.path, btn_results
+            self._app, node_data.path, self._dry_defaults[node_data.path].btn_dict
         )
-        complete_results: BtnDryCompletedDict = {}
-        for btn_label, result in btn_results.items():
-            if result is None:
-                complete_results[btn_label] = new_result[btn_label]
-            else:
-                complete_results[btn_label] = result
-
-        self.path_dry_dict[node_data.path] = complete_results
-        return complete_results
+        self._complete_dicts[node_data.path] = new_result
+        return new_result

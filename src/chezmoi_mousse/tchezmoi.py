@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from asyncio import Task
     from collections.abc import Awaitable, Callable, Iterable
 
-    from chezmoi_mousse.cached_cmd_results import BtnDryDataDict
+    from chezmoi_mousse.cached_cmd_results import DryDefaultsDict
     from chezmoi_mousse.data_types import CommandResult
     from chezmoi_mousse.gui.textual_app import ChezmoiGui
     from chezmoi_mousse.str_enums import BtnLabel
@@ -251,7 +251,7 @@ async def get_highlighted_chezmoi_cat_output(
 
 
 async def collect_chezmoi_paths_in_scope(
-    app: ChezmoiGui, path: Path, dry_dict: BtnDryDataDict
+    app: ChezmoiGui, path: Path, dry_dict: DryDefaultsDict
 ) -> dict[BtnLabel, str]:
 
     needs_update: list[BtnLabel] = [btn for btn, _ in dry_dict.items() if _ is None]
@@ -270,7 +270,7 @@ async def collect_chezmoi_paths_in_scope(
                 raise ValueError(f"Unexpected chezmoi question: {question!r}")
             if cmd_enum is WriteCmd.dry_destroy:
                 path_text = path_text.partition(f" and {store.cfg.source_dir_str}")[0]
-            paths.append(path_text)
+            paths.append(path_text.strip())
 
             if ChezmoiPrompts.no.prompt_item not in options:
                 return ChezmoiPrompts.quit.reply
@@ -288,7 +288,8 @@ async def collect_chezmoi_paths_in_scope(
     async with asyncio.TaskGroup() as task_group:
         for btn in needs_update:
             tasks[btn] = task_group.create_task(collect_command(btn.dry_cmd))
-    return {btn: output.result() for btn, output in tasks.items()}
+    dry_dict.update({btn: output.result() for btn, output in tasks.items()})
+    return {k: v for k, v in dry_dict.items() if v is not None}
 
 
 async def run_chezmoi_interactive(

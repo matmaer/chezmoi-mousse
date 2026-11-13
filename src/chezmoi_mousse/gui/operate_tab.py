@@ -124,7 +124,11 @@ class OperateTab(TabPane):
     def on_mount(self) -> None:
         self.source_path_label = self.query_one(Tcss.green_label.q, Static)
         self.op_btn_group = self.query_exactly_one(OperateBtnGroup)
-        self.op_buttons = self.op_btn_group.query_children(Button).results()
+        self.op_buttons: list[Button] = [
+            b
+            for b in self.op_btn_group.query_children(Button).results()
+            if BtnLabel(b.label) in BtnLabel.op_btn_labels()
+        ]
 
         self.left_side_vertical = self.query_exactly_one(LeftSideVertical)
         self.middle_vert = self.query_exactly_one(MiddleVertical)
@@ -165,8 +169,7 @@ class OperateTab(TabPane):
     async def _update_op_buttons(self, node_data: NodeData) -> None:
         dry_results = await store.cached.get_dry_results(node_data)
         for btn in self.op_buttons:
-            btn_label_enum = BtnLabel(str(btn.label))
-            btn.disabled = bool(dry_results[btn_label_enum])
+            btn.disabled = not bool(dry_results[BtnLabel(str(btn.label))])
 
     @work(description="update view widgets")
     async def _update_view_widgets(self, node_data: NodeData) -> None:
@@ -244,6 +247,7 @@ class OperateTab(TabPane):
             return False
         for tree in self.left_side_vertical.query_children(OperateTree).results():
             await tree.update_nodes(store.cm_changes)
+        await store.init_cached_commands(self.app)
         self.content_view.cache.clear()
         self.diff_view.cache.clear()
         self.diff_reverse_view.cache.clear()
@@ -300,15 +304,12 @@ class OperateTab(TabPane):
             self.current_displayed_tree.collapse_bottom_level()
 
     @on(Button.Pressed)
-    def handle_operate_button(self, event: Button.Pressed) -> None:
+    async def handle_operate_button(self, event: Button.Pressed) -> None:
         if event.button.label not in BtnLabel.op_btn_labels():
             return
         event.stop()
         btn_label = BtnLabel(str(event.button.label))
-        dry_run_data = store.cached.path_dry_dict.get(self.app.current_node.path)
-        if dry_run_data is None:
-            self.app.notify("Affected paths are not available.", severity="warning")
-            return
+        dry_run_data = await store.cached.get_dry_results(self.app.current_node)
         paths = dry_run_data[btn_label]
         modal = OperateModal(
             op_btn_label=btn_label,

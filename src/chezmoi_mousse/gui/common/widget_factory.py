@@ -29,7 +29,10 @@ def cmd_result_collapsible(cmd_result: CommandResult) -> Collapsible:
     rc = cmd_result.returncode
     appr = cmd_result.interactive_approved
     color = f"${ColorVar.text_success}" if rc == 0 else f"${ColorVar.text_warning}"
-    suffix = "(no operations approved)" if appr is False else f"(returncode {rc})"
+    if "--dry-run" in cmd_result.full_cmd:
+        suffix = "(dry-run)"
+    else:
+        suffix = "(no operations approved)" if appr is False else f"(returncode {rc})"
     ts = cmd_result.time_stamp
     title = f"[{color}][{ts}] {escape(cmd_result.pretty_cmd)}[/] {suffix}"
     curated_stdout = cmd_result.std_out or f"{LogStr.no_stdout}"

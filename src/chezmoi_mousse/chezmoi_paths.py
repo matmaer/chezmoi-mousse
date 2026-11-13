@@ -57,6 +57,10 @@ class ChezmoiTreePaths:
         node_data_paths = self.dir_node_data.keys() | self.file_node_data.keys()
         assert all_paths == node_data_paths, AssertStr.path_count_mismatch
 
+    @property
+    def all_node_data(self) -> NodeDict:
+        return self.dir_node_data | self.file_node_data
+
     def _populate_file_node_data(self, *, filtered_files: set[Path]) -> None:
 
         for path in self._man_files.keys() | self._un_man_files:
