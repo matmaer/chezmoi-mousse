@@ -35,7 +35,7 @@ class _BtnDryResults:
             return
         if self._node_data.managed:
             self._managed_defaults()
-        if not self._node_data.managed:
+        elif not self._node_data.managed:
             self._unmanaged_defaults()
         if not self._node_data.exists:
             self._exists_defaults()
