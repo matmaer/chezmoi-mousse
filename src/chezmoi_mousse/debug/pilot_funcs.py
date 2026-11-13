@@ -47,16 +47,16 @@ class NoChill:
     @staticmethod
     async def click_widget(pilot: Pilot[object], widget: HoverClickTypes) -> None:
         if widget.is_on_screen and widget.display:
-            if widget.scroll_to_widget(widget):
-                await pilot.wait_for_animation()
+            widget.scroll_visible()
+            await pilot.pause()
             await pilot.click(widget)
             await pilot.wait_for_animation()
 
     @staticmethod
     async def hover_widget(pilot: Pilot[object], widget: HoverClickTypes) -> None:
         if widget.is_on_screen and widget.display:
-            if widget.scroll_to_widget(widget):
-                await pilot.wait_for_animation()
+            widget.scroll_visible()
+            await pilot.pause()
             await pilot.hover(widget)
             await pilot.wait_for_animation()
 
@@ -163,13 +163,12 @@ class WithChill:
     async def toggle_random_collapsible_and_scroll(
         pilot: Pilot[object], root: Widget, *, scroll_probability: float
     ) -> None:
-        to_collapse = await NoChill.get_random_collapsible_title(root, collapsed=True)
-        to_expand = await NoChill.get_random_collapsible_title(root, collapsed=False)
-        for title in to_collapse, to_expand:
+        for collapsed in (True, False):
+            title = await NoChill.get_random_collapsible_title(
+                root, collapsed=collapsed
+            )
             if title is None:
-                return
-            if root.screen.scroll_to_widget(title):
-                await pilot.wait_for_animation()
+                continue
             await WithChill.hover_and_click(pilot, title)
             if random.random() < scroll_probability:
                 await NoChill.scroll_relevant_widget(pilot, root)
