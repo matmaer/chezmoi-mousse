@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from rich.markup import escape
 from rich.style import Style
+from rich.text import Text
 from textual import on, work
+from textual.color import Color
 from textual.widgets import Tree
 
 from chezmoi_mousse import path_funcs, store
@@ -14,7 +15,6 @@ from chezmoi_mousse.str_enums import ColorVar, StatusCode as Sc, TreeName
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from rich.text import Text
     from textual import getters
     from textual.widgets.tree import TreeNode
 
@@ -44,12 +44,23 @@ class OperateTree(Tree[NodeData]):
     def render_label(
         self, node: TreeNode[NodeData], base_style: Style, style: Style
     ) -> Text:
-        """Override render_label for a cursor node so the label keeps its own color and
-        just underlines the cursor node.
-        """
         if self.cursor_line != -1 and self.cursor_node is node:
-            style = Style(underline=True)
-        return super().render_label(node, base_style, style)
+            style = Style(
+                bgcolor=base_style.bgcolor,
+                bold=style.bold,
+                dim=style.dim,
+                underline=True,
+            )
+        text = super().render_label(node, base_style, style)
+
+        if node.data is not None and node is not self.root:
+            raw_color = self.app.theme_variables[self._label_color_var(node.data)]
+            rich_color = Color.parse(raw_color).rich_color
+            prefix_len = len(self.ICON_NODE) if node.allow_expand else 0
+            text.stylize(
+                Style(color=rich_color, italic=not node.data.exists), start=prefix_len
+            )
+        return text
 
     def _label_color_var(self, node_data: NodeData) -> ColorVar:
         status_code = node_data.status
@@ -122,9 +133,7 @@ class OperateTree(Tree[NodeData]):
             in_tree = path in self.node_map
             include = node_data.include_in_tree(tree_name)
             if in_tree and include:
-                node = self.node_map[path]
-                node.data = node_data
-                node.set_label(self._node_label(node_data))
+                self.node_map[path].data = node_data
             elif in_tree:
                 self._remove_node(path)
             elif include:
@@ -160,10 +169,8 @@ class OperateTree(Tree[NodeData]):
                     return child
         return None
 
-    def _node_label(self, node_data: NodeData) -> str:
-        italic = " italic" if not node_data.exists else ""
-        color = self.app.theme_variables[self._label_color_var(node_data)]
-        return f"[{color}{italic}]{escape(node_data.path.name)}[/]"
+    def _node_label(self, node_data: NodeData) -> Text:
+        return Text(node_data.path.name)
 
     def _add_node_with_color(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
@@ -249,15 +256,11 @@ class OperateTree(Tree[NodeData]):
             return
         iter_dir_result = store.cm_paths.load_un_man_children(node_data.path)
         self.iterated_dirs.add(node_data.path)
-        for tree in self.screen.query(OperateTree).results():
-            tree_node = tree.node_map.get(node_data.path)
-            if tree_node is not None:
-                tree_node.set_label(tree._node_label(node_data))
-        for path, node_data in iter_dir_result.dirs.items():
-            if self.name == TreeName.extended and not node_data.filtered:
+        for path, child_data in iter_dir_result.dirs.items():
+            if self.name == TreeName.extended and not child_data.filtered:
                 continue
-            self._add_node_with_color(path, node_data, allow_expand=True)
-        for path, node_data in iter_dir_result.files.items():
-            if self.name == TreeName.extended and not node_data.filtered:
+            self._add_node_with_color(path, child_data, allow_expand=True)
+        for path, child_data in iter_dir_result.files.items():
+            if self.name == TreeName.extended and not child_data.filtered:
                 continue
-            self._add_node_with_color(path, node_data, allow_expand=False)
+            self._add_node_with_color(path, child_data, allow_expand=False)
