@@ -13,12 +13,7 @@ __all__ = ["run_app"]
 
 def run_app() -> None:
     _PreRunChecks.sys_exit_if_cannot_run()
-    store.init_data = InitData(
-        pilot_mode=(
-            os.environ.get("CHEZMOI_MOUSSE_PILOT_MODE") == "1"
-            or "--pilot-mode" in sys.argv
-        )
-    )
+    store.init_data = InitData(pilot_mode=("--pilot-mode" in sys.argv))
     try:
         app = ChezmoiGui()
         if store.init_data.pilot_mode:
@@ -86,10 +81,7 @@ class _PreRunChecks:
             success_info.append(git_found)
         if os.environ.get("CHEZMOI_SUBSHELL") == "1":
             error_info.append(in_subshell)
-        if (
-            os.environ.get("CHEZMOI_MOUSSE_PRETEND_FAIL") == "1"
-            or "--pretend-fail" in sys.argv
-        ):
+        if "--pretend-fail" in sys.argv:
             error_info.append(pretend_fail)
         if _PreRunChecks._is_elevated():
             error_info.append(elevated)
