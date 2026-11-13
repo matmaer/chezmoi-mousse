@@ -90,7 +90,6 @@ class PromptBtnGroup(HorizontalGroup):
 
 class TreeBtnGroup(Horizontal):
     def compose(self) -> ComposeResult:
-        yield Button(label=BtnLabel.dest_dir, classes=Tcss.dest_dir_button)
         yield Button(
             label=BtnLabel.expand, classes=Tcss.tree_op_button, tooltip="expand leaves"
         )
@@ -99,6 +98,7 @@ class TreeBtnGroup(Horizontal):
             classes=Tcss.tree_op_button,
             tooltip="collapse leaves",
         )
+        yield Button(label=BtnLabel.dest_dir, classes=Tcss.dest_dir_button)
         yield Button(
             label=BtnLabel.refresh, classes=Tcss.tree_op_button, tooltip="refresh tree"
         )

@@ -166,8 +166,9 @@ Button {
   &.dest_dir_button {
     background-tint: $surface-lighten-1;
     background: $surface-lighten-1;
-    border-bottom: inner $surface-lighten-1;
-    border-top: inner $surface-lighten-1;
+    border: inner $surface-lighten-1;
+    /* border-bottom: inner $surface-lighten-1;
+    border-top: inner $surface-lighten-1; */
     color: $text-primary;
     text-style: none;
     width: 1fr;
