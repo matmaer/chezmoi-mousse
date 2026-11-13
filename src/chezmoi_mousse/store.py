@@ -84,7 +84,7 @@ def save_stacktrace() -> None:
     def _write_log_file(st_dir: Path) -> None:
         to_write = traceback.format_exc().strip()
         new_log_path = st_dir / _current_timestamp_name()
-        with new_log_path.open("w") as f:
+        with new_log_path.open("a") as f:
             f.write(to_write)
 
     to_write = traceback.format_exc().strip()
