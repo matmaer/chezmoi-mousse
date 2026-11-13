@@ -47,7 +47,7 @@ class NoChill:
     @staticmethod
     async def click_widget(pilot: Pilot[object], widget: HoverClickTypes) -> None:
         if widget.is_on_screen and widget.display:
-            if widget.screen.scroll_to_widget(widget):
+            if widget.scroll_to_widget(widget):
                 await pilot.wait_for_animation()
             await pilot.click(widget)
             await pilot.wait_for_animation()
@@ -55,7 +55,7 @@ class NoChill:
     @staticmethod
     async def hover_widget(pilot: Pilot[object], widget: HoverClickTypes) -> None:
         if widget.is_on_screen and widget.display:
-            if widget.screen.scroll_to_widget(widget):
+            if widget.scroll_to_widget(widget):
                 await pilot.wait_for_animation()
             await pilot.hover(widget)
             await pilot.wait_for_animation()
@@ -121,6 +121,8 @@ class NoChill:
         ]
         if scrollables:
             widget = random.choice(scrollables)
+            if root.scroll_to_widget(widget):
+                await pilot.wait_for_animation()
             await pilot.wait_for_animation()
             if widget.show_vertical_scrollbar:
                 widget.scroll_end()
@@ -166,6 +168,8 @@ class WithChill:
         for title in to_collapse, to_expand:
             if title is None:
                 return
+            if root.screen.scroll_to_widget(title):
+                await pilot.wait_for_animation()
             await WithChill.hover_and_click(pilot, title)
             if random.random() < scroll_probability:
                 await NoChill.scroll_relevant_widget(pilot, root)
@@ -220,7 +224,6 @@ class WithChill:
             key = "down" if tree.cursor_line < random_node.line else "up"
             while tree.cursor_node != random_node:
                 await NoChill.press_key(pilot, key)
-
         tree.select_node(random_node)
         await NoChill.tree_refresh_wait(pilot, tree)
         await _chill_sleep(pilot)
