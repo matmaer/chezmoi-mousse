@@ -107,37 +107,37 @@ class OperateTree(Tree[NodeData]):
                     color_var = ColorVar.text_accent
         return color_var
 
+    def _apply_nodes(
+        self, dirs: dict[Path, NodeData], files: dict[Path, NodeData]
+    ) -> None:
+        tree_name = TreeName(self.name)
+        for allow_expand, nodes in ((True, dirs), (False, files)):
+            for path, node_data in nodes.items():
+                if path == store.cfg.dest_dir:
+                    self.root.data = node_data
+                    continue
+                in_tree = path in self.node_map
+                include = node_data.include_in_tree(tree_name)
+                if in_tree and include:
+                    self.node_map[path].data = node_data
+                elif in_tree:
+                    self._remove_node(path)
+                elif include:
+                    self._add_node_to_tree(path, node_data, allow_expand=allow_expand)
+
     async def update_nodes(self, changes: CmPathChanges) -> None:
         for path in changes.remove_tree_dirs | changes.remove_tree_files:
             if path in self.node_map:
                 self._remove_node(path)
 
-        tree_name = TreeName(self.name)
-        dirs = path_funcs.sort_path_dict(
-            changes.add_tree_dirs | changes.change_tree_dirs
+        self._apply_nodes(
+            path_funcs.sort_path_dict(changes.add_tree_dirs | changes.change_tree_dirs),
+            path_funcs.sort_path_dict(
+                changes.add_tree_files | changes.change_tree_files
+            ),
         )
-        files = path_funcs.sort_path_dict(
-            changes.add_tree_files | changes.change_tree_files
-        )
-        self._apply_changed_nodes(dirs, tree_name, allow_expand=True)
-        self._apply_changed_nodes(files, tree_name, allow_expand=False)
-        self.refresh(layout=True)
 
-    def _apply_changed_nodes(
-        self, changed: dict[Path, NodeData], tree_name: TreeName, *, allow_expand: bool
-    ) -> None:
-        for path, node_data in changed.items():
-            if path == store.cfg.dest_dir:
-                self.root.data = node_data
-                continue
-            in_tree = path in self.node_map
-            include = node_data.include_in_tree(tree_name)
-            if in_tree and include:
-                self.node_map[path].data = node_data
-            elif in_tree:
-                self._remove_node(path)
-            elif include:
-                self._add_node_with_color(path, node_data, allow_expand=allow_expand)
+        self.refresh(layout=True)
 
     def _remove_node(self, path: Path) -> None:
         self.node_map[path].remove()
@@ -149,46 +149,32 @@ class OperateTree(Tree[NodeData]):
     def _get_before_node(
         self, parent_node: TreeNode[NodeData], node_data: NodeData
     ) -> TreeNode[NodeData] | None:
-        file_nodes = [c for c in parent_node.children if not c.allow_expand]
-        if node_data.dir_path:
-            dir_nodes = [c for c in parent_node.children if c.allow_expand]
-            for child in dir_nodes:
-                if (
-                    child.data is not None
-                    and node_data.path.name.lower() < child.data.path.name.lower()
-                ):
-                    return child
-            if file_nodes:
-                return file_nodes[0]
-        else:
-            for child in file_nodes:
-                if (
-                    child.data is not None
-                    and node_data.path.name.lower() < child.data.path.name.lower()
-                ):
-                    return child
+        target_key = (not node_data.dir_path, node_data.path.name.lower())
+        for child in parent_node.children:
+            if child.data is not None and target_key < (
+                not child.allow_expand,
+                child.data.path.name.lower(),
+            ):
+                return child
         return None
 
     def _node_label(self, node_data: NodeData) -> Text:
         return Text(node_data.path.name)
 
-    def _add_node_with_color(
+    def _add_node_to_tree(
         self, path: Path, node_data: NodeData, *, allow_expand: bool
     ) -> None:
-        if path == store.cfg.dest_dir:
+        # Lazily loaded children can arrive through a refresh; skip paths
+        # whose parent directory this tree never loaded.
+        parent_node = self.node_map.get(path.parent)
+        if parent_node is None:
             return
-        # Lazily loaded children can arrive through a refresh, skip duplicates and
-        # paths of which this tree never loaded the parent.
-        if path in self.node_map or node_data.path.parent not in self.node_map:
-            return
-        parent_node = self.node_map[node_data.path.parent]
-        new_node = parent_node.add(
+        self.node_map[path] = parent_node.add(
             label=self._node_label(node_data),
             data=node_data,
             before=self._get_before_node(parent_node, node_data),
             allow_expand=allow_expand,
         )
-        self.node_map[path] = new_node
 
     def expand_top_level(self) -> None:
         collapsed = {
@@ -217,28 +203,9 @@ class OperateTree(Tree[NodeData]):
         for path in bottom_level:
             self.node_map[path].collapse()
 
-    async def _get_tree_nodes(
-        self, node_dict: dict[Path, NodeData]
-    ) -> dict[Path, NodeData]:
-        result: dict[Path, NodeData] = {}
-        for path, node_data in node_dict.items():
-            if node_data.include_in_tree(TreeName(self.name)):
-                result[path] = node_data
-        return result
-
     @work(description="perform initial tree population")
     async def _initial_tree_population(self) -> None:
-        dir_nodes: dict[Path, NodeData] = await self._get_tree_nodes(
-            store.cm_paths.dir_node_data
-        )
-        file_nodes: dict[Path, NodeData] = await self._get_tree_nodes(
-            store.cm_paths.file_node_data
-        )
-
-        for path, node_data in dir_nodes.items():
-            self._add_node_with_color(path, node_data, allow_expand=True)
-        for path, node_data in file_nodes.items():
-            self._add_node_with_color(path, node_data, allow_expand=False)
+        self._apply_nodes(store.cm_paths.dir_node_data, store.cm_paths.file_node_data)
         if self.name == TreeName.managed_sp:
             self.display = True
 
@@ -256,11 +223,4 @@ class OperateTree(Tree[NodeData]):
             return
         iter_dir_result = store.cm_paths.load_un_man_children(node_data.path)
         self.iterated_dirs.add(node_data.path)
-        for path, child_data in iter_dir_result.dirs.items():
-            if self.name == TreeName.extended and not child_data.filtered:
-                continue
-            self._add_node_with_color(path, child_data, allow_expand=True)
-        for path, child_data in iter_dir_result.files.items():
-            if self.name == TreeName.extended and not child_data.filtered:
-                continue
-            self._add_node_with_color(path, child_data, allow_expand=False)
+        self._apply_nodes(iter_dir_result.dirs, iter_dir_result.files)
